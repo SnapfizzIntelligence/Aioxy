@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Snapfizz Intelligence | ESG Leak Detection</title>
   <style>
     :root {
@@ -11,16 +11,32 @@
       --light: #fff;
     }
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Arial', sans-serif;
       margin: 0;
+      background-color: #f9f9f9;
       color: #333;
       line-height: 1.6;
     }
     header {
       background: var(--dark);
       color: var(--light);
-      padding: 80px 20px;
+      padding: 60px 20px 40px;
       text-align: center;
+    }
+    nav {
+      background: var(--primary);
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 1rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
     }
     h1 {
       font-size: 3.5rem;
@@ -30,28 +46,28 @@
       -webkit-text-fill-color: transparent;
     }
     .subtitle {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       opacity: 0.9;
     }
     .cta {
       background: var(--primary);
       color: white;
-      padding: 15px 30px;
+      padding: 12px 24px;
       border-radius: 50px;
       font-weight: bold;
-      display: inline-block;
-      margin-top: 20px;
       text-decoration: none;
+      display: inline-block;
+      margin-top: 1.5rem;
     }
     .trust-logos {
       display: flex;
       justify-content: center;
       gap: 30px;
-      margin: 40px 0;
+      margin: 30px 0;
     }
     .trust-logos img {
       height: 40px;
-      opacity: 0.7;
+      opacity: 0.8;
     }
     section {
       max-width: 1000px;
@@ -63,27 +79,46 @@
       border-radius: 10px;
       padding: 30px;
       margin: 40px 0;
+      text-align: center;
     }
     footer {
-      text-align: center;
-      padding: 30px;
       background: var(--dark);
       color: var(--light);
+      padding: 30px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .footer-links a {
+      color: #ccc;
+      margin: 0 10px;
+      text-decoration: none;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
+
   <header>
     <h1>Snapfizz Intelligence</h1>
     <p class="subtitle">Uncover hidden ESG leaks. Recover $300M+ in lost revenue.</p>
     <a href="#demo" class="cta">TRY LEAK DETECTOR</a>
-    
     <div class="trust-logos">
-  <img src="unilever-logo.jpg" alt="Unilever">
-  <img src="nestle.png" alt="Nestlé">
-  <img src="patagonia.png" alt="Patagonia">
+      <img src="unilever-logo.jpg" alt="Unilever">
+      <img src="nestle.png" alt="Nestlé">
+      <img src="patagonia.png" alt="Patagonia">
     </div>
   </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="audits.html">ESG Audits</a>
+    <a href="tool.html">Leak Detector</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="privacy.html">Privacy</a>
+  </nav>
 
   <section id="demo">
     <h2>How It Works</h2>
@@ -105,21 +140,20 @@
   </section>
 
   <section>
-    <h2>Our AI Cofounders</h2>
-    <div style="display: flex; gap: 20px;">
-      <div>
-        <h3>Tulasi Pariyar</h3>
-        <p>Founder & ESG Strategist</p>
-      </div>
-      <div>
-        <h3>ChatGPT + DeepSeek</h3>
-        <p>Analysis & Engineering</p>
-      </div>
-    </div>
+    <h2>Meet the Founders</h2>
+    <p><strong>Tulasi Pariyar</strong> — ESG Strategist & Vision<br>
+    <strong>ChatGPT & DeepSeek</strong> — Intelligence & Engineering</p>
+    <p><a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="cta">Connect on LinkedIn</a></p>
   </section>
 
   <footer>
-    &copy; 2025 Snapfizz Intelligence | Built in Nepal with AI
+    &copy; 2025 Snapfizz Intelligence | Built in Nepal with AI + Hope  
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a> | 
+      <a href="disclaimer.html">Disclaimer</a> | 
+      <a href="mailto:pariyartulasi766@gmail.com">Contact Us</a>
+    </div>
   </footer>
+
 </body>
   </html>
