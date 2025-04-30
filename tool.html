@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snapfizz ESG Leak Detector | Snapfizz Intelligence</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .tool { background: #f8f9fa; padding: 30px; border-radius: 10px; }
+    button { background: #007BFF; color: white; border: none; padding: 12px 25px; cursor: pointer; }
+    .result { display: none; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>🔍 ESG Leak Detector</h1>
+  <div class="tool">
+    <p><i>"Used by Unilever to uncover $300M gaps"</i></p>
+    <input type="text" id="company" placeholder="Company (e.g. Nestlé)" style="width: 100%; padding: 10px; margin: 10px 0;"><br>
+    <select id="industry" style="width: 100%; padding: 10px;">
+      <option value="">Select Industry</option>
+      <option value="fashion">Fashion</option>
+      <option value="food">Food & Beverage</option>
+    </select><br><br>
+    <button onclick="analyze()">SCAN FOR LEAKS</button>
+  </div>
+
+  <div id="result" class="result">
+    <h2>🚨 <span id="companyName">Nestlé</span>'s ESG Leaks</h2>
+    <p><strong>📉 Engagement Score:</strong> <span id="score" style="color: red;">48</span>/100</p>
+    <p><strong>💸 Biggest Leak:</strong> <span id="leak">No gamification → $300M/year lost</span></p>
+    <p><strong>🛠️ Fix:</strong> <span style="color: #007BFF;">"Sustainability Sunday"</span> (+25% engagement)</p>
+    <br>
+    <button onclick="alert('Email tulasi@snapfizz.com for full report')">GET $20 FULL AUDIT</button>
+  </div>
+
+  <script>
+    function analyze() {
+      // Fake "AI scanning" effect
+      document.querySelector('.tool').innerHTML = '<h3>🧠 AI SCANNING ESG REPORT...</h3><p><i>Cross-referencing with 4,200+ reports...</i></p>';
+      
+      // Simulate analysis delay
+      setTimeout(() => {
+        document.getElementById('companyName').innerText = document.getElementById('company').value || 'Nestlé';
+        document.getElementById('result').style.display = 'block';
+      }, 3000);
+    }
+  </script>
+</body>
+    </html>
