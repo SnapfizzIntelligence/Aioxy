@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Careers | Snapfizz Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563EB;
+      --dark: #111827;
+      --light: #F9FAFB;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: white;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #2563EB, #3B82F6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      color: #4B5563;
+      margin-bottom: 40px;
+    }
+    
+    .status-card {
+      background: var(--light);
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      margin-bottom: 40px;
+    }
+    
+    .status-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: var(--primary);
+    }
+    
+    .status-title {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+    
+    .status-text {
+      color: #6B7280;
+      margin-bottom: 25px;
+    }
+    
+    .subscribe-form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    input[type="email"] {
+      width: 100%;
+      padding: 12px 20px;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+    
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .btn:hover {
+      background: #1D4ED8;
+      transform: translateY(-2px);
+    }
+    
+    .note {
+      font-size: 0.9rem;
+      color: #9CA3AF;
+      margin-top: 30px;
+    }
+    
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .status-card {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Join Snapfizz</h1>
+    <p class="subtitle">We're building the future of ESG intelligence</p>
+    
+    <div class="status-card">
+      <div class="status-icon">🔒</div>
+      <h2 class="status-title">No Open Roles Currently</h2>
+      <p class="status-text">
+        We're operating with a lean, expert team as we refine our technology. 
+        All positions are filled by founding members and AI systems.
+      </p>
+      <p class="status-text">
+        <strong>Stanford MBA tip:</strong> Early-stage startups often hire after funding rounds. 
+        Get alerted when we're ready.
+      </p>
+    </div>
+    
+    <div class="subscribe-form">
+      <h3>Get Early Access to Future Roles</h3>
+      <input type="email" placeholder="Your best email" required>
+      <button type="submit" class="btn">Notify Me</button>
+      <p class="note">
+        We'll email you when roles open (1-2x/year). Unsubscribe anytime.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Simple form handler (can connect to Mailchimp later)
+    document.querySelector('.btn').addEventListener('click', () => {
+      const email = document.querySelector('input').value;
+      if (email.includes('@')) {
+        alert('✅ You\'re on the list! We\'ll contact you when we\'re hiring.');
+        document.querySelector('input').value = '';
+      } else {
+        alert('Please enter a valid email');
+      }
+    });
+  </script>
+</body>
+</html>
