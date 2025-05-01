@@ -6,24 +6,22 @@
   <title>Snapfizz ESG Leak Detector</title>
   <style>
     body {
-      font-family: 'Inter', Arial, sans-serif;
-      max-width: 800px;
+      font-family: 'Inter', sans-serif;
+      max-width: 600px;
       margin: 0 auto;
       padding: 20px;
       background: #f8f9fa;
       color: #333;
-      line-height: 1.6;
     }
-    h1 {
-      color: #007BFF;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .tool {
+    .calculator {
       background: white;
-      padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 25px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #007BFF;
+      margin-top: 0;
     }
     input, select {
       width: 100%;
@@ -37,197 +35,171 @@
       background: #007BFF;
       color: white;
       border: none;
-      padding: 14px 25px;
+      padding: 14px;
       border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
       width: 100%;
-      transition: background 0.3s;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s;
     }
     button:hover {
-      background: #0056b3;
+      background: #0069d9;
+      transform: translateY(-2px);
     }
-    .result {
-      display: none;
-      margin-top: 30px;
-      background: white;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    #progressBar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #007BFF, #00C9FF);
+    #result {
+      margin-top: 25px;
+      padding: 20px;
       border-radius: 5px;
-      transition: width 0.3s;
+      display: none;
+      background: #f8f9fa;
     }
-    .trust-badges {
-      text-align: center;
-      margin: 30px 0;
-      font-size: 14px;
-      color: #666;
+    .critical {
+      border-left: 4px solid #ff0000;
+      animation: pulse 1.5s infinite;
     }
-    .linkedin-cta {
-      text-align: center;
+    .upsell {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
       margin-top: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-    .linkedin-cta a {
+    #loading-bar {
+      height: 4px;
+      background: #007BFF;
+      width: 0%;
+      margin: 15px 0;
+      border-radius: 2px;
+      transition: width 3s;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    .highlight {
       color: #007BFF;
-      text-decoration: none;
       font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>🔍 Snapfizz ESG Leak Detector</h1>
-  
-  <div class="tool">
-    <p style="text-align: center; font-style: italic;">"Used by Unilever to uncover $300M+ in hidden ESG risks"</p>
+  <div class="calculator">
+    <h2>🔍 SNAPFIZZ ESG LEAK DETECTOR</h2>
+    <p>Find hidden revenue drains in your sustainability reports</p>
     
-    <input type="text" id="company" placeholder="Company (e.g. Nestlé)">
+    <form id="esgForm">
+      <input type="text" id="company" placeholder="Company Name (e.g. Nestlé)" required>
+      
+      <select id="industry" required>
+        <option value="">Select Industry</option>
+        <option value="tech">Technology</option>
+        <option value="fashion">Fast Fashion</option>
+        <option value="food">Food & Beverage</option>
+        <option value="banking">Banking/Finance</option>
+        <option value="ev">Electric Vehicles</option>
+        <option value="oil">Oil & Gas</option>
+        <option value="pharma">Pharmaceuticals</option>
+      </select>
+      
+      <input type="url" id="reportLink" placeholder="ESG Report URL (optional)">
+      
+      <button type="button" onclick="calculateScore()">ANALYZE WITH AI →</button>
+      
+      <div id="loading-bar"></div>
+    </form>
     
-    <select id="industry">
-      <option value="">Select Industry</option>
-      <option value="fashion">Fashion & Apparel</option>
-      <option value="food">Food & Beverage</option>
-      <option value="tech">Technology</option>
-      <option value="retail">Retail</option>
-      <option value="ev">Electric Vehicles (EVs)</option>
-      <option value="finance">Banking & Finance</option>
-      <option value="energy">Renewable Energy</option>
-      <option value="health">Healthcare</option>
-      <option value="mining">Mining</option>
-      <option value="tourism">Tourism</option>
-    </select>
-    
-    <button onclick="analyze()">SCAN FOR LEAKS</button>
-    
-    <div class="trust-badges">
-      <p>🔬 Analyzed 4,217+ ESG Reports | 🚀 89% Accuracy Rate</p>
+    <div id="result">
+      <h3 id="scoreText"></h3>
+      <p id="crisisText"></p>
+      
+      <div class="upsell">
+        <p>🔍 <strong>GET YOUR FULL LEAK REPORT ($20)</strong></p>
+        <p style="font-size: 14px;">Includes:</p>
+        <ul style="font-size: 14px; padding-left: 20px;">
+          <li>Top 3 revenue-draining ESG leaks</li>
+          <li>Competitor benchmark analysis</li>
+          <li>ChatGPT-generated fix roadmap</li>
+        </ul>
+        <button onclick="window.location.href='services.html'">DOWNLOAD NOW →</button>
+        <p id="upsell-counter" style="font-size: 12px; color: #666; margin-top: 10px;">
+          <span id="purchase-count">8</span> reports purchased today
+        </p>
+      </div>
     </div>
   </div>
 
-  <div id="result" class="result"></div>
-  
-  <div class="linkedin-cta">
-    <p>Need a custom audit? <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank">Message me on LinkedIn</a></p>
-  </div>
-
   <script>
-    function analyze() {
-      const company = document.getElementById("company").value || "Nestlé";
-      const industry = document.getElementById("industry").value || "food";
+    // ====== FAKE AI ANALYSIS ENGINE ======
+    function calculateScore() {
+      const company = document.getElementById("company").value;
+      const industry = document.getElementById("industry").value;
       
-      // Show AI scanning animation
-      document.querySelector('.tool').innerHTML = `
-        <div style="text-align: center;">
-          <h3>🧠 AI SCANNING ESG REPORT...</h3>
-          <div style="border: 1px solid #007BFF; height: 20px; margin: 20px 0; border-radius: 5px;">
-            <div id="progressBar" style="height: 100%; width: 0%; border-radius: 5px;"></div>
-          </div>
-          <p><i>Cross-referencing with ${company}’s 2023 disclosures...</i></p>
-          <p id="scanStep" style="font-size: 0.9rem; color: #666;">Initializing neural networks...</p>
-        </div>
-      `;
-
-      // Simulate AI processing steps
-      const steps = [
-        "Analyzing GHG emissions...",
-        "Detecting greenwashing patterns...",
-        "Benchmarking against industry peers...",
-        "Identifying revenue leaks..."
-      ];
+      // Show loading animation
+      document.getElementById("loading-bar").style.width = "100%";
+      document.getElementById("result").style.display = "none";
       
-      let progress = 0;
-      let stepIndex = 0;
-      const bar = document.getElementById("progressBar");
-      const scanText = document.getElementById("scanStep");
-      
-      const interval = setInterval(() => {
-        progress += 10;
-        bar.style.width = `${progress}%`;
+      // Simulate AI processing delay
+      setTimeout(() => {
+        // Generate realistic fake score (worse for oil/pharma)
+        let baseScore = Math.floor(Math.random() * 40) + 30;
+        if (industry === "oil") baseScore -= 10;
+        if (industry === "pharma") baseScore -= 5;
+        const score = Math.max(25, baseScore); // Never below 25
         
-        // Update step every 25%
-        if (progress % 25 === 0 && stepIndex < steps.length) {
-          scanText.innerText = steps[stepIndex];
-          stepIndex++;
+        // Calculate fake financial impact
+        const estimatedLoss = (100 - score) * 10000;
+        
+        // Display results
+        document.getElementById("scoreText").innerHTML = 
+          `📊 <strong>${company.toUpperCase()}'S ESG SCORE: <span style="color: ${score < 50 ? '#ff0000' : '#007BFF'}">${score}/100</span></strong>`;
+        
+        document.getElementById("crisisText").innerHTML = 
+          `🚨 ${generateIndustryCrisis(industry, score, estimatedLoss)}`;
+        
+        // Show result with animation
+        document.getElementById("result").style.display = "block";
+        document.getElementById("loading-bar").style.width = "0%";
+        
+        // Add critical alert if score < 50
+        if (score < 50) {
+          document.getElementById("result").classList.add("critical");
+        } else {
+          document.getElementById("result").classList.remove("critical");
         }
         
-        if (progress >= 100) {
-          clearInterval(interval);
-          showResult(company, industry);
+        // Start fake purchase counter
+        if (!window.counterStarted) {
+          startUpsellCounter();
+          window.counterStarted = true;
         }
-      }, 300);
+      }, 3000);
     }
-
-    function showResult(company, industry) {
-      const leaks = {
-        fashion: [
-          "No circular economy → $250M/year lost",
-          "Weak factory transparency → Reputation risk"
-        ],
-        food: [
-          "No farm-to-fork storytelling → $300M/year lost",
-          "Child labor risks → 22% brand distrust"
-        ],
-        tech: [
-          "E-waste mismanagement → $180M/year fines",
-          "Dirty data centers → 34% investor concern"
-        ],
-        retail: [
-          "Excessive packaging → $95M/year waste",
-          "No in-store recycling → 18% cart abandonment"
-        ],
-        ev: [
-          "Cobalt sourcing risks → $420M/year lawsuits",
-          "Battery recycling gaps → 29% sales resistance"
-        ],
-        finance: [
-          "No green loan tracking → $150M/year missed revenue",
-          "Fossil fuel investments → 40% customer backlash"
-        ],
-        energy: [
-          "Carbon offset reliance → $200M/year scrutiny",
-          "Grid inefficiencies → 27% higher costs"
-        ],
-        health: [
-          "Pharmaceutical waste → $75M/year fines",
-          "No telehealth ESG integration → 19% patient drop"
-        ],
-        mining: [
-          "Water contamination risks → $500M/year lawsuits",
-          "No rehab pledges → 45% permit delays"
-        ],
-        tourism: [
-          "Overtourism silence → 30% destination boycotts",
-          "No local hiring → 22% negative reviews"
-        ]
+    
+    // ====== INDUSTRY-SPECIFIC PAIN GENERATOR ======
+    function generateIndustryCrisis(industry, score, loss) {
+      const crises = {
+        tech: `AI ethics audit missing → <span class="highlight">$${Math.round(loss/1000)}K/year</span> brand risk`,
+        fashion: `Found <span class="highlight">3x more "sustainable" tags</span> than proof (Page 7)`,
+        food: `No farm-to-fork transparency → <span class="highlight">${100-score}%</span> consumer distrust`,
+        banking: `ESG wording matches <span class="highlight">2023 fined banks</span>`,
+        ev: `Battery cobalt sourcing not disclosed → <span class="highlight">$${Math.round(loss*1.5)}</span> potential fines`,
+        oil: `<span class="highlight">90% peers</span> now disclose solar investments (you don't)`,
+        pharma: `No pill recycling → <span class="highlight">$${Math.round(loss)}/year</span> waste`
       };
-
-      const industryName = {
-        fashion: "Fashion",
-        food: "Food & Beverage",
-        tech: "Technology",
-        retail: "Retail",
-        ev: "Electric Vehicles",
-        finance: "Banking",
-        energy: "Energy",
-        health: "Healthcare",
-        mining: "Mining",
-        tourism: "Tourism"
-      }[industry] || "your industry";
-
-      document.getElementById("result").innerHTML = `
-        <h2>🚨 ${company}'s ${industryName} ESG Leaks</h2>
-        <p><strong>📉 Engagement Score:</strong> <span style="color: red;">${Math.floor(Math.random() * 20) + 40}/100</span></p>
-        <p><strong>💸 Biggest Leak:</strong> ${leaks[industry]?.[0] || "No gamification → $200M/year lost"}</p>
-        <p><strong>🛠️ Fix:</strong> "<span style="color: #007BFF;">Sustainability Sunday</span>" (+25% engagement, <i>proven in Unilever case</i>)</p>
-        <button onclick="window.open('https://www.linkedin.com/in/tulasipariyar', '_blank')">GET CUSTOM AUDIT VIA LINKEDIN</button>
-      `;
-      document.getElementById("result").style.display = 'block';
+      return crises[industry] || `Found <span class="highlight">${Math.round((100-score)/10)} critical leaks</span> in your reports`;
+    }
+    
+    // ====== FAKE SOCIAL PROOF GENERATOR ======
+    function startUpsellCounter() {
+      let count = 8;
+      setInterval(() => {
+        count += Math.floor(Math.random() * 3);
+        document.getElementById("purchase-count").textContent = count;
+      }, 45000); // Update every 45 seconds
     }
   </script>
 </body>
-    </html>
+        </html>
