@@ -9,11 +9,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #2563EB; /* More professional blue */
+      --primary: #2563EB;
       --primary-dark: #1D4ED8;
-      --dark: #111827; /* Soft black */
+      --dark: #111827;
       --light: #F9FAFB;
-      --danger: #DC2626; /* Better red */
+      --danger: #DC2626;
       --success: #10B981;
       --font-main: 'Inter', sans-serif;
       --font-heading: 'Playfair Display', serif;
@@ -44,12 +44,6 @@
       0% { transform: scale(1); }
       50% { transform: scale(1.02); }
       100% { transform: scale(1); }
-    }
-
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
     }
 
     /* ====== HEADER ====== */
@@ -94,7 +88,7 @@
       animation: fadeIn 1s ease-out 0.3s both;
     }
 
-    /* ====== NAVIGATION ====== */
+    /* ====== NAVIGATION - UPDATED WITH MOBILE MENU ====== */
     nav {
       background: var(--primary);
       padding: 1rem;
@@ -152,6 +146,75 @@
 
     .nav-links a:hover::after {
       width: 100%;
+    }
+
+    /* NEW: Mobile Menu Toggle */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 30px;
+      height: 21px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    
+    .menu-toggle span {
+      display: block;
+      height: 3px;
+      width: 100%;
+      background: white;
+      border-radius: 3px;
+      transition: all 0.3s;
+    }
+
+    /* NEW: Mobile Menu Styles */
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: flex;
+      }
+      
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background: #111827;
+        flex-direction: column;
+        padding: 100px 30px 30px;
+        transition: all 0.5s ease;
+        z-index: 999;
+      }
+      
+      .nav-links.active {
+        right: 0;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+      }
+      
+      .nav-links a {
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        width: 100%;
+      }
+      
+      .nav-links a::after {
+        display: none;
+      }
+      
+      /* Animate hamburger to X */
+      .menu-toggle.active span:nth-child(1) {
+        transform: translateY(9px) rotate(45deg);
+      }
+      
+      .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+      }
+      
+      .menu-toggle.active span:nth-child(3) {
+        transform: translateY(-9px) rotate(-45deg);
+      }
     }
 
     /* ====== BUTTONS ====== */
@@ -467,12 +530,7 @@
       }
 
       .nav-container {
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .nav-links {
-        gap: 15px;
+        flex-direction: row; /* Changed from column to row */
       }
 
       .section-title {
@@ -565,10 +623,18 @@
     </div>
   </header>
 
-  <!-- Navigation -->
+  <!-- Navigation - UPDATED WITH HAMBURGER -->
   <nav>
     <div class="nav-container">
       <a href="#" class="nav-logo">SNAPFIZZ</a>
+      
+      <!-- NEW: Hamburger Menu -->
+      <div class="menu-toggle" id="mobile-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      
       <div class="nav-links">
         <a href="index.html">Home</a>
         <a href="audit.html">ESG Audits</a>
@@ -653,13 +719,29 @@
   </footer>
 
   <script>
+    // ====== MOBILE MENU TOGGLE - NEW ======
+    const mobileMenu = document.getElementById('mobile-menu');
+    const navLinks = document.querySelector('.nav-links');
+
+    mobileMenu.addEventListener('click', () => {
+      mobileMenu.classList.toggle('active');
+      navLinks.classList.toggle('active');
+    });
+
+    // Close menu when clicking a link
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('active');
+        navLinks.classList.remove('active');
+      });
+    });
+
     // ====== SCROLL ANIMATIONS ======
     function animateOnScroll() {
       const features = document.querySelectorAll('.feature-card');
       const founders = document.querySelectorAll('.founder-card');
       const scrollPosition = window.scrollY + window.innerHeight;
       
-      // Animate feature cards
       features.forEach((card, index) => {
         const cardPosition = card.offsetTop;
         if (scrollPosition > cardPosition + 100) {
@@ -669,7 +751,6 @@
         }
       });
       
-      // Animate founder cards
       founders.forEach((card, index) => {
         const cardPosition = card.offsetTop;
         if (scrollPosition > cardPosition + 100) {
@@ -680,7 +761,6 @@
       });
     }
 
-    // Initialize animations
     window.addEventListener('scroll', animateOnScroll);
     window.addEventListener('load', animateOnScroll);
 
