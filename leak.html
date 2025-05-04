@@ -3,364 +3,380 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Leak Lab | Snapfizz's 7-Industry Emergency Fix Engine</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <meta name="classification" content="Business Autopsy Terminal (Class B)">
+  <title>LEAK LAB 2.0 | Snapfissure™ Business Autopsy Engine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #2563EB;
-      --primary-dark: #1E40AF;
-      --danger: #DC2626;
-      --success: #10B981;
-      --dark: #111827;
-      --light: #F9FAFB;
+      --neon-blue: #00f2ff;
+      --blood-red: #ff2a6d;
+      --matrix-green: #0aff0a;
+      --cyber-purple: #bd00ff;
+      --terminal-black: #121212;
     }
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--light);
-      color: var(--dark);
-      line-height: 1.6;
+      background: var(--terminal-black);
+      color: var(--matrix-green);
+      font-family: 'Space Mono', monospace;
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
+      line-height: 1.6;
     }
-    .leaklab-header {
-      background: linear-gradient(135deg, #111827 0%, #1E3A8A 100%);
-      color: white;
-      padding: 80px 20px;
+    .cyber-header {
+      border-bottom: 1px solid var(--neon-blue);
       text-align: center;
-      position: relative;
-    }
-    .leaklab-header::after {
-      content: '';
-      position: absolute;
-      bottom: -50px;
-      left: 0;
-      right: 0;
-      height: 100px;
-      background: var(--light);
-      transform: skewY(-3deg);
-      z-index: 1;
-    }
-    h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 3.5rem;
-      margin: 0 auto;
-      max-width: 800px;
-      background: linear-gradient(90deg, #3B82F6, #93C5FD);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      line-height: 1.2;
-    }
-    .status-bar {
-      background: rgba(0,0,0,0.3);
-      border-radius: 50px;
-      padding: 15px;
-      max-width: 600px;
-      margin: 30px auto;
-      position: relative;
-      z-index: 2;
-    }
-    .scan-progress {
-      height: 8px;
-      background: linear-gradient(90deg, var(--success), #34D399);
-      border-radius: 4px;
-      width: 72%;
+      padding: 2rem 1rem;
       position: relative;
       overflow: hidden;
     }
-    .scan-progress::after {
-      content: '';
+    .cyber-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--cyber-purple));
+      animation: scanline 3s linear infinite;
+    }
+    @keyframes scanline {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin: 0;
+      text-shadow: 0 0 10px var(--neon-blue);
+      letter-spacing: 2px;
+    }
+    .tagline {
+      color: var(--neon-blue);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .sector-select {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      padding: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    select, button {
+      background: rgba(0, 0, 0, 0.5);
+      color: var(--matrix-green);
+      border: 1px solid var(--neon-blue);
+      padding: 0.8rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+    button {
+      background: var(--blood-red);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      grid-column: span 2;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    button:hover {
+      background: #ff0a4d;
+      box-shadow: 0 0 15px var(--blood-red);
+    }
+    .leak-result {
+      border: 1px solid var(--cyber-purple);
+      padding: 2rem;
+      margin: 0 2rem 2rem;
+      background: rgba(0, 0, 0, 0.3);
+      position: relative;
+      display: none;
+    }
+    .leak-result::before {
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(255,255,255,0.3) 50%, 
-                transparent 100%);
-      animation: scan 2s infinite;
+      background: linear-gradient(
+        135deg,
+        transparent 0%,
+        rgba(189, 0, 255, 0.05) 50%,
+        transparent 100%
+      );
+      pointer-events: none;
     }
-    @keyframes scan {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
+    h2 {
+      color: var(--neon-blue);
+      margin-top: 0;
+      border-bottom: 1px solid var(--cyber-purple);
+      padding-bottom: 0.5rem;
     }
-    .recipe-container {
-      max-width: 800px;
-      margin: 80px auto 40px;
-      padding: 0 20px;
-      position: relative;
-      z-index: 2;
-    }
-    .recipe-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-      padding: 40px;
-      margin-bottom: 30px;
-      border: 1px solid rgba(0,0,0,0.03);
-      transform-style: preserve-3d;
-      transition: all 0.4s;
-    }
-    .recipe-card:hover {
-      transform: translateY(-5px) scale(1.01);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-    }
-    .industry-tag {
-      background: var(--primary);
-      color: white;
-      padding: 6px 12px;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      display: inline-block;
-      margin-bottom: 15px;
-    }
-    .recipe-solution {
-      background: #F8FAFC;
-      border-left: 3px solid var(--primary);
-      padding: 20px;
-      border-radius: 0 8px 8px 0;
-      margin: 20px 0;
-    }
-    .lock-badge {
-      background: #ECFDF5;
-      color: #065F46;
-      padding: 8px 15px;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .next-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 30px;
-      transition: all 0.3s;
-      letter-spacing: 0.5px;
-    }
-    .next-btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
-    }
-    .unlock-cta {
-      text-align: center;
-      margin-top: 40px;
+    .diagnosis {
+      background: rgba(255, 42, 109, 0.1);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-left: 3px solid var(--blood-red);
     }
     .unlock-btn {
-      background: linear-gradient(90deg, var(--danger), #EF4444);
+      background: linear-gradient(90deg, var(--blood-red), #ff0a4d);
       color: white;
-      padding: 15px 40px;
-      border-radius: 8px;
-      font-weight: 700;
-      text-decoration: none;
-      display: inline-block;
-      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
-      transition: all 0.3s;
+      border: none;
+      padding: 1rem;
+      font-weight: bold;
+      text-align: center;
+      display: block;
+      margin: 2rem auto 0;
+      width: 80%;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(255, 42, 109, 0.5);
     }
     .unlock-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+      background: linear-gradient(90deg, #ff0a4d, var(--blood-red));
     }
     footer {
-      background: var(--dark);
-      color: white;
-      padding: 60px 20px;
       text-align: center;
-      margin-top: 80px;
-      position: relative;
+      padding: 2rem;
+      font-size: 0.8rem;
+      color: var(--neon-blue);
+      border-top: 1px solid var(--cyber-purple);
     }
-    footer::before {
-      content: '';
-      position: absolute;
-      top: -50px;
-      left: 0;
-      right: 0;
-      height: 100px;
-      background: var(--light);
-      transform: skewY(-3deg);
-      z-index: 1;
-    }
-    .footer-content {
-      position: relative;
-      z-index: 2;
-      max-width: 600px;
-      margin: 0 auto;
+    body::after {
+      content: "TOP SECRET - SECTOR 7";
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      opacity: 0.05;
+      font-size: 3rem;
+      transform: rotate(-30deg);
+      pointer-events: none;
+      z-index: -1;
     }
     @media (max-width: 768px) {
-      h1 {
-        font-size: 2.5rem;
+      .sector-select {
+        grid-template-columns: 1fr;
       }
-      .recipe-card {
-        padding: 30px 20px;
+      button {
+        grid-column: span 1;
       }
     }
   </style>
 </head>
 <body>
-
-  <!-- Header with animated scan -->
-  <div class="leaklab-header">
-    <h1>THE LEAK LAB</h1>
-    <p>Snapfizz's 7-Industry Emergency Fix Engine</p>
-    
-    <div class="status-bar">
-      <p style="margin-bottom: 10px; font-weight: 600;">LIVE INDUSTRY SCAN IN PROGRESS</p>
-      <div class="scan-progress" id="scan-progress"></div>
-      <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">Detected 3,412 leaks this week</p>
-    </div>
+  <div class="cyber-header">
+    <h1>▲ LEAK LAB 2.0 ▼</h1>
+    <p class="tagline">BUSINESS AUTOMATED AUTOPSY TERMINAL</p>
   </div>
 
-  <!-- Recipe Container -->
-  <div class="recipe-container">
-    <div id="recipe-display">
-      <!-- Dynamically loaded -->
-    </div>
+  <div class="sector-select">
+    <select id="industry">
+      <option value="">▼ SELECT INDUSTRY ▼</option>
+      <option value="FASHION">FASHION</option>
+      <option value="TECH">TECH</option>
+      <option value="FINANCE">FINANCE</option>
+      <option value="ENERGY">ENERGY</option>
+      <option value="HEALTHCARE">HEALTHCARE</option>
+      <option value="EDUCATION">EDUCATION</option>
+      <option value="GOVERNMENT">GOVERNMENT</option>
+    </select>
 
-    <div class="unlock-cta" id="unlock-cta" style="display: none;">
-      <h3>🚨 LEAK LAB LOCKDOWN</h3>
-      <p>You've reached the free diagnostic limit.</p>
-      <a href="/emergency-audit" class="unlock-btn">UNLOCK FULL LAB ACCESS →</a>
-      <p style="margin-top: 15px; font-size: 0.9rem;">92% of brands miss critical leaks without full access</p>
-    </div>
+    <select id="leak-type">
+      <option value="">▼ SELECT LEAK TYPE ▼</option>
+      <option value="ENGAGEMENT_COLLAPSE">ENGAGEMENT COLLAPSE</option>
+      <option value="GREENWASHING_BACKLASH">GREENWASHING BACKLASH</option>
+      <option value="SUPPLY_CHAIN_CANCER">SUPPLY CHAIN CANCER</option>
+      <option value="INVESTOR_BLEEDOUT">INVESTOR BLEEDOUT</option>
+      <option value="GEN_Z_REJECTION">GEN Z REJECTION</option>
+      <option value="AI_OBSOLESCENCE">AI OBSOLESCENCE</option>
+      <option value="LEGAL_TIME_BOMB">LEGAL TIME BOMB</option>
+    </select>
+
+    <button onclick="runAutopsy()">▲ EXECUTE AUTOPSY ▼</button>
   </div>
 
-  <!-- Footer -->
+  <div class="leak-result" id="result">
+    <h2 id="result-title">▲ INDUSTRY AUTOPSY REPORT ▼</h2>
+    <p id="terminal-condition">TERMINAL CONDITION: <span id="leak-name"></span></p>
+    <div class="diagnosis">
+      <p id="diagnosis-text"></p>
+      <p>▲ SOLUTION ▼<br><span id="solution-text"></span></p>
+      <p>▲ KPI IMPACT ▼<br><span id="kpi-impact"></span></p>
+    </div>
+    <button class="unlock-btn">▼ DOWNLOAD FULL CORPSE ANALYSIS ▼</button>
+  </div>
+
   <footer>
-    <div class="footer-content">
-      <p style="font-weight: 600;">Snapfizz Intelligence</p>
-      <p>Military-grade business diagnostics</p>
-      <div style="margin-top: 30px;">
-        <a href="/esg-calculator" style="color: white; margin: 0 10px;">ESG Calculator</a>
-        <a href="/leaklab" style="color: white; margin: 0 10px;">The Leak Lab</a>
-        <a href="/emergency" style="color: white; margin: 0 10px;">Emergency Audit</a>
-      </div>
-      <p style="margin-top: 30px; font-size: 0.9rem; opacity: 0.7;">© 2024 Snapfizz Intelligence | Built for Fortune 500 survival</p>
-    </div>
+    SNAPFIZZ INTELLIGENCE | MILITARY-GRADE BUSINESS DIAGNOSTICS © 2024
   </footer>
 
   <script>
-    // 7x7 MATRIX (Enhanced with execution KPIs)
-    const recipes = [
-      {
-        industry: "Fashion",
-        problem: "Gen Z calls our eco-collections 'hypocrisy wraps' (-25% retention)",
-        solution: "<strong>#FASHION-EX1</strong>: 3-phase 'Guilt-to-Pride' algorithm with shock retention triggers",
-        lock: "🔒 Requires: Factory emission APIs + Snapfizz sentiment tracker",
-        kpi: "28% retention boost in 30 days (proven)"
+    // 7x7 MATRIX OF LEAKS & SOLUTIONS
+    const autopsyData = {
+      "FASHION": {
+        "ENGAGEMENT_COLLAPSE": {
+          diagnosis: "Gen Z detects sincerity gap in eco-claims (-25% retention)",
+          solution: "Implement #GuiltToPride algorithm with Snapfizz sentiment tracker",
+          kpi: "28% retention boost in 30 days (proven)"
+        },
+        "GREENWASHING_BACKLASH": {
+          diagnosis: "TikTok activists expose recycled polyester fraud",
+          solution: "Deploy Transparency Cascade™ with blockchain tags",
+          kpi: "67% reduction in activist attacks"
+        },
+        "SUPPLY_CHAIN_CANCER": {
+          diagnosis: "Uyghur cotton scandal detected in 42% of products",
+          solution: "Emergency supply chain triage with Snapfizz geo-tracking",
+          kpi: "$1.2M compliance savings"
+        },
+        "INVESTOR_BLEEDOUT": {
+          diagnosis: "ESG funds dumping stock after PETA expose",
+          solution: "Investor Confidence Protocol with live factory cams",
+          kpi: "3.4x faster capital recovery"
+        },
+        "GEN_Z_REJECTION": {
+          diagnosis: "#Boycott trends show 18-24yo abandonment",
+          solution: "Gen Z War Room: meme-to-movement conversion funnels",
+          kpi: "2.1x engagement on TikTok"
+        },
+        "AI_OBSOLESCENCE": {
+          diagnosis: "Design AI producing culturally toxic outputs",
+          solution: "Snapfizz Culture Shield™ AI filter system",
+          kpi: "89% reduction in PR disasters"
+        },
+        "LEGAL_TIME_BOMB": {
+          diagnosis: "EU CSRD non-compliance fines estimated at €4.2M",
+          solution: "CSRD Emergency Patch with automated reporting",
+          kpi: "100% compliance in 14 days"
+        }
       },
-      {
-        industry: "Food & Beverage",
-        problem: "Vegan line collapses despite 2024 'Year of Sustainability'",
-        solution: "<strong>#FOOD-FIX7</strong>: 'Nutrient Truth' blockchain scoring + gamified transparency",
-        lock: "🔒 Requires: Ingredient ledger + dynamic QR system",
-        kpi: "2.1x conversion on premium products"
+      "TECH": {
+        "ENGAGEMENT_COLLAPSE": {
+          diagnosis: "Developers revolting against 'woke' API documentation",
+          solution: "Neutrality Override™ for technical content",
+          kpi: "40% faster onboarding"
+        },
+        "GREENWASHING_BACKLASH": {
+          diagnosis: "AWS carbon claims debunked by researchers",
+          solution: "Compute Truth Ledger with live energy tracking",
+          kpi: "2.3x trust score boost"
+        },
+        "SUPPLY_CHAIN_CANCER": {
+          diagnosis: "Conflict minerals found in 18% of devices",
+          solution: "Mineral DNA blockchain certification",
+          kpi: "$800K fine avoidance"
+        },
+        "INVESTOR_BLEEDOUT": {
+          diagnosis: "Series C round collapsing over DEI metrics",
+          solution: "Investor Calibration Matrix with Snapfizz benchmarks",
+          kpi: "$2M+ funding secured"
+        },
+        "GEN_Z_REJECTION": {
+          diagnosis: "Glassdoor reveals 72hr work marathon culture",
+          solution: "Crunch Time Early Warning System",
+          kpi: "35% higher retention"
+        },
+        "AI_OBSOLESCENCE": {
+          diagnosis: "LLM outputs violate new EU AI Act",
+          solution: "Compliance Firewall with real-time auditing",
+          kpi: "100% regulation proof"
+        },
+        "LEGAL_TIME_BOMB": {
+          diagnosis: "Data sovereignty violations across 7 countries",
+          solution: "Jurisdiction Auto-Pilot for data routing",
+          kpi: "Zero penalties"
+        }
       },
-      {
-        industry: "Tech Startups",
-        problem: "Investors laugh at our ESG reports during pitches",
-        solution: "<strong>#TECH-SCORE9</strong>: AI-generated 'Fundability Index' with Unilever benchmarks",
-        lock: "🔒 Requires: Cap table data + GitHub activity monitoring",
-        kpi: "$2M+ average funding boost"
+      // Additional industries (FINANCE, ENERGY, HEALTHCARE, EDUCATION, GOVERNMENT)
+      // follow the same structure with 7 leaks each
+      "FINANCE": {
+        "ENGAGEMENT_COLLAPSE": {
+          diagnosis: "Millennials trust crypto bros more than green funds",
+          solution: "Doubt-to-Diamond certification path",
+          kpi: "3.4x capital inflows"
+        },
+        // ... 6 more leaks
       },
-      {
-        industry: "Beauty",
-        problem: "TikTok teens dissect our 'clean' ingredient lists",
-        solution: "<strong>#BEAUTY-RX3</strong>: 'Transparency Cascade' viral defense system",
-        lock: "🔒 Requires: Real-time supply chain API + crisis simulation",
-        kpi: "67% reduction in activist attacks"
+      "ENERGY": {
+        "ENGAGEMENT_COLLAPSE": {
+          diagnosis: "EV buyers demand cobalt mine autopsies",
+          solution: "Cobalt Confidence storytelling framework",
+          kpi: "19% higher conversions"
+        },
+        // ... 6 more leaks
       },
-      {
-        industry: "Finance",
-        problem: "Millennials trust crypto bros more than our 'green' funds",
-        solution: "<strong>#FIN-LOCK5</strong>: 'Doubt-to-Diamond' certification path with asset autopsy",
-        lock: "🔒 Requires: Transaction audit trails + Snapfizz verification nodes",
-        kpi: "3.4x faster capital inflows"
+      "HEALTHCARE": {
+        "ENGAGEMENT_COLLAPSE": {
+          diagnosis: "Patients reject AI diagnostics as 'soulless'",
+          solution: "Human Touch Overlay for AI systems",
+          kpi: "28% higher adherence"
+        },
+        // ... 6 more leaks
       },
-      {
-        industry: "Automotive",
-        problem: "EV buyers demand cobalt mine autopsies",
-        solution: "<strong>#AUTO-X9</strong>: 'Cobalt Confidence' storytelling framework",
-        lock: "🔒 Requires: Mine-to-factory tracking + blockchain seals",
-        kpi: "19% higher showroom conversion"
+      "EDUCATION": {
+        "ENGAGEMENT_COLLAPSE": {
+          diagnosis: "Students boycott over DEI statement hypocrisy",
+          solution: "Values Alignment Mirror System",
+          kpi: "42% enrollment recovery"
+        },
+        // ... 6 more leaks
       },
-      {
-        industry: "Retail",
-        problem: "Sustainability claims slash conversions by 18%",
-        solution: "<strong>#RETAIL-2024</strong>: 'Anti-Greenwashing' checkout triggers",
-        lock: "🔒 Requires: Snapfizz trust badges + live impact dashboard",
-        kpi: "$120K/month revenue recovery"
+      "GOVERNMENT": {
+        "ENGAGEMENT_COLLAPSE": {
+          diagnosis: "Citizens ignore climate initiatives as 'lip service'",
+          solution: "Participatory Policy Co-Creation Platform",
+          kpi: "3.1x program adoption"
+        },
+        // ... 6 more leaks
       }
-    ];
+    };
 
-    // State management
-    let currentViewCount = 0;
-    const MAX_FREE_VIEWS = 3;
-    let viewedIndustries = [];
-
-    // DOM elements
-    const recipeDisplay = document.getElementById("recipe-display");
-    const unlockCta = document.getElementById("unlock-cta");
-    const scanProgress = document.getElementById("scan-progress");
-
-    // Animate scan progress
-    setInterval(() => {
-      const currentWidth = parseInt(scanProgress.style.width);
-      const newWidth = Math.min(100, currentWidth + (Math.random() * 5));
-      scanProgress.style.width = `${newWidth}%`;
-    }, 3000);
-
-    // Display random recipe
-    function displayRandomRecipe() {
-      if (currentViewCount >= MAX_FREE_VIEWS) {
-        recipeDisplay.style.display = "none";
-        unlockCta.style.display = "block";
+    function runAutopsy() {
+      const industry = document.getElementById("industry").value;
+      const leakType = document.getElementById("leak-type").value;
+      
+      if (!industry || !leakType) {
+        alert("▼ SYSTEM ERROR ▼\nSELECT INDUSTRY AND LEAK TYPE");
         return;
       }
 
-      const availableRecipes = recipes.filter(r => !viewedIndustries.includes(r.industry));
-      const recipe = availableRecipes.length > 0 
-        ? availableRecipes[Math.floor(Math.random() * availableRecipes.length)]
-        : recipes[Math.floor(Math.random() * recipes.length)];
-
-      viewedIndustries.push(recipe.industry);
-      currentViewCount++;
-
-      recipeDisplay.innerHTML = `
-        <div class="recipe-card">
-          <span class="industry-tag">${recipe.industry.toUpperCase()}</span>
-          <h2 style="margin: 10px 0 20px;">"${recipe.problem}"</h2>
-          
-          <div class="recipe-solution">
-            <p style="font-weight: 600; margin-bottom: 10px;">SNAPFIZZ RECIPE:</p>
-            <p>${recipe.solution}</p>
-            <p style="margin-top: 15px; color: var(--success); font-weight: 600;">${recipe.kpi}</p>
-          </div>
-          
-          <div style="margin-top: 20px;">
-            <span class="lock-badge">${recipe.lock}</span>
-          </div>
-          
-          <button class="next-btn" onclick="displayRandomRecipe()">
-            ANALYZE NEXT INDUSTRY → (${MAX_FREE_VIEWS - currentViewCount} remaining)
-          </button>
-        </div>
-      `;
+      const result = autopsyData[industry][leakType];
+      
+      document.getElementById("leak-name").textContent = 
+        document.getElementById("leak-type").options[document.getElementById("leak-type").selectedIndex].text;
+      document.getElementById("diagnosis-text").textContent = result.diagnosis;
+      document.getElementById("solution-text").textContent = result.solution;
+      document.getElementById("kpi-impact").textContent = result.kpi;
+      
+      // Add typing effect
+      const resultElement = document.getElementById("result");
+      resultElement.style.display = "block";
+      resultElement.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Initialize
-    displayRandomRecipe();
+    // Add terminal typing effect for first-time visitors
+    window.onload = function() {
+      if (!localStorage.getItem('leaklab_visited')) {
+        typeWriter(document.querySelector(".tagline"), 
+          "BUSINESS AUTOMATED AUTOPSY TERMINAL", 50);
+        localStorage.setItem('leaklab_visited', 'true');
+      }
+    };
+
+    function typeWriter(element, text, speed) {
+      let i = 0;
+      element.textContent = "";
+      function typing() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(typing, speed);
+        }
+      }
+      typing();
+    }
   </script>
 </body>
-</html>
+  </html>
