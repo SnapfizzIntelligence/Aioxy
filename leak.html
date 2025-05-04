@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Leak Lab | Snapfizz's 7-Industry Emergency Fix Engine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-dark: #1E40AF;
+      --danger: #DC2626;
+      --success: #10B981;
+      --dark: #111827;
+      --light: #F9FAFB;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .leaklab-header {
+      background: linear-gradient(135deg, #111827 0%, #1E3A8A 100%);
+      color: white;
+      padding: 80px 20px;
+      text-align: center;
+      position: relative;
+    }
+    .leaklab-header::after {
+      content: '';
+      position: absolute;
+      bottom: -50px;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: var(--light);
+      transform: skewY(-3deg);
+      z-index: 1;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3.5rem;
+      margin: 0 auto;
+      max-width: 800px;
+      background: linear-gradient(90deg, #3B82F6, #93C5FD);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.2;
+    }
+    .status-bar {
+      background: rgba(0,0,0,0.3);
+      border-radius: 50px;
+      padding: 15px;
+      max-width: 600px;
+      margin: 30px auto;
+      position: relative;
+      z-index: 2;
+    }
+    .scan-progress {
+      height: 8px;
+      background: linear-gradient(90deg, var(--success), #34D399);
+      border-radius: 4px;
+      width: 72%;
+      position: relative;
+      overflow: hidden;
+    }
+    .scan-progress::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255,255,255,0.3) 50%, 
+                transparent 100%);
+      animation: scan 2s infinite;
+    }
+    @keyframes scan {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .recipe-container {
+      max-width: 800px;
+      margin: 80px auto 40px;
+      padding: 0 20px;
+      position: relative;
+      z-index: 2;
+    }
+    .recipe-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      padding: 40px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(0,0,0,0.03);
+      transform-style: preserve-3d;
+      transition: all 0.4s;
+    }
+    .recipe-card:hover {
+      transform: translateY(-5px) scale(1.01);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    .industry-tag {
+      background: var(--primary);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+    .recipe-solution {
+      background: #F8FAFC;
+      border-left: 3px solid var(--primary);
+      padding: 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+    }
+    .lock-badge {
+      background: #ECFDF5;
+      color: #065F46;
+      padding: 8px 15px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .next-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 30px;
+      transition: all 0.3s;
+      letter-spacing: 0.5px;
+    }
+    .next-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+    }
+    .unlock-cta {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .unlock-btn {
+      background: linear-gradient(90deg, var(--danger), #EF4444);
+      color: white;
+      padding: 15px 40px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+      transition: all 0.3s;
+    }
+    .unlock-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+    }
+    footer {
+      background: var(--dark);
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+      margin-top: 80px;
+      position: relative;
+    }
+    footer::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: var(--light);
+      transform: skewY(-3deg);
+      z-index: 1;
+    }
+    .footer-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+      .recipe-card {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header with animated scan -->
+  <div class="leaklab-header">
+    <h1>THE LEAK LAB</h1>
+    <p>Snapfizz's 7-Industry Emergency Fix Engine</p>
+    
+    <div class="status-bar">
+      <p style="margin-bottom: 10px; font-weight: 600;">LIVE INDUSTRY SCAN IN PROGRESS</p>
+      <div class="scan-progress" id="scan-progress"></div>
+      <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">Detected 3,412 leaks this week</p>
+    </div>
+  </div>
+
+  <!-- Recipe Container -->
+  <div class="recipe-container">
+    <div id="recipe-display">
+      <!-- Dynamically loaded -->
+    </div>
+
+    <div class="unlock-cta" id="unlock-cta" style="display: none;">
+      <h3>🚨 LEAK LAB LOCKDOWN</h3>
+      <p>You've reached the free diagnostic limit.</p>
+      <a href="/emergency-audit" class="unlock-btn">UNLOCK FULL LAB ACCESS →</a>
+      <p style="margin-top: 15px; font-size: 0.9rem;">92% of brands miss critical leaks without full access</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <p style="font-weight: 600;">Snapfizz Intelligence</p>
+      <p>Military-grade business diagnostics</p>
+      <div style="margin-top: 30px;">
+        <a href="/esg-calculator" style="color: white; margin: 0 10px;">ESG Calculator</a>
+        <a href="/leaklab" style="color: white; margin: 0 10px;">The Leak Lab</a>
+        <a href="/emergency" style="color: white; margin: 0 10px;">Emergency Audit</a>
+      </div>
+      <p style="margin-top: 30px; font-size: 0.9rem; opacity: 0.7;">© 2024 Snapfizz Intelligence | Built for Fortune 500 survival</p>
+    </div>
+  </footer>
+
+  <script>
+    // 7x7 MATRIX (Enhanced with execution KPIs)
+    const recipes = [
+      {
+        industry: "Fashion",
+        problem: "Gen Z calls our eco-collections 'hypocrisy wraps' (-25% retention)",
+        solution: "<strong>#FASHION-EX1</strong>: 3-phase 'Guilt-to-Pride' algorithm with shock retention triggers",
+        lock: "🔒 Requires: Factory emission APIs + Snapfizz sentiment tracker",
+        kpi: "28% retention boost in 30 days (proven)"
+      },
+      {
+        industry: "Food & Beverage",
+        problem: "Vegan line collapses despite 2024 'Year of Sustainability'",
+        solution: "<strong>#FOOD-FIX7</strong>: 'Nutrient Truth' blockchain scoring + gamified transparency",
+        lock: "🔒 Requires: Ingredient ledger + dynamic QR system",
+        kpi: "2.1x conversion on premium products"
+      },
+      {
+        industry: "Tech Startups",
+        problem: "Investors laugh at our ESG reports during pitches",
+        solution: "<strong>#TECH-SCORE9</strong>: AI-generated 'Fundability Index' with Unilever benchmarks",
+        lock: "🔒 Requires: Cap table data + GitHub activity monitoring",
+        kpi: "$2M+ average funding boost"
+      },
+      {
+        industry: "Beauty",
+        problem: "TikTok teens dissect our 'clean' ingredient lists",
+        solution: "<strong>#BEAUTY-RX3</strong>: 'Transparency Cascade' viral defense system",
+        lock: "🔒 Requires: Real-time supply chain API + crisis simulation",
+        kpi: "67% reduction in activist attacks"
+      },
+      {
+        industry: "Finance",
+        problem: "Millennials trust crypto bros more than our 'green' funds",
+        solution: "<strong>#FIN-LOCK5</strong>: 'Doubt-to-Diamond' certification path with asset autopsy",
+        lock: "🔒 Requires: Transaction audit trails + Snapfizz verification nodes",
+        kpi: "3.4x faster capital inflows"
+      },
+      {
+        industry: "Automotive",
+        problem: "EV buyers demand cobalt mine autopsies",
+        solution: "<strong>#AUTO-X9</strong>: 'Cobalt Confidence' storytelling framework",
+        lock: "🔒 Requires: Mine-to-factory tracking + blockchain seals",
+        kpi: "19% higher showroom conversion"
+      },
+      {
+        industry: "Retail",
+        problem: "Sustainability claims slash conversions by 18%",
+        solution: "<strong>#RETAIL-2024</strong>: 'Anti-Greenwashing' checkout triggers",
+        lock: "🔒 Requires: Snapfizz trust badges + live impact dashboard",
+        kpi: "$120K/month revenue recovery"
+      }
+    ];
+
+    // State management
+    let currentViewCount = 0;
+    const MAX_FREE_VIEWS = 3;
+    let viewedIndustries = [];
+
+    // DOM elements
+    const recipeDisplay = document.getElementById("recipe-display");
+    const unlockCta = document.getElementById("unlock-cta");
+    const scanProgress = document.getElementById("scan-progress");
+
+    // Animate scan progress
+    setInterval(() => {
+      const currentWidth = parseInt(scanProgress.style.width);
+      const newWidth = Math.min(100, currentWidth + (Math.random() * 5));
+      scanProgress.style.width = `${newWidth}%`;
+    }, 3000);
+
+    // Display random recipe
+    function displayRandomRecipe() {
+      if (currentViewCount >= MAX_FREE_VIEWS) {
+        recipeDisplay.style.display = "none";
+        unlockCta.style.display = "block";
+        return;
+      }
+
+      const availableRecipes = recipes.filter(r => !viewedIndustries.includes(r.industry));
+      const recipe = availableRecipes.length > 0 
+        ? availableRecipes[Math.floor(Math.random() * availableRecipes.length)]
+        : recipes[Math.floor(Math.random() * recipes.length)];
+
+      viewedIndustries.push(recipe.industry);
+      currentViewCount++;
+
+      recipeDisplay.innerHTML = `
+        <div class="recipe-card">
+          <span class="industry-tag">${recipe.industry.toUpperCase()}</span>
+          <h2 style="margin: 10px 0 20px;">"${recipe.problem}"</h2>
+          
+          <div class="recipe-solution">
+            <p style="font-weight: 600; margin-bottom: 10px;">SNAPFIZZ RECIPE:</p>
+            <p>${recipe.solution}</p>
+            <p style="margin-top: 15px; color: var(--success); font-weight: 600;">${recipe.kpi}</p>
+          </div>
+          
+          <div style="margin-top: 20px;">
+            <span class="lock-badge">${recipe.lock}</span>
+          </div>
+          
+          <button class="next-btn" onclick="displayRandomRecipe()">
+            ANALYZE NEXT INDUSTRY → (${MAX_FREE_VIEWS - currentViewCount} remaining)
+          </button>
+        </div>
+      `;
+    }
+
+    // Initialize
+    displayRandomRecipe();
+  </script>
+</body>
+</html>
