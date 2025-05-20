@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SNAPFIZZ ESG WALL OF SHAME</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #000; color: white; }
+    .shame-header { 
+      background: #ff0000; 
+      padding: 20px; 
+      text-align: center;
+      font-size: 2em;
+    }
+    .company-card {
+      background: #222;
+      margin: 15px;
+      padding: 15px;
+      border-left: 5px solid #ff0000;
+    }
+    .company-score { color: #ff0000; font-weight: bold; }
+    .tag-button { 
+      background: #007BFF; 
+      color: white; 
+      border: none; 
+      padding: 8px; 
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="shame-header">
+    🚨 SNAPFIZZ ESG WALL OF SHAME 🚨
+  </div>
+
+  <div id="shame-list">
+    <!-- DYNAMICALLY LOADED -->
+  </div>
+
+  <script>
+    // Load saved scans from localStorage
+    const shameData = JSON.parse(localStorage.getItem('snapfizzShame')) || [];
+    
+    // Display each shamed company
+    shameData.forEach(company => {
+      document.getElementById("shame-list").innerHTML += `
+        <div class="company-card">
+          <h3>${company.name} (${company.industry})</h3>
+          <p>SCORE: <span class="company-score">${company.score}/100</span></p>
+          <p>${company.crisis}</p>
+          <button class="tag-button" 
+                  onclick="window.open('https://twitter.com/intent/tweet?text=Hey%20@${company.name}%2C%20your%20ESG%20score%20is%20${company.score}%2F100%20on%20@SnapfizzIntel%27s%20Wall%20of%20Shame.%20Explain%20yourselves.%20${window.location.href}')">
+            TAG THEM ON TWITTER
+          </button>
+        </div>
+      `;
+    });
+
+    // Auto-update every 5 mins
+    setInterval(() => {
+      location.reload();
+    }, 300000);
+  </script>
+</body>
+</html>
