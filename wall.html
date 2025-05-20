@@ -49,9 +49,7 @@
   <script>
     // ====== SECURE CONFIG ======
     const config = {
-      openaiKey: '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};
-
-    // ====== REAL PDF PARSING ======
+          // ====== REAL PDF PARSING ======
     async function extractText(file) {
       const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
       let text = "";
