@@ -1,0 +1,80 @@
+/* ====== WAR MODE STYLING ====== */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  background: #f8fafc;
+  color: #111827;
+}
+
+.war-header {
+  background: linear-gradient(135deg, #1e3a8a, #111827);
+  color: white;
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.cta-button {
+  background: #dc2626;
+  color: white;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-block;
+  margin: 20px 0;
+  transition: all 0.3s;
+}
+
+.nuke-section {
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.war-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.loading-bar {
+  height: 4px;
+  background: #2563eb;
+  width: 0%;
+  margin: 20px auto;
+  transition: width 3s;
+}
+
+.leak-score {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 20px 0;
+}
+
+.paywall-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.paywall-card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  max-width: 500px;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+    }
