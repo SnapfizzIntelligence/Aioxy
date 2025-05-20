@@ -1,208 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snapfizz ESG Leak Detector</title>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background: #f8f9fa;
-      color: #333;
-    }
-    .calculator {
-      background: white;
-      border-radius: 10px;
-      padding: 25px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #007BFF;
-      margin-top: 0;
-    }
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    button {
-      background: #007BFF;
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 5px;
-      width: 100%;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: all 0.3s;
-    }
-    button:hover {
-      background: #0069d9;
-      transform: translateY(-2px);
-    }
-    #result {
-      margin-top: 25px;
-      padding: 20px;
-      border-radius: 5px;
-      display: none;
-      background: #f8f9fa;
-    }
-    .critical {
-      border-left: 4px solid #ff0000;
-      animation: pulse 1.5s infinite;
-    }
-    .upsell {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    #loading-bar {
-      height: 4px;
-      background: #007BFF;
-      width: 0%;
-      margin: 15px 0;
-      border-radius: 2px;
-      transition: width 3s;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
-    .highlight {
-      color: #007BFF;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <div class="calculator">
-    <h2>🔍 SNAPFIZZ ESG LEAK DETECTOR</h2>
-    <p>Find hidden revenue drains in your sustainability reports</p>
-    
-    <form id="esgForm">
-      <input type="text" id="company" placeholder="Company Name (e.g. Nestlé)" required>
-      
-      <select id="industry" required>
-        <option value="">Select Industry</option>
-        <option value="tech">Technology</option>
-        <option value="fashion">Fast Fashion</option>
-        <option value="food">Food & Beverage</option>
-        <option value="banking">Banking/Finance</option>
-        <option value="ev">Electric Vehicles</option>
-        <option value="oil">Oil & Gas</option>
-        <option value="pharma">Pharmaceuticals</option>
-      </select>
-      
-      <input type="url" id="reportLink" placeholder="ESG Report URL (optional)">
-      
-      <button type="button" onclick="calculateScore()">ANALYZE WITH AI →</button>
-      
-      <div id="loading-bar"></div>
-    </form>
-    
-    <div id="result">
-      <h3 id="scoreText"></h3>
-      <p id="crisisText"></p>
-      
-      <div class="upsell">
-        <p>🔍 <strong>GET YOUR FULL LEAK REPORT ($20)</strong></p>
-        <p style="font-size: 14px;">Includes:</p>
-        <ul style="font-size: 14px; padding-left: 20px;">
-          <li>Top 3 revenue-draining ESG leaks</li>
-          <li>Competitor benchmark analysis</li>
-          <li>30-Day "Sustainability Sunday" Campaign Blueprint</li>
-       <p style="font-size: 12px; color: #DC2626; font-style: italic; margin-top: 8px;">
-  ⚠️ <strong>Warning:</strong> 92% of brands implement fixes incorrectly without this blueprint.
-       </p>
-        </ul>
-        <button onclick="window.location.href='services.html'">DOWNLOAD NOW →</button>
-        <p id="upsell-counter" style="font-size: 12px; color: #666; margin-top: 10px;">
-          <span id="purchase-count">8</span> reports purchased today
-        </p>
-      </div>
-    </div>
-  </div>
+// ======== WAR MODE AI CORE ========
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
 
-  <script>
-    // ====== FAKE AI ANALYSIS ENGINE ======
-    function calculateScore() {
-      const company = document.getElementById("company").value;
-      const industry = document.getElementById("industry").value;
-      
-      // Show loading animation
-      document.getElementById("loading-bar").style.width = "100%";
-      document.getElementById("result").style.display = "none";
-      
-      // Simulate AI processing delay
-      setTimeout(() => {
-        // Generate realistic fake score (worse for oil/pharma)
-        let baseScore = Math.floor(Math.random() * 40) + 30;
-        if (industry === "oil") baseScore -= 10;
-        if (industry === "pharma") baseScore -= 5;
-        const score = Math.max(25, baseScore); // Never below 25
-        
-        // Calculate fake financial impact
-        const estimatedLoss = (100 - score) * 10000;
-        
-        // Display results
-        document.getElementById("scoreText").innerHTML = 
-          `📊 <strong>${company.toUpperCase()}'S ESG SCORE: <span style="color: ${score < 50 ? '#ff0000' : '#007BFF'}">${score}/100</span></strong>`;
-        
-        document.getElementById("crisisText").innerHTML = 
-          `🚨 ${generateIndustryCrisis(industry, score, estimatedLoss)}`;
-        
-        // Show result with animation
-        document.getElementById("result").style.display = "block";
-        document.getElementById("loading-bar").style.width = "0%";
-        
-        // Add critical alert if score < 50
-        if (score < 50) {
-          document.getElementById("result").classList.add("critical");
-        } else {
-          document.getElementById("result").classList.remove("critical");
-        }
-        
-        // Start fake purchase counter
-        if (!window.counterStarted) {
-          startUpsellCounter();
-          window.counterStarted = true;
-        }
-      }, 3000);
-    }
-    
-    // ====== INDUSTRY-SPECIFIC PAIN GENERATOR ======
-    function generateIndustryCrisis(industry, score, loss) {
-      const crises = {
-        tech: `AI ethics audit missing → <span class="highlight">$${Math.round(loss/1000)}K/year</span> brand risk`,
-        fashion: `Found <span class="highlight">3x more "sustainable" tags</span> than proof (Page 7)`,
-        food: `No farm-to-fork transparency → <span class="highlight">${100-score}%</span> consumer distrust`,
-        banking: `ESG wording matches <span class="highlight">2023 fined banks</span>`,
-        ev: `Battery cobalt sourcing not disclosed → <span class="highlight">$${Math.round(loss*1.5)}</span> potential fines`,
-        oil: `<span class="highlight">90% peers</span> now disclose solar investments (you don't)`,
-        pharma: `No pill recycling → <span class="highlight">$${Math.round(loss)}/year</span> waste`
-      };
-      return crises[industry] || `Found <span class="highlight">${Math.round((100-score)/10)} critical leaks</span> in your reports`;
-    }
-    
-    // ====== FAKE SOCIAL PROOF GENERATOR ======
-    function startUpsellCounter() {
-      let count = 8;
-      setInterval(() => {
-        count += Math.floor(Math.random() * 3);
-        document.getElementById("purchase-count").textContent = count;
-      }, 45000); // Update every 45 seconds
-    }
-  </script>
-</body>
-        </html>
+async function analyzeReport() {
+  // 1. Extract text from PDF
+  const pdfText = await extractTextFromPDF(file); 
+
+  // 2. Send to ChatGPT-4 for battle analysis
+  const analysis = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer YOUR_OPENAI_KEY",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "gpt-4",
+      messages: [{
+        role: "system",
+        content: "You are an ESG assassin. Find lies, calculate $ losses, and cite pages brutally."
+      }, {
+        role: "user",
+        content: `DESTROY this ESG report: ${pdfText}`
+      }]
+    })
+  });
+
+  // 3. Display leaks with $ amounts
+  displayLeaks(analysis.choices[0].message.content); 
+}
+
+// ======== AUTO-SHAME ENGINE ========
+function shameOnTwitter(company, score) {
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+    `@${company} scored ${score}/100 on @SnapfizzIntel's ESG Wall of Shame. Explain yourselves.`
+  )}`);
+}
