@@ -1,64 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SNAPFIZZ ESG WALL OF SHAME</title>
+  <title>SNAPFIZZ: FIND YOUR $1M ESG LEAK</title>
   <style>
-    body { font-family: 'Inter', sans-serif; background: #000; color: white; }
-    .shame-header { 
-      background: #ff0000; 
-      padding: 20px; 
-      text-align: center;
-      font-size: 2em;
-    }
-    .company-card {
-      background: #222;
-      margin: 15px;
-      padding: 15px;
-      border-left: 5px solid #ff0000;
-    }
-    .company-score { color: #ff0000; font-weight: bold; }
-    .tag-button { 
-      background: #007BFF; 
-      color: white; 
-      border: none; 
-      padding: 8px; 
-      margin-top: 10px;
-      cursor: pointer;
-    }
+    body { font-family: 'Inter'; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .leak-card { background: #fff; border-radius: 10px; padding: 20px; margin: 20px 0; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+    .leak-amount { font-size: 2em; color: #ff0000; font-weight: bold; }
+    button { background: #007BFF; color: white; border: none; padding: 15px; border-radius: 5px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <div class="shame-header">
-    🚨 SNAPFIZZ ESG WALL OF SHAME 🚨
-  </div>
-
-  <div id="shame-list">
-    <!-- DYNAMICALLY LOADED -->
+  <h1>🔍 FIND YOUR $1M ESG LEAK</h1>
+  <p>Upload your ESG report. We'll show you the hidden losses.</p>
+  
+  <input type="file" id="esgReport" accept=".pdf">
+  <button onclick="analyzeLeaks()">SCAN FOR LEAKS →</button>
+  
+  <div id="result" style="display: none;">
+    <div class="leak-card">
+      <h3>YOUR BIGGEST ESG LEAK</h3>
+      <p id="leakText"></p>
+      <p>ESTIMATED LOSS: <span class="leak-amount" id="leakAmount"></span></p>
+    </div>
+    <button onclick="window.location.href='mailto:tulasi@pariyar.com?subject=Fix%20Our%20$1M%20Leak'">GET THE FIX ($5K/MONTH) →</button>
   </div>
 
   <script>
-    // Load saved scans from localStorage
-    const shameData = JSON.parse(localStorage.getItem('snapfizzShame')) || [];
-    
-    // Display each shamed company
-    shameData.forEach(company => {
-      document.getElementById("shame-list").innerHTML += `
-        <div class="company-card">
-          <h3>${company.name} (${company.industry})</h3>
-          <p>SCORE: <span class="company-score">${company.score}/100</span></p>
-          <p>${company.crisis}</p>
-          <button class="tag-button" 
-                  onclick="window.open('https://twitter.com/intent/tweet?text=Hey%20@${company.name}%2C%20your%20ESG%20score%20is%20${company.score}%2F100%20on%20@SnapfizzIntel%27s%20Wall%20of%20Shame.%20Explain%20yourselves.%20${window.location.href}')">
-            TAG THEM ON TWITTER
-          </button>
-        </div>
-      `;
-    });
-
-    // Auto-update every 5 mins
-    setInterval(() => {
-      location.reload();
-    }, 300000);
+    function analyzeLeaks() {
+      // Simulate AI analysis
+      document.getElementById("result").style.display = "block";
+      document.getElementById("leakText").innerHTML = 
+        `"<span style='background: yellow;'>100% recyclable</span>" claim → Actual rate: <strong>12%</strong> (Page 14).`;
+      document.getElementById("leakAmount").innerHTML = "$1.2M/year";
+      
+      // Real integration would use:
+      // 1. PDF parser (e.g., PDF.js)
+      // 2. ChatGPT API to analyze text
+      // 3. Pre-trained ESG risk model
+    }
   </script>
 </body>
 </html>
