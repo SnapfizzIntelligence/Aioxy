@@ -23,6 +23,29 @@
         "3. <b>No habit loops</b> → 25% drop in engagement<br><br>" +
         "<i>Upgrade to full audit to fix these.</i>";
     }
-  </script>
+  async function analyze() {  
+     // Show loading message  
+     document.getElementById("result").innerHTML = "🔍 Scanning ESG report...";  
+
+     // Get user's input  
+     const esgText = document.getElementById("esgUrl").value;  
+
+     // Call ChatGPT (via free proxy)  
+     try {  
+       const response = await fetch("https://api-inference.huggingface.co/models/gpt2", {  
+         method: "POST",  
+         headers: { "Authorization": "Bearer hf_YOURFREEKEY" },  
+         body: JSON.stringify({ inputs: `Analyze this ESG report: ${esgText}. Identify top 3 leaks with $ impact.` })  
+       });  
+       const data = await response.json();  
+       document.getElementById("result").innerHTML = formatAnalysis(data[0].generated_text);  
+     } catch (error) {  
+       document.getElementById("result").innerHTML = "⚠️ Server busy. Try again later.";  
+     }  
+   }  
+
+   function formatAnalysis(text) {  
+     return `<h3>AI-Powered ESG Leaks:</h3>${text.replace(/\n/g, "<br>")}`;  
+   }  
 </body>
 </html>
