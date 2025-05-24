@@ -95,8 +95,7 @@
 Format it clearly for display.` })
         });
 
-        const data = await response.json();
-        const message = data.choices?.[0]?.message?.content || "AI response missing.";
+        const message = await response.text();
 
         resultDiv.innerHTML = `
           <h3>🔎 AI Results:</h3>
