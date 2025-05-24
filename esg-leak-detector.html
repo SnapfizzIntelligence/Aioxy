@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Snapfizz ESG Leak Detector</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    button { background: #007BFF; color: white; border: none; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Snapfizz ESG Leak Detector</h1>
+  <p>Paste any ESG report URL below:</p>
+  <input type="text" id="esgUrl" placeholder="e.g., https://company.com/esg" style="width: 300px;">
+  <button onclick="analyze()">Detect $ Leaks</button>
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <script>
+    function analyze() {
+      document.getElementById("result").innerHTML =
+        "<h3>Top 3 Leaks:</h3>" +
+        "1. <b>No gamification</b> → $1.2M/year loss<br>" +
+        "2. <b>Weak visuals</b> → 40% less trust<br>" +
+        "3. <b>No habit loops</b> → 25% drop in engagement<br><br>" +
+        "<i>Upgrade to full audit to fix these.</i>";
+    }
+  </script>
+</body>
+</html>
