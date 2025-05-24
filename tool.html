@@ -87,7 +87,7 @@
       resultDiv.innerHTML = '<p>Scanning ESG report with AI...</p>';
 
       try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbx-fX1GvZ5Kjdl4rhPb1ZtQQ6SdoTwabiaNBVa2gmF6WDqraeCj1hULwqIHhOb_gv0tmQ/exec", {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbyIWjiUh-hbzZ2Bi2vrNSMZtiT0_yABSMJeFNte-kPlIC3kZW0FgKA7hYK2PI35aWe76A/exec", {
           method: "POST",
           body: JSON.stringify({ prompt: `Analyze this ESG report: ${esgText}. Return:
 1. Top 3 ESG Leaks with $ impact
