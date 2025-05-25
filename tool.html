@@ -1,111 +1,48 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Snapfizz ESG Analyzer</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px }
-    .form-group { margin-bottom: 15px }
-    label { display: block; margin-bottom: 5px; font-weight: bold }
-    input, select, textarea { 
-      width: 100%; 
-      padding: 10px; 
-      border: 1px solid #ddd; 
-      border-radius: 4px 
-    }
-    button { 
-      background: #007BFF; 
-      color: white; 
-      border: none; 
-      padding: 12px 20px; 
-      border-radius: 4px; 
-      cursor: pointer;
-      font-size: 16px;
-    }
-    #loading { 
-      display: none; 
-      margin: 20px 0; 
-      text-align: center;
-      color: #007BFF;
-    }
-    #results { 
-      margin-top: 30px;
-      border: 1px solid #eee;
-      padding: 20px;
-      border-radius: 8px;
-    }
-  </style>
-</head>
-<body>
-  <h1>🔍 Snapfizz ESG Leak Detector</h1>
+<form id="esgForm">
+  <input type="text" id="company" placeholder="Company (e.g. Unilever)" required>
   
-  <form id="esgForm">
-    <div class="form-group">
-      <label for="company">Company Name</label>
-      <input type="text" id="company" required>
-    </div>
-    
-    <div class="form-group">
-      <label for="industry">Industry</label>
-      <select id="industry" required>
-        <option value="">Select...</option>
-        <option value="Technology">Technology</option>
-        <option value="Food & Beverage">Food & Beverage</option>
-        <option value="Fashion">Fashion</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label for="text">ESG Report Text/URL</label>
-      <textarea id="text" rows="5" required></textarea>
-    </div>
-    
-    <button type="submit">Analyze with AI</button>
-  </form>
+  <select id="industry" required>
+    <option value="">Select Industry</option>
+    <option value="Food & Beverage">Food & Beverage</option>
+    <option value="Technology">Technology</option>
+  </select>
   
-  <div id="loading">
-    <p>🔍 Scanning for ESG leaks... (20-30 seconds)</p>
-  </div>
+  <!-- PDF URL Field -->
+  <input type="url" id="pdfUrl" placeholder="ESG PDF URL (optional)">
   
-  <div id="results"></div>
+  <!-- OR Text Area -->
+  <textarea id="text" placeholder="OR paste ESG text here"></textarea>
+  
+  <button type="submit">Analyze</button>
+</form>
 
-  <script>
-    document.getElementById('esgForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const form = e.target;
-      const loading = document.getElementById('loading');
-      const results = document.getElementById('results');
-      
-      // Show loading state
-      form.style.display = 'none';
-      loading.style.display = 'block';
-      results.innerHTML = '';
-      
-      try {
-        const response = await fetch('YOUR_SCRIPT_URL', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            company: document.getElementById('company').value,
-            industry: document.getElementById('industry').value,
-            text: document.getElementById('text').value
-          })
-        });
-        
-        if (!response.ok) throw new Error(await response.text());
-        
-        const html = await response.text();
-        results.innerHTML = html;
-        
-      } catch (error) {
-        results.innerHTML = `<div style="color: red; padding: 10px; background: #ffeeee">
-          🚨 Error: ${error.message.replace('https://script.google.com/macros/s/AKfycbxdcyhh7qSa2SK43gHwXoJqJMIgjreRU31ih2TPMAjxb1_UKAZPaP8p4JxhBSH6-AoGYw/exec', '')}
-        </div>`;
-      } finally {
-        loading.style.display = 'none';
-        form.style.display = 'block';
-      }
+<script>
+document.getElementById('esgForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const formData = {
+    company: document.getElementById('company').value,
+    industry: document.getElementById('industry').value,
+    text: document.getElementById('text').value,
+    pdfUrl: document.getElementById('pdfUrl').value
+  };
+  
+  if (!formData.text && !formData.pdfUrl) {
+    alert("Please provide either PDF URL or text");
+    return;
+  }
+
+  try {
+    const response = await https://script.google.com/macros/s/AKfycbxdcyhh7qSa2SK43gHwXoJqJMIgjreRU31ih2TPMAjxb1_UKAZPaP8p4JxhBSH6-AoGYw/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData) // ✅ Correct JSON payload
     });
-  </script>
-</body>
-  </html>
+    
+    const result = await response.text();
+    document.getElementById('results').innerHTML = result;
+  } catch (error) {
+    console.error("Error:", error);
+  }
+});
+      </script>
