@@ -1,13 +1,19 @@
-{
+export default {
   name: "L'Oréal",
-  industry: "Cosmetics",
-  score: 83,
+  industry: "Cosmetics & Personal Care",
+  score: 85,
   leaks: [
     {
-      issue: "No third-party carbon audit for packaging vendors",
-      impact: "$1.2M/year credibility gap (EU compliance risk)",
-      solution: "Adopt GHG Protocol across value chain (Tier 1-3)",
-      source: "L'Oréal ESG Overview 2023"
+      issue: "Plastic packaging still 55% virgin (2023)",
+      impact: "$1.8M/year in regulatory risk (France 2024 ban forecast)",
+      solution: "Accelerate refill station deployment & bio-pack materials",
+      source: "https://www.loreal.com/en/articles/sustainability/2023-sustainability-report/"
+    },
+    {
+      issue: "Water usage disclosure lacks location-specific stress data",
+      impact: "$900K/year reputational inefficiency",
+      solution: "Disclose region-specific usage & integrate CDP mapping",
+      source: "https://www.loreal.com/en/articles/sustainability/sharing-beauty-with-all/"
     }
   ]
 }
