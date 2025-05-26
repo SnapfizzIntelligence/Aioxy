@@ -1,19 +1,19 @@
 export default {
   name: "Starbucks",
-  industry: "Food & Beverage",
-  score: 76,
+  industry: "Food & Beverage / Retail",
+  score: 74,
   leaks: [
     {
-      issue: "Lack of ESG metrics on dairy supply chain",
-      impact: "$1.7M/year climate risk exposure",
-      solution: "Partner with dairy coops for methane capture",
-      source: "Starbucks Global Environmental Report 2023"
+      issue: "Reusable cup adoption still under 20%",
+      impact: "$1.7M/year waste tax exposure in EU & Canada",
+      solution: "Auto-discount at POS + mobile reward triggers",
+      source: "https://stories.starbucks.com/press/2023/starbucks-2023-sustainability-progress-report/"
     },
     {
-      issue: "Reusable cup program stalled below 10%",
-      impact: "$900K/year in waste management penalties",
-      solution: "In-store gamification for reusable usage",
-      source: "Starbucks ESG Scorecard Q3 2023"
+      issue: "Coffee supply chain lacks climate resilience strategy",
+      impact: "$2.9M/year long-term sourcing risk (Espresso Belt volatility)",
+      solution: "Invest in regenerative farming & climate-resilient varietals",
+      source: "https://www.starbucks.com/responsibility/planet/"
     }
   ]
-};
+}
