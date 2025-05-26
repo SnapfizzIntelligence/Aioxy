@@ -1,19 +1,19 @@
 export default {
-  name: "Google",
+  name: "Google (Alphabet Inc.)",
   industry: "Technology",
-  score: 85,
+  score: 86,
   leaks: [
     {
-      issue: "Water usage transparency missing for data centers",
-      impact: "$2.6M/year climate litigation risk",
-      solution: "Publish full water reports with local risk overlays",
-      source: "Google ESG Summary 2023, pg. 10"
+      issue: "Data center water use not fully disclosed",
+      impact: "$1.3M/year in transparency-related trust loss",
+      solution: "Real-time public dashboards on water metrics",
+      source: "https://www.gstatic.com/gumdrop/sustainability/alphabet-2022-environmental-report.pdf"
     },
     {
-      issue: "Slow rollout of recycled materials in hardware",
-      impact: "$1.1M/year lost in sustainable device market",
-      solution: "Launch Pixel Reuse Program with consumer incentives",
-      source: "Alphabet Impact 2023, pg. 22"
+      issue: "Limited supplier ESG compliance audits",
+      impact: "$2.2M/year governance exposure",
+      solution: "Mandatory ESG certifications for Tier 1 & Tier 2 suppliers",
+      source: "https://sustainability.google/commitments/supply-chain/"
     }
   ]
-};
+}
