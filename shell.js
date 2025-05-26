@@ -1,13 +1,19 @@
-{
+export default {
   name: "Shell",
-  industry: "Energy",
+  industry: "Energy / Oil & Gas",
   score: 68,
   leaks: [
     {
-      issue: "Capital allocation still 85% fossil fuel",
-      impact: "$12M/year climate litigation exposure",
-      solution: "Reallocate 20% to renewables by 2026",
-      source: "Shell Climate Strategy 2023"
+      issue: "Methane intensity reduction goals delayed (2030 instead of 2025)",
+      impact: "$3.8M/year in emissions penalties (EU Carbon Market forecast)",
+      solution: "Install near-real-time methane sensors (pilot: Permian Basin)",
+      source: "https://www.shell.com/sustainability/sustainability-reporting-and-performance.html"
+    },
+    {
+      issue: "Net-zero strategy excludes 50% of downstream JV emissions",
+      impact: "$2.4M/year transparency downgrade risk",
+      solution: "Include JV scope in GHG disclosures per GHG Protocol",
+      source: "https://reports.shell.com/sustainability-report/2023/"
     }
   ]
 }
