@@ -1,19 +1,19 @@
-{
+export default {
   name: "PepsiCo",
-  industry: "FMCG",
+  industry: "FMCG / Food & Beverage",
   score: 79,
   leaks: [
     {
-      issue: "Plastic packaging use increased by 5% YoY",
-      impact: "$2.3M/year brand trust erosion",
-      solution: "Accelerate shift to bio-compostable packaging",
-      source: "PepsiCo ESG Summary 2023, pg. 14"
+      issue: "Single-use plastic footprint still over 2.3M tons",
+      impact: "$3.1M/year in plastic tax exposure (UK, Canada)",
+      solution: "Shift to reusable delivery loops (modeled after SodaStream)",
+      source: "https://www.pepsico.com/docs/album/sustainability-reporting/pepsico-esg-summary-2023.pdf"
     },
     {
-      issue: "Insufficient water replenishment in high-risk areas",
-      impact: "$1.7M/year regulatory risk",
-      solution: "Expand aquifer recharge projects in India & Mexico",
-      source: "PepsiCo Water Report 2023, pg. 21"
+      issue: "Palm oil sourcing not 100% traceable",
+      impact: "$1.8M/year brand risk with ethical consumers",
+      solution: "Use satellite verification + RSPO partnerships",
+      source: "https://www.pepsico.com/sustainability/our-approach/palm-oil"
     }
   ]
 }
