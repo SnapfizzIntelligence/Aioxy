@@ -1,13 +1,19 @@
-{
-  name: "Hyundai",
+export default {
+  name: "Hyundai Motor Company",
   industry: "Automotive",
-  score: 71,
+  score: 74,
   leaks: [
     {
-      issue: "EV production relies on non-renewable energy",
-      impact: "$1.7M/year carbon credit penalty (EU forecast)",
-      solution: "Shift 40% EV assembly to solar-backed plants",
-      source: "Hyundai ESG Report 2023, pg. 10"
+      issue: "No public Scope 3 reduction roadmap",
+      impact: "$2.4M/year EU compliance risk (Fit for 55)",
+      solution: "Publish supplier emissions model & regional goals",
+      source: "https://www.hyundai.com/worldwide/en/company/sustainability/sustainability-reports"
+    },
+    {
+      issue: "Underdeveloped EV battery recycling plan",
+      impact: "$1.2M/year in material inefficiency",
+      solution: "Partner with global recyclers + ESG scorecards",
+      source: "https://tech.hyundaimotorgroup.com/article/hyundai-motor-group-develops-closed-loop-system-to-recycle-battery-resources/"
     }
   ]
 }
