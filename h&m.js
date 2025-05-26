@@ -1,13 +1,19 @@
-{
-  name: "H&M",
-  industry: "Fashion",
-  score: 69,
+export default {
+  name: "H&M Group",
+  industry: "Fashion & Apparel",
+  score: 65,
   leaks: [
     {
-      issue: "Overproduction contributing to landfill overflow",
-      impact: "$1.8M/year sustainability backlash",
-      solution: "AI-driven demand forecasting & circular design",
-      source: "H&M Sustainability Disclosure, 2023"
+      issue: "Overuse of 'conscious collection' without verification",
+      impact: "$1.6M/year greenwashing fines (EU forecast)",
+      solution: "Independent third-party labeling & traceability tags",
+      source: "https://hmgroup.com/sustainability/integrating-sustainability/our-progress/"
+    },
+    {
+      issue: "Low circularity in clothing lifecycle",
+      impact: "$900K/year in material waste",
+      solution: "Garment return gamification + resale partnerships",
+      source: "https://hmgroup.com/sustainability/circularity/"
     }
   ]
 }
