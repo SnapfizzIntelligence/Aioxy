@@ -11,7 +11,7 @@ export default {
         label: "Apple Environmental Progress Report 2023 (PDF, p.12)",
         url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=12"
       }
-    },
+    }
     {
       issue: "Battery recycling rate plateaued below targets",
       impact: "$1.8M/year material value loss (Lithium, Cobalt)",
