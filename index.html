@@ -1209,11 +1209,74 @@
 
     // ====== AIOXY SCANNER FUNCTIONALITY ======
     async function scanCompany() {
-      const name = document.getElementById("company-search").value.trim().toLowerCase();
-      const loading = document.getElementById("loading");
-      const result = document.getElementById("result");
-      const companyNameDisplay = document.getElementById("company-name");
+  const name = document.getElementById("company-search").value.trim().toLowerCase();
+  const result = document.getElementById("result");
+  
+  try {
+    // Clear previous results
+    result.innerHTML = '<div style="padding:20px;text-align:center;">Loading...</div>';
+    
+    // DEBUG: Log the exact import path
+    const importPath = `./companies/${name}.js?t=${Date.now()}`;
+    console.log("Attempting to load:", importPath);
+    
+    // Dynamic import with cache busting
+    const module = await import(importPath);
+    const data = module.default;
+    
+    // Verify data structure
+    if (!data?.leaks) throw new Error("Invalid data format - missing 'leaks' array");
+    
+    // Render results
+    renderResults(data);
+    
+  } catch (err) {
+    console.error("Load error:", err);
+    result.innerHTML = `
+      <div style="background:#FEE2E2; padding:20px; border-radius:8px;">
+        <h3 style="color:#DC2626;">❌ Data Load Failed</h3>
+        <p><strong>File:</strong> companies/${name}.js</p>
+        <p><strong>Error:</strong> ${err.message}</p>
+        <p style="margin-top:15px;">Check:</p>
+        <ul style="margin-left:20px;">
+          <li>File exists in /companies/ folder</li>
+          <li>No typos in company name</li>
+          <li>Browser console (F12) for details</li>
+        </ul>
+      </div>
+    `;
+  }
+}
 
+function renderResults(data) {
+  document.getElementById("result").innerHTML = `
+    <h2>${data.name}</h2>
+    <p>Industry: ${data.industry}</p>
+    ${data.leaks.map(leak => `
+      <div class="leak-card">
+        <h3>${leak.issue}</h3>
+        <p><strong>Impact:</strong> ${leak.impact}</p>
+        <p><strong>Solution:</strong> ${leak.solution}</p>
+        ${renderSource(leak.source)}
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderSource(source) {
+  if (!source) return '';
+  if (typeof source === 'string') {
+    return `<a href="${source}" target="_blank" class="source-link">View Source</a>`;
+  }
+  if (source.url) {
+    const label = source.label || 'Source Document';
+    return `<a href="${source.url}" target="_blank" class="source-link">${label}</a>`;
+  }
+  if (Array.isArray(source)) {
+    return source.map(s => renderSource(s)).join('<br>');
+  }
+  return '';
+    }
       if (!name) return alert("Please enter a company name");
 
       // Show loading state
