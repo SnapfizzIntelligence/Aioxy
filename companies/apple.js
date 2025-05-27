@@ -1,19 +1,34 @@
-export default {
-  name: "Apple",
-  industry: "Technology",
-  score: 81,
-  leaks: [
-    {
-      issue: "Scope 3 emissions rely on estimated supplier data (95% of total footprint)",
-      impact: "Potential compliance risks under evolving SEC/EU disclosure rules",
-      solution: "Supplier Clean Energy Program (+300 suppliers on renewables)",
-      source: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=30"
-    },
-    {
-      issue: "Low consumer trade-in recycling rates (12% for cobalt/lithium)",
-      impact: "Lost material value (estimated $1.8M/year based on 2023 metal prices)",
-      solution: "Expand 'GiveBack' incentives + industrial recycling partnerships",
-      source: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=33"
-    }
-  ]
-};
+{
+    "name": "Apple",
+    "industry": "Technology",
+    "score": null,
+    "leaks": [
+      {
+        "issue": "Scope 3 emissions from supply chain",
+        "impact": "Potential regulatory risks under EU CSRD",
+        "solution": "Expand supplier renewable energy program",
+        "source": {
+          "label": "Apple 2023 Environmental Progress Report, p.45",
+          "url": "https://investor.apple.com/files/doc_sustainability/2023_Environmental_Progress_Report.pdf#page=45"
+        }
+      },
+      {
+        "issue": "E-waste from device upgrades",
+        "impact": "Potential environmental concerns from e-waste",
+        "solution": "Scale Daisy recycling robot program",
+        "source": {
+          "label": "Apple 2023 Environmental Progress Report, p.50",
+          "url": "https://investor.apple.com/files/doc_sustainability/2023_Environmental_pProgress_Report.pdf#page=50"
+        }
+      }
+    ],
+    "strengths": [
+      {
+        "item": "100% renewable energy in facilities",
+        "source": {
+          "label": "Apple 2023 Environmental Progress Report, p.20",
+          "url": "https://investor.apple.com/files/doc_sustainability/2023_Environmental_Progress_Report.pdf#page=20"
+        }
+      }
+    ]
+        }
