@@ -1,4 +1,4 @@
-export default {
+export default { 
   name: "Adidas",
   industry: "Apparel & Footwear",
   score: 76,
