@@ -1,7 +1,6 @@
 export default {
   name: "Alibaba",
   industry: "Technology / E-commerce",
-  score: 76,
   leaks: [
     {
       issue: "Green logistics targets only apply to Cainiao division",
