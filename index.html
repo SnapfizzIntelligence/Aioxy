@@ -6,17 +6,19 @@
   <title>Snapfizz Intelligence | Human-Led ESG Leak Detection</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #2563EB;
-      --primary-dark: #1D4ED8;
-      --dark: #111827;
-      --light: #F9FAFB;
-      --danger: #DC2626;
-      --success: #10B981;
+      --premium-dark: #0F172A;
+      --premium-navy: #1E293B;
+      --premium-accent: #7C3AED;
+      --premium-gold: #D4A017;
+      --premium-light: #F8FAFC;
+      --premium-danger: #DC2626;
+      --premium-success: #10B981;
       --font-main: 'Inter', sans-serif;
-      --font-heading: 'Playfair Display', serif;
+      --font-heading: 'Libre Baskerville', serif;
+      --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
     }
     
     * {
@@ -27,10 +29,11 @@
 
     body {
       font-family: var(--font-main);
-      background-color: white;
-      color: var(--dark);
-      line-height: 1.6;
+      background-color: var(--premium-light);
+      color: var(--premium-navy);
+      line-height: 1.7;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     @keyframes fadeIn {
@@ -44,13 +47,30 @@
       100% { transform: scale(1); }
     }
 
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    /* ====== PREMIUM HEADER ====== */
     header {
-      background: linear-gradient(135deg, #111827, #1E3A8A);
+      background: linear-gradient(135deg, var(--premium-dark), #1E3A8A);
       color: white;
-      padding: 100px 20px 80px;
+      padding: 120px 20px 100px;
       text-align: center;
       position: relative;
       overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15), transparent 60%);
     }
 
     header::after {
@@ -60,38 +80,44 @@
       left: 0;
       right: 0;
       height: 100px;
-      background: white;
+      background: var(--premium-light);
       transform: skewY(-3deg);
       z-index: 1;
     }
 
     h1 {
       font-family: var(--font-heading);
-      font-size: 3.2rem;
+      font-size: 3.5rem;
       margin: 0 auto;
       max-width: 800px;
-      background: linear-gradient(90deg, #3B82F6, #93C5FD);
+      background: linear-gradient(90deg, #F8D347, var(--premium-gold));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       animation: fadeIn 1s ease-out;
       line-height: 1.2;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .subtitle {
       font-size: 1.3rem;
       opacity: 0.9;
-      margin: 20px auto 0;
+      margin: 25px auto 0;
       max-width: 700px;
       animation: fadeIn 1s ease-out 0.3s both;
+      font-weight: 300;
+      letter-spacing: 0.3px;
     }
 
+    /* ====== PREMIUM NAVIGATION ====== */
     nav {
-      background: var(--primary);
+      background: var(--premium-navy);
       padding: 1rem;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.15);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
     .nav-container {
@@ -109,24 +135,37 @@
       text-decoration: none;
       font-size: 1.3rem;
       letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo::before {
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      background: var(--premium-gold);
+      border-radius: 50%;
     }
 
     .nav-links {
       display: flex;
-      gap: 25px;
+      gap: 30px;
     }
 
     .nav-links a {
-      color: white;
+      color: rgba(255,255,255,0.9);
       text-decoration: none;
       font-weight: 500;
-      transition: all 0.3s;
+      transition: var(--transition);
       position: relative;
       font-size: 0.95rem;
+      letter-spacing: 0.3px;
     }
 
     .nav-links a:hover {
-      opacity: 0.9;
+      color: white;
     }
 
     .nav-links a::after {
@@ -136,8 +175,8 @@
       left: 0;
       width: 0;
       height: 2px;
-      background: white;
-      transition: width 0.3s;
+      background: var(--premium-gold);
+      transition: var(--transition);
     }
 
     .nav-links a:hover::after {
@@ -160,7 +199,7 @@
       width: 100%;
       background: white;
       border-radius: 3px;
-      transition: all 0.3s;
+      transition: var(--transition);
     }
 
     @media (max-width: 768px) {
@@ -175,16 +214,17 @@
         width: 80%;
         max-width: 300px;
         height: 100vh;
-        background: #111827;
+        background: var(--premium-dark);
         flex-direction: column;
         padding: 100px 30px 30px;
-        transition: all 0.5s ease;
+        transition: var(--transition);
         z-index: 999;
+        border-left: 1px solid rgba(255,255,255,0.1);
       }
       
       .nav-links.active {
         right: 0;
-        box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+        box-shadow: -5px 0 30px rgba(0,0,0,0.3);
       }
       
       .nav-links a {
@@ -210,77 +250,107 @@
       }
     }
 
+    /* ====== PREMIUM BUTTONS ====== */
     .btn {
-      display: inline-block;
-      padding: 14px 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 36px;
       border-radius: 50px;
       font-weight: 600;
       text-decoration: none;
-      transition: all 0.3s;
+      transition: var(--transition);
       text-align: center;
       font-size: 1rem;
       cursor: pointer;
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow: hidden;
+      border: none;
+      gap: 8px;
+    }
+
+    .btn i {
+      font-size: 1.1em;
     }
 
     .btn-primary {
-      background: var(--primary);
+      background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
       color: white;
-      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-      border: 2px solid var(--primary);
+      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
     }
 
     .btn-primary:hover {
-      background: var(--primary-dark);
       transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+    }
+
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .btn-primary:hover::after {
+      opacity: 1;
     }
 
     .btn-outline {
-      border: 2px solid var(--primary);
-      color: var(--primary);
+      border: 2px solid var(--premium-accent);
+      color: var(--premium-accent);
       background: transparent;
     }
 
     .btn-outline:hover {
-      background: var(--primary);
+      background: var(--premium-accent);
       color: white;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
     }
 
+    /* ====== TRUST LOGOS ====== */
     .trust-logos {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 30px;
+      gap: 40px;
       flex-wrap: wrap;
-      margin: 50px 0 30px;
+      margin: 60px 0 40px;
       animation: fadeIn 1s ease-out 0.4s both;
     }
 
     .trust-logos img {
-      height: 40px;
-      opacity: 0.8;
-      transition: all 0.3s;
+      height: 36px;
+      opacity: 0.7;
+      transition: var(--transition);
       filter: grayscale(100%) brightness(2);
     }
 
     .trust-logos img:hover {
       opacity: 1;
       filter: grayscale(0) brightness(1);
-      transform: scale(1.05);
+      transform: scale(1.1);
     }
 
+    /* ====== SECTIONS ====== */
     .section {
-      padding: 100px 20px;
+      padding: 120px 20px;
       position: relative;
     }
 
     .section-title {
       font-family: var(--font-heading);
-      font-size: 2.5rem;
+      font-size: 2.8rem;
       text-align: center;
-      margin-bottom: 60px;
+      margin-bottom: 70px;
       position: relative;
-      color: var(--dark);
+      color: var(--premium-dark);
+      letter-spacing: -0.5px;
     }
 
     .section-title::after {
@@ -289,9 +359,9 @@
       bottom: -20px;
       left: 50%;
       transform: translateX(-50%);
-      width: 100px;
+      width: 80px;
       height: 4px;
-      background: var(--primary);
+      background: linear-gradient(90deg, var(--premium-gold), #B45309);
       border-radius: 2px;
     }
 
@@ -300,18 +370,25 @@
       margin: 0 auto;
     }
 
+    /* ====== DEMO CARD ====== */
     .demo-card {
       background: white;
-      border-radius: 12px;
-      padding: 50px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 60px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.08);
       text-align: center;
-      max-width: 850px;
+      max-width: 900px;
       margin: 0 auto;
       animation: fadeIn 1s ease-out 0.6s both;
       border: 1px solid rgba(0,0,0,0.05);
       position: relative;
       overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .demo-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.12);
     }
 
     .demo-card::before {
@@ -320,52 +397,73 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 5px;
-      background: var(--danger);
+      height: 6px;
+      background: linear-gradient(90deg, var(--premium-danger), #EF4444);
+    }
+
+    .demo-card h3 {
+      font-size: 1.6rem;
+      margin-bottom: 15px;
+      color: var(--premium-dark);
     }
 
     .demo-score {
-      font-size: 4rem;
+      font-size: 5rem;
       font-weight: 700;
-      margin: 25px 0;
-      background: linear-gradient(90deg, var(--danger), #EF4444);
+      margin: 30px 0;
+      background: linear-gradient(90deg, var(--premium-danger), #EF4444);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       animation: subtlePulse 2s infinite;
+      font-family: var(--font-heading);
     }
 
     .demo-leak {
-      font-size: 1.4rem;
-      color: var(--danger);
+      font-size: 1.5rem;
+      color: var(--premium-danger);
       font-weight: 600;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      letter-spacing: 0.3px;
     }
 
     .demo-cause {
-      font-size: 1.2rem;
-      margin-bottom: 35px;
-      max-width: 650px;
+      font-size: 1.25rem;
+      margin-bottom: 40px;
+      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
-      line-height: 1.7;
+      line-height: 1.8;
     }
 
+    /* ====== FEATURES ====== */
     .features {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 30px;
-      margin-top: 60px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 40px;
+      margin-top: 70px;
     }
 
     .feature-card {
       background: white;
-      border-radius: 10px;
-      padding: 40px 30px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-      transition: all 0.4s;
+      border-radius: 12px;
+      padding: 50px 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      transition: var(--transition);
       border: 1px solid rgba(0,0,0,0.03);
       opacity: 0;
       transform: translateY(30px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--premium-accent), var(--premium-gold));
     }
 
     .feature-card.visible {
@@ -375,38 +473,40 @@
 
     .feature-card:hover {
       transform: translateY(-10px) !important;
-      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     }
 
     .feature-icon {
-      font-size: 2.8rem;
-      margin-bottom: 25px;
-      color: var(--primary);
+      font-size: 3rem;
+      margin-bottom: 30px;
+      color: var(--premium-accent);
     }
 
     .feature-title {
-      font-size: 1.4rem;
-      margin-bottom: 15px;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
       font-weight: 700;
-      color: var(--dark);
+      color: var(--premium-dark);
+      font-family: var(--font-heading);
     }
 
     .feature-text {
       color: #4B5563;
-      line-height: 1.7;
+      line-height: 1.8;
     }
 
+    /* ====== FOUNDERS ====== */
     .founders {
       display: flex;
       justify-content: center;
-      gap: 50px;
+      gap: 60px;
       flex-wrap: wrap;
-      margin-top: 70px;
+      margin-top: 80px;
     }
 
     .founder-card {
       text-align: center;
-      max-width: 280px;
+      max-width: 300px;
       opacity: 0;
       transform: translateY(30px);
       transition: all 0.6s;
@@ -418,37 +518,41 @@
     }
 
     .founder-avatar {
-      width: 150px;
-      height: 150px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
       object-fit: cover;
-      margin-bottom: 25px;
-      border: 4px solid var(--primary);
-      transition: all 0.3s;
+      margin-bottom: 30px;
+      border: 4px solid var(--premium-accent);
+      transition: var(--transition);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     .founder-avatar:hover {
       transform: scale(1.05);
-      box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 15px 40px rgba(124, 58, 237, 0.3);
+      border-color: var(--premium-gold);
     }
 
     .founder-name {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 700;
-      margin-bottom: 8px;
-      color: var(--dark);
+      margin-bottom: 10px;
+      color: var(--premium-dark);
+      font-family: var(--font-heading);
     }
 
     .founder-title {
       color: #6B7280;
-      margin-bottom: 20px;
-      font-size: 1rem;
+      margin-bottom: 25px;
+      font-size: 1.05rem;
     }
 
+    /* ====== FOOTER ====== */
     footer {
-      background: var(--dark);
+      background: var(--premium-dark);
       color: white;
-      padding: 80px 20px 40px;
+      padding: 100px 20px 50px;
       text-align: center;
       position: relative;
     }
@@ -460,7 +564,7 @@
       left: 0;
       right: 0;
       height: 100px;
-      background: white;
+      background: var(--premium-light);
       transform: skewY(-3deg);
       z-index: 1;
     }
@@ -468,8 +572,8 @@
     .footer-links {
       display: flex;
       justify-content: center;
-      gap: 25px;
-      margin: 30px 0;
+      gap: 30px;
+      margin: 40px 0;
       flex-wrap: wrap;
       position: relative;
       z-index: 2;
@@ -478,24 +582,39 @@
     .footer-links a {
       color: #D1D5DB;
       text-decoration: none;
-      transition: all 0.3s;
+      transition: var(--transition);
       font-size: 0.95rem;
+      position: relative;
     }
 
     .footer-links a:hover {
       color: white;
-      text-decoration: underline;
+    }
+
+    .footer-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--premium-gold);
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover::after {
+      width: 100%;
     }
 
     .copyright {
-      margin-top: 30px;
+      margin-top: 40px;
       color: #9CA3AF;
       font-size: 0.9rem;
       position: relative;
       z-index: 2;
     }
 
-    /* NEW AIOXY STYLES */
+    /* ====== AIOXY SCANNER STYLES ====== */
     #aioxy-scanner {
       max-width: 800px;
       margin: 0 auto;
@@ -503,67 +622,247 @@
     
     #company-search {
       width: 100%;
-      padding: 15px;
+      padding: 18px 25px;
       font-size: 1.1rem;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      margin-bottom: 20px;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      margin-bottom: 25px;
       font-family: var(--font-main);
+      transition: var(--transition);
+      background: white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    }
+    
+    #company-search:focus {
+      outline: none;
+      border-color: var(--premium-accent);
+      box-shadow: 0 5px 20px rgba(124, 58, 237, 0.1);
     }
     
     .esg-score-badge {
-      background: linear-gradient(135deg, #2563EB, #1D4ED8);
+      background: linear-gradient(135deg, var(--premium-navy), var(--premium-dark));
       color: white;
-      padding: 15px;
-      border-radius: 8px;
+      padding: 25px;
+      border-radius: 12px;
       text-align: center;
-      margin: 30px 0;
+      margin: 40px 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .esg-score-badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--premium-gold), #B45309);
     }
     
     .leak-card {
-      margin-bottom: 25px;
-      padding-bottom: 25px;
-      border-bottom: 1px solid #eee;
+      margin-bottom: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      text-align: left;
     }
     
     .leak-card h3 {
-      color: var(--danger);
+      color: var(--premium-danger);
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+    }
+    
+    .leak-card p {
       margin-bottom: 10px;
+      line-height: 1.8;
     }
     
     .source-link {
-      font-size: 0.9em;
+      font-size: 0.95em;
       color: #666;
       display: block;
-      margin-top: 8px;
+      margin-top: 15px;
+      transition: var(--transition);
+    }
+    
+    .source-link:hover {
+      color: var(--premium-accent);
     }
 
-    /* Comparison Modal Styles */
+    /* ====== COMPARISON MODAL STYLES ====== */
+    #comparison-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 10000;
+      padding: 20px;
+      overflow-y: auto;
+      backdrop-filter: blur(5px);
+    }
+
+    #comparison-modal > div {
+      max-width: 1200px;
+      margin: 50px auto;
+      background: white;
+      border-radius: 16px;
+      padding: 50px;
+      position: relative;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+      animation: fadeIn 0.5s ease-out;
+    }
+
     #comparison-modal h2 {
       font-family: var(--font-heading);
-      font-size: 2rem;
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: var(--premium-dark);
     }
 
     #comparison-modal h3 {
-      font-size: 1.3rem;
-      margin-bottom: 15px;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: var(--premium-navy);
     }
 
-    #comparison-modal ul {
-      list-style-type: disc;
+    #comparison-subtitle {
+      color: #666;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
     }
 
-    #comparison-modal li {
-      margin-bottom: 5px;
+    #comparison-results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
     }
 
-    @media (max-width: 1024px) {
+    .comparison-card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      transition: var(--transition);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .comparison-card.is-main {
+      background: linear-gradient(135deg, #F8FAFC, white);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      position: relative;
+    }
+
+    .comparison-card.is-main::before {
+      content: 'Your Selection';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--premium-accent);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .score-display {
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 15px 0;
+      font-family: var(--font-heading);
+    }
+
+    .score-good {
+      color: var(--premium-success);
+    }
+
+    .score-medium {
+      color: var(--premium-accent);
+    }
+
+    .score-poor {
+      color: var(--premium-danger);
+    }
+
+    .comparison-card ul {
+      list-style-type: none;
+      margin: 20px 0;
+    }
+
+    .comparison-card li {
+      margin-bottom: 12px;
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    .comparison-card li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--premium-accent);
+      font-weight: bold;
+    }
+
+    /* ====== PREMIUM BADGES ====== */
+    .premium-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--premium-gold), #B45309);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-left: 15px;
+      vertical-align: middle;
+    }
+
+    .pro-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* ====== RESPONSIVE STYLES ====== */
+    @media (max-width: 1200px) {
       h1 {
-        font-size: 2.8rem;
+        font-size: 3rem;
       }
       
       .section {
-        padding: 80px 20px;
+        padding: 100px 20px;
+      }
+      
+      .feature-card {
+        padding: 40px 30px;
+      }
+    }
+
+    @media (max-width: 992px) {
+      h1 {
+        font-size: 2.7rem;
+      }
+      
+      .section-title {
+        font-size: 2.5rem;
+      }
+      
+      .demo-card {
+        padding: 50px 40px;
       }
     }
 
@@ -576,24 +875,29 @@
         font-size: 1.1rem;
       }
 
-      .nav-container {
-        flex-direction: row;
+      .section {
+        padding: 80px 20px;
       }
-
+      
       .section-title {
-        font-size: 2rem;
+        font-size: 2.2rem;
+        margin-bottom: 50px;
       }
 
       .demo-card {
-        padding: 40px 25px;
+        padding: 40px 30px;
       }
 
       .demo-score {
-        font-size: 3rem;
+        font-size: 4rem;
       }
 
       .feature-card {
-        padding: 30px 25px;
+        padding: 35px 25px;
+      }
+
+      .feature-title {
+        font-size: 1.3rem;
       }
 
       .founder-card {
@@ -601,74 +905,99 @@
       }
 
       #comparison-modal > div {
-        margin: 20px auto;
-        padding: 20px;
+        padding: 30px;
+        margin: 30px auto;
       }
       
       #comparison-results {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: 1fr;
+      }
+      
+      .trust-logos img {
+        height: 30px;
       }
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 576px) {
       h1 {
         font-size: 2rem;
       }
 
       header {
-        padding: 80px 20px 60px;
+        padding: 100px 20px 80px;
       }
 
       .btn {
-        padding: 12px 24px;
+        padding: 14px 28px;
         font-size: 0.95rem;
       }
 
       .section {
-        padding: 60px 20px;
+        padding: 70px 20px;
       }
 
       .section-title {
-        font-size: 1.8rem;
-        margin-bottom: 50px;
+        font-size: 1.9rem;
+        margin-bottom: 40px;
       }
 
       .demo-card {
-        padding: 30px 20px;
+        padding: 30px 25px;
       }
 
       .demo-score {
-        font-size: 2.5rem;
+        font-size: 3.5rem;
       }
 
       .demo-cause {
         font-size: 1.1rem;
       }
 
-      .trust-logos img {
-        height: 30px;
-      }
-
       .feature-icon {
-        font-size: 2.2rem;
+        font-size: 2.5rem;
       }
 
       .feature-title {
-        font-size: 1.3rem;
+        font-size: 1.25rem;
       }
 
+      .founder-avatar {
+        width: 140px;
+        height: 140px;
+      }
+      
+      #comparison-modal h2 {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .section-title {
+        font-size: 1.7rem;
+      }
+      
+      .demo-score {
+        font-size: 3rem;
+      }
+      
       .founder-avatar {
         width: 120px;
         height: 120px;
       }
     }
   </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
   <header>
+    <div class="pro-badge">Professional Edition</div>
     <h1>Snapfizz Intelligence</h1>
     <p class="subtitle">Human-led ESG leak detection with AI assistance</p>
-    <a href="#aioxy" class="btn btn-primary">TRY LEAK DETECTOR</a>
+    <a href="#aioxy" class="btn btn-primary"><i class="fas fa-search"></i> TRY LEAK DETECTOR</a>
     <div class="trust-logos">
       <img src="unilever-logo.jpg" alt="Unilever" width="120">
       <img src="nestle.png" alt="Nestlé" width="80">
@@ -704,27 +1033,27 @@
         <div class="demo-score">48/100</div>
         <div class="demo-leak">$300M/year revenue loss</div>
         <p class="demo-cause"><strong>Root Cause:</strong> No gamification strategy → 25% drop in Gen Z engagement and loyalty.</p>
-        <a href="#aioxy" class="btn btn-primary">SCAN YOUR COMPANY</a>
+        <a href="#aioxy" class="btn btn-primary"><i class="fas fa-play"></i> SCAN YOUR COMPANY</a>
       </div>
     </div>
   </section>
 
-  <section class="section" style="background: var(--light);">
+  <section class="section" style="background: #F8FAFC;">
     <div class="container">
       <h2 class="section-title">Why Industry Leaders Trust Us</h2>
       <div class="features">
         <div class="feature-card">
-          <div class="feature-icon">🔍</div>
+          <div class="feature-icon"><i class="fas fa-search-plus"></i></div>
           <h3 class="feature-title">Expert-Led Analysis</h3>
           <p class="feature-text">Tulasi Pariyar personally reviews each report with proprietary algorithmic assistance.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">💸</div>
+          <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
           <h3 class="feature-title">Revenue Impact</h3>
           <p class="feature-text">We translate ESG gaps into precise dollar losses—speaking the language of boards.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">📊</div>
+          <div class="feature-icon"><i class="fas fa-lightbulb"></i></div>
           <h3 class="feature-title">Actionable Fixes</h3>
           <p class="feature-text">Like "Sustainability Sunday" gamification → +25% engagement (proven benchmark).</p>
         </div>
@@ -733,7 +1062,7 @@
   </section>
 
   <!-- AIOXY SCANNER SECTION -->
-  <section id="aioxy" class="section" style="background: #f0f7ff;">
+  <section id="aioxy" class="section" style="background: linear-gradient(135deg, #F0F5FF, #FFFFFF);">
     <div class="container">
       <h2 class="section-title">Aioxy ESG Leak Scanner</h2>
       
@@ -745,12 +1074,12 @@
                  autocomplete="off">
           
           <button class="btn btn-primary" onclick="scanCompany()" style="width:100%;">
-            SCAN COMPANY
+            <i class="fas fa-search"></i> SCAN COMPANY
           </button>
           
-          <div id="loading" style="margin:20px 0; display:none; text-align:center;">
-            <div style="display:inline-block; padding:15px; background:#f8fafc; border-radius:8px;">
-              🔍 Analyzing <span id="company-name"></span>...
+          <div id="loading" style="margin:30px 0; display:none; text-align:center;">
+            <div style="display:inline-block; padding:20px; background:#f8fafc; border-radius:12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+              <i class="fas fa-spinner fa-spin" style="margin-right:10px;"></i> Analyzing <span id="company-name" style="font-weight:600;"></span>...
             </div>
           </div>
           
@@ -761,19 +1090,19 @@
   </section>
 
   <!-- COMPARISON MODAL -->
-  <div id="comparison-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; padding:20px; overflow-y:auto;">
-    <div style="max-width:1200px; margin:40px auto; background:white; border-radius:12px; padding:30px; position:relative;">
-      <button onclick="closeComparison()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+  <div id="comparison-modal" style="display:none;">
+    <div>
+      <button onclick="closeComparison()" style="position:absolute; top:25px; right:25px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;"><i class="fas fa-times"></i></button>
       
-      <h2 style="margin-bottom:10px;" id="comparison-title">ESG Comparison</h2>
-      <p style="color:#666; margin-bottom:30px;" id="comparison-subtitle"></p>
+      <h2 id="comparison-title">ESG Comparison</h2>
+      <p id="comparison-subtitle"></p>
       
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px;" id="comparison-results">
+      <div id="comparison-results">
         <!-- Comparison cards will be inserted here -->
       </div>
       
-      <div style="margin-top:40px; text-align:center;">
-        <button onclick="closeComparison()" class="btn btn-primary">CLOSE COMPARISON</button>
+      <div style="margin-top:50px; text-align:center;">
+        <button onclick="closeComparison()" class="btn btn-primary"><i class="fas fa-times"></i> CLOSE COMPARISON</button>
       </div>
     </div>
   </div>
@@ -788,13 +1117,13 @@
           </a>
           <h3 class="founder-name">Tulasi Pariyar</h3>
           <p class="founder-title">Founder & ESG Strategist</p>
-          <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-outline">Connect on LinkedIn</a>
+          <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-outline"><i class="fab fa-linkedin"></i> Connect on LinkedIn</a>
         </div>
         <div class="founder-card">
           <img src="snapfizz.png" alt="Technical Partner" class="founder-avatar">
           <h3 class="founder-name">Technical Partner</h3>
           <p class="founder-title">Algorithmic Intelligence</p>
-          <a href="services.html" class="btn btn-outline">Learn About Our Tech</a>
+          <a href="services.html" class="btn btn-outline"><i class="fas fa-cogs"></i> Learn About Our Tech</a>
         </div>
       </div>
     </div>
@@ -870,11 +1199,11 @@
     founderAvatars.forEach(avatar => {
       avatar.addEventListener('mouseenter', () => {
         avatar.style.transform = 'scale(1.05)';
-        avatar.style.boxShadow = '0 10px 25px rgba(37, 99, 235, 0.3)';
+        avatar.style.boxShadow = '0 15px 40px rgba(124, 58, 237, 0.3)';
       });
       avatar.addEventListener('mouseleave', () => {
         avatar.style.transform = 'scale(1)';
-        avatar.style.boxShadow = 'none';
+        avatar.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
       });
     });
 
@@ -924,10 +1253,10 @@
           
           <div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">
             <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-primary" style="display:inline-block;">
-              GET FULL AUDIT REPORT
+              <i class="fas fa-file-alt"></i> GET FULL AUDIT REPORT
             </a>
             <button onclick="showComparison('${name}')" class="btn btn-outline" style="display:inline-block;">
-              COMPARE WITH COMPETITORS
+              <i class="fas fa-balance-scale"></i> COMPARE WITH COMPETITORS
             </button>
           </div>
         `;
@@ -936,11 +1265,12 @@
       } catch (err) {
         console.error("Error loading company data:", err);
         result.innerHTML = `
-          <div style="background:#FEE2E2; color:var(--danger); padding:15px; border-radius:8px;">
-            ❌ No ESG data found for "${name}". Try: 
-            <a href="javascript:fillSearch('apple')">Apple</a>, 
-            <a href="javascript:fillSearch('tesla')">Tesla</a>, 
-            <a href="javascript:fillSearch('starbucks')">Starbucks</a>
+          <div style="background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;">
+            <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>
+            No ESG data found for "${name}". Try: 
+            <a href="javascript:fillSearch('apple')" style="color:var(--premium-accent); font-weight:500;">Apple</a>, 
+            <a href="javascript:fillSearch('tesla')" style="color:var(--premium-accent); font-weight:500;">Tesla</a>, 
+            <a href="javascript:fillSearch('starbucks')" style="color:var(--premium-accent); font-weight:500;">Starbucks</a>
           </div>
         `;
         result.style.display = "block";
@@ -1069,42 +1399,37 @@
 
     function createComparisonCard(company, isMain = false) {
       const card = document.createElement("div");
-      card.style.background = isMain ? "#f0f7ff" : "white";
-      card.style.borderRadius = "10px";
-      card.style.padding = "20px";
-      card.style.boxShadow = "0 5px 15px rgba(0,0,0,0.05)";
-      card.style.border = isMain ? "2px solid var(--primary)" : "1px solid #eee";
+      card.className = "comparison-card" + (isMain ? " is-main" : "");
       
-      const scoreColor = company.score >= 80 ? "var(--success)" : 
-                        company.score >= 50 ? "var(--primary)" : "var(--danger)";
+      const scoreColor = company.score >= 80 ? "score-good" : 
+                        company.score >= 50 ? "score-medium" : "score-poor";
       
       card.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <h3 style="margin:0; ${isMain ? 'color:var(--primary);' : ''}">${company.name}</h3>
-          ${isMain ? '<span style="background:var(--primary); color:white; padding:3px 8px; border-radius:4px; font-size:0.8em;">YOUR SELECTION</span>' : ''}
-        </div>
+        <h3>${company.name}</h3>
         
-        <div style="margin-bottom:15px;">
+        <div style="margin:15px 0;">
           <div style="font-size:0.9em; color:#666;">Industry</div>
-          <div>${company.industry}</div>
+          <div style="font-weight:500;">${company.industry}</div>
         </div>
         
-        <div style="margin-bottom:15px;">
+        <div style="margin:20px 0;">
           <div style="font-size:0.9em; color:#666;">ESG Score</div>
-          <div style="font-size:2rem; font-weight:bold; color:${scoreColor}">${company.score}/100</div>
+          <div class="score-display ${scoreColor}">${company.score}/100</div>
         </div>
         
-        <div style="margin-bottom:15px;">
+        <div>
           <div style="font-size:0.9em; color:#666;">Key Leaks</div>
-          <ul style="margin-top:5px; padding-left:20px;">
-            ${company.leaks.slice(0, 3).map(leak => `<li style="margin-bottom:5px;">${leak.issue}</li>`).join('')}
+          <ul>
+            ${company.leaks.slice(0, 3).map(leak => `
+              <li>${leak.issue}</li>
+            `).join('')}
           </ul>
         </div>
         
         <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank"
            class="btn ${isMain ? 'btn-primary' : 'btn-outline'}" 
-           style="width:100%; display:block; text-align:center;">
-          VIEW DETAILS
+           style="width:100%; margin-top:25px;">
+          <i class="fas fa-arrow-right"></i> VIEW DETAILS
         </a>
       `;
       
