@@ -4,18 +4,22 @@ export default {
   score: 81,
   leaks: [
     {
-      issue: "Limited Scope 3 tracking (Supplier emissions)",
-      impact: "$3.2M/year regulatory exposure",
-      solution: "Blockchain-based supplier audit system",
-      source: "[Apple ESG Report 2023, p.12]
-        (https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=12)"
+      issue: "Limited Scope 3 supplier emissions coverage",
+      impact: "$3.2M/year potential regulatory exposure (EU Carbon Border Tax)",
+      solution: "Blockchain-based supplier audit system (pilot in Southeast Asia)",
+      source: {
+        label: "Apple Environmental Progress Report 2023 (PDF, p.12)",
+        url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=12"
+      }
     },
     {
-      issue: "Battery recycling rate stagnant at 12%",
-      impact: "$1.8M/year material loss",
-      solution: "Gamified trade-in program (+45% recovery in pilot)",
-      source: "[Apple Environmental Progress Report 2023, p.33]
-        (https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=33)"
+      issue: "Battery recycling rate plateaued below targets",
+      impact: "$1.8M/year material value loss (Lithium, Cobalt)",
+      solution: "Gamified trade-in program (+45% recovery in iPhone pilot)",
+      source: {
+        label: "Apple Environmental Progress Report 2023 (PDF, p.33)",
+        url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=33"
+      }
     }
   ]
 }
