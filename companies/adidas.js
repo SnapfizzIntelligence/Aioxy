@@ -4,16 +4,22 @@ export default {
   score: 76,
   leaks: [
     {
-      issue: "Plastic use reduction target not on track (–12% vs. 2025 goal)",
-      impact: "$1.2M/year in reputational risk",
-      solution: "Accelerate switch to ocean-recycled plastics",
-      source: "https://www.adidas-group.com/media/filer_public/12/4f/124f4e2d-bc9b-4e57-80e4-6df80a296cbf/adidas_sustainability_report_2022.pdf"
+      issue: "Plastic reduction progress estimated to lag behind 2025 targets",
+      impact: "Estimated $1.2M/year in reputational risk due to delayed sustainable material adoption",
+      solution: "Scale ocean-recycled plastics via Parley partnership and alternative suppliers",
+      source: {
+        label: "Adidas Sustainability Report 2022 (PDF, p.48)",
+        url: "https://www.adidas-group.com/media/filer_public/12/4f/124f4e2d-bc9b-4e57-80e4-6df80a296cbf/adidas_sustainability_report_2022.pdf#page=48"
+      }
     },
     {
-      issue: "Low traceability of cotton sourcing",
-      impact: "$700K/year in ethical sourcing fines (risk-adjusted)",
-      solution: "Blockchain cotton trace certification via Better Cotton Initiative",
-      source: "https://www.adidas-group.com/en/sustainability/responsible-sourcing/"
+      issue: "Cotton traceability not verifiable to farm-level (via Better Cotton Initiative)",
+      impact: "Potential $700K/year in ethical sourcing fines and NGO scrutiny",
+      solution: "Adopt blockchain cotton certification for full end-to-end transparency",
+      source: {
+        label: "Adidas Responsible Sourcing Overview",
+        url: "https://www.adidas-group.com/en/sustainability/responsible-sourcing/"
+      }
     }
   ]
 }
