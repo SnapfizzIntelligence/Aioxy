@@ -1,25 +1,25 @@
 export default {
   name: "Adobe",
-  industry: "Technology",
-  score: 84,
+  industry: "Software & Technology",
+  score: 79,
   leaks: [
     {
-      issue: "Scope 3 emissions constitute 95% of total footprint, with limited supplier-level data",
-      impact: "Potential compliance risks under evolving SEC/EU disclosure rules",
-      solution: "Expand supplier engagement and data collection for comprehensive Scope 3 reporting",
+      issue: "Indirect Scope 3 emissions from cloud services remain unquantified",
+      impact: "Lack of data transparency may hinder regulatory readiness (e.g. SEC, EU CSRD)",
+      solution: "Extend carbon accounting framework to third-party data centers (Cloud Carbon Footprint Tool)",
       source: {
-        label: "Adobe 2023 Corporate Social Responsibility Report (PDF, p.30)",
-        url: "https://www.adobe.com/content/dam/cc/en/corporate-responsibility/pdfs/Adobe-CSR-Report-2023.pdf#page=30"
+        label: "Adobe Corporate Responsibility Report 2023, pp. 23–26",
+        url: "https://www.adobe.com/corporate-responsibility/pdfs/adobe-cdr-2023.pdf#page=23"
       }
     },
     {
-      issue: "Low consumer trade-in recycling rates for devices and packaging",
-      impact: "Lost material value and potential reputational risk",
-      solution: "Implement and promote consumer recycling programs and sustainable packaging initiatives",
+      issue: "Supplier emissions data not independently verified",
+      impact: "Moderate compliance risk under new supply chain disclosure laws (ESRS)",
+      solution: "Adopt CDP Supply Chain & ISO 14064-1 for third-party assurance",
       source: {
-        label: "Adobe 2023 Corporate Social Responsibility Report (PDF, p.33)",
-        url: "https://www.adobe.com/content/dam/cc/en/corporate-responsibility/pdfs/Adobe-CSR-Report-2023.pdf#page=33"
+        label: "Adobe Corporate Responsibility Report 2023, p. 26",
+        url: "https://www.adobe.com/corporate-responsibility/pdfs/adobe-cdr-2023.pdf#page=26"
       }
     }
   ]
-};
+}
