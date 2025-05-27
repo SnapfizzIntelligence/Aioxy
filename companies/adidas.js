@@ -1,25 +1,25 @@
-export default { 
-  name: "Adidas",
-  industry: "Apparel & Footwear",
-  score: 76,
+export default {
+  name: "Adobe",
+  industry: "Technology",
+  score: 84,
   leaks: [
     {
-      issue: "Plastic reduction progress estimated to lag behind 2025 targets",
-      impact: "Estimated $1.2M/year in reputational risk due to delayed sustainable material adoption",
-      solution: "Scale ocean-recycled plastics via Parley partnership and alternative suppliers",
+      issue: "Scope 3 emissions constitute 95% of total footprint, with limited supplier-level data",
+      impact: "Potential compliance risks under evolving SEC/EU disclosure rules",
+      solution: "Expand supplier engagement and data collection for comprehensive Scope 3 reporting",
       source: {
-        label: "Adidas Sustainability Report 2022 (PDF, p.48)",
-        url: "https://www.adidas-group.com/media/filer_public/12/4f/124f4e2d-bc9b-4e57-80e4-6df80a296cbf/adidas_sustainability_report_2022.pdf#page=48"
+        label: "Adobe 2023 Corporate Social Responsibility Report (PDF, p.30)",
+        url: "https://www.adobe.com/content/dam/cc/en/corporate-responsibility/pdfs/Adobe-CSR-Report-2023.pdf#page=30"
       }
     },
     {
-      issue: "Cotton traceability not verifiable to farm-level (via Better Cotton Initiative)",
-      impact: "Potential $700K/year in ethical sourcing fines and NGO scrutiny",
-      solution: "Adopt blockchain cotton certification for full end-to-end transparency",
+      issue: "Low consumer trade-in recycling rates for devices and packaging",
+      impact: "Lost material value and potential reputational risk",
+      solution: "Implement and promote consumer recycling programs and sustainable packaging initiatives",
       source: {
-        label: "Adidas Responsible Sourcing Overview",
-        url: "https://www.adidas-group.com/en/sustainability/responsible-sourcing/"
+        label: "Adobe 2023 Corporate Social Responsibility Report (PDF, p.33)",
+        url: "https://www.adobe.com/content/dam/cc/en/corporate-responsibility/pdfs/Adobe-CSR-Report-2023.pdf#page=33"
       }
     }
   ]
-}
+};
