@@ -1,34 +1,24 @@
-{
-    "name": "Apple",
-    "industry": "Technology",
-    "score": null,
-    "leaks": [
-      {
-        "issue": "Scope 3 emissions from supply chain",
-        "impact": "Potential regulatory risks under EU CSRD",
-        "solution": "Expand supplier renewable energy program",
-        "source": {
-          "label": "Apple 2023 Environmental Progress Report, p.45",
-          "url": "https://investor.apple.com/files/doc_sustainability/2023_Environmental_Progress_Report.pdf#page=45"
-        }
-      },
-      {
-        "issue": "E-waste from device upgrades",
-        "impact": "Potential environmental concerns from e-waste",
-        "solution": "Scale Daisy recycling robot program",
-        "source": {
-          "label": "Apple 2023 Environmental Progress Report, p.50",
-          "url": "https://investor.apple.com/files/doc_sustainability/2023_Environmental_pProgress_Report.pdf#page=50"
-        }
+export default {
+  name: "Apple",
+  industry: "Technology",
+  leaks: [
+    {
+      issue: "Scope 3 emissions rely on estimated supplier data (95% of total footprint)",
+      impact: "Potential compliance risks under evolving SEC/EU disclosure rules",
+      solution: "Supplier Clean Energy Program (+300 suppliers on renewables)",
+      source: {
+        label: "Apple Environmental Progress Report 2023 (PDF, pp.30–31)",
+        url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=30"
       }
-    ],
-    "strengths": [
-      {
-        "item": "100% renewable energy in facilities",
-        "source": {
-          "label": "Apple 2023 Environmental Progress Report, p.20",
-          "url": "https://investor.apple.com/files/doc_sustainability/2023_Environmental_Progress_Report.pdf#page=20"
-        }
+    },
+    {
+      issue: "Low trade-in recovery rate for critical minerals (cobalt/lithium)",
+      impact: "Material losses estimated in millions (based on end-of-life device flows)",
+      solution: "Expansion of Daisy robotic recycling + consumer awareness campaigns",
+      source: {
+        label: "Apple Environmental Progress Report 2023 (PDF, p.33)",
+        url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=33"
       }
-    ]
-        }
+    }
+  ]
+}
