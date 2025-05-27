@@ -1,6 +1,4 @@
-export default 
-disclaimer: "All data sourced from Apple’s 2023 Environmental Progress Report",
-{
+export default {
   name: "Apple",
   industry: "Technology",
   score: 81,
