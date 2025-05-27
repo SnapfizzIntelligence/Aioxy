@@ -1,7 +1,6 @@
 export default {
   name: "Tesla",
   industry: "Automotive & Energy",
-  score: null, // No verified TCFD/SASB score in 2023 Impact Report; removed unverified 88
   leaks: [
     {
       issue: "Cobalt sourcing from DRC (despite audits)",
