@@ -538,6 +538,25 @@
       margin-top: 8px;
     }
 
+    /* Comparison Modal Styles */
+    #comparison-modal h2 {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+    }
+
+    #comparison-modal h3 {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+    }
+
+    #comparison-modal ul {
+      list-style-type: disc;
+    }
+
+    #comparison-modal li {
+      margin-bottom: 5px;
+    }
+
     @media (max-width: 1024px) {
       h1 {
         font-size: 2.8rem;
@@ -579,6 +598,15 @@
 
       .founder-card {
         max-width: 100%;
+      }
+
+      #comparison-modal > div {
+        margin: 20px auto;
+        padding: 20px;
+      }
+      
+      #comparison-results {
+        grid-template-columns: 1fr !important;
       }
     }
 
@@ -661,6 +689,7 @@
         <a href="index.html">Home</a>
         <a href="#aioxy">Aioxy Scanner</a>
         <a href="audit.html">ESG Audits</a>
+        <a href="tool.html">Leak Detector</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
       </div>
@@ -703,7 +732,7 @@
     </div>
   </section>
 
-  <!-- NEW AIOXY SCANNER SECTION -->
+  <!-- AIOXY SCANNER SECTION -->
   <section id="aioxy" class="section" style="background: #f0f7ff;">
     <div class="container">
       <h2 class="section-title">Aioxy ESG Leak Scanner</h2>
@@ -730,6 +759,24 @@
       </div>
     </div>
   </section>
+
+  <!-- COMPARISON MODAL -->
+  <div id="comparison-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; padding:20px; overflow-y:auto;">
+    <div style="max-width:1200px; margin:40px auto; background:white; border-radius:12px; padding:30px; position:relative;">
+      <button onclick="closeComparison()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">×</button>
+      
+      <h2 style="margin-bottom:10px;" id="comparison-title">ESG Comparison</h2>
+      <p style="color:#666; margin-bottom:30px;" id="comparison-subtitle"></p>
+      
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px;" id="comparison-results">
+        <!-- Comparison cards will be inserted here -->
+      </div>
+      
+      <div style="margin-top:40px; text-align:center;">
+        <button onclick="closeComparison()" class="btn btn-primary">CLOSE COMPARISON</button>
+      </div>
+    </div>
+  </div>
 
   <section class="section">
     <div class="container">
@@ -875,9 +922,14 @@
           <h3 style="margin-bottom:20px;">Key ESG Leaks</h3>
           ${leaksHtml}
           
-          <a href="https://www.linkedin.com/in/tulasipariyar}" class="btn btn-primary" style="margin-top:30px; display:inline-block;">
-            GET FULL AUDIT REPORT
-          </a>
+          <div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">
+            <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-primary" style="display:inline-block;">
+              GET FULL AUDIT REPORT
+            </a>
+            <button onclick="showComparison('${name}')" class="btn btn-outline" style="display:inline-block;">
+              COMPARE WITH COMPETITORS
+            </button>
+          </div>
         `;
         
         result.style.display = "block";
@@ -900,6 +952,168 @@
     function fillSearch(company) {
       document.getElementById("company-search").value = company;
       scanCompany();
+    }
+
+    // Industry classification for your companies
+    const industryMap = {
+      // Technology
+      apple: 'Technology',
+      google: 'Technology',
+      microsoft: 'Technology',
+      samsung: 'Technology',
+      dell: 'Technology',
+      intel: 'Technology',
+      cisco: 'Technology',
+      oracle: 'Technology',
+      sony: 'Technology',
+      panasonic: 'Technology',
+      adobe: 'Technology',
+      zoom: 'Technology',
+      meta: 'Technology',
+      
+      // Automotive
+      tesla: 'Automotive',
+      bmw: 'Automotive',
+      mercedes: 'Automotive',
+      ford: 'Automotive',
+      hyundai: 'Automotive',
+      byd: 'Automotive',
+      generalmotors: 'Automotive',
+      
+      // Retail/Fashion
+      adidas: 'Retail/Fashion',
+      nike: 'Retail/Fashion',
+      hnm: 'Retail/Fashion',
+      ikea: 'Retail/Fashion',
+      target: 'Retail/Fashion',
+      loreal: 'Retail/Fashion',
+      lvmh: 'Retail/Fashion',
+      
+      // Food/Beverage
+      cocaCola: 'Food/Beverage',
+      pepsiCo: 'Food/Beverage',
+      nestlé: 'Food/Beverage',
+      macdonalds: 'Food/Beverage',
+      starbucks: 'Food/Beverage',
+      danone: 'Food/Beverage',
+      heineken: 'Food/Beverage',
+      
+      // Energy
+      bp: 'Energy',
+      shell: 'Energy',
+      
+      // Financial
+      hsbc: 'Financial',
+      paypal: 'Financial',
+      vodafone: 'Financial',
+      
+      // Other
+      accenture: 'Professional Services',
+      alibaba: 'E-commerce',
+      amazon: 'E-commerce',
+      airbnb: 'Hospitality',
+      booking: 'Hospitality',
+      uber: 'Transportation',
+      proctergamble: 'Consumer Goods',
+      pfizer: 'Pharmaceutical',
+      johnsonjohnson: 'Pharmaceutical',
+      siemens: 'Industrial',
+      unilever: 'Consumer Goods'
+    };
+
+    // New comparison functions
+    async function showComparison(company) {
+      const modal = document.getElementById("comparison-modal");
+      const title = document.getElementById("comparison-title");
+      const subtitle = document.getElementById("comparison-subtitle");
+      const resultsContainer = document.getElementById("comparison-results");
+      
+      // Get industry for this company
+      const industry = industryMap[company] || 'General';
+      title.textContent = `${company.charAt(0).toUpperCase() + company.slice(1)} vs. Industry Peers`;
+      subtitle.textContent = `Comparing ESG performance in ${industry} sector`;
+      
+      // Get all companies in same industry
+      const competitors = Object.keys(industryMap)
+        .filter(c => industryMap[c] === industry && c !== company)
+        .slice(0, 3); // Show top 3 competitors
+      
+      // Add the main company first
+      resultsContainer.innerHTML = '';
+      
+      try {
+        // Load main company data
+        const mainCompanyModule = await import(`./companies/${company}.js`);
+        const mainCompany = mainCompanyModule.default;
+        
+        // Create comparison card for main company
+        resultsContainer.appendChild(createComparisonCard(mainCompany, true));
+        
+        // Load and add competitors
+        for (const competitor of competitors) {
+          try {
+            const competitorModule = await import(`./companies/${competitor}.js`);
+            resultsContainer.appendChild(createComparisonCard(competitorModule.default));
+          } catch (e) {
+            console.warn(`Couldn't load data for ${competitor}`, e);
+          }
+        }
+        
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+      } catch (e) {
+        console.error("Error loading comparison data", e);
+        alert("Error loading comparison data. Please try again.");
+      }
+    }
+
+    function createComparisonCard(company, isMain = false) {
+      const card = document.createElement("div");
+      card.style.background = isMain ? "#f0f7ff" : "white";
+      card.style.borderRadius = "10px";
+      card.style.padding = "20px";
+      card.style.boxShadow = "0 5px 15px rgba(0,0,0,0.05)";
+      card.style.border = isMain ? "2px solid var(--primary)" : "1px solid #eee";
+      
+      const scoreColor = company.score >= 80 ? "var(--success)" : 
+                        company.score >= 50 ? "var(--primary)" : "var(--danger)";
+      
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+          <h3 style="margin:0; ${isMain ? 'color:var(--primary);' : ''}">${company.name}</h3>
+          ${isMain ? '<span style="background:var(--primary); color:white; padding:3px 8px; border-radius:4px; font-size:0.8em;">YOUR SELECTION</span>' : ''}
+        </div>
+        
+        <div style="margin-bottom:15px;">
+          <div style="font-size:0.9em; color:#666;">Industry</div>
+          <div>${company.industry}</div>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+          <div style="font-size:0.9em; color:#666;">ESG Score</div>
+          <div style="font-size:2rem; font-weight:bold; color:${scoreColor}">${company.score}/100</div>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+          <div style="font-size:0.9em; color:#666;">Key Leaks</div>
+          <ul style="margin-top:5px; padding-left:20px;">
+            ${company.leaks.slice(0, 3).map(leak => `<li style="margin-bottom:5px;">${leak.issue}</li>`).join('')}
+          </ul>
+        </div>
+        
+        <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank"
+           class="btn ${isMain ? 'btn-primary' : 'btn-outline'}" 
+           style="width:100%; display:block; text-align:center;">
+          VIEW DETAILS
+        </a>
+      `;
+      
+      return card;
+    }
+
+    function closeComparison() {
+      document.getElementById("comparison-modal").style.display = "none";
+      document.body.style.overflow = "auto";
     }
   </script>
 </body>
