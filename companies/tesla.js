@@ -1,4 +1,4 @@
-{
+export default {
   name: "Tesla",
   industry: "Automotive",
   score: 72,
