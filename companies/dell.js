@@ -1,19 +1,25 @@
 export default {
   name: "Dell Technologies",
-  industry: "Technology / Hardware",
-  score: 80,
+  industry: "Technology",
+  score: 75,
   leaks: [
     {
-      issue: "Circular design adoption under 30%",
-      impact: "$2.2M/year e-waste inefficiency + missed ROI",
-      solution: "Expand modular laptops + recycled plastic sourcing",
-      source: "https://www.dell.com/en-us/dt/corporate/social-impact/reporting/environmental.htm"
+      issue: "Product energy efficiency metrics not aligned with SBTi Scope 3 guidance",
+      impact: "Misalignment with EU Digital Product Passport requirements (2025)",
+      solution: "Adopt ISO 14067 carbon footprint labeling for key devices",
+      source: {
+        label: "Dell ESG Report FY2023, p.52",
+        url: "https://corporate.delltechnologies.com/content/dam/delltechnologies/assets/DT-ESG-Report-FY23.pdf#page=52"
+      }
     },
     {
-      issue: "Low female technical leadership (13%)",
-      impact: "$1.1M/year DEI score gap vs. HP & Microsoft",
-      solution: "Publish career path pipeline + tie to ESG goals",
-      source: "https://www.dell.com/en-us/dt/corporate/social-impact/advancing-sustainability.htm"
+      issue: "Low circularity in hardware returns (only 17% customer device recovery)",
+      impact: "$1.1M/year raw material loss",
+      solution: "Expand Dell Reconnect + gamified trade-in programs",
+      source: {
+        label: "Dell ESG Report FY2023, p.61",
+        url: "https://corporate.delltechnologies.com/content/dam/delltechnologies/assets/DT-ESG-Report-FY23.pdf#page=61"
+      }
     }
   ]
 }
