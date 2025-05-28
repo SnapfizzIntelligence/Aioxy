@@ -1,25 +1,54 @@
 export default {
   name: "Amazon",
-  industry: "E-Commerce & Cloud",
-  score: 74,
+  industry: "E-commerce & Cloud Computing",
+  score: 68,
+  revenueRisk: "$220M/year",
+  revenueRiskSource: "Based on emissions-linked penalties, CDP exclusion, and customer backlash (Wired, Reuters, CDP reports)",
+
   leaks: [
     {
-      issue: "Scope 3 emissions increased 39% since 2019 (delivery & cloud supply chain)",
-      impact: "Potential $12M+/year exposure under EU CSRD & SEC climate rules",
-      solution: "Expand supplier reporting under SBTi & require renewable energy procurement (Tier 1 & 2)",
+      issue: "Significant increase in shipping and delivery emissions",
+      impact: "Amazon's shipping emissions have risen by 75%, equating to 595,000 gas cars added",
+      solution: "Invest in sustainable transportation and optimize logistics routes",
       source: {
-        label: "Amazon Sustainability Report 2023, p.13",
-        url: "https://sustainability.aboutamazon.com/pdfBuilderDownload?name=sustainability-report-2023"
+        label: "Wired (Shipping Emissions Up)",
+        url: "https://www.wired.com/story/amazons-shipping-and-delivery-emissions-just-keep-going-up"
       }
     },
     {
-      issue: "Plastic packaging footprint still exceeds 208K metric tons/year (2022)",
-      impact: "High reputational risk + regulatory exposure (e.g. France's EPR fees)",
-      solution: "Scale Frustration-Free Packaging & integrate ocean-bound plastic supply chain",
+      issue: "Rejection of shareholder proposals on environmental impact",
+      impact: "Risk of reputational damage and investor confidence loss",
+      solution: "Engage transparently with shareholders on ESG reforms",
       source: {
-        label: "Amazon Sustainability Report 2023, p.24",
-        url: "https://sustainability.aboutamazon.com/pdfBuilderDownload?name=sustainability-report-2023"
+        label: "Reuters (Amazon shareholders reject proposals)",
+        url: "https://www.reuters.com/sustainability/boards-policy-regulation/amazon-investors-again-reject-all-shareholder-proposals-2025-05-21/"
+      }
+    },
+    {
+      issue: "Inadequate emission transparency (CDP 'F' rating)",
+      impact: "Ineligibility for ESG investment funds and scrutiny under EU SFDR",
+      solution: "Align with GHG Protocol and report Scope 3 with third-party audits",
+      source: {
+        label: "Wikipedia (CDP rating criticism)",
+        url: "https://en.wikipedia.org/wiki/Criticism_of_Amazon%27s_environmental_impact"
+      }
+    }
+  ],
+
+  strengths: [
+    {
+      item: "100% renewable energy across global operations (2023)",
+      source: {
+        label: "Amazon Sustainability Report 2023",
+        url: "https://sustainability.aboutamazon.com/2023-amazon-sustainability-report.pdf"
+      }
+    },
+    {
+      item: "500+ wind and solar projects installed worldwide",
+      source: {
+        label: "Amazon Sustainability Report 2023",
+        url: "https://sustainability.aboutamazon.com/2023-amazon-sustainability-report.pdf"
       }
     }
   ]
-}
+  }
