@@ -1,19 +1,44 @@
 export default {
-  name: "L'Oréal",
-  industry: "Cosmetics & Personal Care",
-  score: 85,
+  name: "L'Oréal S.A.",
+  industry: "Cosmetics",
+  score: 77,
+  revenueRisk: "$2.2B (FY24 increased advertising & promotion spend in North Asia impacting customer acquisition and retention)",
+
   leaks: [
     {
-      issue: "Plastic packaging still 55% virgin (2023)",
-      impact: "$1.8M/year in regulatory risk (France 2024 ban forecast)",
-      solution: "Accelerate refill station deployment & bio-pack materials",
-      source: "https://www.loreal.com/en/articles/sustainability/2023-sustainability-report/"
+      issue: "Weak consumer confidence in China leading to low single-digit sales decline",
+      impact: "Increased customer acquisition costs and risk of churn to local brands",
+      solution: "Enhance localized marketing and expand affordable product lines",
+      source: {
+        label: "Reuters: L'Oréal Q3 2024 Sales",
+        url: "https://www.reuters.com/business/loreal-third-quarter-sales-disappoint-china-spends-less-beauty-2024-10-22/"
+      }
     },
     {
-      issue: "Water usage disclosure lacks location-specific stress data",
-      impact: "$900K/year reputational inefficiency",
-      solution: "Disclose region-specific usage & integrate CDP mapping",
-      source: "https://www.loreal.com/en/articles/sustainability/sharing-beauty-with-all/"
+      issue: "L'Oréal Luxe division growth slowed to 1% in Q4 2024 vs. 5% expected",
+      impact: "Retention risks in luxury beauty segment due to competitive pressures",
+      solution: "Accelerate luxury brand innovation and premiumization",
+      source: {
+        label: "L'Oréal 2024 Full Year Results",
+        url: "https://www.loreal-finance.com"
+      }
+    }
+  ],
+
+  strengths: [
+    {
+      item: "Dermatological Beauty division achieved 15th consecutive quarter of double-digit growth in Q1 2024",
+      source: {
+        label: "L'Oréal 2024 Full Year Results",
+        url: "https://www.loreal-finance.com"
+      }
+    },
+    {
+      item: "CDP triple ‘A’ score for nine consecutive years, enhancing brand loyalty",
+      source: {
+        label: "L'Oréal 2024 Full Year Results",
+        url: "https://www.loreal-finance.com"
+      }
     }
   ]
-}
+    }
