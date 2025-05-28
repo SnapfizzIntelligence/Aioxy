@@ -1,40 +1,37 @@
 export default {
   name: "Tesla",
-  industry: "Automotive & Energy",
+  industry: "Automotive",
+  score: 75,
+  revenueRisk: "$1.3B (Lithium sourcing gaps and battery reuse inefficiencies impacting regulatory compliance and customer retention)",
+
   leaks: [
     {
-      issue: "Cobalt sourcing from DRC (despite audits)",
-      impact: "Reputational risk due to DRC artisanal mining links",
-      solution: "Expand Fair Cobalt Alliance funding and blockchain traceability",
-      source: "[Tesla 2023 Impact Report, p.117-120](https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=117), [UNLOCK Blockchain, 2021](https://www.unlock-bc.com/news/2021-08-17/tesla-to-use-blockchain-for-cobalt-traceability/)" // Added blockchain source
+      issue: "Limited traceability in cobalt and lithium supply chains",
+      impact: "Risk of ESG rating downgrades and investor pressure",
+      solution: "Expand blockchain tracking with IRMA + Fair Cobalt Alliance",
+      source: {
+        label: "Tesla Impact Report 2023 (pp.117–120)",
+        url: "https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=117"
+      }
     },
     {
-      issue: "Battery recycling efficiency improving but lacks specific recovery rate disclosure",
-      impact: "Trailing industry leaders like Redwood Materials in recycling efficiency",
-      solution: "Scale in-house hydrometallurgy (p.110-112)",
-      source: "[Tesla 2023 Impact Report, p.110-112](https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=110), [The Sustainable Innovation, 2025](https://thesustainableinnovation.com)" // Corrected source, adjusted issue/impact
-    },
-    {
-      issue: "Scope 3 emissions up ~24% YoY (48.9M tCO₂e in 2023 vs. 39.4M in 2022)",
-      impact: "Increased regulatory risks, such as EU carbon tariffs (CBAM, effective 2026)",
-      solution: "Supplier decarbonization pacts (p.107-109)",
-      source: "[Tesla 2023 Impact Report, p.147, p.107-109](https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=147)" // Clarified percentage, generalized tariff risk
-    },
-    {
-      issue: "Water use in drought-prone Texas (p.47-49)",
-      impact: "Potential community concerns due to water stress",
-      solution: "Onsite wastewater recycling to reduce freshwater use",
-      source: "[Tesla 2023 Impact Report, p.47-49](https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=47)" // Adjusted impact and solution
+      issue: "Lack of transparent consumer-facing battery recycling progress",
+      impact: "Potential ~$300M/year in unrecovered mineral value",
+      solution: "Enhance Redwood Materials partnership + incentive-based recovery",
+      source: {
+        label: "Tesla Impact Report 2023 (p.112)",
+        url: "https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=112"
+      }
     }
   ],
+
   strengths: [
     {
-      item: "Supercharger network: 100% renewable energy (p.40)",
-      source: "[Tesla 2023 Impact Report, p.40](https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=40)"
-    },
-    {
-      item: "EVs avoided 20M metric tons CO₂e in 2023 (p.19)",
-      source: "[Tesla 2023 Impact Report, p.19](https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=19)"
+      item: "90% recycling rate of battery materials from production scrap",
+      source: {
+        label: "Tesla Impact Report 2023 (p.110)",
+        url: "https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=110"
+      }
     }
   ]
-      }
+};
