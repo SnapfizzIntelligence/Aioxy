@@ -1,4 +1,3 @@
-// companies/apple.js
 export default {
   name: "Apple",
   industry: "Consumer Electronics",
