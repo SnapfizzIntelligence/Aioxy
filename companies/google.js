@@ -1,40 +1,43 @@
 export default {
-  name: "Google",
+  name: "Alphabet Inc. (Google)",
   industry: "Technology",
-  score: 88, // Based on analysis of sustainability leadership and SBTi alignment
+  score: 85,
+  revenueRisk: "$2.1B (Q4 2024 antitrust litigation charges impacting search market share and customer acquisition costs)",
+
   leaks: [
     {
-      issue: "Scope 3 emissions exceed operational footprint (13.5 Mt CO₂e)",
-      impact: "Risk of non-alignment with EU CSRD & SEC disclosure rules",
-      solution: "Expand supplier engagement for renewable energy sourcing",
+      issue: "Antitrust lawsuits from DOJ and EU threatening search dominance",
+      impact: "Increased customer acquisition costs and risk of user churn to competing search engines",
+      solution: "Negotiate compliance with regulations and enhance alternative revenue streams",
       source: {
-        label: "Google Environmental Report 2023, p.17",
-        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=17"
+        label: "Alphabet Q4 2024 Earnings",
+        url: "https://investor.google.com/#quarterly-results"
       }
     },
     {
-      issue: "Data center water usage grew by 20% YoY (for AI expansion)",
-      impact: "Public scrutiny in drought-prone regions (Arizona, Chile)",
-      solution: "Adopt Microsoft-style circular water systems",
+      issue: "High AI investment costs with delayed monetization",
+      impact: "Pressure on margins and potential revenue risk if AI adoption lags",
+      solution: "Accelerate AI product integration and monetization strategies",
       source: {
-        label: "Google Environmental Report 2023, p.25",
-        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=25"
+        label: "Alphabet Q4 2024 Earnings",
+        url: "https://investor.google.com/#quarterly-results"
       }
     }
   ],
+
   strengths: [
     {
-      item: "Maintains 100% renewable energy matching since 2017",
+      item: "Google Cloud revenue grew 29% to $10.3B in Q4 2024 with 5% operating margin",
       source: {
-        label: "Google Environmental Report 2023, p.11",
-        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=11"
+        label: "Alphabet Q4 2024 Earnings",
+        url: "https://investor.google.com/#quarterly-results"
       }
     },
     {
-      item: "Achieved 64% waste diversion rate across global operations",
+      item: "Google Search revenue grew 11% to $48.5B in Q4 2024, showing strong user retention",
       source: {
-        label: "Google Environmental Report 2023, p.27",
-        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=27"
+        label: "Alphabet Q4 2024 Earnings",
+        url: "https://investor.google.com/#quarterly-results"
       }
     }
   ]
