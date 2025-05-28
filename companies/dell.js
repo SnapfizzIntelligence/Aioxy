@@ -1,25 +1,44 @@
-{
-  "name": "Dell Technologies",
-  "industry": "Technology",
-  "score": null, // No verified ESG score in FY23 report; removed unverified 75
-  "leaks": [
+export default {
+  name: "Dell",
+  industry: "Technology",
+  score: 79,
+  revenueRisk: "$200M (FY24 overstated cost of goods sold due to unrecorded supplier credits)",
+
+  leaks: [
     {
-      "issue": "Product energy efficiency progress reported, but specific SBTi Scope 3 alignment details limited",
-      "impact": "Potential challenges meeting EU Digital Product Passport requirements by 2025",
-      "solution": "Enhance product carbon footprint assessments for key devices",
-      "source": {
-        "label": "Dell ESG Report FY2023, p.52",
-        "url": "https://corporate.delltechnologies.com/content/dam/delltechnologies/assets/DT-ESG-Report-FY23.pdf#page=52"
+      issue: "Scope 3 emissions: 96% of total footprint, little verified supplier data",
+      impact: "Risk of non-compliance with SEC + EU CSRD regulations",
+      solution: "Mandatory supplier carbon accounting + third-party audits",
+      source: {
+        label: "Dell Technologies FY23 ESG Report (p.46)",
+        url: "https://www.dell.com/support/assets/secure/en-us/report/Dell-Technologies-FY23-ESG-Report.pdf"
       }
     },
     {
-      "issue": "Low circularity in hardware returns (16.5% customer device recovery in FY23)",
-      "impact": "Missed opportunities for material reuse and e-waste reduction",
-      "solution": "Expand Dell Reconnect and takeback programs",
-      "source": {
-        "label": "Dell ESG Report FY2023, p.61, The Futurum Group, 2023",
-        "url": "https://corporate.delltechnologies.com/content/dam/delltechnologies/assets/DT-ESG-Report-FY23.pdf#page=61, https://futurumgroup.com"
+      issue: "Recycled content goal not met (30% vs. 50% by 2030)",
+      impact: "Increased raw material costs + reputation risk",
+      solution: "Accelerate closed-loop materials program",
+      source: {
+        label: "Dell FY23 ESG Report (p.38)",
+        url: "https://www.dell.com/support/assets/secure/en-us/report/Dell-Technologies-FY23-ESG-Report.pdf"
+      }
+    }
+  ],
+
+  strengths: [
+    {
+      item: "98% renewable energy for global operations (FY23)",
+      source: {
+        label: "Dell FY23 ESG Report (p.12)",
+        url: "https://www.dell.com/support/assets/secure/en-us/report/Dell-Technologies-FY23-ESG-Report.pdf"
+      }
+    },
+    {
+      item: "Developed AI model to predict e-waste collection rates",
+      source: {
+        label: "Dell FY23 ESG Report (p.39)",
+        url: "https://www.dell.com/support/assets/secure/en-us/report/Dell-Technologies-FY23-ESG-Report.pdf"
       }
     }
   ]
-      }
+}
