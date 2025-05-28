@@ -1,41 +1,41 @@
 export default {
-  name: "Google (Alphabet Inc.)",
+  name: "Google",
   industry: "Technology",
-  score: 86, // Based on CDP A List + SBTi verification + 100% renewable operations
+  score: 88, // Based on analysis of sustainability leadership and SBTi alignment
   leaks: [
     {
-      issue: "Scope 3 emissions still 3x operational footprint",
-      impact: "High scrutiny under SEC Climate Rule (2024)",
-      solution: "Expand supplier decarbonization (currently 30%)",
+      issue: "Scope 3 emissions exceed operational footprint (13.5 Mt CO₂e)",
+      impact: "Risk of non-alignment with EU CSRD & SEC disclosure rules",
+      solution: "Expand supplier engagement for renewable energy sourcing",
       source: {
-        label: "Alphabet 2023 ESG Report (PDF, p.24)",
-        url: "https://www.gstatic.com/gumdrop/sustainability/alphabet-2023-environmental-report.pdf#page=24"
+        label: "Google Environmental Report 2023, p.17",
+        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=17"
       }
     },
     {
-      issue: "Water usage rose 20% YoY (due to AI data centers)",
-      impact: "Concerns in water-stressed regions (e.g., Mesa, Arizona)",
-      solution: "Replenishment + closed-loop cooling investments",
+      issue: "Data center water usage grew by 20% YoY (for AI expansion)",
+      impact: "Public scrutiny in drought-prone regions (Arizona, Chile)",
+      solution: "Adopt Microsoft-style circular water systems",
       source: {
-        label: "Alphabet 2023 Environmental Report (PDF, p.33)",
-        url: "https://www.gstatic.com/gumdrop/sustainability/alphabet-2023-environmental-report.pdf#page=33"
+        label: "Google Environmental Report 2023, p.25",
+        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=25"
       }
     }
   ],
   strengths: [
     {
-      item: "100% renewable energy match since 2017",
+      item: "Maintains 100% renewable energy matching since 2017",
       source: {
-        label: "Google Sustainability Site",
-        url: "https://sustainability.google/operations/energy/"
+        label: "Google Environmental Report 2023, p.11",
+        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=11"
       }
     },
     {
-      item: "CDP Climate A List (2023)",
+      item: "Achieved 64% waste diversion rate across global operations",
       source: {
-        label: "CDP Disclosure",
-        url: "https://www.cdp.net/en/companies/companies-scores"
+        label: "Google Environmental Report 2023, p.27",
+        url: "https://www.gstatic.com/gumdrop/sustainability/google-2023-environmental-report.pdf#page=27"
       }
     }
   ]
-};
+}
