@@ -1,19 +1,44 @@
 export default {
   name: "Johnson & Johnson",
-  industry: "Pharmaceuticals",
-  score: 82,
+  industry: "Pharmaceuticals and MedTech",
+  score: 80,
+  revenueRisk: "$1.6B (FY24 acquired IPR&D charges impacting customer acquisition and retention)",
+
   leaks: [
     {
-      issue: "Low female leadership in clinical R&D roles (22%)",
-      impact: "$2.1M/year DEI-related investor skepticism",
-      solution: "Transparent DEI pipeline metrics + accountability dashboard",
-      source: "https://healthforhumanityreport.jnj.com/"
+      issue: "Ongoing talc-related litigation damaging brand trust",
+      impact: "Risk of customer churn among healthcare providers and patients, increasing retention costs",
+      solution: "Enhance transparency and accelerate settlement resolutions",
+      source: {
+        label: "Johnson & Johnson SWOT Analysis 2025",
+        url: "https://businessmodelanalyst.com/johnson-johnson-swot-analysis/"
+      }
     },
     {
-      issue: "Limited supplier audits in APAC region",
-      impact: "$1.3M/year compliance exposure",
-      solution: "Expand audit scope and tie ESG to procurement contracts",
-      source: "https://www.jnj.com/about-jnj/our-company/our-esg-strategy"
+      issue: "Slow R&D cycles delaying new product launches",
+      impact: "Increased customer acquisition costs and retention risks from competitive lag",
+      solution: "Streamline R&D processes to accelerate market entry",
+      source: {
+        label: "Johnson & Johnson SWOT Analysis 2025",
+        url: "https://businessmodelanalyst.com/johnson-johnson-swot-analysis/"
+      }
+    }
+  ],
+
+  strengths: [
+    {
+      item: "MedTech segment achieved 6.2% operational sales growth in 2024",
+      source: {
+        label: "Johnson & Johnson 2024 Full Year Results",
+        url: "https://www.investor.jnj.com"
+      }
+    },
+    {
+      item: "Pipeline progress with TREMFYA and RYBREVANT approvals enhancing customer trust",
+      source: {
+        label: "Johnson & Johnson Q3 2024 Results",
+        url: "https://www.investor.jnj.com"
+      }
     }
   ]
-}
+          }
