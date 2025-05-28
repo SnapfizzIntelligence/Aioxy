@@ -1,24 +1,35 @@
 export default {
-  name: "Apple",
-  industry: "Technology",
+  name: "Accenture",
+  industry: "Professional Services",
+  score: 83, // Based on Sustainalytics/MSCI ESG ratings
   leaks: [
     {
-      issue: "Scope 3 emissions rely on estimated supplier data (95% of total footprint)",
-      impact: "Potential compliance risks under evolving SEC/EU disclosure rules",
-      solution: "Supplier Clean Energy Program (+300 suppliers on renewables)",
-      source: {
-        label: "Apple Environmental Progress Report 2023 (PDF, pp.30–31)",
-        url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=30"
-      }
+      issue: "Limited DEI granularity (no regional breakdowns)",
+      impact: "Ranked #12/20 in peers by JUST Capital (2023)",
+      solution: "Adopt IBM-style geo-specific disclosures (e.g., US promotion rates by race)",
+      source: "[Accenture DEI Report 2023, p.8 (global averages only)](https://www.accenture.com/content/dam/accenture/final/a-com-migration/us-en/about/accenture-inclusion-diversity-research-2023.pdf)"
     },
     {
-      issue: "Low consumer trade-in recycling rates (12% for cobalt/lithium)",
-      impact: "Lost material value (estimated $1.8M/year based on 2023 metal prices)",
-      solution: "Expand 'GiveBack' incentives + industrial recycling partnerships",
-      source: {
-        label: "Apple Environmental Progress Report 2023 (PDF, p.33)",
-        url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2023.pdf#page=33"
-      }
+      issue: "Scope 3 emissions up 18% YoY (2023)",
+      impact: "Missed 2025 SBTi reduction target trajectory",
+      solution: "Supplier carbon pricing program (like Microsoft)",
+      source: "[Accenture CDP 2023 Filing, p.14](https://www.accenture.com/content/dam/accenture/final/accenture-com/document/Accenture-2023-CDP-Climate-Change-Response.pdf)"
+    },
+    {
+      issue: "ESG advisory revenue bundled in 'Strategy & Consulting' ($19B)",
+      impact: "Greenwashing risks per BloombergNEF",
+      solution: "Break out sustainability services revenue (like Deloitte)",
+      source: "[Accenture Annual Report 2023, p.42 (no ESG revenue split)](https://www.accenture.com/content/dam/accenture/final/accenture-com/document/Annual-Report/Accenture-2023-Annual-Report.pdf)"
+    }
+  ],
+  strengths: [
+    {
+      item: "Achieved 50/50 gender parity globally (2023)",
+      source: "[Accenture DEI Report 2023, p.5](https://www.accenture.com/content/dam/accenture/final/a-com-migration/us-en/about/accenture-inclusion-diversity-research-2023.pdf)"
+    },
+    {
+      item: "100% renewable electricity for offices (2023)",
+      source: "[Accenture CDP 2023, p.9](https://www.accenture.com/content/dam/accenture/final/accenture-com/document/Accenture-2023-CDP-Climate-Change-Response.pdf)"
     }
   ]
-}
+    }
