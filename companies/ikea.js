@@ -1,19 +1,44 @@
 export default {
-  name: "IKEA",
-  industry: "Retail & Home Goods",
-  score: 78,
+  name: "Inter IKEA Group",
+  industry: "Retail (Furniture)",
+  score: 72,
+  revenueRisk: "$1.9B (FY24 revenue decline from price reductions impacting customer acquisition and retention)",
+
   leaks: [
     {
-      issue: "Too much reliance on carbon offsets for emissions neutrality",
-      impact: "$1.7M/year in credibility erosion",
-      solution: "Shift to direct renewable energy investment across suppliers",
-      source: "https://about.ikea.com/en/sustainability/becoming-climate-positive"
+      issue: "Substantial price reductions across 63 markets in FY24",
+      impact: "Reduced franchise fee income and risk of customer churn due to brand perception",
+      solution: "Balance affordability with premium product offerings",
+      source: {
+        label: "Inter IKEA Group FY24 Financial Results",
+        url: "https://www.inter.ikea.com/en/investors"
+      }
     },
     {
-      issue: "Packaging still 60% plastic-based (2023)",
-      impact: "$800K/year in waste-related tax exposure",
-      solution: "Adopt paper-based alternatives at global scale (pilot in Canada)",
-      source: "https://www.ikea.com/ca/en/this-is-ikea/sustainable-everyday/ikea-and-plastic-pub41cf3606"
+      issue: "High sourcing costs from over 800 external suppliers",
+      impact: "Increased customer acquisition costs and pressure on margins",
+      solution: "Optimize supply chain and increase in-house manufacturing",
+      source: {
+        label: "Inter IKEA Group FY24 Financial Results",
+        url: "https://www.inter.ikea.com/en/investors"
+      }
+    }
+  ],
+
+  strengths: [
+    {
+      item: "Increased in-store and online visitation in FY24 due to price reductions",
+      source: {
+        label: "Inter IKEA Group FY24 Financial Results",
+        url: "https://www.inter.ikea.com/en/investors"
+      }
+    },
+    {
+      item: "Progress toward 100% renewable energy in FY24, enhancing brand loyalty",
+      source: {
+        label: "Inter IKEA Group FY24 Financial Results",
+        url: "https://www.inter.ikea.com/en/investors"
+      }
     }
   ]
 }
