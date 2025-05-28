@@ -1,13 +1,44 @@
 export default {
-  name: "Intel",
-  industry: "Technology",
-  score: 79,
+  name: "Intel Corporation",
+  industry: "Technology (Semiconductors)",
+  score: 71,
+  revenueRisk: "$2.8B (Q3 2024 restructuring charges impacting customer acquisition and retention)",
+
   leaks: [
     {
-      issue: "High water usage in semiconductor fabs",
-      impact: "$2.1M/year operational risk in drought-prone zones",
-      solution: "Recycled water loop and AI-based water monitoring",
-      source: "[Intel Corporate Responsibility Report 2023](https://www.intel.com/content/dam/www/central-libraries/us/en/documents/2023-2022-2023-corporate-responsibility-report.pdf#page=85)"
+      issue: "Restructuring with over 35% cuts in sales/marketing and 15% headcount reduction",
+      impact: "Reduced customer acquisition capacity and risk of churn in foundry/AI markets",
+      solution: "Optimize marketing efficiency and accelerate Intel 18A adoption",
+      source: {
+        label: "Intel Q3 2024 Financial Results",
+        url: "https://www.intc.com"
+      }
+    },
+    {
+      issue: "Slow adoption of Intel Foundry (Intel 18A) by external customers",
+      impact: "Increased customer acquisition costs and retention risks in competitive AI market",
+      solution: "Expand foundry partnerships and enhance Gaudi3 supply",
+      source: {
+        label: "Intel 2024 Full Year Financial Results",
+        url: "https://www.intc.com"
+      }
+    }
+  ],
+
+  strengths: [
+    {
+      item: "Leadership in AI PCs with over 100M units targeted by 2025",
+      source: {
+        label: "Intel 2024 Full Year Financial Results",
+        url: "https://www.intc.com"
+      }
+    },
+    {
+      item: "$7.86B in CHIPS Act funding to support foundry expansion",
+      source: {
+        label: "Intel 2024 Full Year Financial Results",
+        url: "https://www.intc.com"
+      }
     }
   ]
-}
+      }
