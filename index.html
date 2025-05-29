@@ -690,7 +690,20 @@
     .source-link:hover {
       color: var(--premium-accent);
     }
+/* ====== LEAK CARD STYLES ====== */
+.leak-card {
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  text-align: left;
+  border-left: 4px solid var(--premium-danger);
+  padding-left: 15px;
+}
 
+/* For strengths cards */
+.leak-card[style*="border-left-color:var(--premium-success)"] {
+  border-left-color: var(--premium-success) !important;
+}
     /* ====== COMPARISON MODAL STYLES ====== */
     #comparison-modal {
       display: none;
@@ -1122,8 +1135,7 @@
     </div>
     <p class="copyright">© 2025 Snapfizz Intelligence | Built in Nepal with Human Expertise + Advanced Analytics</p>
   </footer>
-
-  <script>
+<script>
     // ====== MOBILE MENU TOGGLE ======
     const mobileMenu = document.getElementById('mobile-menu');
     const navLinks = document.querySelector('.nav-links');
@@ -1231,9 +1243,31 @@
           </div>
         `).join('');
 
+        // Build strengths HTML if they exist
+        const strengthsHtml = data.strengths && data.strengths.length > 0 ? `
+          <div style="margin-top:40px;">
+            <h3 style="color:var(--premium-success);">Strengths</h3>
+            ${data.strengths.map(strength => `
+              <div class="leak-card" style="border-left-color:var(--premium-success);">
+                <p>✅ ${strength.item}</p>
+                ${strength.source.url ? 
+                  `<a href="${strength.source.url}" target="_blank" class="source-link">📄 ${strength.source.label}</a>` : 
+                  `<span class="source-link">📄 ${strength.source.label}</span>`}
+              </div>
+            `).join('')}
+          </div>
+        ` : '';
+
         result.innerHTML = `
           <h2 style="margin-bottom:5px;">${data.name}</h2>
           <p style="color:#666; margin-bottom:20px;">${data.industry || industryMap[name] || 'Unknown Industry'}</p>
+          
+          ${data.revenueRisk ? `
+            <div style="background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);">
+              <p style="font-weight:600; margin-bottom:5px;">🚨 Revenue Risk</p>
+              <p>${data.revenueRisk}</p>
+            </div>
+          ` : ''}
           
           <div class="esg-score-badge">
             <div style="font-size:0.9em; opacity:0.8;">ESG RISK SCORE</div>
@@ -1242,6 +1276,8 @@
           
           <h3 style="margin-bottom:20px;">Key ESG Leaks</h3>
           ${leaksHtml}
+          
+          ${strengthsHtml}
           
           <div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">
             <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-primary" style="display:inline-block;">
@@ -1312,9 +1348,6 @@
       loreal: 'Retail/Fashion',
       lvmh: 'Retail/Fashion',
 shein: 'Retail/Fashion',
-      
-
-      
       // Food/Beverage
       cocacola: 'Food/Beverage',
       pepsico: 'Food/Beverage',
@@ -1346,8 +1379,7 @@ shein: 'Retail/Fashion',
       siemens: 'Industrial',
       unilever: 'Consumer Goods'
     };
-
-    // New comparison functions
+    // ====== COMPARISON FUNCTIONS ======
     async function showComparison(company) {
       const modal = document.getElementById("comparison-modal");
       const title = document.getElementById("comparison-title");
@@ -1436,6 +1468,6 @@ shein: 'Retail/Fashion',
       document.getElementById("comparison-modal").style.display = "none";
       document.body.style.overflow = "auto";
     }
-  </script>
+</script>
 </body>
   </html>
