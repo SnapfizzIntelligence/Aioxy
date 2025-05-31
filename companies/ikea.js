@@ -1,44 +1,44 @@
 export default {
-  name: "Inter IKEA Group",
+  name: "IKEA (Inter IKEA Group)",
   industry: "Retail (Furniture)",
   score: 72,
-  revenueRisk: "$1.9B (FY24 revenue decline from price reductions impacting customer acquisition and retention)",
+  revenueRisk: "$1.9B (FY24 revenue decline from global price reductions and operational sustainability gaps)",
 
   leaks: [
     {
-      issue: "Substantial price reductions across 63 markets in FY24",
-      impact: "Reduced franchise fee income and risk of customer churn due to brand perception",
-      solution: "Balance affordability with premium product offerings",
+      issue: "Global price cuts reduced gross margins across 63 markets",
+      impact: "Lower franchise income and perception risk in premium segments",
+      solution: "Balance affordability with value-add circular services (e.g., Buy Back & Resell)",
       source: {
-        label: "Inter IKEA Group FY24 Financial Results",
-        url: "https://www.inter.ikea.com/en/investors"
+        label: "IKEA Sustainability Report FY23/24 (p.5)",
+        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
       }
     },
     {
-      issue: "High sourcing costs from over 800 external suppliers",
-      impact: "Increased customer acquisition costs and pressure on margins",
-      solution: "Optimize supply chain and increase in-house manufacturing",
+      issue: "Only 48.5% of materials classified as renewable or recycled (target: 100% by 2030)",
+      impact: "ESG goal lag and supplier pressure",
+      solution: "Accelerate recycled content integration in plastics and textiles",
       source: {
-        label: "Inter IKEA Group FY24 Financial Results",
-        url: "https://www.inter.ikea.com/en/investors"
+        label: "IKEA Sustainability Report FY23/24 (p.27)",
+        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
       }
     }
   ],
 
   strengths: [
     {
-      item: "Increased in-store and online visitation in FY24 due to price reductions",
+      item: "89% of electricity used in operations is from renewable sources (2023)",
       source: {
-        label: "Inter IKEA Group FY24 Financial Results",
-        url: "https://www.inter.ikea.com/en/investors"
+        label: "IKEA Sustainability Report FY23/24 (p.16)",
+        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
       }
     },
     {
-      item: "Progress toward 100% renewable energy in FY24, enhancing brand loyalty",
+      item: "Circular product initiatives (Buy Back, Spare Parts) scaled globally",
       source: {
-        label: "Inter IKEA Group FY24 Financial Results",
-        url: "https://www.inter.ikea.com/en/investors"
+        label: "IKEA Sustainability Report FY23/24 (p.30)",
+        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
       }
     }
   ]
-}
+  }
