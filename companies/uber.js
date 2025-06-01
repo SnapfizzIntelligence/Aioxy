@@ -1,19 +1,44 @@
 export default {
-  name: "Uber",
-  industry: "Technology / Transportation",
-  score: 73,
+  name: "Uber Technologies Inc.",
+  industry: "Transportation",
+  score: 69,
+  revenueRisk: "$350M (emissions & legal classification liabilities impacting trust and regulatory compliance)",
+
   leaks: [
     {
-      issue: "Driver emissions not counted in total carbon footprint",
-      impact: "$3.4M/year emissions reporting risk (GRI non-alignment)",
-      solution: "Include scope 3 driver emissions & incentivize EV switch",
-      source: "https://www.uber.com/us/en/about/sustainability/"
+      issue: "Carbon intensity rising in key markets despite Net Zero pledge",
+      impact: "Potential exclusion from ESG-aligned funds and investor trust erosion",
+      solution: "Accelerate EV integration and scale micromobility solutions",
+      source: {
+        label: "Uber Electrification Update",
+        url: "https://www.uber.com/about/reports/sustainability-report/"
+      }
     },
     {
-      issue: "Accessibility goals not benchmarked publicly",
-      impact: "$1.2M/year regulatory pressure (ADA compliance)",
-      solution: "Publish metrics for wheelchair-accessible ride availability",
-      source: "https://www.uber.com/newsroom/esg2023/"
+      issue: "Worker classification lawsuits in US, UK, EU",
+      impact: "Settlement payouts and reputational damage",
+      solution: "Proactive benefits programs and legal clarity on worker status",
+      source: {
+        label: "Uber Electrification Update",
+        url: "https://www.uber.com/about/reports/sustainability-report/"
+      }
+    }
+  ],
+
+  strengths: [
+    {
+      item: "Over 230,000 ZEV drivers active globally as of Q1 2025",
+      source: {
+        label: "Uber Electrification Update",
+        url: "https://www.uber.com/about/reports/sustainability-report/"
+      }
+    },
+    {
+      item: "Significant EV adoption in cities with supportive policies",
+      source: {
+        label: "Uber Electrification Update",
+        url: "https://www.uber.com/about/reports/sustainability-report/"
+      }
     }
   ]
 }
