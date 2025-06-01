@@ -1,44 +1,44 @@
 export default {
   name: "Meta Platforms, Inc.",
   industry: "Technology (Social Media)",
-  score: 86,
-  revenueRisk: "$1.3B (FY24 increased marketing costs in Asia-Pacific impacting customer acquisition and retention)",
+  score: 69,
+  revenueRisk: "$1.1B (2024 risk from investor divestments and advertiser backlash tied to ESG controversies)",
 
   leaks: [
     {
-      issue: "Reduced ad spend from Asia-Pacific e-commerce exporters due to de minimis loophole closure",
-      impact: "Increased customer acquisition costs and risk of advertiser churn",
-      solution: "Enhance targeted ad campaigns and diversify advertiser base",
+      issue: "High energy consumption from data centers with limited Scope 3 supplier visibility",
+      impact: "Rising pressure from institutional ESG investors (e.g., BlackRock, CalPERS)",
+      solution: "Expand supplier emissions disclosures; integrate CDP supply chain reporting",
       source: {
-        label: "Reuters: Meta Beats Q4 2024 Expectations",
-        url: "https://www.reuters.com/technology/meta-beats-expectations-quarterly-revenue-profit-2025-01-29/"
+        label: "Meta Sustainability Report 2023 – Emissions",
+        url: "https://sustainability.fb.com/wp-content/uploads/2023/07/Meta-2023-Sustainability-Report.pdf"
       }
     },
     {
-      issue: "EU Digital Markets Act non-compliance risks user and revenue loss",
-      impact: "Potential churn of European users and advertisers",
-      solution: "Align subscription models with DMA requirements",
+      issue: "AI misinformation risks and ethical AI framework gaps",
+      impact: "Potential regulatory penalties (EU AI Act compliance failure) and loss of public trust",
+      solution: "Adopt transparent AI governance model (like Microsoft's Responsible AI standard)",
       source: {
-        label: "Meta Q1 2025 Results",
-        url: "https://investor.fb.com/investor-news/default.aspx#quarterly"
+        label: "Meta AI Governance Discussion, p. 15",
+        url: "https://about.fb.com/news/2023/05/meta-ai-governance-frameworks/"
       }
     }
   ],
 
   strengths: [
     {
-      item: "Family daily active people reached 3.43B in Q1 2025, up 6% YoY",
+      item: "100% renewable energy since 2020 for operations",
       source: {
-        label: "Meta 2024 Form 10-K",
-        url: "https://www.sec.gov/ix?doc=/Archives/edgar/data/1326801/000132680125000017/meta-20241231.htm"
+        label: "Meta Sustainability Report 2023, p. 4",
+        url: "https://sustainability.fb.com/wp-content/uploads/2023/07/Meta-2023-Sustainability-Report.pdf"
       }
     },
     {
-      item: "Meta AI reached ~1B monthly actives in Q1 2025",
+      item: "Water restoration projects returning over 2B gallons annually",
       source: {
-        label: "Meta Q1 2025 Results",
-        url: "https://investor.fb.com/investor-news/default.aspx#quarterly"
+        label: "Meta Environmental Initiatives",
+        url: "https://sustainability.fb.com/our-commitment/environment/"
       }
     }
   ]
-        }
+}
