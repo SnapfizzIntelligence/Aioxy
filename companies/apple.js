@@ -16,7 +16,7 @@ export default {
     },
     {
       issue: "App Store restrictions flagged under Digital Markets Act",
-      impact: "€1.8B fine (2025)",
+      impact: "€1.8B fine",
       solution: "Increase developer transparency and compliance with EU DMA",
       source: {
         label: "European Commission, March 2025",
