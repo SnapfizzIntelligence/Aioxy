@@ -15,6 +15,15 @@ export default {
       }
     },
     {
+      issue: "App Store restrictions flagged under Digital Markets Act",
+      impact: "€1.8B fine (2025)",
+      solution: "Increase developer transparency and compliance with EU DMA",
+      source: {
+        label: "European Commission, March 2025",
+        url: "https://ec.europa.eu/commission/presscorner/detail/en/ip_25_1085"
+      }
+    },
+    {
       issue: "Low trade-in recovery rate for rare metals like cobalt (~12%)",
       impact: "$1.8M/year in lost material value and brand perception gap",
       solution: "Gamify 'GiveBack+' and scale recycling partnerships",
