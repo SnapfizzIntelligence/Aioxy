@@ -2,7 +2,7 @@ export default {
   name: "Spotify",
   industry: "Technology (Music Streaming)",
   score: 74,
-  revenueRisk: "$620M (2024 revenue risk tied to artist equity debates, ad boycotts, and AI content controversies)",
+  revenueRisk: "$620M (2024 revenue risk tied to artist equity gaps, EU data fines, and AI content controversies)",
 
   leaks: [
     {
@@ -21,6 +21,15 @@ export default {
       source: {
         label: "Spotify Loud & Clear 2023",
         url: "https://loudandclear.byspotify.com/"
+      }
+    },
+    {
+      issue: "Insufficient personal data access for users (GDPR compliance failure)",
+      impact: "€5M fine by Swedish Privacy Protection Authority (IMY)",
+      solution: "Improve user data access workflows under GDPR Article 15",
+      source: {
+        label: "IMY Spotify GDPR Fine (2023)",
+        url: "https://www.edpb.europa.eu/news/national-news/2023/imy-issues-administrative-fine-against-spotify-shortcomings-regarding_en"
       }
     }
   ],
@@ -41,4 +50,4 @@ export default {
       }
     }
   ]
-}
+};
