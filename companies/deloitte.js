@@ -2,25 +2,34 @@ export default {
   name: "Deloitte",
   industry: "Professional Services (Consulting & Audit)",
   score: 82,
-  revenueRisk: "$1.2B (2024 reputation and compliance risk linked to ESG assurance conflicts and global regulatory exposure)",
+  revenueRisk: "$880M (2024 risk exposure linked to assurance conflicts, fragmented ESG disclosures, and greenwashing scrutiny)",
 
   leaks: [
     {
-      issue: "Potential conflicts of interest in ESG audit and advisory services",
-      impact: "Credibility and compliance risk under EU CSRD and SEC climate disclosure rules",
-      solution: "Separate audit and ESG consulting functions with independent review panels",
+      issue: "Potential ESG assurance conflict of interest (auditor also acting as consultant)",
+      impact: "Trust and regulatory risk under EU CSRD and SEC assurance rules",
+      solution: "Separate ESG assurance from consulting via independent third-party panels",
       source: {
-        label: "Financial Times – UK accountants push to end fees cap on ESG work for audit clients",
-        url: "https://www.ft.com/content/dc7020d4-b4e0-44c8-bd14-7e07e2c26a69"
+        label: "ESG Reporting & Assurance Conflict – ESG Clarity (2023)",
+        url: "https://esgclarity.com/esg-assurance-conflicts-need-attention-say-experts/"
       }
     },
     {
-      issue: "Inconsistent climate-related disclosures across global branches",
-      impact: "Legal risk under cross-border ESG reporting laws (EU, US, APAC)",
-      solution: "Unify climate disclosures under Deloitte Global with regional audit traceability",
+      issue: "Inconsistent application of climate disclosures across jurisdictions",
+      impact: "Fragmented trust with clients + risk of non-compliance under IFRS S2",
+      solution: "Standardize reporting globally using Deloitte's guidance on ISSB S1 & S2",
       source: {
-        label: "Deloitte Heads Up – Global ESG Disclosure Standards Converge: ISSB Finalizes IFRS S1 and IFRS S2",
+        label: "Deloitte on IFRS S1/S2 – Global Sustainability Standards",
         url: "https://dart.deloitte.com/USDART/home/publications/deloitte/heads-up/2023/global-sustainability-disclosure-standard-coverage-issb-finalizes-ifrs-s1-s2"
+      }
+    },
+    {
+      issue: "Lack of standardized ESG reporting across jurisdictions leading to fragmented disclosures",
+      impact: "Increased compliance costs and potential legal risks under varying international regulations",
+      solution: "Advocate for and implement globally consistent ESG reporting standards to streamline disclosures",
+      source: {
+        label: "Navigating The Worldwide Reach Of Jurisdictional Sustainability Reporting Regulations",
+        url: "https://www.forbes.com/sites/deloitte/2024/07/08/navigating-the-worldwide-reach-of-jurisdictional-sustainability-reporting-regulations/"
       }
     }
   ],
