@@ -2,7 +2,7 @@ export default {
   name: "Tesla",
   industry: "Automotive",
   score: 75,
-  revenueRisk: "$1.3B (Lithium sourcing gaps and battery reuse inefficiencies impacting regulatory compliance and customer retention)",
+  revenueRisk: "$1.45B (Lithium sourcing gaps, battery inefficiencies, and geopolitical reputational risk)",
 
   leaks: [
     {
@@ -21,6 +21,15 @@ export default {
       source: {
         label: "Tesla Impact Report 2023 (p.112)",
         url: "https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf#page=112"
+      }
+    },
+    {
+      issue: "Public feud between Elon Musk and President Trump",
+      impact: "$150B market cap drop and elevated political risk to government contracts (e.g., SpaceX)",
+      solution: "Strengthen board-level crisis governance and separate Tesla brand from political controversies",
+      source: {
+        label: "Times of India – Tesla Stock Plunge 2025",
+        url: "https://timesofindia.indiatimes.com/business/international-business/tesla-stock-price-crash-wipes-out-150-billion-investors-dump-elon-musks-company-as-clash-with-donald-trump-escalates-fear-us-president-wont-be-a-nice-guy/articleshow/121662628.cms"
       }
     }
   ],
