@@ -2,42 +2,35 @@ export default {
   name: "HSBC Holdings plc",
   industry: "Financial Services",
   score: 78,
-  revenueRisk: "$1.8B (2024-2025 restructuring-related expenses impacting customer acquisition and retention)",
+  revenueRisk: "$1.8B (2024–2026 restructuring-related costs impacting customer acquisition and retention)",
 
   leaks: [
     {
-      issue: "Restructuring with investment banking cuts and market exits (e.g., Argentina, Canada)",
-      impact: "Risk of client churn and increased customer acquisition costs in core markets",
-      solution: "Enhance digital banking offerings and focus on Asia/UK growth",
+      issue: "Delaying net-zero goals by 20 years (from 2030 to 2050)",
+      impact: "Reputational blow and investor backlash; reliance on carbon offsets weakens climate trust",
+      solution: "Recommit to 2030 targets or introduce interim financed-emissions goals with transparency",
       source: {
-        label: "HSBC 2024 Full Year Results",
-        url: "https://www.hsbc.com/investors/results-and-announcements"
+        label: "Reuters – HSBC delays net-zero emissions target by 20 years",
+        url: "https://www.reuters.com/sustainability/hsbc-pushes-back-climate-emissions-target-review-policies-2025-02-19/"
       }
     },
     {
-      issue: "Closure of Zing payments app after one year of operation",
-      impact: "Wasted customer acquisition costs and reduced retail customer retention",
-      solution: "Integrate learnings into existing digital platforms like HSBCnet",
+      issue: "Cost-cutting program including exit from M&A, equity businesses in the West",
+      impact: "Customer churn and acquisitions risk in investment and corporate banking sectors",
+      solution: "Launch digital banking alternatives in core markets like Asia/UK and deepen client loyalty efforts",
       source: {
-        label: "HSBC 2024 Full Year Results",
-        url: "https://www.hsbc.com/investors/results-and-announcements"
+        label: "Reuters – HSBC plans $1.8 b savings drive via restructuring",
+        url: "https://www.reuters.com/business/finance/hsbc-books-66-rise-annual-profit-beats-estimates-2025-02-19/"
       }
     }
   ],
 
   strengths: [
     {
-      item: "Wealth management revenue growth in 2024, supporting high-net-worth client retention",
+      item: "Wealth management revenue growth in 2024 and $32.3 B PBT shows financial resilience",
       source: {
-        label: "HSBC 2024 Full Year Results",
-        url: "https://www.hsbc.com/investors/results-and-announcements"
-      }
-    },
-    {
-      item: "Pre-tax profit of $32.3B in 2024, up 6.6%, showing financial resilience",
-      source: {
-        label: "HSBC 2024 Full Year Results",
-        url: "https://www.hsbc.com/investors/results-and-announcements"
+        label: "Reuters – HSBC plans $1.8 b savings drive via restructuring",
+        url: "https://www.reuters.com/business/finance/hsbc-books-66-rise-annual-profit-beats-estimates-2025-02-19/"
       }
     }
   ]
