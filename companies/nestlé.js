@@ -1,13 +1,29 @@
-export default {
-  name: "Nestlé",
-  industry: "FMCG",
-  score: 77,
-  leaks: [
-    {
-      issue: "No water risk assessment for 38% of factories",
-      impact: "$2.1M/year operational risk",
-      solution: "AI-powered water stress mapping",
-      source: "[Nestlé Waters ESG Disclosure 2023, p.7](https://www.nestle.com/sites/default/files/2023-04/nestle-esg-report-2023.pdf#page=7)"
-    }
-  ]
-}
+export default [
+  {
+    name: "Nestlé SA",
+    industry: "Food & Beverage",
+    score: 60,
+    revenueRisk: "R$13M (~US$2.2M) in fines for misleading packaging claims",
+
+    leaks: [
+      {
+        issue: "Misleading recyclability claims on bottled water packaging",
+        impact: "R$13M (~US$2.2M) fine by Procon-SP for false advertising 1",
+        solution: "Use verified recycling metrics; avoid vague eco-labeling",
+        source: {
+          label: "Procon-SP fine report",
+          url: "https://www.americaeconomia.com/en/node/291378"
+        }
+      }
+    ],
+    strengths: [
+      {
+        item: "Global brand with massive packaging volume—prime for ESG transformation",
+        source: {
+          label: "Nestlé Profile (Wikipedia)",
+          url: "https://en.wikipedia.org/wiki/Nestl%C3%A9"
+        }
+      }
+    ]
+  },
+  
