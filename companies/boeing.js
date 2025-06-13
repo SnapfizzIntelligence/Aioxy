@@ -6,8 +6,8 @@ export default {
 
   leaks: [
     {
-      issue: "Criminal fraud linked to 737 MAX crashes — DOJ non-prosecution deal",
-      impact: "Paying $1.1B total (including $243.6M fine + $444.5M victims fund + ≈$455M compliance costs) to avoid criminal conviction",
+      issue: "Criminal fraud linked to 737 MAX crashes — DOJ non-prosecution deal",
+      impact: "Paying $1.1B total (including $243.6M fine + $444.5M victims fund + ~$455M compliance costs) to avoid criminal conviction",
       solution: "Tie executive compensation to safety compliance metrics & independent audit triggers"
     },
     {
@@ -21,15 +21,8 @@ export default {
     {
       item: "A global aerospace leader — driving compliance upgrades can reset industry standards",
       source: {
-        label: "Reuters – DOJ settlement",
+        label: "Reuters – DOJ deal overview",
         url: "https://www.reuters.com/business/aerospace-defense/us-justice-department-reaches-deal-with-boeing-allow-planemaker-avoid-2025-05-23/"
-      }
-    },
-    {
-      item: "Whistleblower investigation shows systemic flaws are under formal scrutiny",
-      source: {
-        label: "Reuters – FAA 787/777 investigation",
-        url: "https://www.reuters.com/business/aerospace-defense/faa-probing-boeing-whistleblowers-quality-claims-787-777-jets-2024-04-09/"
       }
     }
   ]
