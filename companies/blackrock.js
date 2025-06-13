@@ -2,34 +2,42 @@ export default {
   name: "BlackRock, Inc.",
   industry: "Asset Management",
   score: 50,
-  revenueRisk: "Political & investor trust risk after $11.5T AUM exit from ESG group",
+  revenueRisk: "Brand & political trust risk after $11.5 T AUM exit from NZAM",
 
   leaks: [
     {
-      issue: "Exited the Net Zero Asset Managers Initiative (11.5 T AUM) under political pressure",
-      impact: "Undermined ESG commitments; triggered political & investor backlash",
-      solution: "Recommit to transparent, audit-backed ESG goals; maintain messaging consistency"
+      issue: "Exit from Net Zero Asset Managers Initiative (~$11.5 T AUM)",
+      impact: "Undermined ESG credibility; political and investor backlash",
+      solution: "Publicly reaffirm ESG commitments with measurable targets and client-facing transparency",
+      source: {
+        label: "Reuters – BlackRock exits climate initiative (Jan 2025)",
+        url: "https://www.reuters.com/sustainability/blackrock-quits-climate-group-wall-streets-latest-environmental-step-back-2025-01-09/"
+      }
     },
     {
-      issue: "Removed 'ESG/DEI' language in communications post-political backlash",
-      impact: "Signals ESG was PR-driven, not mission-driven",
-      solution: "Anchor messaging in verified impact data; avoid shifting language based on politics"
+      issue: "Strategic removal of 'ESG/DEI' language from communications after political pressure",
+      impact: "Signals ESG was marketing-led, eroding mission trustworthiness",
+      solution: "Re-anchor messaging in verified impact data, maintain messaging consistency despite politics",
+      source: {
+        label: "FT – BlackRock ESG retreat analysis",
+        url: "https://www.ft.com/content/f0fb9841-db1d-442e-a757-1a1327497fb1"
+      }
     }
   ],
 
   strengths: [
     {
-      item: ">US$11.5 trillion AUM—ultimate scale for leading ESG change",
+      item: "US$11.5 T AUM—unmatched global scale to drive ESG transition",
       source: {
-        label: "Reuters – AUM & exit details",
+        label: "Reuters – AUM & NZAM exit",
         url: "https://www.reuters.com/sustainability/blackrock-quits-climate-group-wall-streets-latest-environmental-step-back-2025-01-09/"
       }
     },
     {
-      item: "Shift away from ESG created political and public backlash—can be redirected into renewed trust via better transparency",
+      item: "UN Secretary‑General publicly urged BlackRock to stay in climate initiative",
       source: {
-        label: "Financial Times – BlackRock ESG retreat",
-        url: "https://www.ft.com/content/f0fb9841-db1d-442e-a757-1a1327497fb1"
+        label: "Reuters – UN chief reaction (Jan 2025)",
+        url: "https://www.reuters.com/sustainability/un-chief-upset-blackrock-quit-climate-group-urges-others-stay-2025-01-10/"
       }
     }
   ]
