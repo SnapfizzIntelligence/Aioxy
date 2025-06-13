@@ -1,4 +1,4 @@
-export default [
+export default 
   {
     name: "Nestlé SA",
     industry: "Food & Beverage",
