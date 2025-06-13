@@ -24,7 +24,7 @@ export default [
           url: "https://www.ft.com/content/f0fb9841-db1d-442e-a757-1a1327497fb1"
         }
       }
-    ],
+    ]
     strengths: [
       {
         item: ">US$11.5 trillion AUM—ultimate scale for leading ESG change",
