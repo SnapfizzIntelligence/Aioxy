@@ -793,6 +793,93 @@
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+  <!-- Add this right before the closing </body> tag -->
+<div id="comparison-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; padding:20px; overflow-y:auto; backdrop-filter:blur(5px);">
+  <div style="max-width:1200px; margin:50px auto; background:white; border-radius:16px; padding:30px; position:relative; box-shadow:0 30px 60px rgba(0,0,0,0.2); animation:fadeIn 0.5s ease-out;">
+    <button onclick="closeComparison()" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;"><i class="fas fa-times"></i></button>
+    
+    <h2 id="comparison-title" style="font-family:var(--font-heading); font-size:2rem; margin-bottom:10px; color:var(--premium-dark);"></h2>
+    <p id="comparison-subtitle" style="color:#666; margin-bottom:30px; font-size:1.1rem;"></p>
+    
+    <div id="comparison-results" style="display:grid; grid-template-columns:1fr; gap:20px;">
+      <!-- Comparison cards will be inserted here by JavaScript -->
+    </div>
+    
+    <div style="margin-top:40px; text-align:center;">
+      <button onclick="closeComparison()" class="btn btn-primary"><i class="fas fa-times"></i> CLOSE COMPARISON</button>
+    </div>
+  </div>
+</div>
+
+
+<style>
+  .comparison-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    transition: var(--transition);
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  .comparison-card.is-main {
+    background: linear-gradient(135deg, #F8FAFC, white);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    position: relative;
+  }
+  
+  .comparison-card.is-main::before {
+    content: 'Your Selection';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--premium-accent);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .score-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 15px 0;
+    font-family: var(--font-heading);
+  }
+  
+  .score-good {
+    color: var(--premium-success);
+  }
+  
+  .score-medium {
+    color: var(--premium-accent);
+  }
+  
+  .score-poor {
+    color: var(--premium-danger);
+  }
+  
+  .comparison-card ul {
+    list-style-type: none;
+    margin: 15px 0;
+  }
+  
+  .comparison-card li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.6;
+  }
+  
+  .comparison-card li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--premium-accent);
+    font-weight: bold;
+  }
+</style>
 <body>
   <header>
     <h1>Aioxy</h1>
