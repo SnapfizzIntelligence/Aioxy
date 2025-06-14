@@ -14,6 +14,15 @@ export default {
       url: "https://www.trouwnutrition.com/en/sustainability/"
     }
     }
+        {
+    issue: "None reported",
+      impact: "Clean ESG record as of 2025",
+      solution: "Continues transparent reporting via Nutreco ESG framework",
+      source: {
+        label: clean
+      url: "https://www.trouwnutrition.com/en/sustainability/"
+    }
+}
       ],
 
   strengths: [
