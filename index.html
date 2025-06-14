@@ -631,124 +631,6 @@
       border-left-color: var(--premium-success) !important;
     }
 
-    /* ====== COMPARISON MODAL ====== */
-    #comparison-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.9);
-      z-index: 10000;
-      padding: 20px;
-      overflow-y: auto;
-      backdrop-filter: blur(5px);
-    }
-    
-    #comparison-modal > div {
-      max-width: 1200px;
-      margin: 30px auto;
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      position: relative;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-      animation: fadeIn 0.5s ease-out;
-    }
-    
-    #comparison-modal h2 {
-      font-family: var(--font-heading);
-      font-size: 2rem;
-      margin-bottom: 15px;
-      color: var(--premium-dark);
-    }
-    
-    #comparison-modal h3 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: var(--premium-navy);
-    }
-    
-    #comparison-subtitle {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 1.1rem;
-    }
-    
-    #comparison-results {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-    
-    .comparison-card {
-      background: white;
-      border-radius: 12px;
-      padding: 25px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-      transition: var(--transition);
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .comparison-card.is-main {
-      background: linear-gradient(135deg, #F8FAFC, white);
-      border: 1px solid rgba(124, 58, 237, 0.2);
-      position: relative;
-    }
-    
-    .comparison-card.is-main::before {
-      content: 'Your Selection';
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: var(--premium-accent);
-      color: white;
-      padding: 3px 10px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-    
-    .score-display {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin: 15px 0;
-      font-family: var(--font-heading);
-    }
-    
-    .score-good {
-      color: var(--premium-success);
-    }
-    
-    .score-medium {
-      color: var(--premium-accent);
-    }
-    
-    .score-poor {
-      color: var(--premium-danger);
-    }
-    
-    .comparison-card ul {
-      list-style-type: none;
-      margin: 15px 0;
-    }
-    
-    .comparison-card li {
-      margin-bottom: 10px;
-      padding-left: 20px;
-      position: relative;
-      line-height: 1.6;
-    }
-    
-    .comparison-card li::before {
-      content: '•';
-      position: absolute;
-      left: 0;
-      color: var(--premium-accent);
-      font-weight: bold;
-    }
-
     /* ====== SOCIAL PROOF ====== */
     .social-proof {
       background: #f9f9f9;
@@ -834,7 +716,92 @@
       position: relative;
       z-index: 2;
     }
+<div id="comparison-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; padding:20px; overflow-y:auto; backdrop-filter:blur(5px);">
+  <div style="max-width:1200px; margin:50px auto; background:white; border-radius:16px; padding:30px; position:relative; box-shadow:0 30px 60px rgba(0,0,0,0.2); animation:fadeIn 0.5s ease-out;">
+    <button onclick="closeComparison()" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;"><i class="fas fa-times"></i></button>
+    
+    <h2 id="comparison-title" style="font-family:var(--font-heading); font-size:2rem; margin-bottom:10px; color:var(--premium-dark);"></h2>
+    <p id="comparison-subtitle" style="color:#666; margin-bottom:30px; font-size:1.1rem;"></p>
+    
+    <div id="comparison-results" style="display:grid; grid-template-columns:1fr; gap:20px;">
+      <!-- Comparison cards will be inserted here by JavaScript -->
+    </div>
+    
+    <div style="margin-top:40px; text-align:center;">
+      <button onclick="closeComparison()" class="btn btn-primary"><i class="fas fa-times"></i> CLOSE COMPARISON</button>
+    </div>
+  </div>
+</div>
 
+<!-- Add this CSS to your style section -->
+<style>
+  .comparison-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    transition: var(--transition);
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+  
+  .comparison-card.is-main {
+    background: linear-gradient(135deg, #F8FAFC, white);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    position: relative;
+  }
+  
+  .comparison-card.is-main::before {
+    content: 'Your Selection';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: var(--premium-accent);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .score-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 15px 0;
+    font-family: var(--font-heading);
+  }
+  
+  .score-good {
+    color: var(--premium-success);
+  }
+  
+  .score-medium {
+    color: var(--premium-accent);
+  }
+  
+  .score-poor {
+    color: var(--premium-danger);
+  }
+  
+  .comparison-card ul {
+    list-style-type: none;
+    margin: 15px 0;
+  }
+  
+  .comparison-card li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.6;
+  }
+  
+  .comparison-card li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--premium-accent);
+    font-weight: bold;
+  }
+</style>
     /* ====== MEDIA QUERIES FOR LARGER SCREENS ====== */
     @media (min-width: 768px) {
       h1 {
@@ -896,10 +863,6 @@
       
       .section {
         padding: 100px 20px;
-      }
-      
-      #comparison-results {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       }
     }
 
@@ -1060,6 +1023,7 @@
       </div>
     </div>
   </section>
+
   <footer>
     <div class="footer-links">
       <a href="privacy.html">Privacy Policy</a>
@@ -1234,20 +1198,138 @@
 
     // Industry classification for your companies
     const industryMap = {
-    apple: 'Technology',
-      google: 'Technology',
-      microsoft: 'Technology',
-      tesla: 'Automotive',
-      nestlé: 'Food/Beverage',
-      unilever: 'Consumer Goods',
+      // Technology
+
+      Apple: ‘Technology’,
+
+      Google: ‘Technology’,
+
+      Microsoft: ‘Technology’,
+
+      Samsung: ‘Technology’,
+
+      Dell: ‘Technology’,
+
+      Intel: ‘Technology’,
+
+      Cisco: ‘Technology’,
+
+      Oracle: ‘Technology’,
+
+      Sony: ‘Technology’,
+
+      Panasonic: ‘Technology’,
+
+      Adobe: ‘Technology’,
+
+      Zoom: ‘Technology’,
+
+      Meta: ‘Technology’,
+
+      Nvidia: ‘Technology’,
+
+      Spotify: ‘Technology’,
+
+      
+
+      // Automotive
+
+      Tesla: ‘Automotive’,
+
+      Bmw: ‘Automotive’,
+
+      Mercedes: ‘Automotive’,
+
+      Ford: ‘Automotive’,
+
+      Audi: ‘Automotive’,
+
+      Hyundai: ‘Automotive’,
+
+      Byd: ‘Automotive’,
+
+      Generalmotors: ‘Automotive’,
+
+      
+
+      // Retail/Fashion
+
       Adidas: ‘Retail/Fashion’,
+
       Nike: ‘Retail/Fashion’,
+
       Hnm: ‘Retail/Fashion’,
+
       Ikea: ‘Retail/Fashion’,
-    Target: ‘Retail/Fashion’, 
-    Loreal: ‘Retail/Fashion’,
-    Lvmh: ‘Retail/Fashion’,
-    Shein: ‘Retail/Fashion’,
+
+      Target: ‘Retail/Fashion’,
+
+      Loreal: ‘Retail/Fashion’,
+
+      Lvmh: ‘Retail/Fashion’,
+
+Shein: ‘Retail/Fashion’,
+
+      // Food/Beverage
+
+      Cocacola: ‘Food/Beverage’,
+
+      Pepsico: ‘Food/Beverage’,
+
+      Nestlé: ‘Food/Beverage’,
+
+      Macdonalds: ‘Food/Beverage’,
+
+      Starbucks: ‘Food/Beverage’,
+
+      Danone: ‘Food/Beverage’,
+
+      Heineken: ‘Food/Beverage’,
+
+      
+
+      // Energy
+
+      Bp: ‘Energy’,
+
+      Shell: ‘Energy’,
+
+      
+
+      // Financial
+
+      Hsbc: ‘Financial’,
+
+      Paypal: ‘Financial’,
+
+      Vodafone: ‘Financial’,
+
+      
+
+      // Other
+
+      Accenture: ‘Professional Services’,
+
+      Alibaba: ‘E-commerce’,
+
+      Amazon: ‘E-commerce’,
+
+      Airbnb: ‘Hospitality’,
+
+      Booking: ‘Hospitality’,
+
+      Uber: ‘Transportation’,
+
+      Proctergamble: ‘Consumer Goods’,
+
+      Pfizer: ‘Pharmaceutical’,
+
+      Johnsonjohnson: ‘Pharmaceutical’,
+
+      Siemens: ‘Industrial’,
+
+      Unilever: ‘Consumer Goods’
+
 
     };
 
