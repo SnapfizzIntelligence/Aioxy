@@ -1190,195 +1190,82 @@
       siemens: 'Industrial',
       unilever: 'Consumer Goods'
     };
-// ====== AIOXY SCANNER FUNCTIONALITY ======
 
-    Async function scanCompany() {
-
-      Const name = document.getElementById(“company-search”).value.trim().toLowerCase();
-
-      Const loading = document.getElementById(“loading”);
-
-      Const result = document.getElementById(“result”);
-
-      Const companyNameDisplay = document.getElementById(“company-name”);
-
-
-
-      If (!name) return alert(“Please enter a company name”);
-
-
-
-      // Show loading state
-
-      companyNameDisplay.textContent = name;
-
-      loading.style.display = “block”;
-
-      result.style.display = “none”;
-
-      result.innerHTML = “”;
-
-
-
-      try {
-
-        // Dynamic import of company data file
-
-        Const module = await import(`./companies/${name}.js`).catch(err => {
-
-          Console.error(`Failed to load ${name}.js:`, err);
-
-          Throw new Error(`No ESG data file for ${name}`);
-
-        });
-
-        Const data = module.default;
-
-
-
-        // Validate the data structure
-
-        If (!data || !data.name || !data.leaks) {
-
-          Throw new Error(`Invalid data structure for ${name}`);
-
-        }
-
-
-
-        // Build results HTML
-
-        Const leaksHtml = data.leaks.map(leak => `
-
-          <div class=”leak-card”>
-
-            <h3>${leak.issue}</h3>
-
-            <p><strong>Impact:</strong> ${leak.impact}</p>
-
-            <p><strong>Solution:</strong> ${leak.solution}</p>
-
-            ${leak.source.url ? 
-
-              `<a href=”${leak.source.url}” target=”_blank” class=”source-link”>📄 Source Document</a>` : 
-
-              `<span class=”source-link”>📄 ${leak.source.label || leak.source}</span>`}
-
-          </div>
-
-        `).join(‘’);
-
-
-
-        // Build strengths HTML if they exist
-
-        Const strengthsHtml = data.strengths && data.strengths.length > 0 ? `
-
-          <div style=”margin-top:40px;”>
-
-            <h3 style=”color:var(--premium-success);”>Strengths</h3>
-
-            ${data.strengths.map(strength => `
-
-              <div class=”leak-card” style=”border-left-color:var(--premium-success);”>
-
-                <p>✅ ${strength.item}</p>
-
-                ${strength.source.url ? 
-
-                  `<a href=”${strength.source.url}” target=”_blank” class=”source-link”>📄 ${strength.source.label}</a>` : 
-
-                  `<span class=”source-link”>📄 ${strength.source.label}</span>`}
-
-              </div>
-
-            `).join(‘’)}
-
-          </div>
-
-        ` : ‘’;
-
-
-
-        Result.innerHTML = `
-
-          <h2 style=”margin-bottom:5px;”>${data.name}</h2>
-
-          <p style=”color:#666; margin-bottom:20px;”>${data.industry || industryMap[name] || ‘Unknown Industry’}</p>
-
-          
-
-          ${data.revenueRisk ? `
-
-            <div style=”background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);”>
-
-              <p style=”font-weight:600; margin-bottom:5px;”>🚨 Revenue Risk</p>
-
-              <p>${data.revenueRisk}</p>
-
-            </div>
-
-          ` : ‘’}
-
-          
-
-          <div class=”esg-score-badge”>
-
-            <div style=”font-size:0.9em; opacity:0.8;”>ESG RISK SCORE</div>
-
-            <div style=”font-size:3.5rem; font-weight:700;”>${data.score !== null && data.score !== undefined ? data.score : ‘N/A’}/100</div>
-
-          </div>
-
-          
-
-          <h3 style=”margin-bottom:20px;”>Key ESG Leaks</h3>
-
-          ${leaksHtml}
-
-          
-
-          ${strengthsHtml}
-          <div style=”margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;”>
-
-            <a href=https://www.linkedin.com/in/tulasipariyar target=”_blank” class=”btn btn-primary” style=”display:inline-block;”>
-
-              <I class=”fas fa-file-alt”></i> GET FULL AUDIT REPORT
-
-            </a>
-
-            <button onclick=”showComparison(‘${name}’)” class=”btn btn-outline” style=”display:inline-block;”>
-              <I class=”fas fa-balance-scale”></i> COMPARE WITH COMPETITORS
-            </button>
-          </div>
-        `;
-        Result.style.display = “block”;
-
-      } catch (err) {
-
-        Console.error(“Error loading company data:”, err);
-
-        Const validCompanies = Object.keys(industryMap).join(‘, ‘);
-
-        Result.innerHTML = `
-
-          <div style=”background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;”>
-
-            <I class=”fas fa-exclamation-triangle” style=”margin-right:8px;”></i>
-
-            No ESG data found for “${name}”. Try: 
-
-            ${Object.keys(industryMap).map(c => `<a href=”javascript:fillSearch(‘${c}’)” style=”color:var(--premium-accent); font-weight:500;”>${c.charAt(0).toUpperCase() + c.slice(1)}</a>`).join(‘, ‘)}
-          </div>
-        `;
-        Result.style.display = “block”;
+    // ====== MODIFIED SCAN FUNCTION ======
+async function scanCompany() {
+  const name = document.getElementById("company-search").value.trim().toLowerCase();
+  const loading = document.getElementById("loading");
+  const result = document.getElementById("result");
+  const companyNameDisplay = document.getElementById("company-name");
+
+  if (!name) return alert("Please enter a company name");
+
+  // Show loading state
+  companyNameDisplay.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+  loading.style.display = "block";
+  result.style.display = "none";
+  result.innerHTML = "";
+
+  try {
+    // Dynamic import from /companies/ folder
+    const module = await import(`./companies/${name}.js`);
+    const data = module.default;
+
+    // Build results HTML (keep your existing rendering code)
+    const leaksHtml = data.leaks.map(leak => `
+      <div class="leak-card">
+        <h3>${leak.issue}</h3>
+        <p><strong>Impact:</strong> ${leak.impact}</p>
+        <p><strong>Solution:</strong> ${leak.solution}</p>
+        ${leak.source.url ? 
+          `<a href="${leak.source.url}" target="_blank" class="source-link">📄 ${leak.source.label}</a>` : 
+          `<span class="source-link">📄 ${leak.source.label}</span>`}
+      </div>
+    `).join('');
+
+    // Rest of your HTML generation...
+    result.innerHTML = `...`; // Keep your existing template
+    result.style.display = "block";
+
+  } catch (err) {
+    console.error("Error loading company data:", err);
+    result.innerHTML = `
+      <div style="background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;">
+        <i class="fas fa-exclamation-triangle"></i> 
+        No ESG data found for "${name}". Try: 
+        ${Object.keys(industryMap).slice(0,5).map(c => 
+          `<a href="javascript:fillSearch('${c}')" style="color:var(--premium-accent);">${c.charAt(0).toUpperCase() + c.slice(1)}</a>`
+        ).join(', ')}
+      </div>`;
+    result.style.display = "block";
+  } finally {
+    loading.style.display = "none";
+  }
+}
+
+// ====== FALLBACK FOR MISSING FILES ======
+function generateMockData(name) {
+  return {
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    industry: industryMap[name] || "Multiple",
+    score: Math.floor(Math.random() * 40) + 40,
+    revenueRisk: `$${Math.floor(Math.random() * 900) + 100}M annual risk`,
+    leaks: [
+      {
+        issue: "Lack of transparent reporting",
+        impact: "Brand trust erosion risk",
+        solution: "Implement blockchain tracking",
+        source: { label: "Generated Analysis" }
       }
-      Loading.style.display = “none”;
-    }
-    Function fillSearch(company) {
-      Document.getElementById(“company-search”).value = company;
-      scanCompany();
-    }
+    ],
+    strengths: [
+      {
+        item: "Strong renewable energy adoption",
+        source: { label: "Generated Analysis" }
+      }
+    ]
+  };
+        }
     // ====== COMPARISON FUNCTIONS ======
     async function showComparison(company) {
       const modal = document.getElementById("comparison-modal");
