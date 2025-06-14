@@ -1,44 +1,51 @@
 export default {
   name: "LVMH Moët Hennessy Louis Vuitton SE",
   industry: "Luxury Goods",
-  score: 76,
-  revenueRisk: "$1.5B (FY24 increased marketing costs and China demand drop impacting customer acquisition and retention)",
+  score: 75,
+  revenueRisk: "€500M+ exposure in ESG reporting and supply‑chain controversies",
 
   leaks: [
     {
-      issue: "10% demand drop in China affecting Perfumes & Cosmetics and Fashion & Leather Goods",
-      impact: "Increased customer acquisition costs and risk of churn to local brands",
-      solution: "Strengthen localized campaigns and expand mid-tier offerings",
+      issue: "Outdated anti‑slavery disclosures and outdated eco‑certification on Dior UK site",
+      impact: "Damages brand trust; EU/MHRA scrutiny may lead to reputational and regulatory fallout",
+      solution: "Update all Modern Slavery Act statements annually and remove expired eco‑labels",
       source: {
-        label: "Bloomberg: LVMH and L'Oréal Face China Pain",
-        url: "https://www.bloomberg.com/news/articles/2024-04-12/lvmh-l-oreal-face-china-pain-emea-earnings-week-ahead"
+        label: "Reuters – Dior supply‑chain disclosure delay",
+        url: "https://www.reuters.com/business/retail-consumer/lvmhs-dior-lagged-supply-chain-disclosure-made-outdated-esg-claim-2024-08-06/"
       }
     },
     {
-      issue: "Negative exchange rate fluctuations impacting revenue",
-      impact: "Reduced profitability and increased customer acquisition costs",
-      solution: "Diversify revenue streams and hedge currency risks",
+      issue: "Sweatshop-like working conditions uncovered at Italian Dior suppliers",
+      impact: "Investor concern (Amundi et al.), group-wide supply-chain governance risk",
+      solution: "Expand supplier audits, living wage policies, and fair-labor traceability systems",
       source: {
-        label: "LVMH 2024 Full Year Results",
-        url: "https://www.lvmh.com"
+        label: "Reuters – Investors demand supplier oversight",
+        url: "https://www.reuters.com/business/retail-consumer/some-investors-demand-change-lvmh-after-probe-into-dior-contractors-2024-07-23/"
       }
     }
   ],
 
   strengths: [
     {
-      item: "Tiffany & Co. high jewelry revenue quadrupled since acquisition",
+      item: "LIFE 360 environmental program ahead of targets: 55% Scopes 1–2 emissions reduction; 31% recycled materials used",
       source: {
-        label: "LVMH 2024 Full Year Results",
-        url: "https://www.lvmh.com"
+        label: "LVMH Annual & Sustainability Report 2023",
+        url: "https://hk.marketscreener.com/quote/stock/LVMH-4669/news/LVMH-2024-Financial-Documents-48892528/"
       }
     },
     {
-      item: "Paris 2024 Olympic/Paralympic partnership boosted brand visibility",
+      item: "Leadership in biodiversity and circular retail: 3.8 M hectares restored, eco‑design awards for boutiques",
       source: {
-        label: "LVMH 2024 Full Year Results",
-        url: "https://www.lvmh.com"
+        label: "LVMH LIFE 360 store awards & biodiversity",
+        url: "https://www.lvmh.com/news-lvmh/lvmh-unveils-the-winners-of-the-2024-life-360-in-stores-awards-celebrating-the-environmental-excellence-of-its-maisonsstores"
+      }
+    },
+    {
+      item: "Robust social impact commitments: 46% women in leadership, 8 k apprenticeships via Métiers d’Excellence",
+      source: {
+        label: "LVMH Social & Environmental Responsibility Report 2023",
+        url: "https://www.marketscreener.com/quote/stock/LVMH-4669/news/LVMH-2023-Social-and-Environmental-Responsibility-Report-46472066/"
       }
     }
   ]
-          }
+};
