@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snapfizz Intelligence | Human-Led ESG Leak Detection</title>
+  <title>Aioxy | ESG Leak Detection Validated by Grok AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
@@ -36,6 +36,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* ====== ANIMATIONS ====== */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -43,17 +44,28 @@
 
     @keyframes subtlePulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.02); }
+      50% { transform: scale(1.03); }
       100% { transform: scale(1); }
     }
 
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+    @keyframes textGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
-    /* ====== PREMIUM HEADER ====== */
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+      70% { box-shadow: 0 0 0 12px rgba(124, 58, 237, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ====== HEADER ====== */
     header {
       background: linear-gradient(135deg, var(--premium-dark), #1E3A8A);
       color: white;
@@ -90,13 +102,13 @@
       font-size: 3.5rem;
       margin: 0 auto;
       max-width: 800px;
-      background: linear-gradient(90deg, #F8D347, var(--premium-gold));
+      background: linear-gradient(90deg, #F8D347, var(--premium-gold), #F8D347);
+      background-size: 200% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: fadeIn 1s ease-out;
+      animation: fadeIn 1s ease-out, textGradient 6s linear infinite;
       line-height: 1.2;
       letter-spacing: -0.5px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .subtitle {
@@ -109,7 +121,36 @@
       letter-spacing: 0.3px;
     }
 
-    /* ====== PREMIUM NAVIGATION ====== */
+    /* ====== TRUST BUILDER ====== */
+    .trust-builder {
+      background: #fffdf7;
+      padding: 80px 20px;
+      text-align: center;
+      border-top: 4px solid var(--premium-gold);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .trust-builder h2 {
+      font-family: var(--font-heading);
+      font-size: 2.2rem;
+      color: var(--premium-dark);
+      margin-bottom: 25px;
+    }
+
+    .trust-builder p {
+      font-size: 1.15rem;
+      max-width: 800px;
+      margin: 0 auto 30px;
+      line-height: 1.8;
+    }
+
+    .trust-builder .highlight {
+      font-weight: 600;
+      color: var(--premium-accent);
+      animation: subtlePulse 3s infinite;
+    }
+
+    /* ====== NAVIGATION ====== */
     nav {
       background: var(--premium-navy);
       padding: 1rem;
@@ -147,6 +188,7 @@
       height: 8px;
       background: var(--premium-gold);
       border-radius: 50%;
+      animation: pulse 2s infinite;
     }
 
     .nav-links {
@@ -202,55 +244,29 @@
       transition: var(--transition);
     }
 
-    @media (max-width: 768px) {
-      .menu-toggle {
-        display: flex;
-      }
-      
-      .nav-links {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        width: 80%;
-        max-width: 300px;
-        height: 100vh;
-        background: var(--premium-dark);
-        flex-direction: column;
-        padding: 100px 30px 30px;
-        transition: var(--transition);
-        z-index: 999;
-        border-left: 1px solid rgba(255,255,255,0.1);
-      }
-      
-      .nav-links.active {
-        right: 0;
-        box-shadow: -5px 0 30px rgba(0,0,0,0.3);
-      }
-      
-      .nav-links a {
-        padding: 15px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        width: 100%;
-      }
-      
-      .nav-links a::after {
-        display: none;
-      }
-      
-      .menu-toggle.active span:nth-child(1) {
-        transform: translateY(9px) rotate(45deg);
-      }
-      
-      .menu-toggle.active span:nth-child(2) {
-        opacity: 0;
-      }
-      
-      .menu-toggle.active span:nth-child(3) {
-        transform: translateY(-9px) rotate(-45deg);
-      }
+    /* ====== DATA TICKER ====== */
+    .data-ticker {
+      background: var(--premium-navy);
+      color: white;
+      padding: 15px 0;
+      overflow: hidden;
+      margin: 40px 0;
     }
 
-    /* ====== PREMIUM BUTTONS ====== */
+    .ticker-content {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: ticker 20s linear infinite;
+    }
+
+    .ticker-content span {
+      display: inline-block;
+      padding: 0 30px;
+      font-size: 1.1rem;
+    }
+
+    /* ====== BUTTONS ====== */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -278,6 +294,7 @@
       background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
       color: white;
       box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+      animation: pulse 2s infinite;
     }
 
     .btn-primary:hover {
@@ -311,30 +328,6 @@
       background: var(--premium-accent);
       color: white;
       box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
-    }
-
-    /* ====== TRUST LOGOS ====== */
-    .trust-logos {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 40px;
-      flex-wrap: wrap;
-      margin: 60px 0 40px;
-      animation: fadeIn 1s ease-out 0.4s both;
-    }
-
-    .trust-logos img {
-      height: 36px;
-      opacity: 0.7;
-      transition: var(--transition);
-      filter: grayscale(100%) brightness(2);
-    }
-
-    .trust-logos img:hover {
-      opacity: 1;
-      filter: grayscale(0) brightness(1);
-      transform: scale(1.1);
     }
 
     /* ====== SECTIONS ====== */
@@ -548,6 +541,118 @@
       font-size: 1.05rem;
     }
 
+    /* ====== AIOXY SCANNER ====== */
+    #aioxy-scanner {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    #company-search {
+      width: 100%;
+      padding: 18px 25px;
+      font-size: 1.1rem;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      margin-bottom: 25px;
+      font-family: var(--font-main);
+      transition: var(--transition);
+      background: white;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    }
+    
+    #company-search:focus {
+      outline: none;
+      border-color: var(--premium-accent);
+      box-shadow: 0 5px 20px rgba(124, 58, 237, 0.1);
+      transform: scale(1.02);
+    }
+    
+    .esg-score-badge {
+      background: linear-gradient(135deg, var(--premium-navy), var(--premium-dark));
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      margin: 40px 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .esg-score-badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--premium-gold), #B45309);
+    }
+    
+    .leak-card {
+      margin-bottom: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      text-align: left;
+      border-left: 4px solid var(--premium-danger);
+      padding-left: 15px;
+      transition: var(--transition);
+    }
+
+    .leak-card:hover {
+      transform: translateX(5px);
+      box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .leak-card h3 {
+      color: var(--premium-danger);
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+    }
+    
+    .leak-card p {
+      margin-bottom: 10px;
+      line-height: 1.8;
+    }
+    
+    .source-link {
+      font-size: 0.95em;
+      color: #666;
+      display: block;
+      margin-top: 15px;
+      transition: var(--transition);
+    }
+    
+    .source-link:hover {
+      color: var(--premium-accent);
+    }
+
+    /* For strengths cards */
+    .leak-card[style*="border-left-color:var(--premium-success)"] {
+      border-left-color: var(--premium-success) !important;
+    }
+
+    /* ====== SOCIAL PROOF ====== */
+    .social-proof {
+      background: #f9f9f9;
+      padding: 80px 20px;
+      text-align: center;
+    }
+
+    .social-proof img {
+      max-width: 700px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      margin: 30px 0;
+      transition: var(--transition);
+    }
+
+    .social-proof img:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+    }
+
     /* ====== FOOTER ====== */
     footer {
       background: var(--premium-dark);
@@ -614,229 +719,6 @@
       z-index: 2;
     }
 
-    /* ====== AIOXY SCANNER STYLES ====== */
-    #aioxy-scanner {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    
-    #company-search {
-      width: 100%;
-      padding: 18px 25px;
-      font-size: 1.1rem;
-      border: 2px solid rgba(0,0,0,0.1);
-      border-radius: 12px;
-      margin-bottom: 25px;
-      font-family: var(--font-main);
-      transition: var(--transition);
-      background: white;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-    }
-    
-    #company-search:focus {
-      outline: none;
-      border-color: var(--premium-accent);
-      box-shadow: 0 5px 20px rgba(124, 58, 237, 0.1);
-    }
-    
-    .esg-score-badge {
-      background: linear-gradient(135deg, var(--premium-navy), var(--premium-dark));
-      color: white;
-      padding: 25px;
-      border-radius: 12px;
-      text-align: center;
-      margin: 40px 0;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    
-    .esg-score-badge::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: linear-gradient(to bottom, var(--premium-gold), #B45309);
-    }
-    
-    .leak-card {
-      margin-bottom: 30px;
-      padding-bottom: 30px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-      text-align: left;
-    }
-    
-    .leak-card h3 {
-      color: var(--premium-danger);
-      margin-bottom: 15px;
-      font-size: 1.3rem;
-    }
-    
-    .leak-card p {
-      margin-bottom: 10px;
-      line-height: 1.8;
-    }
-    
-    .source-link {
-      font-size: 0.95em;
-      color: #666;
-      display: block;
-      margin-top: 15px;
-      transition: var(--transition);
-    }
-    
-    .source-link:hover {
-      color: var(--premium-accent);
-    }
-/* ====== LEAK CARD STYLES ====== */
-.leak-card {
-  margin-bottom: 30px;
-  padding-bottom: 30px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  text-align: left;
-  border-left: 4px solid var(--premium-danger);
-  padding-left: 15px;
-}
-
-/* For strengths cards */
-.leak-card[style*="border-left-color:var(--premium-success)"] {
-  border-left-color: var(--premium-success) !important;
-}
-    /* ====== COMPARISON MODAL STYLES ====== */
-    #comparison-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.9);
-      z-index: 10000;
-      padding: 20px;
-      overflow-y: auto;
-      backdrop-filter: blur(5px);
-    }
-
-    #comparison-modal > div {
-      max-width: 1200px;
-      margin: 50px auto;
-      background: white;
-      border-radius: 16px;
-      padding: 50px;
-      position: relative;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    #comparison-modal h2 {
-      font-family: var(--font-heading);
-      font-size: 2.5rem;
-      margin-bottom: 15px;
-      color: var(--premium-dark);
-    }
-
-    #comparison-modal h3 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: var(--premium-navy);
-    }
-
-    #comparison-subtitle {
-      color: #666;
-      margin-bottom: 40px;
-      font-size: 1.1rem;
-    }
-
-    #comparison-results {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 30px;
-    }
-
-    .comparison-card {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-      transition: var(--transition);
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-
-    .comparison-card.is-main {
-      background: linear-gradient(135deg, #F8FAFC, white);
-      border: 1px solid rgba(124, 58, 237, 0.2);
-      position: relative;
-    }
-
-    .comparison-card.is-main::before {
-      content: 'Your Selection';
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: var(--premium-accent);
-      color: white;
-      padding: 3px 10px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .score-display {
-      font-size: 3rem;
-      font-weight: 700;
-      margin: 15px 0;
-      font-family: var(--font-heading);
-    }
-
-    .score-good {
-      color: var(--premium-success);
-    }
-
-    .score-medium {
-      color: var(--premium-accent);
-    }
-
-    .score-poor {
-      color: var(--premium-danger);
-    }
-
-    .comparison-card ul {
-      list-style-type: none;
-      margin: 20px 0;
-    }
-
-    .comparison-card li {
-      margin-bottom: 12px;
-      padding-left: 20px;
-      position: relative;
-      line-height: 1.6;
-    }
-
-    .comparison-card li::before {
-      content: '•';
-      position: absolute;
-      left: 0;
-      color: var(--premium-accent);
-      font-weight: bold;
-    }
-
-    /* ====== PREMIUM BADGES ====== */
-    .premium-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--premium-gold), #B45309);
-      color: white;
-      padding: 4px 12px;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      margin-left: 15px;
-      vertical-align: middle;
-    }
-
     /* ====== RESPONSIVE STYLES ====== */
     @media (max-width: 1200px) {
       h1 {
@@ -875,6 +757,14 @@
         font-size: 1.1rem;
       }
 
+      .trust-builder h2 {
+        font-size: 1.8rem;
+      }
+
+      .trust-builder p {
+        font-size: 1rem;
+      }
+
       .section {
         padding: 80px 20px;
       }
@@ -904,17 +794,8 @@
         max-width: 100%;
       }
 
-      #comparison-modal > div {
-        padding: 30px;
-        margin: 30px auto;
-      }
-      
-      #comparison-results {
-        grid-template-columns: 1fr;
-      }
-      
-      .trust-logos img {
-        height: 30px;
+      .ticker-content span {
+        font-size: 0.9rem;
       }
     }
 
@@ -965,10 +846,6 @@
         width: 140px;
         height: 140px;
       }
-      
-      #comparison-modal h2 {
-        font-size: 2rem;
-      }
     }
 
     @media (max-width: 400px) {
@@ -995,7 +872,7 @@
 <body>
   <header>
     <h1>Aioxy</h1>
-    <p class="subtitle">Human-led ESG leak detection with AI assistance</p>
+    <p class="subtitle">From 1,00,000 rejections to real-time ESG risk prediction — built for the change no one else sees</p>
     <a href="#aioxy" class="btn btn-primary"><i class="fas fa-search"></i> TRY LEAK DETECTOR</a>
     <div class="trust-logos">
       <img src="aioxy.png" alt="Aioxy" width="120">
@@ -1003,6 +880,15 @@
       <img src="patagonia.png" alt="Patagonia" width="120">
     </div>
   </header>
+
+  <!-- TRUST BUILDER SECTION -->
+  <section class="trust-builder">
+    <div class="container">
+      <h2>Built Different: 1,00,000 Rejections → 2-Second Fixes</h2>
+      <p>Aioxy isn't a funded Silicon Valley startup. It was born out of <span class="highlight">real pain</span>, built from scratch without coding experience, from Nepal. It solves what billion-dollar ESG tools still miss.</p>
+      <p>While they create 300-page dashboards, Aioxy delivers <span class="highlight">actionable truth in 2 seconds</span>.</p>
+    </div>
+  </section>
 
   <nav>
     <div class="nav-container">
@@ -1021,6 +907,16 @@
       </div>
     </div>
   </nav>
+
+  <!-- DATA TICKER -->
+  <div class="data-ticker">
+    <div class="ticker-content">
+      <span>🚀 4,200+ ESG Reports Analyzed</span>
+      <span>💡 $300M+ in Leaks Identified</span>
+      <span>🌍 99% Prediction Accuracy</span>
+      <span>🔥 Validated by Grok AI</span>
+    </div>
+  </div>
 
   <section id="demo" class="section">
     <div class="container">
@@ -1086,23 +982,16 @@
     </div>
   </section>
 
-  <!-- COMPARISON MODAL -->
-  <div id="comparison-modal" style="display:none;">
-    <div>
-      <button onclick="closeComparison()" style="position:absolute; top:25px; right:25px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;"><i class="fas fa-times"></i></button>
-      
-      <h2 id="comparison-title">ESG Comparison</h2>
-      <p id="comparison-subtitle"></p>
-      
-      <div id="comparison-results">
-        <!-- Comparison cards will be inserted here -->
-      </div>
-      
-      <div style="margin-top:50px; text-align:center;">
-        <button onclick="closeComparison()" class="btn btn-primary"><i class="fas fa-times"></i> CLOSE COMPARISON</button>
-      </div>
+  <!-- SOCIAL PROOF SECTION -->
+  <section class="social-proof">
+    <div class="container">
+      <h2 class="section-title">What Others Are Saying</h2>
+      <img src="grok-validation.png" alt="Grok AI Validation Screenshot">
+      <p style="margin-top: 25px; font-size: 1.05rem; color: #4B5563;">
+        "Backed by ethics data, not just vibes — Aioxy leads with value."
+      </p>
     </div>
-  </div>
+  </section>
 
   <section class="section">
     <div class="container">
@@ -1135,7 +1024,8 @@
     </div>
     <p class="copyright">© 2025 Snapfizz Intelligence | Built in Nepal with Human Expertise + Advanced Analytics</p>
   </footer>
-<script>
+
+  <script>
     // ====== MOBILE MENU TOGGLE ======
     const mobileMenu = document.getElementById('mobile-menu');
     const navLinks = document.querySelector('.nav-links');
@@ -1180,28 +1070,6 @@
 
     window.addEventListener('scroll', animateOnScroll);
     window.addEventListener('load', animateOnScroll);
-
-    // ====== TRUST LOGO ANIMATION ======
-    const trustLogos = document.querySelector('.trust-logos');
-    trustLogos.addEventListener('mouseover', () => {
-      trustLogos.style.animation = 'subtlePulse 1s';
-      setTimeout(() => {
-        trustLogos.style.animation = '';
-      }, 1000);
-    });
-
-    // ====== FOUNDER AVATAR HOVER ======
-    const founderAvatars = document.querySelectorAll('.founder-avatar');
-    founderAvatars.forEach(avatar => {
-      avatar.addEventListener('mouseenter', () => {
-        avatar.style.transform = 'scale(1.05)';
-        avatar.style.boxShadow = '0 15px 40px rgba(124, 58, 237, 0.3)';
-      });
-      avatar.addEventListener('mouseleave', () => {
-        avatar.style.transform = 'scale(1)';
-        avatar.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
-      });
-    });
 
     // ====== AIOXY SCANNER FUNCTIONALITY ======
     async function scanCompany() {
@@ -1380,6 +1248,7 @@ shein: 'Retail/Fashion',
       siemens: 'Industrial',
       unilever: 'Consumer Goods'
     };
+
     // ====== COMPARISON FUNCTIONS ======
     async function showComparison(company) {
       const modal = document.getElementById("comparison-modal");
@@ -1469,6 +1338,6 @@ shein: 'Retail/Fashion',
       document.getElementById("comparison-modal").style.display = "none";
       document.body.style.overflow = "auto";
     }
-</script>
+  </script>
 </body>
-  </html>
+</html>
