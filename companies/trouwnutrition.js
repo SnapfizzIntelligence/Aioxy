@@ -2,39 +2,39 @@ export default {
   name: "Trouw Nutrition",
   industry: "Animal Nutrition (Agriculture)",
   score: 70,
-  revenueRisk: "Minimal regulatory fines; strong ESG posture mitigates supply chain-related risks",
+  revenueRisk: "Minimal regulatory/vendor risk; strong ESG posture",
 
   leaks: [
-    // No verified ESG leaks found—Trouw shows strong commitment with limited public controversies.
+    // 👍 No verified ESG leaks found — a clean record 😊
   ],
 
   strengths: [
     {
-      item: "Publishes Nutreco Group Sustainability Reports annually since 2000, with transparent progress and governance",
+      item: "Publishes Nutreco Sustainability Reports annually since 2000, with transparent data and governance",
       source: {
         label: "Nutreco Sustainability Report 2022",
         url: "https://www.trouwnutrition.com/en/news-and-events/news/nutreco-publishes-its-sustainability-report-2022/"
       }
     },
     {
-      item: "Science-based GHG reduction targets: 30% for scope 1–2 and 38% for scope 3 by 2030 under RoadMap 2025",
+      item: "RoadMap 2025 includes science-based GHG targets and circular feed goals",
       source: {
-        label: "Trouw Nutrition RoadMap 2025 – Climate & Circularity",
+        label: "Trouw Nutrition Sustainability RoadMap 2025",
         url: "https://www.trouwnutrition.com/en/sustainability/roadmap-2025/pillar-2-climate-circularity/"
       }
     },
     {
-      item: "Supplier Code of Conduct signed by 300 key suppliers covering ~90% of spend to embed sustainability in procurement",
+      item: "300+ key suppliers (~90% of spend) signed the Business Partner Code of Conduct",
       source: {
         label: "Trouw Nutrition Sustainability Overview",
         url: "https://www.trouwnutrition.com/en/sustainability/"
       }
     },
     {
-      item: "Circularity leader: developing LCA-driven feed formulas and repurposing food by-products into animal feed",
+      item: "eco‑innovation: LCA-based feed formulas and MyFeedPrint carbon‑footprint tool",
       source: {
-        label: "Trouw Nutrition on circular feed innovation",
-        url: "https://sustainablebusinessmagazine.net/agriculture/from-waste-to-resource-trouw-nutrition-drives-sustainable-agriculture/"
+        label: "MyFeedPrint & LCA innovation",
+        url: "https://www.trouwnutrition.com/en/news-and-events/news/nutreco-publishes-its-sustainability-report-2022/"
       }
     }
   ]
