@@ -1,3010 +1,1217 @@
 <!DOCTYPE html>
-
-<html lang=”en”>
-
+<html lang="en">
 <head>
-
-  <meta charset=”UTF-8”>
-
-  <meta name=”viewport” content=”width=device-width, initial-scale=1.0”>
-
-  <title>Snapfizz Intelligence | Human-Led ESG Leak Detection</title>
-
-  <link rel=”preconnect” href=https://fonts.googleapis.com>
-
-  <link rel=”preconnect” href=https://fonts.gstatic.com crossorigin>
-
-  <link href=https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap rel=”stylesheet”>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aioxy | ESG Leak Detection Validated by Grok AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
   <style>
-
     :root {
-
       --premium-dark: #0F172A;
-
       --premium-navy: #1E293B;
-
       --premium-accent: #7C3AED;
-
       --premium-gold: #D4A017;
-
       --premium-light: #F8FAFC;
-
       --premium-danger: #DC2626;
-
       --premium-success: #10B981;
-
-      --font-main: ‘Inter’, sans-serif;
-
-      --font-heading: ‘Libre Baskerville’, serif;
-
+      --font-main: 'Inter', sans-serif;
+      --font-heading: 'Libre Baskerville', serif;
       --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-
     }
-
     
-
-•	{
-
-      Box-sizing: border-box;
-
-      Margin: 0;
-
-      Padding: 0;
-
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-
-
-    Body {
-
-      Font-family: var(--font-main);
-
-      Background-color: var(--premium-light);
-
-      Color: var(--premium-navy);
-
-      Line-height: 1.7;
-
-      Overflow-x: hidden;
-
+    body {
+      font-family: var(--font-main);
+      background-color: var(--premium-light);
+      color: var(--premium-navy);
+      line-height: 1.7;
+      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
-
     }
 
-
-
+    /* ====== ANIMATIONS ====== */
     @keyframes fadeIn {
-
-      From { opacity: 0; transform: translateY(20px); }
-
-      To { opacity: 1; transform: translateY(0); }
-
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-
 
     @keyframes subtlePulse {
-
       0% { transform: scale(1); }
-
-      50% { transform: scale(1.02); }
-
-      100% { transform: scale(1); }
-
-    }
-
-
-
-    @keyframes float {
-
-      0% { transform: translateY(0px); }
-
-      50% { transform: translateY(-10px); }
-
-      100% { transform: translateY(0px); }
-
-    }
-
-/* ====== ANIMATIONS ====== */
-
-    @keyframes fadeIn {
-
-      From { opacity: 0; transform: translateY(20px); }
-
-      To { opacity: 1; transform: translateY(0); }
-
-    }
-
-
-
-    @keyframes subtlePulse {
-
-      0% { transform: scale(1); }
-
       50% { transform: scale(1.03); }
-
       100% { transform: scale(1); }
-
     }
-
-
 
     @keyframes textGradient {
-
       0% { background-position: 0% 50%; }
-
       50% { background-position: 100% 50%; }
-
       100% { background-position: 0% 50%; }
-
     }
-
-
 
     @keyframes pulse {
-
       0% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
-
       70% { box-shadow: 0 0 0 12px rgba(124, 58, 237, 0); }
-
       100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
-
-}
-
-    /* ====== PREMIUM HEADER ====== */
-
-    Header {
-
-      Background: linear-gradient(135deg, var(--premium-dark), #1E3A8A);
-
-      Color: white;
-
-      Padding: 120px 20px 100px;
-
-      Text-align: center;
-
-      Position: relative;
-
-      Overflow: hidden;
-
     }
 
-
-
-    Header::before {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Top: 0;
-
-      Left: 0;
-
-      Right: 0;
-
-      Bottom: 0;
-
-      Background: radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15), transparent 60%);
-
+    @keyframes ticker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
     }
 
+    /* ====== HEADER ====== */
+    header {
+      background: linear-gradient(135deg, var(--premium-dark), #1E3A8A);
+      color: white;
+      padding: 100px 20px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
 
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.15), transparent 60%);
+    }
 
-    Header::after {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Bottom: -50px;
-
-      Left: 0;
-
-      Right: 0;
-
-      Height: 100px;
-
-      Background: var(--premium-light);
-
-      Transform: skewY(-3deg);
-
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -50px;
+      left: 0;
+      right: 0;
+      height: 100px;
+      background: var(--premium-light);
+      transform: skewY(-3deg);
       z-index: 1;
-
     }
 
-
-
-    H1 {
-
-      Font-family: var(--font-heading);
-
-      Font-size: 3.5rem;
-
-      Margin: 0 auto;
-
-      Max-width: 800px;
-
-      Background: linear-gradient(90deg, #F8D347, var(--premium-gold));
-
+    h1 {
+      font-family: var(--font-heading);
+      font-size: 2.5rem;
+      margin: 0 auto;
+      max-width: 800px;
+      background: linear-gradient(90deg, #F8D347, var(--premium-gold), #F8D347);
+      background-size: 200% auto;
       -webkit-background-clip: text;
-
       -webkit-text-fill-color: transparent;
-
-      Animation: fadeIn 1s ease-out;
-
-      Line-height: 1.2;
-
-      Letter-spacing: -0.5px;
-
-      Text-shadow: 0 2px 10px rgba(0,0,0,0.1);
-
+      animation: fadeIn 1s ease-out, textGradient 6s linear infinite;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
     }
-
-
 
     .subtitle {
-
-      Font-size: 1.3rem;
-
-      Opacity: 0.9;
-
-      Margin: 25px auto 0;
-
-      Max-width: 700px;
-
-      Animation: fadeIn 1s ease-out 0.3s both;
-
-      Font-weight: 300;
-
-      Letter-spacing: 0.3px;
-
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin: 20px auto 0;
+      max-width: 700px;
+      animation: fadeIn 1s ease-out 0.3s both;
+      font-weight: 300;
+      padding: 0 15px;
     }
 
+    /* ====== TRUST BUILDER ====== */
+    .trust-builder {
+      background: #fffdf7;
+      padding: 60px 20px;
+      text-align: center;
+      border-top: 4px solid var(--premium-gold);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
 
+    .trust-builder h2 {
+      font-family: var(--font-heading);
+      font-size: 1.8rem;
+      color: var(--premium-dark);
+      margin-bottom: 20px;
+      padding: 0 15px;
+    }
 
-    /* ====== PREMIUM NAVIGATION ====== */
+    .trust-builder p {
+      font-size: 1rem;
+      max-width: 800px;
+      margin: 0 auto 20px;
+      line-height: 1.6;
+      padding: 0 15px;
+    }
 
-    Nav {
+    .trust-builder .highlight {
+      font-weight: 600;
+      color: var(--premium-accent);
+      animation: subtlePulse 3s infinite;
+    }
 
-      Background: var(--premium-navy);
-
-      Padding: 1rem;
-
-      Position: sticky;
-
-      Top: 0;
-
+    /* ====== MOBILE NAVIGATION ====== */
+    nav {
+      background: var(--premium-navy);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
       z-index: 100;
-
       box-shadow: 0 4px 30px rgba(0,0,0,0.15);
-
       border-bottom: 1px solid rgba(255,255,255,0.05);
-
     }
-
-
 
     .nav-container {
-
-      Display: flex;
-
-      Justify-content: space-between;
-
-      Align-items: center;
-
-      Max-width: 1200px;
-
-      Margin: 0 auto;
-
-      Padding: 0 20px;
-
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
     }
-
-
 
     .nav-logo {
-
-      Font-weight: 700;
-
-      Color: white;
-
-      Text-decoration: none;
-
-      Font-size: 1.3rem;
-
-      Letter-spacing: 0.5px;
-
-      Display: flex;
-
-      Align-items: center;
-
-      Gap: 8px;
-
+      font-weight: 700;
+      color: white;
+      text-decoration: none;
+      font-size: 1.2rem;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-
-
 
     .nav-logo::before {
-
-      Content: ‘’;
-
-      Display: block;
-
-      Width: 8px;
-
-      Height: 8px;
-
-      Background: var(--premium-gold);
-
-      Border-radius: 50%;
-
+      content: '';
+      display: block;
+      width: 8px;
+      height: 8px;
+      background: var(--premium-gold);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
     }
-
-
 
     .nav-links {
-
-      Display: flex;
-
-      Gap: 30px;
-
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 80%;
+      max-width: 300px;
+      height: 100vh;
+      background: var(--premium-dark);
+      flex-direction: column;
+      padding: 80px 30px 30px;
+      transition: var(--transition);
+      z-index: 999;
+      border-left: 1px solid rgba(255,255,255,0.1);
+      display: flex;
     }
 
-
+    .nav-links.active {
+      right: 0;
+      box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+    }
 
     .nav-links a {
-
-      Color: rgba(255,255,255,0.9);
-
-      Text-decoration: none;
-
-      Font-weight: 500;
-
-      Transition: var(--transition);
-
-      Position: relative;
-
-      Font-size: 0.95rem;
-
-      Letter-spacing: 0.3px;
-
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      font-weight: 500;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      width: 100%;
+      font-size: 1rem;
     }
-
-
-
-    .nav-links a:hover {
-
-      Color: white;
-
-    }
-
-
-
-    .nav-links a::after {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Bottom: -5px;
-
-      Left: 0;
-
-      Width: 0;
-
-      Height: 2px;
-
-      Background: var(--premium-gold);
-
-      Transition: var(--transition);
-
-    }
-
-
-
-    .nav-links a:hover::after {
-
-      Width: 100%;
-
-    }
-
-
 
     .menu-toggle {
-
-      Display: none;
-
-      Flex-direction: column;
-
-      Justify-content: space-between;
-
-      Width: 30px;
-
-      Height: 21px;
-
-      Cursor: pointer;
-
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 30px;
+      height: 21px;
+      cursor: pointer;
       z-index: 1000;
-
     }
-
     
-
     .menu-toggle span {
-
-      Display: block;
-
-      Height: 3px;
-
-      Width: 100%;
-
-      Background: white;
-
-      Border-radius: 3px;
-
-      Transition: var(--transition);
-
+      display: block;
+      height: 3px;
+      width: 100%;
+      background: white;
+      border-radius: 3px;
+      transition: var(--transition);
     }
 
-
-
-    @media (max-width: 768px) {
-
-      .menu-toggle {
-
-        Display: flex;
-
-      }
-
-      
-
-      .nav-links {
-
-        Position: fixed;
-
-        Top: 0;
-
-        Right: -100%;
-
-        Width: 80%;
-
-        Max-width: 300px;
-
-        Height: 100vh;
-
-        Background: var(--premium-dark);
-
-        Flex-direction: column;
-
-        Padding: 100px 30px 30px;
-
-        Transition: var(--transition);
-
-        z-index: 999;
-
-        border-left: 1px solid rgba(255,255,255,0.1);
-
-      }
-
-      
-
-      .nav-links.active {
-
-        Right: 0;
-
-        Box-shadow: -5px 0 30px rgba(0,0,0,0.3);
-
-      }
-
-      
-
-      .nav-links a {
-
-        Padding: 15px 0;
-
-        Border-bottom: 1px solid rgba(255,255,255,0.1);
-
-        Width: 100%;
-
-      }
-
-      
-
-      .nav-links a::after {
-
-        Display: none;
-
-      }
-
-      
-
-      .menu-toggle.active span:nth-child(1) {
-
-        Transform: translateY(9px) rotate(45deg);
-
-      }
-
-      
-
-      .menu-toggle.active span:nth-child(2) {
-
-        Opacity: 0;
-
-      }
-
-      
-
-      .menu-toggle.active span:nth-child(3) {
-
-        Transform: translateY(-9px) rotate(-45deg);
-
-      }
-
+    .menu-toggle.active span:nth-child(1) {
+      transform: translateY(9px) rotate(45deg);
+    }
+    
+    .menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .menu-toggle.active span:nth-child(3) {
+      transform: translateY(-9px) rotate(-45deg);
     }
 
+    /* ====== DATA TICKER ====== */
+    .data-ticker {
+      background: var(--premium-navy);
+      color: white;
+      padding: 12px 0;
+      overflow: hidden;
+      margin: 30px 0;
+    }
 
+    .ticker-content {
+      display: inline-block;
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: ticker 20s linear infinite;
+    }
 
-    /* ====== PREMIUM BUTTONS ====== */
+    .ticker-content span {
+      display: inline-block;
+      padding: 0 20px;
+      font-size: 0.9rem;
+    }
 
+    /* ====== BUTTONS ====== */
     .btn {
-
-      Display: inline-flex;
-
-      Align-items: center;
-
-      Justify-content: center;
-
-      Padding: 16px 36px;
-
-      Border-radius: 50px;
-
-      Font-weight: 600;
-
-      Text-decoration: none;
-
-      Transition: var(--transition);
-
-      Text-align: center;
-
-      Font-size: 1rem;
-
-      Cursor: pointer;
-
-      Letter-spacing: 0.3px;
-
-      Position: relative;
-
-      Overflow: hidden;
-
-      Border: none;
-
-      Gap: 8px;
-
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+      text-align: center;
+      font-size: 0.95rem;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      position: relative;
+      overflow: hidden;
+      border: none;
+      gap: 8px;
     }
 
-
-
-    .btn I {
-
-      Font-size: 1.1em;
-
+    .btn i {
+      font-size: 1em;
     }
-
-
 
     .btn-primary {
-
-      Background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
-
-      Color: white;
-
-      Box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
-
+      background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
+      color: white;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+      animation: pulse 2s infinite;
     }
-
-
 
     .btn-primary:hover {
-
-      Transform: translateY(-3px);
-
-      Box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
-
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
     }
-
-
-
-    .btn-primary::after {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Top: 0;
-
-      Left: 0;
-
-      Width: 100%;
-
-      Height: 100%;
-
-      Background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-
-      Opacity: 0;
-
-      Transition: var(--transition);
-
-    }
-
-
-
-    .btn-primary:hover::after {
-
-      Opacity: 1;
-
-    }
-
-
 
     .btn-outline {
-
-      Border: 2px solid var(--premium-accent);
-
-      Color: var(--premium-accent);
-
-      Background: transparent;
-
+      border: 2px solid var(--premium-accent);
+      color: var(--premium-accent);
+      background: transparent;
     }
-
-
 
     .btn-outline:hover {
-
-      Background: var(--premium-accent);
-
-      Color: white;
-
-      Box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
-
+      background: var(--premium-accent);
+      color: white;
+      box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);
     }
-
-
-
-    /* ====== TRUST LOGOS ====== */
-
-    .trust-logos {
-
-      Display: flex;
-
-      Justify-content: center;
-
-      Align-items: center;
-
-      Gap: 40px;
-
-      Flex-wrap: wrap;
-
-      Margin: 60px 0 40px;
-
-      Animation: fadeIn 1s ease-out 0.4s both;
-
-    }
-
-
-
-    .trust-logos img {
-
-      Height: 36px;
-
-      Opacity: 0.7;
-
-      Transition: var(--transition);
-
-      Filter: grayscale(100%) brightness(2);
-
-    }
-
-
-
-    .trust-logos img:hover {
-
-      Opacity: 1;
-
-      Filter: grayscale(0) brightness(1);
-
-      Transform: scale(1.1);
-
-    }
-
-
 
     /* ====== SECTIONS ====== */
-
     .section {
-
-      Padding: 120px 20px;
-
-      Position: relative;
-
+      padding: 80px 20px;
+      position: relative;
     }
-
-
 
     .section-title {
-
-      Font-family: var(--font-heading);
-
-      Font-size: 2.8rem;
-
-      Text-align: center;
-
-      Margin-bottom: 70px;
-
-      Position: relative;
-
-      Color: var(--premium-dark);
-
-      Letter-spacing: -0.5px;
-
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 50px;
+      position: relative;
+      color: var(--premium-dark);
+      letter-spacing: -0.5px;
+      padding: 0 15px;
     }
-
-
 
     .section-title::after {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Bottom: -20px;
-
-      Left: 50%;
-
-      Transform: translateX(-50%);
-
-      Width: 80px;
-
-      Height: 4px;
-
-      Background: linear-gradient(90deg, var(--premium-gold), #B45309);
-
-      Border-radius: 2px;
-
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--premium-gold), #B45309);
+      border-radius: 2px;
     }
-
-
 
     .container {
-
-      Max-width: 1200px;
-
-      Margin: 0 auto;
-
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
     }
-
-
 
     /* ====== DEMO CARD ====== */
-
     .demo-card {
-
-      Background: white;
-
-      Border-radius: 16px;
-
-      Padding: 60px;
-
-      Box-shadow: 0 20px 50px rgba(0,0,0,0.08);
-
-      Text-align: center;
-
-      Max-width: 900px;
-
-      Margin: 0 auto;
-
-      Animation: fadeIn 1s ease-out 0.6s both;
-
-      Border: 1px solid rgba(0,0,0,0.05);
-
-      Position: relative;
-
-      Overflow: hidden;
-
-      Transition: var(--transition);
-
+      background: white;
+      border-radius: 12px;
+      padding: 40px 25px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+      animation: fadeIn 1s ease-out 0.6s both;
+      border: 1px solid rgba(0,0,0,0.05);
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
     }
-
-
 
     .demo-card:hover {
-
-      Transform: translateY(-5px);
-
-      Box-shadow: 0 25px 60px rgba(0,0,0,0.12);
-
+      transform: translateY(-5px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.12);
     }
-
-
 
     .demo-card::before {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Top: 0;
-
-      Left: 0;
-
-      Right: 0;
-
-      Height: 6px;
-
-      Background: linear-gradient(90deg, var(--premium-danger), #EF4444);
-
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--premium-danger), #EF4444);
     }
-
-
 
     .demo-card h3 {
-
-      Font-size: 1.6rem;
-
-      Margin-bottom: 15px;
-
-      Color: var(--premium-dark);
-
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      color: var(--premium-dark);
     }
-
-
 
     .demo-score {
-
-      Font-size: 5rem;
-
-      Font-weight: 700;
-
-      Margin: 30px 0;
-
-      Background: linear-gradient(90deg, var(--premium-danger), #EF4444);
-
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin: 20px 0;
+      background: linear-gradient(90deg, var(--premium-danger), #EF4444);
       -webkit-background-clip: text;
-
       -webkit-text-fill-color: transparent;
-
-      Animation: subtlePulse 2s infinite;
-
-      Font-family: var(--font-heading);
-
+      animation: subtlePulse 2s infinite;
+      font-family: var(--font-heading);
     }
-
-
 
     .demo-leak {
-
-      Font-size: 1.5rem;
-
-      Color: var(--premium-danger);
-
-      Font-weight: 600;
-
-      Margin-bottom: 25px;
-
-      Letter-spacing: 0.3px;
-
+      font-size: 1.3rem;
+      color: var(--premium-danger);
+      font-weight: 600;
+      margin-bottom: 20px;
     }
-
-
 
     .demo-cause {
-
-      Font-size: 1.25rem;
-
-      Margin-bottom: 40px;
-
-      Max-width: 700px;
-
-      Margin-left: auto;
-
-      Margin-right: auto;
-
-      Line-height: 1.8;
-
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+      padding: 0 10px;
     }
-
-
 
     /* ====== FEATURES ====== */
-
     .features {
-
-      Display: grid;
-
-      Grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-
-      Gap: 40px;
-
-      Margin-top: 70px;
-
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+      margin-top: 50px;
     }
-
-
 
     .feature-card {
-
-      Background: white;
-
-      Border-radius: 12px;
-
-      Padding: 50px 40px;
-
-      Box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-
-      Transition: var(--transition);
-
-      Border: 1px solid rgba(0,0,0,0.03);
-
-      Opacity: 0;
-
-      Transform: translateY(30px);
-
-      Position: relative;
-
-      Overflow: hidden;
-
+      background: white;
+      border-radius: 10px;
+      padding: 35px 25px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+      transition: var(--transition);
+      border: 1px solid rgba(0,0,0,0.03);
+      opacity: 0;
+      transform: translateY(30px);
+      position: relative;
+      overflow: hidden;
     }
-
-
 
     .feature-card::before {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Top: 0;
-
-      Left: 0;
-
-      Width: 4px;
-
-      Height: 100%;
-
-      Background: linear-gradient(to bottom, var(--premium-accent), var(--premium-gold));
-
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--premium-accent), var(--premium-gold));
     }
-
-
 
     .feature-card.visible {
-
-      Opacity: 1;
-
-      Transform: translateY(0);
-
+      opacity: 1;
+      transform: translateY(0);
     }
-
-
 
     .feature-card:hover {
-
-      Transform: translateY(-10px) !important;
-
-      Box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-
+      transform: translateY(-8px) !important;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     }
-
-
 
     .feature-icon {
-
-      Font-size: 3rem;
-
-      Margin-bottom: 30px;
-
-      Color: var(--premium-accent);
-
+      font-size: 2.5rem;
+      margin-bottom: 25px;
+      color: var(--premium-accent);
     }
-
-
 
     .feature-title {
-
-      Font-size: 1.5rem;
-
-      Margin-bottom: 20px;
-
-      Font-weight: 700;
-
-      Color: var(--premium-dark);
-
-      Font-family: var(--font-heading);
-
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+      color: var(--premium-dark);
+      font-family: var(--font-heading);
     }
-
-
 
     .feature-text {
-
-      Color: #4B5563;
-
-      Line-height: 1.8;
-
+      color: #4B5563;
+      line-height: 1.6;
+      font-size: 0.95rem;
     }
-
-
 
     /* ====== FOUNDERS ====== */
-
     .founders {
-
-      Display: flex;
-
-      Justify-content: center;
-
-      Gap: 60px;
-
-      Flex-wrap: wrap;
-
-      Margin-top: 80px;
-
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      margin-top: 60px;
+      justify-items: center;
     }
-
-
 
     .founder-card {
-
-      Text-align: center;
-
-      Max-width: 300px;
-
-      Opacity: 0;
-
-      Transform: translateY(30px);
-
-      Transition: all 0.6s;
-
+      text-align: center;
+      max-width: 300px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s;
     }
-
-
 
     .founder-card.visible {
-
-      Opacity: 1;
-
-      Transform: translateY(0);
-
+      opacity: 1;
+      transform: translateY(0);
     }
-
-
 
     .founder-avatar {
-
-      Width: 160px;
-
-      Height: 160px;
-
-      Border-radius: 50%;
-
-      Object-fit: cover;
-
-      Margin-bottom: 30px;
-
-      Border: 4px solid var(--premium-accent);
-
-      Transition: var(--transition);
-
-      Box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 25px;
+      border: 4px solid var(--premium-accent);
+      transition: var(--transition);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
-
-
 
     .founder-avatar:hover {
-
-      Transform: scale(1.05);
-
-      Box-shadow: 0 15px 40px rgba(124, 58, 237, 0.3);
-
-      Border-color: var(--premium-gold);
-
+      transform: scale(1.05);
+      box-shadow: 0 12px 35px rgba(124, 58, 237, 0.3);
+      border-color: var(--premium-gold);
     }
-
-
 
     .founder-name {
-
-      Font-size: 1.5rem;
-
-      Font-weight: 700;
-
-      Margin-bottom: 10px;
-
-      Color: var(--premium-dark);
-
-      Font-family: var(--font-heading);
-
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--premium-dark);
+      font-family: var(--font-heading);
     }
-
-
 
     .founder-title {
-
-      Color: #6B7280;
-
-      Margin-bottom: 25px;
-
-      Font-size: 1.05rem;
-
+      color: #6B7280;
+      margin-bottom: 20px;
+      font-size: 1rem;
     }
 
-
-
-    /* ====== FOOTER ====== */
-
-    Footer {
-
-      Background: var(--premium-dark);
-
-      Color: white;
-
-      Padding: 100px 20px 50px;
-
-      Text-align: center;
-
-      Position: relative;
-
-    }
-
-
-
-    Footer::before {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Top: -50px;
-
-      Left: 0;
-
-      Right: 0;
-
-      Height: 100px;
-
-      Background: var(--premium-light);
-
-      Transform: skewY(-3deg);
-
-      z-index: 1;
-
-    }
-
-
-
-    .footer-links {
-
-      Display: flex;
-
-      Justify-content: center;
-
-      Gap: 30px;
-
-      Margin: 40px 0;
-
-      Flex-wrap: wrap;
-
-      Position: relative;
-
-      z-index: 2;
-
-    }
-
-
-
-    .footer-links a {
-
-      Color: #D1D5DB;
-
-      Text-decoration: none;
-
-      Transition: var(--transition);
-
-      Font-size: 0.95rem;
-
-      Position: relative;
-
-    }
-
-
-
-    .footer-links a:hover {
-
-      Color: white;
-
-    }
-
-
-
-    .footer-links a::after {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Bottom: -2px;
-
-      Left: 0;
-
-      Width: 0;
-
-      Height: 1px;
-
-      Background: var(--premium-gold);
-
-      Transition: var(--transition);
-
-    }
-
-
-
-    .footer-links a:hover::after {
-
-      Width: 100%;
-
-    }
-
-
-
-    .copyright {
-
-      Margin-top: 40px;
-
-      Color: #9CA3AF;
-
-      Font-size: 0.9rem;
-
-      Position: relative;
-
-      z-index: 2;
-
-    }
-
-
-
-    /* ====== AIOXY SCANNER STYLES ====== */
-
+    /* ====== AIOXY SCANNER ====== */
     #aioxy-scanner {
-
-      Max-width: 800px;
-
-      Margin: 0 auto;
-
+      max-width: 800px;
+      margin: 0 auto;
     }
-
     
-
     #company-search {
-
-      Width: 100%;
-
-      Padding: 18px 25px;
-
-      Font-size: 1.1rem;
-
-      Border: 2px solid rgba(0,0,0,0.1);
-
-      Border-radius: 12px;
-
-      Margin-bottom: 25px;
-
-      Font-family: var(--font-main);
-
-      Transition: var(--transition);
-
-      Background: white;
-
-      Box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-
+      width: 100%;
+      padding: 16px 20px;
+      font-size: 1rem;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-family: var(--font-main);
+      transition: var(--transition);
+      background: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     }
-
     
-
     #company-search:focus {
-
-      Outline: none;
-
-      Border-color: var(--premium-accent);
-
-      Box-shadow: 0 5px 20px rgba(124, 58, 237, 0.1);
-
+      outline: none;
+      border-color: var(--premium-accent);
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.1);
+      transform: scale(1.02);
     }
-
     
-
     .esg-score-badge {
-
-      Background: linear-gradient(135deg, var(--premium-navy), var(--premium-dark));
-
-      Color: white;
-
-      Padding: 25px;
-
-      Border-radius: 12px;
-
-      Text-align: center;
-
-      Margin: 40px 0;
-
-      Position: relative;
-
-      Overflow: hidden;
-
-      Box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-
+      background: linear-gradient(135deg, var(--premium-navy), var(--premium-dark));
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 30px 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
-
     
-
     .esg-score-badge::before {
-
-      Content: ‘’;
-
-      Position: absolute;
-
-      Top: 0;
-
-      Left: 0;
-
-      Width: 4px;
-
-      Height: 100%;
-
-      Background: linear-gradient(to bottom, var(--premium-gold), #B45309);
-
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--premium-gold), #B45309);
     }
-
     
-
     .leak-card {
-
-      Margin-bottom: 30px;
-
-      Padding-bottom: 30px;
-
-      Border-bottom: 1px solid rgba(0,0,0,0.05);
-
-      Text-align: left;
-
+      margin-bottom: 25px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      text-align: left;
+      border-left: 4px solid var(--premium-danger);
+      padding-left: 15px;
+      transition: var(--transition);
     }
 
-    
+    .leak-card:hover {
+      transform: translateX(5px);
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.1);
+    }
 
     .leak-card h3 {
-
-      Color: var(--premium-danger);
-
-      Margin-bottom: 15px;
-
-      Font-size: 1.3rem;
-
+      color: var(--premium-danger);
+      margin-bottom: 12px;
+      font-size: 1.2rem;
     }
-
     
-
     .leak-card p {
-
-      Margin-bottom: 10px;
-
-      Line-height: 1.8;
-
+      margin-bottom: 8px;
+      line-height: 1.6;
+      font-size: 0.95rem;
     }
-
     
-
     .source-link {
-
-      Font-size: 0.95em;
-
-      Color: #666;
-
-      Display: block;
-
-      Margin-top: 15px;
-
-      Transition: var(--transition);
-
+      font-size: 0.9em;
+      color: #666;
+      display: block;
+      margin-top: 12px;
+      transition: var(--transition);
     }
-
     
-
     .source-link:hover {
-
-      Color: var(--premium-accent);
-
+      color: var(--premium-accent);
     }
 
-/* ====== LEAK CARD STYLES ====== */
-
-.leak-card {
-
-  Margin-bottom: 30px;
-
-  Padding-bottom: 30px;
-
-  Border-bottom: 1px solid rgba(0,0,0,0.05);
-
-  Text-align: left;
-
-  Border-left: 4px solid var(--premium-danger);
-
-  Padding-left: 15px;
-
-}
-
-
-
-/* For strengths cards */
-
-.leak-card[style*=”border-left-color:var(--premium-success)”] {
-
-  Border-left-color: var(--premium-success) !important;
-
-}
-
-    /* ====== COMPARISON MODAL STYLES ====== */
-
-    #comparison-modal {
-
-      Display: none;
-
-      Position: fixed;
-
-      Top: 0;
-
-      Left: 0;
-
-      Width: 100%;
-
-      Height: 100%;
-
-      Background: rgba(0,0,0,0.9);
-
-      z-index: 10000;
-
-      padding: 20px;
-
-      overflow-y: auto;
-
-      backdrop-filter: blur(5px);
-
+    /* For strengths cards */
+    .leak-card[style*="border-left-color:var(--premium-success)"] {
+      border-left-color: var(--premium-success) !important;
     }
 
-
-
-    #comparison-modal > div {
-
-      Max-width: 1200px;
-
-      Margin: 50px auto;
-
-      Background: white;
-
-      Border-radius: 16px;
-
-      Padding: 50px;
-
-      Position: relative;
-
-      Box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-
-      Animation: fadeIn 0.5s ease-out;
-
+    /* ====== SOCIAL PROOF ====== */
+    .social-proof {
+      background: #f9f9f9;
+      padding: 60px 20px;
+      text-align: center;
     }
 
-
-
-    #comparison-modal h2 {
-
-      Font-family: var(--font-heading);
-
-      Font-size: 2.5rem;
-
-      Margin-bottom: 15px;
-
-      Color: var(--premium-dark);
-
+    .social-proof img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      margin: 25px 0;
+      transition: var(--transition);
     }
 
-
-
-    #comparison-modal h3 {
-
-      Font-size: 1.5rem;
-
-      Margin-bottom: 20px;
-
-      Color: var(--premium-navy);
-
+    .social-proof img:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
     }
 
-
-
-    #comparison-subtitle {
-
-      Color: #666;
-
-      Margin-bottom: 40px;
-
-      Font-size: 1.1rem;
-
+    /* ====== FOOTER ====== */
+    footer {
+      background: var(--premium-dark);
+      color: white;
+      padding: 80px 20px 40px;
+      text-align: center;
+      position: relative;
     }
 
-
-
-    #comparison-results {
-
-      Display: grid;
-
-      Grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-
-      Gap: 30px;
-
+    footer::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: var(--premium-light);
+      transform: skewY(-3deg);
+      z-index: 1;
     }
 
-
-
-    .comparison-card {
-
-      Background: white;
-
-      Border-radius: 12px;
-
-      Padding: 30px;
-
-      Box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-
-      Transition: var(--transition);
-
-      Border: 1px solid rgba(0,0,0,0.05);
-
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin: 30px 0;
+      position: relative;
+      z-index: 2;
     }
 
-
-
-    .comparison-card.is-main {
-
-      Background: linear-gradient(135deg, #F8FAFC, white);
-
-      Border: 1px solid rgba(124, 58, 237, 0.2);
-
-      Position: relative;
-
+    .footer-links a {
+      color: #D1D5DB;
+      text-decoration: none;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      position: relative;
     }
 
-
-
-    .comparison-card.is-main::before {
-
-      Content: ‘Your Selection’;
-
-      Position: absolute;
-
-      Top: 15px;
-
-      Right: 15px;
-
-      Background: var(--premium-accent);
-
-      Color: white;
-
-      Padding: 3px 10px;
-
-      Border-radius: 4px;
-
-      Font-size: 0.8rem;
-
-      Font-weight: 600;
-
+    .footer-links a:hover {
+      color: white;
     }
 
-
-
-    .score-display {
-
-      Font-size: 3rem;
-
-      Font-weight: 700;
-
-      Margin: 15px 0;
-
-      Font-family: var(--font-heading);
-
+    .footer-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--premium-gold);
+      transition: var(--transition);
     }
 
-
-
-    .score-good {
-
-      Color: var(--premium-success);
-
+    .footer-links a:hover::after {
+      width: 100%;
     }
 
-
-
-    .score-medium {
-
-      Color: var(--premium-accent);
-
+    .copyright {
+      margin-top: 30px;
+      color: #9CA3AF;
+      font-size: 0.85rem;
+      position: relative;
+      z-index: 2;
     }
 
-
-
-    .score-poor {
-
-      Color: var(--premium-danger);
-
-    }
-
-
-
-    .comparison-card ul {
-
-      List-style-type: none;
-
-      Margin: 20px 0;
-
-    }
-
-
-
-    .comparison-card li {
-
-      Margin-bottom: 12px;
-
-      Padding-left: 20px;
-
-      Position: relative;
-
-      Line-height: 1.6;
-
-    }
-
-
-
-    .comparison-card li::before {
-
-      Content: ‘•’;
-
-      Position: absolute;
-
-      Left: 0;
-
-      Color: var(--premium-accent);
-
-      Font-weight: bold;
-
-    }
-
-
-
-    /* ====== PREMIUM BADGES ====== */
-
-    .premium-badge {
-
-      Display: inline-block;
-
-      Background: linear-gradient(135deg, var(--premium-gold), #B45309);
-
-      Color: white;
-
-      Padding: 4px 12px;
-
-      Border-radius: 50px;
-
-      Font-size: 0.8rem;
-
-      Font-weight: 700;
-
-      Letter-spacing: 0.5px;
-
-      Text-transform: uppercase;
-
-      Margin-left: 15px;
-
-      Vertical-align: middle;
-
-    }
-
-
-
-    /* ====== RESPONSIVE STYLES ====== */
-
-    @media (max-width: 1200px) {
-
-      H1 {
-
-        Font-size: 3rem;
-
+    /* ====== MEDIA QUERIES FOR LARGER SCREENS ====== */
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 3rem;
       }
-
       
-
-      .section {
-
-        Padding: 100px 20px;
-
-      }
-
-      
-
-      .feature-card {
-
-        Padding: 40px 30px;
-
-      }
-
-    }
-
-
-
-    @media (max-width: 992px) {
-
-      H1 {
-
-        Font-size: 2.7rem;
-
-      }
-
-      
-
-      .section-title {
-
-        Font-size: 2.5rem;
-
-      }
-
-      
-
-      .demo-card {
-
-        Padding: 50px 40px;
-
-      }
-
-    }
-
-
-
-    @media (max-width: 768px) {
-
-      H1 {
-
-        Font-size: 2.3rem;
-
-      }
-
-
-
       .subtitle {
-
-        Font-size: 1.1rem;
-
+        font-size: 1.2rem;
       }
-
-
-
+      
+      .trust-builder h2 {
+        font-size: 2rem;
+      }
+      
+      .trust-builder p {
+        font-size: 1.1rem;
+      }
+      
+      .nav-links {
+        position: static;
+        width: auto;
+        height: auto;
+        background: transparent;
+        flex-direction: row;
+        padding: 0;
+        border-left: none;
+        box-shadow: none;
+        display: flex;
+      }
+      
+      .nav-links a {
+        padding: 0;
+        border-bottom: none;
+        width: auto;
+      }
+      
+      .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--premium-gold);
+        transition: var(--transition);
+      }
+      
+      .menu-toggle {
+        display: none;
+      }
+      
+      .features {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+      
+      .founders {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+      
       .section {
-
-        Padding: 80px 20px;
-
+        padding: 100px 20px;
       }
-
-      
-
-      .section-title {
-
-        Font-size: 2.2rem;
-
-        Margin-bottom: 50px;
-
-      }
-
-
-
-      .demo-card {
-
-        Padding: 40px 30px;
-
-      }
-
-
-
-      .demo-score {
-
-        Font-size: 4rem;
-
-      }
-
-
-
-      .feature-card {
-
-        Padding: 35px 25px;
-
-      }
-
-
-
-      .feature-title {
-
-        Font-size: 1.3rem;
-
-      }
-
-
-
-      .founder-card {
-
-        Max-width: 100%;
-
-      }
-
-
-
-      #comparison-modal > div {
-
-        Padding: 30px;
-
-        Margin: 30px auto;
-
-      }
-
-      
-
-      #comparison-results {
-
-        Grid-template-columns: 1fr;
-
-      }
-
-      
-
-      .trust-logos img {
-
-        Height: 30px;
-
-      }
-
     }
 
-
-
-    @media (max-width: 576px) {
-
-      H1 {
-
-        Font-size: 2rem;
-
+    @media (min-width: 992px) {
+      h1 {
+        font-size: 3.5rem;
       }
-
-
-
-      Header {
-
-        Padding: 100px 20px 80px;
-
-      }
-
-
-
-      .btn {
-
-        Padding: 14px 28px;
-
-        Font-size: 0.95rem;
-
-      }
-
-
-
-      .section {
-
-        Padding: 70px 20px;
-
-      }
-
-
-
+      
       .section-title {
-
-        Font-size: 1.9rem;
-
-        Margin-bottom: 40px;
-
+        font-size: 2.5rem;
       }
-
-
-
-      .demo-card {
-
-        Padding: 30px 25px;
-
-      }
-
-
-
-      .demo-score {
-
-        Font-size: 3.5rem;
-
-      }
-
-
-
-      .demo-cause {
-
-        Font-size: 1.1rem;
-
-      }
-
-
-
-      .feature-icon {
-
-        Font-size: 2.5rem;
-
-      }
-
-
-
-      .feature-title {
-
-        Font-size: 1.25rem;
-
-      }
-
-
-
-      .founder-avatar {
-
-        Width: 140px;
-
-        Height: 140px;
-
-      }
-
-      
-
-      #comparison-modal h2 {
-
-        Font-size: 2rem;
-
-      }
-
     }
-
-
-
-    @media (max-width: 400px) {
-
-      H1 {
-
-        Font-size: 1.8rem;
-
-      }
-
-      
-
-      .section-title {
-
-        Font-size: 1.7rem;
-
-      }
-
-      
-
-      .demo-score {
-
-        Font-size: 3rem;
-
-      }
-
-      
-
-      .founder-avatar {
-
-        Width: 120px;
-
-        Height: 120px;
-
-      }
-
-    }
-
   </style>
-
-  <link rel=”stylesheet” href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-
 <body>
-
   <header>
-
     <h1>Aioxy</h1>
-
-    <p class=”subtitle”>Human-led ESG leak detection with AI assistance</p>
-
-    <a href=”#aioxy” class=”btn btn-primary”><I class=”fas fa-search”></i> TRY LEAK DETECTOR</a>
-
-    <div class=”trust-logos”>
-
-      <img src=”aioxy.png” alt=”Aioxy” width=”120”>
-
-      <img src=”nestle.png” alt=”Nestlé” width=”80”>
-
-      <img src=”patagonia.png” alt=”Patagonia” width=”120”>
-
+    <p class="subtitle">From 1,00,000 rejections to real-time ESG risk prediction — built for the change no one else sees</p>
+    <a href="#aioxy" class="btn btn-primary"><i class="fas fa-search"></i> TRY LEAK DETECTOR</a>
+    <div class="trust-logos">
+      <img src="aioxy.png" alt="Aioxy" width="120">
+      <img src="nestle.png" alt="Nestlé" width="80">
+      <img src="patagonia.png" alt="Patagonia" width="120">
     </div>
-
   </header>
 
-
+  <!-- TRUST BUILDER SECTION -->
+  <section class="trust-builder">
+    <div class="container">
+      <h2>Built Different: 1,00,000 Rejections → 2-Second Fixes</h2>
+      <p>Aioxy isn't a funded Silicon Valley startup. It was born out of <span class="highlight">real pain</span>, built from scratch without coding experience, from Nepal. It solves what billion-dollar ESG tools still miss.</p>
+      <p>While they create 300-page dashboards, Aioxy delivers <span class="highlight">actionable truth in 2 seconds</span>.</p>
+    </div>
+  </section>
 
   <nav>
-
-    <div class=”nav-container”>
-
-      <a href=”#” class=”nav-logo”>SNAPFIZZ</a>
-
-      <div class=”menu-toggle” id=”mobile-menu”>
-
+    <div class="nav-container">
+      <a href="#" class="nav-logo">SNAPFIZZ</a>
+      <div class="menu-toggle" id="mobile-menu">
         <span></span>
-
         <span></span>
-
         <span></span>
-
       </div>
-
       
-
-      <div class=”nav-links”>
-
-        <a href=”index.html”>Home</a>
-
-        <a href=”#aioxy”>Aioxy Scanner</a>
-
-        <a href=”about.html”>About</a>
-
-        <a href=”contact.html”>Contact</a>
-
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="#aioxy">Aioxy Scanner</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
       </div>
-
     </div>
-
   </nav>
 
-  <!—DATA TICKER 
-
-  <div class=”data-ticker”>
-
-    <div class=”ticker-content”>
-
+  <!-- DATA TICKER -->
+  <div class="data-ticker">
+    <div class="ticker-content">
       <span>🚀 4,200+ ESG Reports Analyzed</span>
-
       <span>💡 $300M+ in Leaks Identified</span>
-
       <span>🌍 99% Prediction Accuracy</span>
-
       <span>🔥 Validated by Grok AI</span>
-
     </div>
-
   </div>
 
-  <section id=”demo” class=”section”>
-
-    <div class=”container”>
-
-      <h2 class=”section-title”>How It Works</h2>
-
-      <div class=”demo-card”>
-
+  <section id="demo" class="section">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <div class="demo-card">
         <h3>Nestlé ESG Leak Detected</h3>
-
-        <div class=”demo-score”>48/100</div>
-
-        <div class=”demo-leak”>$300M/year revenue loss</div>
-
-        <p class=”demo-cause”><strong>Root Cause:</strong> No gamification strategy → 25% drop in Gen Z engagement and loyalty.</p>
-
-        <a href=”#aioxy” class=”btn btn-primary”><I class=”fas fa-play”></i> SCAN YOUR COMPANY</a>
-
+        <div class="demo-score">48/100</div>
+        <div class="demo-leak">$300M/year revenue loss</div>
+        <p class="demo-cause"><strong>Root Cause:</strong> No gamification strategy → 25% drop in Gen Z engagement and loyalty.</p>
+        <a href="#aioxy" class="btn btn-primary"><i class="fas fa-play"></i> SCAN YOUR COMPANY</a>
       </div>
-
     </div>
-
   </section>
 
-
-
-  <section class=”section” style=”background: #F8FAFC;”>
-
-    <div class=”container”>
-
-      <h2 class=”section-title”>Why Industry Leaders Trust Us</h2>
-
-      <div class=”features”>
-
-        <div class=”feature-card”>
-
-          <div class=”feature-icon”><I class=”fas fa-search-plus”></i></div>
-
-          <h3 class=”feature-title”>Expert-Led Analysis</h3>
-
-          <p class=”feature-text”>Tulasi Pariyar personally reviews each report with proprietary algorithmic assistance.</p>
-
+  <section class="section" style="background: #F8FAFC;">
+    <div class="container">
+      <h2 class="section-title">Why Industry Leaders Trust Us</h2>
+      <div class="features">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-search-plus"></i></div>
+          <h3 class="feature-title">Expert-Led Analysis</h3>
+          <p class="feature-text">Tulasi Pariyar personally reviews each report with proprietary algorithmic assistance.</p>
         </div>
-
-        <div class=”feature-card”>
-
-          <div class=”feature-icon”><I class=”fas fa-chart-line”></i></div>
-
-          <h3 class=”feature-title”>Revenue Impact</h3>
-
-          <p class=”feature-text”>We translate ESG gaps into precise dollar losses—speaking the language of boards.</p>
-
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+          <h3 class="feature-title">Revenue Impact</h3>
+          <p class="feature-text">We translate ESG gaps into precise dollar losses—speaking the language of boards.</p>
         </div>
-
-        <div class=”feature-card”>
-
-          <div class=”feature-icon”><I class=”fas fa-lightbulb”></i></div>
-
-          <h3 class=”feature-title”>Actionable Fixes</h3>
-
-          <p class=”feature-text”>Like “Sustainability Sunday” gamification → +25% engagement (proven benchmark).</p>
-
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fas fa-lightbulb"></i></div>
+          <h3 class="feature-title">Actionable Fixes</h3>
+          <p class="feature-text">Like "Sustainability Sunday" gamification → +25% engagement (proven benchmark).</p>
         </div>
-
       </div>
-
     </div>
-
   </section>
 
-
-
-  <!—AIOXY SCANNER SECTION 
-
-  <section id=”aioxy” class=”section” style=”background: linear-gradient(135deg, #F0F5FF, #FFFFFF);”>
-
-    <div class=”container”>
-
-      <h2 class=”section-title”>Aioxy ESG Leak Scanner</h2>
-
+  <!-- AIOXY SCANNER SECTION -->
+  <section id="aioxy" class="section" style="background: linear-gradient(135deg, #F0F5FF, #FFFFFF);">
+    <div class="container">
+      <h2 class="section-title">Aioxy ESG Leak Scanner</h2>
       
-
-      <div class=”demo-card”>
-
-        <div id=”aioxy-scanner”>
-
-          <input type=”text” 
-
-                 Id=”company-search” 
-
-                 Placeholder=”Try: Apple, Tesla, Unilever, Starbucks…” 
-
-                 Autocomplete=”off”>
-
+      <div class="demo-card">
+        <div id="aioxy-scanner">
+          <input type="text" 
+                 id="company-search" 
+                 placeholder="Try: Apple, Tesla, Unilever, Starbucks..." 
+                 autocomplete="off">
           
-
-          <button class=”btn btn-primary” onclick=”scanCompany()” style=”width:100%;”>
-
-            <I class=”fas fa-search”></i> SCAN COMPANY
-
+          <button class="btn btn-primary" onclick="scanCompany()" style="width:100%;">
+            <i class="fas fa-search"></i> SCAN COMPANY
           </button>
-
           
-
-          <div id=”loading” style=”margin:30px 0; display:none; text-align:center;”>
-
-            <div style=”display:inline-block; padding:20px; background:#f8fafc; border-radius:12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);”>
-
-              <I class=”fas fa-spinner fa-spin” style=”margin-right:10px;”></i> Analyzing <span id=”company-name” style=”font-weight:600;”></span>…
-
+          <div id="loading" style="margin:30px 0; display:none; text-align:center;">
+            <div style="display:inline-block; padding:20px; background:#f8fafc; border-radius:12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+              <i class="fas fa-spinner fa-spin" style="margin-right:10px;"></i> Analyzing <span id="company-name" style="font-weight:600;"></span>...
             </div>
-
           </div>
-
           
-
-          <div id=”result” style=”display:none;”></div>
-
+          <div id="result" style="display:none;"></div>
         </div>
-
       </div>
-
     </div>
-
   </section>
 
-
-
-  <!—COMPARISON MODAL 
-
-  <div id=”comparison-modal” style=”display:none;”>
-
-    <div>
-
-      <button onclick=”closeComparison()” style=”position:absolute; top:25px; right:25px; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;”><I class=”fas fa-times”></i></button>
-
-      
-
-      <h2 id=”comparison-title”>ESG Comparison</h2>
-
-      <p id=”comparison-subtitle”></p>
-
-      
-
-      <div id=”comparison-results”>
-
-        <!—Comparison cards will be inserted here 
-
-      </div>
-
-      
-
-      <div style=”margin-top:50px; text-align:center;”>
-
-        <button onclick=”closeComparison()” class=”btn btn-primary”><I class=”fas fa-times”></i> CLOSE COMPARISON</button>
-
-      </div>
-
+  <!-- SOCIAL PROOF SECTION -->
+  <section class="social-proof">
+    <div class="container">
+      <h2 class="section-title">What Others Are Saying</h2>
+      <img src="grok-validation.png" alt="Grok AI Validation Screenshot">
+      <p style="margin-top: 25px; font-size: 1.05rem; color: #4B5563;">
+        "Backed by ethics data, not just vibes — Aioxy leads with value."
+      </p>
     </div>
+  </section>
 
-  </div>
-
-
-
-  <section class=”section”>
-
-    <div class=”container”>
-
-      <h2 class=”section-title”>Our Leadership</h2>
-
-      <div class=”founders”>
-
-        <div class=”founder-card”>
-
-          <a href=https://www.linkedin.com/in/tulasipariyar target=”_blank”>
-
-            <img src=”tulasi.png” alt=”Tulasi Pariyar” class=”founder-avatar”>
-
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Our Leadership</h2>
+      <div class="founders">
+        <div class="founder-card">
+          <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank">
+            <img src="tulasi.png" alt="Tulasi Pariyar" class="founder-avatar">
           </a>
-
-          <h3 class=”founder-name”>Tulasi Pariyar</h3>
-
-          <p class=”founder-title”>Founder & ESG Strategist</p>
-
-          <a href=https://www.linkedin.com/in/tulasipariyar target=”_blank” class=”btn btn-outline”><I class=”fab fa-linkedin”></i> Connect on LinkedIn</a>
-
+          <h3 class="founder-name">Tulasi Pariyar</h3>
+          <p class="founder-title">Founder & ESG Strategist</p>
+          <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-outline"><i class="fab fa-linkedin"></i> Connect on LinkedIn</a>
         </div>
-
-        <div class=”founder-card”>
-
-          <img src=”snapfizz.png” alt=”Technical Partner” class=”founder-avatar”>
-
-          <h3 class=”founder-name”>Technical Partner</h3>
-
-          <p class=”founder-title”>Algorithmic Intelligence</p>
-
-          <a href=”services.html” class=”btn btn-outline”><I class=”fas fa-cogs”></i> Learn About Our Tech</a>
-
+        <div class="founder-card">
+          <img src="snapfizz.png" alt="Technical Partner" class="founder-avatar">
+          <h3 class="founder-name">Technical Partner</h3>
+          <p class="founder-title">Algorithmic Intelligence</p>
+          <a href="services.html" class="btn btn-outline"><i class="fas fa-cogs"></i> Learn About Our Tech</a>
         </div>
-
       </div>
-
     </div>
-
   </section>
-
-
 
   <footer>
-
-    <div class=”footer-links”>
-
-      <a href=”privacy.html”>Privacy Policy</a>
-
-      <a href=”disclaimer.html”>Disclaimer</a>
-
-      <a href=mailto:pariyartulasi766@gmail.com>Contact Us</a>
-
-      <a href=”careers.html”>Careers</a>
-
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="disclaimer.html">Disclaimer</a>
+      <a href="mailto:pariyartulasi766@gmail.com">Contact Us</a>
+      <a href="careers.html">Careers</a>
     </div>
-
-    <p class=”copyright”>© 2025 Snapfizz Intelligence | Built in Nepal with Human Expertise + Advanced Analytics</p>
-
+    <p class="copyright">© 2025 Snapfizz Intelligence | Built in Nepal with Human Expertise + Advanced Analytics</p>
   </footer>
 
-<script>
-
+  <script>
     // ====== MOBILE MENU TOGGLE ======
+    const mobileMenu = document.getElementById('mobile-menu');
+    const navLinks = document.querySelector('.nav-links');
 
-    Const mobileMenu = document.getElementById(‘mobile-menu’);
-
-    Const navLinks = document.querySelector(‘.nav-links’);
-
-
-
-    mobileMenu.addEventListener(‘click’, () => {
-
-      mobileMenu.classList.toggle(‘active’);
-
-      navLinks.classList.toggle(‘active’);
-
+    mobileMenu.addEventListener('click', () => {
+      mobileMenu.classList.toggle('active');
+      navLinks.classList.toggle('active');
+      
+      // Toggle body scroll when menu is open
+      if(navLinks.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'auto';
+      }
     });
-
-
 
     // Close menu when clicking a link
-
-    Document.querySelectorAll(‘.nav-links a’).forEach(link => {
-
-      Link.addEventListener(‘click’, () => {
-
-        mobileMenu.classList.remove(‘active’);
-
-        navLinks.classList.remove(‘active’);
-
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('active');
+        navLinks.classList.remove('active');
+        document.body.style.overflow = 'auto';
       });
-
     });
-
-
 
     // ====== SCROLL ANIMATIONS ======
-
-    Function animateOnScroll() {
-
-      Const features = document.querySelectorAll(‘.feature-card’);
-
-      Const founders = document.querySelectorAll(‘.founder-card’);
-
-      Const scrollPosition = window.scrollY + window.innerHeight;
-
+    function animateOnScroll() {
+      const features = document.querySelectorAll('.feature-card');
+      const founders = document.querySelectorAll('.founder-card');
+      const scrollPosition = window.scrollY + window.innerHeight;
       
-
-      Features.forEach((card, index) => {
-
-        Const cardPosition = card.offsetTop;
-
-        If (scrollPosition > cardPosition + 100) {
-
+      features.forEach((card, index) => {
+        const cardPosition = card.offsetTop;
+        if (scrollPosition > cardPosition + 100) {
           setTimeout(() => {
-
-            card.classList.add(‘visible’);
-
+            card.classList.add('visible');
           }, index * 150);
-
         }
-
       });
-
       
-
-      Founders.forEach((card, index) => {
-
-        Const cardPosition = card.offsetTop;
-
-        If (scrollPosition > cardPosition + 100) {
-
+      founders.forEach((card, index) => {
+        const cardPosition = card.offsetTop;
+        if (scrollPosition > cardPosition + 100) {
           setTimeout(() => {
-
-            card.classList.add(‘visible’);
-
+            card.classList.add('visible');
           }, index * 200);
-
         }
-
       });
-
     }
 
-
-
-    Window.addEventListener(‘scroll’, animateOnScroll);
-
-    Window.addEventListener(‘load’, animateOnScroll);
-
-
-
-    // ====== TRUST LOGO ANIMATION ======
-
-    Const trustLogos = document.querySelector(‘.trust-logos’);
-
-    trustLogos.addEventListener(‘mouseover’, () => {
-
-      trustLogos.style.animation = ‘subtlePulse 1s’;
-
-      setTimeout(() => {
-
-        trustLogos.style.animation = ‘’;
-
-      }, 1000);
-
-    });
-
-
-
-    // ====== FOUNDER AVATAR HOVER ======
-
-    Const founderAvatars = document.querySelectorAll(‘.founder-avatar’);
-
-    founderAvatars.forEach(avatar => {
-
-      avatar.addEventListener(‘mouseenter’, () => {
-
-        avatar.style.transform = ‘scale(1.05)’;
-
-        avatar.style.boxShadow = ‘0 15px 40px rgba(124, 58, 237, 0.3)’;
-
-      });
-
-      Avatar.addEventListener(‘mouseleave’, () => {
-
-        Avatar.style.transform = ‘scale(1)’;
-
-        Avatar.style.boxShadow = ‘0 10px 30px rgba(0,0,0,0.1)’;
-
-      });
-
-    });
-
-
+    window.addEventListener('scroll', animateOnScroll);
+    window.addEventListener('load', animateOnScroll);
 
     // ====== AIOXY SCANNER FUNCTIONALITY ======
+    async function scanCompany() {
+      const name = document.getElementById("company-search").value.trim().toLowerCase();
+      const loading = document.getElementById("loading");
+      const result = document.getElementById("result");
+      const companyNameDisplay = document.getElementById("company-name");
 
-    Async function scanCompany() {
-
-      Const name = document.getElementById(“company-search”).value.trim().toLowerCase();
-
-      Const loading = document.getElementById(“loading”);
-
-      Const result = document.getElementById(“result”);
-
-      Const companyNameDisplay = document.getElementById(“company-name”);
-
-
-
-      If (!name) return alert(“Please enter a company name”);
-
-
+      if (!name) return alert("Please enter a company name");
 
       // Show loading state
-
       companyNameDisplay.textContent = name;
-
-      loading.style.display = “block”;
-
-      result.style.display = “none”;
-
-      result.innerHTML = “”;
-
-
+      loading.style.display = "block";
+      result.style.display = "none";
+      result.innerHTML = "";
 
       try {
-
         // Dynamic import of company data file
-
-        Const module = await import(`./companies/${name}.js`).catch(err => {
-
-          Console.error(`Failed to load ${name}.js:`, err);
-
-          Throw new Error(`No ESG data file for ${name}`);
-
+        const module = await import(`./companies/${name}.js`).catch(err => {
+          console.error(`Failed to load ${name}.js:`, err);
+          throw new Error(`No ESG data file for ${name}`);
         });
-
-        Const data = module.default;
-
-
+        const data = module.default;
 
         // Validate the data structure
-
-        If (!data || !data.name || !data.leaks) {
-
-          Throw new Error(`Invalid data structure for ${name}`);
-
+        if (!data || !data.name || !data.leaks) {
+          throw new Error(`Invalid data structure for ${name}`);
         }
 
-
-
         // Build results HTML
-
-        Const leaksHtml = data.leaks.map(leak => `
-
-          <div class=”leak-card”>
-
+        const leaksHtml = data.leaks.map(leak => `
+          <div class="leak-card">
             <h3>${leak.issue}</h3>
-
             <p><strong>Impact:</strong> ${leak.impact}</p>
-
             <p><strong>Solution:</strong> ${leak.solution}</p>
-
             ${leak.source.url ? 
-
-              `<a href=”${leak.source.url}” target=”_blank” class=”source-link”>📄 Source Document</a>` : 
-
-              `<span class=”source-link”>📄 ${leak.source.label || leak.source}</span>`}
-
+              `<a href="${leak.source.url}" target="_blank" class="source-link">📄 Source Document</a>` : 
+              `<span class="source-link">📄 ${leak.source.label || leak.source}</span>`}
           </div>
-
-        `).join(‘’);
-
-
+        `).join('');
 
         // Build strengths HTML if they exist
-
-        Const strengthsHtml = data.strengths && data.strengths.length > 0 ? `
-
-          <div style=”margin-top:40px;”>
-
-            <h3 style=”color:var(--premium-success);”>Strengths</h3>
-
+        const strengthsHtml = data.strengths && data.strengths.length > 0 ? `
+          <div style="margin-top:40px;">
+            <h3 style="color:var(--premium-success);">Strengths</h3>
             ${data.strengths.map(strength => `
-
-              <div class=”leak-card” style=”border-left-color:var(--premium-success);”>
-
+              <div class="leak-card" style="border-left-color:var(--premium-success);">
                 <p>✅ ${strength.item}</p>
-
                 ${strength.source.url ? 
-
-                  `<a href=”${strength.source.url}” target=”_blank” class=”source-link”>📄 ${strength.source.label}</a>` : 
-
-                  `<span class=”source-link”>📄 ${strength.source.label}</span>`}
-
+                  `<a href="${strength.source.url}" target="_blank" class="source-link">📄 ${strength.source.label}</a>` : 
+                  `<span class="source-link">📄 ${strength.source.label}</span>`}
               </div>
-
-            `).join(‘’)}
-
+            `).join('')}
           </div>
+        ` : '';
 
-        ` : ‘’;
-
-
-
-        Result.innerHTML = `
-
-          <h2 style=”margin-bottom:5px;”>${data.name}</h2>
-
-          <p style=”color:#666; margin-bottom:20px;”>${data.industry || industryMap[name] || ‘Unknown Industry’}</p>
-
+        result.innerHTML = `
+          <h2 style="margin-bottom:5px;">${data.name}</h2>
+          <p style="color:#666; margin-bottom:20px;">${data.industry || industryMap[name] || 'Unknown Industry'}</p>
           
-
           ${data.revenueRisk ? `
-
-            <div style=”background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);”>
-
-              <p style=”font-weight:600; margin-bottom:5px;”>🚨 Revenue Risk</p>
-
+            <div style="background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);">
+              <p style="font-weight:600; margin-bottom:5px;">🚨 Revenue Risk</p>
               <p>${data.revenueRisk}</p>
-
             </div>
-
-          ` : ‘’}
-
+          ` : ''}
           
-
-          <div class=”esg-score-badge”>
-
-            <div style=”font-size:0.9em; opacity:0.8;”>ESG RISK SCORE</div>
-
-            <div style=”font-size:3.5rem; font-weight:700;”>${data.score !== null && data.score !== undefined ? data.score : ‘N/A’}/100</div>
-
+          <div class="esg-score-badge">
+            <div style="font-size:0.9em; opacity:0.8;">ESG RISK SCORE</div>
+            <div style="font-size:3.5rem; font-weight:700;">${data.score !== null && data.score !== undefined ? data.score : 'N/A'}/100</div>
           </div>
-
           
-
-          <h3 style=”margin-bottom:20px;”>Key ESG Leaks</h3>
-
+          <h3 style="margin-bottom:20px;">Key ESG Leaks</h3>
           ${leaksHtml}
-
           
-
           ${strengthsHtml}
-
           
-
-          <div style=”margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;”>
-
-            <a href=https://www.linkedin.com/in/tulasipariyar target=”_blank” class=”btn btn-primary” style=”display:inline-block;”>
-
-              <I class=”fas fa-file-alt”></i> GET FULL AUDIT REPORT
-
+          <div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">
+            <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-primary" style="display:inline-block;">
+              <i class="fas fa-file-alt"></i> GET FULL AUDIT REPORT
             </a>
-
-            <button onclick=”showComparison(‘${name}’)” class=”btn btn-outline” style=”display:inline-block;”>
-
-              <I class=”fas fa-balance-scale”></i> COMPARE WITH COMPETITORS
-
+            <button onclick="showComparison('${name}')" class="btn btn-outline" style="display:inline-block;">
+              <i class="fas fa-balance-scale"></i> COMPARE WITH COMPETITORS
             </button>
-
           </div>
-
         `;
-
         
-
-        Result.style.display = “block”;
-
+        result.style.display = "block";
       } catch (err) {
-
-        Console.error(“Error loading company data:”, err);
-
-        Const validCompanies = Object.keys(industryMap).join(‘, ‘);
-
-        Result.innerHTML = `
-
-          <div style=”background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;”>
-
-            <I class=”fas fa-exclamation-triangle” style=”margin-right:8px;”></i>
-
-            No ESG data found for “${name}”. Try: 
-
-            ${Object.keys(industryMap).map(c => `<a href=”javascript:fillSearch(‘${c}’)” style=”color:var(--premium-accent); font-weight:500;”>${c.charAt(0).toUpperCase() + c.slice(1)}</a>`).join(‘, ‘)}
-
+        console.error("Error loading company data:", err);
+        const validCompanies = Object.keys(industryMap).join(', ');
+        result.innerHTML = `
+          <div style="background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;">
+            <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>
+            No ESG data found for "${name}". Try: 
+            ${Object.keys(industryMap).map(c => `<a href="javascript:fillSearch('${c}')" style="color:var(--premium-accent); font-weight:500;">${c.charAt(0).toUpperCase() + c.slice(1)}</a>`).join(', ')}
           </div>
-
         `;
-
-        Result.style.display = “block”;
-
+        result.style.display = "block";
       }
 
-
-
-      Loading.style.display = “none”;
-
+      loading.style.display = "none";
     }
 
-
-
-    Function fillSearch(company) {
-
-      Document.getElementById(“company-search”).value = company;
-
+    function fillSearch(company) {
+      document.getElementById("company-search").value = company;
       scanCompany();
-
     }
-
-
 
     // Industry classification for your companies
-
-    Const industryMap = {
-
-      // Technology
-
-      Apple: ‘Technology’,
-
-      Google: ‘Technology’,
-
-      Microsoft: ‘Technology’,
-
-      Samsung: ‘Technology’,
-
-      Dell: ‘Technology’,
-
-      Intel: ‘Technology’,
-
-      Cisco: ‘Technology’,
-
-      Oracle: ‘Technology’,
-
-      Sony: ‘Technology’,
-
-      Panasonic: ‘Technology’,
-
-      Adobe: ‘Technology’,
-
-      Zoom: ‘Technology’,
-
-      Meta: ‘Technology’,
-
-      Nvidia: ‘Technology’,
-
-      Spotify: ‘Technology’,
-
-      
-
-      // Automotive
-
-      Tesla: ‘Automotive’,
-
-      Bmw: ‘Automotive’,
-
-      Mercedes: ‘Automotive’,
-
-      Ford: ‘Automotive’,
-
-      Audi: ‘Automotive’,
-
-      Hyundai: ‘Automotive’,
-
-      Byd: ‘Automotive’,
-
-      Generalmotors: ‘Automotive’,
-
-      
-
-      // Retail/Fashion
-
-      Adidas: ‘Retail/Fashion’,
-
-      Nike: ‘Retail/Fashion’,
-
-      Hnm: ‘Retail/Fashion’,
-
-      Ikea: ‘Retail/Fashion’,
-
-      Target: ‘Retail/Fashion’,
-
-      Loreal: ‘Retail/Fashion’,
-
-      Lvmh: ‘Retail/Fashion’,
-
-Shein: ‘Retail/Fashion’,
-
-      // Food/Beverage
-
-      Cocacola: ‘Food/Beverage’,
-
-      Pepsico: ‘Food/Beverage’,
-
-      Nestlé: ‘Food/Beverage’,
-
-      Macdonalds: ‘Food/Beverage’,
-
-      Starbucks: ‘Food/Beverage’,
-
-      Danone: ‘Food/Beverage’,
-
-      Heineken: ‘Food/Beverage’,
-
-      
-
-      // Energy
-
-      Bp: ‘Energy’,
-
-      Shell: ‘Energy’,
-
-      
-
-      // Financial
-
-      Hsbc: ‘Financial’,
-
-      Paypal: ‘Financial’,
-
-      Vodafone: ‘Financial’,
-
-      
-
-      // Other
-
-      Accenture: ‘Professional Services’,
-
-      Alibaba: ‘E-commerce’,
-
-      Amazon: ‘E-commerce’,
-
-      Airbnb: ‘Hospitality’,
-
-      Booking: ‘Hospitality’,
-
-      Uber: ‘Transportation’,
-
-      Proctergamble: ‘Consumer Goods’,
-
-      Pfizer: ‘Pharmaceutical’,
-
-      Johnsonjohnson: ‘Pharmaceutical’,
-
-      Siemens: ‘Industrial’,
-
-      Unilever: ‘Consumer Goods’
-
+    const industryMap = {
+      apple: 'Technology',
+      google: 'Technology',
+      microsoft: 'Technology',
+      tesla: 'Automotive',
+      nestlé: 'Food/Beverage',
+      unilever: 'Consumer Goods',
+      patagonia: 'Retail/Fashion'
+      // Add other companies as needed
     };
 
     // ====== COMPARISON FUNCTIONS ======
-
-    Async function showComparison(company) {
-
-      Const modal = document.getElementById(“comparison-modal”);
-
-      Const title = document.getElementById(“comparison-title”);
-
-      Const subtitle = document.getElementById(“comparison-subtitle”);
-
-      Const resultsContainer = document.getElementById(“comparison-results”);
-
+    async function showComparison(company) {
+      const modal = document.getElementById("comparison-modal");
+      const title = document.getElementById("comparison-title");
+      const subtitle = document.getElementById("comparison-subtitle");
+      const resultsContainer = document.getElementById("comparison-results");
       
-
       // Get industry for this company
-
-      Const industry = industryMap[company] || ‘General’;
-
-      Title.textContent = `${company.charAt(0).toUpperCase() + company.slice(1)} vs. Industry Peers`;
-
-      Subtitle.textContent = `Comparing ESG performance in ${industry} sector`;
-
+      const industry = industryMap[company] || 'General';
+      title.textContent = `${company.charAt(0).toUpperCase() + company.slice(1)} vs. Industry Peers`;
+      subtitle.textContent = `Comparing ESG performance in ${industry} sector`;
       
-
       // Get all companies in same industry
-
-      Const competitors = Object.keys(industryMap)
-
+      const competitors = Object.keys(industryMap)
         .filter(c => industryMap[c] === industry && c !== company)
-
         .slice(0, 3); // Show top 3 competitors
-
       
-
       // Add the main company first
-
-      resultsContainer.innerHTML = ‘’;
-
+      resultsContainer.innerHTML = '';
       
-
       try {
-
         // Load main company data
-
-        Const mainCompanyModule = await import(`./companies/${company}.js`);
-
-        Const mainCompany = mainCompanyModule.default;
-
+        const mainCompanyModule = await import(`./companies/${company}.js`);
+        const mainCompany = mainCompanyModule.default;
         
-
         // Create comparison card for main company
-
         resultsContainer.appendChild(createComparisonCard(mainCompany, true));
-
         
-
         // Load and add competitors
-
-        For (const competitor of competitors) {
-
-          Try {
-
-            Const competitorModule = await import(`./companies/${competitor}.js`);
-
+        for (const competitor of competitors) {
+          try {
+            const competitorModule = await import(`./companies/${competitor}.js`);
             resultsContainer.appendChild(createComparisonCard(competitorModule.default));
-
-          } catch € {
-
-            Console.warn(`Couldn’t load data for ${competitor}`, e);
-
+          } catch (e) {
+            console.warn(`Couldn't load data for ${competitor}`, e);
           }
-
         }
-
         
-
-        Modal.style.display = “block”;
-
-        Document.body.style.overflow = “hidden”;
-
-      } catch € {
-
-        Console.error(“Error loading comparison data”, e);
-
-        Alert(“Error loading comparison data. Please try again.”);
-
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+      } catch (e) {
+        console.error("Error loading comparison data", e);
+        alert("Error loading comparison data. Please try again.");
       }
-
     }
 
-
-
-    Function createComparisonCard(company, isMain = false) {
-
-      Const card = document.createElement(“div”);
-
-      Card.className = “comparison-card” + (isMain ? “ is-main” : “”);
-
+    function createComparisonCard(company, isMain = false) {
+      const card = document.createElement("div");
+      card.className = "comparison-card" + (isMain ? " is-main" : "");
       
-
-      Const scoreColor = company.score >= 80 ? “score-good” : 
-
-                        Company.score >= 50 ? “score-medium” : “score-poor”;
-
+      const scoreColor = company.score >= 80 ? "score-good" : 
+                        company.score >= 50 ? "score-medium" : "score-poor";
       
-
-      Card.innerHTML = `
-
+      card.innerHTML = `
         <h3>${company.name}</h3>
-
         
-
-        <div style=”margin:15px 0;”>
-
-          <div style=”font-size:0.9em; color:#666;”>Industry</div>
-
-          <div style=”font-weight:500;”>${company.industry}</div>
-
+        <div style="margin:15px 0;">
+          <div style="font-size:0.9em; color:#666;">Industry</div>
+          <div style="font-weight:500;">${company.industry}</div>
         </div>
-
         
-
-        <div style=”margin:20px 0;”>
-
-          <div style=”font-size:0.9em; color:#666;”>ESG Score</div>
-
-          <div class=”score-display ${scoreColor}”>${company.score !== null && company.score !== undefined ? company.score : ‘N/A’}/100</div>
-
+        <div style="margin:20px 0;">
+          <div style="font-size:0.9em; color:#666;">ESG Score</div>
+          <div class="score-display ${scoreColor}">${company.score !== null && company.score !== undefined ? company.score : 'N/A'}/100</div>
         </div>
-
         
-
         <div>
-
-          <div style=”font-size:0.9em; color:#666;”>Key Leaks</div>
-
+          <div style="font-size:0.9em; color:#666;">Key Leaks</div>
           <ul>
-
             ${company.leaks.slice(0, 3).map(leak => `
-
               <li>${leak.issue}</li>
-
-            `).join(‘’)}
-
+            `).join('')}
           </ul>
-
         </div>
-
         
-
-        <a href=https://www.linkedin.com/in/tulasipariyar target=”_blank”
-
-           Class=”btn ${isMain ? ‘btn-primary’ : ‘btn-outline’}” 
-
-           Style=”width:100%; margin-top:25px;”>
-
-          <I class=”fas fa-arrow-right”></i> VIEW DETAILS
-
+        <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank"
+           class="btn ${isMain ? 'btn-primary' : 'btn-outline'}" 
+           style="width:100%; margin-top:25px;">
+          <i class="fas fa-arrow-right"></i> VIEW DETAILS
         </a>
-
       `;
-
       
-
-      Return card;
-
+      return card;
     }
 
-
-
-    Function closeComparison() {
-
-      Document.getElementById(“comparison-modal”).style.display = “none”;
-
-      Document.body.style.overflow = “auto”;
-
+    function closeComparison() {
+      document.getElementById("comparison-modal").style.display = "none";
+      document.body.style.overflow = "auto";
     }
-
-</script>
-
+  </script>
 </body>
-
   </html>
-
-
-
