@@ -1,39 +1,37 @@
 export default {
   name: "Trouw Nutrition",
   industry: "Animal Nutrition (Agriculture)",
-  score: 70,
-  revenueRisk: "Minimal regulatory/vendor risk; strong ESG posture",
+  score: 74,
+  revenueRisk: "Low (no ESG-related fines or reputational risks detected)",
 
-  leaks: [
-    // 👍 No verified ESG leaks found — a clean record 😊
-  ],
+  
 
   strengths: [
     {
-      item: "Publishes Nutreco Sustainability Reports annually since 2000, with transparent data and governance",
+      item: "Part of Nutreco, publishing annual Sustainability Reports since 2000",
       source: {
         label: "Nutreco Sustainability Report 2022",
         url: "https://www.trouwnutrition.com/en/news-and-events/news/nutreco-publishes-its-sustainability-report-2022/"
       }
     },
     {
-      item: "RoadMap 2025 includes science-based GHG targets and circular feed goals",
+      item: "Sustainability RoadMap 2025 outlines science-based targets on climate and circularity",
       source: {
-        label: "Trouw Nutrition Sustainability RoadMap 2025",
+        label: "Trouw RoadMap 2025",
         url: "https://www.trouwnutrition.com/en/sustainability/roadmap-2025/pillar-2-climate-circularity/"
       }
     },
     {
-      item: "300+ key suppliers (~90% of spend) signed the Business Partner Code of Conduct",
+      item: "90% of supplier spend covered under Business Partner Code of Conduct",
       source: {
-        label: "Trouw Nutrition Sustainability Overview",
+        label: "Nutreco/Trouw Code of Conduct",
         url: "https://www.trouwnutrition.com/en/sustainability/"
       }
     },
     {
-      item: "eco‑innovation: LCA-based feed formulas and MyFeedPrint carbon‑footprint tool",
+      item: "MyFeedPrint and LCA tools promote carbon transparency in feed formulation",
       source: {
-        label: "MyFeedPrint & LCA innovation",
+        label: "Trouw eco-innovation (MyFeedPrint)",
         url: "https://www.trouwnutrition.com/en/news-and-events/news/nutreco-publishes-its-sustainability-report-2022/"
       }
     }
