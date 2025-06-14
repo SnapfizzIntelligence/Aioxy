@@ -1190,146 +1190,195 @@
       siemens: 'Industrial',
       unilever: 'Consumer Goods'
     };
+// ====== AIOXY SCANNER FUNCTIONALITY ======
 
-    // ====== AIOXY SCANNER FUNCTIONALITY ======
-    async function scanCompany() {
-      const name = document.getElementById("company-search").value.trim().toLowerCase();
-      const loading = document.getElementById("loading");
-      const result = document.getElementById("result");
-      const companyNameDisplay = document.getElementById("company-name");
+    Async function scanCompany() {
 
-      if (!name) return alert("Please enter a company name");
+      Const name = document.getElementById(“company-search”).value.trim().toLowerCase();
+
+      Const loading = document.getElementById(“loading”);
+
+      Const result = document.getElementById(“result”);
+
+      Const companyNameDisplay = document.getElementById(“company-name”);
+
+
+
+      If (!name) return alert(“Please enter a company name”);
+
+
 
       // Show loading state
-      companyNameDisplay.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-      loading.style.display = "block";
-      result.style.display = "none";
-      result.innerHTML = "";
+
+      companyNameDisplay.textContent = name;
+
+      loading.style.display = “block”;
+
+      result.style.display = “none”;
+
+      result.innerHTML = “”;
+
+
 
       try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Check if company exists in our mapping
-        if (!industryMap[name]) {
-          throw new Error(`No ESG data available for ${name}`);
+
+        // Dynamic import of company data file
+
+        Const module = await import(`./companies/${name}.js`).catch(err => {
+
+          Console.error(`Failed to load ${name}.js:`, err);
+
+          Throw new Error(`No ESG data file for ${name}`);
+
+        });
+
+        Const data = module.default;
+
+
+
+        // Validate the data structure
+
+        If (!data || !data.name || !data.leaks) {
+
+          Throw new Error(`Invalid data structure for ${name}`);
+
         }
 
-        // Build mock results (in a real app, this would come from an API)
-        const mockData = {
-          name: name.charAt(0).toUpperCase() + name.slice(1),
-          industry: industryMap[name],
-          score: Math.floor(Math.random() * 40) + 40, // Random score 40-80
-          revenueRisk: `$${Math.floor(Math.random() * 900) + 100}M annual risk`,
-          leaks: [
-            {
-              issue: "Lack of transparent supply chain reporting",
-              impact: "Potential brand trust erosion (15-25%)",
-              solution: "Implement blockchain-based tracking system",
-              source: {
-                label: "2023 Sustainability Report",
-                url: "#"
-              }
-            },
-            {
-              issue: "No executive compensation tied to ESG goals",
-              impact: "Missed 30% acceleration opportunity on targets",
-              solution: "Link 25% of bonus structure to sustainability KPIs",
-              source: {
-                label: "Proxy Statement Analysis",
-                url: "#"
-              }
-            }
-          ],
-          strengths: [
-            {
-              item: "Industry-leading renewable energy adoption (85% clean power)",
-              source: {
-                label: "CDP Climate Change Report 2023",
-                url: "#"
-              }
-            }
-          ]
-        };
+
 
         // Build results HTML
-        const leaksHtml = mockData.leaks.map(leak => `
-          <div class="leak-card">
+
+        Const leaksHtml = data.leaks.map(leak => `
+
+          <div class=”leak-card”>
+
             <h3>${leak.issue}</h3>
+
             <p><strong>Impact:</strong> ${leak.impact}</p>
+
             <p><strong>Solution:</strong> ${leak.solution}</p>
+
             ${leak.source.url ? 
-              `<a href="${leak.source.url}" target="_blank" class="source-link">📄 ${leak.source.label}</a>` : 
-              `<span class="source-link">📄 ${leak.source.label}</span>`}
+
+              `<a href=”${leak.source.url}” target=”_blank” class=”source-link”>📄 Source Document</a>` : 
+
+              `<span class=”source-link”>📄 ${leak.source.label || leak.source}</span>`}
+
           </div>
-        `).join('');
+
+        `).join(‘’);
+
+
 
         // Build strengths HTML if they exist
-        const strengthsHtml = mockData.strengths && mockData.strengths.length > 0 ? `
-          <div style="margin-top:40px;">
-            <h3 style="color:var(--premium-success);">Strengths</h3>
-            ${mockData.strengths.map(strength => `
-              <div class="leak-card" style="border-left-color:var(--premium-success);">
-                <p>✅ ${strength.item}</p>
-                ${strength.source.url ? 
-                  `<a href="${strength.source.url}" target="_blank" class="source-link">📄 ${strength.source.label}</a>` : 
-                  `<span class="source-link">📄 ${strength.source.label}</span>`}
-              </div>
-            `).join('')}
-          </div>
-        ` : '';
 
-        result.innerHTML = `
-          <h2 style="margin-bottom:5px;">${mockData.name}</h2>
-          <p style="color:#666; margin-bottom:20px;">${mockData.industry}</p>
-          
-          <div style="background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);">
-            <p style="font-weight:600; margin-bottom:5px;">🚨 Revenue Risk</p>
-            <p>${mockData.revenueRisk}</p>
+        Const strengthsHtml = data.strengths && data.strengths.length > 0 ? `
+
+          <div style=”margin-top:40px;”>
+
+            <h3 style=”color:var(--premium-success);”>Strengths</h3>
+
+            ${data.strengths.map(strength => `
+
+              <div class=”leak-card” style=”border-left-color:var(--premium-success);”>
+
+                <p>✅ ${strength.item}</p>
+
+                ${strength.source.url ? 
+
+                  `<a href=”${strength.source.url}” target=”_blank” class=”source-link”>📄 ${strength.source.label}</a>` : 
+
+                  `<span class=”source-link”>📄 ${strength.source.label}</span>`}
+
+              </div>
+
+            `).join(‘’)}
+
           </div>
+
+        ` : ‘’;
+
+
+
+        Result.innerHTML = `
+
+          <h2 style=”margin-bottom:5px;”>${data.name}</h2>
+
+          <p style=”color:#666; margin-bottom:20px;”>${data.industry || industryMap[name] || ‘Unknown Industry’}</p>
+
           
-          <div class="esg-score-badge">
-            <div style="font-size:0.9em; opacity:0.8;">ESG RISK SCORE</div>
-            <div style="font-size:3.5rem; font-weight:700;">${mockData.score}/100</div>
+
+          ${data.revenueRisk ? `
+
+            <div style=”background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);”>
+
+              <p style=”font-weight:600; margin-bottom:5px;”>🚨 Revenue Risk</p>
+
+              <p>${data.revenueRisk}</p>
+
+            </div>
+
+          ` : ‘’}
+
+          
+
+          <div class=”esg-score-badge”>
+
+            <div style=”font-size:0.9em; opacity:0.8;”>ESG RISK SCORE</div>
+
+            <div style=”font-size:3.5rem; font-weight:700;”>${data.score !== null && data.score !== undefined ? data.score : ‘N/A’}/100</div>
+
           </div>
+
           
-          <h3 style="margin-bottom:20px;">Key ESG Leaks</h3>
+
+          <h3 style=”margin-bottom:20px;”>Key ESG Leaks</h3>
+
           ${leaksHtml}
+
           
+
           ${strengthsHtml}
-          
-          <div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">
-            <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-primary" style="display:inline-block;">
-              <i class="fas fa-file-alt"></i> GET FULL AUDIT REPORT
+          <div style=”margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;”>
+
+            <a href=https://www.linkedin.com/in/tulasipariyar target=”_blank” class=”btn btn-primary” style=”display:inline-block;”>
+
+              <I class=”fas fa-file-alt”></i> GET FULL AUDIT REPORT
+
             </a>
-            <button onclick="showComparison('${name}')" class="btn btn-outline" style="display:inline-block;">
-              <i class="fas fa-balance-scale"></i> COMPARE WITH COMPETITORS
+
+            <button onclick=”showComparison(‘${name}’)” class=”btn btn-outline” style=”display:inline-block;”>
+              <I class=”fas fa-balance-scale”></i> COMPARE WITH COMPETITORS
             </button>
           </div>
         `;
-        
-        result.style.display = "block";
+        Result.style.display = “block”;
+
       } catch (err) {
-        console.error("Error loading company data:", err);
-        const validCompanies = Object.keys(industryMap).join(', ');
-        result.innerHTML = `
-          <div style="background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;">
-            <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>
-            No ESG data found for "${name}". Try: 
-            ${Object.keys(industryMap).slice(0,5).map(c => `<a href="javascript:fillSearch('${c}')" style="color:var(--premium-accent); font-weight:500;">${c.charAt(0).toUpperCase() + c.slice(1)}</a>`).join(', ')}
+
+        Console.error(“Error loading company data:”, err);
+
+        Const validCompanies = Object.keys(industryMap).join(‘, ‘);
+
+        Result.innerHTML = `
+
+          <div style=”background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;”>
+
+            <I class=”fas fa-exclamation-triangle” style=”margin-right:8px;”></i>
+
+            No ESG data found for “${name}”. Try: 
+
+            ${Object.keys(industryMap).map(c => `<a href=”javascript:fillSearch(‘${c}’)” style=”color:var(--premium-accent); font-weight:500;”>${c.charAt(0).toUpperCase() + c.slice(1)}</a>`).join(‘, ‘)}
           </div>
         `;
-        result.style.display = "block";
+        Result.style.display = “block”;
       }
-
-      loading.style.display = "none";
+      Loading.style.display = “none”;
     }
-
-    function fillSearch(company) {
-      document.getElementById("company-search").value = company;
+    Function fillSearch(company) {
+      Document.getElementById(“company-search”).value = company;
       scanCompany();
     }
-
     // ====== COMPARISON FUNCTIONS ======
     async function showComparison(company) {
       const modal = document.getElementById("comparison-modal");
