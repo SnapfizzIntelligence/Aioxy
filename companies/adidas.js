@@ -1,45 +1,51 @@
 export default {
-  name: "Adidas",
+  name: "Adidas AG",
   industry: "Apparel & Footwear",
   score: 72,
-  revenueRisk: "$110M/year",
-  revenueRiskSource: "Due to EU forced labor law violations, traceability gaps, and customer boycotts (2023 Reuters, BCI, EU Corporate Sustainability Due Diligence Directive)",
+  revenueRisk: "$400M+ in ESG exposure: synthetic materials scrutiny and labor & safety fines",
 
   leaks: [
     {
-      issue: "Low cotton traceability in supply chain (Xinjiang risk)",
-      impact: "Adidas lacks full visibility into cotton origins despite BCI membership",
-      solution: "Blockchain-based tracking + BCI GeoCerti partnership",
+      issue: "Heavy reliance on synthetic (petroleum-based) materials, including Olympic kits",
+      impact: "Criticism for undermining sustainability claims despite recycled content usage",
+      solution: "Accelerate shift to bio-based and regenerative fabrics; phase out virgin polyester fully",
       source: {
-        label: "Adidas Responsible Sourcing Page",
-        url: "https://www.adidas-group.com/en/sustainability/responsible-sourcing/"
+        label: "Vogue Business – Synthetic kits undermine sustainability",
+        url: "https://www.voguebusiness.com/story/sustainability/do-synthetic-kits-undermine-the-most-sustainable-olympics-ever"
       }
     },
     {
-      issue: "Plastic reduction goal off track (–12% vs 2025 goal)",
-      impact: "Potential $20M reputational risk & EU packaging fines",
-      solution: "Switch to ocean-recycled plastic at scale (Parley model)",
+      issue: "OSHA citations and close to $400K penalties at US warehouse for repeated safety infractions",
+      impact: "Workplace compliance and safety risk with financial penalty",
+      solution: "Implement proactive OSH systems and anonymous employee safety hotlines",
       source: {
-        label: "Adidas Sustainability Report 2022 (PDF)",
-        url: "https://www.adidas-group.com/media/filer_public/12/4f/124f4e2d-bc9b-4e57-80e4-6df80a296cbf/adidas_sustainability_report_2022.pdf"
+        label: "OSHA workplace safety penalties 2024",
+        url: "https://www.reddit.com/r/WorkReform/comments/1et1ral"
       }
     }
   ],
 
   strengths: [
     {
-      item: "90% of products use sustainable materials (2023)",
+      item: "S&P ESG Profile Score of 85/100; constituent in DJSI, FTSE4Good & MSCI ESG indices",
       source: {
-        label: "Adidas ESG Overview",
-        url: "https://www.adidas-group.com/en/sustainability/"
+        label: "Adidas Group – S&P ESG recognition",
+        url: "https://www.adidas-group.com/en/media/press-releases/adidas-awarded-strong-esg-rating-by-sandp-for-outstanding-sustainability-performance"
       }
     },
     {
-      item: "Member of Better Cotton Initiative (BCI)",
+      item: "Pioneering circularity programs: Parley (ocean plastics), Futurecraft.Footprint, Made to Be Remade",
       source: {
-        label: "Better Cotton Adidas Profile",
-        url: "https://bettercotton.org/who-we-are/our-members/adidas/"
+        label: "Scope 3 Magazine – responsible sourcing & circular innovation",
+        url: "https://scope3magazine.com/supply-chain-sustainability/addidas-innovation-sustainable-sportswear"
+      }
+    },
+    {
+      item: "Verified 96% recycled polyester usage, renewable energy in operations and supply-chain footprinting tools",
+      source: {
+        label: "Adidas sustainability targets and metrics",
+        url: "https://sustainabilitymag.com/sustainability/how-adidas-is-innovating-to-make-sportswear-more-sustainable"
       }
     }
   ]
-    }
+};
