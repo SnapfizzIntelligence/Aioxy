@@ -1,6 +1,6 @@
 export default {
   name: "Adidas AG",
-  industry: "Apparel & Footwear",
+  industry: "Retail/Fashion",
   score: 72,
   revenueRisk: "$400M+ in ESG exposure: synthetic materials scrutiny and labor & safety fines",
 
