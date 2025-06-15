@@ -1,44 +1,51 @@
 export default {
-  name: "IKEA (Inter IKEA Group)",
-  industry: "Retail (Furniture)",
-  score: 72,
-  revenueRisk: "$1.9B (FY24 revenue decline from global price reductions and operational sustainability gaps)",
+  name: "Inter IKEA Group",
+  industry: "Retail & Furniture",
+  score: 80,
+  revenueRisk: "€10B+ risk from Scope 3 sourcing, greenwashing scrutiny, and diluted circular initiatives",
 
   leaks: [
     {
-      issue: "Global price cuts reduced gross margins across 63 markets",
-      impact: "Lower franchise income and perception risk in premium segments",
-      solution: "Balance affordability with value-add circular services (e.g., Buy Back & Resell)",
+      issue: "Scaling back zero-emission delivery target (2025 → 2028 shift)",
+      impact: "Creates trust gap: progress flags but execution lags amid regulation (EU, transport emissions)",
+      solution: "Launch real-time emission dashboards and customer transparency portal on delivery impact",
       source: {
-        label: "IKEA Sustainability Report FY23/24 (p.5)",
-        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
+        label: "ESG Dive – Zero-emission target adjustment",
+        url: "https://www.esgdive.com/news/ikea-upgrades-regional-sustainability-manager-to-cso-lena-julle/748185/"
       }
     },
     {
-      issue: "Only 48.5% of materials classified as renewable or recycled (target: 100% by 2030)",
-      impact: "ESG goal lag and supplier pressure",
-      solution: "Accelerate recycled content integration in plastics and textiles",
+      issue: "Criticism over responsible wood sourcing from Romanian forests",
+      impact: "Greenpeace and watchdog scrutiny could impact brand trust",
+      solution: "Integrate supplier traceability with blockchain and open supply-chain dashboards",
       source: {
-        label: "IKEA Sustainability Report FY23/24 (p.27)",
-        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
+        label: "Reuters – Circular sourcing challenges at IKEA",
+        url: "https://www.reuters.com/sustainability/boards-policy-regulation/can-flat-pack-be-closed-loop-how-ikea-hopes-have-its-swedish-cinnamon-bun-eat-it-2024-06-06/"
       }
     }
   ],
 
   strengths: [
     {
-      item: "89% of electricity used in operations is from renewable sources (2023)",
+      item: "Reduced climate footprint by 24.3% (2016–2023) while growing revenue 30.9%",
       source: {
-        label: "IKEA Sustainability Report FY23/24 (p.16)",
-        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
+        label: "TIME – CEO Jesper Brodin on climate + growth",
+        url: "https://time.com/6964927/jesper-brodin/"
       }
     },
     {
-      item: "Circular product initiatives (Buy Back, Spare Parts) scaled globally",
+      item: "Pilots like ‘IKEA Preowned’ and modular designs to push circular business model",
       source: {
-        label: "IKEA Sustainability Report FY23/24 (p.30)",
-        url: "https://www.ikea.com/global/en/images/IKEA_Sustainability_Report_FY_24_2025_01_27_2c35989733.pdf"
+        label: "TIME – Sustainability strategy 2025 and Preowned program",
+        url: "https://time.com/7172421/karen-pflug/"
+      }
+    },
+    {
+      item: "New CSO Lena Julle at helm since May 1, 2025 — signal of elevated ESG leadership",
+      source: {
+        label: "IKEA newsroom – Lena Julle appointment",
+        url: "https://www.ikea.com/global/en/newsroom/sustainability/lena-julle-inter-ikea-groups-new-chief-sustainability-officer-250430/"
       }
     }
   ]
-  }
+};
