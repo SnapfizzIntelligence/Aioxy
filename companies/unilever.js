@@ -1,44 +1,44 @@
 export default {
-  name: "Unilever",
-  industry: "Consumer Goods",
-  score: 82,
-  revenueRisk: "$200M/year (lost Gen Z engagement due to lack of gamified sustainability actions)",
+  name: "Unilever plc",
+  industry: "Consumer Goods (FMCG)",
+  score: 72,
+  revenueRisk: "€500M+ exposure from retracted sustainability targets, plastic pollution fines, and geopolitical trust erosion",
 
   leaks: [
     {
-      issue: "Lack of gamification triggers in sustainable campaigns",
-      impact: "$200M/year in engagement loss (Snapfizz benchmark comparison)",
-      solution: "Gamify with 'Plant-with-Purchase' Sunday campaigns",
+      issue: "Scaled-back plastic reduction and diverse supplier targets",
+      impact: "Undermined credibility—estimated €100M+ offset in reduced recycling progress",
+      solution: "Recommit to original 2025 plastic and diversity targets with interim action plan and public progress dashboard",
       source: {
-        label: "Unilever Sustainability Strategy 2023",
-        url: "https://www.unilever.com/sustainability/"
+        label: "Planet Tracker & Bloomberg analysis – target rollback (2025)",
+        url: "https://dairynews.today/news/corporate-climate-goals-under-scrutiny-coca-cola-nestl-and-unilever-scale-back-sustainability-commit.html"
       }
     },
     {
-      issue: "Limited Scope 3 emissions transparency in some supplier regions",
-      impact: "Risk of compliance gaps under EU CSRD rules",
-      solution: "Use blockchain supplier emissions audit (pilot with Dove supply chain)",
+      issue: "Continued sales and tax payments in Russia amid the Ukraine war",
+      impact: "Listed as ‘sponsor of war’ by Ukrainian government—risk to brand trust and political backlash",
+      solution: "Publish transparent exit strategy or neutral operations policy with independent monitoring",
       source: {
-        label: "Unilever Sustainability 2023 (Scope 3 disclosures)",
-        url: "https://www.unilever.com/sustainability/"
+        label: "Reuters/Irish Times/Ukrainian reports – Russia war sponsorship (2023)",
+        url: "https://en.wikipedia.org/wiki/Unilever#Trade_in_Russia_amid_the_Russo-Ukrainian_War"
       }
     }
   ],
 
   strengths: [
     {
-      item: "Sustainable Living Brands grew 69% faster than other brands (2023)",
+      item: "Ranked top 5 globally in DJSI (Personal Products); Climate ‘A List’ in CDP 2023",
       source: {
-        label: "Unilever Sustainability 2023 Highlights",
-        url: "https://www.unilever.com/sustainability/"
+        label: "Unilever Sustainability ratings (DJSI, CDP Climate A List)",
+        url: "https://www.unilever.com/sustainability/responsible-business/sustainability-ratings-and-rankings/"
       }
     },
     {
-      item: "Achieved 100% renewable grid electricity across global operations",
+      item: "Eco-efficiency: 79% CO₂ reduction per production tonne, zero non-hazardous factory waste, 93% renewable energy (2022)",
       source: {
-        label: "Unilever Sustainability Strategy 2023",
-        url: "https://www.unilever.com/sustainability/"
+        label: "Unilever eco-efficiency reporting (2022)",
+        url: "https://www.unilever.com/sustainability/responsible-business/our-eco-efficiency-reporting/"
       }
     }
   ]
-      }
+};
