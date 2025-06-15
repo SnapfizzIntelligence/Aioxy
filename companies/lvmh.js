@@ -1,6 +1,6 @@
 export default {
   name: "LVMH Moët Hennessy Louis Vuitton SE",
-  industry: "Luxury Goods",
+  industry: "Retail/Fashion",
   score: 75,
   revenueRisk: "€500M+ exposure in ESG reporting and supply‑chain controversies",
 
