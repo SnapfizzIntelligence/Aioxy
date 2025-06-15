@@ -1,6 +1,6 @@
 export default {
   name: "Allbirds, Inc.",
-  industry: "Apparel & Footwear",
+  industry: "Retail/Fashion",
   score: 82,
   revenueRisk: "$70M+ market cap loss due to sustainability claim shortfalls and product strategy shifts",
 
