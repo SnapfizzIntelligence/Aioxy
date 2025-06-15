@@ -1,6 +1,6 @@
 export default {
   name: "SHEIN",
-  industry: "Apparel & Fast Fashion",
+  industry: "Retail/Fashion",
   score: 35,
   revenueRisk: "$2B+ reputational & regulatory exposure from emissions, labor, child-labor, and greenwashing issues",
 
