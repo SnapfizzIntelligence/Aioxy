@@ -1306,609 +1306,274 @@
       });
     });
 
-    // ====== AIOXY SCANNER FUNCTIONALITY ======
-
-
-
-    Async function scanCompany() {
-
-
-
-      Const name = document.getElementById(“company-search”).value.trim().toLowerCase();
-
-
-
-      Const loading = document.getElementById(“loading”);
-
-
-
-      Const result = document.getElementById(“result”);
-
-
-
-      Const companyNameDisplay = document.getElementById(“company-name”);
-
-
-
-
-
-
-
-      If (!name) return alert(“Please enter a company name”);
-
-
-
-
-
-
-
-      // Show loading state
-
-
-
-      companyNameDisplay.textContent = name;
-
-
-
-      loading.style.display = “block”;
-
-
-
-      result.style.display = “none”;
-
-
-
-      result.innerHTML = “”;
-
-
-
-
-
-
-
-      try {
-
-
-
-        // Dynamic import of company data file
-
-
-
-        Const module = await import(`./companies/${name}.js`).catch(err => {
-
-
-
-          Console.error(`Failed to load ${name}.js:`, err);
-
-
-
-          Throw new Error(`No ESG data file for ${name}`);
-
-
-
-        });
-
-
-
-        Const data = module.default;
-
-
-
-
-
-
-
-        // Validate the data structure
-
-
-
-        If (!data || !data.name || !data.leaks) {
-
-
-
-          Throw new Error(`Invalid data structure for ${name}`);
-
-
-
-        }
-
-
-
-
-
-
-
-        // Build results HTML
-
-
-
-        Const leaksHtml = data.leaks.map(leak => `
-
-
-
-          <div class=”leak-card”>
-
-
-
-            <h3>${leak.issue}</h3>
-
-
-
-            <p><strong>Impact:</strong> ${leak.impact}</p>
-
-
-
-            <p><strong>Solution:</strong> ${leak.solution}</p>
-
-
-
-            ${leak.source.url ? 
-
-
-
-              `<a href=”${leak.source.url}” target=”_blank” class=”source-link”>📄 Source Document</a>` : 
-
-
-
-              `<span class=”source-link”>📄 ${leak.source.label || leak.source}</span>`}
-
-
-
-          </div>
-
-
-
-        `).join(‘’);
-
-
-
-
-
-
-
-        // Build strengths HTML if they exist
-
-
-
-        Const strengthsHtml = data.strengths && data.strengths.length > 0 ? `
-
-
-
-          <div style=”margin-top:40px;”>
-
-
-
-            <h3 style=”color:var(--premium-success);”>Strengths</h3>
-
-
-
-            ${data.strengths.map(strength => `
-
-
-
-              <div class=”leak-card” style=”border-left-color:var(--premium-success);”>
-
-
-
-                <p>✅ ${strength.item}</p>
-
-
-
-                ${strength.source.url ? 
-
-
-
-                  `<a href=”${strength.source.url}” target=”_blank” class=”source-link”>📄 ${strength.source.label}</a>` : 
-
-
-
-                  `<span class=”source-link”>📄 ${strength.source.label}</span>`}
-
-
-
-              </div>
-
-
-
-            `).join(‘’)}
-
-
-
-          </div>
-
-
-
-        ` : ‘’;
-
-
-
-
-
-
-
-        Result.innerHTML = `
-
-
-
-          <h2 style=”margin-bottom:5px;”>${data.name}</h2>
-
-
-
-          <p style=”color:#666; margin-bottom:20px;”>${data.industry || industryMap[name] || ‘Unknown Industry’}</p>
-
-
-
-          
-
-
-
-          ${data.revenueRisk ? `
-
-
-
-            <div style=”background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);”>
-
-
-
-              <p style=”font-weight:600; margin-bottom:5px;”>🚨 Revenue Risk</p>
-
-
-
-              <p>${data.revenueRisk}</p>
-
-
-
-            </div>
-
-
-
-          ` : ‘’}
-
-
-
-          
-
-
-
-          <div class=”esg-score-badge”>
-
-
-
-            <div style=”font-size:0.9em; opacity:0.8;”>ESG RISK SCORE</div>
-
-
-
-            <div style=”font-size:3.5rem; font-weight:700;”>${data.score !== null && data.score !== undefined ? data.score : ‘N/A’}/100</div>
-
-
-
-          </div>
-
-
-
-          
-
-
-
-          <h3 style=”margin-bottom:20px;”>Key ESG Leaks</h3>
-
-
-
-          ${leaksHtml}
-
-
-
-          
-
-
-
-          ${strengthsHtml}
-
-
-
-          
-
-
-
-          <div style=”margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;”>
-
-
-
-            <a href=https://www.linkedin.com/in/tulasipariyar target=”_blank” class=”btn btn-primary” style=”display:inline-block;”>
-
-
-
-              <I class=”fas fa-file-alt”></i> GET FULL AUDIT REPORT
-
-
-
-            </a>
-
-
-
-            <button onclick=”showComparison(‘${name}’)” class=”btn btn-outline” style=”display:inline-block;”>
-
-
-
-              <I class=”fas fa-balance-scale”></i> COMPARE WITH COMPETITORS
-
-
-
-            </button>
-
-
-
-          </div>
-
-
-
-        `;
-
-
-
-        
-
-
-
-        Result.style.display = “block”;
-
-
-
-      } catch (err) {
-
-
-
-        Console.error(“Error loading company data:”, err);
-
-
-
-        Const validCompanies = Object.keys(industryMap).join(‘, ‘);
-
-
-
-        Result.innerHTML = `
-
-
-
-          <div style=”background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;”>
-
-
-
-            <I class=”fas fa-exclamation-triangle” style=”margin-right:8px;”></i>
-
-
-
-            No ESG data found for “${name}”. Try: 
-
-
-
-            ${Object.keys(industryMap).map(c => `<a href=”javascript:fillSearch(‘${c}’)” style=”color:var(--premium-accent); font-weight:500;”>${c.charAt(0).toUpperCase() + c.slice(1)}</a>`).join(‘, ‘)}
-
-
-
-          </div>
-
-
-
-        `;
-
-
-
-        Result.style.display = “block”;
-
-
-
-      }
-
-
-
-
-
-
-
-      Loading.style.display = “none”;
-
-
-
+   // ====== AIOXY SCANNER FUNCTIONALITY ======
+async function scanCompany() {
+  const name = document.getElementById("company-search").value.trim().toLowerCase();
+  const loading = document.getElementById("loading");
+  const result = document.getElementById("result");
+  const companyNameDisplay = document.getElementById("company-name");
+
+  if (!name) return alert("Please enter a company name");
+
+  // Show loading state
+  companyNameDisplay.textContent = name;
+  loading.style.display = "block";
+  result.style.display = "none";
+  result.innerHTML = "";
+
+  try {
+    // Dynamic import of company data file
+    const module = await import(`./companies/${name}.js`).catch(err => {
+      console.error(`Failed to load ${name}.js:`, err);
+      throw new Error(`No ESG data file for ${name}`);
+    });
+    const data = module.default;
+
+    // Validate the data structure
+    if (!data || !data.name || !data.leaks) {
+      throw new Error(`Invalid data structure for ${name}`);
     }
 
+    // Build results HTML
+    const leaksHtml = data.leaks.map(leak => `
+      <div class="leak-card">
+        <h3>${leak.issue}</h3>
+        <p><strong>Impact:</strong> ${leak.impact}</p>
+        <p><strong>Solution:</strong> ${leak.solution}</p>
+        ${leak.source.url ? 
+          `<a href="${leak.source.url}" target="_blank" class="source-link">📄 ${leak.source.label}</a>` : 
+          `<span class="source-link">📄 ${leak.source.label || leak.source}</span>`}
+      </div>
+    `).join('');
 
+    // Build strengths HTML if they exist
+    const strengthsHtml = data.strengths && data.strengths.length > 0 ? `
+      <div style="margin-top:40px;">
+        <h3 style="color:var(--premium-success);">Strengths</h3>
+        ${data.strengths.map(strength => `
+          <div class="leak-card" style="border-left-color:var(--premium-success);">
+            <p>✅ ${strength.item}</p>
+            ${strength.source.url ? 
+              `<a href="${strength.source.url}" target="_blank" class="source-link">📄 ${strength.source.label}</a>` : 
+              `<span class="source-link">📄 ${strength.source.label}</span>`}
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
 
-
-
-
-
-    Function fillSearch(company) {
-
-
-
-      Document.getElementById(“company-search”).value = company;
-
-
-
-      scanCompany();
-
-
-
-    }
-
-
-
-    // Industry classification for your companies
-    const industryMap = {
-      // Technology
-      apple: 'Technology',
-      google: 'Technology',
-      microsoft: 'Technology',
-      samsung: 'Technology',
-      dell: 'Technology',
-      intel: 'Technology',
-      cisco: 'Technology',
-      oracle: 'Technology',
-      sony: 'Technology',
-      panasonic: 'Technology',
-      adobe: 'Technology',
-      zoom: 'Technology',
-      meta: 'Technology',
-      nvidia: 'Technology',
-      spotify: 'Technology',
+    result.innerHTML = `
+      <h2 style="margin-bottom:5px;">${data.name}</h2>
+      <p style="color:#666; margin-bottom:20px;">${data.industry || 'Unknown Industry'}</p>
       
-      // Automotive
-      tesla: 'Automotive',
-      bmw: 'Automotive',
-      mercedes: 'Automotive',
-      ford: 'Automotive',
-      audi: 'Automotive',
-      hyundai: 'Automotive',
-      byd: 'Automotive',
-      generalmotors: 'Automotive',
-      
-      // Retail/Fashion
-      adidas: 'Retail/Fashion',
-      nike: 'Retail/Fashion',
-      hnm: 'Retail/Fashion',
-      ikea: 'Retail/Fashion',
-      target: 'Retail/Fashion',
-      loreal: 'Retail/Fashion',
-      lvmh: 'Retail/Fashion',
-      shein: 'Retail/Fashion',
-      // Food/Beverage
-      cocacola: 'Food/Beverage',
-      pepsico: 'Food/Beverage',
-      nestlé: 'Food/Beverage',
-      macdonalds: 'Food/Beverage',
-      starbucks: 'Food/Beverage',
-      danone: 'Food/Beverage',
-      heineken: 'Food/Beverage',
-      
-      // Energy
-      bp: 'Energy',
-      shell: 'Energy',
-      
-      // Financial
-      hsbc: 'Financial',
-      paypal: 'Financial',
-      vodafone: 'Financial',
-      
-      // Other
-      accenture: 'Professional Services',
-      alibaba: 'E-commerce',
-      amazon: 'E-commerce',
-      airbnb: 'Hospitality',
-      booking: 'Hospitality',
-      uber: 'Transportation',
-      proctergamble: 'Consumer Goods',
-      pfizer: 'Pharmaceutical',
-      johnsonjohnson: 'Pharmaceutical',
-      siemens: 'Industrial',
-      unilever: 'Consumer Goods'
-    };
-
-    function getIndustry(company) {
-      return industryMap[company.toLowerCase()] || 'General';
-    }
-
-    // ====== COMPARISON FUNCTIONS ======
-    async function showComparison(company) {
-      const modal = document.getElementById("comparison-modal");
-      const title = document.getElementById("comparison-title");
-      const subtitle = document.getElementById("comparison-subtitle");
-      const resultsContainer = document.getElementById("comparison-results");
-      
-      // Get industry for this company
-      const industry = getIndustry(company);
-      title.textContent = `${company.charAt(0).toUpperCase() + company.slice(1)} vs. Industry Peers`;
-      subtitle.textContent = `Comparing ESG performance in ${industry} sector`;
-      
-      // Get all companies in same industry
-      const competitors = Object.keys(industryMap)
-        .filter(c => getIndustry(c) === industry && c !== company)
-        .slice(0, 3); // Show top 3 competitors
-      
-      // Add the main company first
-      resultsContainer.innerHTML = '';
-      
-      try {
-        // Create sample data for main company
-        const mainCompany = {
-          name: company.charAt(0).toUpperCase() + company.slice(1),
-          industry: industry,
-          score: Math.floor(Math.random() * 100),
-          leaks: [
-            { issue: "Sample issue 1" },
-            { issue: "Sample issue 2" },
-            { issue: "Sample issue 3" }
-          ]
-        };
-        
-        // Create comparison card for main company
-        resultsContainer.appendChild(createComparisonCard(mainCompany, true));
-        
-        // Create and add competitors
-        for (const competitor of competitors) {
-          const competitorData = {
-            name: competitor.charAt(0).toUpperCase() + competitor.slice(1),
-            industry: industry,
-            score: Math.floor(Math.random() * 100),
-            leaks: [
-              { issue: "Competitor issue 1" },
-              { issue: "Competitor issue 2" }
-            ]
-          };
-          resultsContainer.appendChild(createComparisonCard(competitorData));
-        }
-        
-        modal.style.display = "block";
-        document.body.style.overflow = "hidden";
-      } catch (e) {
-        console.error("Error loading comparison data", e);
-        alert("Error loading comparison data. Please try again.");
-      }
-    }
-
-    function createComparisonCard(company, isMain = false) {
-      const card = document.createElement("div");
-      card.className = "comparison-card" + (isMain ? " is-main" : "");
-      
-      const scoreColor = company.score >= 80 ? "score-good" : 
-                        company.score >= 50 ? "score-medium" : "score-poor";
-      
-      card.innerHTML = `
-        <h3>${company.name}</h3>
-        
-        <div style="margin:15px 0;">
-          <div style="font-size:0.9em; color:#666;">Industry</div>
-          <div style="font-weight:500;">${company.industry}</div>
+      ${data.revenueRisk ? `
+        <div style="background:#FFF8E1; padding:15px; border-radius:8px; margin-bottom:25px; border-left:4px solid var(--premium-gold);">
+          <p style="font-weight:600; margin-bottom:5px;">🚨 Revenue Risk</p>
+          <p>${data.revenueRisk}</p>
         </div>
-        
-        <div style="margin:20px 0;">
-          <div style="font-size:0.9em; color:#666;">ESG Score</div>
-          <div class="score-display ${scoreColor}">${company.score !== null && company.score !== undefined ? company.score : 'N/A'}/100</div>
-        </div>
-        
-        <div>
-          <div style="font-size:0.9em; color:#666;">Key Leaks</div>
-          <ul>
-            ${company.leaks.slice(0, 3).map(leak => `
-              <li>${leak.issue}</li>
-            `).join('')}
-          </ul>
-        </div>
-        
-        <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank"
-           class="btn ${isMain ? 'btn-primary' : 'btn-outline'}" 
-           style="width:100%; margin-top:25px;">
-          <i class="fas fa-arrow-right"></i> VIEW DETAILS
+      ` : ''}
+      
+      <div class="esg-score-badge">
+        <div style="font-size:0.9em; opacity:0.8;">ESG RISK SCORE</div>
+        <div style="font-size:3.5rem; font-weight:700;">${data.score !== null && data.score !== undefined ? data.score : 'N/A'}/100</div>
+      </div>
+      
+      <h3 style="margin-bottom:20px;">Key ESG Leaks</h3>
+      ${leaksHtml}
+      
+      ${strengthsHtml}
+      
+      <div style="margin-top:30px; display:flex; gap:15px; flex-wrap:wrap;">
+        <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank" class="btn btn-primary" style="display:inline-block;">
+          <i class="fas fa-file-alt"></i> GET FULL AUDIT REPORT
         </a>
-      `;
-      
-      return card;
-    }
+        <button onclick="showComparison('${name}')" class="btn btn-outline" style="display:inline-block;">
+          <i class="fas fa-balance-scale"></i> COMPARE WITH COMPETITORS
+        </button>
+      </div>
+    `;
+    
+    result.style.display = "block";
+  } catch (err) {
+    console.error("Error loading company data:", err);
+    const validCompanies = Object.keys(industryMap).join(', ');
+    result.innerHTML = `
+      <div style="background:#FEE2E2; color:var(--premium-danger); padding:20px; border-radius:12px; text-align:center;">
+        <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>
+        No ESG data found for "${name}". Try: 
+        ${Object.keys(industryMap).map(c => `<a href="javascript:fillSearch('${c}')" style="color:var(--premium-accent); font-weight:500;">${c.charAt(0).toUpperCase() + c.slice(1)}</a>`).join(', ')}
+      </div>
+    `;
+    result.style.display = "block";
+  }
 
-    function closeComparison() {
-      document.getElementById("comparison-modal").style.display = "none";
-      document.body.style.overflow = "auto";
+  loading.style.display = "none";
+}
+
+function fillSearch(company) {
+  document.getElementById("company-search").value = company;
+  scanCompany();
+}
+
+// Industry classification for your companies
+const industryMap = {
+  // Technology
+  apple: 'Technology',
+  google: 'Technology',
+  microsoft: 'Technology',
+  samsung: 'Technology',
+  dell: 'Technology',
+  intel: 'Technology',
+  cisco: 'Technology',
+  oracle: 'Technology',
+  sony: 'Technology',
+  panasonic: 'Technology',
+  adobe: 'Technology',
+  zoom: 'Technology',
+  meta: 'Technology',
+  nvidia: 'Technology',
+  spotify: 'Technology',
+  
+  // Automotive
+  tesla: 'Automotive',
+  bmw: 'Automotive',
+  mercedes: 'Automotive',
+  ford: 'Automotive',
+  audi: 'Automotive',
+  hyundai: 'Automotive',
+  byd: 'Automotive',
+  generalmotors: 'Automotive',
+  
+  // Retail/Fashion
+  adidas: 'Retail/Fashion',
+  nike: 'Retail/Fashion',
+  hnm: 'Retail/Fashion',
+  ikea: 'Retail/Fashion',
+  target: 'Retail/Fashion',
+  loreal: 'Retail/Fashion',
+  lvmh: 'Retail/Fashion',
+  shein: 'Retail/Fashion',
+  
+  // Food/Beverage
+  cocacola: 'Food/Beverage',
+  pepsico: 'Food/Beverage',
+  nestle: 'Food/Beverage',
+  macdonalds: 'Food/Beverage',
+  starbucks: 'Food/Beverage',
+  danone: 'Food/Beverage',
+  heineken: 'Food/Beverage',
+  
+  // Energy
+  bp: 'Energy',
+  shell: 'Energy',
+  
+  // Financial
+  hsbc: 'Financial',
+  paypal: 'Financial',
+  vodafone: 'Financial',
+  
+  // Other
+  accenture: 'Professional Services',
+  alibaba: 'E-commerce',
+  amazon: 'E-commerce',
+  airbnb: 'Hospitality',
+  booking: 'Hospitality',
+  uber: 'Transportation',
+  proctergamble: 'Consumer Goods',
+  pfizer: 'Pharmaceutical',
+  johnsonjohnson: 'Pharmaceutical',
+  siemens: 'Industrial',
+  unilever: 'Consumer Goods'
+};
+
+// ====== COMPARISON FUNCTIONS ======
+async function showComparison(company) {
+  const modal = document.getElementById("comparison-modal");
+  const title = document.getElementById("comparison-title");
+  const subtitle = document.getElementById("comparison-subtitle");
+  const resultsContainer = document.getElementById("comparison-results");
+  
+  // Get industry for this company
+  const industry = industryMap[company] || 'General';
+  title.textContent = `${company.charAt(0).toUpperCase() + company.slice(1)} vs. Industry Peers`;
+  subtitle.textContent = `Comparing ESG performance in ${industry} sector`;
+  
+  // Get all companies in same industry
+  const competitors = Object.keys(industryMap)
+    .filter(c => industryMap[c] === industry && c !== company)
+    .slice(0, 3); // Show top 3 competitors
+  
+  // Add the main company first
+  resultsContainer.innerHTML = '';
+  
+  try {
+    // Load main company data
+    const mainCompanyModule = await import(`./companies/${company}.js`);
+    const mainCompany = mainCompanyModule.default;
+    
+    // Create comparison card for main company
+    resultsContainer.appendChild(createComparisonCard(mainCompany, true));
+    
+    // Load and add competitors
+    for (const competitor of competitors) {
+      try {
+        const competitorModule = await import(`./companies/${competitor}.js`);
+        resultsContainer.appendChild(createComparisonCard(competitorModule.default));
+      } catch (e) {
+        console.warn(`Couldn't load data for ${competitor}`, e);
+      }
     }
+    
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
+  } catch (e) {
+    console.error("Error loading comparison data", e);
+    alert("Error loading comparison data. Please try again.");
+  }
+}
+
+function createComparisonCard(company, isMain = false) {
+  const card = document.createElement("div");
+  card.className = "comparison-card" + (isMain ? " is-main" : "");
+  
+  const scoreColor = company.score >= 80 ? "score-good" : 
+                    company.score >= 50 ? "score-medium" : "score-poor";
+  
+  card.innerHTML = `
+    <h3>${company.name}</h3>
+    
+    <div style="margin:15px 0;">
+      <div style="font-size:0.9em; color:#666;">Industry</div>
+      <div style="font-weight:500;">${company.industry}</div>
+    </div>
+    
+    <div style="margin:20px 0;">
+      <div style="font-size:0.9em; color:#666;">ESG Score</div>
+      <div class="score-display ${scoreColor}">${company.score !== null && company.score !== undefined ? company.score : 'N/A'}/100</div>
+    </div>
+    
+    <div>
+      <div style="font-size:0.9em; color:#666;">Key Leaks</div>
+      <ul>
+        ${company.leaks.slice(0, 3).map(leak => `
+          <li>${leak.issue}</li>
+        `).join('')}
+      </ul>
+    </div>
+    
+    <a href="https://www.linkedin.com/in/tulasipariyar" target="_blank"
+       class="btn ${isMain ? 'btn-primary' : 'btn-outline'}" 
+       style="width:100%; margin-top:25px;">
+      <i class="fas fa-arrow-right"></i> VIEW DETAILS
+    </a>
+  `;
+  
+  return card;
+}
+
+function closeComparison() {
+  document.getElementById("comparison-modal").style.display = "none";
+  document.body.style.overflow = "auto";
+  } 
 </script>
 </body>
   </html>
