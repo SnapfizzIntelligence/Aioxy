@@ -8,7 +8,7 @@ export default {
     {
       issue: "Missed 2025 sustainable‑packaging targets; growing scrutiny over non‑recyclable components",
       impact: "Reputation vulnerability with eco‑conscious Gen Z, risk to brand integrity and loyalty",
-      solution: "Introduce a weekly 'L’Oréal Sunday' sustainability ritual—e.g., consumer-led recycling challenges and transparent packaging metrics",
+      solution: "Launch a weekly sustainability ritual to engage Gen Z—e.g., transparent packaging progress, consumer-led recycling engagement, and verified storytelling. A high-impact format can be co-created.",
       source: {
         label: "Packaging Europe – 2025 packaging targets report",
         url: "https://packagingeurope.com/news/where-loreal-stands-after-missing-sustainable-packaging-goals-for-2025/12739.article"
