@@ -1,52 +1,42 @@
 export default {
-  name: "H&M (Hennes & Mauritz AB)",
-  industry: "Retail (Fashion)",
+  name: "H&M Group",
+  industry: "Apparel & Retail",
   score: 70,
-  revenueRisk: "$500M (FY24 increased discounting and marketing costs amid fast fashion criticism)",
+  revenueRisk: "€8B+ at risk due to missed circular targets and Gen Z loyalty decline",
 
   leaks: [
     {
-      issue: "Burning or landfilling unsold clothing",
-      impact: "Brand damage and ESG compliance risk due to environmental waste",
-      solution: "Adopt AI forecasting and circular resale/recycling model",
+      issue: "Missed 2025 goal for 30% recycled textiles (only reached ~29.5% in 2024)",
+      impact: "Undermines credibility and Gen Z trust in sustainable promises",
+      solution: "Initiate weekly ‘Repair Sundays’ in‑store to visibly push circular action",
       source: {
-        label: "Vox",
-        url: "https://www.vox.com/the-goods/2018/9/17/17852294/fashion-brands-burning-merchandise-burberry-nike-h-and-m"
+        label: "H&M Sustainability Report 2023",
+        url: "https://hmgroup.com/sustainability/circularity-and-climate/materials/"
       }
     },
     {
-      issue: "Greenwashing via ‘Conscious Collection’ scores",
-      impact: "Reputational risk and regulatory scrutiny in EU markets",
-      solution: "Provide third-party verified eco-labeling",
+      issue: "Fast fashion “take-back” bins criticized for redirection of waste to landfill or overseas dumps",
+      impact: "Emerging greenwashing concerns, especially in Europe",
       source: {
-        label: "Quartz",
-        url: "https://qz.com/quartzy/1648911/norway-questions-the-sustainability-of-hms-conscious-collection"
-      }
-    },
-    {
-      issue: "High marketing and discounting costs",
-      impact: "Profit margin pressure and weak ROI",
-      solution: "Refocus on value-based campaigns with better customer segmentation",
-      source: {
-        label: "H&M Nine-Month Report 2024 (PDF)",
-        url: "https://hmgroup.com/wp-content/uploads/2024/09/HM-Group-Nine-Month-Report-2024.pdf"
+        label: "Guardian – H&M recycling criticized as greenwash",
+        url: "https://www.theguardian.com/sustainable-business/sustainability-case-studies-h-m-recycle"
       }
     }
   ],
 
   strengths: [
     {
-      item: "Gross margin improved to 54.6% in Q4 2024 due to supply chain efficiency",
+      item: "Collected 16,855 tonnes of used garments in 2023 (~172,700 tonnes since 2013)",
       source: {
-        label: "H&M Full-Year Report 2024 (PDF)",
-        url: "https://hmgroup.com/wp-content/uploads/2024/12/HM-Group-Full-Year-Report-2024.pdf"
+        label: "Statista – H&M garment collection 2023",
+        url: "https://www.statista.com/statistics/961998/quantity-of-apparel-collected-by-handm-s-reuse-and-recycling-scheme-worldwide/"
       }
     },
     {
-      item: "Sustainability target: 100% recycled/sustainable materials by 2030",
+      item: "Reduced supply‑chain emissions 22% and operations 24% since 2019 (on track for 2030 targets)",
       source: {
-        label: "H&M Sustainability Progress Report 2024 (PDF)",
-        url: "https://hmgroup.com/wp-content/uploads/2024/12/HM-Sustainability-Progress-Report-2024.pdf"
+        label: "H&M Sustainability Report 2023 emissions",
+        url: "https://hmgroup.com/news/h-m-hennes-mauritz-abs-annual-and-sustainability-report-2023-is-published/"
       }
     }
   ]
