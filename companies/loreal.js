@@ -1,44 +1,42 @@
 export default {
-  name: "L'Oréal S.A.",
-  industry: "Cosmetics",
-  score: 77,
-  revenueRisk: "$2.2B (FY24 increased advertising & promotion spend in North Asia impacting customer acquisition and retention)",
+  name: "L’Oréal Group",
+  industry: "Beauty & Personal Care",
+  score: 82,
+  revenueRisk: "€500M+ risk from Gen Z trust decline and plastic/packaging transparency shortfalls",
 
   leaks: [
     {
-      issue: "Weak consumer confidence in China leading to low single-digit sales decline",
-      impact: "Increased customer acquisition costs and risk of churn to local brands",
-      solution: "Enhance localized marketing and expand affordable product lines",
+      issue: "Missed 2025 sustainable‑packaging targets; growing scrutiny over non‑recyclable components",
+      impact: "Reputation vulnerability with eco‑conscious Gen Z, risk to brand integrity and loyalty",
+      solution: "Introduce a weekly 'L’Oréal Sunday' sustainability ritual—e.g., consumer-led recycling challenges and transparent packaging metrics",
       source: {
-        label: "Reuters: L'Oréal Q3 2024 Sales",
-        url: "https://www.reuters.com/business/loreal-third-quarter-sales-disappoint-china-spends-less-beauty-2024-10-22/"
-      }
-    },
-    {
-      issue: "L'Oréal Luxe division growth slowed to 1% in Q4 2024 vs. 5% expected",
-      impact: "Retention risks in luxury beauty segment due to competitive pressures",
-      solution: "Accelerate luxury brand innovation and premiumization",
-      source: {
-        label: "L'Oréal 2024 Full Year Results",
-        url: "https://www.loreal-finance.com"
+        label: "Packaging Europe – 2025 packaging targets report",
+        url: "https://packagingeurope.com/news/where-loreal-stands-after-missing-sustainable-packaging-goals-for-2025/12739.article"
       }
     }
   ],
 
   strengths: [
     {
-      item: "Dermatological Beauty division achieved 15th consecutive quarter of double-digit growth in Q1 2024",
+      item: "91% reduction in Scope 1 & 2 CO₂ emissions vs. 2005; 70% of sites now carbon neutral",
       source: {
-        label: "L'Oréal 2024 Full Year Results",
-        url: "https://www.loreal-finance.com"
+        label: "L’Oréal For the Future program (2022)",
+        url: "https://www.loreal.com/-/media/project/loreal/brand-sites/corp/master/lcorp/3-commitments/for-the-planet/3-pagers-updates-160523/en/fighting-climate-change--loral-for-the-future.pdf"
       }
     },
     {
-      item: "CDP triple ‘A’ score for nine consecutive years, enhancing brand loyalty",
+      item: "44% reduction in air-transport CO₂ from finished products (2023); target 50% by 2030",
       source: {
-        label: "L'Oréal 2024 Full Year Results",
-        url: "https://www.loreal-finance.com"
+        label: "L’Oréal 2023 Universal Registration Document",
+        url: "https://www.loreal-finance.com/eng/2023-universal-registration-document/en/article/206/"
+      }
+    },
+    {
+      item: "Launched €50M Climate Fund; over 70% of industrial sites are carbon neutral",
+      source: {
+        label: "CarbonCredits.com – Green Glow-Up report",
+        url: "https://carboncredits.com/loreal-launches-sustainable-innovation-accelerator-where-beauty-meets-sustainability-carbon-reduction/"
       }
     }
   ]
-    }
+};
