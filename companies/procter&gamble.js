@@ -8,7 +8,7 @@ export default {
     {
       issue: "Potential shortfall on 2025 recyclable-plastic targets—flexible plastics underperforming",
       impact: "Exposure to EU packaging taxes and shareholder backlash (As You Sow resolution pending)",
-      solution: "Launch a weekly 'P&G Sunday' ritual inviting consumers to scan & verify packaging recyclability, building transparency and loyalty",
+      solution: "Launch a weekly ritual inviting consumers to scan & verify packaging recyclability, building transparency and loyalty",
       source: {
         label: "As You Sow – flexible-plastics packaging resolution (2025)",
         url: "https://www.asyousow.org/resolutions/2025/4/25-procter-and-gamble-sustainable-packaging-policies-for-flexible-plastics"
