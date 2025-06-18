@@ -4,6 +4,11 @@ export default {
   score: 62,
   revenueRisk: "Up to 4% of EU turnover (~€600M+ estimated) under Green Claims Directive for unverified circularity claims",
 
+  esgReport: {
+    title: "Inditex 2023 Annual Report – ESG & Join Life Disclosures",
+    url: "https://www.inditex.com/documents/10279/710108/Inditex_2023_Annual_Report.pdf"
+  },
+
   leaks: [
     {
       issue: '“100% sustainable materials by 2025” targets and Join Life circular claims lack third-party verification and traceability details',
@@ -11,7 +16,7 @@ export default {
       solution: 'Obtain independent LCA, verify with accredited bodies, publish traceability audits, and qualify statements.',
       source: {
         label: 'Inditex Sustainability Hub & Join Life program',
-        url: 'https://annualreport2023.inditex.com/en/medioambiente'  // green claims outline 1
+        url: 'https://annualreport2023.inditex.com/en/medioambiente'
       }
     },
     {
@@ -20,7 +25,7 @@ export default {
       solution: 'Specify exact recycled share per garment, link to audit certificates, and comply with Green Claims & CMA rules',
       source: {
         label: 'Changing Markets study: 60% of fast-fashion claims misleading, Zara included',
-        url: 'https://www.edie.net/report-60-of-sustainability-claims-by-fashion-giants-are-greenwashing/' 2
+        url: 'https://www.edie.net/report-60-of-sustainability-claims-by-fashion-giants-are-greenwashing/'
       }
     },
     {
@@ -29,17 +34,17 @@ export default {
       solution: 'Include certified recycling rates, third-party packaging audits, and lifecycle assessment transparency',
       source: {
         label: 'InnovationsforEnergy critique on lack of traceability',
-        url: 'https://innovationsforenergy.com/zara-sustainability-report/' 3
+        url: 'https://innovationsforenergy.com/zara-sustainability-report/'
       }
     }
   ],
 
   strengths: [
     {
-      item: "Huge scale: 68% preferred fibres+18% recycled content; Join Life initiative is well-recognized",
+      item: "68% of materials now preferred fibres and 18% recycled content — Join Life initiative is scaling visibly",
       source: {
         label: 'Inditex Sustainability Hub data',
-        url: 'https://annualreport2023.inditex.com/en/medioambiente' 4
+        url: 'https://annualreport2023.inditex.com/en/medioambiente'
       }
     }
   ]
