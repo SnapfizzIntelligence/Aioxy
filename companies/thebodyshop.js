@@ -2,24 +2,24 @@ export default {
   name: "The Body Shop",
   industry: "Beauty / Personal Care",
   score: 71,
-  revenueRisk: "Low regulatory risk, but competitive loss risk if ESG claims lack consumer-facing clarity under CMA/EU Green Claims rules",
+  revenueRisk: "Risk of brand dilution if sustainability claims lack depth; may lose loyalty & differentiation as consumer expectations rise",
 
   leaks: [
     {
-      issue: "Lack of regional breakdown on recyclability and refill impact",
-      impact: "Risk of consumer trust erosion if packaging claims are too generalized; CMA flags regional accuracy as key",
-      solution: "Disclose packaging impact by country; add traceable QR codes for disposal & refill locations",
+      issue: "Packaging claims (recyclable/refill) generalised without regional clarity or impact metrics",
+      impact: "Potential erosion of trust as consumers demand transparency on which products can be recycled or refilled in which stores",
+      solution: "Publish region-specific packaging impact data; add QR-enabled disposal/refill instructions for customers",
       source: {
-        label: "The Body Shop — Our Packaging Blog",
+        label: "The Body Shop — Our Packaging (blog detailing drop‑off and refill goals)",
         url: "https://www.thebodyshop.com/blogs/about-us/our-packaging"
       }
     },
     {
-      issue: "Community Fair Trade lacks quantifiable, consumer-facing metrics (e.g., volumes, wages, impact per SKU)",
-      impact: "Competitive disadvantage as other brands publish traceable social metrics",
-      solution: "Publish partner impact reports; align metrics with B Lab or GRI framework",
+      issue: "Community Fair Trade programme lacks detailed, consumer-facing impact metrics (e.g., volume sourced, money returned to communities)",
+      impact: "Missed opportunity to strengthen emotional engagement and social credibility—heavy consumer demand for traceable impact stories",
+      solution: "Publish per-SKU sourcing metrics and community benefits; link to ECOCERT‑verified audit summaries",
       source: {
-        label: "The Body Shop — Community Fair Trade",
+        label: "The Body Shop — Community Fair Trade (includes program scope but lacks specific data)",
         url: "https://www.thebodyshop.com/pages/about-us/community-fair-trade"
       }
     }
@@ -27,17 +27,17 @@ export default {
 
   strengths: [
     {
-      item: "ECOCERT-audited Community Fair Trade program since 1987 — trusted ethical sourcing",
+      item: "Pioneering Community Fair Trade since 1987, ECOCERT-audited, benefiting tens of thousands",
       source: {
-        label: "Community Fair Trade Audit",
+        label: "The Body Shop — Community Fair Trade details",
         url: "https://www.thebodyshop.com/pages/about-us/community-fair-trade"
       }
     },
     {
-      item: "Public goal: 100% recyclable, reusable or compostable packaging by 2030",
+      item: "Refill & recycling targets: 100% recyclable, reusable or compostable packaging; 75% PCR plastics in certain bottles",
       source: {
-        label: "Packaging Commitment",
-        url: "https://www.thebodyshop.com/blogs/about-us/our-packaging"
+        label: "The Body Shop — Packaging goals and PCR stats",
+        url: "https://thebodyshop.com.kh/en/pages/sustainable-packaging"
       }
     }
   ]
