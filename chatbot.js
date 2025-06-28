@@ -348,7 +348,7 @@ async function loadCompanyData(companyName) {
 // ======================
 async function getAnswer(userQuestion) {
   // 1. Check for company-specific questions
-  const companies = ['apple', 'tesla', 'unilever'];
+  const companies = ['apple','samsung', 'boeing', 'patagonia','ikea','tesla', 'unilever'];
   const company = companies.find(c => userQuestion.toLowerCase().includes(c));
   
   if (company) {
