@@ -1230,32 +1230,41 @@
 <!-- ===== ESG CHATBOT ===== -->
 <section class="section" style="background: #F8FAFC;">
   <div class="container">
-    <h2 class="section-title">ESG Quick Assistant</h2>
+    <h2 class="section-title">AIOxy ESG Expert</h2>
     <div style="max-width:800px; margin:0 auto; background:white; border-radius:12px; padding:30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
-      <div id="esg-chat-messages" style="height:300px; overflow-y:auto; margin-bottom:20px; padding:10px; border:1px solid rgba(0,0,0,0.05); border-radius:8px;">
-        <div style="background:#f3f4f6; padding:12px; border-radius:8px; display:inline-block; max-width:80%;">
-          Hello! Ask me about:<br><br>
-          • Apple/Tesla ESG reports<br>
-          • Carbon accounting<br>
-          • Supply chain risks
+      <div id="esg-chat-messages" style="height:400px; overflow-y:auto; margin-bottom:20px; padding:15px; border:1px solid rgba(0,0,0,0.05); border-radius:8px; background:#fafafa;">
+        <!-- Initial message with clickable questions -->
+        <div style="margin-bottom:15px;">
+          <div style="display:inline-block; background:#f3f4f6; padding:12px 15px; border-radius:18px 18px 18px 0; max-width:80%;">
+            <strong>Welcome to ESG Intelligence!</strong><br><br>
+            Try asking:<br>
+            • <a href="javascript:askExample('Explain Scope 1 vs 2 emissions')" style="color:var(--premium-accent);">Scope 1 vs 2 emissions</a><br>
+            • <a href="javascript:askExample('Show Tesla ESG risks')" style="color:var(--premium-accent);">Tesla's ESG risks</a><br>
+            • <a href="javascript:askExample('How to report supply chain emissions')" style="color:var(--premium-accent);">Supply chain reporting</a>
+          </div>
         </div>
       </div>
+      
       <div style="display:flex; gap:10px;">
-        <input id="esg-user-input" type="text" placeholder="Type your ESG question..." 
-               style="flex:1; padding:12px; border:1px solid rgba(0,0,0,0.1); border-radius:8px;">
-        <button onclick="sendEsgMessage()" class="btn btn-primary" style="padding:12px 24px;">
-          <i class="fas fa-paper-plane"></i>
+        <input id="esg-user-input" type="text" placeholder="Ask any ESG question..." 
+               style="flex:1; padding:12px 15px; border:1px solid rgba(0,0,0,0.1); border-radius:8px; font-size:1rem;">
+        <button onclick="sendEsgMessage()" class="btn btn-primary" style="padding:12px 24px; font-size:1rem;">
+          <i class="fas fa-paper-plane"></i> Ask
         </button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 🔥 ONLY NEED THIS ONE SCRIPT NOW -->
 <script src="esg-qa.js"></script>
 
 <script>
 // ===== CHAT FUNCTIONS =====
+function askExample(question) {
+  document.getElementById('esg-user-input').value = question;
+  sendEsgMessage();
+}
+
 async function sendEsgMessage() {
   const input = document.getElementById('esg-user-input');
   const message = input.value.trim();
@@ -1265,8 +1274,8 @@ async function sendEsgMessage() {
   
   // Add user message
   chatBox.innerHTML += `
-    <div style="text-align:right; margin-bottom:12px;">
-      <div style="display:inline-block; background:var(--premium-accent); color:white; padding:10px 15px; border-radius:18px 18px 0 18px; max-width:80%;">
+    <div style="text-align:right; margin-bottom:15px;">
+      <div style="display:inline-block; background:var(--premium-accent); color:white; padding:12px 15px; border-radius:18px 18px 0 18px; max-width:80%; line-height:1.5;">
         ${message}
       </div>
     </div>
@@ -1275,43 +1284,71 @@ async function sendEsgMessage() {
   input.value = '';
   chatBox.scrollTop = chatBox.scrollHeight;
   
-  try {
-    // ✅ Uses the getAnswer() from esg-qa.js
-    const response = await getAnswer(message);
-    
-    // Add bot response
-    chatBox.innerHTML += `
-      <div style="margin-bottom:12px;">
-        <div style="display:inline-block; background:#f3f4f6; padding:10px 15px; border-radius:18px 18px 18px 0; max-width:80%;">
-          ${response.answer.replace(/\n/g, '<br>')}
-          ${response.sources?.length ? `
-            <div style="font-size:12px; color:#666; margin-top:8px; border-top:1px dashed #ddd; padding-top:8px;">
-              Sources: ${response.sources.join(', ')}
-            </div>
-          ` : ''}
-        </div>
+  // Add typing indicator
+  const typingDiv = document.createElement('div');
+  typingDiv.id = 'typing-indicator';
+  typingDiv.innerHTML = `
+    <div style="display:flex; gap:8px; margin-bottom:15px; align-items:center;">
+      <div style="width:30px; height:30px; background:var(--premium-gold); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white;">
+        <i class="fas fa-robot"></i>
       </div>
-    `;
-  } catch (error) {
-    chatBox.innerHTML += `
-      <div style="margin-bottom:12px;">
-        <div style="display:inline-block; background:#f3f4f6; padding:10px 15px; border-radius:18px 18px 18px 0; max-width:80%;">
-          ⚠️ Try:<br><br>
-          • "Show Tesla's ESG score"<br>
-          • "Explain scope 3"
-        </div>
+      <div style="display:flex; gap:4px;">
+        <div style="width:8px; height:8px; background:#ccc; border-radius:50%; animation: bounce 1s infinite;"></div>
+        <div style="width:8px; height:8px; background:#ccc; border-radius:50%; animation: bounce 1s infinite 0.2s;"></div>
+        <div style="width:8px; height:8px; background:#ccc; border-radius:50%; animation: bounce 1s infinite 0.4s;"></div>
       </div>
-    `;
-  }
-  
+    </div>
+  `;
+  chatBox.appendChild(typingDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
+  
+  // Get response (with 1-2 sec delay for realism)
+  setTimeout(async () => {
+    try {
+      const response = await getAnswer(message);
+      document.getElementById('typing-indicator').remove();
+      
+      chatBox.innerHTML += `
+        <div style="margin-bottom:15px;">
+          <div style="display:inline-block; background:#f3f4f6; padding:12px 15px; border-radius:18px 18px 18px 0; max-width:80%; line-height:1.5;">
+            ${response.answer.replace(/\n/g, '<br>')}
+            ${response.sources?.length ? `
+              <div style="font-size:12px; color:#666; margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;">
+                <strong>Sources:</strong> ${response.sources.join(', ')}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      document.getElementById('typing-indicator').remove();
+      chatBox.innerHTML += `
+        <div style="margin-bottom:15px;">
+          <div style="display:inline-block; background:#f3f4f6; padding:12px 15px; border-radius:18px 18px 18px 0; max-width:80%; line-height:1.5;">
+            ⚠️ Try these exact queries:<br><br>
+            • "Explain carbon accounting"<br>
+            • "Show Apple's ESG leaks"<br>
+            • "How to set science-based targets"
+          </div>
+        </div>
+      `;
+    }
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }, 1000 + Math.random() * 1000);
 }
 
 // Press Enter to send
-document.getElementById('esg-user-input').addEventListener('keypress', function(e) {
+document.getElementById('esg-user-input').addEventListener('keypress', (e) => {
   if (e.key === 'Enter') sendEsgMessage();
 });
-  </script>
+</script>
+
+<style>
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  </style>
   <footer>
     <div class="footer-links">
       <a href="privacy.html">Privacy Policy</a>
