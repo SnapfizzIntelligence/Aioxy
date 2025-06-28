@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIOxy ESG Analyst</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --premium-dark: #0F172A;
+      --premium-accent: #7C3AED;
+      --premium-gold: #D4A017;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #F8FAFC;
+    }
+    #chat-container {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #chat-header {
+      background: var(--premium-dark);
+      color: white;
+      padding: 18px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.2rem;
+      position: relative;
+    }
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      background: #f5f5f5;
+    }
+    .user-message {
+      text-align: right;
+      margin-bottom: 15px;
+    }
+    .user-bubble {
+      display: inline-block;
+      background: var(--premium-accent);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 18px 18px 0 18px;
+      max-width: 80%;
+    }
+    .bot-message {
+      margin-bottom: 15px;
+    }
+    .bot-bubble {
+      display: inline-block;
+      background: white;
+      padding: 12px 16px;
+      border-radius: 18px 18px 18px 0;
+      max-width: 80%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .sources {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+      border-top: 1px dashed #ddd;
+      padding-top: 8px;
+    }
+    #input-area {
+      padding: 12px;
+      background: white;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 8px;
+    }
+    #user-input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 24px;
+      font-size: 1rem;
+    }
+    #send-btn {
+      background: var(--premium-accent);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 12px 0;
+    }
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: #ccc;
+      border-radius: 50%;
+      animation: bounce 1s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chat-header">
+      AIOxy ESG Analyst
+    </div>
+    <div id="chat-messages">
+      <div class="bot-message">
+        <div class="bot-bubble">
+          <strong>Welcome to Deep ESG Analysis!</strong><br><br>
+          Try these:<br>
+          • "Compare Apple vs Tesla ESG"<br>
+          • "Semiconductor water risks"<br>
+          • "EV battery recycling rates"
+        </div>
+      </div>
+    </div>
+    <div id="input-area">
+      <input type="text" id="user-input" placeholder="Ask any ESG question...">
+      <button id="send-btn" onclick="sendMessage()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <script src="esg-qa.js"></script>
+  <script>
+    // Chat functions
+    function sendMessage() {
+      const input = document.getElementById('user-input');
+      const message = input.value.trim();
+      if (!message) return;
+      
+      const chatBox = document.getElementById('chat-messages');
+      
+      // Add user message
+      chatBox.innerHTML += `
+        <div class="user-message">
+          <div class="user-bubble">${message}</div>
+        </div>
+      `;
+      
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+      
+      // Add typing indicator
+      chatBox.innerHTML += `
+        <div class="bot-message">
+          <div class="typing-dots">
+            <div class="typing-dot" style="animation-delay: 0s"></div>
+            <div class="typing-dot" style="animation-delay: 0.2s"></div>
+            <div class="typing-dot" style="animation-delay: 0.4s"></div>
+          </div>
+        </div>
+      `;
+      chatBox.scrollTop = chatBox.scrollHeight;
+      
+      // Get response
+      setTimeout(async () => {
+        try {
+          const response = await getAnswer(message);
+          document.querySelector('.typing-dots').remove();
+          
+          chatBox.innerHTML += `
+            <div class="bot-message">
+              <div class="bot-bubble">
+                ${response.answer.replace(/\n/g, '<br>')}
+                ${response.sources?.length ? `
+                  <div class="sources">
+                    <strong>Verified Sources:</strong> ${response.sources.join(', ')}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        } catch (error) {
+          document.querySelector('.typing-dots').remove();
+          chatBox.innerHTML += `
+            <div class="bot-message">
+              <div class="bot-bubble">
+                ⚠️ Try these exact queries:<br><br>
+                • "Scope 3 calculation steps"<br>
+                • "CSRD compliance checklist"<br>
+                • "Apple vs Nike ESG scores"
+              </div>
+            </div>
+          `;
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 1500);
+    }
+
+    // Enter key support
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
