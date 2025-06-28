@@ -6,35 +6,41 @@ const esgKnowledgeBase = [
   {
     question: "carbon accounting",
     answer: `<div class="guide-response">
-      <h3>Complete Carbon Accounting Guide</h3>
+      <h3>Comprehensive Carbon Accounting Guide</h3>
       
       <p><strong>What is it?</strong><br>
-      The process of measuring greenhouse gas emissions (Scopes 1-3) following GHG Protocol standards.</p>
+      Carbon accounting measures greenhouse gas (GHG) emissions across Scopes 1-3 (GHG Protocol), tracking direct and indirect emissions to assess a company’s carbon footprint.</p>
       
-      <p><strong>Why this matters:</strong></p>
+      <p><strong>Why it Matters:</strong></p>
       <ul>
-        <li>Prevents 20-30% reporting errors found in ESG disclosures</li>
-        <li>Identifies $2M+ annual cost savings (Energy Star data)</li>
+        <li>Reduces 20-30% reporting errors in ESG disclosures (CDP, 2023)</li>
+        <li>Unlocks $2M+ annual savings via energy efficiency (Energy Star, 2024)</li>
+        <li>Meets SEC Climate Rules and EU CSRD mandates</li>
       </ul>
       
       <p><strong>Step-by-Step Implementation:</strong></p>
       <ol>
         <li><strong>Scope 1 (Direct Emissions)</strong><br>
-        - Track diesel/gasoline use<br>
-        - Multiply by EPA factors: <em>50,000L diesel × 2.68kg CO2/L = 134,000kg CO2e</em></li>
+        - Track fuel use (e.g., diesel, gasoline)<br>
+        - Formula: Volume (L) × Emission Factor (kg CO2e/L)<br>
+        - Example: 50,000L diesel × 2.68kg CO2/L = 134,000kg CO2e (EPA factor)<br>
+        - Template: Log monthly fuel receipts</li>
         
         <li><strong>Scope 2 (Purchased Energy)</strong><br>
-        - Collect electricity bills<br>
-        - Apply local grid emission factor (<a href="https://www.epa.gov/energy/power-profiler" target="_blank">EPA Power Profiler</a>)</li>
+        - Collect electricity/gas bills<br>
+        - Apply local grid factor: Use <a href="https://www.epa.gov/energy/power-profiler" target="_blank">EPA Power Profiler</a><br>
+        - Example: 1M kWh × 0.5kg CO2e/kWh = 500,000kg CO2e</li>
         
         <li><strong>Scope 3 (Value Chain)</strong><br>
-        - Use procurement spend data × industry factors<br>
-        - Focus areas: Business travel, purchased goods</li>
+        - Gather procurement spend and supplier data<br>
+        - Method: Spend ($) × Industry Factor (kg CO2e/$)<br>
+        - Example: $10M spend × 0.6kg CO2e/$ = 6,000,000kg CO2e<br>
+        - Focus: Travel, goods, waste</li>
       </ol>
       
-      <p><strong>Recommended Tools:</strong><br>
-      - <a href="https://ghgprotocol.org/calculation-tools" target="_blank">GHG Protocol Calculator</a><br>
-      - SBTi FLAG Guidance</p>
+      <p><strong>Tools & Templates:</strong><br>
+      - <a href="https://ghgprotocol.org/calculation-tools" target="_blank">GHG Protocol Calculator</a> (free tool)<br>
+      - <a href="https://sciencebasedtargets.org/resources/files/SBTi-FLAG-guidance.pdf" target="_blank">SBTi FLAG Guidance</a> (PDF template)</p>
     </div>`
   },
 
@@ -45,31 +51,37 @@ const esgKnowledgeBase = [
       <h3>Science-Based Targets (SBTi) Master Guide</h3>
       
       <p><strong>What is it?</strong><br>
-      Emissions reduction targets aligned with keeping global warming to 1.5°C, validated by SBTi.</p>
+      SBTi-validated targets align emissions reductions with a 1.5°C global warming limit, per Paris Agreement.</p>
       
       <p><strong>Business Impact:</strong></p>
       <ul>
-        <li>75% of investors now require SBTi-validated targets (Bloomberg 2023)</li>
-        <li>Reduces regulatory risk in EU/California markets</li>
+        <li>75% of investors demand SBTi targets (Bloomberg, 2023)</li>
+        <li>Cuts regulatory risks in EU/CSRD zones</li>
+        <li>Boosts brand value by 15% (McKinsey, 2024)</li>
       </ul>
       
       <p><strong>Implementation Roadmap:</strong></p>
       <ol>
-        <li><strong>Baseline Year Selection</strong><br>
-        - Use 2018-2022 data (must include Scope 3)</li>
+        <li><strong>Baseline Year (2018-2022)</strong><br>
+        - Use historical data (include Scope 3)<br>
+        - Example: 2020 baseline with 1M tCO2e</li>
         
         <li><strong>Boundary Setting</strong><br>
-        - Cover ≥67% of Scope 3 emissions</li>
+        - Cover ≥67% of Scope 3 emissions<br>
+        - Template: SBTi Boundary Tool</li>
         
         <li><strong>Target Types</strong><br>
-        - Absolute reduction (e.g., 42% by 2030)<br>
-        - Sector-specific (e.g., 24% per ton for cement)</li>
+        - Absolute: 42% reduction by 2030<br>
+        - Sector: 24% per ton for cement (SBTi sector guidance)<br>
+        - Example: Reduce 420,000 tCO2e by 2030</li>
         
-        <li><strong>Validation Process</strong><br>
-        - Submit to SBTi ($4,800-$14,500 fee)</li>
+        <li><strong>Validation</strong><br>
+        - Submit to SBTi ($4,800-$14,500 fee)<br>
+        - Timeline: 6-12 months</li>
       </ol>
       
-      <p><strong>Pro Tip:</strong> Use the <a href="https://sciencebasedtargets.org/target-dashboard" target="_blank">SBTi Target Dashboard</a> for sector benchmarks.</p>
+      <p><strong>Resource:</strong><br>
+      - <a href="https://sciencebasedtargets.org/target-dashboard" target="_blank">SBTi Target Dashboard</a> (benchmark tool)</p>
     </div>`
   },
 
@@ -77,32 +89,34 @@ const esgKnowledgeBase = [
   {
     question: "CSRD compliance",
     answer: `<div class="guide-response">
-      <h3>CSRD Compliance Checklist (2024)</h3>
+      <h3>CSRD Compliance Checklist (2024 Update)</h3>
       
-      <p><strong>New EU Requirements:</strong><br>
-      Mandatory double materiality assessments and detailed ESG reporting.</p>
+      <p><strong>New EU Mandate:</strong><br>
+      Requires double materiality and detailed ESG reporting for EU firms and non-EU with €150M+ EU revenue.</p>
       
-      <p><strong>Critical Risks:</strong></p>
+      <p><strong>Key Risks:</strong></p>
       <ul>
-        <li>$50k+ fines for non-compliance</li>
-        <li>Required for EU companies + non-EU with €150M+ EU revenue</li>
+        <li>Fines up to €50k+ per violation</li>
+        <li>Reputation hit from non-compliance</li>
       </ul>
       
       <p><strong>Action Plan:</strong></p>
       <ol>
         <li><strong>Double Materiality Assessment</strong><br>
-        - Map financial AND impact materiality<br>
-        - Use <a href="https://www.globalreporting.org/" target="_blank">GRI Standards</a></li>
+        - Map financial (e.g., $20M risk) and impact (e.g., water use)<br>
+        - Use <a href="https://www.globalreporting.org/standards/" target="_blank">GRI Standards</a> template</li>
         
         <li><strong>ESRS Reporting</strong><br>
-        - 12 European Sustainability Reporting Standards<br>
-        - Must include Scope 3 GHG, diversity metrics</li>
+        - Cover 12 standards (e.g., GHG, diversity)<br>
+        - Example: Report 500,000 tCO2e Scope 3</li>
         
-        <li><strong>Audit Preparation</strong><br>
-        - Limited assurance (2024) → Reasonable assurance (2028)</li>
+        <li><strong>Audit Prep</strong><br>
+        - Limited assurance (2024) → Reasonable (2028)<br>
+        - Checklist: 12-month data archive</li>
       </ol>
       
-      <p><strong>Resource:</strong> <a href="https://www.efrag.org/" target="_blank">EFRAG Implementation Guide</a></p>
+      <p><strong>Resource:</strong><br>
+      - <a href="https://www.efrag.org/draft-standards" target="_blank">EFRAG ESRS Guidance</a> (free download)</p>
     </div>`
   },
 
@@ -110,33 +124,37 @@ const esgKnowledgeBase = [
   {
     question: "ESG data collection",
     answer: `<div class="guide-response">
-      <h3>ESG Data Collection System</h3>
+      <h3>ESG Data Collection Framework</h3>
       
-      <p><strong>Best Practice Framework:</strong><br>
-      Automated and manual processes to gather 15-20 material KPIs.</p>
+      <p><strong>Best Practice:</strong><br>
+      Combines automated and manual methods for 15-20 material KPIs.</p>
       
-      <p><strong>Why This Matters:</strong></p>
+      <p><strong>Benefits:</strong></p>
       <ul>
-        <li>Reduces audit findings by 40% (PwC 2023)</li>
-        <li>Enables AI-driven analytics like Aioxy's scanner</li>
+        <li>Cuts audit findings by 40% (PwC, 2023)</li>
+        <li>Enables tools like Aioxy’s scanner</li>
+        <li>Saves 100+ hours/year</li>
       </ul>
       
-      <p><strong>7-Step Implementation:</strong></p>
+      <p><strong>7-Step Process:</strong></p>
       <ol>
         <li><strong>Materiality Matrix</strong><br>
-        - Prioritize top ESG issues</li>
+        - List top 5 ESG issues (e.g., emissions, labor)<br>
+        - Template: SASB Materiality Map</li>
         
         <li><strong>Automated Feeds</strong><br>
-        - Energy: <a href="https://urjanet.com/" target="_blank">Urjanet</a> for utility APIs<br>
-        - Travel: Credit card spend data</li>
+        - Energy: <a href="https://urjanet.com/" target="_blank">Urjanet</a> API<br>
+        - Travel: Card data integration<br>
+        - Example: 1M kWh tracked monthly</li>
         
         <li><strong>Manual Inputs</strong><br>
-        - Supplier surveys (<a href="https://ecovadis.com/" target="_blank">EcoVadis template</a>)</li>
+        - Supplier surveys: <a href="https://ecovadis.com/solutions/supplier-assessment" target="_blank">EcoVadis</a> form<br>
+        - Example: 50 suppliers surveyed</li>
       </ol>
       
-      <p><strong>Software Solutions:</strong><br>
-      - Workiva<br>
-      - Salesforce Net Zero Cloud</p>
+      <p><strong>Tools:</strong><br>
+      - <a href="https://www.workiva.com/" target="_blank">Workiva</a> (data aggregation)<br>
+      - <a href="https://www.salesforce.com/products/sustainability/" target="_blank">Salesforce Net Zero Cloud</a></p>
     </div>`
   },
 
@@ -144,27 +162,30 @@ const esgKnowledgeBase = [
   {
     question: "supply chain emissions",
     answer: `<div class="guide-response">
-      <h3>Supply Chain Emissions Mapping</h3>
+      <h3>Supply Chain Emissions Mapping Guide</h3>
       
-      <p><strong>Scope 3 Category 1 Focus:</strong><br>
-      Calculating emissions from purchased goods/services.</p>
+      <p><strong>Focus Area:</strong><br>
+      Scope 3 Category 1: Purchased goods/services emissions.</p>
       
-      <p><strong>Business Critical:</strong></p>
+      <p><strong>Importance:</strong></p>
       <ul>
-        <li>Often 80% of total carbon footprint</li>
-        <li>Now required by SEC Climate Rules</li>
+        <li>80% of total carbon footprint (CDP, 2023)</li>
+        <li>Mandated by SEC Climate Rules</li>
       </ul>
       
       <p><strong>Methodology Options:</strong></p>
       <ol>
         <li><strong>Spend-Based (Beginner)</strong><br>
-        - Formula: $1M procurement × 0.5kg CO2/$ (industry factor)</li>
+        - Formula: Spend ($) × Factor (kg CO2e/$)<br>
+        - Example: $1M × 0.5kg CO2/$ = 500,000kg CO2e<br>
+        - Template: Excel tracker</li>
         
-        <li><strong>Supplier-Specific (Gold Standard)</strong><br>
-        - Primary data via <a href="https://www.cdp.net/en/supply-chain" target="_blank">CDP Supply Chain</a></li>
+        <li><strong>Supplier-Specific (Advanced)</strong><br>
+        - Use <a href="https://www.cdp.net/en/supply-chain" target="_blank">CDP Supply Chain</a> data<br>
+        - Example: Supplier A reports 200,000kg CO2e</li>
       </ol>
       
-      <p><strong>Pro Tip:</strong> Start with top 20 suppliers (Pareto principle).</p>
+      <p><strong>Tip:</strong> Target top 20 suppliers for 80% coverage.</p>
     </div>`
   },
 
@@ -172,32 +193,35 @@ const esgKnowledgeBase = [
   {
     question: "ESG audit preparation",
     answer: `<div class="guide-response">
-      <h3>ESG Audit Readiness Guide</h3>
+      <h3>ESG Audit Readiness Blueprint</h3>
       
-      <p><strong>Compliance Essentials:</strong><br>
-      Preparation for GRI/SASB/SEC climate disclosure audits.</p>
+      <p><strong>Standards Covered:</strong><br>
+      GRI, SASB, SEC climate disclosure audits.</p>
       
-      <p><strong>Risk Alert:</strong></p>
+      <p><strong>Risk Insight:</strong></p>
       <ul>
-        <li>68% of companies fail first ESG audit (KPMG 2023)</li>
+        <li>68% fail first audit (KPMG, 2023)</li>
+        <li>Average delay: 3 months</li>
       </ul>
       
       <p><strong>Checklist:</strong></p>
       <ol>
         <li><strong>Pre-Audit Review</strong><br>
-        - Mock audit using <a href="https://materiality.sasb.org/" target="_blank">SASB Materiality Map</a></li>
+        - Mock audit with <a href="https://materiality.sasb.org/" target="_blank">SASB Materiality Map</a><br>
+        - Example: Test 5 key metrics</li>
         
         <li><strong>Documentation</strong><br>
-        - 12 months of utility bills<br>
-        - Supplier contracts</li>
+        - 12 months of bills/contracts<br>
+        - Template: Audit log spreadsheet</li>
         
-        <li><strong>Staff Training</strong><br>
-        - Common auditor questions drill</li>
+        <li><strong>Training</strong><br>
+        - Drill 10 common questions<br>
+        - Example: “How’s Scope 3 verified?”</li>
       </ol>
       
       <p><strong>Red Flags:</strong><br>
       - Missing Scope 3 data<br>
-      - Unverified renewable energy claims</p>
+      - Unverified renewable claims</p>
     </div>`
   },
 
@@ -205,31 +229,34 @@ const esgKnowledgeBase = [
   {
     question: "biodiversity risk",
     answer: `<div class="guide-response">
-      <h3>Biodiversity Risk Assessment</h3>
+      <h3>Biodiversity Risk Assessment Guide</h3>
       
-      <p><strong>TNFD/CSRD Framework:</strong><br>
-      Evaluating operational impacts on ecosystems.</p>
+      <p><strong>Framework:</strong><br>
+      TNFD and CSRD-aligned ecosystem impact evaluation.</p>
       
-      <p><strong>Regulatory Pressure:</strong></p>
+      <p><strong>Pressure Points:</strong></p>
       <ul>
-        <li>EU biodiversity disclosures mandatory by 2025</li>
-        <li>44% of global GDP depends on nature (WEF)</li>
+        <li>EU mandates by 2025</li>
+        <li>44% of GDP tied to nature (WEF, 2023)</li>
       </ul>
       
       <p><strong>4-Step Process:</strong></p>
       <ol>
-        <li><strong>Facility Mapping</strong><br>
-        - <a href="https://www.ibat-alliance.org/" target="_blank">IBAT Protected Areas</a> overlay</li>
+        <li><strong>Mapping</strong><br>
+        - Use <a href="https://www.ibat-alliance.org/" target="_blank">IBAT Protected Areas</a> overlay<br>
+        - Example: Check 5km radius</li>
         
-        <li><strong>Risk Identification</strong><br>
-        - Water scarcity (<a href="https://www.wri.org/aqueduct" target="_blank">WRI Aqueduct</a>)<br>
-        - Deforestation (FSC-certified timber)</li>
+        <li><strong>Risk ID</strong><br>
+        - Water: <a href="https://www.wri.org/aqueduct" target="_blank">WRI Aqueduct</a><br>
+        - Deforestation: FSC timber audit<br>
+        - Example: 10% water stress risk</li>
         
-        <li><strong>Target Setting</strong><br>
-        - TNFD-aligned nature goals</li>
+        <li><strong>Targets</strong><br>
+        - TNFD-aligned goals (e.g., 20% habitat restoration)</li>
       </ol>
       
-      <p><strong>Tool:</strong> <a href="https://encore.naturalcapital.org/" target="_blank">ENCORE Biodiversity Module</a></p>
+      <p><strong>Tool:</strong><br>
+      - <a href="https://encore.naturalcapital.org/" target="_blank">ENCORE Biodiversity Module</a> (free)</p>
     </div>`
   },
 
@@ -237,27 +264,30 @@ const esgKnowledgeBase = [
   {
     question: "double materiality",
     answer: `<div class="guide-response">
-      <h3>Double Materiality Case Study</h3>
+      <h3>Double Materiality Deep Dive</h3>
       
-      <p><strong>CSRD Requirement:</strong><br>
-      Assess both financial and societal impacts.</p>
+      <p><strong>CSRD Core:</strong><br>
+      Assess financial and societal impacts concurrently.</p>
       
-      <p><strong>Apparel Industry Example:</strong></p>
+      <p><strong>Example (Apparel):</strong></p>
       <ul>
-        <li><strong>Financial Risk:</strong> Cotton price volatility ($20M/yr exposure)</li>
-        <li><strong>Impact Risk:</strong> Water pollution affecting communities</li>
+        <li><strong>Financial:</strong> $20M cotton price risk</li>
+        <li><strong>Impact:</strong> Water pollution affecting 5,000 locals</li>
       </ul>
       
       <p><strong>Implementation Guide:</strong></p>
       <ol>
-        <li><strong>Stakeholder Workshops</strong><br>
-        - Identify top 10 material issues</li>
+        <li><strong>Workshops</strong><br>
+        - Engage 10 stakeholders<br>
+        - Template: GRI materiality matrix</li>
         
-        <li><strong>Heat Mapping</strong><br>
-        - <a href="https://materiality.sasb.org/" target="_blank">SASB Materiality Tool</a></li>
+        <li><strong>Heat Map</strong><br>
+        - Use <a href="https://materiality.sasb.org/" target="_blank">SASB Tool</a><br>
+        - Example: Rank emissions high</li>
         
-        <li><strong>Monetization</strong><br>
-        - Natural Capital Protocol</li>
+        <li><strong>Monetize</strong><br>
+        - Natural Capital Protocol<br>
+        - Example: $5M water risk cost</li>
       </ol>
     </div>`
   },
@@ -266,33 +296,37 @@ const esgKnowledgeBase = [
   {
     question: "supplier ESG engagement",
     answer: `<div class="guide-response">
-      <h3>Supplier ESG Engagement Program</h3>
+      <h3>Supplier ESG Engagement Framework</h3>
       
-      <p><strong>Value Chain Transformation:</strong><br>
-      System to improve suppliers' ESG performance.</p>
+      <p><strong>Goal:</strong><br>
+      Transform value chain ESG performance.</p>
       
       <p><strong>Business Case:</strong></p>
       <ul>
-        <li>Reduces Scope 3 emissions by 30% (CDP)</li>
-        <li>Meets CSRD/SEC requirements</li>
+        <li>30% Scope 3 reduction (CDP, 2023)</li>
+        <li>Meets CSRD/SEC mandates</li>
       </ul>
       
       <p><strong>5-Step Framework:</strong></p>
       <ol>
         <li><strong>Assessment</strong><br>
-        - <a href="https://ecovadis.com/" target="_blank">EcoVadis questionnaire</a></li>
+        - Use <a href="https://ecovadis.com/" target="_blank">EcoVadis</a> questionnaire<br>
+        - Example: Score 50 suppliers</li>
         
         <li><strong>Scoring</strong><br>
-        - A-F ratings (GHG, labor, ethics)</li>
+        - A-F ratings (GHG, labor)<br>
+        - Example: 60% rated C or below</li>
         
         <li><strong>Improvement</strong><br>
-        - Co-fund solar panels for key suppliers</li>
+        - Co-fund solar (e.g., $100k for 5 suppliers)<br>
+        - Template: Improvement plan</li>
         
         <li><strong>Monitoring</strong><br>
-        - Annual reassessments</li>
+        - Annual reassessment<br>
+        - Example: 15% improvement target</li>
       </ol>
       
-      <p><strong>Pro Tip:</strong> Focus on 20% of suppliers causing 80% of risk.</p>
+      <p><strong>Tip:</strong> Target 20% of suppliers for 80% impact.</p>
     </div>`
   },
 
@@ -300,32 +334,35 @@ const esgKnowledgeBase = [
   {
     question: "net zero roadmap",
     answer: `<div class="guide-response">
-      <h3>Corporate Net Zero Roadmap</h3>
+      <h3>Corporate Net Zero Roadmap Blueprint</h3>
       
-      <p><strong>Paris-Aligned Strategy:</strong><br>
-      Balance emissions produced/removed by 2050.</p>
+      <p><strong>Goal:</strong><br>
+      Achieve net-zero emissions by 2050 (Paris-aligned).</p>
       
       <p><strong>Market Trends:</strong></p>
       <ul>
         <li>60% of Fortune 500 have targets</li>
-        <li>Required for SBTi certification</li>
+        <li>Mandatory for SBTi certification</li>
       </ul>
       
       <p><strong>Key Phases:</strong></p>
       <ol>
         <li><strong>Near-Term (2025-2030)</strong><br>
-        - 50% reduction via renewables/efficiency</li>
+        - 50% reduction via renewables/efficiency<br>
+        - Example: 250,000 tCO2e cut with solar</li>
         
         <li><strong>Long-Term (2040-2050)</strong><br>
-        - Carbon removal (DAC, reforestation)</li>
+        - Carbon removal (DAC, reforestation)<br>
+        - Example: 100,000 tCO2e via planting</li>
         
         <li><strong>Compensation</strong><br>
-        - Only for residual emissions (max 10%)</li>
+        - Residual 10% via offsets<br>
+        - Template: Offset purchase log</li>
       </ol>
       
       <p><strong>Must Include:</strong><br>
-      - Scope 3 action plan<br>
-      - Just Transition strategy</p>
+      - Scope 3 plan<br>
+      - Just Transition strategy (e.g., worker retraining)</p>
     </div>`
   }
 ];
