@@ -1227,63 +1227,91 @@
         </div>
       </div>
     </div>
-<!-- $$$ PREMIUM CHATBOT $$$ -->
-<div id="aioxy-chatbot-container">[...keep existing UI code...]</div>
+<!-- ===== ESG CHATBOT ===== -->
+<section class="section" style="background: #F8FAFC;">
+  <div class="container">
+    <h2 class="section-title">ESG Quick Assistant</h2>
+    <div style="max-width:800px; margin:0 auto; background:white; border-radius:12px; padding:30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+      <div id="esg-chat-messages" style="height:300px; overflow-y:auto; margin-bottom:20px; padding:10px; border:1px solid rgba(0,0,0,0.05); border-radius:8px;">
+        <div style="background:#f3f4f6; padding:12px; border-radius:8px; display:inline-block; max-width:80%;">
+          Hello! Ask me about:<br><br>
+          • Apple/Tesla ESG reports<br>
+          • Carbon accounting<br>
+          • Supply chain risks
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <input id="esg-user-input" type="text" placeholder="Type your ESG question..." 
+               style="flex:1; padding:12px; border:1px solid rgba(0,0,0,0.1); border-radius:8px;">
+        <button onclick="sendEsgMessage()" class="btn btn-primary" style="padding:12px 24px;">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
 
-<!-- $$$ CRITICAL CONNECTIONS $$$ -->
+<!-- 🔥 ONLY NEED THIS ONE SCRIPT NOW -->
 <script src="esg-qa.js"></script>
+
 <script>
-  // ====== CHATBOT CORE ======
-  function sendMessage() {
-    const input = document.getElementById('user-input');
-    const question = input.value.trim();
-    if (!question) return;
-    
-    // Add user message to chat
-    const chatBox = document.getElementById('chat-messages');
-    chatBox.innerHTML += `
-      <div style="text-align:right; margin-bottom:20px;">
-        <div style="display:inline-block; background:var(--premium-accent); color:white; padding:12px 16px; border-radius:18px 0 18px 18px; max-width:80%;">
-          ${question}
-        </div>
+// ===== CHAT FUNCTIONS =====
+async function sendEsgMessage() {
+  const input = document.getElementById('esg-user-input');
+  const message = input.value.trim();
+  if (!message) return;
+  
+  const chatBox = document.getElementById('esg-chat-messages');
+  
+  // Add user message
+  chatBox.innerHTML += `
+    <div style="text-align:right; margin-bottom:12px;">
+      <div style="display:inline-block; background:var(--premium-accent); color:white; padding:10px 15px; border-radius:18px 18px 0 18px; max-width:80%;">
+        ${message}
       </div>
-    `;
+    </div>
+  `;
+  
+  input.value = '';
+  chatBox.scrollTop = chatBox.scrollHeight;
+  
+  try {
+    // ✅ Uses the getAnswer() from esg-qa.js
+    const response = await getAnswer(message);
     
-    input.value = '';
-    
-    // Show "typing" indicator
+    // Add bot response
     chatBox.innerHTML += `
-      <div id="typing-indicator" style="display:flex; gap:12px; margin-bottom:20px;">
-        <div style="width:36px; height:36px; background:var(--premium-gold); border-radius:50%;"></div>
-        <div style="display:flex; gap:5px; align-items:center;">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      </div>
-    `;
-    chatBox.scrollTop = chatBox.scrollHeight;
-    
-    // Get answer after 1s delay (simulate AI)
-    setTimeout(() => {
-      document.getElementById('typing-indicator').remove();
-      const response = getESGAnswer(question); // From esg-qa.js
-      
-      chatBox.innerHTML += `
-        <div style="margin-bottom:20px;">
-          <div style="display:flex; gap:12px;">
-            <div style="width:36px; height:36px; background:var(--premium-gold); border-radius:50%;"></div>
-            <div style="background:white; padding:12px 16px; border-radius:0 18px 18px 18px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-              ${response.answer}
-              ${response.sources?.length ? `<div style="margin-top:10px; font-size:0.8rem; color:#666;">Sources: ${response.sources.join(', ')}</div>` : ''}
+      <div style="margin-bottom:12px;">
+        <div style="display:inline-block; background:#f3f4f6; padding:10px 15px; border-radius:18px 18px 18px 0; max-width:80%;">
+          ${response.answer.replace(/\n/g, '<br>')}
+          ${response.sources?.length ? `
+            <div style="font-size:12px; color:#666; margin-top:8px; border-top:1px dashed #ddd; padding-top:8px;">
+              Sources: ${response.sources.join(', ')}
             </div>
-          </div>
+          ` : ''}
         </div>
-      `;
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }, 1000);
+      </div>
+    `;
+  } catch (error) {
+    chatBox.innerHTML += `
+      <div style="margin-bottom:12px;">
+        <div style="display:inline-block; background:#f3f4f6; padding:10px 15px; border-radius:18px 18px 18px 0; max-width:80%;">
+          ⚠️ Try:<br><br>
+          • "Show Tesla's ESG score"<br>
+          • "Explain scope 3"
+        </div>
+      </div>
+    `;
   }
-</script>
+  
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Press Enter to send
+document.getElementById('esg-user-input').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') sendEsgMessage();
+});
+  </script>
   <footer>
     <div class="footer-links">
       <a href="privacy.html">Privacy Policy</a>
