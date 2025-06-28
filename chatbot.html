@@ -1,418 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Premium ESG Assistant | Aioxy</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <title>Aioxy ESG Assistant</title>
   <style>
-    :root {
-      --premium-dark: #0F172A;
-      --premium-navy: #1E293B;
-      --premium-accent: #7C3AED;
-      --premium-gold: #D4A017;
-      --premium-light: #F8FAFC;
-      --premium-danger: #DC2626;
-      --premium-success: #10B981;
-      --font-main: 'Inter', sans-serif;
-      --font-heading: 'Libre Baskerville', serif;
-    }
-    
-    body {
-      font-family: var(--font-main);
-      background-color: var(--premium-light);
-      color: var(--premium-navy);
-      line-height: 1.7;
-      margin: 0;
-      padding: 0;
-    }
-    
-    /* Premium Chat Container */
-    .chat-container {
-      max-width: 900px;
-      margin: 0 auto;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 0 50px rgba(0,0,0,0.1);
-    }
-    
-    /* Chat Header */
-    .chat-header {
-      background: linear-gradient(135deg, var(--premium-dark), var(--premium-navy));
+    /* Premium Chat UI Styles */
+    .company-header {
+      background: linear-gradient(135deg, #0F172A, #1E293B);
       color: white;
-      padding: 25px;
-      text-align: center;
-      position: relative;
-      z-index: 10;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
     }
-    
-    .chat-header h2 {
-      font-family: var(--font-heading);
-      font-size: 2rem;
-      margin: 0;
-      background: linear-gradient(90deg, #F8D347, var(--premium-gold));
+    .esg-score {
+      font-size: 2.5rem;
+      font-weight: bold;
+      background: linear-gradient(90deg, #7C3AED, #6D28D9);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    
-    .chat-header p {
-      opacity: 0.9;
-      font-size: 0.95rem;
-      margin: 8px 0 0;
-    }
-    
-    /* Messages Area */
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 30px;
-      background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNDgsMjQ4LDI1MiwwLjAzKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNwYXR0ZXJuKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==');
-    }
-    
-    /* Message Styles */
-    .message {
-      margin-bottom: 25px;
-      max-width: 80%;
-      animation: fadeIn 0.4s ease-out;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .user-message {
-      margin-left: auto;
-      background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
-      color: white;
-      padding: 18px 25px;
-      border-radius: 24px 24px 0 24px;
-      box-shadow: 0 5px 20px rgba(124, 58, 237, 0.2);
-    }
-    
-    .bot-message {
-      margin-right: auto;
-      background: white;
-      color: var(--premium-navy);
-      padding: 25px;
-      border-radius: 24px 24px 24px 0;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .bot-message h3 {
-      color: var(--premium-accent);
-      margin-top: 0;
-      font-family: var(--font-heading);
-    }
-    
-    .bot-message ul, .bot-message ol {
-      padding-left: 20px;
-    }
-    
-    .bot-message li {
-      margin-bottom: 10px;
-    }
-    
-    .bot-message code {
-      background: rgba(124, 58, 237, 0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-      color: var(--premium-accent);
-    }
-    
-    /* Input Area */
-    .chat-input-container {
-      padding: 20px;
-      background: white;
-      border-top: 1px solid rgba(0,0,0,0.05);
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.02);
-    }
-    
-    .chat-input-wrapper {
-      display: flex;
-      align-items: center;
-      background: white;
-      border-radius: 50px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-      padding: 5px;
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    #user-input {
-      flex: 1;
-      border: none;
-      padding: 15px 20px;
-      font-size: 1rem;
-      border-radius: 50px;
-      outline: none;
-    }
-    
-    #send-button {
-      background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
-      color: white;
-      border: none;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    #send-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
-    }
-    
-    /* Suggested Questions */
-    .suggested-questions {
-      padding: 0 30px 30px;
-    }
-    
-    .suggested-questions h4 {
-      color: var(--premium-navy);
-      opacity: 0.7;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 15px;
-    }
-    
-    .questions-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 15px;
-    }
-    
-    .suggested-question {
-      background: white;
-      border: 1px solid rgba(124, 58, 237, 0.2);
-      color: var(--premium-accent);
+    .leak-card {
+      border-left: 4px solid #DC2626;
       padding: 15px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: all 0.3s;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-      text-align: center;
-    }
-    
-    .suggested-question:hover {
-      background: var(--premium-accent);
-      color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.2);
-    }
-    
-    /* Typing Indicator */
-    .typing-indicator {
-      display: inline-flex;
-      align-items: center;
-      background: white;
-      padding: 12px 20px;
-      border-radius: 24px 24px 24px 0;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-    
-    .typing-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--premium-accent);
-      border-radius: 50%;
-      margin: 0 3px;
-      animation: typingAnimation 1.4s infinite ease-in-out;
-    }
-    
-    .typing-dot:nth-child(1) { animation-delay: 0s; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    
-    @keyframes typingAnimation {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-5px); }
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .chat-container {
-        height: auto;
-        min-height: 100vh;
-      }
-      
-      .chat-messages {
-        padding: 20px;
-      }
-      
-      .message {
-        max-width: 90%;
-      }
-      
-      .questions-grid {
-        grid-template-columns: 1fr;
-      }
+      margin: 20px 0;
+      background: #FFF5F5;
     }
   </style>
 </head>
 <body>
-  <!-- Navigation (reuse your existing nav) -->
-  <nav>
-    <div class="nav-container">
-      <a href="index.html" class="nav-logo">AIOXY</a>
-      <div class="menu-toggle" id="mobile-menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="chatwithaioxy.html" class="active">ESG Assistant</a>
-        <a href="#aioxy">Leak Scanner</a>
-        <a href="about.html">About</a>
-      </div>
+  <div id="chat-container">
+    <div id="messages">
+      <!-- Messages appear here -->
     </div>
-  </nav>
-
-  <!-- Premium Chat Interface -->
-  <div class="chat-container">
-    <div class="chat-header">
-      <h2>Premium ESG Assistant</h2>
-      <p>Expert-level guidance on environmental, social and governance topics</p>
-    </div>
-    
-    <div class="chat-messages" id="chat-messages">
-      <div class="message bot-message">
-        <h3>Welcome to Your ESG Knowledge Partner</h3>
-        <p>I'm here to provide detailed, actionable guidance on all ESG matters. Unlike generic chatbots, I offer:</p>
-        <ul>
-          <li><strong>Step-by-step implementation guides</strong> for complex topics</li>
-          <li><strong>Regulatory insights</strong> across jurisdictions</li>
-          <li><strong>Calculation methodologies</strong> with examples</li>
-          <li><strong>Best practice frameworks</strong> from leading organizations</li>
-        </ul>
-        <p>Try asking about:</p>
-      </div>
-    </div>
-    
-    <div class="suggested-questions">
-      <h4>Key ESG Topics</h4>
-      <div class="questions-grid">
-        <div class="suggested-question" onclick="askQuestion('How to implement carbon accounting?')">
-          <i class="fas fa-calculator"></i> Carbon Accounting Guide
-        </div>
-        <div class="suggested-question" onclick="askQuestion('Scope 1 vs 2 vs 3 emissions differences')">
-          <i class="fas fa-industry"></i> Emission Scopes Explained
-        </div>
-        <div class="suggested-question" onclick="askQuestion('Setting science-based net zero targets')">
-          <i class="fas fa-bullseye"></i> Net Zero Roadmap
-        </div>
-        <div class="suggested-question" onclick="askQuestion('ESG reporting framework comparison')">
-          <i class="fas fa-file-alt"></i> Reporting Standards
-        </div>
-      </div>
-    </div>
-    
-    <div class="chat-input-container">
-      <div class="chat-input-wrapper">
-        <input type="text" id="user-input" placeholder="Ask any ESG question..." autocomplete="off">
-        <button id="send-button" onclick="sendMessage()">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-    </div>
+    <input id="user-input" placeholder="Ask about Apple's ESG or general topics...">
+    <button onclick="sendMessage()">Send</button>
   </div>
 
-  <script src="chatbot.js"></script>
-  <script>
-    // Enhanced Chat Functionality
-    function sendMessage() {
-      const input = document.getElementById('user-input');
-      const question = input.value.trim();
+  <script type="module">
+    import { getAnswer } from './chatbot.js';
+    
+    async function sendMessage() {
+      const question = document.getElementById('user-input').value;
+      const answer = await getAnswer(question);
       
-      if (question) {
-        addMessage(question, 'user');
-        input.value = '';
-        
-        // Show typing indicator
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'message bot-message typing-indicator';
-        typingIndicator.id = 'typing-indicator';
-        typingIndicator.innerHTML = `
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        `;
-        document.getElementById('chat-messages').appendChild(typingIndicator);
-        document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
-        
-        // Simulate processing delay for premium feel
-        setTimeout(() => {
-          document.getElementById('typing-indicator').remove();
-          const answer = getAnswer(question);
-          addMessage(answer, 'bot');
-        }, 1000 + Math.random() * 1000);
-      }
+      // Display in UI
+      document.getElementById('messages').innerHTML += `
+        <div class="user-question">${question}</div>
+        <div class="bot-answer">${answer}</div>
+      `;
     }
-    
-    function askQuestion(question) {
-      document.getElementById('user-input').value = question;
-      sendMessage();
-    }
-    
-    function addMessage(content, sender) {
-      const messages = document.getElementById('chat-messages');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${sender}-message`;
-      
-      if (sender === 'bot') {
-        messageDiv.innerHTML = content;
-      } else {
-        messageDiv.textContent = content;
-      }
-      
-      messages.appendChild(messageDiv);
-      messages.scrollTop = messages.scrollHeight;
-    }
-    
-    // Handle Enter key
-    document.getElementById('user-input').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
-    });
-    
-    // Mobile menu toggle
-    const mobileMenu = document.getElementById('mobile-menu');
-    const navLinks = document.querySelector('.nav-links');
-    
-    mobileMenu.addEventListener('click', () => {
-      mobileMenu.classList.toggle('active');
-      navLinks.classList.toggle('active');
-    });
-    
-    // Initial suggested questions
-    const initialQuestions = [
-      "Comprehensive carbon accounting methodology",
-      "Detailed breakdown of Scope 1 emissions",
-      "How to set science-based net zero targets?",
-      "Step-by-step ESG reporting framework selection",
-      "Calculating Scope 3 emissions from supply chain"
-    ];
-    
-    setTimeout(() => {
-      initialQuestions.forEach(q => {
-        const div = document.createElement('div');
-        div.className = 'suggested-question';
-        div.textContent = q;
-        div.onclick = () => askQuestion(q);
-        document.querySelector('.questions-grid').appendChild(div);
-      });
-    }, 1500);
   </script>
 </body>
-          </html>
+</html>
