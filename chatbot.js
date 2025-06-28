@@ -287,3 +287,49 @@ function formatAnswer(text) {
   
   return formatted;
 }
+// COMPANY DATA LOADER
+async function loadCompanyData(companyName) {
+  try {
+    const normalizedName = companyName.toLowerCase().replace(/\s+/g, '');
+    const module = await import(`../companies/${companyname}.js`);
+    return module.default;
+  } catch {
+    return null; 
+  }
+}
+
+// HYBRID ANSWER ENGINE
+async function getAnswer(question) {
+  // 1. Check for company questions
+  const companies = ['apple', 'tesla', 'unilever']; // Auto-generate this list later
+  const company = companies.find(c => question.toLowerCase().includes(c));
+  
+  if (company) {
+    const data = await loadCompanyData(company);
+    if (data) {
+      return `
+        <div class="company-header">
+          <h3>${data.name} ESG Report</h3>
+          <div class="esg-score">${data.score}/100</div>
+        </div>
+        
+        <div class="leak-card">
+          <h4>Key Leak</h4>
+          <p>${data.leaks[0].issue}</p>
+          <a href="${data.leaks[0].source.url}" target="_blank">Source</a>
+        </div>
+        
+        <div class="general-knowledge">
+          <h4>Industry Best Practice</h4>
+          ${getAnswer('carbon accounting')} <!-- Reuse knowledge base -->
+        </div>
+      `;
+    }
+  }
+  
+  // 2. General ESG questions
+  const q = esgKnowledgeBase.find(item => 
+    question.toLowerCase().includes(item.question));
+  
+  return q?.answer || "I can analyze ESG reports for: Apple, Tesla, Unilever. Ask about their scores, leaks, or general topics like 'Scope 3 emissions'.";
+}
