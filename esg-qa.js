@@ -1,38 +1,42 @@
-// ESG Q&A Database - Add all questions here
+// ====== COMBINED CHATBOT LOGIC + ESG DATA ======
 const esgQA = {
   "carbon accounting": {
-    answer: `Carbon accounting measures greenhouse gas emissions across:<br><br>
+    answer: `Measures greenhouse gas emissions across:<br><br>
              <strong>Scope 1:</strong> Direct emissions (e.g., company vehicles)<br>
-             <strong>Scope 2:</strong> Energy indirect (e.g., electricity)<br>
-             <strong>Scope 3:</strong> Value chain (e.g., supplier emissions)<br><br>
-             <em>Start with:</em> <a href="https://ghgprotocol.org/" target="_blank">GHG Protocol</a>`,
-    sources: ["GHG Protocol", "ISO 14064"]
+             <strong>Scope 2:</strong> Purchased energy<br>
+             <strong>Scope 3:</strong> Supply chain (often 80% of emissions)<br><br>
+             <em>Tool:</em> <a href="https://ghgprotocol.org/" target="_blank">GHG Protocol</a>`,
+    sources: ["GHG Protocol"]
   },
-  "scope 3": {
-    answer: `Scope 3 includes 15 categories like:<br><br>
-             • Purchased goods/services<br>
-             • Business travel<br>
-             • Investments<br><br>
-             <strong>Priority:</strong> Category 1 (supply chain) is 40-80% of emissions.`,
-    sources: ["CDP Scope 3 Guidance"]
-  }
-  // Add 100+ more...
+  // Add more Q&A here...
 };
 
-function getESGAnswer(question) {
-  const q = question.toLowerCase();
+// NEW: Unified function to handle BOTH company data and ESG questions
+async function getAnswer(question) {
+  // 1. Check for company name
+  const companyMatch = question.match(/(apple|tesla|nike|nestle|unilever)/i);
   
-  // 1. Exact match
-  if (esgQA[q]) return esgQA[q];
-  
-  // 2. Keyword match
-  for (const [keyword, data] of Object.entries(esgQA)) {
-    if (q.includes(keyword)) return data;
+  // 2. If company question
+  if (companyMatch) {
+    const company = companyMatch[0].toLowerCase();
+    try {
+      const data = await import(`./companies/${company}.js`);
+      return {
+        answer: `ESG Analysis for ${data.default.name}:<br><br>
+                <strong>Score:</strong> ${data.default.score}/100<br>
+                <strong>Top Leak:</strong> ${data.default.leaks[0].issue}<br><br>
+                <a href="#" onclick="showFullReport('${company}')">View Full Report</a>`,
+        sources: ["Snapfizz Intelligence"]
+      };
+    } catch {
+      return { answer: `Ask about ${company}'s:<br>• Carbon emissions<br>• Supply chain risks` };
+    }
   }
   
-  // 3. Default
-  return {
-    answer: "Ask me about:<br><br>• Carbon accounting<br>• Scope 3<br>• ESG scores",
+  // 3. General ESG question
+  const q = question.toLowerCase();
+  return esgQA[q] || {
+    answer: "Ask me about:<br><br>• Specific companies (Apple/Tesla)<br>• ESG concepts<br>• Regulatory risks",
     sources: []
   };
 }
