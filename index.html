@@ -1088,6 +1088,7 @@
       <div class="nav-links">
         <a href="index.html">Home</a>
         <a href="#aioxy">Aioxy Scanner</a>
+        <a href="chatbot.html">Aioxy ESG Expert</a>
         <a href="about.html">About</a>
         <a href="contact.html">Contact</a>
       </div>
@@ -1295,60 +1296,7 @@ async function sendEsgMessage() {
       <div style="display:flex; gap:4px;">
         <div style="width:8px; height:8px; background:#ccc; border-radius:50%; animation: bounce 1s infinite;"></div>
         <div style="width:8px; height:8px; background:#ccc; border-radius:50%; animation: bounce 1s infinite 0.2s;"></div>
-        <div style="width:8px; height:8px; background:#ccc; border-radius:50%; animation: bounce 1s infinite 0.4s;"></div>
-      </div>
-    </div>
-  `;
-  chatBox.appendChild(typingDiv);
-  chatBox.scrollTop = chatBox.scrollHeight;
-  
-  // Get response (with 1-2 sec delay for realism)
-  setTimeout(async () => {
-    try {
-      const response = await getAnswer(message);
-      document.getElementById('typing-indicator').remove();
-      
-      chatBox.innerHTML += `
-        <div style="margin-bottom:15px;">
-          <div style="display:inline-block; background:#f3f4f6; padding:12px 15px; border-radius:18px 18px 18px 0; max-width:80%; line-height:1.5;">
-            ${response.answer.replace(/\n/g, '<br>')}
-            ${response.sources?.length ? `
-              <div style="font-size:12px; color:#666; margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;">
-                <strong>Sources:</strong> ${response.sources.join(', ')}
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    } catch (error) {
-      document.getElementById('typing-indicator').remove();
-      chatBox.innerHTML += `
-        <div style="margin-bottom:15px;">
-          <div style="display:inline-block; background:#f3f4f6; padding:12px 15px; border-radius:18px 18px 18px 0; max-width:80%; line-height:1.5;">
-            ⚠️ Try these exact queries:<br><br>
-            • "Explain carbon accounting"<br>
-            • "Show Apple's ESG leaks"<br>
-            • "How to set science-based targets"
-          </div>
-        </div>
-      `;
-    }
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }, 1000 + Math.random() * 1000);
-}
 
-// Press Enter to send
-document.getElementById('esg-user-input').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendEsgMessage();
-});
-</script>
-
-<style>
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
-  </style>
   <footer>
     <div class="footer-links">
       <a href="privacy.html">Privacy Policy</a>
