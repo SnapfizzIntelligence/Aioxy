@@ -1,327 +1,290 @@
-// Premium ESG Knowledge Base
+// ======================
+// PREMIUM ESG KNOWLEDGE BASE
+// ======================
 const esgKnowledgeBase = [
+  // 1. CARBON ACCOUNTING GUIDE
   {
     question: "carbon accounting",
-    tags: ["carbon", "accounting", "emissions", "ghg"],
-    answer: `## Comprehensive Guide to Carbon Accounting
+    answer: `## Comprehensive Carbon Accounting Guide
 
-**What is Carbon Accounting?**
-Carbon accounting is the systematic process of measuring an organization's greenhouse gas (GHG) emissions. It's the foundation for any credible climate action plan.
+**What is it?**  
+Systematic measurement of GHG emissions across Scopes 1-3 using standards like GHG Protocol.
 
-**Step-by-Step Implementation:**
+**Why it matters:**  
+- Avoids 20-30% reporting errors common in ESG disclosures  
+- Identifies $2M+ annual cost savings opportunities (Energy Star)  
 
-1. **Define Organizational Boundaries**
-   - Choose between equity share (investments) or control approach (facilities you operate)
-   - Document all subsidiaries, joint ventures, and leased assets
+**Step-by-Step Implementation:**  
+1. **Scope 1 (Direct Emissions)**  
+   - Track fuel use (diesel, gasoline) → Multiply by EPA emission factors  
+   - Example: 50,000L diesel × 2.68kg CO2/L = 134,000kg CO2e  
 
-2. **Identify Emission Sources** (Scopes 1-3):
-   - *Scope 1*: Direct emissions from owned sources
-     - Fuel combustion
-     - Company vehicles
-     - Fugitive emissions (leaks)
-   - *Scope 2*: Indirect emissions from purchased energy
-     - Electricity
-     - Heat
-     - Steam
-     - Cooling
-   - *Scope 3*: All other indirect emissions
-     - Purchased goods/services
-     - Business travel
-     - Employee commuting
-     - Investments
-     - Waste disposal
+2. **Scope 2 (Purchased Energy)**  
+   - Collect electricity bills → Multiply by local grid factor  
+   - *Pro Tip:* Use [EPA Power Profiler](https://www.epa.gov/energy/power-profiler#/) for regional factors  
 
-3. **Collect Activity Data**
-   - Energy bills (electricity, gas, fuel)
-   - Travel records (flights, hotels)
-   - Procurement data
-   - Facility square footage
-   - Employee commuting surveys
+3. **Scope 3 (Value Chain)**  
+   - Use spend data × industry-specific factors (EIO-LCA database)  
+   - Critical categories: Business travel, purchased goods, waste  
 
-4. **Apply Emission Factors**
-   - Use latest GHG Protocol conversion factors
-   - Example calculation:
-     \`Electricity Emissions = kWh used × Local grid emission factor\`
-   - For accuracy:
-     - Use supplier-specific factors when available
-     - Apply market-based vs location-based for Scope 2
-
-5. **Calculate Results**
-   - Convert all emissions to CO2 equivalents (CO2e)
-   - Use global warming potential (GWP) values:
-     - CO2 = 1
-     - Methane = 25
-     - Nitrous oxide = 298
-
-6. **Quality Assurance**
-   - Data validation checks
-   - Third-party verification (recommended)
-   - Uncertainty analysis
-
-**Tools & Resources:**
-- GHG Protocol Corporate Standard
-- EPA GHG Emission Factors Hub
-- Carbon Disclosure Project (CDP) reporting templates
-
-**Common Pitfalls:**
-- Underestimating Scope 3 (often 80% of footprint)
-- Using outdated emission factors
-- Not accounting for leased assets
-- Ignoring data quality assessments`
+**Tools:**  
+- [GHG Protocol Calculator](https://ghgprotocol.org/calculation-tools)  
+- [SBTi FLAG Guidance](https://sciencebasedtargets.org/resources/files/FLAG-Guidance.pdf)`
   },
+
+  // 2. SCIENCE-BASED TARGETS (SBTi)  
   {
-    question: "scope 1 emissions",
-    tags: ["scope1", "direct emissions", "ghg"],
-    answer: `## Complete Guide to Scope 1 Emissions
+    question: "science-based target setting",
+    answer: `## Science-Based Target (SBTi) Implementation  
 
-**Definition:**
-Scope 1 emissions are direct greenhouse gas emissions from sources owned or controlled by your organization.
+**What is it?**  
+Targets aligned with Paris Agreement to limit warming to 1.5°C, validated by SBTi.  
 
-**Detailed Breakdown:**
+**Why it matters:**  
+- 75% of investors now require SBTi-validated targets (Bloomberg 2023)  
+- Reduces regulatory risk in EU/California  
 
-1. **Stationary Combustion**
-   - Boilers, furnaces, turbines
-   - Types of fuels:
-     - Natural gas
-     - Coal
-     - Diesel
-     - Propane
-   - Calculation method:
-     \`Emissions = Fuel consumed × Emission factor\`
+**5-Step Setup:**  
+1. **Baseline Year**  
+   - Choose 2018-2022 as reference (must include Scope 3)  
 
-2. **Mobile Combustion**
-   - Company vehicles (cars, trucks, forklifts)
-   - Aviation (owned aircraft)
-   - Marine (owned vessels)
-   - Tracking requirements:
-     - Fuel purchases
-     - Mileage logs
-     - Engine types
+2. **Boundary Setting**  
+   - Include ≥67% of Scope 3 emissions (per SBTi criteria)  
 
-3. **Process Emissions**
-   - Chemical reactions in manufacturing
-   - Cement production (calcination)
-   - Aluminum production (PFC emissions)
-   - Electronics (SF6 use)
+3. **Target Types**  
+   - Absolute reduction (e.g., 42% by 2030)  
+   - Sector-specific (e.g., cement: 24% per ton)  
 
-4. **Fugitive Emissions**
-   - Refrigerant leaks (HVAC systems)
-   - Methane leaks (pipelines)
-   - Industrial gas releases
-   - Monitoring methods:
-     - Infrared cameras
-     - Ultrasonic detectors
-     - Manual inspections
+4. **Validation**  
+   - Submit to SBTi ($4,800-$14,500 fee based on revenue)  
 
-**Measurement Best Practices:**
-- Continuous monitoring where possible
-- Quarterly leak detection surveys
-- EPA Method 21 for leak quantification
-- Use of calibrated flow meters
+5. **Disclosure**  
+   - Required in CDP, annual reports  
 
-**Reduction Strategies:**
-- Fuel switching to lower-carbon alternatives
-- Leak detection and repair programs
-- Process optimization
-- Equipment upgrades
-- Carbon capture pilot projects
-
-**Reporting Requirements:**
-- Must be included in GHG Protocol reporting
-- CDP disclosure
-- SEC climate disclosure rules (upcoming)`
+**Pro Tip:** Use the [SBTi Target Dashboard](https://sciencebasedtargets.org/target-dashboard) for sector benchmarks`
   },
+
+  // 3. CSRD COMPLIANCE  
   {
-    question: "net zero target",
-    tags: ["netzero", "carbon neutral", "climate target"],
-    answer: `## Implementing a Credible Net Zero Target
+    question: "CSRD compliance",
+    answer: `## CSRD Compliance Checklist (2024)  
 
-**Definition:**
-Net zero means achieving a balance between greenhouse gas emissions produced and emissions removed from the atmosphere.
+**What is it?**  
+EU Corporate Sustainability Reporting Directive requiring double materiality assessments.  
 
-**Step-by-Step Roadmap:**
+**Why it matters:**  
+- Mandatory for all large EU companies + non-EU with €150M+ EU revenue  
+- $50k+ fines for non-compliance  
 
-1. **Baseline Assessment**
-   - Complete carbon footprint (Scopes 1-3)
-   - Identify emission hotspots
-   - Project future growth scenarios
+**Critical Requirements:**  
+1. **Double Materiality**  
+   - Map financial AND impact materiality (use [GRI Standards](https://www.globalreporting.org/))  
 
-2. **Target Setting**
-   - Near-term targets (5-10 years)
-   - Long-term net zero date (2040-2050)
-   - Science-based targets initiative (SBTi) validation
-   - Recommended reductions:
-     - 50% by 2030
-     - 90% by 2040
-     - Neutralize remaining 10% by 2050
+2. **ESRS Reporting**  
+   - 12 European Sustainability Reporting Standards  
+   - Must include Scope 3 GHG, diversity metrics  
 
-3. **Reduction Strategies**
-   - *Energy*:
-     - 100% renewable electricity
-     - Building retrofits
-     - On-site generation
-   - *Operations*:
-     - Fleet electrification
-     - Sustainable procurement
-     - Circular economy practices
-   - *Value Chain*:
-     - Supplier engagement programs
-     - Low-carbon product design
-     - Logistics optimization
+3. **Audit Requirement**  
+   - Limited assurance (2024) → Reasonable assurance (2028)  
 
-4. **Removal Strategies**
-   - Nature-based solutions:
-     - Reforestation
-     - Soil carbon sequestration
-   - Technological solutions:
-     - Direct air capture
-     - Carbon mineralization
-   - Offsets (only for residual emissions):
-     - Gold Standard certified
-     - Verified Carbon Standard
-
-5. **Governance**
-   - Board-level oversight
-   - Dedicated climate team
-   - Employee training
-   - Tied to executive compensation
-
-6. **Reporting & Verification**
-   - Annual progress reports
-   - Third-party verification
-   - CDP disclosure
-   - TCFD-aligned reporting
-
-**Common Mistakes:**
-- Relying too heavily on offsets
-- Ignoring Scope 3 emissions
-- Lack of interim targets
-- No clear governance structure
-- Underestimating removal costs
-
-**Resources:**
-- SBTi Net Zero Standard
-- Oxford Offsetting Principles
-- GHG Protocol Mitigation Goal Standard`
+**Pro Tip:** Start with cross-mapping SASB/GRI to ESRS using [EFRAG's Implementation Guide](https://www.efrag.org/)`
   },
-  // Add 97+ more detailed entries like these
+
+  // 4. ESG DATA COLLECTION  
   {
-    question: "esg reporting frameworks",
-    tags: ["reporting", "frameworks", "standards"],
-    answer: `## ESG Reporting Framework Comparison Guide
+    question: "ESG data collection",
+    answer: `## ESG Data Collection Plan  
 
-**1. Global Reporting Initiative (GRI)**
-- Most widely used global standard
-- 200+ performance indicators
-- Sector-specific supplements
-- Strong focus on impacts
+**What is it?**  
+System to gather quantitative/qualitative ESG metrics across operations.  
 
-**2. Sustainability Accounting Standards Board (SASB)**
-- Industry-specific standards
-- Financially material issues
-- Used for SEC filings
-- 77 industry standards
+**Why it matters:**  
+- Reduces audit findings by 40% (PwC 2023)  
+- Enables AI-driven analytics like your Aioxy scanner  
 
-**3. Task Force on Climate-related Disclosures (TCFD)**
-- Climate risk focus
-- Governance, strategy, risk management
-- Metrics and targets
-- Becoming mandatory in many jurisdictions
+**7-Step Framework:**  
+1. **Materiality Matrix** → Prioritize 15-20 KPIs  
+2. **Automated Feeds**  
+   - Energy: Connect utility APIs (e.g., [Urjanet](https://urjanet.com/))  
+   - Travel: Export credit card spend data  
+3. **Manual Inputs**  
+   - Supplier surveys (use [EcoVadis template](https://ecovadis.com/))  
+4. **Validation**  
+   - 3rd-party verification for critical data  
 
-**... (additional detailed comparison of 8 more frameworks) ...`
+**Tool Stack:**  
+- **Software:** Workiva, Salesforce Net Zero Cloud  
+- **Free Tools:** [CDP Reporting Templates](https://www.cdp.net/en/guidance)`
+  },
 
+  // 5. SUPPLY CHAIN EMISSIONS  
+  {
+    question: "supply chain emissions",
+    answer: `## Supply Chain Emissions Mapping  
+
+**What is it?**  
+Calculating Scope 3 Category 1 (Purchased Goods/Services) emissions.  
+
+**Why it matters:**  
+- Often 80% of total carbon footprint  
+- Now required by SEC Climate Rules  
+
+**Methodology:**  
+1. **Spend-Based** (Best for starters)  
+   - Formula: $1M procurement × 0.5kg CO2/$ (industry factor)  
+2. **Supplier-Specific** (Gold standard)  
+   - Require primary data via [CDP Supply Chain](https://www.cdp.net/en/supply-chain)  
+
+**Pro Tip:** Start with top 20 suppliers (Pareto principle) → Expand annually`
+  },
+
+  // 6. ESG AUDIT PREP  
+  {
+    question: "ESG audit preparation",
+    answer: `## ESG Audit Readiness Guide  
+
+**What is it?**  
+Process to ensure compliance with frameworks like GRI/SASB.  
+
+**Why it matters:**  
+- 68% of companies fail first ESG audit (KPMG 2023)  
+
+**Checklist:**  
+1. **Pre-Audit**  
+   - Conduct mock audit using [SASB Materiality Map](https://materiality.sasb.org/)  
+2. **Documentation**  
+   - Collect 12 months of utility bills, supplier contracts  
+3. **Interviews**  
+   - Train staff on common auditor questions  
+
+**Red Flags to Fix:**  
+- Missing Scope 3 data  
+- Unverified renewable energy claims`
+  },
+
+  // 7. BIODIVERSITY RISK  
+  {
+    question: "biodiversity risk",
+    answer: `## Biodiversity Risk Assessment  
+
+**What is it?**  
+Evaluating operational impacts on ecosystems using TNFD/CSRD frameworks.  
+
+**Why it matters?**  
+- New EU rules mandate biodiversity disclosures (2025)  
+- 44% of economies depend on nature (WEF)  
+
+**4-Step Process:**  
+1. **Locate Facilities** → Map to [IBAT Protected Areas](https://www.ibat-alliance.org/)  
+2. **Material Risks**  
+   - Water scarcity (use [WRI Aqueduct](https://www.wri.org/aqueduct))  
+   - Deforestation (source timber via [FSC](https://fsc.org/))  
+3. **Mitigation**  
+   - Science-based targets for nature (TNFD guidance)  
+
+**Tool:** [ENCORE Biodiversity Module](https://encore.naturalcapital.org/)`
+  },
+
+  // 8. DOUBLE MATERIALITY  
+  {
+    question: "double materiality",
+    answer: `## Double Materiality Case Example  
+
+**What is it?**  
+CSRD requirement to assess both:  
+1. **Financial Materiality** (How ESG affects business)  
+2. **Impact Materiality** (How business affects society)  
+
+**Example: Apparel Company**  
+- **Financial Risk:** Cotton price volatility from droughts ($20M/yr exposure)  
+- **Impact Risk:** Water pollution affecting local communities  
+
+**How to Implement:**  
+1. **Stakeholder Workshops** → Identify top 10 issues  
+2. **Heat Mapping** → Use [SASB Materiality Tool](https://materiality.sasb.org/)  
+3. **Quantify** → Monetize risks via [Natural Capital Protocol](https://naturalcapitalcoalition.org/)`
+  },
+
+  // 9. SUPPLIER ESG ENGAGEMENT  
+  {
+    question: "supplier ESG engagement",
+    answer: `## Supplier ESG Engagement Plan  
+
+**What is it?**  
+Program to improve suppliers' ESG performance.  
+
+**Why it matters?**  
+- Reduces Scope 3 emissions by 30% (CDP data)  
+- Meets CSRD/SEC requirements  
+
+**5-Step Framework:**  
+1. **Assess** → Send [EcoVadis questionnaire](https://ecovadis.com/)  
+2. **Score** → Rate suppliers A-F on GHG, labor, ethics  
+3. **Improve** → Co-fund solar panels for key suppliers  
+4. **Monitor** → Annual re-assessments  
+5. **Exit** → Replace chronic underperformers  
+
+**Pro Tip:** Start with 20% of suppliers generating 80% of risk`
+  },
+
+  // 10. NET ZERO ROADMAP  
+  {
+    question: "net zero roadmap",
+    answer: `## Corporate Net Zero Roadmap  
+
+**What is it?**  
+Plan to achieve balance between emissions produced/removed by 2050.  
+
+**Why it matters?**  
+- Required for SBTi certification  
+- 60% of Fortune 500 now have targets  
+
+**Key Phases:**  
+1. **Near-Term (2025-2030)**  
+   - 50% emission reduction via renewables, efficiency  
+2. **Long-Term (2040-2050)**  
+   - Carbon removal (DAC, reforestation)  
+3. **Compensation**  
+   - Only for residual emissions (max 10%)  
+
+**Must-Include Elements:**  
+- Scope 3 action plan  
+- Just Transition strategy for workers  
+- Annual progress reporting`
   }
 ];
 
-// Advanced matching algorithm
-function getAnswer(userQuestion) {
-  const lowerQuestion = userQuestion.toLowerCase().trim();
-  
-  // 1. Try exact match
-  const exactMatch = esgKnowledgeBase.find(item => 
-    item.question.toLowerCase() === lowerQuestion);
-  if (exactMatch) return formatAnswer(exactMatch.answer);
-  
-  // 2. Try tag matches
-  const tagMatches = esgKnowledgeBase.filter(item => 
-    item.tags.some(tag => lowerQuestion.includes(tag)));
-  
-  if (tagMatches.length > 0) {
-    // Return best tag match (could enhance with scoring)
-    return formatAnswer(tagMatches[0].answer);
-  }
-  
-  // 3. Try partial question matches
-  const questionMatches = esgKnowledgeBase.filter(item => 
-    item.question.toLowerCase().includes(lowerQuestion) || 
-    lowerQuestion.includes(item.question.toLowerCase()));
-  
-  if (questionMatches.length > 0) {
-    return formatAnswer(questionMatches[0].answer);
-  }
-  
-  // 4. Return default with suggestions
-  return formatAnswer(`I couldn't find an exact match for your question about "${userQuestion}". 
-  
-Here are some related topics I can help with:
-- Carbon accounting methodology
-- Scope 1 vs 2 vs 3 emissions
-- Setting science-based targets
-- ESG reporting frameworks comparison
-- Calculating your carbon footprint
-
-Try rephrasing or asking about one of these topics.`);
-}
-
-// Format markdown-style answers
-function formatAnswer(text) {
-  // Convert markdown headers to HTML
-  let formatted = text.replace(/## (.*)/g, '<h3>$1</h3>');
-  
-  // Convert lists
-  formatted = formatted.replace(/- (.*)/g, '<li>$1</li>');
-  formatted = formatted.replace(/\* (.*)/g, '<li>$1</li>');
-  
-  // Preserve code blocks
-  formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
-  
-  return formatted;
-}
-// COMPANY DATA LOADER
+// ======================
+// COMPANY DATA INTEGRATION
+// ======================
 async function loadCompanyData(companyName) {
   try {
     const normalizedName = companyName.toLowerCase().replace(/\s+/g, '');
-    const module = await import(`../companies/${companyname}.js`);
+    const module = await import(`./companies/${normalizedName}.js`);
     return module.default;
   } catch {
     return null; 
   }
 }
 
-// HYBRID ANSWER ENGINE
-async function getAnswer(question) {
-  // 1. Check for company questions
-  const companies = ['apple', 'tesla', 'unilever']; // Auto-generate this list later
-  const company = companies.find(c => question.toLowerCase().includes(c));
+// ======================
+// ANSWER GENERATOR
+// ======================
+async function getAnswer(userQuestion) {
+  // 1. Check for company-specific questions
+  const companies = ['apple', 'tesla', 'unilever'];
+  const company = companies.find(c => userQuestion.toLowerCase().includes(c));
   
   if (company) {
     const data = await loadCompanyData(company);
     if (data) {
       return `
-        <div class="company-header">
+        <div class="company-response">
           <h3>${data.name} ESG Report</h3>
-          <div class="esg-score">${data.score}/100</div>
-        </div>
-        
-        <div class="leak-card">
-          <h4>Key Leak</h4>
-          <p>${data.leaks[0].issue}</p>
+          <div class="company-score">${data.score}/100</div>
+          <p><strong>Key Risk:</strong> ${data.leaks[0].issue}</p>
+          <p><strong>Solution:</strong> ${data.leaks[0].solution}</p>
           <a href="${data.leaks[0].source.url}" target="_blank">Source</a>
-        </div>
-        
-        <div class="general-knowledge">
-          <h4>Industry Best Practice</h4>
-          ${getAnswer('carbon accounting')} <!-- Reuse knowledge base -->
         </div>
       `;
     }
@@ -329,7 +292,11 @@ async function getAnswer(question) {
   
   // 2. General ESG questions
   const q = esgKnowledgeBase.find(item => 
-    question.toLowerCase().includes(item.question));
+    userQuestion.toLowerCase().includes(item.question.toLowerCase()));
   
-  return q?.answer || "I can analyze ESG reports for: Apple, Tesla, Unilever. Ask about their scores, leaks, or general topics like 'Scope 3 emissions'.";
+  return q?.answer || `I specialize in:  
+  - Carbon accounting  
+  - CSRD compliance  
+  - ESG audits  
+  Try: "Explain ${userQuestion}"`;
 }
