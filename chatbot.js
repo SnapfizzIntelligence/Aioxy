@@ -262,35 +262,53 @@ const esgKnowledgeBase = [
 
   // 8. DOUBLE MATERIALITY
   {
-    question: "double materiality",
-    answer: `<div class="guide-response">
-      <h3>Double Materiality Deep Dive</h3>
-      
-      <p><strong>CSRD Core:</strong><br>
-      Assess financial and societal impacts concurrently.</p>
-      
-      <p><strong>Example (Apparel):</strong></p>
-      <ul>
-        <li><strong>Financial:</strong> $20M cotton price risk</li>
-        <li><strong>Impact:</strong> Water pollution affecting 5,000 locals</li>
-      </ul>
-      
-      <p><strong>Implementation Guide:</strong></p>
-      <ol>
-        <li><strong>Workshops</strong><br>
-        - Engage 10 stakeholders<br>
-        - Template: GRI materiality matrix</li>
-        
-        <li><strong>Heat Map</strong><br>
-        - Use <a href="https://materiality.sasb.org/" target="_blank">SASB Tool</a><br>
-        - Example: Rank emissions high</li>
-        
-        <li><strong>Monetize</strong><br>
-        - Natural Capital Protocol<br>
-        - Example: $5M water risk cost</li>
-      </ol>
-    </div>`
-  },
+  question: "double materiality cost calculator",
+  answer: `<div class="guide-response">
+    <h3>Double Materiality Cost & Risk Solution</h3>
+
+    <p><strong>What is it?</strong><br>
+    A CSRD-required assessment of both:
+    <ul>
+      <li><strong>Financial Materiality</strong>: ESG issues that could impact company value</li>
+      <li><strong>Impact Materiality</strong>: Company’s environmental & social impact</li>
+    </ul></p>
+
+    <p><strong>Why this matters:</strong></p>
+    <ul>
+      <li>CSRD compliance mandatory by 2024-2025 (EU fines $50k+)</li>
+      <li>Consultants charge $100K–$300K; time: 3-6 months (PwC, EY)</li>
+    </ul>
+
+    <p><strong>Aioxy instant solution:</strong></p>
+    <ol>
+      <li><strong>Instant Risk Matrix</strong> — Aioxy generates a heat map:
+        <ul>
+          <li>Financial risk: Quantifies exposure (e.g., cotton volatility = $20M/yr)</li>
+          <li>Impact risk: Quantifies harm (e.g., 500M liters water overuse / year)</li>
+        </ul>
+      </li>
+      <li><strong>Materiality Ranking</strong> — Prioritizes top 10 ESG topics based on:
+        <ul>
+          <li>Industry benchmarks (from SASB + GRI)</li>
+          <li>Revenue, region, sector data</li>
+        </ul>
+      </li>
+      <li><strong>Compliance Checklist</strong> — Auto-generates list of CSRD must-haves</li>
+      <li><strong>Downloadable Report</strong> — Summary ready for audit prep</li>
+    </ol>
+
+    <p><strong>Comparison:</strong></p>
+    <table border="1" cellpadding="4">
+      <tr><th>Traditional Consultant</th><th>Aioxy</th></tr>
+      <tr><td>$100K–300K, 3-6 months</td><td>Free / low cost, instant</td></tr>
+      <tr><td>Manual stakeholder workshops</td><td>Auto-prioritized risk zones</td></tr>
+    </table>
+
+    <p><strong>Try tools:</strong><br>
+    - <a href="https://materiality.sasb.org/" target="_blank">SASB Materiality Map</a> (manual)  
+    - Aioxy: Automated double materiality in seconds</p>
+  </div>`
+  }, 
 
   // 9. SUPPLIER ESG ENGAGEMENT
   {
