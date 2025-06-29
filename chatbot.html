@@ -238,54 +238,59 @@
 
   <script src="chatbot.js"></script>
   <script>
-    // UI Controls
-    function hideSuggestions() {
-      document.getElementById('suggested-questions').classList.add('hidden');
-    }
-
-    function askQuestion(question) {
-      hideSuggestions();
-      document.getElementById('user-input').value = question;
-      sendMessage();
-    }
-
-    function sendMessage() {
-      const input = document.getElementById('user-input');
-      const question = input.value.trim();
-      
-      if (question) {
-        hideSuggestions();
-        addMessage(question, 'user');
-        input.value = '';
-        
-        // Show typing indicator
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'message bot-message typing-indicator';
-        typingIndicator.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
-        document.getElementById('chat-messages').appendChild(typingIndicator);
-        
-        // Get answer
-        const q = esgKnowledgeBase.find(item => {
-  if (Array.isArray(item.question)) {
-    return item.question.some(q => userQuestion.toLowerCase().includes(q.toLowerCase()));
-  } else {
-    return userQuestion.toLowerCase().includes(item.question.toLowerCase());
+  function hideSuggestions() {
+    document.getElementById('suggested-questions').classList.add('hidden');
   }
-});
 
-    function addMessage(content, sender) {
-      const messages = document.getElementById('chat-messages');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message ${sender}-message`;
-      messageDiv.innerHTML = sender === 'bot' ? content : content;
-      messages.appendChild(messageDiv);
-      messages.scrollTop = messages.scrollHeight;
+  function askQuestion(question) {
+    hideSuggestions();
+    document.getElementById('user-input').value = question;
+    sendMessage();
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('user-input');
+    const question = input.value.trim();
+
+    if (question) {
+      hideSuggestions();
+      addMessage(question, 'user');
+      input.value = '';
+
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'message bot-message typing-indicator';
+      typingIndicator.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+      document.getElementById('chat-messages').appendChild(typingIndicator);
+
+      const q = esgKnowledgeBase.find(item => {
+        if (Array.isArray(item.question)) {
+          return item.question.some(qText => question.toLowerCase().includes(qText.toLowerCase()));
+        } else {
+          return question.toLowerCase().includes(item.question.toLowerCase());
+        }
+      });
+
+      setTimeout(() => {
+        typingIndicator.remove();
+        if (q) {
+          addMessage(q.answer, 'bot');
+        } else {
+          addMessage(`<p>Sorry, I don’t have that information yet.</p>`, 'bot');
+        }
+      }, 1000);
     }
+  }
 
-    // Handle Enter key
-    document.getElementById('user-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
+  function addMessage(content, sender) {
+    const messages = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    messageDiv.innerHTML = content;
+    messages.appendChild(messageDiv);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  document.getElementById('user-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
   </script>
-</body>
-</html>
