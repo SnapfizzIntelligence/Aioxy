@@ -1,7 +1,8 @@
 // ======================
 // BREAKTHROUGH KNOWLEDGE BASE
 // ======================
-const esgKnowledgeBase = [
+const esgKnowledgeBase =[
+  
   // 1. CARBON ACCOUNTING (FLAGSHIP FEATURE)
   {
     question: "carbon accounting",
@@ -383,6 +384,7 @@ const esgKnowledgeBase = [
       - Scope 3 plan<br>
       - Just Transition strategy (e.g., worker retraining)</p>
     </div>`
+
   }
 ];
 
@@ -400,20 +402,20 @@ async function loadCompanyData(companyName) {
 }
 
 // ======================
-// ANSWER GENERATOR
+// ANSWER GENERATION LOGIC
 // ======================
 async function getAnswer(userQuestion) {
   // 1. Check for company-specific questions
   const companies = ['apple','samsung', 'boeing', 'patagonia','ikea','tesla', 'unilever'];
-  const company = companies.find(c => userQuestion.toLowerCase().includes(c));
+  const companyMatch = companies.find(c => userQuestion.toLowerCase().includes(c));
   
-  if (company) {
-    const data = await loadCompanyData(company);
+  if (companyMatch) {
+    const data = await loadCompanyData(companyMatch);
     if (data) {
       return `
         <div class="company-response">
           <h3>${data.name} ESG Report</h3>
-          <div class="score">${data.score}/100</div>
+          <div class="company-score">${data.score}/100</div>
           <p><strong>Key Risk:</strong> ${data.leaks[0].issue}</p>
           <p><strong>Solution:</strong> ${data.leaks[0].solution}</p>
           <a href="${data.leaks[0].source.url}" target="_blank">Source</a>
@@ -422,13 +424,104 @@ async function getAnswer(userQuestion) {
     }
   }
   
-  // 2. General ESG questions
-  const q = esgKnowledgeBase.find(item => 
-    userQuestion.toLowerCase().includes(item.question.toLowerCase()));
-  
-  return q?.answer || `I specialize in:<br>
-  - Carbon accounting<br>
-  - CSRD compliance<br>
-  - ESG audits<br>
-  Try: "Explain ${userQuestion}"`;
+  // 2. Check general ESG questions
+  const lowerQuestion = userQuestion.toLowerCase();
+  let bestMatch = null;
+  let highestScore = 0;
+
+  for (const item of esgKnowledgeBase) {
+    const questions = Array.isArray(item.question) ? item.question : [item.question];
+    
+    for (const q of questions) {
+      const lowerQ = q.toLowerCase();
+      let score = 0;
+      
+      // Exact match gets highest priority
+      if (lowerQuestion === lowerQ) {
+        return item.answer;
+      }
+      
+      // Partial matches get scored
+      if (lowerQuestion.includes(lowerQ)) {
+        score = lowerQ.length; // Longer matches score higher
+      }
+      
+      // Also check individual keywords
+      const keywords = lowerQ.split(/\s+/);
+      keywords.forEach(keyword => {
+        if (keyword.length > 3 && lowerQuestion.includes(keyword)) {
+          score += keyword.length;
+        }
+      });
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestMatch = item.answer;
+      }
     }
+  }
+
+  return bestMatch || `<p>I specialize in:<br>
+    - Carbon accounting<br>
+    - CSRD compliance<br>
+    - ESG audits<br>
+    Try rephrasing or ask about one of these topics.</p>`;
+}
+
+// ======================
+// CORE FUNCTIONS
+// ======================
+function addMessage(content, sender) {
+  const messages = document.getElementById('chat-messages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender}-message`;
+  messageDiv.innerHTML = content;
+  messages.appendChild(messageDiv);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('user-input');
+  const question = input.value.trim();
+
+  if (question) {
+    hideSuggestions();
+    addMessage(question, 'user');
+    input.value = '';
+
+    // Show typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'message bot-message typing-indicator';
+    typingIndicator.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+    document.getElementById('chat-messages').appendChild(typingIndicator);
+
+    // Get and display answer
+    try {
+      const answer = await getAnswer(question);
+      setTimeout(() => {
+        typingIndicator.remove();
+        addMessage(answer, 'bot');
+      }, 800 + Math.random() * 400); // Natural delay
+    } catch (error) {
+      console.error("Error getting answer:", error);
+      typingIndicator.remove();
+      addMessage("<p>Sorry, I encountered an error. Please try again.</p>", 'bot');
+    }
+  }
+}
+
+function hideSuggestions() {
+  document.getElementById('suggested-questions').classList.add('hidden');
+}
+
+function askQuestion(question) {
+  hideSuggestions();
+  document.getElementById('user-input').value = question;
+  sendMessage();
+}
+
+// Initialize
+window.sendMessage = sendMessage;
+window.hideSuggestions = hideSuggestions;
+window.askQuestion = askQuestion;
+window.addMessage = addMessage;
