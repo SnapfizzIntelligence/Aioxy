@@ -262,7 +262,8 @@ const esgKnowledgeBase = [
 
   // 8. DOUBLE MATERIALITY
   {
-  question: "double materiality cost calculator",
+  {
+  question: ["double materiality", "double materiality cost calculator", "csrd materiality"],
   answer: `<div class="guide-response">
     <h3>Double Materiality Cost & Risk Solution</h3>
 
@@ -305,10 +306,10 @@ const esgKnowledgeBase = [
     </table>
 
     <p><strong>Try tools:</strong><br>
-    - <a href="https://materiality.sasb.org/" target="_blank">SASB Materiality Map</a> (manual)  
+    - <a href="https://materiality.sasb.org/" target="_blank">SASB Materiality Map</a> (manual)<br>
     - Aioxy: Automated double materiality in seconds</p>
   </div>`
-  }, 
+  }
 
   // 9. SUPPLIER ESG ENGAGEMENT
   {
