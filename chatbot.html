@@ -1,284 +1,291 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>Aioxy ESG Chatbot</title>  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">  
-  <style>  
-    :root {  
-      --premium-dark: #0F172A;  
-      --premium-navy: #1E293B;  
-      --premium-accent: #7C3AED;  
-      --premium-gold: #D4A017;  
-      --premium-light: #F8FAFC;  
-      --premium-danger: #DC2626;  
-      --premium-success: #10B981;  
-      --font-main: 'Inter', sans-serif;  
-      --font-heading: 'Libre Baskerville', serif;  
-    }  body {  
-  font-family: var(--font-main);  
-  background-color: var(--premium-light);  
-  color: var(--premium-navy);  
-  margin: 0;  
-  padding: 0;  
-  height: 100vh;  
-  display: flex;  
-  flex-direction: column;  
-}  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aioxy ESG Chatbot</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --premium-dark: #0F172A;
+      --premium-navy: #1E293B;
+      --premium-accent: #7C3AED;
+      --premium-gold: #D4A017;
+      --premium-light: #F8FAFC;
+      --premium-danger: #DC2626;
+      --premium-success: #10B981;
+      --font-main: 'Inter', sans-serif;
+      --font-heading: 'Libre Baskerville', serif;
+    }
 
-/* Chat Container */  
-.chat-container {  
-  max-width: 900px;  
-  margin: 0 auto;  
-  flex: 1;  
-  display: flex;  
-  flex-direction: column;  
-  box-shadow: 0 0 30px rgba(0,0,0,0.1);  
-}  
+    body {
+      font-family: var(--font-main);
+      background-color: var(--premium-light);
+      color: var(--premium-navy);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-/* Messages Area */  
-.chat-messages {  
-  flex: 1;  
-  overflow-y: auto;  
-  padding: 20px;  
-  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNDgsMjQ4LDI1MiwwLjAzKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNwYXR0ZXJuKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==');  
-}  
+    /* Chat Container */
+    .chat-container {
+      max-width: 900px;
+      margin: 0 auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 30px rgba(0,0,0,0.1);
+    }
 
-/* Message Styles */  
-.message {  
-  margin-bottom: 20px;  
-  max-width: 80%;  
-  animation: fadeIn 0.3s ease-out;  
-}  
+    /* Messages Area */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNDgsMjQ4LDI1MiwwLjAzKSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3QgZmlsbD0idXJsKCNwYXR0ZXJuKSIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIvPjwvc3ZnPg==');
+    }
 
-@keyframes fadeIn {  
-  from { opacity: 0; transform: translateY(10px); }  
-  to { opacity: 1; transform: translateY(0); }  
-}  
+    /* Message Styles */
+    .message {
+      margin-bottom: 20px;
+      max-width: 80%;
+      animation: fadeIn 0.3s ease-out;
+    }
 
-.user-message {  
-  margin-left: auto;  
-  background: linear-gradient(135deg, var(--premium-accent), #6D28D9);  
-  color: white;  
-  padding: 15px 20px;  
-  border-radius: 18px 18px 0 18px;  
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);  
-}  
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-.bot-message {  
-  margin-right: auto;  
-  background: white;  
-  color: var(--premium-navy);  
-  padding: 20px;  
-  border-radius: 18px 18px 18px 0;  
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);  
-  border: 1px solid rgba(0,0,0,0.05);  
-}  
+    .user-message {
+      margin-left: auto;
+      background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 18px 18px 0 18px;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+    }
 
-.bot-message h3 {  
-  color: var(--premium-accent);  
-  margin-top: 0;  
-  font-family: var(--font-heading);  
-}  
+    .bot-message {
+      margin-right: auto;
+      background: white;
+      color: var(--premium-navy);
+      padding: 20px;
+      border-radius: 18px 18px 18px 0;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
 
-/* Input Area */  
-.chat-input-container {  
-  padding: 15px;  
-  background: white;  
-  border-top: 1px solid rgba(0,0,0,0.05);  
-}  
+    .bot-message h3 {
+      color: var(--premium-accent);
+      margin-top: 0;
+      font-family: var(--font-heading);
+    }
 
-.chat-input-wrapper {  
-  display: flex;  
-  align-items: center;  
-  background: white;  
-  border-radius: 50px;  
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);  
-  padding: 5px;  
-}  
+    /* Input Area */
+    .chat-input-container {
+      padding: 15px;
+      background: white;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
 
-#user-input {  
-  flex: 1;  
-  border: none;  
-  padding: 12px 20px;  
-  font-size: 1rem;  
-  border-radius: 50px;  
-  outline: none;  
-}  
+    .chat-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 50px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      padding: 5px;
+    }
 
-#send-button {  
-  background: linear-gradient(135deg, var(--premium-accent), #6D28D9);  
-  color: white;  
-  border: none;  
-  width: 45px;  
-  height: 45px;  
-  border-radius: 50%;  
-  cursor: pointer;  
-  display: flex;  
-  align-items: center;  
-  justify-content: center;  
-}  
+    #user-input {
+      flex: 1;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 50px;
+      outline: none;
+    }
 
-/* Suggested Questions */  
-.suggested-questions {  
-  padding: 0 20px 20px;  
-}  
+    #send-button {
+      background: linear-gradient(135deg, var(--premium-accent), #6D28D9);
+      color: white;
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-.suggested-questions.hidden {  
-  display: none;  
-}  
+    /* Suggested Questions */
+    .suggested-questions {
+      padding: 0 20px 20px;
+    }
 
-.questions-grid {  
-  display: grid;  
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));  
-  gap: 12px;  
-}  
+    .suggested-questions.hidden {
+      display: none;
+    }
 
-.suggested-question {  
-  background: white;  
-  border: 1px solid rgba(124, 58, 237, 0.2);  
-  color: var(--premium-accent);  
-  padding: 12px;  
-  border-radius: 10px;  
-  cursor: pointer;  
-  transition: all 0.3s;  
-  box-shadow: 0 3px 10px rgba(0,0,0,0.03);  
-  text-align: center;  
-  font-size: 0.9rem;  
-}  
+    .questions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
 
-.suggested-question:hover {  
-  background: var(--premium-accent);  
-  color: white;  
-  transform: translateY(-2px);  
-}  
+    .suggested-question {
+      background: white;
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      color: var(--premium-accent);
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+      text-align: center;
+      font-size: 0.9rem;
+    }
 
-/* Typing Indicator */  
-.typing-indicator {  
-  display: inline-flex;  
-  align-items: center;  
-  background: white;  
-  padding: 10px 15px;  
-  border-radius: 18px 18px 18px 0;  
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);  
-}  
+    .suggested-question:hover {
+      background: var(--premium-accent);
+      color: white;
+      transform: translateY(-2px);
+    }
 
-.typing-dot {  
-  width: 7px;  
-  height: 7px;  
-  background: var(--premium-accent);  
-  border-radius: 50%;  
-  margin: 0 2px;  
-  animation: typingAnimation 1.4s infinite ease-in-out;  
-}  
+    /* Typing Indicator */
+    .typing-indicator {
+      display: inline-flex;
+      align-items: center;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 18px 18px 18px 0;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
 
-@keyframes typingAnimation {  
-  0%, 60%, 100% { transform: translateY(0); }  
-  30% { transform: translateY(-3px); }  
-}  
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--premium-accent);
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: typingAnimation 1.4s infinite ease-in-out;
+    }
 
-/* Company Response Styling */  
-.company-response {  
-  background: var(--premium-light);  
-  padding: 15px;  
-  border-radius: 10px;  
-  border-left: 4px solid var(--premium-accent);  
-}  
+    @keyframes typingAnimation {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-3px); }
+    }
 
-.company-score {  
-  font-size: 2rem;  
-  font-weight: bold;  
-  color: var(--premium-accent);  
-  margin: 10px 0;  
-}
+    /* Company Response Styling */
+    .company-response {
+      background: var(--premium-light);
+      padding: 15px;
+      border-radius: 10px;
+      border-left: 4px solid var(--premium-accent);
+    }
 
-  </style>  
-</head>  
-<body>  
-  <!-- Chat Interface -->  
-  <div class="chat-container">  
-    <div class="chat-messages" id="chat-messages">  
-      <div class="message bot-message">  
-        <h3>Welcome to Aioxy ESG Assistant</h3>  
-        <p>Ask me about:</p>  
-        <ul>  
-          <li>Company ESG reports (Apple, Tesla, etc.)</li>  
-          <li>Carbon accounting methods</li>  
-          <li>Regulatory compliance</li>  
-        </ul>  
-      </div>  
-    </div>  <div class="suggested-questions" id="suggested-questions">  
-  <h4>Try asking:</h4>  
-  <div class="questions-grid">  
-    <div class="suggested-question" onclick="askQuestion('Apple ESG score')">  
-      <i class="fab fa-apple"></i> Apple Analysis  
-    </div>  
-    <div class="suggested-question" onclick="askQuestion('science-based target setting (SBTi)')">  
-      <i class="fas fa-industry"></i> science-based target setting (SBTi) guide  
-    </div>  
-    <div class="suggested-question" onclick="askQuestion('Net zero roadmap')">  
-      <i class="fas fa-bullseye"></i> Net Zero Roadmap  
-    </div>  
-  </div>  
-</div>  
+    .company-score {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--premium-accent);
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Chat Interface -->
+  <div class="chat-container">
+    <div class="chat-messages" id="chat-messages">
+      <div class="message bot-message">
+        <h3>Welcome to Aioxy ESG Assistant</h3>
+        <p>Ask me about:</p>
+        <ul>
+          <li>Company ESG reports (Apple, Tesla, etc.)</li>
+          <li>Carbon accounting methods</li>
+          <li>Regulatory compliance</li>
+        </ul>
+      </div>
+    </div>
 
-<div class="chat-input-container">  
-  <div class="chat-input-wrapper">  
-    <input type="text" id="user-input" placeholder="Ask about ESG..." autocomplete="off">  
-    <button id="send-button" onclick="sendMessage()">  
-      <i class="fas fa-paper-plane"></i>  
-    </button>  
-  </div>  
-</div>
+    <div class="suggested-questions" id="suggested-questions">
+      <h4>Try asking:</h4>
+      <div class="questions-grid">
+        <div class="suggested-question" onclick="askQuestion('Apple ESG score')">
+          <i class="fab fa-apple"></i> Apple Analysis
+        </div>
+        <div class="suggested-question" onclick="askQuestion('Scope 3 emissions')">
+          <i class="fas fa-industry"></i> Scope 3 Guide
+        </div>
+        <div class="suggested-question" onclick="askQuestion('Net zero roadmap')">
+          <i class="fas fa-bullseye"></i> Net Zero Plan
+        </div>
+      </div>
+    </div>
 
-  </div>    <script src="chatbot.js"></script>    <script>  
-    // UI Controls  
-    function hideSuggestions() {  
-      document.getElementById('suggested-questions').classList.add('hidden');  
-    }  
-  
-    function askQuestion(question) {  
-      hideSuggestions();  
-      document.getElementById('user-input').value = question;  
-      sendMessage();  
-    }  
-  
-    function sendMessage() {  
-      const input = document.getElementById('user-input');  
-      const question = input.value.trim();  
+    <div class="chat-input-container">
+      <div class="chat-input-wrapper">
+        <input type="text" id="user-input" placeholder="Ask about ESG..." autocomplete="off">
+        <button id="send-button" onclick="sendMessage()">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="chatbot.js"></script>
+  <script>
+    // UI Controls
+    function hideSuggestions() {
+      document.getElementById('suggested-questions').classList.add('hidden');
+    }
+
+    function askQuestion(question) {
+      hideSuggestions();
+      document.getElementById('user-input').value = question;
+      sendMessage();
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('user-input');
+      const question = input.value.trim();
+      
+      if (question) {
+        hideSuggestions();
+        addMessage(question, 'user');
+        input.value = '';
         
-      if (question) {  
-        hideSuggestions();  
-        addMessage(question, 'user');  
-        input.value = '';  
-          
-        // Show typing indicator  
-        const typingIndicator = document.createElement('div');  
-        typingIndicator.className = 'message bot-message typing-indicator';  
-        typingIndicator.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;  
-        document.getElementById('chat-messages').appendChild(typingIndicator);  
-          
-        // Get answer  
-        const q = esgKnowledgeBase.find(item => {  
-  if (Array.isArray(item.question)) {  
-    return item.question.some(q => userQuestion.toLowerCase().includes(q.toLowerCase()));  
-  } else {  
-    return userQuestion.toLowerCase().includes(item.question.toLowerCase());  
-  }  
-});  
-  
-    function addMessage(content, sender) {  
-      const messages = document.getElementById('chat-messages');  
-      const messageDiv = document.createElement('div');  
-      messageDiv.className = `message ${sender}-message`;  
-      messageDiv.innerHTML = sender === 'bot' ? content : content;  
-      messages.appendChild(messageDiv);  
-      messages.scrollTop = messages.scrollHeight;  
-    }  
-  
-    // Handle Enter key  
-    document.getElementById('user-input').addEventListener('keypress', (e) => {  
-      if (e.key === 'Enter') sendMessage();  
-    });  
-  </script>  </body>  
-              </html>
+        // Show typing indicator
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'message bot-message typing-indicator';
+        typingIndicator.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+        document.getElementById('chat-messages').appendChild(typingIndicator);
+        
+        // Get answer
+        setTimeout(async () => {
+          typingIndicator.remove();
+          const answer = await getAnswer(question);
+          addMessage(answer, 'bot');
+        }, 800 + Math.random() * 500);
+      }
+    }
+
+    function addMessage(content, sender) {
+      const messages = document.getElementById('chat-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}-message`;
+      messageDiv.innerHTML = sender === 'bot' ? content : content;
+      messages.appendChild(messageDiv);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Handle Enter key
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+        </html>
