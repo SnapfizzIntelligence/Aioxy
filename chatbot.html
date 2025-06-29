@@ -265,13 +265,13 @@
         document.getElementById('chat-messages').appendChild(typingIndicator);
         
         // Get answer
-        setTimeout(async () => {
-          typingIndicator.remove();
-          const answer = await getAnswer(question);
-          addMessage(answer, 'bot');
-        }, 800 + Math.random() * 500);
-      }
-    }
+        const q = esgKnowledgeBase.find(item => {
+  if (Array.isArray(item.question)) {
+    return item.question.some(q => userQuestion.toLowerCase().includes(q.toLowerCase()));
+  } else {
+    return userQuestion.toLowerCase().includes(item.question.toLowerCase());
+  }
+});
 
     function addMessage(content, sender) {
       const messages = document.getElementById('chat-messages');
