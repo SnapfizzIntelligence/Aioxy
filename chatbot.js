@@ -1,7 +1,7 @@
 // ======================
 // BREAKTHROUGH KNOWLEDGE BASE
 // ======================
-const esgKnowledgeBase =[
+const esgKnowledgeBase = [
   
   // 1. CARBON ACCOUNTING (FLAGSHIP FEATURE)
   {
@@ -261,11 +261,10 @@ const esgKnowledgeBase =[
     </div>`
   },
 
-  // 8. DOUBLE MATERIALITY
+  // 8. DOUBLE MATERIALITY 
   {
-  {
-  question: ["double materiality", "double materiality cost calculator", "csrd materiality"],
-  answer: `<div class="guide-response">
+    question: ["double materiality", "double materiality cost calculator", "csrd materiality"],
+    answer: `<div class="guide-response">
     <h3>Double Materiality Cost & Risk Solution</h3>
 
     <p><strong>What is it?</strong><br>
@@ -384,144 +383,149 @@ const esgKnowledgeBase =[
       - Scope 3 plan<br>
       - Just Transition strategy (e.g., worker retraining)</p>
     </div>`
+    }
 
-  }
-];
-
-// ======================
-// COMPANY DATA INTEGRATION
-// ======================
-async function loadCompanyData(companyName) {
-  try {
-    const normalizedName = companyName.toLowerCase().replace(/\s+/g, '');
-    const module = await import(`./companies/${normalizedName}.js`);
-    return module.default;
-  } catch {
-    return null; 
-  }
-}
+]
 
 // ======================
-// ANSWER GENERATION LOGIC
+// FUTURE-PROOF ANSWER ENGINE
 // ======================
-async function getAnswer(userQuestion) {
-  // 1. Check for company-specific questions
-  const companies = ['apple','samsung', 'boeing', 'patagonia','ikea','tesla', 'unilever'];
-  const companyMatch = companies.find(c => userQuestion.toLowerCase().includes(c));
+class ESGAnswerEngine {
+  static #companies = ['apple', 'tesla', 'unilever'];
   
-  if (companyMatch) {
-    const data = await loadCompanyData(companyMatch);
-    if (data) {
-      return `
-        <div class="company-response">
-          <h3>${data.name} ESG Report</h3>
-          <div class="company-score">${data.score}/100</div>
-          <p><strong>Key Risk:</strong> ${data.leaks[0].issue}</p>
-          <p><strong>Solution:</strong> ${data.leaks[0].solution}</p>
-          <a href="${data.leaks[0].source.url}" target="_blank">Source</a>
-        </div>
-      `;
+  static async #loadCompanyData(companyName) {
+    try {
+      const normalizedName = companyName.toLowerCase().replace(/\s+/g, '');
+      const module = await import(`./companies/${normalizedName}.js`);
+      return module.default;
+    } catch {
+      return null;
     }
   }
-  
-  // 2. Check general ESG questions
-  const lowerQuestion = userQuestion.toLowerCase();
-  let bestMatch = null;
-  let highestScore = 0;
 
-  for (const item of esgKnowledgeBase) {
-    const questions = Array.isArray(item.question) ? item.question : [item.question];
+  static async getAnswer(userQuestion) {
+    const lowerQuestion = userQuestion.toLowerCase().trim();
     
-    for (const q of questions) {
-      const lowerQ = q.toLowerCase();
-      let score = 0;
-      
-      // Exact match gets highest priority
-      if (lowerQuestion === lowerQ) {
-        return item.answer;
-      }
-      
-      // Partial matches get scored
-      if (lowerQuestion.includes(lowerQ)) {
-        score = lowerQ.length; // Longer matches score higher
-      }
-      
-      // Also check individual keywords
-      const keywords = lowerQ.split(/\s+/);
-      keywords.forEach(keyword => {
-        if (keyword.length > 3 && lowerQuestion.includes(keyword)) {
-          score += keyword.length;
-        }
-      });
-
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = item.answer;
+    // 1. Check for company data
+    for (const company of this.#companies) {
+      if (lowerQuestion.includes(company)) {
+        const data = await this.#loadCompanyData(company);
+        if (data) return this.#formatCompanyResponse(data);
       }
     }
+    
+    // 2. Find best matching question
+    let bestMatch = null;
+    let highestScore = 0;
+
+    for (const item of esgKnowledgeBase) {
+      const questions = Array.isArray(item.question) ? item.question : [item.question];
+      
+      for (const q of questions) {
+        const score = this.#calculateMatchScore(lowerQuestion, q.toLowerCase());
+        if (score > highestScore) {
+          highestScore = score;
+          bestMatch = item.answer;
+        }
+      }
+    }
+
+    return bestMatch || this.#getFallbackResponse();
   }
 
-  return bestMatch || `<p>I specialize in:<br>
-    - Carbon accounting<br>
-    - CSRD compliance<br>
-    - ESG audits<br>
-    Try rephrasing or ask about one of these topics.</p>`;
+  static #calculateMatchScore(question, keyword) {
+    if (question === keyword) return Infinity; // Exact match
+    if (question.includes(keyword)) return keyword.length * 2; // Partial match
+    
+    // Keyword matching
+    return keyword.split(/\s+/)
+      .filter(word => word.length > 3 && question.includes(word))
+      .reduce((sum, word) => sum + word.length, 0);
+  }
+
+  static #formatCompanyResponse(data) {
+    return `
+      <div class="company-response">
+        <h3>${data.name} ESG Report</h3>
+        <div class="company-score">${data.score}/100</div>
+        <p><strong>Key Risk:</strong> ${data.leaks[0].issue}</p>
+        <p><strong>Solution:</strong> ${data.leaks[0].solution}</p>
+        <a href="${data.leaks[0].source.url}" target="_blank">Source</a>
+      </div>`;
+  }
+
+  static #getFallbackResponse() {
+    return `<p>I specialize in:<br>
+      - Carbon accounting<br>
+      - CSRD compliance<br>
+      - ESG audits<br>
+      Try rephrasing your question.</p>`;
+  }
 }
 
 // ======================
-// CORE FUNCTIONS
+// CHAT INTERFACE CONTROLLER
 // ======================
-function addMessage(content, sender) {
-  const messages = document.getElementById('chat-messages');
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${sender}-message`;
-  messageDiv.innerHTML = content;
-  messages.appendChild(messageDiv);
-  messages.scrollTop = messages.scrollHeight;
-}
+class ChatInterface {
+  static init() {
+    document.getElementById('user-input')
+      .addEventListener('keypress', (e) => e.key === 'Enter' && this.sendMessage());
+  }
 
-async function sendMessage() {
-  const input = document.getElementById('user-input');
-  const question = input.value.trim();
+  static async sendMessage() {
+    const input = document.getElementById('user-input');
+    const question = input.value.trim();
 
-  if (question) {
-    hideSuggestions();
-    addMessage(question, 'user');
+    if (!question) return;
+
+    this.#hideSuggestions();
+    this.#addMessage(question, 'user');
     input.value = '';
 
-    // Show typing indicator
-    const typingIndicator = document.createElement('div');
-    typingIndicator.className = 'message bot-message typing-indicator';
-    typingIndicator.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+    const typingIndicator = this.#createTypingIndicator();
     document.getElementById('chat-messages').appendChild(typingIndicator);
 
-    // Get and display answer
     try {
-      const answer = await getAnswer(question);
+      const answer = await ESGAnswerEngine.getAnswer(question);
       setTimeout(() => {
         typingIndicator.remove();
-        addMessage(answer, 'bot');
-      }, 800 + Math.random() * 400); // Natural delay
+        this.#addMessage(answer, 'bot');
+      }, 800 + Math.random() * 400);
     } catch (error) {
-      console.error("Error getting answer:", error);
+      console.error("Error:", error);
       typingIndicator.remove();
-      addMessage("<p>Sorry, I encountered an error. Please try again.</p>", 'bot');
+      this.#addMessage("<p>Sorry, I encountered an error. Please try again.</p>", 'bot');
     }
   }
-}
 
-function hideSuggestions() {
-  document.getElementById('suggested-questions').classList.add('hidden');
-}
+  static #addMessage(content, sender) {
+    const messages = document.getElementById('chat-messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    messageDiv.innerHTML = content;
+    messages.appendChild(messageDiv);
+    messages.scrollTop = messages.scrollHeight;
+  }
 
-function askQuestion(question) {
-  hideSuggestions();
-  document.getElementById('user-input').value = question;
-  sendMessage();
+  static #hideSuggestions() {
+    document.getElementById('suggested-questions').classList.add('hidden');
+  }
+
+  static #createTypingIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'message bot-message typing-indicator';
+    indicator.innerHTML = `
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>`;
+    return indicator;
+  }
 }
 
 // Initialize
-window.sendMessage = sendMessage;
-window.hideSuggestions = hideSuggestions;
-window.askQuestion = askQuestion;
-window.addMessage = addMessage;
+window.sendMessage = ChatInterface.sendMessage;
+window.askQuestion = (question) => {
+  document.getElementById('user-input').value = question;
+  ChatInterface.sendMessage();
+};
+ChatInterface.init();
