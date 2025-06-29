@@ -1,7 +1,7 @@
 // ======================
 // BREAKTHROUGH KNOWLEDGE BASE
 // ======================
-const esgKnowledgeBase = [
+const esgKnowledgeBase = [  //
   
   // 1. CARBON ACCOUNTING (FLAGSHIP FEATURE)
   {
@@ -383,9 +383,9 @@ const esgKnowledgeBase = [
       - Scope 3 plan<br>
       - Just Transition strategy (e.g., worker retraining)</p>
     </div>`
-    }
+    }, 
 
-]
+];  //
 
 // ======================
 // FUTURE-PROOF ANSWER ENGINE
