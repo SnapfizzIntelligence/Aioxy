@@ -86,88 +86,36 @@ const brandData = {
     }
 };
 
-// DOM Elements
-const brandSelect = document.getElementById('brandSelect');
-const auditButton = document.getElementById('auditButton');
-const resultsDiv = document.getElementById('results');
-
-// Main Function
+// 2. CORE FUNCTION (SIMPLIFIED)
 function runAudit() {
-    const brand = brandSelect.value;
-    
-    // Validate selection
-    if (!brand) {
-        alert("Please select a brand");
-        return;
+    const brand = document.getElementById("brandSelect").value;
+    if (!brand) return alert("Select a brand first!");
+
+    const data = brandData[brand];
+    let html = `<h2>${brand.toUpperCase()} Audit</h2><table border="1">`;
+
+    // Add comparison rows
+    html += `
+        <tr><th>Metric</th><th>Big 4 Value</th><th>AIOXY Value</th></tr>
+        <tr><td>Scope 1</td><td>${data.big4.scope1 || "Not reported"}</td><td>${data.scope1}</td></tr>
+        <tr><td>Scope 2</td><td>${data.big4.scope2 || "Not reported"}</td><td>${data.scope2}</td></tr>
+        <tr><td>Scope 3</td><td>${data.big4.scope3 || "Not reported"}</td><td>${data.scope3}</td></tr>
+    </table>`;
+
+    // Add findings
+    if (data.errors.length > 0) {
+        html += "<h3>Key Risks Found:</h3><ul>";
+        data.errors.forEach(err => {
+            html += `<li class="risk">${err.issue} <a href="#" onclick="alert('Source: ${err.source}')">[?]</a></li>`;
+        });
+        html += "</ul>";
     }
-    
-    // Show loading state
-    resultsDiv.innerHTML = "<div>Processing audit...</div>";
-    resultsDiv.style.display = 'block';
-    
-    // Simulate processing delay
-    setTimeout(() => {
-        try {
-            const data = brandData[brand].carbon;
-            const big4 = data.big4;
-            
-            // Generate HTML
-            let html = `
-                <h2>${brand.charAt(0).toUpperCase() + brand.slice(1)} Carbon Audit</h2>
-                <p><strong>Data Source:</strong> ${big4.assurance}</p>
-                
-                <table>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Reported Value</th>
-                        <th>AIOXY Value</th>
-                    </tr>
-                    <tr>
-                        <td>Scope 1</td>
-                        <td>${big4.scope1 || 'Not assured'} ${big4.scope1 ? 'MT' : ''}</td>
-                        <td>${data.scope1} MT</td>
-                    </tr>
-                    <tr>
-                        <td>Scope 2</td>
-                        <td>${big4.scope2 || 'Not assured'} ${big4.scope2 ? 'MT' : ''}</td>
-                        <td>${data.scope2} MT</td>
-                    </tr>
-                    <tr>
-                        <td>Scope 3</td>
-                        <td>${big4.scope3 !== null ? big4.scope3 + ' MT' : 'Not assured'}</td>
-                        <td>${data.scope3} MT</td>
-                    </tr>
-                </table>
-            `;
-            
-            // Add findings if available
-            if (data.errors.length > 0) {
-                html += `<h3>Key Findings</h3><ul>`;
-                data.errors.forEach(error => {
-                    html += `<li>${error.issue} <a href="${error.source.url}" class="source-link" target="_blank">[Source]</a></li>`;
-                });
-                html += `</ul>`;
-            }
-            
-            // Add CTA
-            html += `
-                <div style="margin-top: 30px; text-align: center;">
-                    <button style="padding: 10px 20px;">Get Full Report ($200)</button>
-                    <p style="font-size: 0.9em; margin-top: 10px;">Same audit Big 4 charges $100K+</p>
-                </div>
-            `;
-            
-            resultsDiv.innerHTML = html;
-            
-        } catch (error) {
-            console.error("Audit failed:", error);
-            resultsDiv.innerHTML = `<p class="risk">Error: Could not process audit. Please try again.</p>`;
-        }
-    }, 800); // Simulate processing delay
-}
 
-// Event Listeners
-auditButton.addEventListener('click', runAudit);
+    // Add CTA
+    html += `<button onclick="alert('Redirecting to booking...')">Book $200 Full Audit</button>`;
 
-// Initialize
-console.log("AIOXY Auditor initialized");
+    // Display results
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = html;
+    resultsDiv.style.display = "block";
+                                  }
