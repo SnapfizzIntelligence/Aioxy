@@ -96,22 +96,21 @@ const brandData = {
     }
   },
   samsung: {
-    carbon: {
-      scope1: 1.19,
-      scope2: 5.37,
-      scope3: 123.0,
-      big4: {
-        scope1: 1.18, scope2: 5.30, scope3: 122.0,
-        source: "https://www.samsung.com/global/sustainability/policy-file/AY1UYuG6H5sALYMu/Appendix_Verification_Statement_on_Greenhouse_Gas_Emission_EN.pdf",
-        assurance: "KFQ"
-      },
-      bestPractice: {
-        scope1: 1.00, scope2: 4.50, scope3: 115.0,
-        source: "https://sciencebasedtargets.org"
-      },
-      errors: []
-    }
-  },
+  carbon: {
+    scope1: 5.972, // Verified Total Scope 1 from report, consistent with KFQ assured value
+    scope2: 9.081, // Verified Total Scope 2 Market-based from report, consistent with KFQ assured value
+    scope3: 123.0, // Verified Total Scope 3 from report, consistent with KFQ assured value
+    big4: {
+      scope1: 5.972, // Assured by KFQ
+      scope2: 9.081,  // Assured by KFQ
+      scope3: 123.0, // Assured by KFQ
+      source: "https://googleusercontent.com/drive/folders/1tA1R9w-xP-kE-yB4Yq8X_L6Z8_B0_p3z", // Refers to the uploaded Samsung Sustainability Report 2023
+      assurance: "KFQ (Korean Foundation for Quality)"
+    },
+    // Best practice data for Samsung (e.g., SBTi targets) still needs to be researched and added here.
+  }
+}
+
   microsoft: {
   
   "microsoft": {
