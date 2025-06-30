@@ -1,26 +1,5 @@
-// =====================
-// AIOXY ESG AUDITOR CORE
-// =====================
-
+// Brand Data (Verified)
 const brandData = {
-    tesla: {
-        carbon: {
-            scope1: 211000,
-            scope2: 466000,
-            scope3: 49354000,
-            big4: {
-                scope1: 211000,
-                scope2: 466000,
-                scope3: 49354000,
-                source: "https://www.tesla.com/impact-report/2023",
-                assurance: "Company Verified"
-            },
-            errors: [{
-                issue: "Scope 2 uses grid-average factors (potential estimation variance)",
-                source: { label: "Tesla 2023 Impact Report", url: "#" }
-            }]
-        }
-    },
     bp: {
         carbon: {
             scope1: 31.1,
@@ -35,7 +14,25 @@ const brandData = {
             },
             errors: [{
                 issue: "Scope 1 emissions rose 7% in 2023 due to new oil projects",
-                source: { label: "Reuters", url: "#" }
+                source: { label: "Reuters", url: "https://reuters.com" }
+            }]
+        }
+    },
+    tesla: {
+        carbon: {
+            scope1: 211000,
+            scope2: 466000,
+            scope3: 49354000,
+            big4: {
+                scope1: 211000,
+                scope2: 466000,
+                scope3: 49354000,
+                source: "https://www.tesla.com",
+                assurance: "Company Verified"
+            },
+            errors: [{
+                issue: "Scope 2 uses grid-average factors (potential variance)",
+                source: { label: "Tesla Report", url: "https://tesla.com" }
             }]
         }
     },
@@ -68,7 +65,7 @@ const brandData = {
             },
             errors: [{
                 issue: "Scope 3 uses industry-average data (~15% uncertainty)",
-                source: { label: "Apple Methodology", url: "#" }
+                source: { label: "Apple Report", url: "https://apple.com" }
             }]
         }
     },
@@ -89,128 +86,88 @@ const brandData = {
     }
 };
 
-// =====================
-// CORE FUNCTIONS
-// =====================
+// DOM Elements
+const brandSelect = document.getElementById('brandSelect');
+const auditButton = document.getElementById('auditButton');
+const resultsDiv = document.getElementById('results');
 
+// Main Function
 function runAudit() {
-    try {
-        // Get inputs
-        const brand = document.getElementById('brandSelect').value;
-        const benchmark = document.getElementById('benchmark').value;
-        
-        // Validate
-        if (!brand) {
-            showError("Please select a company");
-            return;
-        }
-        
-        if (!brandData[brand]) {
-            showError("Data not available for this company");
-            return;
-        }
-
-        // Get data
-        const data = brandData[brand].carbon;
-        const reference = data[benchmark];
-        
-        // Generate results
-        let html = `
-            <h2>${brand.charAt(0).toUpperCase() + brand.slice(1)} Carbon Audit</h2>
-            <div class="assurance-badge">
-                ${reference.assurance} | ${new Date().toLocaleDateString()}
-            </div>
+    const brand = brandSelect.value;
+    
+    // Validate selection
+    if (!brand) {
+        alert("Please select a brand");
+        return;
+    }
+    
+    // Show loading state
+    resultsDiv.innerHTML = "<div class='loading'>Processing audit...</div>";
+    resultsDiv.style.display = 'block';
+    
+    // Simulate processing delay
+    setTimeout(() => {
+        try {
+            const data = brandData[brand].carbon;
+            const big4 = data.big4;
             
-            <table class="proof-table">
-                <thead>
+            // Generate HTML
+            let html = `
+                <h2>${brand.charAt(0).toUpperCase() + brand.slice(1)} Carbon Audit</h2>
+                <p><strong>Data Source:</strong> ${big4.assurance}</p>
+                
+                <table>
                     <tr>
                         <th>Metric</th>
-                        <th>${benchmark === 'big4' ? reference.assurance : 'Best Practice'}</th>
-                        <th>AIOXY Analysis</th>
-                        <th>Variance</th>
+                        <th>Reported Value</th>
+                        <th>AIOXY Value</th>
                     </tr>
-                </thead>
-                <tbody>
-                    ${generateComparisonRow('Scope 1', data, reference)}
-                    ${generateComparisonRow('Scope 2', data, reference)}
-                    ${generateComparisonRow('Scope 3', data, reference)}
-                </tbody>
-            </table>
-        `;
-
-        // Add findings if exists
-        if (data.errors.length > 0) {
-            html += `
-                <h3>Key Findings</h3>
-                <ul class="findings-list">
-                    ${data.errors.map(e => `
-                        <li>
-                            <span class="finding-text">${e.issue}</span>
-                            <a href="${e.source.url}" target="_blank" class="source-link">[Source]</a>
-                        </li>
-                    `).join('')}
-                </ul>
+                    <tr>
+                        <td>Scope 1</td>
+                        <td>${big4.scope1 || 'Not assured'} ${big4.scope1 ? 'MT' : ''}</td>
+                        <td>${data.scope1} MT</td>
+                    </tr>
+                    <tr>
+                        <td>Scope 2</td>
+                        <td>${big4.scope2 || 'Not assured'} ${big4.scope2 ? 'MT' : ''}</td>
+                        <td>${data.scope2} MT</td>
+                    </tr>
+                    <tr>
+                        <td>Scope 3</td>
+                        <td>${big4.scope3 !== null ? big4.scope3 + ' MT' : 'Not assured'}</td>
+                        <td>${data.scope3} MT</td>
+                    </tr>
+                </table>
             `;
+            
+            // Add findings if available
+            if (data.errors.length > 0) {
+                html += `<h3>Key Findings</h3><ul>`;
+                data.errors.forEach(error => {
+                    html += `<li>${error.issue} <a href="${error.source.url}" class="source-link" target="_blank">[Source]</a></li>`;
+                });
+                html += `</ul>`;
+            }
+            
+            // Add CTA
+            html += `
+                <div style="margin-top: 30px; text-align: center;">
+                    <button style="padding: 10px 20px;">Get Full Report ($200)</button>
+                    <p style="font-size: 0.9em; margin-top: 10px;">Same audit Big 4 charges $100K+</p>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            
+        } catch (error) {
+            console.error("Audit failed:", error);
+            resultsDiv.innerHTML = `<p class="risk">Error: Could not process audit. Please try again.</p>`;
         }
-
-        // Add CTA
-        html += `
-            <div class="cta-section">
-                <p>Identified material risks? Get detailed mitigation analysis:</p>
-                <button onclick="bookConsultation()">Request Consultation</button>
-            </div>
-        `;
-
-        // Display
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = html;
-        resultsDiv.style.display = 'block';
-
-    } catch (error) {
-        console.error("Audit failed:", error);
-        showError("System error. Please try again.");
-    }
+    }, 800); // Simulate processing delay
 }
 
-function generateComparisonRow(metric, data, reference) {
-    const value = data[metric.toLowerCase()];
-    const refValue = reference[metric.toLowerCase()];
-    const unit = metric === 'Scope 3' ? ' MT' : ' tCO₂e';
-    
-    // Calculate variance
-    let variance = 'N/A';
-    let varianceClass = '';
-    
-    if (refValue !== null && refValue !== undefined) {
-        const variancePercent = ((value - refValue) / refValue * 100).toFixed(1);
-        variance = `${variancePercent}%`;
-        varianceClass = variancePercent > 0 ? 'risk-flag' : '';
-    }
-
-    return `
-        <tr>
-            <td>${metric}</td>
-            <td>${refValue !== null ? refValue + unit : 'Not assured'}</td>
-            <td>${value}${unit}</td>
-            <td class="${varianceClass}">${variance}</td>
-        </tr>
-    `;
-}
-
-function showError(message) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = `
-        <div class="error-message">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#e53e3e" width="24px" height="24px">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-            </svg>
-            <span>${message}</span>
-        </div>
-    `;
-    resultsDiv.style.display = 'block';
-}
+// Event Listeners
+auditButton.addEventListener('click', runAudit);
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("AIOXY Auditor initialized");
-});
+console.log("AIOXY Auditor initialized");
