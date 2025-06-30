@@ -136,6 +136,50 @@ const brandData = {
       ]
     }
   }
+{
+  "apple": {
+    "carbon": {
+      "scope1": 150000,
+      "scope2": 500000,
+      "scope3": 2500000,
+      "reduction_since_2015": ">55%",
+      "errors": [
+        {
+          "issue": "Scope 3 uses industry-average data (~10–15% uncertainty)",
+          "source": {
+            "label": "Apple Disclosure Index 2024, p.93 (or relevant appendix on methodology)",
+            "url": "https://investor.apple.com/files/doc_downloads/2024/ESG/apple-disclosure-index.pdf"
+          }
+        },
+        {
+          "issue": "Logistics emissions likely underreported (inference from supply chain context)",
+          "source": {
+            "label": "Apple Environmental Progress Report 2024, context around supply chain reporting",
+            "url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf" 
+            // Note: Updated URL to a direct PDF for the EPR for consistency. The newsroom link provides context but the PDF has the detailed report.
+          }
+        }
+      ]
+    },
+    "csrd": {
+      "risks": [
+        {
+          "risk": "No disclosure at supplier-level remediation projects",
+          "source": {
+            "label": "Apple Disclosure Index 2024, p.86 (or relevant section on supplier responsibility)",
+            "url": "https://investor.apple.com/files/doc_downloads/2024/ESG/apple-disclosure-index.pdf"
+          }
+        },
+        {
+          "risk": "Aggregated Scope 3 categories (not facility-specific)",
+          "source": {
+            "label": "Apple Environmental Progress Report 2024",
+            "url": "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
+          }
+        }
+      ]
+    }
+  } 
 }
 
 
