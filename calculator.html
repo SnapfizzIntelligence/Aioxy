@@ -1,51 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AIOXY ESG Auditor | Big 4-Level Audits for $0</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIOXY ESG Auditor</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px }
-    h1 { color: #2e8b57; text-align: center }
-    .input-group { display: flex; gap: 10px; margin: 20px 0 }
-    select, button { padding: 10px; border-radius: 5px }
-    button { background: #2e8b57; color: white; border: none; cursor: pointer }
     .proof-table { width: 100%; border-collapse: collapse; margin: 20px 0 }
     .proof-table th, .proof-table td { padding: 12px; border: 1px solid #ddd; text-align: left }
-    .proof-table th { background: #f8f9fa }
     .risk-flag { color: #e74c3c; font-weight: bold }
-    .cta-box { background: #f8f9fa; padding: 20px; margin-top: 30px; text-align: center }
-    .proof-note { font-size: 0.9em; color: #666; text-align: center; margin-top: 40px }
-    .assurance-badge { 
-      background: #1a5276; color: white; 
-      padding: 5px 10px; border-radius: 3px;
-      display: inline-block; margin-bottom: 10px 
-    }
+    .assurance-badge { background: #1a5276; color: white; padding: 5px 10px; border-radius: 3px }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>AIOXY ESG AUDITOR</h1>
-    <p style="text-align: center">Big 4-Level Accuracy for $0</p>
-    
-    <div class="input-group">
-      <select id="brandSelect">
-        <option value="">-- Select Brand --</option>
-      </select>
-      <select id="benchmark">
-        <option value="big4">Compare with Big 4</option>
-        <option value="best">Compare with Best Practice</option>
-      </select>
-      <button onclick="runAudit()">Run Free Audit</button>
-    </div>
-    
-    <div id="results"></div>
-    
-    <p class="proof-note">
-      Data verified by PwC, Deloitte, EY, KPMG. AIOXY provides instant ESG insights — same data, no $500K bill.
-    </p>
+  <h1>AIOXY ESG AUDITOR</h1>
+  <p>Big 4-Level Accuracy for $0</p>
+
+  <div>
+    <select id="brandSelect">
+      <option value="">-- Select Brand --</option>
+      <option value="tesla">Tesla</option>
+      <option value="bp">BP</option>
+      <option value="samsung">Samsung</option>
+      <option value="apple">Apple</option>
+      <option value="microsoft">Microsoft</option>
+    </select>
+    <button onclick="runAudit()">Run Audit</button>
   </div>
-  
+
+  <div id="results"></div>
+
   <script src="calculator.js"></script>
 </body>
 </html>
