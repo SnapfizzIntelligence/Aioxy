@@ -1,227 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY ESG Auditor | Audit-Grade ESG Analysis in Seconds</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #2e8b57;
-            --secondary: #1a5276;
-            --accent: #ff6b6b;
-            --dark: #1a3a1a;
-            --light: #f8f9fa;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 30px auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        header {
-            background: var(--dark);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        
-        h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        .tool-container {
-            padding: 25px;
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark);
-        }
-        
-        select, button {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        select {
-            background: white;
-            cursor: pointer;
-        }
-        
-        select:hover {
-            border-color: var(--primary);
-        }
-        
-        button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        
-        button:hover {
-            background: #237347;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46, 139, 87, 0.3);
-        }
-        
-        .results {
-            display: none;
-            margin-top: 30px;
-            padding: 20px;
-            background: var(--light);
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .results h3 {
-            color: var(--secondary);
-            margin-bottom: 15px;
-        }
-        
-        .risk-item, .error-item {
-            background: white;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .risk-item h4, .error-item h4 {
-            color: var(--accent);
-            margin-bottom: 5px;
-        }
-        
-        .source-link {
-            display: inline-block;
-            margin-top: 8px;
-            font-size: 0.85rem;
-            color: var(--secondary);
-            text-decoration: none;
-            border-bottom: 1px dotted var(--secondary);
-        }
-        
-        .source-link:hover {
-            color: var(--primary);
-        }
-        
-        .pwc-comparison {
-            background: #fff8f8;
-            padding: 15px;
-            margin: 25px 0;
-            border-radius: 8px;
-            border: 1px dashed var(--accent);
-        }
-        
-        .pwc-comparison h4 {
-            color: var(--accent);
-            margin-bottom: 10px;
-        }
-        
-        .download-btn {
-            background: var(--secondary);
-            display: block;
-            text-align: center;
-        }
-        
-        .download-btn:hover {
-            background: #154360;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                margin: 15px;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
+  <title>AIOXY ESG Auditor | Big 4-Level Audits for $0</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px }
+    h1 { color: #2e8b57; text-align: center }
+    .input-group { display: flex; gap: 10px; margin: 20px 0 }
+    select, button { padding: 10px; border-radius: 5px }
+    button { background: #2e8b57; color: white; border: none; cursor: pointer }
+    .proof-table { width: 100%; border-collapse: collapse; margin: 20px 0 }
+    .proof-table th, .proof-table td { padding: 12px; border: 1px solid #ddd; text-align: left }
+    .proof-table th { background: #f8f9fa }
+    .risk-flag { color: #e74c3c; font-weight: bold }
+    .cta-box { background: #f8f9fa; padding: 20px; margin-top: 30px; text-align: center }
+    .proof-note { font-size: 0.9em; color: #666; text-align: center; margin-top: 40px }
+    .assurance-badge { 
+      background: #1a5276; color: white; 
+      padding: 5px 10px; border-radius: 3px;
+      display: inline-block; margin-bottom: 10px 
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>AIOXY ESG AUDITOR</h1>
-            <p class="subtitle">PWC-Level Accuracy in 5 Seconds</p>
-        </header>
-        
-        <div class="tool-container">
-            <div class="input-group">
-                <label for="brandSelect">1. Select a Brand</label>
-                <select id="brandSelect">
-                    <option value="">-- Choose Brand --</option>
-                    <option value="cocacola">Coca-Cola</option>
-                    <option value="bp">BP</option>
-                    <option value="apple">Apple</option>
-                    <option value="tesla">Tesla</option>
-                    <option value="microsoft">Microsoft</option>
-                    <option value="nestle">Nestlé</option>
-                    <option value="unilever">Unilever</option>
-                    <option value="samsung">Samsung</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <label for="auditType">2. Choose Audit Type</label>
-                <select id="auditType">
-                    <option value="carbon">Carbon Accounting Check</option>
-                    <option value="csrd">CSRD Double Materiality</option>
-                </select>
-            </div>
-            
-            <button onclick="runAudit()">Run ESG Audit</button>
-            
-            <div id="results" class="results">
-                <!-- Results will be inserted here by calculator.js -->
-            </div>
-        </div>
+  <div class="container">
+    <h1>AIOXY ESG AUDITOR</h1>
+    <p style="text-align: center">Big 4-Level Accuracy for $0</p>
+    
+    <div class="input-group">
+      <select id="brandSelect">
+        <option value="">-- Select Brand --</option>
+      </select>
+      <select id="benchmark">
+        <option value="big4">Compare with Big 4</option>
+        <option value="best">Compare with Best Practice</option>
+      </select>
+      <button onclick="runAudit()">Run Free Audit</button>
     </div>
-
-    <script src="calculator.js"></script>
+    
+    <div id="results"></div>
+    
+    <p class="proof-note">
+      Data verified by PwC, Deloitte, EY, KPMG. AIOXY provides instant ESG insights — same data, no $500K bill.
+    </p>
+  </div>
+  
+  <script src="calculator.js"></script>
 </body>
 </html>
