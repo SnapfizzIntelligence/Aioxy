@@ -1,4 +1,3 @@
-// Brand Data (Verified)
 const brandData = {
     bp: {
         carbon: {
@@ -86,36 +85,48 @@ const brandData = {
     }
 };
 
-// 2. CORE FUNCTION (SIMPLIFIED)
 function runAudit() {
     const brand = document.getElementById("brandSelect").value;
     if (!brand) return alert("Select a brand first!");
 
-    const data = brandData[brand];
-    let html = `<h2>${brand.toUpperCase()} Audit</h2><table border="1">`;
+    const data = brandData[brand].carbon;
 
-    // Add comparison rows
-    html += `
-        <tr><th>Metric</th><th>Big 4 Value</th><th>AIOXY Value</th></tr>
-        <tr><td>Scope 1</td><td>${data.big4.scope1 || "Not reported"}</td><td>${data.scope1}</td></tr>
-        <tr><td>Scope 2</td><td>${data.big4.scope2 || "Not reported"}</td><td>${data.scope2}</td></tr>
-        <tr><td>Scope 3</td><td>${data.big4.scope3 || "Not reported"}</td><td>${data.scope3}</td></tr>
-    </table>`;
+    let html = `<h2>${brand.toUpperCase()} Audit</h2>
+                <p><strong>Data Source:</strong> ${data.big4.assurance}</p>
+                <table>
+                    <tr><th>Metric</th><th>Reported (Big 4)</th><th>AIOXY Value</th><th>Variance</th></tr>`;
 
-    // Add findings
+    ['scope1', 'scope2', 'scope3'].forEach(scope => {
+        const big4Val = data.big4[scope];
+        const aioxyVal = data[scope];
+        const variance = (big4Val !== null && big4Val !== undefined)
+            ? (aioxyVal - big4Val).toFixed(2)
+            : "N/A";
+
+        html += `<tr>
+                    <td>${scope.replace('scope', 'Scope ')}</td>
+                    <td>${big4Val !== null && big4Val !== undefined ? big4Val + ' MT' : 'Not reported'}</td>
+                    <td>${aioxyVal} MT</td>
+                    <td class="${variance !== 'N/A' && variance != 0 ? 'risk' : ''}">
+                        ${variance !== 'N/A' ? (variance >= 0 ? '+' : '') + variance : 'N/A'}
+                    </td>
+                 </tr>`;
+    });
+
+    html += `</table>`;
+
     if (data.errors.length > 0) {
-        html += "<h3>Key Risks Found:</h3><ul>";
+        html += `<h3>Key Risks Found:</h3><ul>`;
         data.errors.forEach(err => {
-            html += `<li class="risk">${err.issue} <a href="#" onclick="alert('Source: ${err.source}')">[?]</a></li>`;
+            html += `<li class="risk">${err.issue} 
+                     <a href="${err.source.url}" class="source-link" target="_blank">[Source]</a></li>`;
         });
-        html += "</ul>";
+        html += `</ul>`;
     }
 
-    // Add CTA
     html += `<button onclick="alert('Redirecting to booking...')">Book $200 Full Audit</button>`;
 
-    // Display results
     const resultsDiv = document.getElementById("results");
     resultsDiv.innerHTML = html;
     resultsDiv.style.display = "block";
-                                  }
+}
