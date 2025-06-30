@@ -1,33 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AIOXY ESG Auditor</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px }
-    .proof-table { width: 100%; border-collapse: collapse; margin: 20px 0 }
-    .proof-table th, .proof-table td { padding: 12px; border: 1px solid #ddd; text-align: left }
-    .risk-flag { color: #e74c3c; font-weight: bold }
-    .assurance-badge { background: #1a5276; color: white; padding: 5px 10px; border-radius: 3px }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOXY ESG Auditor | Enterprise Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2e86ab;
+            --dark: #1a3a8f;
+            --light: #f8fafc;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        header {
+            background: var(--dark);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .audit-interface {
+            padding: 2rem;
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        select, button {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #1d6b91;
+            transform: translateY(-1px);
+        }
+        .results {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .proof-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+        .proof-table th, .proof-table td {
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .proof-table th {
+            background: var(--light);
+            font-weight: 500;
+        }
+        .risk-flag {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+        .assurance-badge {
+            background: var(--dark);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
-  <h1>AIOXY ESG AUDITOR</h1>
-  <p>Big 4-Level Accuracy for $0</p>
+    <div class="container">
+        <header>
+            <h1>AIOXY ESG AUDITOR</h1>
+            <p>Enterprise-Grade Sustainability Analytics</p>
+        </header>
+        
+        <div class="audit-interface">
+            <div class="input-group">
+                <select id="brandSelect">
+                    <option value="">Select Company</option>
+                    <option value="tesla">Tesla</option>
+                    <option value="bp">BP</option>
+                    <option value="samsung">Samsung</option>
+                    <option value="apple">Apple</option>
+                    <option value="microsoft">Microsoft</option>
+                </select>
+                <select id="benchmark">
+                    <option value="big4">Compare with Big 4</option>
+                    <option value="best">Compare with Best Practice</option>
+                </select>
+                <button onclick="runAudit()">Run Comprehensive Audit</button>
+            </div>
+            
+            <div id="results" class="results"></div>
+        </div>
+    </div>
 
-  <div>
-    <select id="brandSelect">
-      <option value="">-- Select Brand --</option>
-      <option value="tesla">Tesla</option>
-      <option value="bp">BP</option>
-      <option value="samsung">Samsung</option>
-      <option value="apple">Apple</option>
-      <option value="microsoft">Microsoft</option>
-    </select>
-    <button onclick="runAudit()">Run Audit</button>
-  </div>
-
-  <div id="results"></div>
-
-  <script src="calculator.js"></script>
+    <script src="calculator.js"></script>
 </body>
-</html>
+  </html>
