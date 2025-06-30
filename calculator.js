@@ -93,9 +93,65 @@ const companiesData = {
   }
 };
 
-// Function to display data on the HTML page
+// Helper function to format keys nicely (e.g., 'scope1_2_total_market_based_2023' -> 'Scope 1 2 Total Market Based 2023')
+function formatKey(key) {
+    // Replace underscores with spaces, then capitalize the first letter of each word
+    return key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+}
+
+// Recursive function to build HTML list for nested objects and arrays
+function buildList(data) {
+    let listHtml = '<ul>';
+    for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+            const value = data[key];
+            listHtml += `<li><strong>${formatKey(key)}:</strong> `;
+
+            if (typeof value === 'string' && value.startsWith('http')) {
+                // Handle URLs
+                listHtml += `<a href="${value}" target="_blank">Link to Source</a>`;
+            } else if (typeof value === 'object' && value !== null) {
+                if (Array.isArray(value)) {
+                    // Handle arrays, specifically for 'errors'
+                    listHtml += '<ul>';
+                    value.forEach(item => {
+                        listHtml += `<li>`;
+                        if (item.issue) { // For error objects
+                            listHtml += `Issue: ${item.issue}`;
+                            if (item.source && item.source.url && typeof item.source.url === 'string' && item.source.url.startsWith('http')) {
+                                listHtml += ` (Source: ${item.source.label} - <a href="${item.source.url}" target="_blank">Link</a>)`;
+                            } else if (item.source && item.source.label) {
+                                listHtml += ` (Source: ${item.source.label})`;
+                            }
+                        } else { // Generic array item
+                            listHtml += JSON.stringify(item); // Fallback for other array items
+                        }
+                        listHtml += `</li>`;
+                    });
+                    listHtml += '</ul>';
+                } else {
+                    // Handle nested objects
+                    listHtml += buildList(value);
+                }
+            } else {
+                // Handle primitive values (numbers, strings, booleans, null)
+                listHtml += (value === null || value === undefined) ? 'N/A' : value;
+            }
+            listHtml += '</li>';
+        }
+    }
+    listHtml += '</ul>';
+    return listHtml;
+}
+
+// Main function to display all company data
 function displayCompanyData() {
   const container = document.getElementById('companies-data');
+  if (!container) {
+      console.error("Error: HTML element with ID 'companies-data' not found. Make sure it exists in calculator.html.");
+      return; // Stop execution if container is not found
+  }
+
   for (const companyName in companiesData) {
     if (companiesData.hasOwnProperty(companyName)) {
       const company = companiesData[companyName];
@@ -106,36 +162,22 @@ function displayCompanyData() {
       htmlContent += `<h3>Carbon Data:</h3>`;
       htmlContent += `<ul>`;
 
-      for (const key in company.carbon) {
-        if (company.carbon.hasOwnProperty(key)) {
-          if (key === 'big4') {
-            htmlContent += `<li><strong>Assurance Details (Big 4 / Official):</strong><ul>`;
-            for (const big4Key in company.carbon.big4) {
-              if (company.carbon.big4.hasOwnProperty(big4Key)) {
-                if (big4Key === 'source' && typeof company.carbon.big4[big4Key] === 'string' && company.carbon.big4[big4Key].startsWith('http')) {
-                  htmlContent += `<li>${big4Key.replace(/_/g, ' ')}: <a href="${company.carbon.big4[big4Key]}" target="_blank">Link to Source</a></li>`;
-                } else {
-                  htmlContent += `<li>${big4Key.replace(/_/g, ' ')}: ${JSON.stringify(company.carbon.big4[big4Key])}</li>`;
-                }
-              }
-            }
-            htmlContent += `</ul></li>`;
-          } else if (key === 'errors') {
-            htmlContent += `<li><strong>Errors/Notes:</strong><ul>`;
-            company.carbon.errors.forEach(error => {
-              htmlContent += `<li>Issue: ${error.issue}`;
-              if (error.source && error.source.url && typeof error.source.url === 'string' && error.source.url.startsWith('http')) {
-                htmlContent += ` (Source: ${error.source.label} - <a href="${error.source.url}" target="_blank">Link</a>)`;
-              } else if (error.source && error.source.label) {
-                 htmlContent += ` (Source: ${error.source.label})`;
-              }
-              htmlContent += `</li>`;
-            });
-            htmlContent += `</ul></li>`;
-          } else if (typeof company.carbon[key] !== 'object' || company.carbon[key] === null) { // Simple display for non-object, non-null values
-            htmlContent += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${JSON.stringify(company.carbon[key])}</li>`;
-          } else if (Array.isArray(company.carbon[key])) { // For arrays like errors, though already handled above
-             htmlContent += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${JSON.stringify(company.carbon[key])}</li>`;
+      for (const carbonKey in company.carbon) {
+        if (company.carbon.hasOwnProperty(carbonKey)) {
+          const carbonValue = company.carbon[carbonKey];
+
+          // Special handling for 'big4' and 'errors' objects
+          if (carbonKey === 'big4') {
+            htmlContent += `<li><strong>Assurance Details (Big 4 / Official):</strong>${buildList(carbonValue)}</li>`;
+          } else if (carbonKey === 'errors') {
+            htmlContent += `<li><strong>Errors/Notes:</strong>${buildList(carbonValue)}</li>`;
+          }
+          // For all other top-level carbon properties (scope1, scope2, scope3, etc.)
+          else if (typeof carbonValue !== 'object' || carbonValue === null) {
+            htmlContent += `<li><strong>${formatKey(carbonKey)}:</strong> ${carbonValue !== null ? carbonValue : 'N/A'}</li>`;
+          } else {
+              // Fallback for any unexpected nested objects directly under carbon (shouldn't happen with current data, but for robustness)
+              htmlContent += `<li><strong>${formatKey(carbonKey)}:</strong> ${buildList(carbonValue)}</li>`;
           }
         }
       }
@@ -146,4 +188,5 @@ function displayCompanyData() {
   }
 }
 
+// Ensure the function runs after the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', displayCompanyData);
