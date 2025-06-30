@@ -1,173 +1,149 @@
-// Brand Data (Verified)
-const brandData = {
-    bp: {
-        carbon: {
-            scope1: 31.1,
-            scope2: 1.0,
-            scope3: 314.9,
-            big4: {
-                scope1: 31.1,
-                scope2: 1.0,
-                scope3: null,
-                source: "https://www.bp.com",
-                assurance: "Deloitte (Scope 1-2)"
-            },
-            errors: [{
-                issue: "Scope 1 emissions rose 7% in 2023 due to new oil projects",
-                source: { label: "Reuters", url: "https://reuters.com" }
-            }]
+const companiesData = {
+  "tesla": {
+    "carbon": {
+      "scope1": 211000,
+      "scope2": 466000,
+      "scope3": 49354000,
+      "errors": [
+        {
+          "issue": "Scope 2 uses grid-average factors (location-based), potential under-/over-estimation compared to market-based method",
+          "source": {
+            "label": "Tesla 2023 Impact Report, GHG Emissions Disclosure (Methodology discussion, p.158)",
+            "url": "https://googleusercontent.com/drive/folders/1tA1R9w-xP-kE-yB4Yq8X_L6Z8_B0_p3z"
+          }
         }
-    },
-    tesla: {
-        carbon: {
-            scope1: 211000,
-            scope2: 466000,
-            scope3: 49354000,
-            big4: {
-                scope1: 211000,
-                scope2: 466000,
-                scope3: 49354000,
-                source: "https://www.tesla.com",
-                assurance: "Company Verified"
-            },
-            errors: [{
-                issue: "Scope 2 uses grid-average factors (potential variance)",
-                source: { label: "Tesla Report", url: "https://tesla.com" }
-            }]
-        }
-    },
-    samsung: {
-        carbon: {
-            scope1: 5.972,
-            scope2: 9.081,
-            scope3: 123.0,
-            big4: {
-                scope1: 5.972,
-                scope2: 9.081,
-                scope3: 123.0,
-                source: "https://www.samsung.com",
-                assurance: "KFQ Verified"
-            },
-            errors: []
-        }
-    },
-    apple: {
-        carbon: {
-            scope1: 55200,
-            scope2: 3400,
-            scope3: 15982800,
-            big4: {
-                scope1: 55200,
-                scope2: 3400,
-                scope3: null,
-                source: "https://www.apple.com",
-                assurance: "Apex (Partial)"
-            },
-            errors: [{
-                issue: "Scope 3 uses industry-average data (~15% uncertainty)",
-                source: { label: "Apple Report", url: "https://apple.com" }
-            }]
-        }
-    },
-    microsoft: {
-        carbon: {
-            scope1: 144960,
-            scope2: 393134,
-            scope3: 16475520,
-            big4: {
-                scope1: 144960,
-                scope2: 393134,
-                scope3: 14819000,
-                source: "https://www.microsoft.com",
-                assurance: "Company Verified"
-            },
-            errors: []
-        }
+      ],
+      "big4": {
+        "scope1": 211000,
+        "scope2": 466000,
+        "scope3": 49354000,
+        "source": "https://googleusercontent.com/drive/folders/1tA1R9w-xP-kE-yB4Yq8X_L6Z8_B0_p3z",
+        "assurance": "Official Company Asserted (No Independent External Assurance Disclosed)"
+      }
     }
+  },
+  "bp": {
+    "carbon": {
+      "scope1": 31.1,
+      "scope2": 1.0,
+      "scope3": 314.9,
+      "big4": {
+        "scope1": 31.1,
+        "scope2": 1.0,
+        "scope3": null,
+        "source": "https://www.bp.com/content/dam/bp/business-sites/en/global/corporate/pdfs/sustainability/group-reports/bp-esg-datasheet-2024.pdf",
+        "assurance": "Deloitte (Limited Assurance for Scope 1 & 2 Operational Control)"
+      }
+    }
+  },
+  "samsung": {
+    "carbon": {
+      "scope1": 5.972,
+      "scope2": 9.081,
+      "scope3": 123.0,
+      "big4": {
+        "scope1": 5.972,
+        "scope2": 9.081,
+        "scope3": 123.0,
+        "source": "https://googleusercontent.com/drive/folders/1tA1R9w-xP-kE-yB4Yq8X_L6Z8_B0_p3z",
+        "assurance": "KFQ (Korean Foundation for Quality)"
+      }
+    }
+  },
+  "Apple": {
+    "carbon": {
+      "scope1": 55200,
+      "scope2": 3400,
+      "scope3": 15982800,
+      "reduction_since_2015": ">55%",
+      "errors": [
+        {
+          "issue": "Scope 3 uses industry-average data (potential uncertainty from methodology)",
+          "source": {
+            "label": "Apple Environmental Progress Report 2024, Appendix B: Apple's life cycle assessment methodology (p.94)",
+            "url": "https://googleusercontent.com/drive/folders/1tA1R9w-xP-kE-yB4Yq8X_L6Z8_B0_p3z"
+          }
+        }
+      ],
+      "big4": {
+        "scope1": 55200,
+        "scope2": 3400,
+        "scope3": null,
+        "source": "https://googleusercontent.com/drive/folders/1tA1R9w-xP-kE-yB4Yq8X_L6Z8_B0_p3z",
+        "assurance": "Apex Companies, LLC (Partial Scope 3, major parts by 'another third-party')"
+      }
+    }
+  },
+  "microsoft": {
+    "carbon": {
+      "scope1": 144960,
+      "scope2": 393134,
+      "scope3": 14819000,
+      "scope1_2_reduction_since_2020": "6.3%",
+      "scope3_increase_since_2020": "30.9%",
+      "scope3_percent_of_total_footprint": ">96%",
+      "big4": {
+        "scope1": 144960,
+        "scope2": 393134,
+        "scope3": 14819000,
+        "source": "https://googleusercontent.com/drive/folders/1tA1R9w-xP-kE-yB4Yq8X_L6Z8_B0_p3z",
+        "assurance": "Official Company Verified (Signed by CSO & Board)"
+      }
+    }
+  }
 };
 
-// DOM Elements
-const brandSelect = document.getElementById('brandSelect');
-const auditButton = document.getElementById('auditButton');
-const resultsDiv = document.getElementById('results');
+// Function to display data on the HTML page
+function displayCompanyData() {
+  const container = document.getElementById('companies-data');
+  for (const companyName in companiesData) {
+    if (companiesData.hasOwnProperty(companyName)) {
+      const company = companiesData[companyName];
+      const companyDiv = document.createElement('div');
+      companyDiv.className = 'company-card';
 
-// Main Function
-function runAudit() {
-    const brand = brandSelect.value;
-    
-    // Validate selection
-    if (!brand) {
-        alert("Please select a brand");
-        return;
-    }
-    
-    // Show loading state
-    resultsDiv.innerHTML = "<div class='loading'>Processing audit...</div>";
-    resultsDiv.style.display = 'block';
-    
-    // Simulate processing delay
-    setTimeout(() => {
-        try {
-            const data = brandData[brand].carbon;
-            const big4 = data.big4;
-            
-            // Generate HTML
-            let html = `
-                <h2>${brand.charAt(0).toUpperCase() + brand.slice(1)} Carbon Audit</h2>
-                <p><strong>Data Source:</strong> ${big4.assurance}</p>
-                
-                <table>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Reported Value</th>
-                        <th>AIOXY Value</th>
-                    </tr>
-                    <tr>
-                        <td>Scope 1</td>
-                        <td>${big4.scope1 || 'Not assured'} ${big4.scope1 ? 'MT' : ''}</td>
-                        <td>${data.scope1} MT</td>
-                    </tr>
-                    <tr>
-                        <td>Scope 2</td>
-                        <td>${big4.scope2 || 'Not assured'} ${big4.scope2 ? 'MT' : ''}</td>
-                        <td>${data.scope2} MT</td>
-                    </tr>
-                    <tr>
-                        <td>Scope 3</td>
-                        <td>${big4.scope3 !== null ? big4.scope3 + ' MT' : 'Not assured'}</td>
-                        <td>${data.scope3} MT</td>
-                    </tr>
-                </table>
-            `;
-            
-            // Add findings if available
-            if (data.errors.length > 0) {
-                html += `<h3>Key Findings</h3><ul>`;
-                data.errors.forEach(error => {
-                    html += `<li>${error.issue} <a href="${error.source.url}" class="source-link" target="_blank">[Source]</a></li>`;
-                });
-                html += `</ul>`;
+      let htmlContent = `<h2>${companyName.toUpperCase()}</h2>`;
+      htmlContent += `<h3>Carbon Data:</h3>`;
+      htmlContent += `<ul>`;
+
+      for (const key in company.carbon) {
+        if (company.carbon.hasOwnProperty(key)) {
+          if (key === 'big4') {
+            htmlContent += `<li><strong>Assurance Details (Big 4 / Official):</strong><ul>`;
+            for (const big4Key in company.carbon.big4) {
+              if (company.carbon.big4.hasOwnProperty(big4Key)) {
+                if (big4Key === 'source' && typeof company.carbon.big4[big4Key] === 'string' && company.carbon.big4[big4Key].startsWith('http')) {
+                  htmlContent += `<li>${big4Key.replace(/_/g, ' ')}: <a href="${company.carbon.big4[big4Key]}" target="_blank">Link to Source</a></li>`;
+                } else {
+                  htmlContent += `<li>${big4Key.replace(/_/g, ' ')}: ${JSON.stringify(company.carbon.big4[big4Key])}</li>`;
+                }
+              }
             }
-            
-            // Add CTA
-            html += `
-                <div style="margin-top: 30px; text-align: center;">
-                    <button style="padding: 10px 20px;">Get Full Report ($200)</button>
-                    <p style="font-size: 0.9em; margin-top: 10px;">Same audit Big 4 charges $100K+</p>
-                </div>
-            `;
-            
-            resultsDiv.innerHTML = html;
-            
-        } catch (error) {
-            console.error("Audit failed:", error);
-            resultsDiv.innerHTML = `<p class="risk">Error: Could not process audit. Please try again.</p>`;
+            htmlContent += `</ul></li>`;
+          } else if (key === 'errors') {
+            htmlContent += `<li><strong>Errors/Notes:</strong><ul>`;
+            company.carbon.errors.forEach(error => {
+              htmlContent += `<li>Issue: ${error.issue}`;
+              if (error.source && error.source.url && typeof error.source.url === 'string' && error.source.url.startsWith('http')) {
+                htmlContent += ` (Source: ${error.source.label} - <a href="${error.source.url}" target="_blank">Link</a>)`;
+              } else if (error.source && error.source.label) {
+                 htmlContent += ` (Source: ${error.source.label})`;
+              }
+              htmlContent += `</li>`;
+            });
+            htmlContent += `</ul></li>`;
+          } else if (typeof company.carbon[key] !== 'object' || company.carbon[key] === null) { // Simple display for non-object, non-null values
+            htmlContent += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${JSON.stringify(company.carbon[key])}</li>`;
+          } else if (Array.isArray(company.carbon[key])) { // For arrays like errors, though already handled above
+             htmlContent += `<li><strong>${key.replace(/_/g, ' ')}:</strong> ${JSON.stringify(company.carbon[key])}</li>`;
+          }
         }
-    }, 800); // Simulate processing delay
+      }
+      htmlContent += `</ul>`;
+      companyDiv.innerHTML = htmlContent;
+      container.appendChild(companyDiv);
+    }
+  }
 }
 
-// Event Listeners
-auditButton.addEventListener('click', runAudit);
-
-// Initialize
-console.log("AIOXY Auditor initialized");
+document.addEventListener('DOMContentLoaded', displayCompanyData);
