@@ -207,21 +207,30 @@ function runAudit() {
 }
 
 function generateRow(metric, data, benchmark) {
-  const benchmarkVal = data[benchmark][metric.toLowerCase()] || 0;
+  // Get values (fallback to reported data if benchmark is null)
+  const benchmarkVal = data[benchmark]?.[metric.toLowerCase()] ?? data[metric.toLowerCase()];
   const aioxyVal = data[metric.toLowerCase()];
-  const variance = benchmarkVal ? ((aioxyVal - benchmarkVal) / benchmarkVal * 100).toFixed(1) + '%' : 'N/A';
   
+  // Unit handling
+  const unit = metric === 'Scope 3' ? ' MT' : ' tCO2e';
+  
+  // Variance calculation
+  let variance = 'N/A';
+  if (benchmarkVal !== null && benchmarkVal !== undefined && !isNaN(benchmarkVal)) {
+    variance = ((aioxyVal - benchmarkVal) / benchmarkVal * 100).toFixed(1) + '%';
+  }
+
   return `
     <tr>
       <td>${metric}</td>
-      <td>${benchmarkVal ? benchmarkVal + (metric === 'Scope 3' ? ' MT' : ' tCO2e') : 'Not assured'}</td>
-      <td>${aioxyVal} ${metric === 'Scope 3' ? ' MT' : ' tCO2e'}</td>
-      <td class="${benchmarkVal && (aioxyVal > benchmarkVal) ? 'risk-flag' : ''}">
+      <td>${benchmarkVal !== null ? benchmarkVal + unit : 'Not assured'}</td>
+      <td>${aioxyVal}${unit}</td>
+      <td class="${(benchmarkVal < aioxyVal) ? 'risk-flag' : ''}">
         ${variance}
       </td>
     </tr>
   `;
-}
+            }
 
 function bookAudit() {
   window.open("https://linkedin.com/in/tulasipariyar", "_blank");
