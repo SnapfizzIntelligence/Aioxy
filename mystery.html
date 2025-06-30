@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystery Discount Tree</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            color: #2e8b57;
+            margin-bottom: 30px;
+        }
+        
+        .tree {
+            width: 250px;
+            height: 350px;
+            position: relative;
+            margin: 0 auto 30px;
+        }
+        
+        .trunk {
+            width: 40px;
+            height: 100px;
+            background-color: #8B4513;
+            margin: 0 auto;
+            border-radius: 5px;
+        }
+        
+        .leaves {
+            width: 200px;
+            height: 250px;
+            background-color: #2e8b57;
+            border-radius: 100px 100px 50px 50px;
+            margin: -20px auto 0;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 30px 10px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .leaf {
+            width: 40px;
+            height: 40px;
+            background-color: #3cb371;
+            border-radius: 50% 0 50% 50%;
+            margin: 5px;
+            cursor: pointer;
+            transform: rotate(-45deg);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .leaf:hover {
+            transform: rotate(-45deg) scale(1.1);
+            background-color: #228B22;
+        }
+        
+        .result {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 300px;
+            margin: 20px auto;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .result h2 {
+            color: #2e8b57;
+            margin-top: 0;
+        }
+        
+        .customer {
+            width: 60px;
+            height: 100px;
+            background-color: #FF69B4;
+            border-radius: 30px 30px 0 0;
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            animation: appear 1s ease;
+        }
+        
+        .customer:after {
+            content: "";
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #FFD700;
+            border-radius: 50%;
+            top: -15px;
+            left: 15px;
+        }
+        
+        .hand {
+            position: absolute;
+            width: 15px;
+            height: 30px;
+            background-color: #FFB6C1;
+            border-radius: 10px;
+            top: 30px;
+            right: -10px;
+            transform-origin: top center;
+            animation: reach 2s infinite;
+        }
+        
+        @keyframes reach {
+            0%, 100% { transform: rotate(20deg); }
+            50% { transform: rotate(-10deg); }
+        }
+        
+        @keyframes appear {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .share-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .instagram {
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+        }
+        
+        .tiktok {
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mystery Discount Tree</h1>
+        
+        <div class="tree">
+            <div class="leaves" id="leaves">
+                <!-- Leaves will be added by JavaScript -->
+            </div>
+            <div class="trunk"></div>
+        </div>
+        
+        <div class="customer">
+            <div class="hand"></div>
+        </div>
+        
+        <div class="result" id="result">
+            <h2>Congratulations!</h2>
+            <p id="reward-text">You've unlocked a special reward!</p>
+            <div class="share-buttons">
+                <button class="share-btn instagram">Share on Instagram</button>
+                <button class="share-btn tiktok">Share on TikTok</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create leaves
+        const leavesContainer = document.getElementById('leaves');
+        const resultDiv = document.getElementById('result');
+        const rewardText = document.getElementById('reward-text');
+        
+        const rewards = [
+            "20% OFF your entire purchase!",
+            "A tree will be planted in your name!",
+            "Free gift with your next order!",
+            "15% OFF + free shipping!",
+            "Exclusive member discount for 30 days!"
+        ];
+        
+        // Create 12 leaves
+        for (let i = 0; i < 12; i++) {
+            const leaf = document.createElement('div');
+            leaf.className = 'leaf';
+            leaf.innerHTML = '🍃';
+            leaf.addEventListener('click', () => revealReward(i));
+            leavesContainer.appendChild(leaf);
+        }
+        
+        function revealReward(leafIndex) {
+            // Random reward (or you can assign specific rewards to specific leaves)
+            const randomReward = rewards[Math.floor(Math.random() * rewards.length)];
+            rewardText.textContent = randomReward;
+            
+            // Hide all leaves
+            document.querySelectorAll('.leaf').forEach(leaf => {
+                leaf.style.opacity = '0.3';
+                leaf.style.pointerEvents = 'none';
+            });
+            
+            // Highlight selected leaf
+            const selectedLeaf = document.querySelectorAll('.leaf')[leafIndex];
+            selectedLeaf.style.transform = 'rotate(-45deg) scale(1.5)';
+            selectedLeaf.style.backgroundColor = '#FFD700';
+            selectedLeaf.style.color = '#2e8b57';
+            
+            // Show result
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
