@@ -18,7 +18,7 @@ const brandCarbonData = {
             { 
                 issue: "Scope 3 missing (38% of total footprint)", 
                 severity: "high",
-                source: { label: "BP Report 2023", url: "#" }
+                source: { label: "BP Report 2023", url: "https://www.bp.com/content/dam/bp/business-sites/en/global/corporate/pdfs/sustainability/group-reports/bp-esg-datasheet-2024.pdf" }
             }
         ]
     },
@@ -36,7 +36,7 @@ const brandCarbonData = {
             {
                 issue: "Scope 2 uses grid-average factors",
                 severity: "medium",
-                source: { label: "Tesla Impact Report", url: "#" }
+                source: { label: "Tesla Impact Report", url: "https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf" }
             }
         ]
     },
@@ -54,7 +54,7 @@ const brandCarbonData = {
             {
                 issue: "Semiconductor PFC emissions underreported",
                 severity: "high",
-                source: { label: "Greenpeace", url: "#" }
+                source: { label: "Greenpeace", url: "https://share.google/MEJsrPm3trNTmaS5d" }
             }
         ]
     },
@@ -72,7 +72,7 @@ const brandCarbonData = {
             {
                 issue: "Scope 3 uses industry averages",
                 severity: "medium",
-                source: { label: "Apple CDP Report", url: "#" }
+                source: { label: "Apple CDP Report", url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf" }
             }
         ]
     },
@@ -84,13 +84,13 @@ const brandCarbonData = {
             scope1: 144960,
             scope2: 393134,
             scope3: 14819000,
-            assurance: "PwC (Full verification)"
+            assurance: "Official Company Verified (Signed by CSO & Board)"
         },
         errors: [
             {
                 issue: "Cloud methodology unclear",
                 severity: "low",
-                source: { label: "MSFT Report", url: "#" }
+                source: { label: "MSFT Report", url: "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/final/en-us/microsoft-brand/documents/RW1p01M.pdf" }
             }
         ]
     }
