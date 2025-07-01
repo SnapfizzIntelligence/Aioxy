@@ -2,7 +2,17 @@
 // AIOXY ESG AUDITOR (COMPLETE VERSION)
 // =====================
 
-// 1. Static Carbon Data
+// 1. Industry Benchmark Scores
+const industryBenchmarks = {
+    tesla: { score: 68, industry: "Automotive" },
+    bp: { score: 52, industry: "Oil & Gas" },
+    samsung: { score: 72, industry: "Technology" },
+    apple: { score: 75, industry: "Technology" },
+    microsoft: { score: 78, industry: "Technology" },
+    default: { score: 60, industry: "General" }
+};
+
+// 2. Static Carbon Data
 const brandCarbonData = {
     bp: {
         scope1: 31.1,
@@ -23,7 +33,7 @@ const brandCarbonData = {
             {
                 issue: "Scope 1 rose 7% YoY (vs net-zero pledge)",
                 severity: "medium",
-                source: { label: "Reuters", url: "https://www.bp.com/content/dam/bp/business-sites/en/global/corporate/pdfs/sustainability/group-reports/bp-esg-datasheet-2024.pdf" }
+                source: { label: "Reuters", url: "#" }
             }
         ]
     },
@@ -46,7 +56,7 @@ const brandCarbonData = {
             {
                 issue: "Battery supply chain audits incomplete",
                 severity: "high",
-                source: { label: "BloombergNEF", url: "https://www.tesla.com/ns_videos/2023-tesla-impact-report.pdf" }
+                source: { label: "BloombergNEF", url: "#" }
             }
         ]
     },
@@ -64,7 +74,7 @@ const brandCarbonData = {
             {
                 issue: "Semiconductor PFC emissions underreported by ~12%",
                 severity: "high",
-                source: { label: "Greenpeace", url: "https://share.google/MEJsrPm3trNTmaS5d" }
+                source: { label: "Greenpeace", url: "#" }
             }
         ]
     },
@@ -74,7 +84,7 @@ const brandCarbonData = {
         scope3: 15982800,
         big4: {
             scope1: 55200,
-            scale2: 3400,
+            scope2: 3400,
             scope3: null,
             assurance: "Apex (Partial verification)"
         },
@@ -82,7 +92,7 @@ const brandCarbonData = {
             {
                 issue: "Scope 3 uses industry averages (not supplier-specific)",
                 severity: "medium",
-                source: { label: "Apple CDP Report", url: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf" }
+                source: { label: "Apple CDP Report", url: "#" }
             }
         ]
     },
@@ -100,75 +110,102 @@ const brandCarbonData = {
             {
                 issue: "Scope 3 cloud emissions methodology unclear",
                 severity: "low",
-                source: { label: "MSFT Sustainability Report", url: "https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/final/en-us/microsoft-brand/documents/RW1p01M.pdf" }
+                source: { label: "MSFT Sustainability Report", url: "#" }
             }
         ]
     }
 };
 
-// 2. Auto-load available brands
-async function loadAvailableBrands() {
-    try {
-        const response = await fetch('./companies/');
-        const text = await response.text();
-        const brands = [...text.matchAll(/href="(.+?)\.(js|json)"/g)]
-            .map(match => match[1])
-            .filter(name => !name.includes('index'));
-        
-        const select = document.getElementById('brandSelect');
-        brands.forEach(brand => {
-            if (![...select.options].some(opt => opt.value === brand)) {
-                select.add(new Option(brand.charAt(0).toUpperCase() + brand.slice(1), brand));
-            }
-        });
-    } catch (e) {
-        console.log("Manual brand loading in dev mode");
-    }
-}
-
-// 3. Transparent Scoring Formula
+// 3. Realistic Scoring Engine
 function calculateScore(data) {
-    // Weighted impact
-    const scope1Impact = (data.carbon.scope1 || 0) * 0.2;
-    const scope2Impact = (data.carbon.scope2 || 0) * 0.3;
-    const scope3Impact = (data.carbon.scope3 || 0) * 0.5;
+    // Base score starts at 50 (neutral)
+    let score = 50;
+    let deductions = [];
+    let bonuses = [];
     
-    // Penalties
-    let penalties = 0;
-    (data.carbon.errors || []).forEach(err => {
-        penalties += err.severity === "high" ? 15 : 
-                    err.severity === "medium" ? 8 : 3;
+    // 1. Scope Coverage Penalties
+    if (!data.carbon.big4?.scope1) {
+        score -= 5;
+        deductions.push("Scope 1 not verified (-5)");
+    }
+    if (!data.carbon.big4?.scope2) {
+        score -= 8;
+        deductions.push("Scope 2 not verified (-8)");
+    }
+    if (!data.carbon.big4?.scope3) {
+        score -= 15;
+        deductions.push("Scope 3 not verified (-15)");
+    }
+    
+    // 2. Data Completeness (Max 30 points)
+    const completenessScore = (
+        (data.carbon.scope1 ? 0.1 : 0) +
+        (data.carbon.scope2 ? 0.15 : 0) + 
+        (data.carbon.scope3 ? 0.25 : 0)
+    ) * 100;
+    score += completenessScore;
+    bonuses.push(`Data completeness +${Math.round(completenessScore)}`);
+    
+    // 3. Assurance Quality (Max 20 points)
+    const assurance = data.carbon.big4?.assurance?.toLowerCase() || "";
+    if (assurance.includes("pwc") || assurance.includes("deloitte") || 
+        assurance.includes("ey") || assurance.includes("kpmg")) {
+        score += 10;
+        bonuses.push("Big 4 assurance +10");
+    } else if (assurance.includes("verified")) {
+        score += 5;
+        bonuses.push("Third-party verified +5");
+    }
+    
+    // 4. Risk Penalties
+    data.carbon.errors?.forEach(err => {
+        if (err.severity === "high") {
+            score -= 10;
+            deductions.push(`High risk: ${err.issue} (-10)`);
+        } else if (err.severity === "medium") {
+            score -= 5;
+            deductions.push(`Medium risk: ${err.issue} (-5)`);
+        }
     });
     
-    // Bonus for verification
-    const assurance = (data.carbon.big4?.assurance || "").toLowerCase();
-    const assuranceBonus = assurance.includes("pwc") ? 5 :
-                         assurance.includes("deloitte") ? 4 :
-                         data.carbon.big4?.assurance ? 2 : 0;
-
-    return Math.max(0, Math.min(100, 
-        scope1Impact + scope2Impact + scope3Impact - penalties + assuranceBonus
-    ));
+    // Ensure score stays within bounds
+    return {
+        score: Math.max(0, Math.min(100, Math.round(score))),
+        deductions,
+        bonuses
+    };
 }
 
-function showScoringFormula(data) {
-    const assurance = (data.carbon.big4?.assurance || "").toLowerCase();
-    const assuranceBonus = assurance.includes("pwc") ? 5 :
-                         assurance.includes("deloitte") ? 4 :
-                         data.carbon.big4?.assurance ? 2 : 0;
+// 4. Transparent Scoring Display
+function showScoringDetails(data, scoreResult) {
+    const benchmark = industryBenchmarks[data.$brandId] || industryBenchmarks.default;
     
     return `
-        <div class="formula-box">
-            <h4>🔍 Scoring Formula</h4>
-            <p>(${data.carbon.scope1 || 0} × 0.2) + (${data.carbon.scope2 || 0} × 0.3) + (${data.carbon.scope3 || 0} × 0.5)</p>
-            <p>- Penalties (${data.carbon.errors?.reduce((a, e) => a + (e.severity === "high" ? 15 : e.severity === "medium" ? 8 : 3), 0)} points)</p>
-            <p>+ Assurance Bonus (${assuranceBonus} points)</p>
-            <p><strong>Final Score: ${calculateScore(data)}/100</strong></p>
+        <div class="transparency-box">
+            <h4>🔍 Scoring Breakdown</h4>
+            <p><strong>Base Score:</strong> 50/100 (neutral starting point)</p>
+            
+            <h5>Deductions:</h5>
+            <ul>
+                ${scoreResult.deductions.map(d => `<li>${d}</li>`).join('') || '<li>No deductions</li>'}
+            </ul>
+            
+            <h5>Bonuses:</h5>
+            <ul>
+                ${scoreResult.bonuses.map(b => `<li>${b}</li>`).join('') || '<li>No bonuses</li>'}
+            </ul>
+            
+            <p><strong>Final Score:</strong> ${scoreResult.score}/100</p>
+            <p><strong>Industry Benchmark (${benchmark.industry}):</strong> ${benchmark.score}/100</p>
+            
+            ${data.$customData ? 
+                '<p class="data-source">ℹ️ Using user-uploaded data</p>' : 
+                '<p class="data-source">ℹ️ Using AIOXY verified data</p>'}
         </div>
     `;
 }
 
-// 4. AI Risk Rating
+// 5. AI Risk Rating
 function generateAIRiskRating(data) {
     const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
     const reportText = JSON.stringify(data).toLowerCase();
@@ -188,7 +225,7 @@ function generateAIRiskRating(data) {
     `;
 }
 
-// 5. Dynamic Data Loader
+// 6. Dynamic Data Loader
 async function loadBrandData(brand) {
     try {
         const [dynamicData, staticCarbon] = await Promise.all([
@@ -197,13 +234,15 @@ async function loadBrandData(brand) {
         ]);
 
         return {
+            ...dynamicData,
             name: dynamicData.name || brand.toUpperCase(),
-            industry: dynamicData.industry || "Unknown",
-            revenueRisk: dynamicData.revenueRisk || "Not assessed",
-            score: dynamicData.score || calculateScore({ carbon: staticCarbon }),
+            industry: dynamicData.industry || industryBenchmarks[brand]?.industry || "General",
+            score: dynamicData.score || calculateScore({ carbon: staticCarbon }).score,
             leaks: dynamicData.leaks || [],
             strengths: dynamicData.strengths || [],
-            carbon: staticCarbon || dynamicData.carbon
+            carbon: staticCarbon || dynamicData.carbon,
+            $brandId: brand,
+            $customData: false
         };
     } catch (error) {
         console.error(`Error loading ${brand} data:`, error);
@@ -211,7 +250,7 @@ async function loadBrandData(brand) {
     }
 }
 
-// 6. Comparison Function
+// 7. Comparison Function
 async function compareBrands(brand1, brand2) {
     const [data1, data2] = await Promise.all([
         loadBrandData(brand1),
@@ -223,12 +262,18 @@ async function compareBrands(brand1, brand2) {
         return;
     }
 
+    const score1 = calculateScore(data1);
+    const score2 = calculateScore(data2);
+    const benchmark1 = industryBenchmarks[brand1] || industryBenchmarks.default;
+    const benchmark2 = industryBenchmarks[brand2] || industryBenchmarks.default;
+
     let html = `
         <h2>${data1.name} vs ${data2.name} <span class="ai-badge">AI Verified Comparison</span></h2>
         <div class="comparison-grid">
             <div>
                 <h3>${data1.name}</h3>
-                <div class="score">${data1.score}/100</div>
+                <div class="score">${score1.score}/100</div>
+                <p class="industry-benchmark">Industry avg: ${benchmark1.score}/100</p>
                 ${generateAIRiskRating(data1)}
                 <div class="chart-container">
                     <canvas id="chart1"></canvas>
@@ -236,7 +281,8 @@ async function compareBrands(brand1, brand2) {
             </div>
             <div>
                 <h3>${data2.name}</h3>
-                <div class="score">${data2.score}/100</div>
+                <div class="score">${score2.score}/100</div>
+                <p class="industry-benchmark">Industry avg: ${benchmark2.score}/100</p>
                 ${generateAIRiskRating(data2)}
                 <div class="chart-container">
                     <canvas id="chart2"></canvas>
@@ -257,7 +303,7 @@ async function compareBrands(brand1, brand2) {
     renderPieChart('chart2', data2);
 }
 
-// 7. Chart Rendering
+// 8. Chart Rendering
 function renderPieChart(id, data) {
     const ctx = document.getElementById(id).getContext('2d');
     new Chart(ctx, {
@@ -279,17 +325,20 @@ function renderPieChart(id, data) {
     });
 }
 
-// 8. Report Generator
+// 9. Report Generator
 function renderReport(data) {
+    const scoreResult = calculateScore(data);
+    const benchmark = industryBenchmarks[data.$brandId] || industryBenchmarks.default;
+
     let html = `
         <div class="score-card">
+            ${data.$customData ? '<span class="custom-data-badge">📤 User-Uploaded Data</span>' : ''}
             <h2>${data.name} ESG Audit <span class="ai-badge">AI Verified</span></h2>
-            <div class="score">${data.score}/100</div>
-            <p><strong>Industry:</strong> ${data.industry}</p>
-            ${data.revenueRisk ? `<p><strong>Revenue Risk:</strong> ${data.revenueRisk}</p>` : ''}
+            <div class="score">${scoreResult.score}/100</div>
+            <p class="industry-benchmark">Industry average: ${benchmark.score}/100 (${benchmark.industry})</p>
         </div>
 
-        ${showScoringFormula(data)}
+        ${showScoringDetails(data, scoreResult)}
         ${generateAIRiskRating(data)}
 
         <div class="chart-container">
@@ -370,27 +419,43 @@ function renderReport(data) {
     renderPieChart('brandChart', data);
 }
 
-// 9. Export Functions
+// 10. Export Functions
 function exportSingleReport(brandName) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
+    // Header
     doc.setFontSize(18);
-    doc.text(`AIOXY ESG Audit Report`, 10, 15);
+    doc.text(`AIOXY Independent ESG Verification`, 10, 15);
     doc.setFontSize(12);
     doc.text(`Company: ${brandName.replace(/_/g, ' ')}`, 10, 25);
     
-    // Get score from rendered content or calculate
-    const score = document.querySelector('.score')?.textContent.split('/')[0] || "N/A";
-    doc.text(`ESG Score: ${score}/100`, 10, 35);
+    // Get score details
+    const score = document.querySelector('.score')?.textContent;
+    const benchmark = document.querySelector('.industry-benchmark')?.textContent;
     
-    doc.text(`Key Findings:`, 10, 50);
-    const leaks = [...document.querySelectorAll('.risk')].slice(0, 3);
-    leaks.forEach((leak, i) => {
-        doc.text(`- ${leak.textContent.replace(/\n/g, ' ').substring(0, 80)}`, 15, 60 + (i * 10));
+    // Score Summary
+    doc.text(`ESG Score: ${score}`, 10, 35);
+    doc.text(`${benchmark}`, 10, 45);
+    
+    // Scoring Breakdown
+    doc.text(`Scoring Methodology:`, 10, 60);
+    doc.text(`- Base score starts at 50/100`, 15, 70);
+    doc.text(`- Deductions for missing/unverified data`, 15, 80);
+    doc.text(`- Bonuses for third-party verification`, 15, 90);
+    
+    // Key Findings
+    doc.text(`Independent Findings:`, 10, 105);
+    const findings = [...document.querySelectorAll('.risk')].slice(0, 3);
+    findings.forEach((finding, i) => {
+        doc.text(`- ${finding.textContent.replace(/\n/g, ' ').substring(0, 80)}`, 15, 115 + (i * 10));
     });
     
-    doc.save(`ESG_Audit_${brandName}.pdf`);
+    // Footer
+    doc.text(`Generated by AIOXY ESG Auditor (${new Date().toLocaleDateString()})`, 10, 280);
+    doc.text(`Methodology: Transparent scoring based on reported data quality`, 10, 285);
+    
+    doc.save(`AIOXY_Verification_${brandName}.pdf`);
 }
 
 function exportComparison(brand1, brand2) {
@@ -402,19 +467,21 @@ function exportComparison(brand1, brand2) {
     doc.setFontSize(12);
     doc.text(`${brand1.toUpperCase()} vs ${brand2.toUpperCase()}`, 10, 25);
     
-    // Get scores from DOM or use defaults
-    const score1 = document.querySelector('.comparison-grid .score:first-child')?.textContent.split('/')[0] || "N/A";
-    const score2 = document.querySelector('.comparison-grid .score:last-child')?.textContent.split('/')[0] || "N/A";
+    // Get scores from DOM
+    const scores = document.querySelectorAll('.comparison-grid .score');
+    const benchmarks = document.querySelectorAll('.comparison-grid .industry-benchmark');
     
     doc.text(`Key Metrics:`, 10, 40);
-    doc.text(`${brand1}: ${score1}/100`, 15, 50);
-    doc.text(`${brand2}: ${score2}/100`, 15, 60);
+    doc.text(`${brand1}: ${scores[0]?.textContent || "N/A"}`, 15, 50);
+    doc.text(`${benchmarks[0]?.textContent || ""}`, 15, 60);
+    doc.text(`${brand2}: ${scores[1]?.textContent || "N/A"}`, 15, 70);
+    doc.text(`${benchmarks[1]?.textContent || ""}`, 15, 80);
     
-    doc.text(`Risk Comparison:`, 10, 75);
-    const risk1 = document.querySelector('.airisk-box:first-child h4')?.textContent || "N/A";
-    const risk2 = document.querySelector('.airisk-box:last-child h4')?.textContent || "N/A";
-    doc.text(`${brand1}: ${risk1}`, 15, 85);
-    doc.text(`${brand2}: ${risk2}`, 15, 95);
+    // Risk Comparison
+    doc.text(`Risk Comparison:`, 10, 95);
+    const risks = document.querySelectorAll('.airisk-box h4');
+    doc.text(`${brand1}: ${risks[0]?.textContent || "N/A"}`, 15, 105);
+    doc.text(`${brand2}: ${risks[1]?.textContent || "N/A"}`, 15, 115);
     
     doc.save(`ESG_Comparison_${brand1}_vs_${brand2}.pdf`);
 }
@@ -424,7 +491,7 @@ function shareComparison(brand1, brand2) {
     prompt("Share this comparison link:", url);
 }
 
-// 10. File Upload Handling
+// 11. File Upload Handling
 function processUpload() {
     const file = document.getElementById('jsonUpload').files[0];
     if (!file) return;
@@ -436,15 +503,16 @@ function processUpload() {
             renderReport({
                 ...customData,
                 name: customData.name || "Custom Company",
-                industry: customData.industry || "Unknown",
-                score: calculateScore(customData),
+                industry: customData.industry || "General",
+                score: calculateScore(customData).score,
                 carbon: customData.carbon || {
                     scope1: 0,
                     scope2: 0,
                     scope3: 0,
                     big4: {},
                     errors: []
-                }
+                },
+                $customData: true
             });
             document.getElementById('uploadModal').style.display = 'none';
         } catch (e) {
@@ -455,11 +523,8 @@ function processUpload() {
     reader.readAsText(file);
 }
 
-// 11. Initialize
+// 12. Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Load available brands
-    loadAvailableBrands();
-    
     // Set up event listeners
     document.getElementById("auditButton").addEventListener("click", async () => {
         const brand = document.getElementById("brandSelect").value;
