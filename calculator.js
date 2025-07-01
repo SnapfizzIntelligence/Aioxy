@@ -142,15 +142,19 @@ const brandCarbonData = {
     }
 };
 
-// 3. UPDATED SCORING ENGINE (WEIGHTED MODEL)
+// =====================
+// AIOXY ESG SCORING ENGINE v2.0 (UNDENIABLE MODEL)
+// =====================
+
 function calculateScore(data) {
-    // Start with perfect score (100)
+    // 🔴 Core Principle: Scores always out of 100, with risk caps CLEARLY marked
     let score = 100;
     let deductions = [];
     let bonuses = [];
-    let maxPossible = 100;
-    
-    // 1. Verification Penalties (Weighted)
+    let riskRating = getRiskRating(data);
+    let maxPossible = 100; // Default (Low Risk)
+
+    // 1️⃣ VERIFICATION PENALTIES (FIXED WEIGHTS)
     if (!data.carbon.big4?.scope1) {
         score -= 5;
         deductions.push("Scope 1 unverified (-5)");
@@ -161,132 +165,164 @@ function calculateScore(data) {
     }
     if (!data.carbon.big4?.scope3) {
         score -= 20;
-        deductions.push("Scope 3 unverified (-20)");
+        deductions.push("Scope 3 unverified (-20) → Major red flag");
     }
-    
-    // 2. Material ESG Leaks (All count as -10)
+
+    // 2️⃣ MATERIAL ESG LEAKS (ZERO TOLERANCE)
     data.carbon.errors?.forEach(err => {
         if (err.severity === "high" || err.severity === "medium") {
             score -= 10;
-            deductions.push(`Material ESG leak: ${err.issue} (-10)`);
+            deductions.push(`Material ESG leak: "${err.issue}" (-10)`);
         }
     });
+
+    // 3️⃣ BIG4 BONUSES (REWARD TRANSPARENCY)
+    const assurance = data.carbon.big4?.assurance?.toLowerCase() || "";
+    const isBig4 = /pwc|deloitte|ey|kpmg/.test(assurance);
     
-    // 3. AI Risk Rating Caps
-    const riskRating = getRiskRating(data);
+    [1, 2, 3].forEach(scope => {
+        if (data.carbon.big4?.[`scope${scope}`] && isBig4) {
+            score += 2;
+            bonuses.push(`Scope ${scope} Big4 verified (+2)`);
+        }
+    });
+
+    // 4️⃣ RISK CAPS (HARD LIMITS)
     if (riskRating === "🟠 Medium") {
         maxPossible = 80;
-        deductions.push("AI Risk Rating: Medium (capped at 80)");
+        deductions.push("AI Risk Rating: Medium → Max possible = 80");
     } 
     else if (riskRating === "🔴 High") {
         maxPossible = 65;
-        deductions.push("AI Risk Rating: High (capped at 65)");
+        deductions.push("AI Risk Rating: High → Max possible = 65");
     }
-    
-    // 4. Big4 Bonuses (kept for compatibility)
-    const assurance = data.carbon.big4?.assurance?.toLowerCase() || "";
-    const isBig4 = assurance.includes("pwc") || assurance.includes("deloitte") || 
-                  assurance.includes("ey") || assurance.includes("kpmg");
-    
-    if (data.carbon.big4?.scope1 && isBig4) {
-        score += 2;
-        bonuses.push("Scope 1 Big 4 verified (+2)");
-    }
-    if (data.carbon.big4?.scope2 && isBig4) {
-        score += 2;
-        bonuses.push("Scope 2 Big 4 verified (+2)");
-    }
-    if (data.carbon.big4?.scope3 && isBig4) {
-        score += 2;
-        bonuses.push("Scope 3 Big 4 verified (+2)");
-    }
-    
-    // Apply final score within bounds
-    const finalScore = Math.max(0, Math.min(maxPossible, Math.round(score)));
-    
+
+    // ✅ FINAL CALCULATION (IRREFUTABLE)
+    const finalScore = Math.max(0, Math.min(
+        maxPossible, // Respect risk cap
+        Math.round(score) // No decimal scores
+    ));
+
     return {
         score: finalScore,
+        maxPossible, // Always 100/80/65
         deductions,
         bonuses,
-        maxPossible,
-        riskRating
+        riskRating,
+        isCapped: finalScore >= maxPossible // Flag for UI
     };
 }
 
-// 4. UPDATED RISK RATING FUNCTIONS
+// =====================
+// TRANSPARENCY TOOLS
+// =====================
+
 function getRiskRating(data) {
-    const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
-    const reportText = JSON.stringify(data).toLowerCase();
-    const foundRisks = keywords.filter(kw => reportText.includes(kw));
+    // 🚨 High-risk keywords (expandable list)
+    const riskKeywords = [
+        "child labor", "corruption", "greenwashing", 
+        "violation", "underreport", "controversy",
+        "lawsuit", "fraud", "exploitation"
+    ];
     
+    const reportText = JSON.stringify(data).toLowerCase();
+    const foundRisks = riskKeywords.filter(kw => reportText.includes(kw));
+    
+    // Clear thresholds:
     return foundRisks.length > 2 ? "🔴 High" : 
            foundRisks.length > 0 ? "🟠 Medium" : "🟢 Low";
 }
 
 function generateAIRiskRating(data) {
-    const riskRating = getRiskRating(data);
+    const { riskRating, isCapped } = calculateScore(data);
     const foundRisks = getRiskKeywords(data);
     
     return `
-        <div class="airisk-box">
+        <div class="airisk-box" style="border-left: 4px solid ${
+            riskRating === "🔴 High" ? "#e74c3c" : 
+            riskRating === "🟠 Medium" ? "#f39c12" : "#2ecc71"
+        }">
             <h4>🤖 AI Risk Rating: ${riskRating}</h4>
             ${riskRating !== "🟢 Low" ? `
-                <p><strong>Score Cap Applied:</strong> ${riskRating === "🟠 Medium" ? "80 (Medium Risk)" : "65 (High Risk)"}</p>
+                <p><strong>${isCapped ? "⛔️ Score Capped" : "⚠️ Potential Cap"}:</strong> 
+                ${riskRating === "🟠 Medium" ? "80" : "65"}/100</p>
             ` : ''}
             ${foundRisks.length ? `
-                <p>Flags detected: ${foundRisks.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}</p>
-                <p>Estimated financial exposure: $${(foundRisks.length * 5000000).toLocaleString()}+</p>
-            ` : '<p>No high-risk patterns detected</p>'}
+                <div class="risk-flags">
+                    <p>🚩 <strong>Flags detected:</strong> ${foundRisks.map(r => 
+                        `<span class="risk-tag">${r.toUpperCase()}</span>`
+                    ).join(' ')}</p>
+                    <p>💸 <strong>Estimated exposure:</strong> $${(
+                        foundRisks.length * 5000000
+                    ).toLocaleString()}+</p>
+                </div>
+            ` : '<p>✅ No high-risk patterns detected</p>'}
         </div>
     `;
 }
 
-function getRiskKeywords(data) {
-    const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
-    const reportText = JSON.stringify(data).toLowerCase();
-    return keywords.filter(kw => reportText.includes(kw));
-}
+// =====================
+// BULLETPROOF DISPLAY
+// =====================
 
-// 5. Transparent Scoring Display (UNCHANGED)
 function showScoringDetails(data, scoreResult) {
     const benchmark = industryBenchmarks[data.$brandId] || industryBenchmarks.default;
-    
+    const isPerfect = scoreResult.score === 100 && scoreResult.maxPossible === 100;
+
     return `
         <div class="transparency-box">
             <h4>🔍 Scoring Breakdown</h4>
             <p><strong>Starting Score:</strong> 100/100 (perfect compliance)</p>
             
-            <h5>Deductions:</h5>
-            <ul>
-                ${scoreResult.deductions.map(d => `<li>${d}</li>`).join('') || '<li>No deductions</li>'}
+            <!-- Deductions -->
+            <h5>${scoreResult.deductions.length ? '⚠️ Deductions' : '✅ No Deductions'}</h5>
+            <ul class="deductions">
+                ${scoreResult.deductions.map(d => `<li>${d}</li>`).join('') || 
+                '<li>All required disclosures verified</li>'}
             </ul>
             
-            <h5>Bonuses:</h5>
-            <ul>
-                ${scoreResult.bonuses.map(b => `<li>${b}</li>`).join('') || '<li>No bonuses</li>'}
+            <!-- Bonuses -->
+            <h5>${scoreResult.bonuses.length ? '✨ Bonuses' : '📉 No Bonuses'}</h5>
+            <ul class="bonuses">
+                ${scoreResult.bonuses.map(b => `<li>${b}</li>`).join('') || 
+                '<li>No third-party verification bonuses</li>'}
             </ul>
             
+            <!-- Final Score -->
             <div class="final-score">
-                <strong>Final Score:</strong> ${scoreResult.score}/${scoreResult.maxPossible || 100}
+                <strong>Final Score:</strong> 
+                <span class="score-value">${scoreResult.score}/${scoreResult.maxPossible}</span>
+                ${scoreResult.maxPossible < 100 ? `
+                    <span class="cap-warning">
+                        (Capped due to ${scoreResult.riskRating} risk)
+                    </span>
+                ` : ''}
+                
+                ${isPerfect ? '<div class="perfect-badge">🏆 Perfect Audit</div>' : ''}
+                
                 <div class="score-bar">
-                    <div style="width:${scoreResult.score}%; background-color:${getScoreColor(scoreResult.score)};"></div>
+                    <div style="
+                        width: ${scoreResult.score}%;
+                        background: ${getScoreColor(scoreResult.score)};
+                        ${scoreResult.isCapped ? 'border-right: 3px dashed #000' : ''}
+                    "></div>
                 </div>
-                <p><strong>Industry Benchmark (${benchmark.industry}):</strong> ${benchmark.score}/100</p>
+                
+                <p class="benchmark">
+                    <strong>Industry Benchmark (${benchmark.industry}):</strong> 
+                    ${benchmark.score}/100
+                    ${scoreResult.score > benchmark.score ? '↑' : '↓'}
+                </p>
             </div>
             
             ${data.$customData ? 
-                '<p class="data-source">ℹ️ Using user-uploaded data</p>' : 
-                `<p class="data-source">ℹ️ Source: <a href="${data.carbon.big4?.source || '#'}" target="_blank" class="source-link">${data.carbon.big4?.source ? 'Original Report' : 'AIOXY Data'}</a></p>`}
+                '<p class="data-source">ℹ️ Using user-uploaded data (not independently verified)</p>' : 
+                `<p class="data-source">📄 Source: <a href="${data.carbon.big4?.source || '#'}" target="_blank">
+                    ${data.carbon.big4?.source ? 'Original Report' : 'AIOXY Database'}
+                </a></p>`}
         </div>
     `;
 }
-
-function getScoreColor(score) {
-    if (score >= 80) return '#2e8b57'; // Green
-    if (score >= 60) return '#f1c40f'; // Yellow
-    return '#e74c3c'; // Red
-}
-
 // 6. Dynamic Data Loader (UNCHANGED)
 async function loadBrandData(brand) {
     try {
