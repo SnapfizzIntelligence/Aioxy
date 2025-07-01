@@ -844,28 +844,16 @@ function getSampleJSON() {
 <!-- Load PDF.js in head -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 */
-// Initialize (UNCHANGED)
+// =====================
+// INITIALIZATION (FIXED)
+// =====================
 document.addEventListener('DOMContentLoaded', () => {
-    // Set up event listeners
-    document.getElementById("auditButton").addEventListener("click", async () => {
-        const brand = document.getElementById("brandSelect").value;
-        if (!brand) return alert("Select a brand first");
-        
-        const data = await loadBrandData(brand);
-        if (data) renderReport(data);
-    });
+    // Set up event listeners PROPERLY
+    document.getElementById("auditButton").addEventListener("click", handleAudit);
+    document.getElementById("compareBtn").addEventListener("click", handleCompare);
+    document.getElementById("uploadBtn").addEventListener("click", handleUpload);
     
-    document.getElementById("compareBtn").addEventListener("click", () => {
-        const brand1 = prompt("Enter first brand (e.g., tesla):");
-        const brand2 = prompt("Enter second brand (e.g., samsung):");
-        if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
-    });
-    
-    document.getElementById("uploadBtn").addEventListener("click", () => {
-        document.getElementById("uploadModal").style.display = "block";
-    });
-    
-    // Check for URL parameters
+    // Check URL parameters
     const params = new URLSearchParams(window.location.search);
     const compare = params.get('compare');
     if (compare) {
@@ -873,3 +861,98 @@ document.addEventListener('DOMContentLoaded', () => {
         if (brand1 && brand2) compareBrands(brand1, brand2);
     }
 });
+
+// =====================
+// BUTTON HANDLERS (NEW)
+// =====================
+async function handleAudit() {
+    const brand = document.getElementById("brandSelect").value;
+    if (!brand) {
+        alert("Please select a brand first");
+        return;
+    }
+    
+    try {
+        const data = await loadBrandData(brand);
+        if (data) {
+            renderReport(data);
+        } else {
+            alert("Failed to load brand data");
+        }
+    } catch (error) {
+        console.error("Audit failed:", error);
+        alert("An error occurred during the audit");
+    }
+}
+
+function handleCompare() {
+    const brand1 = prompt("Enter first brand (e.g., tesla):");
+    const brand2 = prompt("Enter second brand (e.g., samsung):");
+    if (brand1 && brand2) {
+        compareBrands(brand1.trim(), brand2.trim());
+    }
+}
+
+function handleUpload() {
+    document.getElementById("uploadModal").style.display = "block";
+}
+
+// =====================
+// FIXED UPLOAD HANDLER
+// =====================
+async function processUpload() {
+    const fileInput = document.getElementById('jsonUpload');
+    if (!fileInput.files.length) {
+        alert("Please select a file first");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const statusElement = document.getElementById('uploadStatus');
+    
+    try {
+        // Show loading state
+        statusElement.textContent = `Analyzing ${file.name}...`;
+        statusElement.style.display = 'block';
+
+        let result;
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            result = await analyzePDF(file);
+        } else {
+            result = await processJSON(file);
+        }
+
+        // Validate we got at least some data
+        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2)) {
+            throw new Error("No valid emissions data found in the file");
+        }
+
+        // Render results
+        renderReport({
+            ...result,
+            score: calculateScore(result).score,
+            $customData: true,
+            $source: `Uploaded ${file.type === 'application/pdf' ? 'PDF' : 'JSON'}`
+        });
+
+    } catch (e) {
+        alert(`Analysis failed: ${e.message}\n\nSample format:\n${getSampleJSON()}`);
+        console.error("Upload Error:", e);
+    } finally {
+        document.getElementById('uploadModal').style.display = 'none';
+        statusElement.style.display = 'none';
+        fileInput.value = ''; // Reset file input
+    }
+}
+
+// =====================
+// HTML CHANGES NEEDED
+// =====================
+/* 
+Add this to your HTML (if not already present):
+
+<div id="uploadStatus" style="display: none; margin: 10px 0; padding: 10px; background: #f0f0f0;"></div>
+
+And update your file input to:
+<input type="file" id="jsonUpload" accept=".json,.pdf" style="margin-bottom: 10px;" />
+*/
