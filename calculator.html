@@ -246,18 +246,24 @@
     <div id="comparisonResults" class="comparison-mode"></div>
 
     <div id="uploadModal">
-        <div class="modal-content">
-            <h3>📤 Upload Custom ESG Data</h3>
-            <p>Upload a JSON or PDF file:</p>
-            <input type="file" id="fileUpload" accept=".json,.pdf">
-            <div id="uploadStatus"></div>
-            <div class="input-group" style="margin-top:15px;">
-                <button id="uploadSubmitBtn">Generate Report</button>
-                <button id="uploadCancelBtn" class="danger">Cancel</button>
-            </div>
+    <div class="modal-content">
+        <h3>📤 Upload Custom ESG Data</h3>
+        <p>Upload a JSON or PDF file:</p>
+        <input type="file" id="fileUpload" accept=".json,.pdf">
+        <div id="uploadStatus" style="margin: 10px 0; min-height: 40px;"></div>
+        <div class="input-group">
+            <button id="uploadSubmitBtn">Generate Report</button>
+            <button id="uploadCancelBtn" class="danger">Cancel</button>
         </div>
     </div>
+    </div>
 
-    <script src="calculator.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+    // Set up PDF.js before loading our app
+    pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+</script>
+<script src="calculator.js"></script>
 </body>
 </html>
