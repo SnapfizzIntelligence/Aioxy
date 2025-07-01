@@ -833,27 +833,84 @@ function getSampleJSON() {
         strengths: ["100% renewable energy usage"]
     }, null, 2);
 }
+
 // =====================
-// INITIALIZATION (AT BOTTOM OF calculator.js)
+// INITIALIZATION (PUT THIS AT THE VERY BOTTOM)
 // =====================
-document.addEventListener('DOMContentLoaded', () => {
-    // Main button handlers
-    document.getElementById("auditButton").addEventListener("click", handleAudit);
-    document.getElementById("compareBtn").addEventListener("click", handleCompare);
-    document.getElementById("uploadBtn").addEventListener("click", handleUpload);
-    
-    // Modal button handlers
-    document.getElementById("uploadSubmitBtn").addEventListener("click", processUpload);
-    document.getElementById("uploadCancelBtn").addEventListener("click", () => {
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Audit Button
+    document.getElementById('auditButton').addEventListener('click', function() {
+        const brand = document.getElementById('brandSelect').value;
+        if (!brand) {
+            alert('Please select a brand first');
+            return;
+        }
+        loadBrandData(brand).then(renderReport).catch(err => {
+            console.error('Audit failed:', err);
+            alert('Error loading brand data');
+        });
+    });
+
+    // 2. Compare Button
+    document.getElementById('compareBtn').addEventListener('click', function() {
+        const brand1 = prompt('First brand (e.g., tesla):');
+        const brand2 = prompt('Second brand (e.g., apple):');
+        if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
+    });
+
+    // 3. Upload Button
+    document.getElementById('uploadBtn').addEventListener('click', function() {
+        document.getElementById('uploadModal').style.display = 'block';
+    });
+
+    // 4. Modal Buttons
+    document.getElementById('processBtn').addEventListener('click', processUpload);
+    document.getElementById('cancelBtn').addEventListener('click', function() {
         document.getElementById('uploadModal').style.display = 'none';
     });
 
-    // Check URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const compare = params.get('compare');
+    // Check for URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const compare = urlParams.get('compare');
     if (compare) {
-        const [brand1, brand2] = compare.split(',');
-        if (brand1 && brand2) compareBrands(brand1, brand2);
+        const brands = compare.split(',');
+        if (brands.length === 2) compareBrands(brands[0], brands[1]);
     }
 });
 
+// Make sure this is your ONLY processUpload function
+async function processUpload() {
+    const fileInput = document.getElementById('fileUpload');
+    const statusElement = document.getElementById('uploadStatus');
+    
+    if (!fileInput.files.length) {
+        alert('Please select a file first');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    statusElement.textContent = `Processing ${file.name}...`;
+    statusElement.style.display = 'block';
+
+    try {
+        const result = file.name.endsWith('.pdf') 
+            ? await analyzePDF(file) 
+            : await processJSON(file);
+        
+        if (!result.carbon) throw new Error('Invalid ESG data format');
+        
+        renderReport({
+            ...result,
+            score: calculateScore(result).score,
+            $customData: true
+        });
+        
+        document.getElementById('uploadModal').style.display = 'none';
+    } catch (error) {
+        alert(`Error: ${error.message}\n\nSample format:\n${getSampleJSON()}`);
+        console.error('Upload failed:', error);
+    } finally {
+        statusElement.style.display = 'none';
+        fileInput.value = '';
+    }
+    }
