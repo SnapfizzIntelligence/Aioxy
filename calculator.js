@@ -834,69 +834,85 @@ function getSampleJSON() {
     }, null, 2);
 }
 // =====================
-// MOBILE-PROOF INITIALIZATION
+// MOBILE-PROOF INITIALIZATION (FIXED VERSION)
 // =====================
 
 // Wait for full DOM load
-function initApp() {
-    // 1. Audit Button - SIMPLIFIED
-    document.getElementById('auditButton').onclick = function() {
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Audit Button
+    document.getElementById('auditButton').addEventListener('click', function() {
         const brand = document.getElementById('brandSelect').value;
-        if (!brand) return alert('Please select a brand');
-        loadBrandData(brand).then(renderReport);
-    };
+        if (!brand) {
+            alert('Please select a brand');
+            return;
+        }
+        loadBrandData(brand).then(renderReport).catch(error => {
+            console.error('Error loading brand data:', error);
+            alert('Failed to load brand data. Please try again.');
+        });
+    });
 
-    // 2. Compare Button - SIMPLIFIED
-    document.getElementById('compareBtn').onclick = function() {
+    // 2. Compare Button
+    document.getElementById('compareBtn').addEventListener('click', function() {
         const brand1 = prompt('First brand (e.g., tesla):');
         const brand2 = prompt('Second brand (e.g., apple):');
-        if (brand1 && brand2) compareBrands(brand1, brand2);
-    };
+        if (brand1 && brand2) {
+            compareBrands(brand1, brand2);
+        }
+    });
 
-    // 3. Upload Button - SIMPLIFIED
-    document.getElementById('uploadBtn').onclick = function() {
+    // 3. Upload Button
+    document.getElementById('uploadBtn').addEventListener('click', function() {
         document.getElementById('uploadModal').style.display = 'block';
-    };
+    });
 
-    // 4. Modal Buttons - SIMPLIFIED
-    document.getElementById('uploadSubmitBtn').onclick = processUpload;
-    document.getElementById('uploadCancelBtn').onclick = function() {
+    // 4. Modal Buttons
+    document.getElementById('uploadSubmitBtn').addEventListener('click', processUpload);
+    document.getElementById('uploadCancelBtn').addEventListener('click', function() {
         document.getElementById('uploadModal').style.display = 'none';
-    };
-}
+    });
+});
 
-// Ultra-reliable mobile-ready initialization
-if (document.readyState === 'complete') {
-    initApp();
-} else {
-    window.addEventListener('load', initApp);
-}
-
-// SINGLE processUpload function (mobile-optimized)
+// SINGLE processUpload function (fixed version)
 async function processUpload() {
     const fileInput = document.getElementById('fileUpload');
-    if (!fileInput.files.length) return alert('Select a file first');
+    if (!fileInput.files || !fileInput.files.length) {
+        alert('Please select a file first');
+        return;
+    }
     
     const file = fileInput.files[0];
     const statusEl = document.getElementById('uploadStatus');
+    statusEl.style.display = 'block';
     statusEl.textContent = 'Processing...';
     
     try {
-        const result = file.name.endsWith('.pdf') 
-            ? await analyzePDF(file) 
-            : await processJSON(file);
+        let result;
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            result = await analyzePDF(file);
+        } else {
+            result = await processJSON(file);
+        }
         
+        // Validate we got some data
+        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2 && !result.carbon.scope3)) {
+            throw new Error("No valid carbon emissions data found in the file");
+        }
+
         renderReport({
             ...result,
             score: calculateScore(result).score,
-            $customData: true
+            $customData: true,
+            $brandId: 'custom_' + Date.now()
         });
         
         document.getElementById('uploadModal').style.display = 'none';
     } catch (error) {
-        alert('Error: ' + error.message);
+        console.error('Upload processing error:', error);
+        alert(`Error processing file: ${error.message}\n\nFor JSON files, please use this format:\n${getSampleJSON()}`);
     } finally {
         statusEl.textContent = '';
+        statusEl.style.display = 'none';
         fileInput.value = '';
     }
-}
+                      }
