@@ -518,7 +518,7 @@ function renderReport(data) {
 }
 
 // =====================
-// UPDATED EXPORT FUNCTIONS (v2.0 - UNDENIABLE TRANSPARENCY)
+//10. UPDATED EXPORT FUNCTIONS (v2.0 - UNDENIABLE TRANSPARENCY)
 // =====================
 
 function exportSingleReport(brandName, scoreResult) {
@@ -834,122 +834,70 @@ function getSampleJSON() {
     }, null, 2);
 }
 // =====================
-// INITIALIZATION (PUT THIS AT THE VERY BOTTOM)
+// 11. INITIALIZATION (PUT THIS AT VERY BOTTOM)
 // =====================
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM fully loaded"); // Debug line
-    
-    // 1. Audit Button
+
+// Simple mobile-friendly button handlers
+function setupButtons() {
+    // Audit Button
     const auditBtn = document.getElementById('auditButton');
     if (auditBtn) {
-        auditBtn.addEventListener('click', function() {
+        auditBtn.onclick = function() {
             const brand = document.getElementById('brandSelect').value;
-            if (!brand) return alert('Please select a brand first');
-            
-            console.log("Running audit for:", brand); // Debug line
-            loadBrandData(brand)
-                .then(data => {
-                    if (data) renderReport(data);
-                    else alert("Brand data not found");
-                })
-                .catch(err => {
-                    console.error("Audit error:", err);
-                    alert("Error during audit");
-                });
-        });
+            if (!brand) return alert('Select a brand first');
+            loadBrandData(brand).then(renderReport);
+        };
     }
 
-    // 2. Compare Button
+    // Compare Button
     const compareBtn = document.getElementById('compareBtn');
     if (compareBtn) {
-        compareBtn.addEventListener('click', function() {
-            const brand1 = prompt('Enter first brand (e.g., tesla):');
-            const brand2 = prompt('Enter second brand (e.g., apple):');
-            if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
-        });
+        compareBtn.onclick = function() {
+            const brand1 = prompt('First brand (e.g., tesla):');
+            const brand2 = prompt('Second brand (e.g., apple):');
+            if (brand1 && brand2) compareBrands(brand1, brand2);
+        };
     }
 
-    // 3. Upload Button
+    // Upload Button
     const uploadBtn = document.getElementById('uploadBtn');
     if (uploadBtn) {
-        uploadBtn.addEventListener('click', function() {
+        uploadBtn.onclick = function() {
             document.getElementById('uploadModal').style.display = 'block';
-            console.log("Upload modal opened"); // Debug line
-        });
+        };
     }
 
-    // 4. Modal Buttons
-    const submitBtn = document.getElementById('uploadSubmitBtn');
-    const cancelBtn = document.getElementById('uploadCancelBtn');
-    
-    if (submitBtn) submitBtn.addEventListener('click', processUpload);
-    if (cancelBtn) cancelBtn.addEventListener('click', function() {
+    // Modal Buttons
+    document.getElementById('processBtn').onclick = processUpload;
+    document.getElementById('cancelBtn').onclick = function() {
         document.getElementById('uploadModal').style.display = 'none';
-    });
+    };
+}
 
-    // Debug: Check if all elements exist
-    console.log("Elements found:", {
-        auditBtn: !!auditBtn,
-        compareBtn: !!compareBtn,
-        uploadBtn: !!uploadBtn,
-        submitBtn: !!submitBtn,
-        cancelBtn: !!cancelBtn
-    });
-});
+// Mobile-friendly DOM load detection
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupButtons);
+} else {
+    setupButtons();
+}
 
-// SINGLE processUpload IMPLEMENTATION
+// Single processUpload function
 async function processUpload() {
-    console.log("Upload process started"); // Debug line
+    const file = document.getElementById('fileUpload').files[0];
+    if (!file) return alert('Select a file first');
     
-    const fileInput = document.getElementById('fileUpload');
-    const statusElement = document.getElementById('uploadStatus');
-    
-    if (!fileInput || !fileInput.files.length) {
-        alert('Please select a file first');
-        return;
-    }
-
-    const file = fileInput.files[0];
-    statusElement.textContent = `Processing ${file.name}...`;
-    statusElement.style.display = 'block';
-
     try {
-        console.log("Processing file:", file.name); // Debug line
-        const result = file.type.includes('pdf') || file.name.endsWith('.pdf')
-            ? await analyzePDF(file)
-            : await processJSON(file);
-        
-        if (!result?.carbon) throw new Error("Invalid ESG data format");
-        
-        console.log("File processed successfully"); // Debug line
+        document.getElementById('uploadStatus').textContent = 'Processing...';
+        const result = file.name.endsWith('.pdf') ? await analyzePDF(file) : await processJSON(file);
         renderReport({
             ...result,
             score: calculateScore(result).score,
-            $customData: true,
-            $source: `Uploaded ${file.type.includes('pdf') ? 'PDF' : 'JSON'}`
+            $customData: true
         });
-        
         document.getElementById('uploadModal').style.display = 'none';
-    } catch (error) {
-        console.error("Upload error:", error); // Debug line
-        alert(`Error processing file: ${error.message}\n\nSample format:\n${getSampleJSON()}`);
+    } catch (e) {
+        alert(`Error: ${e.message}`);
     } finally {
-        statusElement.style.display = 'none';
-        fileInput.value = '';
+        document.getElementById('uploadStatus').textContent = '';
     }
-}
-
-// Add these missing helper functions if not present
-function getRiskKeywords(data) {
-    const text = JSON.stringify(data).toLowerCase();
-    return [
-        "child labor", "corruption", "greenwashing", 
-        "violation", "underreport", "controversy",
-        "lawsuit", "fraud", "exploitation"
-    ].filter(keyword => text.includes(keyword));
-}
-
-function getScoreColor(score) {
-    return score >= 80 ? '#2ecc71' : 
-           score >= 60 ? '#f39c12' : '#e74c3c';
-                                                  }
+        }
