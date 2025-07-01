@@ -1,7 +1,7 @@
 export default {
   name: "Apple Inc.",
   industry: "Technology (Electronics & Services)",
-  score: 80,
+  score: 68,
   revenueRisk: "$500 M+ (legal, compliance, and reputational risks due to environmental, supply chain, and labor issues)",
 
   leaks: [
