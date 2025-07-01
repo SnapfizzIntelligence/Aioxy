@@ -1,8 +1,13 @@
 // =====================
-// AIOXY ESG AUDITOR (COMPLETE VERSION) - WITH UPDATED SCORING ONLY
+// ULTIMATE FIXES APPLIED TO EXISTING CODE
 // =====================
 
-// Utility function that was missing
+// 1. Add this safety check at the very top
+if (typeof window.jsPDF === 'undefined') {
+    window.jsPDF = window.jspdf.jsPDF;
+}
+
+// 2. Add this missing utility function
 function getScoreColor(score) {
     return score >= 80 ? '#2e8b57' : 
            score >= 60 ? '#f39c12' : '#e74c3c';
@@ -879,71 +884,104 @@ function detectStrengths(text) {
 
 // Robust initialization that works in all scenarios
 function initializeApp() {
-    console.log("Initializing ESG Auditor...");
-    
-    // Audit Button
-    const auditBtn = document.getElementById('auditButton');
-    if (auditBtn) {
-        auditBtn.addEventListener('click', function() {
-            const brand = document.getElementById('brandSelect').value;
-            if (!brand) {
-                alert('Please select a brand');
-                return;
-            }
-            console.log("Running audit for:", brand);
-            loadBrandData(brand)
-                .then(data => {
-                    if (!data) throw new Error("No data returned");
-                    renderReport(data);
-                })
-                .catch(err => {
-                    console.error("Audit failed:", err);
-                    alert("Failed to run audit. Check console for details.");
-                });
+    console.log("AIOXY ESG Auditor INITIALIZING");
+
+    // Safety check for DOM elements
+    if (!document.getElementById('auditButton')) {
+        console.error("Critical error: auditButton not found");
+        return;
+    }
+
+    // 1. Audit Button - Enhanced with error handling
+    document.getElementById('auditButton').addEventListener('click', async function() {
+        console.log("Audit button clicked");
+        const brand = document.getElementById('brandSelect').value;
+        if (!brand) {
+            alert('Please select a brand');
+            return;
+        }
+        
+        try {
+            const data = await loadBrandData(brand);
+            if (!data) throw new Error("No data returned");
+            renderReport(data);
+            console.log("Render successful for", brand);
+        } catch (error) {
+            console.error("Audit failed:", error);
+            alert(`Audit failed: ${error.message}`);
+        }
+    });
+
+    // 2. Compare Button - More robust
+    document.getElementById('compareBtn').addEventListener('click', function() {
+        console.log("Compare button clicked");
+        const brand1 = prompt('First brand (e.g., tesla):');
+        const brand2 = prompt('Second brand (e.g., apple):');
+        if (brand1 && brand2) {
+            console.log("Comparing:", brand1, "vs", brand2);
+            compareBrands(brand1, brand2).catch(err => {
+                console.error("Comparison failed:", err);
+                alert("Comparison failed. Check console for details.");
+            });
+        }
+    });
+
+    // 3. Upload System - Full error handling
+    document.getElementById('uploadBtn').addEventListener('click', function() {
+        console.log("Upload modal opened");
+        document.getElementById('uploadModal').style.display = 'block';
+    });
+
+    document.getElementById('uploadSubmitBtn').addEventListener('click', function() {
+        console.log("Upload submitted");
+        processUpload().catch(err => {
+            console.error("Upload failed:", err);
+            alert(`Upload failed: ${err.message}`);
         });
-    }
+    });
 
-    // Compare Button
-    const compareBtn = document.getElementById('compareBtn');
-    if (compareBtn) {
-        compareBtn.addEventListener('click', function() {
-            const brand1 = prompt('First brand (e.g., tesla):');
-            const brand2 = prompt('Second brand (e.g., apple):');
-            if (brand1 && brand2) {
-                console.log("Comparing brands:", brand1, brand2);
-                compareBrands(brand1, brand2);
-            }
-        });
-    }
+    document.getElementById('uploadCancelBtn').addEventListener('click', function() {
+        console.log("Upload cancelled");
+        document.getElementById('uploadModal').style.display = 'none';
+    });
 
-    // Upload Button
-    const uploadBtn = document.getElementById('uploadBtn');
-    if (uploadBtn) {
-        uploadBtn.addEventListener('click', function() {
-            console.log("Showing upload modal");
-            document.getElementById('uploadModal').style.display = 'block';
-        });
-    }
-
-    // Modal Buttons
-    const uploadSubmit = document.getElementById('uploadSubmitBtn');
-    if (uploadSubmit) {
-        uploadSubmit.addEventListener('click', processUpload);
-    }
-
-    const uploadCancel = document.getElementById('uploadCancelBtn');
-    if (uploadCancel) {
-        uploadCancel.addEventListener('click', function() {
-            document.getElementById('uploadModal').style.display = 'none';
-        });
-    }
-
-    console.log("Initialization complete");
+    console.log("AIOXY ESG Auditor READY");
 }
 
-// Start the app when ready
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(initializeApp, 1);
-} else {
-    document.addEventListener('DOMContentLoaded', initializeApp);
+// 4. MODIFY loadBrandData to be more resilient:
+async function loadBrandData(brand) {
+    console.log(`Loading data for ${brand}`);
+    try {
+        // First try static data
+        if (brandCarbonData[brand]) {
+            console.log("Using static data for", brand);
+            return {
+                ...brandCarbonData[brand],
+                name: brand.toUpperCase(),
+                industry: industryBenchmarks[brand]?.industry || "General",
+                score: calculateScore({ carbon: brandCarbonData[brand] }).score,
+                $brandId: brand,
+                $customData: false
+            };
+        }
+
+        // Fallback if no static data
+        console.warn("No static data for", brand);
+        return {
+            name: brand.toUpperCase(),
+            industry: "General",
+            carbon: { scope1: 0, scope2: 0, scope3: 0, big4: {}, errors: [] },
+            $brandId: brand,
+            $customData: false
+        };
+    } catch (error) {
+        console.error(`Error loading ${brand} data:`, error);
+        throw error;
     }
+}
+
+// 5. Start the app with dual initialization
+document.addEventListener('DOMContentLoaded', initializeApp);
+if (document.readyState === 'complete') {
+    setTimeout(initializeApp, 100);
+                    }
