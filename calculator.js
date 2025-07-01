@@ -609,9 +609,16 @@ function shareComparison(brand1, brand2) {
 }
 
 // =====================
-// UNBREAKABLE FILE UPLOAD v4.0 (FINAL)
+// BULLETPROOF FILE UPLOAD SYSTEM v5.0
 // =====================
 
+// Global variable to track upload state
+let currentUpload = {
+    file: null,
+    status: 'idle'
+};
+
+// Modified processUpload function
 async function processUpload() {
     const fileInput = document.getElementById('fileUpload');
     if (!fileInput.files || fileInput.files.length === 0) {
@@ -621,21 +628,31 @@ async function processUpload() {
 
     const file = fileInput.files[0];
     const statusEl = document.getElementById('uploadStatus');
+    
+    // Update UI
     statusEl.style.display = 'block';
     statusEl.textContent = `Analyzing ${file.name}...`;
-
+    document.getElementById('uploadSubmitBtn').disabled = true;
+    
     try {
+        console.log(`Processing file: ${file.name}`);
+        
+        // Process based on file type
         let result;
         if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            statusEl.textContent = 'Extracting data from PDF...';
             result = await analyzePDF(file);
         } else {
+            statusEl.textContent = 'Processing JSON data...';
             result = await processJSON(file);
         }
 
+        // Validate we got usable data
         if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2 && !result.carbon.scope3)) {
             throw new Error("No valid carbon emissions data found in the file");
         }
 
+        // Render the results
         renderReport({
             ...result,
             score: calculateScore(result).score,
@@ -643,168 +660,112 @@ async function processUpload() {
             $brandId: 'custom_' + Date.now()
         });
 
+        // Close modal
         document.getElementById('uploadModal').style.display = 'none';
+        
     } catch (error) {
         console.error("Upload processing error:", error);
-        alert(`Error processing file: ${error.message}\n\nFor JSON files, please use this format:\n${getSampleJSON()}`);
+        statusEl.innerHTML = `Error: ${error.message}<br><br>Sample format:<pre>${getSampleJSON()}</pre>`;
     } finally {
-        statusEl.textContent = '';
-        statusEl.style.display = 'none';
+        document.getElementById('uploadSubmitBtn').disabled = false;
         fileInput.value = '';
     }
 }
 
+// Enhanced PDF analyzer
 async function analyzePDF(pdfFile) {
-    const { default: pdfjs } = await import('pdfjs-dist/build/pdf');
-    pdfjs.GlobalWorkerOptions.workerSrc = 
+    console.log("Starting PDF analysis...");
+    
+    // Load PDF.js dynamically
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-    const arrayBuffer = await pdfFile.arrayBuffer();
-    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
-    
-    let fullText = "";
-    for (let i = 1; i <= Math.min(pdf.numPages, 50); i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        fullText += textContent.items.map(item => item.str).join(' ') + "\n";
-    }
-
-    const esgData = {
-        name: extractCompanyName(fullText),
-        industry: detectIndustry(fullText),
-        carbon: extractCarbonData(fullText),
-        strengths: detectStrengths(fullText)
-    };
-
-    const riskFlags = scanForRisks(fullText);
-    if (riskFlags.length > 0) {
-        esgData.carbon.errors = riskFlags;
-        if (riskFlags.some(f => f.severity === "high")) {
-            const proceed = confirm(`WARNING: High-risk issues detected. Continue analysis?`);
-            if (!proceed) throw new Error("Analysis canceled by user");
+    try {
+        // Extract text
+        const arrayBuffer = await pdfFile.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+        
+        let fullText = "";
+        const pageLimit = Math.min(pdf.numPages, 20); // Limit to 20 pages for performance
+        
+        for (let i = 1; i <= pageLimit; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            fullText += textContent.items.map(item => item.str).join(' ') + "\n";
         }
-    }
 
-    return esgData;
-}
+        console.log("PDF text extracted, analyzing content...");
+        
+        // ESG Data Extraction
+        const esgData = {
+            name: extractCompanyName(fullText) || pdfFile.name.replace('.pdf', ''),
+            industry: detectIndustry(fullText) || "General",
+            carbon: extractCarbonData(fullText),
+            strengths: detectStrengths(fullText),
+            leaks: []
+        };
 
-function extractCompanyName(text) {
-    const matches = text.match(/(?:Report|Disclosure|Sustainability)\s+(?:for|by)\s+([^\n]+)/i);
-    return matches ? matches[1].trim() : "Unknown Company";
-}
-
-function extractCarbonData(text) {
-    const scope1 = parseFloat(text.match(/Scope\s*1[^\d]*([\d,\.]+)\s*(?:tonnes?|tCO2e?)/i)?.[1]?.replace(/,/g, '')) || 0;
-    const scope2 = parseFloat(text.match(/Scope\s*2[^\d]*([\d,\.]+)\s*(?:tonnes?|tCO2e?)/i)?.[1]?.replace(/,/g, '')) || 0;
-    
-    const verifiers = ["PwC", "Deloitte", "EY", "KPMG", "Ernst & Young", "Bureau Veritas"];
-    const assurance = verifiers.find(v => text.includes(v)) || "Self-Reported";
-
-    return {
-        scope1,
-        scope2,
-        scope3: null,
-        big4: { assurance },
-        errors: []
-    };
-}
-
-function scanForRisks(text) {
-    const riskPatterns = [
-        { 
-            regex: /(underreport|under[\s-]*report)[^\d]*(\d+)/i, 
-            message: (_, num) => `Potential underreporting (${num} tonnes unaccounted)`,
-            severity: "high"
-        },
-        {
-            regex: /(not\scovered|excluded)\sfrom\s(scope\s*[123]|boundary)/i,
-            message: "Boundary exclusion found",
-            severity: "medium"
+        // Risk Validation
+        const riskFlags = scanForRisks(fullText);
+        if (riskFlags.length > 0) {
+            esgData.carbon.errors = riskFlags;
+            if (riskFlags.some(f => f.severity === "high")) {
+                const proceed = confirm(`WARNING: High-risk issues detected. Continue analysis?`);
+                if (!proceed) throw new Error("Analysis canceled by user");
+            }
         }
-    ];
 
-    return riskPatterns
-        .filter(({ regex }) => regex.test(text))
-        .map(({ message, severity, regex }) => {
-            const match = text.match(regex);
-            return {
-                issue: typeof message === 'function' ? message(...match) : message,
-                severity,
-                source: "PDF Analysis"
-            };
-        });
+        console.log("PDF analysis completed successfully");
+        return esgData;
+        
+    } catch (error) {
+        console.error("PDF analysis failed:", error);
+        throw new Error(`Failed to analyze PDF: ${error.message}`);
+    }
 }
 
+// Enhanced JSON processor
 async function processJSON(file) {
-    const text = await file.text();
-    const customData = JSON.parse(text);
+    console.log("Processing JSON file...");
+    try {
+        const text = await file.text();
+        const customData = JSON.parse(text);
 
-    return {
-        name: String(customData.name || file.name.replace(/\..+$/, '')),
-        industry: String(customData.industry || "General"),
-        carbon: {
-            scope1: Math.abs(Number(customData.carbon?.scope1)) || 0,
-            scope2: Math.abs(Number(customData.carbon?.scope2)) || 0,
-            scope3: Math.abs(Number(customData.carbon?.scope3)) || 0,
-            big4: customData.carbon?.big4 || {},
-            errors: Array.isArray(customData.carbon?.errors) 
-                ? customData.carbon.errors.filter(e => e.issue) 
-                : []
-        },
-        strengths: Array.isArray(customData.strengths) ? customData.strengths : []
-    };
-}
+        // Data Validation
+        if (!customData.carbon) {
+            throw new Error("No carbon data found in JSON");
+        }
 
-function getSampleJSON() {
-    return JSON.stringify({
-        name: "Your Company",
-        industry: "Technology",
-        carbon: {
-            scope1: 1000,
-            scope2: 500,
-            scope3: 15000,
-            big4: {
-                scope1: 1000,
-                scope2: 500,
-                scope3: null,
-                assurance: "Deloitte"
+        return {
+            name: String(customData.name || file.name.replace(/\..+$/, '')),
+            industry: String(customData.industry || "General"),
+            carbon: {
+                scope1: Math.abs(Number(customData.carbon?.scope1)) || 0,
+                scope2: Math.abs(Number(customData.carbon?.scope2)) || 0,
+                scope3: Math.abs(Number(customData.carbon?.scope3)) || 0,
+                big4: customData.carbon?.big4 || {},
+                errors: Array.isArray(customData.carbon?.errors) 
+                    ? customData.carbon.errors.filter(e => e.issue) 
+                    : []
             },
-            errors: [
-                {
-                    issue: "Scope 3 supplier data incomplete",
-                    severity: "medium",
-                    source: { label: "Internal Audit", url: "" }
-                }
-            ]
-        },
-        strengths: ["100% renewable energy usage"]
-    }, null, 2);
+            strengths: Array.isArray(customData.strengths) ? customData.strengths : [],
+            leaks: Array.isArray(customData.leaks) ? customData.leaks : []
+        };
+    } catch (error) {
+        console.error("JSON processing failed:", error);
+        throw new Error(`Invalid JSON format: ${error.message}`);
+    }
 }
 
-function detectIndustry(text) {
-    const industries = {
-        tech: /tech|software|hardware|computer|device/i,
-        automotive: /auto|vehicle|car|truck|tesla/i,
-        oil: /oil|gas|petroleum|bp/i,
-        retail: /retail|store|shop|amazon/i
-    };
-    
-    for (const [industry, regex] of Object.entries(industries)) {
-        if (regex.test(text)) return industry;
-    }
-    return "General";
-}
+// Helper functions (keep these the same as before)
+function extractCompanyName(text) { /* ... */ }
+function extractCarbonData(text) { /* ... */ }
+function scanForRisks(text) { /* ... */ }
+function detectIndustry(text) { /* ... */ }
+function detectStrengths(text) { /* ... */ }
+function getSampleJSON() { /* ... */ }
 
-function detectStrengths(text) {
-    const strengths = [];
-    if (text.match(/renewable|solar|wind/i)) {
-        strengths.push("Uses renewable energy");
-    }
-    if (text.match(/recycl|re\-?use/i)) {
-        strengths.push("Recycling program");
-    }
-    return strengths;
-}
 
 // =====================
 // INITIALIZATION
@@ -813,6 +774,24 @@ function detectStrengths(text) {
 function initializeApp() {
     console.log("Initializing ESG Auditor...");
     
+    // Set up event listeners
+    document.getElementById('uploadBtn').addEventListener('click', function() {
+        document.getElementById('uploadModal').style.display = 'block';
+        document.getElementById('uploadStatus').style.display = 'none';
+    });
+
+    document.getElementById('uploadSubmitBtn').addEventListener('click', function() {
+        processUpload().catch(err => {
+            console.error("Upload error:", err);
+            alert("Upload failed: " + err.message);
+        });
+    });
+
+    document.getElementById('uploadCancelBtn').addEventListener('click', function() {
+        document.getElementById('uploadModal').style.display = 'none';
+        document.getElementById('fileUpload').value = '';
+    });
+
     // Audit Button
     document.getElementById('auditButton').addEventListener('click', function() {
         const brand = document.getElementById('brandSelect').value;
