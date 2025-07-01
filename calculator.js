@@ -849,18 +849,16 @@ function getSampleJSON() {
 // INITIALIZATION (FIXED)
 // =====================
 document.addEventListener('DOMContentLoaded', () => {
-    // Set up event listeners PROPERLY
+    // Main button handlers
     document.getElementById("auditButton").addEventListener("click", handleAudit);
     document.getElementById("compareBtn").addEventListener("click", handleCompare);
     document.getElementById("uploadBtn").addEventListener("click", handleUpload);
     
-    // Modal buttons
-    document.querySelector('#uploadModal button[onclick="processUpload()"]')
-        .addEventListener('click', processUpload);
-    document.querySelector('#uploadModal button.danger')
-        .addEventListener('click', () => {
-            document.getElementById('uploadModal').style.display = 'none';
-        });
+    // Modal button handlers
+    document.getElementById("uploadSubmitBtn").addEventListener("click", processUpload);
+    document.getElementById("uploadCancelBtn").addEventListener("click", () => {
+        document.getElementById('uploadModal').style.display = 'none';
+    });
 
     // Check URL parameters
     const params = new URLSearchParams(window.location.search);
@@ -952,4 +950,7 @@ async function processUpload() {
         statusElement.style.display = 'none';
         fileInput.value = ''; // Reset file input
     }
-            }
+}
+
+// [Keep all your other existing functions exactly as they were]
+// [Don't include any duplicate processUpload() functions]
