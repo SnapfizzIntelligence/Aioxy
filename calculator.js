@@ -1,8 +1,8 @@
 // =====================
-// AIOXY ESG AUDITOR (COMPLETE VERSION) - WITH UPDATED SCORING ONLY
+// AIOXY ESG AUDITOR (FINAL WORKING VERSION)
 // =====================
 
-// 1. Industry Benchmark Scores (UNCHANGED)
+// 1. Industry Benchmark Scores
 const industryBenchmarks = {
     tesla: { score: 65, industry: "Automotive" },
     bp: { score: 58, industry: "Oil & Gas" },
@@ -12,7 +12,7 @@ const industryBenchmarks = {
     default: { score: 60, industry: "General" }
 };
 
-// 2. Static Carbon Data with REAL Sources (COMPLETELY UNCHANGED)
+// 2. Static Carbon Data with REAL Sources
 const brandCarbonData = {
     bp: {
         scope1: 31.1,
@@ -142,15 +142,19 @@ const brandCarbonData = {
     }
 };
 
-// 3. UPDATED SCORING ENGINE (WEIGHTED MODEL)
+// =====================
+// AIOXY ESG SCORING ENGINE v2.0 (UNDENIABLE MODEL)
+// =====================
+
 function calculateScore(data) {
-    // Start with perfect score (100)
+    // 🔴 Core Principle: Scores always out of 100, with risk caps CLEARLY marked
     let score = 100;
     let deductions = [];
     let bonuses = [];
-    let maxPossible = 100;
-    
-    // 1. Verification Penalties (Weighted)
+    let riskRating = getRiskRating(data);
+    let maxPossible = 100; // Default (Low Risk)
+
+    // 1️⃣ VERIFICATION PENALTIES (FIXED WEIGHTS)
     if (!data.carbon.big4?.scope1) {
         score -= 5;
         deductions.push("Scope 1 unverified (-5)");
@@ -161,133 +165,184 @@ function calculateScore(data) {
     }
     if (!data.carbon.big4?.scope3) {
         score -= 20;
-        deductions.push("Scope 3 unverified (-20)");
+        deductions.push("Scope 3 unverified (-20) → Major red flag");
     }
-    
-    // 2. Material ESG Leaks (All count as -10)
+
+    // 2️⃣ MATERIAL ESG LEAKS (ZERO TOLERANCE)
     data.carbon.errors?.forEach(err => {
         if (err.severity === "high" || err.severity === "medium") {
             score -= 10;
-            deductions.push(`Material ESG leak: ${err.issue} (-10)`);
+            deductions.push(`Material ESG leak: "${err.issue}" (-10)`);
         }
     });
+
+    // 3️⃣ BIG4 BONUSES (REWARD TRANSPARENCY)
+    const assurance = data.carbon.big4?.assurance?.toLowerCase() || "";
+    const isBig4 = /pwc|deloitte|ey|kpmg/.test(assurance);
     
-    // 3. AI Risk Rating Caps
-    const riskRating = getRiskRating(data);
+    [1, 2, 3].forEach(scope => {
+        if (data.carbon.big4?.[`scope${scope}`] && isBig4) {
+            score += 2;
+            bonuses.push(`Scope ${scope} Big4 verified (+2)`);
+        }
+    });
+
+    // 4️⃣ RISK CAPS (HARD LIMITS)
     if (riskRating === "🟠 Medium") {
         maxPossible = 80;
-        deductions.push("AI Risk Rating: Medium (capped at 80)");
+        deductions.push("AI Risk Rating: Medium → Max possible = 80");
     } 
     else if (riskRating === "🔴 High") {
         maxPossible = 65;
-        deductions.push("AI Risk Rating: High (capped at 65)");
+        deductions.push("AI Risk Rating: High → Max possible = 65");
     }
-    
-    // 4. Big4 Bonuses (kept for compatibility)
-    const assurance = data.carbon.big4?.assurance?.toLowerCase() || "";
-    const isBig4 = assurance.includes("pwc") || assurance.includes("deloitte") || 
-                  assurance.includes("ey") || assurance.includes("kpmg");
-    
-    if (data.carbon.big4?.scope1 && isBig4) {
-        score += 2;
-        bonuses.push("Scope 1 Big 4 verified (+2)");
-    }
-    if (data.carbon.big4?.scope2 && isBig4) {
-        score += 2;
-        bonuses.push("Scope 2 Big 4 verified (+2)");
-    }
-    if (data.carbon.big4?.scope3 && isBig4) {
-        score += 2;
-        bonuses.push("Scope 3 Big 4 verified (+2)");
-    }
-    
-    // Apply final score within bounds
-    const finalScore = Math.max(0, Math.min(maxPossible, Math.round(score)));
-    
+
+    // ✅ FINAL CALCULATION (IRREFUTABLE)
+    const finalScore = Math.max(0, Math.min(
+        maxPossible, // Respect risk cap
+        Math.round(score) // No decimal scores
+    ));
+
     return {
         score: finalScore,
+        maxPossible, // Always 100/80/65
         deductions,
         bonuses,
-        maxPossible,
-        riskRating
+        riskRating,
+        isCapped: finalScore >= maxPossible // Flag for UI
     };
 }
 
-// 4. UPDATED RISK RATING FUNCTIONS
+// =====================
+// TRANSPARENCY TOOLS
+// =====================
+
 function getRiskRating(data) {
-    const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
-    const reportText = JSON.stringify(data).toLowerCase();
-    const foundRisks = keywords.filter(kw => reportText.includes(kw));
+    // 🚨 High-risk keywords (expandable list)
+    const riskKeywords = [
+        "child labor", "corruption", "greenwashing", 
+        "violation", "underreport", "controversy",
+        "lawsuit", "fraud", "exploitation"
+    ];
     
+    const reportText = JSON.stringify(data).toLowerCase();
+    const foundRisks = riskKeywords.filter(kw => reportText.includes(kw));
+    
+    // Clear thresholds:
     return foundRisks.length > 2 ? "🔴 High" : 
            foundRisks.length > 0 ? "🟠 Medium" : "🟢 Low";
 }
 
 function generateAIRiskRating(data) {
-    const riskRating = getRiskRating(data);
+    const { riskRating, isCapped } = calculateScore(data);
     const foundRisks = getRiskKeywords(data);
     
     return `
-        <div class="airisk-box">
+        <div class="airisk-box" style="border-left: 4px solid ${
+            riskRating === "🔴 High" ? "#e74c3c" : 
+            riskRating === "🟠 Medium" ? "#f39c12" : "#2ecc71"
+        }">
             <h4>🤖 AI Risk Rating: ${riskRating}</h4>
             ${riskRating !== "🟢 Low" ? `
-                <p><strong>Score Cap Applied:</strong> ${riskRating === "🟠 Medium" ? "80 (Medium Risk)" : "65 (High Risk)"}</p>
+                <p><strong>${isCapped ? "⛔️ Score Capped" : "⚠️ Potential Cap"}:</strong> 
+                ${riskRating === "🟠 Medium" ? "80" : "65"}/100</p>
             ` : ''}
             ${foundRisks.length ? `
-                <p>Flags detected: ${foundRisks.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}</p>
-                <p>Estimated financial exposure: $${(foundRisks.length * 5000000).toLocaleString()}+</p>
-            ` : '<p>No high-risk patterns detected</p>'}
+                <div class="risk-flags">
+                    <p>🚩 <strong>Flags detected:</strong> ${foundRisks.map(r => 
+                        `<span class="risk-tag">${r.toUpperCase()}</span>`
+                    ).join(' ')}</p>
+                    <p>💸 <strong>Estimated exposure:</strong> $${(
+                        foundRisks.length * 5000000
+                    ).toLocaleString()}+</p>
+                </div>
+            ` : '<p>✅ No high-risk patterns detected</p>'}
         </div>
     `;
 }
 
 function getRiskKeywords(data) {
-    const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
+    const riskKeywords = [
+        "child labor", "corruption", "greenwashing", 
+        "violation", "underreport", "controversy",
+        "lawsuit", "fraud", "exploitation"
+    ];
     const reportText = JSON.stringify(data).toLowerCase();
-    return keywords.filter(kw => reportText.includes(kw));
+    return riskKeywords.filter(kw => reportText.includes(kw));
 }
 
-// 5. Transparent Scoring Display (UNCHANGED)
+// =====================
+// BULLETPROOF DISPLAY
+// =====================
+
 function showScoringDetails(data, scoreResult) {
     const benchmark = industryBenchmarks[data.$brandId] || industryBenchmarks.default;
-    
+    const isPerfect = scoreResult.score === 100 && scoreResult.maxPossible === 100;
+
     return `
         <div class="transparency-box">
             <h4>🔍 Scoring Breakdown</h4>
             <p><strong>Starting Score:</strong> 100/100 (perfect compliance)</p>
             
-            <h5>Deductions:</h5>
-            <ul>
-                ${scoreResult.deductions.map(d => `<li>${d}</li>`).join('') || '<li>No deductions</li>'}
+            <!-- Deductions -->
+            <h5>${scoreResult.deductions.length ? '⚠️ Deductions' : '✅ No Deductions'}</h5>
+            <ul class="deductions">
+                ${scoreResult.deductions.map(d => `<li>${d}</li>`).join('') || 
+                '<li>All required disclosures verified</li>'}
             </ul>
             
-            <h5>Bonuses:</h5>
-            <ul>
-                ${scoreResult.bonuses.map(b => `<li>${b}</li>`).join('') || '<li>No bonuses</li>'}
+            <!-- Bonuses -->
+            <h5>${scoreResult.bonuses.length ? '✨ Bonuses' : '📉 No Bonuses'}</h5>
+            <ul class="bonuses">
+                ${scoreResult.bonuses.map(b => `<li>${b}</li>`).join('') || 
+                '<li>No third-party verification bonuses</li>'}
             </ul>
             
+            <!-- Final Score -->
             <div class="final-score">
-                <strong>Final Score:</strong> ${scoreResult.score}/${scoreResult.maxPossible || 100}
+                <strong>Final Score:</strong> 
+                <span class="score-value">${scoreResult.score}/${scoreResult.maxPossible}</span>
+                ${scoreResult.maxPossible < 100 ? `
+                    <span class="cap-warning">
+                        (Capped due to ${scoreResult.riskRating} risk)
+                    </span>
+                ` : ''}
+                
+                ${isPerfect ? '<div class="perfect-badge">🏆 Perfect Audit</div>' : ''}
+                
                 <div class="score-bar">
-                    <div style="width:${scoreResult.score}%; background-color:${getScoreColor(scoreResult.score)};"></div>
+                    <div style="
+                        width: ${scoreResult.score}%;
+                        background: ${getScoreColor(scoreResult.score)};
+                        ${scoreResult.isCapped ? 'border-right: 3px dashed #000' : ''}
+                    "></div>
                 </div>
-                <p><strong>Industry Benchmark (${benchmark.industry}):</strong> ${benchmark.score}/100</p>
+                
+                <p class="benchmark">
+                    <strong>Industry Benchmark (${benchmark.industry}):</strong> 
+                    ${benchmark.score}/100
+                    ${scoreResult.score > benchmark.score ? '↑' : '↓'}
+                </p>
             </div>
             
             ${data.$customData ? 
-                '<p class="data-source">ℹ️ Using user-uploaded data</p>' : 
-                `<p class="data-source">ℹ️ Source: <a href="${data.carbon.big4?.source || '#'}" target="_blank" class="source-link">${data.carbon.big4?.source ? 'Original Report' : 'AIOXY Data'}</a></p>`}
+                '<p class="data-source">ℹ️ Using user-uploaded data (not independently verified)</p>' : 
+                `<p class="data-source">📄 Source: <a href="${data.carbon.big4?.source || '#'}" target="_blank">
+                    ${data.carbon.big4?.source ? 'Original Report' : 'AIOXY Database'}
+                </a></p>`}
         </div>
     `;
 }
 
 function getScoreColor(score) {
-    if (score >= 80) return '#2e8b57'; // Green
-    if (score >= 60) return '#f1c40f'; // Yellow
-    return '#e74c3c'; // Red
+    return score >= 80 ? '#2e8b57' : 
+           score >= 60 ? '#f39c12' : '#e74c3c';
 }
 
-// 6. Dynamic Data Loader (UNCHANGED)
+// =====================
+// DYNAMIC DATA LOADER
+// =====================
+
 async function loadBrandData(brand) {
     try {
         const [dynamicData, staticCarbon] = await Promise.all([
@@ -310,9 +365,12 @@ async function loadBrandData(brand) {
         console.error(`Error loading ${brand} data:`, error);
         return null;
     }
-}
+                }
 
-// 7. Comparison Function (UNCHANGED)
+// =====================
+// COMPARISON FUNCTION
+// =====================
+
 async function compareBrands(brand1, brand2) {
     const [data1, data2] = await Promise.all([
         loadBrandData(brand1),
@@ -365,7 +423,10 @@ async function compareBrands(brand1, brand2) {
     renderPieChart('chart2', data2);
 }
 
-// 8. Chart Rendering (UNCHANGED)
+// =====================
+// CHART RENDERING
+// =====================
+
 function renderPieChart(id, data) {
     const ctx = document.getElementById(id).getContext('2d');
     new Chart(ctx, {
@@ -387,7 +448,10 @@ function renderPieChart(id, data) {
     });
 }
 
-// 9. Report Generator (UNCHANGED except for score display)
+// =====================
+// REPORT GENERATOR
+// =====================
+
 function renderReport(data) {
     const scoreResult = calculateScore(data);
     const benchmark = industryBenchmarks[data.$brandId] || industryBenchmarks.default;
@@ -432,7 +496,6 @@ function renderReport(data) {
         <p><strong>Assurance:</strong> ${data.carbon.big4?.assurance || "None"}</p>
     `;
 
-    // Add leaks if available
     if (data.leaks?.length > 0) {
         html += `<h3>Key ESG Leaks</h3><ul>`;
         data.leaks.forEach(leak => {
@@ -448,7 +511,6 @@ function renderReport(data) {
         html += `</ul>`;
     }
 
-    // Add strengths if available
     if (data.strengths?.length > 0) {
         html += `<h3>Strengths</h3><ul>`;
         data.strengths.forEach(strength => {
@@ -462,7 +524,6 @@ function renderReport(data) {
         html += `</ul>`;
     }
 
-    // Add CTA
     html += `
         <div class="export-buttons">
             <button onclick="exportSingleReport('${data.name.replace(/\s+/g, '_')}')">
@@ -481,39 +542,35 @@ function renderReport(data) {
     renderPieChart('brandChart', data);
 }
 
-// 10. Export Functions (UNCHANGED)
+// =====================
+// EXPORT FUNCTIONS
+// =====================
+
 function exportSingleReport(brandName) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // Header
     doc.setFontSize(18);
     doc.text(`AIOXY Independent ESG Verification`, 10, 15);
     doc.setFontSize(12);
     doc.text(`Company: ${brandName.replace(/_/g, ' ')}`, 10, 25);
     
-    // Get score details
     const score = document.querySelector('.score')?.textContent;
     const benchmark = document.querySelector('.industry-benchmark')?.textContent;
     
-    // Score Summary
     doc.text(`ESG Score: ${score}`, 10, 35);
     doc.text(`${benchmark}`, 10, 45);
     
-    // Scoring Breakdown
     doc.text(`Scoring Methodology:`, 10, 60);
-    doc.text(`- Base score starts at 50/100`, 15, 70);
+    doc.text(`- Base score starts at 100/100`, 15, 70);
     doc.text(`- Deductions for missing/unverified data`, 15, 80);
     doc.text(`- Bonuses for third-party verification`, 15, 90);
     
-    // Key Findings
-    doc.text(`Independent Findings:`, 10, 105);
     const findings = [...document.querySelectorAll('.risk')].slice(0, 3);
     findings.forEach((finding, i) => {
         doc.text(`- ${finding.textContent.replace(/\n/g, ' ').substring(0, 80)}`, 15, 115 + (i * 10));
     });
     
-    // Footer
     doc.text(`Generated by AIOXY ESG Auditor (${new Date().toLocaleDateString()})`, 10, 280);
     doc.text(`Methodology: Transparent scoring based on reported data quality`, 10, 285);
     
@@ -529,7 +586,6 @@ function exportComparison(brand1, brand2) {
     doc.setFontSize(12);
     doc.text(`${brand1.toUpperCase()} vs ${brand2.toUpperCase()}`, 10, 25);
     
-    // Get scores from DOM
     const scores = document.querySelectorAll('.comparison-grid .score');
     const benchmarks = document.querySelectorAll('.comparison-grid .industry-benchmark');
     
@@ -539,9 +595,8 @@ function exportComparison(brand1, brand2) {
     doc.text(`${brand2}: ${scores[1]?.textContent || "N/A"}`, 15, 70);
     doc.text(`${benchmarks[1]?.textContent || ""}`, 15, 80);
     
-    // Risk Comparison
-    doc.text(`Risk Comparison:`, 10, 95);
     const risks = document.querySelectorAll('.airisk-box h4');
+    doc.text(`Risk Comparison:`, 10, 95);
     doc.text(`${brand1}: ${risks[0]?.textContent || "N/A"}`, 15, 105);
     doc.text(`${brand2}: ${risks[1]?.textContent || "N/A"}`, 15, 115);
     
@@ -553,64 +608,255 @@ function shareComparison(brand1, brand2) {
     prompt("Share this comparison link:", url);
 }
 
-// 11. File Upload Handling (UNCHANGED)
-function processUpload() {
-    const file = document.getElementById('jsonUpload').files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const customData = JSON.parse(e.target.result);
-            renderReport({
-                ...customData,
-                name: customData.name || "Custom Company",
-                industry: customData.industry || "General",
-                score: calculateScore(customData).score,
-                carbon: customData.carbon || {
-                    scope1: 0,
-                    scope2: 0,
-                    scope3: 0,
-                    big4: {},
-                    errors: []
-                },
-                $customData: true
-            });
-            document.getElementById('uploadModal').style.display = 'none';
-        } catch (e) {
-            alert("Invalid file format. Please upload a valid JSON file.");
-            console.error(e);
+// =====================
+// UNBREAKABLE FILE UPLOAD v4.0 (FINAL)
+// =====================
+
+async function processUpload() {
+    const fileInput = document.getElementById('fileUpload');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a file first');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const statusEl = document.getElementById('uploadStatus');
+    statusEl.style.display = 'block';
+    statusEl.textContent = `Analyzing ${file.name}...`;
+
+    try {
+        let result;
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            result = await analyzePDF(file);
+        } else {
+            result = await processJSON(file);
         }
-    };
-    reader.readAsText(file);
+
+        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2 && !result.carbon.scope3)) {
+            throw new Error("No valid carbon emissions data found in the file");
+        }
+
+        renderReport({
+            ...result,
+            score: calculateScore(result).score,
+            $customData: true,
+            $brandId: 'custom_' + Date.now()
+        });
+
+        document.getElementById('uploadModal').style.display = 'none';
+    } catch (error) {
+        console.error("Upload processing error:", error);
+        alert(`Error processing file: ${error.message}\n\nFor JSON files, please use this format:\n${getSampleJSON()}`);
+    } finally {
+        statusEl.textContent = '';
+        statusEl.style.display = 'none';
+        fileInput.value = '';
+    }
 }
 
-// Initialize (UNCHANGED)
-document.addEventListener('DOMContentLoaded', () => {
-    // Set up event listeners
-    document.getElementById("auditButton").addEventListener("click", async () => {
-        const brand = document.getElementById("brandSelect").value;
-        if (!brand) return alert("Select a brand first");
-        
-        const data = await loadBrandData(brand);
-        if (data) renderReport(data);
-    });
+async function analyzePDF(pdfFile) {
+    const { default: pdfjs } = await import('pdfjs-dist/build/pdf');
+    pdfjs.GlobalWorkerOptions.workerSrc = 
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    const arrayBuffer = await pdfFile.arrayBuffer();
+    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
     
-    document.getElementById("compareBtn").addEventListener("click", () => {
-        const brand1 = prompt("Enter first brand (e.g., tesla):");
-        const brand2 = prompt("Enter second brand (e.g., samsung):");
-        if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
-    });
-    
-    document.getElementById("uploadBtn").addEventListener("click", () => {
-        document.getElementById("uploadModal").style.display = "block";
-    });
-    
-    // Check for URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const compare = params.get('compare');
-    if (compare) {
-        const [brand1, brand2] = compare.split(',');
-        if (brand1 && brand2) compareBrands(brand1, brand2);
+    let fullText = "";
+    for (let i = 1; i <= Math.min(pdf.numPages, 50); i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map(item => item.str).join(' ') + "\n";
     }
-});
+
+    const esgData = {
+        name: extractCompanyName(fullText),
+        industry: detectIndustry(fullText),
+        carbon: extractCarbonData(fullText),
+        strengths: detectStrengths(fullText)
+    };
+
+    const riskFlags = scanForRisks(fullText);
+    if (riskFlags.length > 0) {
+        esgData.carbon.errors = riskFlags;
+        if (riskFlags.some(f => f.severity === "high")) {
+            const proceed = confirm(`WARNING: High-risk issues detected. Continue analysis?`);
+            if (!proceed) throw new Error("Analysis canceled by user");
+        }
+    }
+
+    return esgData;
+}
+
+function extractCompanyName(text) {
+    const matches = text.match(/(?:Report|Disclosure|Sustainability)\s+(?:for|by)\s+([^\n]+)/i);
+    return matches ? matches[1].trim() : "Unknown Company";
+}
+
+function extractCarbonData(text) {
+    const scope1 = parseFloat(text.match(/Scope\s*1[^\d]*([\d,\.]+)\s*(?:tonnes?|tCO2e?)/i)?.[1]?.replace(/,/g, '')) || 0;
+    const scope2 = parseFloat(text.match(/Scope\s*2[^\d]*([\d,\.]+)\s*(?:tonnes?|tCO2e?)/i)?.[1]?.replace(/,/g, '')) || 0;
+    
+    const verifiers = ["PwC", "Deloitte", "EY", "KPMG", "Ernst & Young", "Bureau Veritas"];
+    const assurance = verifiers.find(v => text.includes(v)) || "Self-Reported";
+
+    return {
+        scope1,
+        scope2,
+        scope3: null,
+        big4: { assurance },
+        errors: []
+    };
+}
+
+function scanForRisks(text) {
+    const riskPatterns = [
+        { 
+            regex: /(underreport|under[\s-]*report)[^\d]*(\d+)/i, 
+            message: (_, num) => `Potential underreporting (${num} tonnes unaccounted)`,
+            severity: "high"
+        },
+        {
+            regex: /(not\scovered|excluded)\sfrom\s(scope\s*[123]|boundary)/i,
+            message: "Boundary exclusion found",
+            severity: "medium"
+        }
+    ];
+
+    return riskPatterns
+        .filter(({ regex }) => regex.test(text))
+        .map(({ message, severity, regex }) => {
+            const match = text.match(regex);
+            return {
+                issue: typeof message === 'function' ? message(...match) : message,
+                severity,
+                source: "PDF Analysis"
+            };
+        });
+}
+
+async function processJSON(file) {
+    const text = await file.text();
+    const customData = JSON.parse(text);
+
+    return {
+        name: String(customData.name || file.name.replace(/\..+$/, '')),
+        industry: String(customData.industry || "General"),
+        carbon: {
+            scope1: Math.abs(Number(customData.carbon?.scope1)) || 0,
+            scope2: Math.abs(Number(customData.carbon?.scope2)) || 0,
+            scope3: Math.abs(Number(customData.carbon?.scope3)) || 0,
+            big4: customData.carbon?.big4 || {},
+            errors: Array.isArray(customData.carbon?.errors) 
+                ? customData.carbon.errors.filter(e => e.issue) 
+                : []
+        },
+        strengths: Array.isArray(customData.strengths) ? customData.strengths : []
+    };
+}
+
+function getSampleJSON() {
+    return JSON.stringify({
+        name: "Your Company",
+        industry: "Technology",
+        carbon: {
+            scope1: 1000,
+            scope2: 500,
+            scope3: 15000,
+            big4: {
+                scope1: 1000,
+                scope2: 500,
+                scope3: null,
+                assurance: "Deloitte"
+            },
+            errors: [
+                {
+                    issue: "Scope 3 supplier data incomplete",
+                    severity: "medium",
+                    source: { label: "Internal Audit", url: "" }
+                }
+            ]
+        },
+        strengths: ["100% renewable energy usage"]
+    }, null, 2);
+}
+
+function detectIndustry(text) {
+    const industries = {
+        tech: /tech|software|hardware|computer|device/i,
+        automotive: /auto|vehicle|car|truck|tesla/i,
+        oil: /oil|gas|petroleum|bp/i,
+        retail: /retail|store|shop|amazon/i
+    };
+    
+    for (const [industry, regex] of Object.entries(industries)) {
+        if (regex.test(text)) return industry;
+    }
+    return "General";
+}
+
+function detectStrengths(text) {
+    const strengths = [];
+    if (text.match(/renewable|solar|wind/i)) {
+        strengths.push("Uses renewable energy");
+    }
+    if (text.match(/recycl|re\-?use/i)) {
+        strengths.push("Recycling program");
+    }
+    return strengths;
+}
+
+// =====================
+// INITIALIZATION
+// =====================
+
+function initializeApp() {
+    console.log("Initializing ESG Auditor...");
+    
+    // Audit Button
+    document.getElementById('auditButton').addEventListener('click', function() {
+        const brand = document.getElementById('brandSelect').value;
+        if (!brand) {
+            alert('Please select a brand');
+            return;
+        }
+        loadBrandData(brand)
+            .then(data => {
+                if (!data) throw new Error("No data returned");
+                renderReport(data);
+            })
+            .catch(err => {
+                console.error("Audit failed:", err);
+                alert("Failed to run audit. Check console for details.");
+            });
+    });
+
+    // Compare Button
+    document.getElementById('compareBtn').addEventListener('click', function() {
+        const brand1 = prompt('First brand (e.g., tesla):');
+        const brand2 = prompt('Second brand (e.g., apple):');
+        if (brand1 && brand2) {
+            compareBrands(brand1, brand2);
+        }
+    });
+
+    // Upload Button
+    document.getElementById('uploadBtn').addEventListener('click', function() {
+        document.getElementById('uploadModal').style.display = 'block';
+    });
+
+    // Modal Buttons
+    document.getElementById('uploadSubmitBtn').addEventListener('click', processUpload);
+    document.getElementById('uploadCancelBtn').addEventListener('click', function() {
+        document.getElementById('uploadModal').style.display = 'none';
+    });
+
+    console.log("Initialization complete");
+}
+
+// Start the app
+if (document.readyState === 'complete') {
+    setTimeout(initializeApp, 100);
+} else {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+        }
