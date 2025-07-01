@@ -844,28 +844,13 @@ function getSampleJSON() {
 <!-- Load PDF.js in head -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 */
-// =====================
-// INITIALIZATION (FIXED)
-// =====================
-document.addEventListener('DOMContentLoaded', () => {
-    // Set up event listeners PROPERLY
-    document.getElementById("auditButton").addEventListener("click", handleAudit);
-    document.getElementById("compareBtn").addEventListener("click", handleCompare);
-    document.getElementById("uploadBtn").addEventListener("click", handleUpload);
-    
-    // Check URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const compare = params.get('compare');
-    if (compare) {
-        const [brand1, brand2] = compare.split(',');
-        if (brand1 && brand2) compareBrands(brand1, brand2);
-    }
-});
 
 // =====================
-// BUTTON HANDLERS (NEW)
+// INITIALIZATION (FIXED VERSION)
 // =====================
-async function handleAudit() {
+
+// Make these functions global so HTML can access them
+window.handleAudit = async function() {
     const brand = document.getElementById("brandSelect").value;
     if (!brand) {
         alert("Please select a brand first");
@@ -876,31 +861,26 @@ async function handleAudit() {
         const data = await loadBrandData(brand);
         if (data) {
             renderReport(data);
-        } else {
-            alert("Failed to load brand data");
         }
     } catch (error) {
         console.error("Audit failed:", error);
         alert("An error occurred during the audit");
     }
-}
+};
 
-function handleCompare() {
+window.handleCompare = function() {
     const brand1 = prompt("Enter first brand (e.g., tesla):");
     const brand2 = prompt("Enter second brand (e.g., samsung):");
     if (brand1 && brand2) {
         compareBrands(brand1.trim(), brand2.trim());
     }
-}
+};
 
-function handleUpload() {
+window.handleUpload = function() {
     document.getElementById("uploadModal").style.display = "block";
-}
+};
 
-// =====================
-// FIXED UPLOAD HANDLER
-// =====================
-async function processUpload() {
+window.processUpload = async function() {
     const fileInput = document.getElementById('jsonUpload');
     if (!fileInput.files.length) {
         alert("Please select a file first");
@@ -911,7 +891,6 @@ async function processUpload() {
     const statusElement = document.getElementById('uploadStatus');
     
     try {
-        // Show loading state
         statusElement.textContent = `Analyzing ${file.name}...`;
         statusElement.style.display = 'block';
 
@@ -922,12 +901,10 @@ async function processUpload() {
             result = await processJSON(file);
         }
 
-        // Validate we got at least some data
         if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2)) {
             throw new Error("No valid emissions data found in the file");
         }
 
-        // Render results
         renderReport({
             ...result,
             score: calculateScore(result).score,
@@ -941,18 +918,21 @@ async function processUpload() {
     } finally {
         document.getElementById('uploadModal').style.display = 'none';
         statusElement.style.display = 'none';
-        fileInput.value = ''; // Reset file input
+        fileInput.value = '';
     }
-}
+};
 
-// =====================
-// HTML CHANGES NEEDED
-// =====================
-/* 
-Add this to your HTML (if not already present):
-
-<div id="uploadStatus" style="display: none; margin: 10px 0; padding: 10px; background: #f0f0f0;"></div>
-
-And update your file input to:
-<input type="file" id="jsonUpload" accept=".json,.pdf" style="margin-bottom: 10px;" />
-*/
+// Initialize event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById("auditButton").addEventListener("click", handleAudit);
+    document.getElementById("compareBtn").addEventListener("click", handleCompare);
+    document.getElementById("uploadBtn").addEventListener("click", handleUpload);
+    
+    // Check for URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const compare = params.get('compare');
+    if (compare) {
+        const [brand1, brand2] = compare.split(',');
+        if (brand1 && brand2) compareBrands(brand1, brand2);
+    }
+});
