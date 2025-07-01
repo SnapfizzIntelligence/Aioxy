@@ -1,11 +1,13 @@
 // =====================
 // AIOXY ESG AUDITOR (COMPLETE VERSION) - WITH UPDATED SCORING ONLY
 // =====================
-// Add missing utility function
+
+// Utility function that was missing
 function getScoreColor(score) {
     return score >= 80 ? '#2e8b57' : 
            score >= 60 ? '#f39c12' : '#e74c3c';
 }
+
 // 1. Industry Benchmark Scores (UNCHANGED)
 const industryBenchmarks = {
     tesla: { score: 65, industry: "Automotive" },
@@ -237,6 +239,16 @@ function getRiskRating(data) {
            foundRisks.length > 0 ? "🟠 Medium" : "🟢 Low";
 }
 
+function getRiskKeywords(data) {
+    const riskKeywords = [
+        "child labor", "corruption", "greenwashing", 
+        "violation", "underreport", "controversy",
+        "lawsuit", "fraud", "exploitation"
+    ];
+    const reportText = JSON.stringify(data).toLowerCase();
+    return riskKeywords.filter(kw => reportText.includes(kw));
+}
+
 function generateAIRiskRating(data) {
     const { riskRating, isCapped } = calculateScore(data);
     const foundRisks = getRiskKeywords(data);
@@ -327,6 +339,7 @@ function showScoringDetails(data, scoreResult) {
         </div>
     `;
 }
+
 // 6. Dynamic Data Loader (UNCHANGED)
 async function loadBrandData(brand) {
     try {
@@ -644,51 +657,48 @@ function exportComparison(brand1, brand2, score1, score2) {
 }
 
 // =====================
-// IMPLEMENTATION NOTES:
-// =====================
-// 1. In renderReport(), replace:
-//    exportSingleReport(name) → exportSingleReport(name, scoreResult)
-//
-// 2. In compareBrands(), replace:
-//    exportComparison(brand1, brand2) → exportComparison(brand1, brand2, score1, score2)
-
-// =====================
 // UNBREAKABLE FILE UPLOAD v4.0 (FINAL)
 // =====================
 async function processUpload() {
-    const file = document.getElementById('jsonUpload').files[0];
-    if (!file) return;
+    const fileInput = document.getElementById('fileUpload');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select a file first');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const statusEl = document.getElementById('uploadStatus');
+    statusEl.style.display = 'block';
+    statusEl.textContent = `Analyzing ${file.name}...`;
 
     try {
-        // Show loading state
-        document.getElementById('uploadStatus').textContent = 
-            `Analyzing ${file.name}...`;
-        document.getElementById('uploadStatus').style.display = 'block';
-
-        // 1️⃣ ROUTE BY FILE TYPE
-        const result = file.type === 'application/pdf' || file.name.endsWith('.pdf') 
-            ? await analyzePDF(file) 
-            : await processJSON(file);
-
-        // 2️⃣ VALIDATE CORE DATA
-        if (!result.carbon.scope1 && !result.carbon.scope2) {
-            throw new Error("No valid emissions data found");
+        let result;
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            result = await analyzePDF(file);
+        } else {
+            result = await processJSON(file);
         }
 
-        // 3️⃣ RENDER RESULTS
+        // Validate we got some data
+        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2 && !result.carbon.scope3)) {
+            throw new Error("No valid carbon emissions data found in the file");
+        }
+
         renderReport({
             ...result,
             score: calculateScore(result).score,
             $customData: true,
-            $source: `Uploaded ${file.type === 'application/pdf' ? 'PDF' : 'JSON'}`
+            $brandId: 'custom_' + Date.now()
         });
 
-    } catch (e) {
-        alert(`Analysis failed: ${e.message}\n\nSample format:\n${getSampleJSON()}`);
-        console.error("Upload Error:", e);
-    } finally {
         document.getElementById('uploadModal').style.display = 'none';
-        document.getElementById('uploadStatus').style.display = 'none';
+    } catch (error) {
+        console.error("Upload processing error:", error);
+        alert(`Error processing file: ${error.message}\n\nFor JSON files, please use this format:\n${getSampleJSON()}`);
+    } finally {
+        statusEl.textContent = '';
+        statusEl.style.display = 'none';
+        fileInput.value = '';
     }
 }
 
@@ -837,11 +847,41 @@ function getSampleJSON() {
         strengths: ["100% renewable energy usage"]
     }, null, 2);
 }
-// Ultra-reliable initialization
-function initApp() {
-    console.log("Initializing app...");
+
+function detectIndustry(text) {
+    const industries = {
+        tech: /tech|software|hardware|computer|device/i,
+        automotive: /auto|vehicle|car|truck|tesla/i,
+        oil: /oil|gas|petroleum|bp/i,
+        retail: /retail|store|shop|amazon/i
+    };
     
-    // 1. Audit Button
+    for (const [industry, regex] of Object.entries(industries)) {
+        if (regex.test(text)) return industry;
+    }
+    return "General";
+}
+
+function detectStrengths(text) {
+    const strengths = [];
+    if (text.match(/renewable|solar|wind/i)) {
+        strengths.push("Uses renewable energy");
+    }
+    if (text.match(/recycl|re\-?use/i)) {
+        strengths.push("Recycling program");
+    }
+    return strengths;
+}
+
+// =====================
+// FINAL INITIALIZATION (GUARANTEED TO WORK)
+// =====================
+
+// Robust initialization that works in all scenarios
+function initializeApp() {
+    console.log("Initializing ESG Auditor...");
+    
+    // Audit Button
     const auditBtn = document.getElementById('auditButton');
     if (auditBtn) {
         auditBtn.addEventListener('click', function() {
@@ -850,32 +890,33 @@ function initApp() {
                 alert('Please select a brand');
                 return;
             }
-            console.log("Loading brand:", brand);
+            console.log("Running audit for:", brand);
             loadBrandData(brand)
-                .then(renderReport)
+                .then(data => {
+                    if (!data) throw new Error("No data returned");
+                    renderReport(data);
+                })
                 .catch(err => {
-                    console.error("Error:", err);
-                    alert("Error loading data. Check console for details.");
+                    console.error("Audit failed:", err);
+                    alert("Failed to run audit. Check console for details.");
                 });
         });
-    } else {
-        console.error("Audit button not found!");
     }
 
-    // 2. Compare Button
+    // Compare Button
     const compareBtn = document.getElementById('compareBtn');
     if (compareBtn) {
         compareBtn.addEventListener('click', function() {
             const brand1 = prompt('First brand (e.g., tesla):');
             const brand2 = prompt('Second brand (e.g., apple):');
             if (brand1 && brand2) {
-                console.log("Comparing:", brand1, "vs", brand2);
+                console.log("Comparing brands:", brand1, brand2);
                 compareBrands(brand1, brand2);
             }
         });
     }
 
-    // 3. Upload Button
+    // Upload Button
     const uploadBtn = document.getElementById('uploadBtn');
     if (uploadBtn) {
         uploadBtn.addEventListener('click', function() {
@@ -884,18 +925,25 @@ function initApp() {
         });
     }
 
-    // 4. Modal Buttons
-    document.getElementById('uploadSubmitBtn')?.addEventListener('click', processUpload);
-    document.getElementById('uploadCancelBtn')?.addEventListener('click', function() {
-        document.getElementById('uploadModal').style.display = 'none';
-    });
+    // Modal Buttons
+    const uploadSubmit = document.getElementById('uploadSubmitBtn');
+    if (uploadSubmit) {
+        uploadSubmit.addEventListener('click', processUpload);
+    }
+
+    const uploadCancel = document.getElementById('uploadCancelBtn');
+    if (uploadCancel) {
+        uploadCancel.addEventListener('click', function() {
+            document.getElementById('uploadModal').style.display = 'none';
+        });
+    }
 
     console.log("Initialization complete");
 }
 
-// Start the app
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
+// Start the app when ready
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initializeApp, 1);
 } else {
-    initApp();
-                    }
+    document.addEventListener('DOMContentLoaded', initializeApp);
+    }
