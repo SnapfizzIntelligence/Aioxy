@@ -19,8 +19,8 @@ const brandCarbonData = {
         scope2: 0.8,
         scope3: 314.9,
         big4: {
-            scope1: 31.1,
-            scope2: 1.0,
+            scope1: 32.8,
+            scope2: 0.8,
             scope3: null,
             assurance: "Deloitte (Scope 1-2 only)",
             source: "https://www.bp.com/content/dam/bp/business-sites/en/global/corporate/pdfs/sustainability/group-reports/bp-esg-datasheet-2024.pdf"
