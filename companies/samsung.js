@@ -1,7 +1,7 @@
 export default {
   name: "Samsung Electronics Co., Ltd.",
   industry: "Technology (Electronics and Semiconductors)",
-  score: 80,
+  score: 72,
   revenueRisk: "$1.7B (FY 2024 increased marketing costs for smartphones and chips impacting customer acquisition and retention)",
 
   leaks: [
