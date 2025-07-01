@@ -1,8 +1,8 @@
 // =====================
-// AIOXY ESG AUDITOR (COMPLETE VERSION)
+// AIOXY ESG AUDITOR (COMPLETE VERSION) - WITH UPDATED SCORING ONLY
 // =====================
 
-// 1. Industry Benchmark Scores
+// 1. Industry Benchmark Scores (UNCHANGED)
 const industryBenchmarks = {
     tesla: { score: 65, industry: "Automotive" },
     bp: { score: 58, industry: "Oil & Gas" },
@@ -12,7 +12,7 @@ const industryBenchmarks = {
     default: { score: 60, industry: "General" }
 };
 
-// 2. Static Carbon Data with REAL Sources
+// 2. Static Carbon Data with REAL Sources (COMPLETELY UNCHANGED)
 const brandCarbonData = {
     bp: {
         scope1: 31.1,
@@ -142,28 +142,48 @@ const brandCarbonData = {
     }
 };
 
-// 3. Realistic Scoring Engine
+// 3. UPDATED SCORING ENGINE (WEIGHTED MODEL)
 function calculateScore(data) {
     // Start with perfect score (100)
     let score = 100;
     let deductions = [];
     let bonuses = [];
+    let maxPossible = 100;
     
-    // 1. Verification Penalties
+    // 1. Verification Penalties (Weighted)
     if (!data.carbon.big4?.scope1) {
-        score -= 10;
-        deductions.push("Scope 1 not verified (-10)");
+        score -= 5;
+        deductions.push("Scope 1 unverified (-5)");
     }
     if (!data.carbon.big4?.scope2) {
-        score -= 10;
-        deductions.push("Scope 2 not verified (-10)");
+        score -= 5;
+        deductions.push("Scope 2 unverified (-5)");
     }
     if (!data.carbon.big4?.scope3) {
         score -= 20;
-        deductions.push("Scope 3 not verified (-20)");
+        deductions.push("Scope 3 unverified (-20)");
     }
     
-    // 2. Assurance Bonuses (per verified scope)
+    // 2. Material ESG Leaks (All count as -10)
+    data.carbon.errors?.forEach(err => {
+        if (err.severity === "high" || err.severity === "medium") {
+            score -= 10;
+            deductions.push(`Material ESG leak: ${err.issue} (-10)`);
+        }
+    });
+    
+    // 3. AI Risk Rating Caps
+    const riskRating = getRiskRating(data);
+    if (riskRating === "🟠 Medium") {
+        maxPossible = 80;
+        deductions.push("AI Risk Rating: Medium (capped at 80)");
+    } 
+    else if (riskRating === "🔴 High") {
+        maxPossible = 65;
+        deductions.push("AI Risk Rating: High (capped at 65)");
+    }
+    
+    // 4. Big4 Bonuses (kept for compatibility)
     const assurance = data.carbon.big4?.assurance?.toLowerCase() || "";
     const isBig4 = assurance.includes("pwc") || assurance.includes("deloitte") || 
                   assurance.includes("ey") || assurance.includes("kpmg");
@@ -181,26 +201,53 @@ function calculateScore(data) {
         bonuses.push("Scope 3 Big 4 verified (+2)");
     }
     
-    // 3. Risk Penalties
-    data.carbon.errors?.forEach(err => {
-        if (err.severity === "high") {
-            score -= 10;
-            deductions.push(`High risk: ${err.issue} (-10)`);
-        } else if (err.severity === "medium") {
-            score -= 5;
-            deductions.push(`Medium risk: ${err.issue} (-5)`);
-        }
-    });
+    // Apply final score within bounds
+    const finalScore = Math.max(0, Math.min(maxPossible, Math.round(score)));
     
-    // Ensure score stays within bounds
     return {
-        score: Math.max(0, Math.min(100, Math.round(score))),
+        score: finalScore,
         deductions,
-        bonuses
+        bonuses,
+        maxPossible,
+        riskRating
     };
 }
 
-// 4. Transparent Scoring Display
+// 4. UPDATED RISK RATING FUNCTIONS
+function getRiskRating(data) {
+    const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
+    const reportText = JSON.stringify(data).toLowerCase();
+    const foundRisks = keywords.filter(kw => reportText.includes(kw));
+    
+    return foundRisks.length > 2 ? "🔴 High" : 
+           foundRisks.length > 0 ? "🟠 Medium" : "🟢 Low";
+}
+
+function generateAIRiskRating(data) {
+    const riskRating = getRiskRating(data);
+    const foundRisks = getRiskKeywords(data);
+    
+    return `
+        <div class="airisk-box">
+            <h4>🤖 AI Risk Rating: ${riskRating}</h4>
+            ${riskRating !== "🟢 Low" ? `
+                <p><strong>Score Cap Applied:</strong> ${riskRating === "🟠 Medium" ? "80 (Medium Risk)" : "65 (High Risk)"}</p>
+            ` : ''}
+            ${foundRisks.length ? `
+                <p>Flags detected: ${foundRisks.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}</p>
+                <p>Estimated financial exposure: $${(foundRisks.length * 5000000).toLocaleString()}+</p>
+            ` : '<p>No high-risk patterns detected</p>'}
+        </div>
+    `;
+}
+
+function getRiskKeywords(data) {
+    const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
+    const reportText = JSON.stringify(data).toLowerCase();
+    return keywords.filter(kw => reportText.includes(kw));
+}
+
+// 5. Transparent Scoring Display (UNCHANGED)
 function showScoringDetails(data, scoreResult) {
     const benchmark = industryBenchmarks[data.$brandId] || industryBenchmarks.default;
     
@@ -220,7 +267,7 @@ function showScoringDetails(data, scoreResult) {
             </ul>
             
             <div class="final-score">
-                <strong>Final Score:</strong> ${scoreResult.score}/100
+                <strong>Final Score:</strong> ${scoreResult.score}/${scoreResult.maxPossible || 100}
                 <div class="score-bar">
                     <div style="width:${scoreResult.score}%; background-color:${getScoreColor(scoreResult.score)};"></div>
                 </div>
@@ -240,27 +287,7 @@ function getScoreColor(score) {
     return '#e74c3c'; // Red
 }
 
-// 5. AI Risk Rating
-function generateAIRiskRating(data) {
-    const keywords = ["child labor", "corruption", "greenwashing", "controversy", "violation", "underreport"];
-    const reportText = JSON.stringify(data).toLowerCase();
-    
-    const foundRisks = keywords.filter(kw => reportText.includes(kw));
-    const riskLevel = foundRisks.length > 2 ? "🔴 High" : 
-                     foundRisks.length > 0 ? "🟠 Medium" : "🟢 Low";
-    
-    return `
-        <div class="airisk-box">
-            <h4>🤖 AI Risk Rating: ${riskLevel}</h4>
-            ${foundRisks.length ? `
-                <p>Flags detected: ${foundRisks.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')}</p>
-                <p>Estimated financial exposure: $${(foundRisks.length * 5000000).toLocaleString()}+</p>
-            ` : '<p>No high-risk patterns detected</p>'}
-        </div>
-    `;
-}
-
-// 6. Dynamic Data Loader
+// 6. Dynamic Data Loader (UNCHANGED)
 async function loadBrandData(brand) {
     try {
         const [dynamicData, staticCarbon] = await Promise.all([
@@ -285,7 +312,7 @@ async function loadBrandData(brand) {
     }
 }
 
-// 7. Comparison Function
+// 7. Comparison Function (UNCHANGED)
 async function compareBrands(brand1, brand2) {
     const [data1, data2] = await Promise.all([
         loadBrandData(brand1),
@@ -307,7 +334,7 @@ async function compareBrands(brand1, brand2) {
         <div class="comparison-grid">
             <div>
                 <h3>${data1.name}</h3>
-                <div class="score">${score1.score}/100</div>
+                <div class="score">${score1.score}/${score1.maxPossible || 100}</div>
                 <p class="industry-benchmark">Industry avg: ${benchmark1.score}/100</p>
                 ${generateAIRiskRating(data1)}
                 <div class="chart-container">
@@ -316,7 +343,7 @@ async function compareBrands(brand1, brand2) {
             </div>
             <div>
                 <h3>${data2.name}</h3>
-                <div class="score">${score2.score}/100</div>
+                <div class="score">${score2.score}/${score2.maxPossible || 100}</div>
                 <p class="industry-benchmark">Industry avg: ${benchmark2.score}/100</p>
                 ${generateAIRiskRating(data2)}
                 <div class="chart-container">
@@ -338,7 +365,7 @@ async function compareBrands(brand1, brand2) {
     renderPieChart('chart2', data2);
 }
 
-// 8. Chart Rendering
+// 8. Chart Rendering (UNCHANGED)
 function renderPieChart(id, data) {
     const ctx = document.getElementById(id).getContext('2d');
     new Chart(ctx, {
@@ -360,7 +387,7 @@ function renderPieChart(id, data) {
     });
 }
 
-// 9. Report Generator
+// 9. Report Generator (UNCHANGED except for score display)
 function renderReport(data) {
     const scoreResult = calculateScore(data);
     const benchmark = industryBenchmarks[data.$brandId] || industryBenchmarks.default;
@@ -369,7 +396,7 @@ function renderReport(data) {
         <div class="score-card">
             ${data.$customData ? '<span class="custom-data-badge">📤 User-Uploaded Data</span>' : ''}
             <h2>${data.name} ESG Audit <span class="ai-badge">AI Verified</span></h2>
-            <div class="score">${scoreResult.score}/100</div>
+            <div class="score">${scoreResult.score}/${scoreResult.maxPossible || 100}</div>
             <p class="industry-benchmark">Industry average: ${benchmark.score}/100 (${benchmark.industry})</p>
         </div>
 
@@ -454,7 +481,7 @@ function renderReport(data) {
     renderPieChart('brandChart', data);
 }
 
-// 10. Export Functions
+// 10. Export Functions (UNCHANGED)
 function exportSingleReport(brandName) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -526,7 +553,7 @@ function shareComparison(brand1, brand2) {
     prompt("Share this comparison link:", url);
 }
 
-// 11. File Upload Handling
+// 11. File Upload Handling (UNCHANGED)
 function processUpload() {
     const file = document.getElementById('jsonUpload').files[0];
     if (!file) return;
@@ -557,7 +584,8 @@ function processUpload() {
     };
     reader.readAsText(file);
 }
-// Initialize
+
+// Initialize (UNCHANGED)
 document.addEventListener('DOMContentLoaded', () => {
     // Set up event listeners
     document.getElementById("auditButton").addEventListener("click", async () => {
