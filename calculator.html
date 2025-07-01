@@ -23,7 +23,7 @@
             gap: 10px;
             margin: 20px 0;
         }
-        select, button {
+        select, button, input {
             padding: 10px 15px;
             font-size: 16px;
             border-radius: 5px;
@@ -40,6 +40,12 @@
         }
         button:hover {
             background: #1f6e4a;
+        }
+        button.secondary {
+            background: #3498db;
+        }
+        button.danger {
+            background: #e74c3c;
         }
         #results {
             margin-top: 30px;
@@ -112,6 +118,35 @@
             gap: 10px;
             margin-top: 20px;
         }
+        #uploadModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            width: 80%;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .formula-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .airisk-box {
+            border-left: 4px solid #e74c3c;
+            padding-left: 10px;
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -131,12 +166,25 @@
     </div>
 
     <div class="input-group">
-        <button id="compareBtn">🔍 Compare Competitors</button>
+        <button id="compareBtn" class="secondary">🔍 Compare Competitors</button>
+        <button id="uploadBtn" class="secondary">📤 Upload Custom Data</button>
     </div>
 
     <div id="results"></div>
     <div id="comparisonResults" class="comparison-mode"></div>
 
+    <div id="uploadModal">
+        <div class="modal-content">
+            <h3>📤 Upload Custom ESG Data</h3>
+            <p>Upload a JSON file with your company's ESG data:</p>
+            <input type="file" id="jsonUpload" accept=".json">
+            <div class="input-group" style="margin-top: 15px;">
+                <button onclick="processUpload()">Generate Report</button>
+                <button onclick="document.getElementById('uploadModal').style.display='none'" class="danger">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="calculator.js"></script>
 </body>
-</html>
+    </html>
