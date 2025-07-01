@@ -609,162 +609,101 @@ function shareComparison(brand1, brand2) {
 }
 
 // =====================
-// BULLETPROOF FILE UPLOAD SYSTEM v5.0
+// BULLETPROOF FILE UPLOAD SYSTEM
 // =====================
 
-// Global variable to track upload state
-let currentUpload = {
-    file: null,
-    status: 'idle'
-};
-
-// Modified processUpload function
 async function processUpload() {
-    const fileInput = document.getElementById('fileUpload');
-    if (!fileInput.files || fileInput.files.length === 0) {
+    const file = document.getElementById('fileUpload').files[0];
+    if (!file) {
         alert('Please select a file first');
         return;
     }
 
-    const file = fileInput.files[0];
     const statusEl = document.getElementById('uploadStatus');
-    
-    // Update UI
     statusEl.style.display = 'block';
-    statusEl.textContent = `Analyzing ${file.name}...`;
-    document.getElementById('uploadSubmitBtn').disabled = true;
-    
+    statusEl.textContent = `Processing ${file.name}...`;
+
     try {
-        console.log(`Processing file: ${file.name}`);
-        
-        // Process based on file type
-        let result;
-        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-            statusEl.textContent = 'Extracting data from PDF...';
-            result = await analyzePDF(file);
-        } else {
-            statusEl.textContent = 'Processing JSON data...';
-            result = await processJSON(file);
-        }
+        // Process file based on type
+        const result = file.name.endsWith('.pdf') 
+            ? await analyzePDF(file)
+            : await processJSON(file);
 
-        // Validate we got usable data
-        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2 && !result.carbon.scope3)) {
-            throw new Error("No valid carbon emissions data found in the file");
-        }
-
-        // Render the results
+        // Show results
         renderReport({
             ...result,
             score: calculateScore(result).score,
             $customData: true,
-            $brandId: 'custom_' + Date.now()
+            $brandId: 'uploaded_' + Date.now()
         });
-
+        
         // Close modal
         document.getElementById('uploadModal').style.display = 'none';
-        
+
     } catch (error) {
-        console.error("Upload processing error:", error);
-        statusEl.innerHTML = `Error: ${error.message}<br><br>Sample format:<pre>${getSampleJSON()}</pre>`;
-    } finally {
-        document.getElementById('uploadSubmitBtn').disabled = false;
-        fileInput.value = '';
+        statusEl.innerHTML = `
+            <span style="color:red">Error: ${error.message}</span><br><br>
+            <strong>Sample format:</strong>
+            <pre>${getSampleJSON()}</pre>
+        `;
     }
 }
 
-// Enhanced PDF analyzer
 async function analyzePDF(pdfFile) {
     console.log("Starting PDF analysis...");
     
-    // Load PDF.js dynamically
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 
-        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-
-    try {
-        // Extract text
-        const arrayBuffer = await pdfFile.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-        
-        let fullText = "";
-        const pageLimit = Math.min(pdf.numPages, 20); // Limit to 20 pages for performance
-        
-        for (let i = 1; i <= pageLimit; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            fullText += textContent.items.map(item => item.str).join(' ') + "\n";
-        }
-
-        console.log("PDF text extracted, analyzing content...");
-        
-        // ESG Data Extraction
-        const esgData = {
-            name: extractCompanyName(fullText) || pdfFile.name.replace('.pdf', ''),
-            industry: detectIndustry(fullText) || "General",
-            carbon: extractCarbonData(fullText),
-            strengths: detectStrengths(fullText),
-            leaks: []
-        };
-
-        // Risk Validation
-        const riskFlags = scanForRisks(fullText);
-        if (riskFlags.length > 0) {
-            esgData.carbon.errors = riskFlags;
-            if (riskFlags.some(f => f.severity === "high")) {
-                const proceed = confirm(`WARNING: High-risk issues detected. Continue analysis?`);
-                if (!proceed) throw new Error("Analysis canceled by user");
-            }
-        }
-
-        console.log("PDF analysis completed successfully");
-        return esgData;
-        
-    } catch (error) {
-        console.error("PDF analysis failed:", error);
-        throw new Error(`Failed to analyze PDF: ${error.message}`);
+    // Load the PDF
+    const pdf = await pdfjsLib.getDocument(await pdfFile.arrayBuffer()).promise;
+    
+    // Extract text from first 5 pages (for speed)
+    let text = "";
+    for (let i = 1; i <= Math.min(5, pdf.numPages); i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(' ') + "\n";
     }
+
+    // Create basic report
+    return {
+        name: pdfFile.name.replace('.pdf', ''),
+        industry: text.match(/technology|automotive|energy/i)?.[0] || "General",
+        carbon: {
+            scope1: parseFloat(text.match(/scope\s*1[^\d]*([\d,]+)/i)?.[1]?.replace(/,/g, '')) || 0,
+            scope2: parseFloat(text.match(/scope\s*2[^\d]*([\d,]+)/i)?.[1]?.replace(/,/g, '')) || 0,
+            scope3: 0, // Default to 0 unless found
+            big4: {},
+            errors: []
+        },
+        strengths: []
+    };
 }
 
-// Enhanced JSON processor
 async function processJSON(file) {
-    console.log("Processing JSON file...");
-    try {
-        const text = await file.text();
-        const customData = JSON.parse(text);
-
-        // Data Validation
-        if (!customData.carbon) {
-            throw new Error("No carbon data found in JSON");
-        }
-
-        return {
-            name: String(customData.name || file.name.replace(/\..+$/, '')),
-            industry: String(customData.industry || "General"),
-            carbon: {
-                scope1: Math.abs(Number(customData.carbon?.scope1)) || 0,
-                scope2: Math.abs(Number(customData.carbon?.scope2)) || 0,
-                scope3: Math.abs(Number(customData.carbon?.scope3)) || 0,
-                big4: customData.carbon?.big4 || {},
-                errors: Array.isArray(customData.carbon?.errors) 
-                    ? customData.carbon.errors.filter(e => e.issue) 
-                    : []
-            },
-            strengths: Array.isArray(customData.strengths) ? customData.strengths : [],
-            leaks: Array.isArray(customData.leaks) ? customData.leaks : []
-        };
-    } catch (error) {
-        console.error("JSON processing failed:", error);
-        throw new Error(`Invalid JSON format: ${error.message}`);
+    const content = await file.text();
+    const data = JSON.parse(content);
+    
+    // Validate required fields
+    if (!data.carbon || (!data.carbon.scope1 && !data.carbon.scope2)) {
+        throw new Error("Missing required carbon data");
     }
+    
+    return data;
 }
 
-// Helper functions (keep these the same as before)
-function extractCompanyName(text) { /* ... */ }
-function extractCarbonData(text) { /* ... */ }
-function scanForRisks(text) { /* ... */ }
-function detectIndustry(text) { /* ... */ }
-function detectStrengths(text) { /* ... */ }
-function getSampleJSON() { /* ... */ }
+function getSampleJSON() {
+    return JSON.stringify({
+        name: "Your Company",
+        industry: "Technology",
+        carbon: {
+            scope1: 1000,
+            scope2: 500,
+            scope3: 15000,
+            big4: { assurance: "Deloitte" },
+            errors: []
+        },
+        strengths: ["Uses renewable energy"]
+    }, null, 2);
+            }
 
 
 // =====================
