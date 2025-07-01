@@ -220,10 +220,12 @@
     <div id="uploadModal">
     <div class="modal-content">
         <h3>📤 Upload Custom ESG Data</h3>
-        <p>Upload a JSON or PDF file with your company's ESG data:</p>
-        <input type="file" id="fileUpload" accept=".json,.pdf" style="margin-bottom: 10px;">
+        <p>Upload a JSON or PDF file:</p>
+        <!-- Changed to consistent ID -->
+        <input type="file" id="fileUpload" accept=".json,.pdf">
         <div id="uploadStatus"></div>
-        <div class="input-group" style="margin-top: 15px;">
+        <div class="input-group" style="margin-top:15px;">
+            <!-- Changed to consistent IDs -->
             <button id="uploadSubmitBtn">Generate Report</button>
             <button id="uploadCancelBtn" class="danger">Cancel</button>
         </div>
