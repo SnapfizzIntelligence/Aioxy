@@ -834,70 +834,69 @@ function getSampleJSON() {
     }, null, 2);
 }
 // =====================
-// 11. INITIALIZATION (PUT THIS AT VERY BOTTOM)
+// MOBILE-PROOF INITIALIZATION
 // =====================
 
-// Simple mobile-friendly button handlers
-function setupButtons() {
-    // Audit Button
-    const auditBtn = document.getElementById('auditButton');
-    if (auditBtn) {
-        auditBtn.onclick = function() {
-            const brand = document.getElementById('brandSelect').value;
-            if (!brand) return alert('Select a brand first');
-            loadBrandData(brand).then(renderReport);
-        };
-    }
+// Wait for full DOM load
+function initApp() {
+    // 1. Audit Button - SIMPLIFIED
+    document.getElementById('auditButton').onclick = function() {
+        const brand = document.getElementById('brandSelect').value;
+        if (!brand) return alert('Please select a brand');
+        loadBrandData(brand).then(renderReport);
+    };
 
-    // Compare Button
-    const compareBtn = document.getElementById('compareBtn');
-    if (compareBtn) {
-        compareBtn.onclick = function() {
-            const brand1 = prompt('First brand (e.g., tesla):');
-            const brand2 = prompt('Second brand (e.g., apple):');
-            if (brand1 && brand2) compareBrands(brand1, brand2);
-        };
-    }
+    // 2. Compare Button - SIMPLIFIED
+    document.getElementById('compareBtn').onclick = function() {
+        const brand1 = prompt('First brand (e.g., tesla):');
+        const brand2 = prompt('Second brand (e.g., apple):');
+        if (brand1 && brand2) compareBrands(brand1, brand2);
+    };
 
-    // Upload Button
-    const uploadBtn = document.getElementById('uploadBtn');
-    if (uploadBtn) {
-        uploadBtn.onclick = function() {
-            document.getElementById('uploadModal').style.display = 'block';
-        };
-    }
+    // 3. Upload Button - SIMPLIFIED
+    document.getElementById('uploadBtn').onclick = function() {
+        document.getElementById('uploadModal').style.display = 'block';
+    };
 
-    // Modal Buttons
-    document.getElementById('processBtn').onclick = processUpload;
-    document.getElementById('cancelBtn').onclick = function() {
+    // 4. Modal Buttons - SIMPLIFIED
+    document.getElementById('uploadSubmitBtn').onclick = processUpload;
+    document.getElementById('uploadCancelBtn').onclick = function() {
         document.getElementById('uploadModal').style.display = 'none';
     };
 }
 
-// Mobile-friendly DOM load detection
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupButtons);
+// Ultra-reliable mobile-ready initialization
+if (document.readyState === 'complete') {
+    initApp();
 } else {
-    setupButtons();
+    window.addEventListener('load', initApp);
 }
 
-// Single processUpload function
+// SINGLE processUpload function (mobile-optimized)
 async function processUpload() {
-    const file = document.getElementById('fileUpload').files[0];
-    if (!file) return alert('Select a file first');
+    const fileInput = document.getElementById('fileUpload');
+    if (!fileInput.files.length) return alert('Select a file first');
+    
+    const file = fileInput.files[0];
+    const statusEl = document.getElementById('uploadStatus');
+    statusEl.textContent = 'Processing...';
     
     try {
-        document.getElementById('uploadStatus').textContent = 'Processing...';
-        const result = file.name.endsWith('.pdf') ? await analyzePDF(file) : await processJSON(file);
+        const result = file.name.endsWith('.pdf') 
+            ? await analyzePDF(file) 
+            : await processJSON(file);
+        
         renderReport({
             ...result,
             score: calculateScore(result).score,
             $customData: true
         });
+        
         document.getElementById('uploadModal').style.display = 'none';
-    } catch (e) {
-        alert(`Error: ${e.message}`);
+    } catch (error) {
+        alert('Error: ' + error.message);
     } finally {
-        document.getElementById('uploadStatus').textContent = '';
+        statusEl.textContent = '';
+        fileInput.value = '';
     }
-        }
+}
