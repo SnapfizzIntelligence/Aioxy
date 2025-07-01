@@ -99,11 +99,11 @@ const brandCarbonData = {
     apple: {
         scope1: 55200,
         scope2: 3400,
-        scope3: 15982800,
+        scope3: 18300,
         big4: {
             scope1: 55200,
             scope2: 3400,
-            scope3: null,
+            scope3: 18300,
             assurance: "Apex (Partial verification)",
             source: "https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf"
         },
