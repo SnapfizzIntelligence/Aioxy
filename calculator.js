@@ -846,76 +846,110 @@ function getSampleJSON() {
 */
 
 // =====================
-// FINAL INITIALIZATION FIX
+// INITIALIZATION (FIXED)
 // =====================
-
-// Make core functions globally available
-window.handleAudit = async function() {
-    const brand = document.getElementById("brandSelect").value;
-    if (!brand) return alert("Please select a brand first");
-    
-    try {
-        const data = await loadBrandData(brand);
-        if (data) renderReport(data);
-    } catch (error) {
-        console.error("Audit error:", error);
-        alert("Audit failed. Check console for details.");
-    }
-};
-
-window.handleCompare = function() {
-    const brand1 = prompt("First brand (e.g., tesla):");
-    const brand2 = prompt("Second brand (e.g., apple):");
-    if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
-};
-
-window.handleUpload = function() {
-    document.getElementById("uploadModal").style.display = "block";
-};
-
-window.processUpload = async function() {
-    const fileInput = document.getElementById('jsonUpload');
-    if (!fileInput.files.length) return alert("Please select a file");
-    
-    const file = fileInput.files[0];
-    const statusEl = document.getElementById('uploadStatus');
-    statusEl.textContent = `Processing ${file.name}...`;
-    statusEl.style.display = 'block';
-
-    try {
-        const result = file.type.includes('pdf') 
-            ? await analyzePDF(file) 
-            : await processJSON(file);
-        
-        if (!result?.carbon) throw new Error("Invalid ESG data format");
-        
-        renderReport({
-            ...result,
-            score: calculateScore(result).score,
-            $customData: true
-        });
-    } catch (error) {
-        alert(`Upload failed: ${error.message}\n\nSample format:\n${getSampleJSON()}`);
-        console.error("Upload error:", error);
-    } finally {
-        document.getElementById('uploadModal').style.display = 'none';
-        statusEl.style.display = 'none';
-        fileInput.value = '';
-    }
-};
-
-// Initialize everything when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Setup button listeners
+    // Set up event listeners PROPERLY
     document.getElementById("auditButton").addEventListener("click", handleAudit);
     document.getElementById("compareBtn").addEventListener("click", handleCompare);
     document.getElementById("uploadBtn").addEventListener("click", handleUpload);
     
-    // Handle URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const compare = urlParams.get('compare');
+    // Modal buttons
+    document.querySelector('#uploadModal button[onclick="processUpload()"]')
+        .addEventListener('click', processUpload);
+    document.querySelector('#uploadModal button.danger')
+        .addEventListener('click', () => {
+            document.getElementById('uploadModal').style.display = 'none';
+        });
+
+    // Check URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const compare = params.get('compare');
     if (compare) {
         const [brand1, brand2] = compare.split(',');
         if (brand1 && brand2) compareBrands(brand1, brand2);
     }
 });
+
+// =====================
+// BUTTON HANDLERS (NEW)
+// =====================
+async function handleAudit() {
+    const brand = document.getElementById("brandSelect").value;
+    if (!brand) {
+        alert("Please select a brand first");
+        return;
+    }
+    
+    try {
+        const data = await loadBrandData(brand);
+        if (data) {
+            renderReport(data);
+        } else {
+            alert("Failed to load brand data");
+        }
+    } catch (error) {
+        console.error("Audit failed:", error);
+        alert("An error occurred during the audit");
+    }
+}
+
+function handleCompare() {
+    const brand1 = prompt("Enter first brand (e.g., tesla):");
+    const brand2 = prompt("Enter second brand (e.g., samsung):");
+    if (brand1 && brand2) {
+        compareBrands(brand1.trim(), brand2.trim());
+    }
+}
+
+function handleUpload() {
+    document.getElementById("uploadModal").style.display = "block";
+}
+
+// =====================
+// FIXED UPLOAD HANDLER
+// =====================
+async function processUpload() {
+    const fileInput = document.getElementById('jsonUpload');
+    if (!fileInput.files.length) {
+        alert("Please select a file first");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const statusElement = document.getElementById('uploadStatus');
+    
+    try {
+        // Show loading state
+        statusElement.textContent = `Analyzing ${file.name}...`;
+        statusElement.style.display = 'block';
+
+        let result;
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+            result = await analyzePDF(file);
+        } else {
+            result = await processJSON(file);
+        }
+
+        // Validate we got at least some data
+        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2)) {
+            throw new Error("No valid emissions data found in the file");
+        }
+
+        // Render results
+        renderReport({
+            ...result,
+            score: calculateScore(result).score,
+            $customData: true,
+            $source: `Uploaded ${file.type === 'application/pdf' ? 'PDF' : 'JSON'}`
+        });
+
+    } catch (e) {
+        alert(`Analysis failed: ${e.message}\n\nSample format:\n${getSampleJSON()}`);
+        console.error("Upload Error:", e);
+    } finally {
+        document.getElementById('uploadModal').style.display = 'none';
+        statusElement.style.display = 'none';
+        fileInput.value = ''; // Reset file input
+    }
+            }
