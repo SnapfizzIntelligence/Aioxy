@@ -1,7 +1,11 @@
 // =====================
 // AIOXY ESG AUDITOR (COMPLETE VERSION) - WITH UPDATED SCORING ONLY
 // =====================
-
+// Add missing utility function
+function getScoreColor(score) {
+    return score >= 80 ? '#2e8b57' : 
+           score >= 60 ? '#f39c12' : '#e74c3c';
+}
 // 1. Industry Benchmark Scores (UNCHANGED)
 const industryBenchmarks = {
     tesla: { score: 65, industry: "Automotive" },
@@ -833,86 +837,65 @@ function getSampleJSON() {
         strengths: ["100% renewable energy usage"]
     }, null, 2);
 }
-// =====================
-// MOBILE-PROOF INITIALIZATION (FIXED VERSION)
-// =====================
-
-// Wait for full DOM load
-document.addEventListener('DOMContentLoaded', function() {
+// Ultra-reliable initialization
+function initApp() {
+    console.log("Initializing app...");
+    
     // 1. Audit Button
-    document.getElementById('auditButton').addEventListener('click', function() {
-        const brand = document.getElementById('brandSelect').value;
-        if (!brand) {
-            alert('Please select a brand');
-            return;
-        }
-        loadBrandData(brand).then(renderReport).catch(error => {
-            console.error('Error loading brand data:', error);
-            alert('Failed to load brand data. Please try again.');
+    const auditBtn = document.getElementById('auditButton');
+    if (auditBtn) {
+        auditBtn.addEventListener('click', function() {
+            const brand = document.getElementById('brandSelect').value;
+            if (!brand) {
+                alert('Please select a brand');
+                return;
+            }
+            console.log("Loading brand:", brand);
+            loadBrandData(brand)
+                .then(renderReport)
+                .catch(err => {
+                    console.error("Error:", err);
+                    alert("Error loading data. Check console for details.");
+                });
         });
-    });
+    } else {
+        console.error("Audit button not found!");
+    }
 
     // 2. Compare Button
-    document.getElementById('compareBtn').addEventListener('click', function() {
-        const brand1 = prompt('First brand (e.g., tesla):');
-        const brand2 = prompt('Second brand (e.g., apple):');
-        if (brand1 && brand2) {
-            compareBrands(brand1, brand2);
-        }
-    });
+    const compareBtn = document.getElementById('compareBtn');
+    if (compareBtn) {
+        compareBtn.addEventListener('click', function() {
+            const brand1 = prompt('First brand (e.g., tesla):');
+            const brand2 = prompt('Second brand (e.g., apple):');
+            if (brand1 && brand2) {
+                console.log("Comparing:", brand1, "vs", brand2);
+                compareBrands(brand1, brand2);
+            }
+        });
+    }
 
     // 3. Upload Button
-    document.getElementById('uploadBtn').addEventListener('click', function() {
-        document.getElementById('uploadModal').style.display = 'block';
-    });
+    const uploadBtn = document.getElementById('uploadBtn');
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function() {
+            console.log("Showing upload modal");
+            document.getElementById('uploadModal').style.display = 'block';
+        });
+    }
 
     // 4. Modal Buttons
-    document.getElementById('uploadSubmitBtn').addEventListener('click', processUpload);
-    document.getElementById('uploadCancelBtn').addEventListener('click', function() {
+    document.getElementById('uploadSubmitBtn')?.addEventListener('click', processUpload);
+    document.getElementById('uploadCancelBtn')?.addEventListener('click', function() {
         document.getElementById('uploadModal').style.display = 'none';
     });
-});
 
-// SINGLE processUpload function (fixed version)
-async function processUpload() {
-    const fileInput = document.getElementById('fileUpload');
-    if (!fileInput.files || !fileInput.files.length) {
-        alert('Please select a file first');
-        return;
-    }
-    
-    const file = fileInput.files[0];
-    const statusEl = document.getElementById('uploadStatus');
-    statusEl.style.display = 'block';
-    statusEl.textContent = 'Processing...';
-    
-    try {
-        let result;
-        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-            result = await analyzePDF(file);
-        } else {
-            result = await processJSON(file);
-        }
-        
-        // Validate we got some data
-        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2 && !result.carbon.scope3)) {
-            throw new Error("No valid carbon emissions data found in the file");
-        }
+    console.log("Initialization complete");
+}
 
-        renderReport({
-            ...result,
-            score: calculateScore(result).score,
-            $customData: true,
-            $brandId: 'custom_' + Date.now()
-        });
-        
-        document.getElementById('uploadModal').style.display = 'none';
-    } catch (error) {
-        console.error('Upload processing error:', error);
-        alert(`Error processing file: ${error.message}\n\nFor JSON files, please use this format:\n${getSampleJSON()}`);
-    } finally {
-        statusEl.textContent = '';
-        statusEl.style.display = 'none';
-        fileInput.value = '';
-    }
-                      }
+// Start the app
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+                    }
