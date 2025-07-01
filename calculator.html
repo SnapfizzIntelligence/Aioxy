@@ -72,6 +72,9 @@
             color: #3498db;
             text-decoration: none;
         }
+        .source-link:hover {
+            text-decoration: underline;
+        }
         .score-card {
             background: #f8f9fa;
             padding: 15px;
@@ -164,6 +167,22 @@
             font-size: 14px;
             color: #666;
         }
+        .final-score {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .score-bar {
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .score-bar div {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -204,4 +223,4 @@
 
     <script src="calculator.js"></script>
 </body>
-</html>
+    </html>
