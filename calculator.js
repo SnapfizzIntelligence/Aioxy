@@ -833,57 +833,78 @@ function getSampleJSON() {
         strengths: ["100% renewable energy usage"]
     }, null, 2);
 }
-
 // =====================
 // INITIALIZATION (PUT THIS AT THE VERY BOTTOM)
 // =====================
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM fully loaded"); // Debug line
+    
     // 1. Audit Button
-    document.getElementById('auditButton').addEventListener('click', function() {
-        const brand = document.getElementById('brandSelect').value;
-        if (!brand) {
-            alert('Please select a brand first');
-            return;
-        }
-        loadBrandData(brand).then(renderReport).catch(err => {
-            console.error('Audit failed:', err);
-            alert('Error loading brand data');
+    const auditBtn = document.getElementById('auditButton');
+    if (auditBtn) {
+        auditBtn.addEventListener('click', function() {
+            const brand = document.getElementById('brandSelect').value;
+            if (!brand) return alert('Please select a brand first');
+            
+            console.log("Running audit for:", brand); // Debug line
+            loadBrandData(brand)
+                .then(data => {
+                    if (data) renderReport(data);
+                    else alert("Brand data not found");
+                })
+                .catch(err => {
+                    console.error("Audit error:", err);
+                    alert("Error during audit");
+                });
         });
-    });
+    }
 
     // 2. Compare Button
-    document.getElementById('compareBtn').addEventListener('click', function() {
-        const brand1 = prompt('First brand (e.g., tesla):');
-        const brand2 = prompt('Second brand (e.g., apple):');
-        if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
-    });
+    const compareBtn = document.getElementById('compareBtn');
+    if (compareBtn) {
+        compareBtn.addEventListener('click', function() {
+            const brand1 = prompt('Enter first brand (e.g., tesla):');
+            const brand2 = prompt('Enter second brand (e.g., apple):');
+            if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
+        });
+    }
 
     // 3. Upload Button
-    document.getElementById('uploadBtn').addEventListener('click', function() {
-        document.getElementById('uploadModal').style.display = 'block';
-    });
+    const uploadBtn = document.getElementById('uploadBtn');
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function() {
+            document.getElementById('uploadModal').style.display = 'block';
+            console.log("Upload modal opened"); // Debug line
+        });
+    }
 
     // 4. Modal Buttons
-    document.getElementById('processBtn').addEventListener('click', processUpload);
-    document.getElementById('cancelBtn').addEventListener('click', function() {
+    const submitBtn = document.getElementById('uploadSubmitBtn');
+    const cancelBtn = document.getElementById('uploadCancelBtn');
+    
+    if (submitBtn) submitBtn.addEventListener('click', processUpload);
+    if (cancelBtn) cancelBtn.addEventListener('click', function() {
         document.getElementById('uploadModal').style.display = 'none';
     });
 
-    // Check for URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const compare = urlParams.get('compare');
-    if (compare) {
-        const brands = compare.split(',');
-        if (brands.length === 2) compareBrands(brands[0], brands[1]);
-    }
+    // Debug: Check if all elements exist
+    console.log("Elements found:", {
+        auditBtn: !!auditBtn,
+        compareBtn: !!compareBtn,
+        uploadBtn: !!uploadBtn,
+        submitBtn: !!submitBtn,
+        cancelBtn: !!cancelBtn
+    });
 });
 
-// Make sure this is your ONLY processUpload function
+// SINGLE processUpload IMPLEMENTATION
 async function processUpload() {
+    console.log("Upload process started"); // Debug line
+    
     const fileInput = document.getElementById('fileUpload');
     const statusElement = document.getElementById('uploadStatus');
     
-    if (!fileInput.files.length) {
+    if (!fileInput || !fileInput.files.length) {
         alert('Please select a file first');
         return;
     }
@@ -893,24 +914,42 @@ async function processUpload() {
     statusElement.style.display = 'block';
 
     try {
-        const result = file.name.endsWith('.pdf') 
-            ? await analyzePDF(file) 
+        console.log("Processing file:", file.name); // Debug line
+        const result = file.type.includes('pdf') || file.name.endsWith('.pdf')
+            ? await analyzePDF(file)
             : await processJSON(file);
         
-        if (!result.carbon) throw new Error('Invalid ESG data format');
+        if (!result?.carbon) throw new Error("Invalid ESG data format");
         
+        console.log("File processed successfully"); // Debug line
         renderReport({
             ...result,
             score: calculateScore(result).score,
-            $customData: true
+            $customData: true,
+            $source: `Uploaded ${file.type.includes('pdf') ? 'PDF' : 'JSON'}`
         });
         
         document.getElementById('uploadModal').style.display = 'none';
     } catch (error) {
-        alert(`Error: ${error.message}\n\nSample format:\n${getSampleJSON()}`);
-        console.error('Upload failed:', error);
+        console.error("Upload error:", error); // Debug line
+        alert(`Error processing file: ${error.message}\n\nSample format:\n${getSampleJSON()}`);
     } finally {
         statusElement.style.display = 'none';
         fileInput.value = '';
     }
-    }
+}
+
+// Add these missing helper functions if not present
+function getRiskKeywords(data) {
+    const text = JSON.stringify(data).toLowerCase();
+    return [
+        "child labor", "corruption", "greenwashing", 
+        "violation", "underreport", "controversy",
+        "lawsuit", "fraud", "exploitation"
+    ].filter(keyword => text.includes(keyword));
+}
+
+function getScoreColor(score) {
+    return score >= 80 ? '#2ecc71' : 
+           score >= 60 ? '#f39c12' : '#e74c3c';
+                                                  }
