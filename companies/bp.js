@@ -1,7 +1,7 @@
 export default {
   name: "BP",
   industry: "Energy",
-  score: 61,
+  score: 52,
   leaks: [
     {
       issue: "Scope 3 emissions increased by 8% YoY (2022–2023)",
