@@ -78,6 +78,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
+            position: relative;
         }
         .score {
             font-size: 2.5rem;
@@ -136,16 +137,32 @@
             padding: 20px;
             border-radius: 10px;
         }
-        .formula-box {
+        .transparency-box {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
             margin: 15px 0;
+            border-left: 4px solid #6e8efb;
         }
-        .airisk-box {
-            border-left: 4px solid #e74c3c;
-            padding-left: 10px;
-            margin: 15px 0;
+        .custom-data-badge {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: inline-block;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .data-source {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        .industry-benchmark {
+            font-size: 14px;
+            color: #666;
         }
     </style>
 </head>
@@ -187,4 +204,4 @@
 
     <script src="calculator.js"></script>
 </body>
-    </html>
+</html>
