@@ -15,8 +15,8 @@ const industryBenchmarks = {
 // 2. Static Carbon Data with REAL Sources
 const brandCarbonData = {
     bp: {
-        scope1: 31.1,
-        scope2: 1.0,
+        scope1: 32.8,
+        scope2: 0.8,
         scope3: 314.9,
         big4: {
             scope1: 31.1,
@@ -121,7 +121,7 @@ const brandCarbonData = {
     microsoft: {
         scope1: 144960,
         scope2: 393134,
-        scope3: 16475520,
+        scope3: 14819000,
         big4: {
             scope1: 144960,
             scope2: 393134,
