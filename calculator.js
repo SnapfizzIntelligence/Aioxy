@@ -846,34 +846,27 @@ function getSampleJSON() {
 */
 
 // =====================
-// INITIALIZATION (FIXED VERSION)
+// FINAL INITIALIZATION FIX
 // =====================
 
-// Make these functions global so HTML can access them
+// Make core functions globally available
 window.handleAudit = async function() {
     const brand = document.getElementById("brandSelect").value;
-    if (!brand) {
-        alert("Please select a brand first");
-        return;
-    }
+    if (!brand) return alert("Please select a brand first");
     
     try {
         const data = await loadBrandData(brand);
-        if (data) {
-            renderReport(data);
-        }
+        if (data) renderReport(data);
     } catch (error) {
-        console.error("Audit failed:", error);
-        alert("An error occurred during the audit");
+        console.error("Audit error:", error);
+        alert("Audit failed. Check console for details.");
     }
 };
 
 window.handleCompare = function() {
-    const brand1 = prompt("Enter first brand (e.g., tesla):");
-    const brand2 = prompt("Enter second brand (e.g., samsung):");
-    if (brand1 && brand2) {
-        compareBrands(brand1.trim(), brand2.trim());
-    }
+    const brand1 = prompt("First brand (e.g., tesla):");
+    const brand2 = prompt("Second brand (e.g., apple):");
+    if (brand1 && brand2) compareBrands(brand1.trim(), brand2.trim());
 };
 
 window.handleUpload = function() {
@@ -882,55 +875,45 @@ window.handleUpload = function() {
 
 window.processUpload = async function() {
     const fileInput = document.getElementById('jsonUpload');
-    if (!fileInput.files.length) {
-        alert("Please select a file first");
-        return;
-    }
-
-    const file = fileInput.files[0];
-    const statusElement = document.getElementById('uploadStatus');
+    if (!fileInput.files.length) return alert("Please select a file");
     
+    const file = fileInput.files[0];
+    const statusEl = document.getElementById('uploadStatus');
+    statusEl.textContent = `Processing ${file.name}...`;
+    statusEl.style.display = 'block';
+
     try {
-        statusElement.textContent = `Analyzing ${file.name}...`;
-        statusElement.style.display = 'block';
-
-        let result;
-        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-            result = await analyzePDF(file);
-        } else {
-            result = await processJSON(file);
-        }
-
-        if (!result.carbon || (!result.carbon.scope1 && !result.carbon.scope2)) {
-            throw new Error("No valid emissions data found in the file");
-        }
-
+        const result = file.type.includes('pdf') 
+            ? await analyzePDF(file) 
+            : await processJSON(file);
+        
+        if (!result?.carbon) throw new Error("Invalid ESG data format");
+        
         renderReport({
             ...result,
             score: calculateScore(result).score,
-            $customData: true,
-            $source: `Uploaded ${file.type === 'application/pdf' ? 'PDF' : 'JSON'}`
+            $customData: true
         });
-
-    } catch (e) {
-        alert(`Analysis failed: ${e.message}\n\nSample format:\n${getSampleJSON()}`);
-        console.error("Upload Error:", e);
+    } catch (error) {
+        alert(`Upload failed: ${error.message}\n\nSample format:\n${getSampleJSON()}`);
+        console.error("Upload error:", error);
     } finally {
         document.getElementById('uploadModal').style.display = 'none';
-        statusElement.style.display = 'none';
+        statusEl.style.display = 'none';
         fileInput.value = '';
     }
 };
 
-// Initialize event listeners when DOM is loaded
+// Initialize everything when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    // Setup button listeners
     document.getElementById("auditButton").addEventListener("click", handleAudit);
     document.getElementById("compareBtn").addEventListener("click", handleCompare);
     document.getElementById("uploadBtn").addEventListener("click", handleUpload);
     
-    // Check for URL parameters
-    const params = new URLSearchParams(window.location.search);
-    const compare = params.get('compare');
+    // Handle URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const compare = urlParams.get('compare');
     if (compare) {
         const [brand1, brand2] = compare.split(',');
         if (brand1 && brand2) compareBrands(brand1, brand2);
