@@ -1,7 +1,7 @@
 export default {
   name: "Tesla",
   industry: "Automotive",
-  score: 75,
+  score: 68,
   revenueRisk: "$1.45B (Lithium sourcing gaps, battery inefficiencies, and geopolitical reputational risk)",
 
   leaks: [
