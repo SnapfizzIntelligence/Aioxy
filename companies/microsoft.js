@@ -1,7 +1,7 @@
 export default {
   name: "Microsoft Corporation",
   industry: "Technology (Software)",
-  score: 87,
+  score: 78,
   revenueRisk: "$1.5B (FY24 increased cloud and AI marketing costs impacting customer acquisition and retention)",
 
   leaks: [
