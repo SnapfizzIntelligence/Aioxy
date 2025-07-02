@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aioxy GHG Auditor | Enterprise Emissions Calculator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="aioxy.js"></script> <!-- CRITICAL CONNECTION -->
+    <script src="aioxy.js"></script> <!-- ABSOLUTELY CRITICAL CONNECTION -->
     <style>
         :root { --aioxy-green: #2e8b57; --aioxy-dark: #1a3e2d; }
         body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
@@ -13,6 +13,8 @@
         .input-section { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         button { background: var(--aioxy-green); color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; }
         #error-message { color: red; font-weight: bold; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
     </style>
 </head>
 <body>
@@ -56,6 +58,29 @@
         <h2>3. Scope 2: Purchased Energy</h2>
         <input type="number" id="electricity" placeholder="kWh">
         <p><strong>Total Scope 2 Emissions:</strong> <span id="scope2-total">0</span> kg CO₂e</p>
+    </div>
+
+    <!-- SCOPE 3 -->
+    <div class="input-section">
+        <h2>4. Scope 3: Indirect Emissions</h2>
+        <table>
+            <tr>
+                <th>Fuel Type</th>
+                <th>Quantity</th>
+                <th>CO₂e (kg)</th>
+            </tr>
+            <tr>
+                <td>Petrol (WTT)</td>
+                <td><input type="number" id="petrol-wtt" placeholder="0"></td>
+                <td id="petrol-wtt-result">0</td>
+            </tr>
+            <tr>
+                <td>Diesel (WTT)</td>
+                <td><input type="number" id="diesel-wtt" placeholder="0"></td>
+                <td id="diesel-wtt-result">0</td>
+            </tr>
+        </table>
+        <p><strong>Total Scope 3 Emissions:</strong> <span id="scope3-total">0</span> kg CO₂e</p>
     </div>
 
     <!-- RESULTS -->
@@ -119,8 +144,21 @@
                 const elecFactor = AioxyGHGData.getFactor(region, 'scope2', 'electricity').factor;
                 document.getElementById('scope2-total').textContent = (electricity * elecFactor).toFixed(2);
 
-                // Total
-                const total = (petrol * petrolFactor + diesel * dieselFactor + electricity * elecFactor);
+                // Scope 3
+                const petrolWTT = parseFloat(document.getElementById('petrol-wtt').value) || 0;
+                const dieselWTT = parseFloat(document.getElementById('diesel-wtt').value) || 0;
+                const petrolWTTFactor = AioxyGHGData.getFactor(region, 'scope3', 'fuel_wtt').petrol.factor;
+                const dieselWTTFactor = AioxyGHGData.getFactor(region, 'scope3', 'fuel_wtt').diesel.factor;
+                
+                document.getElementById('petrol-wtt-result').textContent = (petrolWTT * petrolWTTFactor).toFixed(2);
+                document.getElementById('diesel-wtt-result').textContent = (dieselWTT * dieselWTTFactor).toFixed(2);
+                document.getElementById('scope3-total').textContent = 
+                    (petrolWTT * petrolWTTFactor + dieselWTT * dieselWTTFactor).toFixed(2);
+
+                // Grand Total
+                const total = (petrol * petrolFactor + diesel * dieselFactor + 
+                              electricity * elecFactor + 
+                              petrolWTT * petrolWTTFactor + dieselWTT * dieselWTTFactor);
                 document.getElementById('total-emissions').textContent = total.toFixed(2);
 
                 document.getElementById('error-message').textContent = '';
@@ -132,4 +170,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
