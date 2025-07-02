@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aioxy GHG Auditor | Enterprise-Grade Emissions Calculator</title>
+    <title>Aioxy GHG Auditor | Enterprise Emissions Calculator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-    <script src="Aioxy-GHG-data.js"></script>
+    <script src="aioxy.js"></script>
     <style>
         :root {
             --aioxy-green: #2e8b57;
@@ -49,6 +49,7 @@
             border-radius: 4px;
             width: 100%;
             box-sizing: border-box;
+            margin-bottom: 10px;
         }
         table {
             width: 100%;
@@ -97,6 +98,10 @@
             text-align: center;
             margin-top: 40px;
             color: #666;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -206,6 +211,8 @@
         <button id="calculate-btn">Calculate All</button>
         <button id="export-pdf">Export to PDF</button>
         <button id="reset-btn">Reset All</button>
+        
+        <div id="error-message" class="error"></div>
     </div>
 
     <footer>
@@ -213,24 +220,32 @@
     </footer>
 
     <script>
-        <script src="aioxy.js"></script>
-    
+        // Debugging: Check if JS file loaded
+        console.log("AioxyGHGData available?", typeof AioxyGHGData !== 'undefined');
+        
         // Initialize jsPDF
         const { jsPDF } = window.jspdf;
 
         // DOM Elements
         const regionSelect = document.getElementById('region-select');
         const auditMode = document.getElementById('audit-mode');
+        const errorMessage = document.getElementById('error-message');
         
         // Populate country dropdown
         function loadCountries() {
-            const countries = AioxyGHGData.getCountries();
-            countries.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country;
-                option.textContent = country;
-                regionSelect.appendChild(option);
-            });
+            try {
+                const countries = AioxyGHGData.getCountries();
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country;
+                    option.textContent = country;
+                    regionSelect.appendChild(option);
+                });
+                errorMessage.textContent = '';
+            } catch (e) {
+                errorMessage.textContent = 'Error: Could not load emission data. Please check aioxy.js is properly linked.';
+                console.error("Data loading failed:", e);
+            }
         }
 
         // Update factors when region changes
@@ -238,18 +253,24 @@
             const region = this.value;
             if (!region) return;
             
-            // Scope 1
-            updateFactorDisplay('petrol', region, 'scope1', 'fuel');
-            updateFactorDisplay('diesel', region, 'scope1', 'fuel');
-            
-            // Scope 2
-            updateFactorDisplay('electricity', region, 'scope2', 'electricity');
-            
-            // Scope 3
-            updateFactorDisplay('petrol-wtt', region, 'scope3', 'fuel_wtt');
-            updateFactorDisplay('diesel-wtt', region, 'scope3', 'fuel_wtt');
-            
-            calculateAll();
+            try {
+                // Scope 1
+                updateFactorDisplay('petrol', region, 'scope1', 'fuel');
+                updateFactorDisplay('diesel', region, 'scope1', 'fuel');
+                
+                // Scope 2
+                updateFactorDisplay('electricity', region, 'scope2', 'electricity');
+                
+                // Scope 3
+                updateFactorDisplay('petrol-wtt', region, 'scope3', 'fuel_wtt');
+                updateFactorDisplay('diesel-wtt', region, 'scope3', 'fuel_wtt');
+                
+                calculateAll();
+                errorMessage.textContent = '';
+            } catch (e) {
+                errorMessage.textContent = `Error loading data for ${region}. Check console for details.`;
+                console.error("Region data error:", e);
+            }
         });
 
         // Toggle audit sources
@@ -261,6 +282,10 @@
         function updateFactorDisplay(elementPrefix, region, scope, category) {
             const type = elementPrefix.includes('wtt') ? elementPrefix.split('-')[0] : elementPrefix;
             const data = AioxyGHGData.getFactor(region, scope, category)[type];
+            
+            if (!data) {
+                throw new Error(`No data found for ${region}/${scope}/${category}[${type}]`);
+            }
             
             document.getElementById(`${elementPrefix}-factor`).textContent = data.factor;
             
@@ -277,28 +302,35 @@
             const region = regionSelect.value;
             if (!region) return;
             
-            // Scope 1
-            calculateEmission('petrol', region, 'scope1', 'fuel');
-            calculateEmission('diesel', region, 'scope1', 'fuel');
-            const scope1Total = parseFloat(document.getElementById('petrol-result').textContent) + 
-                               parseFloat(document.getElementById('diesel-result').textContent);
-            document.getElementById('scope1-total').textContent = scope1Total.toFixed(2);
-            
-            // Scope 2
-            calculateEmission('electricity', region, 'scope2', 'electricity');
-            const scope2Total = parseFloat(document.getElementById('electricity-result').textContent);
-            document.getElementById('scope2-total').textContent = scope2Total.toFixed(2);
-            
-            // Scope 3
-            calculateEmission('petrol-wtt', region, 'scope3', 'fuel_wtt');
-            calculateEmission('diesel-wtt', region, 'scope3', 'fuel_wtt');
-            const scope3Total = parseFloat(document.getElementById('petrol-wtt-result').textContent) + 
-                               parseFloat(document.getElementById('diesel-wtt-result').textContent);
-            document.getElementById('scope3-total').textContent = scope3Total.toFixed(2);
-            
-            // Grand Total
-            const total = scope1Total + scope2Total + scope3Total;
-            document.getElementById('total-emissions').textContent = total.toFixed(2);
+            try {
+                // Scope 1
+                calculateEmission('petrol', region, 'scope1', 'fuel');
+                calculateEmission('diesel', region, 'scope1', 'fuel');
+                const scope1Total = parseFloat(document.getElementById('petrol-result').textContent) + 
+                                   parseFloat(document.getElementById('diesel-result').textContent);
+                document.getElementById('scope1-total').textContent = scope1Total.toFixed(2);
+                
+                // Scope 2
+                calculateEmission('electricity', region, 'scope2', 'electricity');
+                const scope2Total = parseFloat(document.getElementById('electricity-result').textContent);
+                document.getElementById('scope2-total').textContent = scope2Total.toFixed(2);
+                
+                // Scope 3
+                calculateEmission('petrol-wtt', region, 'scope3', 'fuel_wtt');
+                calculateEmission('diesel-wtt', region, 'scope3', 'fuel_wtt');
+                const scope3Total = parseFloat(document.getElementById('petrol-wtt-result').textContent) + 
+                                   parseFloat(document.getElementById('diesel-wtt-result').textContent);
+                document.getElementById('scope3-total').textContent = scope3Total.toFixed(2);
+                
+                // Grand Total
+                const total = scope1Total + scope2Total + scope3Total;
+                document.getElementById('total-emissions').textContent = total.toFixed(2);
+                
+                errorMessage.textContent = '';
+            } catch (e) {
+                errorMessage.textContent = 'Calculation error. Please check inputs and try again.';
+                console.error("Calculation failed:", e);
+            }
         }
 
         function calculateEmission(inputId, region, scope, category) {
@@ -309,22 +341,37 @@
             const quantity = parseFloat(inputElement.value) || 0;
             const factorData = AioxyGHGData.getFactor(region, scope, category)[type];
             
+            if (!factorData) {
+                throw new Error(`Missing factor data for ${inputId}`);
+            }
+            
             resultElement.textContent = (quantity * factorData.factor).toFixed(2);
         }
 
         // PDF Export
         document.getElementById('export-pdf').addEventListener('click', function() {
-            const doc = new jsPDF();
-            const region = regionSelect.value;
-            
-            // Title
-            doc.setFontSize(18);
-            doc.text(`Aioxy GHG Emissions Report (${region})`, 105, 15, { align: 'center' });
-            
-            // Add content...
-            // (Full PDF generation code would go here)
-            
-            doc.save(`Aioxy_GHG_Report_${region}.pdf`);
+            try {
+                const doc = new jsPDF();
+                const region = regionSelect.value;
+                
+                // Title
+                doc.setFontSize(18);
+                doc.text(`Aioxy GHG Emissions Report (${region})`, 105, 15, { align: 'center' });
+                
+                // Add content...
+                doc.setFontSize(12);
+                doc.text(`Scope 1 Emissions: ${document.getElementById('scope1-total').textContent} kg CO₂e`, 15, 30);
+                doc.text(`Scope 2 Emissions: ${document.getElementById('scope2-total').textContent} kg CO₂e`, 15, 40);
+                doc.text(`Scope 3 Emissions: ${document.getElementById('scope3-total').textContent} kg CO₂e`, 15, 50);
+                doc.text(`Total Emissions: ${document.getElementById('total-emissions').textContent} kg CO₂e`, 15, 60);
+                
+                // Save PDF
+                doc.save(`Aioxy_GHG_Report_${region}.pdf`);
+                errorMessage.textContent = '';
+            } catch (e) {
+                errorMessage.textContent = 'Failed to generate PDF. Try again or check console.';
+                console.error("PDF generation failed:", e);
+            }
         });
 
         // Reset
@@ -342,7 +389,13 @@
                 input.addEventListener('input', calculateAll);
             });
             document.getElementById('calculate-btn').addEventListener('click', calculateAll);
+            
+            // Debug connection
+            console.log("Script initialized successfully");
+            if (typeof AioxyGHGData === 'undefined') {
+                errorMessage.textContent = 'CRITICAL: aioxy.js not loaded properly! Check file name and path.';
+            }
         });
     </script>
 </body>
-</html>
+                        </html>
