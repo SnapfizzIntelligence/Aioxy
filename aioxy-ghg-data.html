@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aioxy GHG Auditor | Enterprise-Grade Emissions Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+    <script src="Aioxy-GHG-data.js"></script>
+    <style>
+        :root {
+            --aioxy-green: #2e8b57;
+            --aioxy-dark: #1a3e2d;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        header {
+            background: var(--aioxy-dark);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+        h2 {
+            color: var(--aioxy-green);
+            border-bottom: 2px solid var(--aioxy-green);
+            padding-bottom: 5px;
+        }
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        select, input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
+        }
+        button {
+            background: var(--aioxy-green);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #1f6e4a;
+            transform: translateY(-2px);
+        }
+        #results {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .source-note {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .audit-toggle {
+            float: right;
+            font-size: 0.9em;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Aioxy GHG Auditor</h1>
+        <p>Enterprise-grade emissions calculator | 100% client-side | Audit-ready</p>
+    </header>
+
+    <div class="input-section">
+        <h2>1. Select Region</h2>
+        <select id="region-select">
+            <option value="">-- Select Country --</option>
+            <!-- Populated by JavaScript -->
+        </select>
+        
+        <label class="audit-toggle">
+            <input type="checkbox" id="audit-mode"> Show audit sources
+        </label>
+    </div>
+
+    <!-- SCOPE 1 -->
+    <div class="input-section">
+        <h2>2. Scope 1: Direct Emissions</h2>
+        <table>
+            <tr>
+                <th>Fuel Type</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Emission Factor</th>
+                <th>CO₂e (kg)</th>
+            </tr>
+            <tr>
+                <td>Petrol</td>
+                <td><input type="number" id="petrol" placeholder="0"></td>
+                <td>litres</td>
+                <td><span id="petrol-factor">0</span> <span class="source-note" id="petrol-source"></span></td>
+                <td id="petrol-result">0</td>
+            </tr>
+            <tr>
+                <td>Diesel</td>
+                <td><input type="number" id="diesel" placeholder="0"></td>
+                <td>litres</td>
+                <td><span id="diesel-factor">0</span> <span class="source-note" id="diesel-source"></span></td>
+                <td id="diesel-result">0</td>
+            </tr>
+        </table>
+        <p><strong>Total Scope 1 Emissions:</strong> <span id="scope1-total">0</span> kg CO₂e</p>
+    </div>
+
+    <!-- SCOPE 2 -->
+    <div class="input-section">
+        <h2>3. Scope 2: Purchased Energy</h2>
+        <table>
+            <tr>
+                <th>Energy Type</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Emission Factor</th>
+                <th>CO₂e (kg)</th>
+            </tr>
+            <tr>
+                <td>Electricity</td>
+                <td><input type="number" id="electricity" placeholder="0"></td>
+                <td>kWh</td>
+                <td><span id="electricity-factor">0</span> <span class="source-note" id="electricity-source"></span></td>
+                <td id="electricity-result">0</td>
+            </tr>
+        </table>
+        <p><strong>Total Scope 2 Emissions:</strong> <span id="scope2-total">0</span> kg CO₂e</p>
+    </div>
+
+    <!-- SCOPE 3 -->
+    <div class="input-section">
+        <h2>4. Scope 3: Indirect Emissions</h2>
+        <table>
+            <tr>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Emission Factor</th>
+                <th>CO₂e (kg)</th>
+            </tr>
+            <tr>
+                <td>Petrol (WTT)</td>
+                <td><input type="number" id="petrol-wtt" placeholder="0"></td>
+                <td>litres</td>
+                <td><span id="petrol-wtt-factor">0</span> <span class="source-note" id="petrol-wtt-source"></span></td>
+                <td id="petrol-wtt-result">0</td>
+            </tr>
+            <tr>
+                <td>Diesel (WTT)</td>
+                <td><input type="number" id="diesel-wtt" placeholder="0"></td>
+                <td>litres</td>
+                <td><span id="diesel-wtt-factor">0</span> <span class="source-note" id="diesel-wtt-source"></span></td>
+                <td id="diesel-wtt-result">0</td>
+            </tr>
+        </table>
+        <p><strong>Total Scope 3 Emissions:</strong> <span id="scope3-total">0</span> kg CO₂e</p>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results">
+        <h2>Emissions Report</h2>
+        <p><strong>Total GHG Emissions:</strong> <span id="total-emissions">0</span> kg CO₂e</p>
+        
+        <button id="calculate-btn">Calculate All</button>
+        <button id="export-pdf">Export to PDF</button>
+        <button id="reset-btn">Reset All</button>
+    </div>
+
+    <footer>
+        <p>Aioxy GHG Auditor | Open-source alternative to $100K consultancy reports</p>
+    </footer>
+
+    <script>
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+
+        // DOM Elements
+        const regionSelect = document.getElementById('region-select');
+        const auditMode = document.getElementById('audit-mode');
+        
+        // Populate country dropdown
+        function loadCountries() {
+            const countries = AioxyGHGData.getCountries();
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                regionSelect.appendChild(option);
+            });
+        }
+
+        // Update factors when region changes
+        regionSelect.addEventListener('change', function() {
+            const region = this.value;
+            if (!region) return;
+            
+            // Scope 1
+            updateFactorDisplay('petrol', region, 'scope1', 'fuel');
+            updateFactorDisplay('diesel', region, 'scope1', 'fuel');
+            
+            // Scope 2
+            updateFactorDisplay('electricity', region, 'scope2', 'electricity');
+            
+            // Scope 3
+            updateFactorDisplay('petrol-wtt', region, 'scope3', 'fuel_wtt');
+            updateFactorDisplay('diesel-wtt', region, 'scope3', 'fuel_wtt');
+            
+            calculateAll();
+        });
+
+        // Toggle audit sources
+        auditMode.addEventListener('change', function() {
+            calculateAll();
+        });
+
+        // Update factor displays
+        function updateFactorDisplay(elementPrefix, region, scope, category) {
+            const type = elementPrefix.includes('wtt') ? elementPrefix.split('-')[0] : elementPrefix;
+            const data = AioxyGHGData.getFactor(region, scope, category)[type];
+            
+            document.getElementById(`${elementPrefix}-factor`).textContent = data.factor;
+            
+            if (auditMode.checked) {
+                document.getElementById(`${elementPrefix}-source`).innerHTML = 
+                    `| Source: <a href="${data.source_url}" target="_blank">${data.source}</a>`;
+            } else {
+                document.getElementById(`${elementPrefix}-source`).textContent = '';
+            }
+        }
+
+        // Main calculation function
+        function calculateAll() {
+            const region = regionSelect.value;
+            if (!region) return;
+            
+            // Scope 1
+            calculateEmission('petrol', region, 'scope1', 'fuel');
+            calculateEmission('diesel', region, 'scope1', 'fuel');
+            const scope1Total = parseFloat(document.getElementById('petrol-result').textContent) + 
+                               parseFloat(document.getElementById('diesel-result').textContent);
+            document.getElementById('scope1-total').textContent = scope1Total.toFixed(2);
+            
+            // Scope 2
+            calculateEmission('electricity', region, 'scope2', 'electricity');
+            const scope2Total = parseFloat(document.getElementById('electricity-result').textContent);
+            document.getElementById('scope2-total').textContent = scope2Total.toFixed(2);
+            
+            // Scope 3
+            calculateEmission('petrol-wtt', region, 'scope3', 'fuel_wtt');
+            calculateEmission('diesel-wtt', region, 'scope3', 'fuel_wtt');
+            const scope3Total = parseFloat(document.getElementById('petrol-wtt-result').textContent) + 
+                               parseFloat(document.getElementById('diesel-wtt-result').textContent);
+            document.getElementById('scope3-total').textContent = scope3Total.toFixed(2);
+            
+            // Grand Total
+            const total = scope1Total + scope2Total + scope3Total;
+            document.getElementById('total-emissions').textContent = total.toFixed(2);
+        }
+
+        function calculateEmission(inputId, region, scope, category) {
+            const type = inputId.includes('wtt') ? inputId.split('-')[0] : inputId;
+            const inputElement = document.getElementById(inputId);
+            const resultElement = document.getElementById(`${inputId}-result`);
+            
+            const quantity = parseFloat(inputElement.value) || 0;
+            const factorData = AioxyGHGData.getFactor(region, scope, category)[type];
+            
+            resultElement.textContent = (quantity * factorData.factor).toFixed(2);
+        }
+
+        // PDF Export
+        document.getElementById('export-pdf').addEventListener('click', function() {
+            const doc = new jsPDF();
+            const region = regionSelect.value;
+            
+            // Title
+            doc.setFontSize(18);
+            doc.text(`Aioxy GHG Emissions Report (${region})`, 105, 15, { align: 'center' });
+            
+            // Add content...
+            // (Full PDF generation code would go here)
+            
+            doc.save(`Aioxy_GHG_Report_${region}.pdf`);
+        });
+
+        // Reset
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.value = '';
+            });
+            calculateAll();
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCountries();
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', calculateAll);
+            });
+            document.getElementById('calculate-btn').addEventListener('click', calculateAll);
+        });
+    </script>
+</body>
+</html>
