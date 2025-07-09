@@ -144,9 +144,10 @@ function showResults(total, materials, energy, transport, country, details) {
             <ul>${details.transport.map(t => 
                 `<li>${t.weight} kg × ${t.distance} km ${t.mode} @ ${t.factor} kg/ton-km = ${t.co2.toFixed(2)} kg</li>`
             ).join('')}</ul>
+
+            <p class="total-co2">🧮 Total CO₂e: ${total.toFixed(2)} kg</p>
         </div>
         <p class="source">Data Sources: ${sources[country]}</p>`;
-
     // Pie Chart
     const ctx = document.getElementById('chart').getContext('2d');
     const chart = new Chart(ctx, {
