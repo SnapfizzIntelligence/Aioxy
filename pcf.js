@@ -66,37 +66,58 @@ function addTransport() {
 function calculatePCF() {
     const country = document.getElementById('product-country').value;
     
-    // 1. MATERIALS (Weight × Factor)
+    // 1. MATERIALS (INCLUDES PACKAGING)
     let materialCO2 = 0;
+    const materialsLog = [];
     document.querySelectorAll('#materials-container .input-row').forEach(row => {
         const type = row.querySelector('.material-type').value;
         const weight = parseFloat(row.querySelector('.material-weight').value) || 0;
         const factor = PCFFactors.materials[type][country] || PCFFactors.materials[type]['global'];
-        materialCO2 += weight * factor; // kgCO₂e
+        const co2 = weight * factor;
+        materialCO2 += co2;
+        materialsLog.push({
+            name: type.replace('-', ' '),
+            weight,
+            co2,
+            factor: factor.toFixed(3)
+        });
     });
 
-    // 2. ENERGY (kWh × Factor)
+    // 2. ENERGY (MANUFACTURING)
     const energyType = document.getElementById('energy-type').value;
     const energyAmount = parseFloat(document.getElementById('energy-amount').value) || 0;
     const energyFactor = PCFFactors.energy[energyType][country] || PCFFactors.energy[energyType]['global'];
-    const energyCO2 = energyAmount * energyFactor; // kgCO₂e
+    const energyCO2 = energyAmount * energyFactor;
 
-    // 3. TRANSPORT ((Weight × Distance × Factor) / 1000)
+    // 3. TRANSPORT (MULTI-LEG)
     let transportCO2 = 0;
+    const transportLog = [];
     document.querySelectorAll('#transport-container .input-row').forEach(row => {
         const mode = row.querySelector('.transport-mode').value;
         const distance = parseFloat(row.querySelector('.transport-distance').value) || 0;
         const weight = parseFloat(row.querySelector('.transport-weight').value) || 0;
         const factor = PCFFactors.transport[mode][country] || PCFFactors.transport[mode]['global'];
-        transportCO2 += (weight * distance * factor) / 1000; // kgCO₂e
+        const co2 = (weight * distance * factor) / 1000;
+        transportCO2 += co2;
+        transportLog.push({
+            mode,
+            distance,
+            weight,
+            co2,
+            factor: factor.toFixed(3)
+        });
     });
 
-    // 4. TOTAL (Sum of all components)
+    // 4. RESULTS
     const totalCO2 = materialCO2 + energyCO2 + transportCO2;
-    showResults(totalCO2, materialCO2, energyCO2, transportCO2, country);
+    showResults(totalCO2, materialCO2, energyCO2, transportCO2, country, {
+        materials: materialsLog,
+        energy: { type: energyType, amount: energyAmount, co2: energyCO2, factor: energyFactor.toFixed(3) },
+        transport: transportLog
+    });
 }
 
-function showResults(total, materials, energy, transport, country) {
+function showResults(total, materials, energy, transport, country, details) {
     const sources = {
         'Germany': 'UBA 2024',
         'France': 'ADEME 2024',
@@ -107,29 +128,82 @@ function showResults(total, materials, energy, transport, country) {
         'global': 'Weighted Global Average'
     };
 
-    document.getElementById('result-summary').innerHTML = `
-        <h3>${document.getElementById('product-name').value || 'Product'}</h3>
+    // Detailed Breakdown
+    let breakdown = `<h3>${document.getElementById('product-name').value || 'Product'}</h3>
         <p>Total CO₂ Footprint: <strong>${total.toFixed(2)} kg</strong></p>
-        <p>Breakdown:</p>
-        <ul>
-            <li>Materials: ${materials.toFixed(2)} kg (${((materials/total)*100).toFixed(0)}%)</li>
-            <li>Manufacturing: ${energy.toFixed(2)} kg (${((energy/total)*100).toFixed(0)}%)</li>
-            <li>Transport: ${transport.toFixed(2)} kg (${((transport/total)*100).toFixed(0)}%)</li>
-        </ul>
-        <p>Data Source: ${sources[country]}</p>
-    `;
+        <div class="detail-section">
+            <h4>🧱 Materials (${materials.toFixed(2)} kg)</h4>
+            <ul>${details.materials.map(m => 
+                `<li>${m.weight} kg ${m.name} = ${m.co2.toFixed(2)} kg (${m.factor} kgCO₂e/kg)</li>`
+            ).join('')}</ul>
+            
+            <h4>⚡ Manufacturing (${energy.toFixed(2)} kg)</h4>
+            <p>${details.energy.amount} kWh ${details.energy.type} @ ${details.energy.factor} kg/kWh = ${details.energy.co2.toFixed(2)} kg</p>
+            
+            <h4>🚚 Transport (${transport.toFixed(2)} kg)</h4>
+            <ul>${details.transport.map(t => 
+                `<li>${t.weight} kg × ${t.distance} km ${t.mode} @ ${t.factor} kg/ton-km = ${t.co2.toFixed(2)} kg</li>`
+            ).join('')}</ul>
+        </div>
+        <p class="source">Data Sources: ${sources[country]}</p>`;
 
+    // Pie Chart
     const ctx = document.getElementById('chart').getContext('2d');
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: ['Materials', 'Manufacturing', 'Transport'],
+            labels: [
+                `Materials (${((materials/total)*100).toFixed(0)}%)`,
+                `Manufacturing (${((energy/total)*100).toFixed(0)}%)`,
+                `Transport (${((transport/total)*100).toFixed(0)}%)`
+            ],
             datasets: [{
                 data: [materials, energy, transport],
-                backgroundColor: ['#2e8b57', '#3a86ff', '#ff9f1c']
+                backgroundColor: ['#2e8b57', '#3a86ff', '#ff9f1c'],
+                borderWidth: 1
             }]
+        },
+        options: {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw.toFixed(2)} kg`;
+                        }
+                    }
+                }
+            }
         }
     });
 
+    document.getElementById('result-summary').innerHTML = breakdown;
     document.getElementById('results').style.display = 'block';
-                 }
+
+    // Generate QR Code
+    if(typeof QRCode !== 'undefined') {
+        document.getElementById('qrcode').innerHTML = '';
+        new QRCode(document.getElementById("qrcode"), {
+            text: `AIOXY PCF|${document.getElementById('product-name').value || 'Product'}|Total:${total.toFixed(2)}kg|Materials:${materials.toFixed(2)}kg|Energy:${energy.toFixed(2)}kg|Transport:${transport.toFixed(2)}kg`,
+            width: 120,
+            height: 120
+        });
+    }
+}
+
+// ================== EXPORT FUNCTIONS ==================
+function saveAsPDF() {
+    alert("PDF export coming in v1.1 - Use browser print for now!");
+}
+
+function copyResults() {
+    const text = document.getElementById('result-summary').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        alert("CO₂ Passport copied to clipboard!");
+    });
+}
+
+// Initialize first rows on load
+document.addEventListener('DOMContentLoaded', () => {
+    addMaterial();
+    addTransport();
+});
