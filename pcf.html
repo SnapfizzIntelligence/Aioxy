@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIOXY Product Carbon Footprint</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="pcf.js" defer></script>
     <style>
         :root { --aioxy-green: #2e8b57; --aioxy-dark: #1a3e2d; }
         body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -17,6 +19,12 @@
         .input-row > button { flex: 0 0 30px; }
         #results { margin-top: 20px; padding: 15px; background: #e9f5ee; border-radius: 8px; display: none; }
         .calculate-btn { background: var(--aioxy-dark); font-weight: bold; }
+        .detail-section { background: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .detail-section h4 { color: var(--aioxy-dark); margin-bottom: 5px; }
+        .export-buttons { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .export-buttons button { background: var(--aioxy-dark); padding: 8px 12px; }
+        .source { font-size: 0.9em; color: #666; margin-top: 10px; }
+        #qrcode { margin: 15px auto; text-align: center; }
     </style>
 </head>
 <body>
@@ -52,7 +60,7 @@
                     <option value="cardboard">Cardboard</option>
                 </select>
                 <input type="number" class="material-weight" placeholder="kg" step="0.01">
-                <button class="remove-btn">×</button>
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
             </div>
         </div>
         <button onclick="addMaterial()">+ Add Material</button>
@@ -78,7 +86,7 @@
                 </select>
                 <input type="number" class="transport-distance" placeholder="km" step="1">
                 <input type="number" class="transport-weight" placeholder="kg" step="0.01">
-                <button class="remove-btn">×</button>
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
             </div>
         </div>
         <button onclick="addTransport()">+ Add Transport</button>
@@ -90,8 +98,11 @@
         <h2>🚀 Results</h2>
         <div id="result-summary"></div>
         <canvas id="chart" width="400" height="400"></canvas>
+        <div class="export-buttons">
+            <button onclick="saveAsPDF()">Save as PDF</button>
+            <button onclick="copyResults()">Copy Summary</button>
+            <div id="qrcode"></div>
+        </div>
     </div>
-
-    <script src="pcf.js"></script>
 </body>
-                        </html>
+    </html>
