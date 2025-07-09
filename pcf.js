@@ -8,18 +8,25 @@ const PCFFactors = {
         'steel': { 'Germany': 2.0, 'UK': 2.05, 'France': 1.9, 'Japan': 2.2, 'US': 2.3, 'China': 2.5, 'global': 2.1 },
         'aluminum': { 'Germany': 10.5, 'UK': 10.8, 'France': 10.0, 'Japan': 11.2, 'US': 11.5, 'China': 12.0, 'global': 11.0 },
         'glass': { 'Germany': 1.2, 'UK': 1.25, 'France': 1.1, 'Japan': 1.4, 'US': 1.5, 'China': 1.6, 'global': 1.3 },
-        'cardboard': { 'Germany': 0.9, 'UK': 0.95, 'France': 0.85, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.94 }
+        'cardboard': { 'Germany': 0.9, 'UK': 0.95, 'France': 0.85, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.94 },
+        'nylon-recycled': { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6 }, // UBA 2024 textile proxy
+        'cotton': { 'Germany': 3.5, 'UK': 3.4, 'France': 3.3, 'Japan': 3.6, 'US': 3.7, 'China': 4.0, 'global': 3.6 }, // ADEME 2024
+        'polyester': { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3 } // EPA 2024
     },
     energy: {
         'grid': { 'Germany': 0.362, 'UK': 0.189, 'France': 0.051, 'Japan': 0.395, 'US': 0.352, 'China': 0.573, 'global': 0.475 },
         'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045 },
-        'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015 }
+        'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015 },
+        'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012 }, // UBA 2024
+        'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06 } // EPA 2024
     },
     transport: {
         'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120 },
         'air': { 'Germany': 0.560, 'UK': 0.570, 'France': 0.550, 'Japan': 0.580, 'US': 0.590, 'China': 0.600, 'global': 0.570 },
         'sea': { 'Germany': 0.014, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015 },
-        'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030 }
+        'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030 },
+        'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04 }, // DESNZ 2024
+        'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011 } // UBA 2024
     }
 };
 
@@ -38,6 +45,9 @@ function addMaterial() {
             <option value="aluminum">Aluminum</option>
             <option value="glass">Glass</option>
             <option value="cardboard">Cardboard</option>
+            <option value="nylon-recycled">Nylon-Recycled</option>
+            <option value="cotton">Cotton</option>
+            <option value="polyester">Polyester</option>
         </select>
         <input type="number" class="material-weight" placeholder="kg" step="0.01">
         <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
@@ -55,6 +65,8 @@ function addTransport() {
             <option value="air">Air Freight</option>
             <option value="sea">Sea Freight</option>
             <option value="rail">Rail</option>
+            <option value="electric-vehicle">Electric-Vehicle</option>
+            <option value="inland-waterway">Inland-Waterway</option>
         </select>
         <input type="number" class="transport-distance" placeholder="km" step="1">
         <input type="number" class="transport-weight" placeholder="kg" step="0.01">
