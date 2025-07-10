@@ -9,26 +9,29 @@ const PCFFactors = {
         'aluminum': { 'Germany': 10.5, 'UK': 10.8, 'France': 10.0, 'Japan': 11.2, 'US': 11.5, 'China': 12.0, 'global': 11.0 },
         'glass': { 'Germany': 1.2, 'UK': 1.25, 'France': 1.1, 'Japan': 1.4, 'US': 1.5, 'China': 1.6, 'global': 1.3 },
         'cardboard': { 'Germany': 0.9, 'UK': 0.95, 'France': 0.85, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.94 },
-        'nylon-recycled': { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6 }, // UBA 2024 textile proxy
-        'cotton': { 'Germany': 3.5, 'UK': 3.4, 'France': 3.3, 'Japan': 3.6, 'US': 3.7, 'China': 4.0, 'global': 3.6 }, // ADEME 2024
-        'polyester': { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3 } // EPA 2024
+        'nylon-recycled': { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6 },
+        'cotton': { 'Germany': 3.5, 'UK': 3.4, 'France': 3.3, 'Japan': 3.6, 'US': 3.7, 'China': 4.0, 'global': 3.6 },
+        'polyester': { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3 }
     },
     energy: {
         'grid': { 'Germany': 0.362, 'UK': 0.189, 'France': 0.051, 'Japan': 0.395, 'US': 0.352, 'China': 0.573, 'global': 0.475 },
         'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045 },
         'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015 },
-        'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012 }, // UBA 2024
-        'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06 } // EPA 2024
+        'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012 },
+        'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06 }
     },
     transport: {
         'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120 },
         'air': { 'Germany': 0.560, 'UK': 0.570, 'France': 0.550, 'Japan': 0.580, 'US': 0.590, 'China': 0.600, 'global': 0.570 },
         'sea': { 'Germany': 0.014, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015 },
         'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030 },
-        'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04 }, // DESNZ 2024
-        'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011 } // UBA 2024
+        'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04 },
+        'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011 }
     }
 };
+
+// ================== NEW: SCAN TRACKER ==================
+let scanCount = localStorage.getItem('aioxyScanCount') || 0;
 
 // ================== CORE FUNCTIONS ==================
 function addMaterial() {
@@ -73,6 +76,74 @@ function addTransport() {
         <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
     `;
     container.appendChild(newRow);
+}
+
+// ================== NEW: CO₂ SAVINGS FIELD ==================
+function addSavingsField() {
+    const inputSection = document.querySelector('.input-section');
+    if (!document.getElementById('benchmark-co2')) {
+        inputSection.insertAdjacentHTML('beforeend', `
+            <h3>CO₂ Savings (Optional)</h3>
+            <div class="input-row">
+                <input type="number" id="benchmark-co2" placeholder="Benchmark (kg)" step="0.01">
+                <span>vs. market average</span>
+            </div>
+        `);
+    }
+}
+
+// ================== NEW: SHARE ON TWITTER ==================
+function shareOnTwitter() {
+    const productName = document.getElementById('product-name').value || 'My Product';
+    const totalCO2 = document.querySelector('.total-co2')?.innerText || '0 kg';
+    const url = window.location.href;
+    const tweetText = `Check ${productName}'s carbon footprint: ${totalCO2} - Generated with @AIOXY ${url} #GreenRevolution`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`);
+}
+
+// ================== NEW: ENHANCED QR GENERATOR ==================
+function generateQRCode(total, materials, energy, transport, country, details) {
+    if (typeof QRCode !== 'undefined') {
+        const productName = document.getElementById('product-name').value || 'Product';
+        const benchmark = parseFloat(document.getElementById('benchmark-co2')?.value) || 0;
+        const savedCO2 = benchmark > 0 ? benchmark - total : 0;
+
+        const qrData = {
+            id: `AIOXY-${Date.now()}`,
+            product: productName,
+            CO2e: total.toFixed(2),
+            saved: savedCO2.toFixed(2),
+            materials: details.materials.map(m => `${m.weight}kg ${m.name}`).join(', '),
+            energy: `${details.energy.amount}kWh ${details.energy.type}`,
+            country: country,
+            scanned: false
+        };
+
+        document.getElementById('qrcode').innerHTML = '';
+        const qr = new QRCode(document.getElementById('qrcode'), {
+            text: JSON.stringify(qrData),
+            width: 180,
+            height: 180,
+            colorDark: "#2e8b57",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Add click tracking
+        document.getElementById('qrcode').onclick = () => {
+            scanCount++;
+            localStorage.setItem('aioxyScanCount', scanCount);
+            console.log(`QR Scans: ${scanCount}`);
+            alert(`This QR has been scanned ${scanCount} times!`);
+        };
+
+        // Add share button
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'share-btn';
+        shareBtn.textContent = 'Share on X';
+        shareBtn.onclick = shareOnTwitter;
+        document.getElementById('qrcode').appendChild(shareBtn);
+    }
 }
 
 function calculatePCF() {
@@ -140,9 +211,14 @@ function showResults(total, materials, energy, transport, country, details) {
         'global': 'Weighted Global Average'
     };
 
+    // Calculate savings if benchmark exists
+    const benchmark = parseFloat(document.getElementById('benchmark-co2')?.value) || 0;
+    const savedCO2 = benchmark > 0 ? benchmark - total : 0;
+
     // Detailed Breakdown
     let breakdown = `<h3>${document.getElementById('product-name').value || 'Product'}</h3>
         <p>Total CO₂ Footprint: <strong>${total.toFixed(2)} kg</strong></p>
+        ${savedCO2 > 0 ? `<p class="savings">♻️ Saved: <strong>${savedCO2.toFixed(2)} kgCO₂e</strong> vs benchmark</p>` : ''}
         <div class="detail-section">
             <h4>🧱 Materials (${materials.toFixed(2)} kg)</h4>
             <ul>${details.materials.map(m => 
@@ -156,13 +232,15 @@ function showResults(total, materials, energy, transport, country, details) {
             <ul>${details.transport.map(t => 
                 `<li>${t.weight} kg × ${t.distance} km ${t.mode} @ ${t.factor} kg/ton-km = ${t.co2.toFixed(2)} kg</li>`
             ).join('')}</ul>
-
-            <p class="total-co2">🧮 Total CO₂e: ${total.toFixed(2)} kg</p>
         </div>
         <p class="source">Data Sources: ${sources[country]}</p>`;
+
+    document.getElementById('result-summary').innerHTML = breakdown;
+    document.getElementById('results').style.display = 'block';
+
     // Pie Chart
     const ctx = document.getElementById('chart').getContext('2d');
-    const chart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'pie',
         data: {
             labels: [
@@ -189,19 +267,33 @@ function showResults(total, materials, energy, transport, country, details) {
         }
     });
 
-    document.getElementById('result-summary').innerHTML = breakdown;
-    document.getElementById('results').style.display = 'block';
+    // Generate Enhanced QR Code
+    generateQRCode(total, materials, energy, transport, country, details);
+}
 
-    // Generate QR Code
-    if(typeof QRCode !== 'undefined') {
-        document.getElementById('qrcode').innerHTML = '';
-        new QRCode(document.getElementById("qrcode"), {
-            text: `AIOXY PCF|${document.getElementById('product-name').value || 'Product'}|Total:${total.toFixed(2)}kg|Materials:${materials.toFixed(2)}kg|Energy:${energy.toFixed(2)}kg|Transport:${transport.toFixed(2)}kg`,
-            width: 120,
-            height: 120
+// ================== NEW: MOBILE OPTIMIZATION ==================
+function checkMobileView() {
+    if (window.innerWidth <= 600) {
+        document.querySelectorAll('.input-row').forEach(row => {
+            row.style.flexDirection = 'column';
+        });
+        document.getElementById('qrcode').style.width = '200px';
+        document.getElementById('qrcode').style.height = '200px';
+    } else {
+        document.querySelectorAll('.input-row').forEach(row => {
+            row.style.flexDirection = 'row';
         });
     }
 }
+
+// ================== INITIALIZATION ==================
+document.addEventListener('DOMContentLoaded', () => {
+    addMaterial();
+    addTransport();
+    addSavingsField(); // NEW
+    checkMobileView(); // NEW
+    window.addEventListener('resize', checkMobileView); // NEW
+});
 
 // ================== EXPORT FUNCTIONS ==================
 function saveAsPDF() {
@@ -213,10 +305,4 @@ function copyResults() {
     navigator.clipboard.writeText(text).then(() => {
         alert("CO₂ Passport copied to clipboard!");
     });
-}
-
-// Initialize first rows on load
-document.addEventListener('DOMContentLoaded', () => {
-    addMaterial();
-    addTransport();
-});
+                 }
