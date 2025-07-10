@@ -30,6 +30,9 @@ const PCFFactors = {
     }
 };
 
+// QR Code Counter
+let qrCounter = 1;
+
 // Core Functions
 function addMaterial() {
     const container = document.getElementById('materials-container');
@@ -73,6 +76,79 @@ function addTransport() {
         <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
     `;
     container.appendChild(newRow);
+}
+
+function generateQRCode(total, materials, energy, transport, country, details) {
+    const qrElement = document.getElementById('qrcode');
+    const qrError = document.getElementById('qr-error');
+    const downloadBtn = document.getElementById('downloadQR');
+    
+    qrElement.innerHTML = '';
+    qrError.style.display = 'none';
+    
+    const productName = document.getElementById('product-name').value || 'Product';
+    const benchmark = parseFloat(document.getElementById('benchmark').value) || 6.0;
+    const savedCO2 = benchmark - total;
+    
+    // Create QR data
+    const qrData = {
+        product: productName,
+        CO2e: total.toFixed(2),
+        saved: savedCO2.toFixed(2),
+        material: details.materials.map(m => `${m.name} ${m.weight}kg`).join(', '),
+        energy: `${details.energy.amount}kWh`,
+        country: country,
+        id: `QR-${qrCounter.toString().padStart(3, '0')}`
+    };
+    
+    // Create HTML preview for QR
+    const htmlPreview = `
+        data:text/html,
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>AIOXY CO₂ Passport</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; max-width: 300px; margin: 0 auto; }
+                h1 { color: #2e8b57; font-size: 24px; }
+                p { font-size: 16px; line-height: 1.5; }
+            </style>
+        </head>
+        <body>
+            <h1>${qrData.product}</h1>
+            <p>CO₂e: ${qrData.CO2e} kg | Saved: ${qrData.saved} kg</p>
+            <p>Materials: ${qrData.material}</p>
+            <p>Energy: ${qrData.energy} (${qrData.country})</p>
+            <p>ID: ${qrData.id}</p>
+        </body>
+        </html>
+    `;
+    
+    // Generate QR Code
+    try {
+        new QRCode(qrElement, {
+            text: htmlPreview,
+            width: 200,
+            height: 200,
+            colorDark: "#00FF00",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        // Enable download button after QR is generated
+        setTimeout(() => {
+            const qrImg = qrElement.querySelector('img');
+            if (qrImg) {
+                downloadBtn.href = qrImg.src;
+                downloadBtn.style.display = 'inline-block';
+            }
+        }, 100);
+        
+        qrCounter++;
+    } catch (e) {
+        qrError.style.display = 'block';
+        console.error("QR generation error:", e);
+    }
 }
 
 function calculatePCF() {
@@ -139,9 +215,14 @@ function showResults(total, materials, energy, transport, country, details) {
         'global': 'Weighted Global Average'
     };
 
-    // Detailed Breakdown
-    let breakdown = `<h3>${document.getElementById('product-name').value || 'Product'}</h3>
+    const benchmark = parseFloat(document.getElementById('benchmark').value) || 6.0;
+    const savedCO2 = benchmark - total;
+
+    // Results Display
+    document.getElementById('result-summary').innerHTML = `
+        <h3>${document.getElementById('product-name').value || 'Product'}</h3>
         <p>Total CO₂ Footprint: <strong>${total.toFixed(2)} kg</strong></p>
+        ${savedCO2 > 0 ? `<p class="savings">♻️ Saved: ${savedCO2.toFixed(2)} kgCO₂e vs. ${benchmark.toFixed(2)} kg benchmark</p>` : ''}
         <div class="detail-section">
             <h4>🧱 Materials (${materials.toFixed(2)} kg)</h4>
             <ul>${details.materials.map(m => 
@@ -156,7 +237,8 @@ function showResults(total, materials, energy, transport, country, details) {
                 `<li>${t.weight} kg × ${t.distance} km ${t.mode} @ ${t.factor} kg/ton-km = ${t.co2.toFixed(2)} kg</li>`
             ).join('')}</ul>
         </div>
-        <p class="source">Data Sources: ${sources[country]}</p>`;
+        <p class="source">Data Sources: ${sources[country]}</p>
+    `;
 
     // Pie Chart
     const ctx = document.getElementById('chart').getContext('2d');
@@ -176,18 +258,9 @@ function showResults(total, materials, energy, transport, country, details) {
         }
     });
 
-    document.getElementById('result-summary').innerHTML = breakdown;
-    document.getElementById('results').style.display = 'block';
-
     // Generate QR Code
-    if(typeof QRCode !== 'undefined') {
-        document.getElementById('qrcode').innerHTML = '';
-        new QRCode(document.getElementById("qrcode"), {
-            text: `AIOXY PCF|${document.getElementById('product-name').value || 'Product'}|Total:${total.toFixed(2)}kg|Materials:${materials.toFixed(2)}kg|Energy:${energy.toFixed(2)}kg|Transport:${transport.toFixed(2)}kg`,
-            width: 120,
-            height: 120
-        });
-    }
+    generateQRCode(total, materials, energy, transport, country, details);
+    document.getElementById('results').style.display = 'block';
 }
 
 // Export Functions
@@ -202,8 +275,17 @@ function copyResults() {
     });
 }
 
-// Initialize first rows on load
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     addMaterial();
     addTransport();
+    
+    // Set up social share button
+    document.getElementById('share').addEventListener('click', () => {
+        const product = document.getElementById('product-name').value || 'Product';
+        const co2 = document.querySelector('#result-summary p')?.innerText || '';
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+            `Check my ${product}'s carbon footprint: ${co2} - Generated with @AIOXY #BeTheFirst`
+        )}`);
+    });
 });
