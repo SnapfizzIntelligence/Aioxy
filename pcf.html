@@ -24,7 +24,38 @@
         .export-buttons { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
         .export-buttons button { background: var(--aioxy-dark); padding: 8px 12px; }
         .source { font-size: 0.9em; color: #666; margin-top: 10px; }
-        #qrcode { margin: 15px auto; text-align: center; }
+        /* QR Code Styling */
+#qrcode {
+    margin: 20px auto;
+    text-align: center;
+    position: relative;
+}
+
+.share-btn {
+    background: #1DA1F2;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.savings {
+    color: #2e8b57;
+    font-weight: bold;
+}
+
+/* Mobile Optimization */
+@media (max-width: 600px) {
+    .input-row {
+        flex-direction: column !important;
+    }
+    #qrcode {
+        width: 200px !important;
+        height: 200px !important;
+    }
+                }
     </style>
 </head>
 <body>
