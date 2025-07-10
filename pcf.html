@@ -5,147 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIOXY Product Carbon Footprint</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script src="pcf.js" defer></script>
     <style>
-        :root { 
-            --aioxy-green: #2e8b57; 
-            --aioxy-dark: #1a3e2d;
-            --twitter-blue: #1DA1F2;
-        }
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            line-height: 1.6;
-        }
-        header { 
-            background: var(--aioxy-dark); 
-            color: white; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
-        }
-        .input-section { 
-            background: #f8f9fa; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
-        }
-        button { 
-            background: var(--aioxy-green); 
-            color: white; 
-            border: none; 
-            padding: 10px 15px; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            margin: 5px 0; 
-            transition: all 0.3s ease;
-        }
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        input, select { 
-            padding: 8px; 
-            margin: 5px 0; 
-            width: 100%; 
-            box-sizing: border-box; 
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .input-row { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 10px; 
-            align-items: center; 
-        }
+        :root { --aioxy-green: #2e8b57; --aioxy-dark: #1a3e2d; }
+        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        header { background: var(--aioxy-dark); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .input-section { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        button { background: var(--aioxy-green); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 5px 0; }
+        input, select { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         .input-row > * { flex: 1; }
-        .input-row > button { 
-            flex: 0 0 30px; 
-            background: #dc3545;
-            color: white;
-        }
-        #results { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background: #e9f5ee; 
-            border-radius: 8px; 
-            display: none; 
-        }
-        .calculate-btn { 
-            background: var(--aioxy-dark); 
-            font-weight: bold; 
-            width: 100%;
-            margin-top: 10px;
-        }
-        .detail-section { 
-            background: white; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin: 10px 0; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .detail-section h4 { 
-            color: var(--aioxy-dark); 
-            margin-bottom: 5px; 
-        }
-        .export-buttons { 
-            display: flex; 
-            gap: 10px; 
-            margin-top: 20px; 
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .source { 
-            font-size: 0.9em; 
-            color: #666; 
-            margin-top: 10px; 
-        }
-        #qrcode-container {
-            margin: 20px auto;
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            max-width: 220px;
-        }
-        #qrcode {
-            margin: 0 auto;
-        }
-        #qrcode canvas {
-            display: block !important;
-            margin: 0 auto;
-            border: 10px solid white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .share-btn {
-            background: var(--twitter-blue);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            margin-top: 10px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .savings {
-            color: var(--aioxy-green);
-            font-weight: bold;
-            background: #e8f5ee;
-            padding: 5px 10px;
-            border-radius: 4px;
-            display: inline-block;
-            margin: 5px 0;
-        }
-        @media (max-width: 600px) {
-            .input-row {
-                flex-direction: column;
-            }
-            .input-row > * {
-                width: 100%;
-            }
-        }
+        .input-row > button { flex: 0 0 30px; }
+        #results { margin-top: 20px; padding: 15px; background: #e9f5ee; border-radius: 8px; display: none; }
+        .calculate-btn { background: var(--aioxy-dark); font-weight: bold; }
+        .detail-section { background: white; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .detail-section h4 { color: var(--aioxy-dark); margin-bottom: 5px; }
+        .export-buttons { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .export-buttons button { background: var(--aioxy-dark); padding: 8px 12px; }
+        .source { font-size: 0.9em; color: #666; margin-top: 10px; }
+        #qrcode { margin: 15px auto; text-align: center; }
     </style>
 </head>
 <body>
@@ -168,7 +47,22 @@
         </select>
 
         <h3>Materials</h3>
-        <div id="materials-container"></div>
+        <div id="materials-container">
+            <div class="input-row">
+                <select class="material-type">
+                    <option value="plastic-virgin">Virgin Plastic</option>
+                    <option value="plastic-recycled">Recycled Plastic</option>
+                    <option value="rubber">Rubber</option>
+                    <option value="leather">Leather</option>
+                    <option value="steel">Steel</option>
+                    <option value="aluminum">Aluminum</option>
+                    <option value="glass">Glass</option>
+                    <option value="cardboard">Cardboard</option>
+                </select>
+                <input type="number" class="material-weight" placeholder="kg" step="0.01">
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            </div>
+        </div>
         <button onclick="addMaterial()">+ Add Material</button>
 
         <h3>Manufacturing Energy</h3>
@@ -178,19 +72,23 @@
                 <option value="grid">Grid Electricity</option>
                 <option value="solar">Solar</option>
                 <option value="wind">Wind</option>
-                <option value="hydro">Hydro</option>
-                <option value="biomass">Biomass</option>
             </select>
         </div>
 
-        <h3>CO₂ Savings (Optional)</h3>
-        <div class="input-row">
-            <input type="number" id="benchmark-co2" placeholder="Benchmark (kg)" step="0.01">
-            <span>vs. market average</span>
-        </div>
-
         <h3>Transport</h3>
-        <div id="transport-container"></div>
+        <div id="transport-container">
+            <div class="input-row">
+                <select class="transport-mode">
+                    <option value="road">Road Freight</option>
+                    <option value="air">Air Freight</option>
+                    <option value="sea">Sea Freight</option>
+                    <option value="rail">Rail</option>
+                </select>
+                <input type="number" class="transport-distance" placeholder="km" step="1">
+                <input type="number" class="transport-weight" placeholder="kg" step="0.01">
+                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            </div>
+        </div>
         <button onclick="addTransport()">+ Add Transport</button>
 
         <button onclick="calculatePCF()" class="calculate-btn">Generate CO₂ Passport</button>
@@ -200,16 +98,11 @@
         <h2>🚀 Results</h2>
         <div id="result-summary"></div>
         <canvas id="chart" width="400" height="400"></canvas>
-        <div id="qrcode-container">
-            <div id="qrcode"></div>
-            <button class="share-btn" onclick="shareOnTwitter()">Share on X</button>
-        </div>
         <div class="export-buttons">
             <button onclick="saveAsPDF()">Save as PDF</button>
             <button onclick="copyResults()">Copy Summary</button>
+            <div id="qrcode"></div>
         </div>
     </div>
-
-    <script src="pcf.js"></script>
 </body>
-                    </html>
+                                               </html>
