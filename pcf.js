@@ -32,6 +32,7 @@ const PCFFactors = {
 
 // QR Code Counter
 let qrCounter = 1;
+let currentQRCode = null;
 
 // Core Functions
 function addMaterial() {
@@ -83,8 +84,14 @@ function generateQRCode(total, materials, energy, transport, country, details) {
     const qrError = document.getElementById('qr-error');
     const downloadBtn = document.getElementById('downloadQR');
     
+    // Clear previous QR code
     qrElement.innerHTML = '';
     qrError.style.display = 'none';
+    downloadBtn.style.display = 'none';
+    
+    if (currentQRCode) {
+        currentQRCode.clear();
+    }
     
     const productName = document.getElementById('product-name').value || 'Product';
     const benchmark = parseFloat(document.getElementById('benchmark').value) || 6.0;
@@ -126,11 +133,11 @@ function generateQRCode(total, materials, energy, transport, country, details) {
     
     // Generate QR Code
     try {
-        new QRCode(qrElement, {
+        currentQRCode = new QRCode(qrElement, {
             text: htmlPreview,
             width: 200,
             height: 200,
-            colorDark: "#00FF00",
+            colorDark: "#2e8b57",  // Using the primary color instead of bright green
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
@@ -242,7 +249,13 @@ function showResults(total, materials, energy, transport, country, details) {
 
     // Pie Chart
     const ctx = document.getElementById('chart').getContext('2d');
-    new Chart(ctx, {
+    
+    // Clear previous chart if it exists
+    if (window.myChart) {
+        window.myChart.destroy();
+    }
+    
+    window.myChart = new Chart(ctx, {
         type: 'pie',
         data: {
             labels: [
@@ -255,6 +268,15 @@ function showResults(total, materials, energy, transport, country, details) {
                 backgroundColor: ['#2e8b57', '#3a86ff', '#ff9f1c'],
                 borderWidth: 1
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
         }
     });
 
