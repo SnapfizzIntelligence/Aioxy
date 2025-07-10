@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIOXY Product Carbon Footprint</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-    <script src="pcf.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
     <style>
         :root { 
             --aioxy-green: #2e8b57; 
@@ -98,10 +97,6 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-        .export-buttons button { 
-            background: var(--aioxy-dark); 
-            padding: 8px 12px; 
-        }
         .source { 
             font-size: 0.9em; 
             color: #666; 
@@ -109,22 +104,23 @@
         }
         
         /* QR Code Styling */
-        #qrcode {
+        #qrcode-container {
             margin: 20px auto;
             text-align: center;
-            position: relative;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            max-width: 220px;
         }
-        
-        #qrcode img {
+        #qrcode {
+            margin: 0 auto;
+        }
+        #qrcode canvas {
+            display: block !important;
+            margin: 0 auto;
             border: 10px solid white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        
         .share-btn {
             background: var(--twitter-blue);
             color: white;
@@ -134,15 +130,7 @@
             margin-top: 10px;
             cursor: pointer;
             font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
         }
-        
-        .share-btn:hover {
-            background: #1991da;
-        }
-        
         .savings {
             color: var(--aioxy-green);
             font-weight: bold;
@@ -152,40 +140,13 @@
             display: inline-block;
             margin: 5px 0;
         }
-        
-        /* Mobile Optimization */
         @media (max-width: 600px) {
             .input-row {
                 flex-direction: column !important;
             }
-            #qrcode {
-                width: 200px !important;
-                height: 200px !important;
-            }
             .input-row > * {
                 width: 100%;
             }
-        }
-        
-        /* QR Code Logo Overlay */
-        .qr-logo-overlay {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: white;
-            border-radius: 4px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-        }
-        
-        .qr-logo-overlay img {
-            width: 100%;
-            height: auto;
         }
     </style>
 </head>
@@ -277,16 +238,6 @@
             <button onclick="saveAsPDF()">Save as PDF</button>
             <button onclick="copyResults()">Copy Summary</button>
         </div>
-        <div id="qrcode"></div>
-    </div>
-
-    <!-- Hidden logo for QR code (base64 encoded placeholder) -->
-    <svg style="display:none;">
-        <symbol id="aioxy.png" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="#2e8b57"/>
-            <path d="M30,30 L70,30 L70,70 L30,70 Z" fill="white"/>
-            <text x="50" y="60" font-family="Arial" font-size="30" fill="white" text-anchor="middle">A</text>
-        </symbol>
-    </svg>
+ <script src="pcf.js"></script>
 </body>
-                        </html>
+</html>
