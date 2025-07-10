@@ -1,4 +1,4 @@
-// ================== GOVT-VERIFIED 2024 DATASET ==================
+// Emission Factors Dataset
 const PCFFactors = {
     materials: {
         'plastic-virgin': { 'Germany': 2.8, 'UK': 2.75, 'France': 2.6, 'Japan': 2.9, 'US': 3.0, 'China': 3.2, 'global': 2.7 },
@@ -30,10 +30,7 @@ const PCFFactors = {
     }
 };
 
-// ================== NEW: SCAN TRACKER ==================
-let scanCount = localStorage.getItem('aioxyScanCount') || 0;
-
-// ================== CORE FUNCTIONS ==================
+// Core Functions
 function addMaterial() {
     const container = document.getElementById('materials-container');
     const newRow = document.createElement('div');
@@ -78,78 +75,40 @@ function addTransport() {
     container.appendChild(newRow);
 }
 
-// ================== NEW: CO₂ SAVINGS FIELD ==================
-function addSavingsField() {
-    const inputSection = document.querySelector('.input-section');
-    if (!document.getElementById('benchmark-co2')) {
-        inputSection.insertAdjacentHTML('beforeend', `
-            <h3>CO₂ Savings (Optional)</h3>
-            <div class="input-row">
-                <input type="number" id="benchmark-co2" placeholder="Benchmark (kg)" step="0.01">
-                <span>vs. market average</span>
-            </div>
-        `);
-    }
-}
-
-// ================== NEW: SHARE ON TWITTER ==================
-function shareOnTwitter() {
-    const productName = document.getElementById('product-name').value || 'My Product';
-    const totalCO2 = document.querySelector('.total-co2')?.innerText || '0 kg';
-    const url = window.location.href;
-    const tweetText = `Check ${productName}'s carbon footprint: ${totalCO2} - Generated with @AIOXY ${url} #GreenRevolution`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`);
-}
-
-// ================== NEW: ENHANCED QR GENERATOR ==================
 function generateQRCode(total, materials, energy, transport, country, details) {
-    if (typeof QRCode !== 'undefined') {
-        const productName = document.getElementById('product-name').value || 'Product';
-        const benchmark = parseFloat(document.getElementById('benchmark-co2')?.value) || 0;
-        const savedCO2 = benchmark > 0 ? benchmark - total : 0;
+    const qrElement = document.getElementById('qrcode');
+    qrElement.innerHTML = ''; // Clear previous QR
+    
+    const productName = document.getElementById('product-name').value || 'Product';
+    const benchmark = parseFloat(document.getElementById('benchmark-co2')?.value) || 0;
+    const savedCO2 = benchmark > 0 ? benchmark - total : 0;
 
-        const qrData = {
-            id: `AIOXY-${Date.now()}`,
-            product: productName,
-            CO2e: total.toFixed(2),
-            saved: savedCO2.toFixed(2),
-            materials: details.materials.map(m => `${m.weight}kg ${m.name}`).join(', '),
-            energy: `${details.energy.amount}kWh ${details.energy.type}`,
-            country: country,
-            scanned: false
-        };
+    const qrData = {
+        product: productName,
+        CO2e: total.toFixed(2),
+        saved: savedCO2.toFixed(2),
+        materials: details.materials.map(m => `${m.weight}kg ${m.name}`).join(', '),
+        energy: `${details.energy.amount}kWh ${details.energy.type}`,
+        transport: details.transport.map(t => `${t.mode} (${t.distance}km)`).join(', '),
+        country: country,
+        verification: "AIOXY-verified-" + Date.now()
+    };
 
-        document.getElementById('qrcode').innerHTML = '';
-        const qr = new QRCode(document.getElementById('qrcode'), {
-            text: JSON.stringify(qrData),
-            width: 180,
-            height: 180,
-            colorDark: "#2e8b57",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-
-        // Add click tracking
-        document.getElementById('qrcode').onclick = () => {
-            scanCount++;
-            localStorage.setItem('aioxyScanCount', scanCount);
-            console.log(`QR Scans: ${scanCount}`);
-            alert(`This QR has been scanned ${scanCount} times!`);
-        };
-
-        // Add share button
-        const shareBtn = document.createElement('button');
-        shareBtn.className = 'share-btn';
-        shareBtn.textContent = 'Share on X';
-        shareBtn.onclick = shareOnTwitter;
-        document.getElementById('qrcode').appendChild(shareBtn);
-    }
+    // Generate QR Code
+    new QRCode(qrElement, {
+        text: JSON.stringify(qrData),
+        width: 180,
+        height: 180,
+        colorDark: "#2e8b57",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
 }
 
 function calculatePCF() {
     const country = document.getElementById('product-country').value;
     
-    // 1. MATERIALS (INCLUDES PACKAGING)
+    // Materials Calculation
     let materialCO2 = 0;
     const materialsLog = [];
     document.querySelectorAll('#materials-container .input-row').forEach(row => {
@@ -162,17 +121,17 @@ function calculatePCF() {
             name: type.replace('-', ' '),
             weight,
             co2,
-            factor: factor.toFixed(3)
+            factor
         });
     });
 
-    // 2. ENERGY (MANUFACTURING)
+    // Energy Calculation
     const energyType = document.getElementById('energy-type').value;
     const energyAmount = parseFloat(document.getElementById('energy-amount').value) || 0;
     const energyFactor = PCFFactors.energy[energyType][country] || PCFFactors.energy[energyType]['global'];
     const energyCO2 = energyAmount * energyFactor;
 
-    // 3. TRANSPORT (MULTI-LEG)
+    // Transport Calculation
     let transportCO2 = 0;
     const transportLog = [];
     document.querySelectorAll('#transport-container .input-row').forEach(row => {
@@ -187,15 +146,14 @@ function calculatePCF() {
             distance,
             weight,
             co2,
-            factor: factor.toFixed(3)
+            factor
         });
     });
 
-    // 4. RESULTS
     const totalCO2 = materialCO2 + energyCO2 + transportCO2;
     showResults(totalCO2, materialCO2, energyCO2, transportCO2, country, {
         materials: materialsLog,
-        energy: { type: energyType, amount: energyAmount, co2: energyCO2, factor: energyFactor.toFixed(3) },
+        energy: { type: energyType, amount: energyAmount, co2: energyCO2, factor: energyFactor },
         transport: transportLog
     });
 }
@@ -211,32 +169,30 @@ function showResults(total, materials, energy, transport, country, details) {
         'global': 'Weighted Global Average'
     };
 
-    // Calculate savings if benchmark exists
     const benchmark = parseFloat(document.getElementById('benchmark-co2')?.value) || 0;
     const savedCO2 = benchmark > 0 ? benchmark - total : 0;
 
-    // Detailed Breakdown
-    let breakdown = `<h3>${document.getElementById('product-name').value || 'Product'}</h3>
+    // Results Display
+    document.getElementById('result-summary').innerHTML = `
+        <h3>${document.getElementById('product-name').value || 'Product'}</h3>
         <p>Total CO₂ Footprint: <strong>${total.toFixed(2)} kg</strong></p>
-        ${savedCO2 > 0 ? `<p class="savings">♻️ Saved: <strong>${savedCO2.toFixed(2)} kgCO₂e</strong> vs benchmark</p>` : ''}
+        ${savedCO2 > 0 ? `<p class="savings">♻️ Saved: ${savedCO2.toFixed(2)} kg vs benchmark</p>` : ''}
         <div class="detail-section">
             <h4>🧱 Materials (${materials.toFixed(2)} kg)</h4>
             <ul>${details.materials.map(m => 
-                `<li>${m.weight} kg ${m.name} = ${m.co2.toFixed(2)} kg (${m.factor} kgCO₂e/kg)</li>`
+                `<li>${m.weight} kg ${m.name} = ${m.co2.toFixed(2)} kg</li>`
             ).join('')}</ul>
             
             <h4>⚡ Manufacturing (${energy.toFixed(2)} kg)</h4>
-            <p>${details.energy.amount} kWh ${details.energy.type} @ ${details.energy.factor} kg/kWh = ${details.energy.co2.toFixed(2)} kg</p>
+            <p>${details.energy.amount} kWh ${details.energy.type}</p>
             
             <h4>🚚 Transport (${transport.toFixed(2)} kg)</h4>
             <ul>${details.transport.map(t => 
-                `<li>${t.weight} kg × ${t.distance} km ${t.mode} @ ${t.factor} kg/ton-km = ${t.co2.toFixed(2)} kg</li>`
+                `<li>${t.weight} kg × ${t.distance} km ${t.mode} = ${t.co2.toFixed(2)} kg</li>`
             ).join('')}</ul>
         </div>
-        <p class="source">Data Sources: ${sources[country]}</p>`;
-
-    document.getElementById('result-summary').innerHTML = breakdown;
-    document.getElementById('results').style.display = 'block';
+        <p class="source">Data Sources: ${sources[country]}</p>
+    `;
 
     // Pie Chart
     const ctx = document.getElementById('chart').getContext('2d');
@@ -253,56 +209,33 @@ function showResults(total, materials, energy, transport, country, details) {
                 backgroundColor: ['#2e8b57', '#3a86ff', '#ff9f1c'],
                 borderWidth: 1
             }]
-        },
-        options: {
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.label}: ${context.raw.toFixed(2)} kg`;
-                        }
-                    }
-                }
-            }
         }
     });
 
-    // Generate Enhanced QR Code
+    // Generate QR Code
     generateQRCode(total, materials, energy, transport, country, details);
+    document.getElementById('results').style.display = 'block';
 }
 
-// ================== NEW: MOBILE OPTIMIZATION ==================
-function checkMobileView() {
-    if (window.innerWidth <= 600) {
-        document.querySelectorAll('.input-row').forEach(row => {
-            row.style.flexDirection = 'column';
-        });
-        document.getElementById('qrcode').style.width = '200px';
-        document.getElementById('qrcode').style.height = '200px';
-    } else {
-        document.querySelectorAll('.input-row').forEach(row => {
-            row.style.flexDirection = 'row';
-        });
-    }
+function shareOnTwitter() {
+    const product = document.getElementById('product-name').value || 'Product';
+    const co2 = document.querySelector('#result-summary p')?.innerText || '';
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        `My ${product}'s carbon footprint: ${co2} - Generated with @AIOXY`
+    )}`);
 }
 
-// ================== INITIALIZATION ==================
-document.addEventListener('DOMContentLoaded', () => {
-    addMaterial();
-    addTransport();
-    addSavingsField(); // NEW
-    checkMobileView(); // NEW
-    window.addEventListener('resize', checkMobileView); // NEW
-});
-
-// ================== EXPORT FUNCTIONS ==================
 function saveAsPDF() {
-    alert("PDF export coming in v1.1 - Use browser print for now!");
+    alert("PDF export coming soon!");
 }
 
 function copyResults() {
-    const text = document.getElementById('result-summary').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-        alert("CO₂ Passport copied to clipboard!");
-    });
-                 }
+    navigator.clipboard.writeText(document.getElementById('result-summary').innerText);
+    alert("Results copied to clipboard!");
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    addMaterial();
+    addTransport();
+});
