@@ -102,8 +102,6 @@
             color: #666; 
             margin-top: 10px; 
         }
-        
-        /* QR Code Styling */
         #qrcode-container {
             margin: 20px auto;
             text-align: center;
@@ -142,7 +140,7 @@
         }
         @media (max-width: 600px) {
             .input-row {
-                flex-direction: column !important;
+                flex-direction: column;
             }
             .input-row > * {
                 width: 100%;
@@ -170,25 +168,7 @@
         </select>
 
         <h3>Materials</h3>
-        <div id="materials-container">
-            <div class="input-row">
-                <select class="material-type">
-                    <option value="plastic-virgin">Virgin Plastic</option>
-                    <option value="plastic-recycled">Recycled Plastic</option>
-                    <option value="rubber">Rubber</option>
-                    <option value="leather">Leather</option>
-                    <option value="steel">Steel</option>
-                    <option value="aluminum">Aluminum</option>
-                    <option value="glass">Glass</option>
-                    <option value="cardboard">Cardboard</option>
-                    <option value="nylon-recycled">Nylon-Recycled</option>
-                    <option value="cotton">Cotton</option>
-                    <option value="polyester">Polyester</option>
-                </select>
-                <input type="number" class="material-weight" placeholder="kg" step="0.01">
-                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
-            </div>
-        </div>
+        <div id="materials-container"></div>
         <button onclick="addMaterial()">+ Add Material</button>
 
         <h3>Manufacturing Energy</h3>
@@ -210,21 +190,7 @@
         </div>
 
         <h3>Transport</h3>
-        <div id="transport-container">
-            <div class="input-row">
-                <select class="transport-mode">
-                    <option value="road">Road Freight</option>
-                    <option value="air">Air Freight</option>
-                    <option value="sea">Sea Freight</option>
-                    <option value="rail">Rail</option>
-                    <option value="electric-vehicle">Electric-Vehicle</option>
-                    <option value="inland-waterway">Inland-Waterway</option>
-                </select>
-                <input type="number" class="transport-distance" placeholder="km" step="1">
-                <input type="number" class="transport-weight" placeholder="kg" step="0.01">
-                <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
-            </div>
-        </div>
+        <div id="transport-container"></div>
         <button onclick="addTransport()">+ Add Transport</button>
 
         <button onclick="calculatePCF()" class="calculate-btn">Generate CO₂ Passport</button>
@@ -234,10 +200,16 @@
         <h2>🚀 Results</h2>
         <div id="result-summary"></div>
         <canvas id="chart" width="400" height="400"></canvas>
+        <div id="qrcode-container">
+            <div id="qrcode"></div>
+            <button class="share-btn" onclick="shareOnTwitter()">Share on X</button>
+        </div>
         <div class="export-buttons">
             <button onclick="saveAsPDF()">Save as PDF</button>
             <button onclick="copyResults()">Copy Summary</button>
         </div>
- <script src="pcf.js"></script>
+    </div>
+
+    <script src="pcf.js"></script>
 </body>
-</html>
+                    </html>
