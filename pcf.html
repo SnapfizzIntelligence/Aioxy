@@ -9,7 +9,7 @@
     <script src="pcf.js" defer></script>
     <style>
         :root { 
-            --aioxy-primary: #2e8b57; /* More subtle green */
+            --aioxy-primary: #2e8b57;
             --aioxy-secondary: #3a7d54; 
             --aioxy-dark: #1a3e2d;
             --twitter-blue: #1DA1F2;
@@ -214,7 +214,7 @@
         <div id="qrcode-container">
             <div id="qrcode"></div>
             <a id="downloadQR" download="aioxy-qr.png" style="display:none;">Download QR</a>
-            <div id="qr-error" class="error-message" style="display:none;">Generate CO₂ Passport first</div>
+            <div id="qr-error" class="error-message" style="display:none;"></div>
         </div>
         
         <div class="export-buttons">
@@ -223,5 +223,19 @@
             <button id="share">Share on X</button>
         </div>
     </div>
+
+    <script>
+        // Verify QRCode library is loaded
+        function checkQRCodeLibrary() {
+            if (typeof QRCode === 'undefined') {
+                console.error("QRCode library failed to load");
+                document.getElementById('qr-error').textContent = 
+                    "QR feature disabled - library not loaded";
+                document.getElementById('qr-error').style.display = 'block';
+            }
+        }
+        // Check after page loads
+        window.addEventListener('load', checkQRCodeLibrary);
+    </script>
 </body>
-</html>
+                </html>
