@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magical Christmas Tree</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <title>Interactive Christmas Tree</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2e8b57;
@@ -27,7 +27,17 @@
             color: white;
         }
         
-        /* Realistic Tree Container */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
         .tree-container {
             position: relative;
             width: 320px;
@@ -35,145 +45,217 @@
             perspective: 1000px;
         }
         
-        /* Realistic Christmas Tree */
+        /* Realistic Tree */
         .tree {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: url('https://i.imgur.com/3QJj3xW.png') no-repeat center bottom;
-            background-size: contain;
+            background: 
+                /* Tree silhouette */
+                conic-gradient(
+                    at 50% 30%,
+                    #1a3a1a 0deg,
+                    #2e8b57 60deg,
+                    #3cb371 120deg,
+                    #2e8b57 180deg,
+                    #1a3a1a 240deg,
+                    #2e8b57 300deg,
+                    #1a3a1a 360deg
+                );
+            clip-path: polygon(
+                50% 0%, 
+                30% 20%,
+                20% 40%,
+                15% 60%,
+                10% 80%,
+                0% 100%,
+                100% 100%,
+                90% 80%,
+                85% 60%,
+                80% 40%,
+                70% 20%
+            );
             z-index: 1;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
-        /* Realistic Leaves (as ornaments) */
-        .leaf {
+        /* Tree trunk */
+        .tree:after {
+            content: "";
             position: absolute;
-            width: 50px;
-            height: 50px;
-            background: url('https://i.imgur.com/JQJQJQJ.png') no-repeat center center;
-            background-size: contain;
-            cursor: pointer;
-            transition: all 0.5s ease;
-            transform-style: preserve-3d;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 80px;
+            background: linear-gradient(to right, #8B4513, #A0522D, #8B4513);
+            border-radius: 5px;
             z-index: 2;
         }
         
-        /* Front of leaf (pine needle texture) */
-        .leaf-front {
+        /* Realistic leaves/ornaments */
+        .leaf {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            background: url('https://i.imgur.com/7V7V7V7.png') no-repeat center center;
-            background-size: contain;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: all 0.6s ease;
+            transform-style: preserve-3d;
+            z-index: 3;
         }
         
-        /* Back of leaf (message side) */
-        .leaf-back {
+        .leaf-front, .leaf-back {
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
-            background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transform: rotateY(180deg);
-            padding: 5px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
-            font-size: 12px;
-            text-align: center;
-            color: #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
-        /* Leaf flip animation */
+        /* Pine needle texture front */
+        .leaf-front {
+            background: 
+                radial-gradient(circle at 30% 30%, #3cb371, #2e8b57),
+                repeating-linear-gradient(
+                    45deg,
+                    #1a3a1a,
+                    #1a3a1a 2px,
+                    #3cb371 2px,
+                    #3cb371 4px
+                );
+            transform: rotateY(0deg);
+        }
+        
+        /* Message back side */
+        .leaf-back {
+            background: white;
+            transform: rotateY(180deg);
+            padding: 5px;
+            font-size: 10px;
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+        }
+        
         .leaf.flipped {
             transform: rotateY(180deg);
         }
         
-        /* Snow effect */
-        .snow {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: url('https://i.imgur.com/9YQ9YQ9.png');
-            z-index: 3;
-            pointer-events: none;
-            animation: snow 10s linear infinite;
-        }
-        
-        @keyframes snow {
-            0% { background-position: 0px 0px }
-            100% { background-position: 500px 1000px }
-        }
-        
-        /* Ground */
+        /* Snow on ground */
         .ground {
             position: absolute;
             bottom: 0;
             width: 120%;
             height: 80px;
-            background: linear-gradient(to top, #8B4513, #A0522D);
+            background: 
+                linear-gradient(to top, #8B4513, #A0522D),
+                radial-gradient(circle at 20% 30%, white, transparent 20%),
+                radial-gradient(circle at 80% 50%, white, transparent 20%);
             border-radius: 50% / 100%;
             border-top-left-radius: 0;
             border-top-right-radius: 0;
             z-index: 1;
         }
+        
+        /* Falling snow animation */
+        .snow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, white 1px, transparent 1px),
+                radial-gradient(circle at 30% 40%, white 1px, transparent 1px),
+                radial-gradient(circle at 70% 10%, white 1px, transparent 1px),
+                radial-gradient(circle at 90% 30%, white 1px, transparent 1px),
+                radial-gradient(circle at 50% 70%, white 1px, transparent 1px);
+            background-size: 200px 200px;
+            animation: snowFall 10s linear infinite;
+            z-index: 4;
+            pointer-events: none;
+        }
+        
+        @keyframes snowFall {
+            from { background-position: 0 0 }
+            to { background-position: 0 200px }
+        }
+        
+        @media (max-width: 480px) {
+            .tree-container {
+                width: 280px;
+                height: 450px;
+            }
+            
+            .leaf {
+                width: 35px;
+                height: 35px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>Magical Christmas Tree</h1>
+        <p>Tap the leaves to discover special messages!</p>
+    </div>
+    
     <div class="tree-container">
         <div class="ground"></div>
         <div class="tree"></div>
         <div class="snow"></div>
-        <!-- Leaves will be added dynamically -->
+        <!-- Leaves will be added here by JavaScript -->
     </div>
 
     <script>
-        // Tree messages (mix of Amy's and e-commerce)
+        // Messages for the leaves
         const messages = [
             "Supermom Mode: Activated! ⚡",
             "Your Aura is Contagious 🌞",
             "20% OFF Your Next Purchase! 💰",
             "We're Planting a Tree in Your Name! 🌳",
             "Free Eco-Friendly Gift! 🎁",
-            "15% OFF + Free Shipping! 🚚"
+            "15% OFF + Free Shipping! 🚚",
+            "Exclusive Member Discount! 👑",
+            "Surprise Gift at Checkout! ✨"
         ];
         
         // Create realistic leaves on the tree
         const container = document.querySelector('.tree-container');
         
-        // Position leaves in a tree shape
+        // Position leaves in a natural tree pattern
         const positions = [
             // Top section
-            {top: '15%', left: '45%'},
-            {top: '20%', left: '35%'},
-            {top: '20%', left: '55%'},
+            {top: '15%', left: '45%', size: 0.9},
+            {top: '20%', left: '35%', size: 1},
+            {top: '20%', left: '55%', size: 1},
             // Middle section
-            {top: '30%', left: '30%'},
-            {top: '30%', left: '50%'},
-            {top: '30%', left: '70%'},
-            {top: '40%', left: '25%'},
-            {top: '40%', left: '45%'},
-            {top: '40%', left: '65%'},
+            {top: '30%', left: '30%', size: 1.1},
+            {top: '30%', left: '50%', size: 1.2},
+            {top: '30%', left: '70%', size: 1.1},
+            {top: '40%', left: '25%', size: 1.3},
+            {top: '40%', left: '45%', size: 1.4},
+            {top: '40%', left: '65%', size: 1.3},
             // Bottom section
-            {top: '55%', left: '20%'},
-            {top: '55%', left: '40%'},
-            {top: '55%', left: '60%'},
-            {top: '55%', left: '80%'},
-            {top: '65%', left: '15%'},
-            {top: '65%', left: '35%'},
-            {top: '65%', left: '55%'},
-            {top: '65%', left: '75%'}
+            {top: '55%', left: '20%', size: 1.5},
+            {top: '55%', left: '40%', size: 1.6},
+            {top: '55%', left: '60%', size: 1.5},
+            {top: '55%', left: '80%', size: 1.4},
+            {top: '65%', left: '15%', size: 1.7},
+            {top: '65%', left: '35%', size: 1.8},
+            {top: '65%', left: '55%', size: 1.7},
+            {top: '65%', left: '75%', size: 1.6}
         ];
         
-        // Create leaves
+        // Create and position leaves
         positions.forEach((pos, index) => {
             const leaf = document.createElement('div');
             leaf.className = 'leaf';
             leaf.style.top = pos.top;
             leaf.style.left = pos.left;
+            leaf.style.transform = `scale(${pos.size})`;
             
             const front = document.createElement('div');
             front.className = 'leaf-front';
@@ -186,7 +268,7 @@
             leaf.appendChild(back);
             container.appendChild(leaf);
             
-            // Add click handler
+            // Add click handler to flip leaf
             leaf.addEventListener('click', function() {
                 this.classList.toggle('flipped');
             });
