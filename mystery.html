@@ -46,7 +46,7 @@
             height: 600px;
         }
         
-        /* Tree from your image */
+        /* Realistic Tree */
         .tree {
             position: absolute;
             width: 100%;
@@ -54,62 +54,63 @@
             background: 
                 /* Tree trunk */
                 linear-gradient(
-                    90deg,
+                    to right,
                     #8B4513 0%,
                     #A0522D 50%,
                     #8B4513 100%
                 ),
-                /* Tree branches */
+                /* Tree foliage */
                 radial-gradient(
                     ellipse at 50% 30%,
-                    transparent 0%,
-                    transparent 65%,
-                    #2e8b57 65%,
-                    #2e8b57 70%,
+                    #3cb371 0%,
+                    #2e8b57 30%,
+                    #1a3a1a 60%,
                     transparent 70%
                 ),
                 radial-gradient(
-                    ellipse at 50% 45%,
-                    transparent 0%,
-                    transparent 60%,
-                    #2e8b57 60%,
-                    #2e8b57 75%,
+                    ellipse at 50% 50%,
+                    #3cb371 0%,
+                    #2e8b57 35%,
+                    #1a3a1a 65%,
                     transparent 75%
                 ),
                 radial-gradient(
-                    ellipse at 50% 60%,
-                    transparent 0%,
-                    transparent 55%,
-                    #2e8b57 55%,
-                    #2e8b57 80%,
+                    ellipse at 50% 70%,
+                    #3cb371 0%,
+                    #2e8b57 40%,
+                    #1a3a1a 70%,
                     transparent 80%
-                ),
-                radial-gradient(
-                    ellipse at 50% 75%,
-                    transparent 0%,
-                    transparent 50%,
-                    #2e8b57 50%,
-                    #2e8b57 85%,
-                    transparent 85%
                 );
             background-repeat: no-repeat;
-            background-position: bottom center;
-            background-size: 40px 100px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+            background-position: 
+                bottom center,
+                center 20%,
+                center 50%,
+                center 80%;
+            background-size: 
+                50px 120px,
+                300px 200px,
+                350px 250px,
+                300px 200px;
             clip-path: polygon(
                 50% 0%,
-                30% 20%,
-                20% 40%,
+                35% 15%,
+                25% 30%,
+                20% 45%,
                 15% 60%,
-                10% 80%,
+                10% 75%,
+                5% 90%,
                 0% 100%,
                 100% 100%,
-                90% 80%,
+                95% 90%,
+                90% 75%,
                 85% 60%,
-                80% 40%,
-                70% 20%
+                80% 45%,
+                75% 30%,
+                65% 15%
             );
             z-index: 1;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
         }
         
         /* Realistic Leaves */
@@ -237,29 +238,30 @@
         const container = document.querySelector('.tree-container');
         const messageBox = document.getElementById('messageBox');
         
-        // Position leaves in a natural pattern (adjusted for this tree shape)
+        // Position leaves in a natural pattern
         const positions = [
             // Top section
-            {top: '18%', left: '48%', rotation: '-5deg'},
-            {top: '22%', left: '38%', rotation: '-25deg'},
-            {top: '22%', left: '58%', rotation: '20deg'},
+            {top: '20%', left: '50%', rotation: '0deg'},
+            {top: '22%', left: '40%', rotation: '-20deg'},
+            {top: '22%', left: '60%', rotation: '20deg'},
             // Middle section
-            {top: '32%', left: '33%', rotation: '-35deg'},
-            {top: '32%', left: '53%', rotation: '5deg'},
-            {top: '32%', left: '73%', rotation: '35deg'},
-            {top: '42%', left: '28%', rotation: '-45deg'},
-            {top: '42%', left: '48%', rotation: '-10deg'},
-            {top: '42%', left: '68%', rotation: '30deg'},
+            {top: '35%', left: '35%', rotation: '-30deg'},
+            {top: '35%', left: '50%', rotation: '0deg'},
+            {top: '35%', left: '65%', rotation: '30deg'},
+            {top: '45%', left: '30%', rotation: '-40deg'},
+            {top: '45%', left: '45%', rotation: '-10deg'},
+            {top: '45%', left: '60%', rotation: '20deg'},
+            {top: '45%', left: '75%', rotation: '40deg'},
             // Lower section
-            {top: '52%', left: '23%', rotation: '-50deg'},
-            {top: '52%', left: '43%', rotation: '-15deg'},
-            {top: '52%', left: '63%', rotation: '25deg'},
-            {top: '52%', left: '83%', rotation: '50deg'},
-            // Very bottom
-            {top: '62%', left: '18%', rotation: '-55deg'},
-            {top: '62%', left: '38%', rotation: '-20deg'},
-            {top: '62%', left: '58%', rotation: '20deg'},
-            {top: '62%', left: '78%', rotation: '55deg'}
+            {top: '55%', left: '25%', rotation: '-45deg'},
+            {top: '55%', left: '40%', rotation: '-15deg'},
+            {top: '55%', left: '55%', rotation: '15deg'},
+            {top: '55%', left: '70%', rotation: '45deg'},
+            // Bottom section
+            {top: '65%', left: '20%', rotation: '-50deg'},
+            {top: '65%', left: '35%', rotation: '-20deg'},
+            {top: '65%', left: '50%', rotation: '10deg'},
+            {top: '65%', left: '65%', rotation: '50deg'}
         ];
         
         // Create and position leaves
