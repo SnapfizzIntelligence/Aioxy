@@ -1,117 +1,244 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gratitude Tree</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #eaf7ef;
-      font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }.tree-container {
-  position: relative;
-  width: 400px;
-  height: 600px;
-  background: url('tree.png') no-repeat center center;
-  background-size: contain;
-}
-
-.leaf {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  background-image: url('leaf.png');
-  background-size: cover;
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.leaf.falling {
-  animation: fall 2.5s forwards ease-in;
-}
-
-@keyframes fall {
-  0% { transform: translateY(0px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(300px) rotate(720deg); opacity: 0; }
-}
-
-.message-box {
-  margin-top: 20px;
-  background: #ffffffcc;
-  padding: 15px 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  max-width: 80%;
-  text-align: center;
-  display: none;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gratitude Tree</title>
+    <style>
+        :root {
+            --primary: #2e8b57;
+            --secondary: #d4a017;
+            --accent: #e3342f;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+            color: #333;
+            margin: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #2e8b57;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tree-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Tree image */
+        .tree-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: bottom;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        /* Leaves */
+        .leaf {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-image: url('leaf.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+            z-index: 2;
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+            transform-origin: center top;
+            transition: transform 0.2s ease;
+        }
+        
+        .leaf:hover {
+            transform: scale(1.1);
+        }
+        
+        .leaf.falling {
+            animation: fall 3s ease-in forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            30% { transform: translateY(50px) rotate(15deg); }
+            70% { transform: translateY(150px) rotate(-15deg); }
+            100% { transform: translateY(300px) rotate(0deg); opacity: 0; }
+        }
+        
+        /* Message box */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            z-index: 10;
+            max-width: 80%;
+            text-align: center;
+            display: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid rgba(46, 139, 87, 0.2);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -45%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        
+        /* Ground */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 120%;
+            height: 80px;
+            background: linear-gradient(to top, #8B4513, #A0522D);
+            border-radius: 50% / 100%;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            z-index: 3;
+        }
+        
+        @media (max-width: 500px) {
+            .tree-container {
+                height: 500px;
+            }
+            
+            .leaf {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .message-box {
+                padding: 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="tree-container" id="tree"></div>
-  <div class="message-box" id="messageBox"></div>  <script>
-    const messages = [
-      "Supermom Mode: Activated! ⚡",
-      "Your Aura is Contagious 🌞",
-      "20% OFF Your Next Purchase! 💰",
-      "We're Planting a Tree in Your Name! 🌳",
-      "Free Eco-Friendly Gift! 🏱",
-      "15% OFF + Free Shipping! 🚚",
-      "Exclusive Member Discount! 👑",
-      "Surprise Gift at Checkout! ✨",
-      "Amy, you're a beam of light! 🌞",
-      "Your Spartan energy is unmatched! 💪",
-      "You juggle it all like a superhero mom! 🧘‍♀️",
-      "The world needs more hearts like yours. 💚",
-      "Remember to breathe and smile, Amy! ☀️",
-      "This one is for your peaceful dog park moments. 🐾"
-    ];
+    <div class="header">
+        <h1>Gratitude Tree</h1>
+        <p>Click leaves to see them fall and reveal messages</p>
+    </div>
+    
+    <div class="tree-container">
+        <img class="tree-img" src="tree.png" alt="Gratitude Tree">
+        <div class="ground"></div>
+        <!-- Leaves will be added here by JavaScript -->
+    </div>
+    
+    <div class="message-box" id="messageBox"></div>
 
-    const positions = [
-      { top: 50, left: 150 },
-      { top: 100, left: 180 },
-      { top: 130, left: 120 },
-      { top: 180, left: 170 },
-      { top: 200, left: 90 },
-      { top: 250, left: 140 },
-      { top: 300, left: 190 },
-      { top: 340, left: 100 },
-      { top: 360, left: 160 },
-      { top: 100, left: 80 },
-      { top: 220, left: 60 },
-      { top: 280, left: 60 },
-      { top: 310, left: 230 },
-      { top: 150, left: 210 },
-    ];
-
-    const tree = document.getElementById('tree');
-    const messageBox = document.getElementById('messageBox');
-
-    positions.forEach((pos, index) => {
-      const leaf = document.createElement('div');
-      leaf.className = 'leaf';
-      leaf.style.top = pos.top + 'px';
-      leaf.style.left = pos.left + 'px';
-      leaf.dataset.message = messages[index];
-
-      leaf.addEventListener('click', () => {
-        leaf.classList.add('falling');
-        messageBox.textContent = leaf.dataset.message;
-        messageBox.style.display = 'block';
-        setTimeout(() => leaf.remove(), 2500);
-      });
-
-      tree.appendChild(leaf);
-    });
-  </script></body>
+    <script>
+        // Leaf messages
+        const messages = [
+            "Supermom Mode: Activated! ⚡",
+            "Your Aura is Contagious 🌞",
+            "20% OFF Your Next Purchase! 💰",
+            "We're Planting a Tree in Your Name! 🌳",
+            "Free Eco-Friendly Gift! 🎁",
+            "15% OFF + Free Shipping! 🚚",
+            "Exclusive Member Discount! 👑",
+            "Surprise Gift at Checkout! ✨",
+            "Amy, you're a beam of light! 🌞",
+            "Your Spartan energy is unmatched! 💪",
+            "You juggle it all like a superhero mom! 🦸‍♀️",
+            "The world needs more hearts like yours. 💚",
+            "Remember to breathe and smile, Amy! ☀️",
+            "This one is for your peaceful dog park moments. 🐾"
+        ];
+        
+        // Leaf positions (top, left, rotation)
+        const leafPositions = [
+            // Top branches
+            {top: '15%', left: '50%', rotation: '0deg'},
+            {top: '18%', left: '40%', rotation: '-20deg'},
+            {top: '18%', left: '60%', rotation: '20deg'},
+            // Middle branches
+            {top: '30%', left: '35%', rotation: '-30deg'},
+            {top: '30%', left: '50%', rotation: '5deg'},
+            {top: '30%', left: '65%', rotation: '30deg'},
+            {top: '40%', left: '30%', rotation: '-40deg'},
+            {top: '40%', left: '45%', rotation: '-10deg'},
+            {top: '40%', left: '60%', rotation: '25deg'},
+            {top: '40%', left: '75%', rotation: '45deg'},
+            // Lower branches
+            {top: '55%', left: '25%', rotation: '-50deg'},
+            {top: '55%', left: '40%', rotation: '-15deg'},
+            {top: '55%', left: '55%', rotation: '15deg'},
+            {top: '55%', left: '70%', rotation: '50deg'}
+        ];
+        
+        // Initialize the tree
+        function initTree() {
+            const container = document.querySelector('.tree-container');
+            const messageBox = document.getElementById('messageBox');
+            
+            // Create leaves
+            leafPositions.forEach((pos, index) => {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.style.top = pos.top;
+                leaf.style.left = pos.left;
+                leaf.style.transform = `rotate(${pos.rotation})`;
+                leaf.dataset.message = messages[index % messages.length];
+                
+                leaf.addEventListener('click', function() {
+                    // Show message
+                    messageBox.textContent = this.dataset.message;
+                    messageBox.style.display = 'block';
+                    
+                    // Make leaf fall
+                    this.classList.add('falling');
+                    
+                    // Remove leaf after animation
+                    setTimeout(() => {
+                        this.remove();
+                    }, 3000);
+                });
+                
+                container.appendChild(leaf);
+            });
+            
+            // Close message box when clicking anywhere
+            document.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('leaf') && e.target.id !== 'messageBox') {
+                    messageBox.style.display = 'none';
+                }
+            });
+        }
+        
+        // Start when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initTree);
+    </script>
+</body>
 </html>
