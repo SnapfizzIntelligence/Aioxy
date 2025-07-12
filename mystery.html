@@ -3,27 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thank You For Your Purchase!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
+    <title>Magical Christmas Tree</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4a8f68;
-            --secondary: #FF69B4;
-            --accent: #FFD700;
+            --primary: #2e8b57;
+            --secondary: #d4a017;
+            --accent: #e3342f;
             --dark: #1a3a1a;
             --light: #f8f8f8;
-            --amy-section: #f0e6ff;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #e6f9ff 0%, #f0fff4 100%);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -31,589 +24,173 @@
             min-height: 100vh;
             padding: 20px;
             overflow-x: hidden;
-            color: #333;
+            color: white;
         }
         
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 1s ease;
-            max-width: 800px;
-        }
-        
-        .header h1 {
-            color: var(--dark);
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-            background: linear-gradient(to right, #2e8b57, #4a8f68);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .header p {
-            color: #555;
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
-        .scene {
+        /* Realistic Tree Container */
+        .tree-container {
             position: relative;
-            width: 100%;
-            max-width: 500px;
-            height: 600px;
-            margin: 0 auto;
+            width: 320px;
+            height: 500px;
             perspective: 1000px;
         }
         
-        .tree-container {
-            position: relative;
+        /* Realistic Christmas Tree */
+        .tree {
+            position: absolute;
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
+            background: url('https://i.imgur.com/3QJj3xW.png') no-repeat center bottom;
+            background-size: contain;
+            z-index: 1;
         }
         
+        /* Realistic Leaves (as ornaments) */
+        .leaf {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: url('https://i.imgur.com/JQJQJQJ.png') no-repeat center center;
+            background-size: contain;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            transform-style: preserve-3d;
+            z-index: 2;
+        }
+        
+        /* Front of leaf (pine needle texture) */
+        .leaf-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: url('https://i.imgur.com/7V7V7V7.png') no-repeat center center;
+            background-size: contain;
+        }
+        
+        /* Back of leaf (message side) */
+        .leaf-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotateY(180deg);
+            padding: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+            font-size: 12px;
+            text-align: center;
+            color: #333;
+        }
+        
+        /* Leaf flip animation */
+        .leaf.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        /* Snow effect */
+        .snow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('https://i.imgur.com/9YQ9YQ9.png');
+            z-index: 3;
+            pointer-events: none;
+            animation: snow 10s linear infinite;
+        }
+        
+        @keyframes snow {
+            0% { background-position: 0px 0px }
+            100% { background-position: 500px 1000px }
+        }
+        
+        /* Ground */
         .ground {
             position: absolute;
             bottom: 0;
-            width: 140%;
-            height: 100px;
+            width: 120%;
+            height: 80px;
             background: linear-gradient(to top, #8B4513, #A0522D);
             border-radius: 50% / 100%;
             border-top-left-radius: 0;
             border-top-right-radius: 0;
             z-index: 1;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .tree {
-            position: relative;
-            width: 280px;
-            height: 480px;
-            z-index: 2;
-            transform-origin: bottom center;
-            animation: treeGrow 1.5s ease-out;
-        }
-        
-        .trunk {
-            width: 60px;
-            height: 150px;
-            background: linear-gradient(to right, #8B4513, #A0522D, #8B4513);
-            margin: 0 auto;
-            border-radius: 15px;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .trunk:after {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                          rgba(255,255,255,0) 0%, 
-                          rgba(255,255,255,0.3) 50%, 
-                          rgba(255,255,255,0) 100%);
-            border-radius: inherit;
-        }
-        
-        .leaves {
-            width: 280px;
-            height: 350px;
-            background: radial-gradient(ellipse at center, #5dbe8a 0%, #3a9667 70%, #1a3a1a 100%);
-            border-radius: 140px 140px 80px 80px;
-            margin-top: -40px;
-            position: relative;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            align-content: flex-start;
-            padding: 50px 20px 20px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            z-index: 2;
-        }
-        
-        .leaf {
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(ellipse at center, #7CFC00 0%, #3CB371 100%);
-            border-radius: 50% 0 50% 50%;
-            margin: 8px;
-            cursor: pointer;
-            transform: rotate(-45deg);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255,255,255,0.8);
-            font-size: 24px;
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .leaf:before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-            border-radius: inherit;
-        }
-        
-        .leaf:hover {
-            transform: rotate(-45deg) scale(1.15);
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .leaf.amy-leaf {
-            background: radial-gradient(ellipse at center, #e0b0ff 0%, #b57edc 100%);
-            border: 1px dashed rgba(255,255,255,0.5);
-            animation: pulse 2s infinite;
-        }
-        
-        .amy-section-label {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: var(--amy-section);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #6a3093;
-            z-index: 3;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transform: rotate(15deg);
-        }
-        
-        .reward-card {
-            position: absolute;
-            width: 320px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-            padding: 30px;
-            text-align: center;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotateY(180deg);
-            backface-visibility: hidden;
-            opacity: 0;
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
-            transform-style: preserve-3d;
-            border: 2px solid rgba(74, 143, 104, 0.2);
-        }
-        
-        .reward-card.visible {
-            opacity: 1;
-            transform: translate(-50%, -50%) rotateY(0deg);
-        }
-        
-        .reward-card h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-        
-        .reward-card p {
-            color: #555;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-        
-        .reward-icon {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            text-shadow: 0 3px 6px rgba(0,0,0,0.1);
-        }
-        
-        .coupon-code {
-            background: #f8f8f8;
-            border: 2px dashed #4a8f68;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 1.2rem;
-            margin: 15px 0;
-            display: inline-block;
-            color: #2e8b57;
-            font-weight: bold;
-        }
-        
-        .share-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 25px;
-        }
-        
-        .share-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 30px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .share-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-        }
-        
-        .instagram {
-            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
-        }
-        
-        .tiktok {
-            background: linear-gradient(45deg, #25F4EE, #000000, #FE2C55);
-        }
-        
-        .confetti {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background-color: var(--accent);
-            opacity: 0;
-            z-index: 5;
-        }
-        
-        .signature {
-            font-family: 'Dancing Script', cursive;
-            font-size: 1.4rem;
-            color: #6a3093;
-            margin-top: 10px;
-        }
-        
-        @keyframes treeGrow {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        @keyframes pulse {
-            0% { transform: rotate(-45deg) scale(1); }
-            50% { transform: rotate(-45deg) scale(1.1); }
-            100% { transform: rotate(-45deg) scale(1); }
-        }
-        
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes confettiFall {
-            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(600px) rotate(360deg); opacity: 0; }
-        }
-        
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 2.2rem;
-            }
-            
-            .tree {
-                width: 220px;
-                height: 400px;
-            }
-            
-            .leaves {
-                width: 220px;
-                height: 300px;
-                padding-top: 40px;
-            }
-            
-            .leaf {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
-            }
-            
-            .reward-card {
-                width: 90%;
-                padding: 20px;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Thank You For Your Purchase!</h1>
-        <p>Pick a leaf to reveal your special thank you gift! Some leaves hold personal messages for someone very special!</p>
-    </div>
-    
-    <div class="scene">
-        <div class="tree-container">
-            <div class="ground"></div>
-            <div class="tree">
-                <div class="leaves" id="leaves">
-                    <!-- Leaves will be added by JavaScript -->
-                </div>
-                <div class="trunk"></div>
-                <div class="amy-section-label">For Amy</div>
-            </div>
-            
-            <div class="reward-card" id="rewardCard">
-                <div class="reward-icon" id="rewardIcon">💖</div>
-                <h2 id="rewardTitle">Special Reward!</h2>
-                <p id="rewardText">You've unlocked a special thank you gift!</p>
-                <div id="couponCode" class="coupon-code" style="display: none;">THANKYOU20</div>
-                <div id="rewardSignature" class="signature"></div>
-                <div class="share-buttons">
-                    <button class="share-btn instagram">
-                        <span>Share on Instagram</span>
-                    </button>
-                    <button class="share-btn tiktok">
-                        <span>Share on TikTok</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div class="tree-container">
+        <div class="ground"></div>
+        <div class="tree"></div>
+        <div class="snow"></div>
+        <!-- Leaves will be added dynamically -->
     </div>
 
     <script>
+        // Tree messages (mix of Amy's and e-commerce)
+        const messages = [
+            "Supermom Mode: Activated! ⚡",
+            "Your Aura is Contagious 🌞",
+            "20% OFF Your Next Purchase! 💰",
+            "We're Planting a Tree in Your Name! 🌳",
+            "Free Eco-Friendly Gift! 🎁",
+            "15% OFF + Free Shipping! 🚚"
+        ];
+        
+        // Create realistic leaves on the tree
+        const container = document.querySelector('.tree-container');
+        
+        // Position leaves in a tree shape
+        const positions = [
+            // Top section
+            {top: '15%', left: '45%'},
+            {top: '20%', left: '35%'},
+            {top: '20%', left: '55%'},
+            // Middle section
+            {top: '30%', left: '30%'},
+            {top: '30%', left: '50%'},
+            {top: '30%', left: '70%'},
+            {top: '40%', left: '25%'},
+            {top: '40%', left: '45%'},
+            {top: '40%', left: '65%'},
+            // Bottom section
+            {top: '55%', left: '20%'},
+            {top: '55%', left: '40%'},
+            {top: '55%', left: '60%'},
+            {top: '55%', left: '80%'},
+            {top: '65%', left: '15%'},
+            {top: '65%', left: '35%'},
+            {top: '65%', left: '55%'},
+            {top: '65%', left: '75%'}
+        ];
+        
         // Create leaves
-        const leavesContainer = document.getElementById('leaves');
-        const rewardCard = document.getElementById('rewardCard');
-        const rewardTitle = document.getElementById('rewardTitle');
-        const rewardText = document.getElementById('rewardText');
-        const rewardIcon = document.getElementById('rewardIcon');
-        const couponCode = document.getElementById('couponCode');
-        const rewardSignature = document.getElementById('rewardSignature');
-        
-        // Special messages for Amy (unchanged)
-        const amyMessages = [
-            { 
-                title: "Supermom Mode: Activated!",
-                text: "Amy, from baseball games to mountain races to pup walks — you're a real-life superhero. I don't know how you do it, but it's amazing.",
-                icon: "🦸‍♀️",
-                color: "#b57edc",
-                signature: "Your biggest fan"
-            },
-            { 
-                title: "Your Aura is Contagious",
-                text: "Even through a screen, your positivity lifts people up. You're the sunshine after a hectic week. Never forget that!",
-                icon: "☀️",
-                color: "#b57edc",
-                signature: "Someone you brighten"
-            },
-            { 
-                title: "Power Ranger Amy Unlocked!",
-                text: "Red Ranger Amy reporting for duty! Obstacle race complete, now on to the next adventure 🚴‍♀️🌲💪",
-                icon: "🚴‍♀️",
-                color: "#b57edc",
-                signature: "Your adventure buddy"
-            },
-            { 
-                title: "Your Talk Show Would Break the Internet",
-                text: "One day, we'll tune in to 'The Amy Show' — a show where strength, humor, and heart come together. Oprah's got nothing on you 😉",
-                icon: "🎤",
-                color: "#b57edc",
-                signature: "Your future producer"
-            }
-        ];
-        
-        // E-commerce post-purchase rewards
-        const ecomRewards = [
-            { 
-                title: "20% OFF Your Next Purchase!",
-                text: "Enjoy 20% off your entire next order as our way of saying thanks for being an amazing customer!",
-                icon: "💰",
-                color: "#FFD700",
-                coupon: "THANKYOU20"
-            },
-            { 
-                title: "We're Planting a Tree in Your Name!",
-                text: "To celebrate your purchase, we'll plant a tree through our partnership with OneTreePlanted.org",
-                icon: "🌳",
-                color: "#2e8b57"
-            },
-            { 
-                title: "Free Eco-Friendly Gift!",
-                text: "Your next order will include a free sustainable gift handpicked by our team!",
-                icon: "🎁",
-                color: "#FF69B4"
-            },
-            { 
-                title: "15% OFF + Free Shipping!",
-                text: "Enjoy 15% off plus free shipping on your next purchase! Valid for 30 days.",
-                icon: "🚚",
-                color: "#4169E1",
-                coupon: "FREESHIP15"
-            },
-            { 
-                title: "Exclusive Member Discount!",
-                text: "You've unlocked 30 days of VIP pricing on all our products!",
-                icon: "👑",
-                color: "#9370DB"
-            },
-            { 
-                title: "Surprise Gift at Checkout!",
-                text: "On your next visit, you'll find a special surprise gift waiting at checkout!",
-                icon: "✨",
-                color: "#FFA500"
-            },
-            { 
-                title: "Early Access to New Products!",
-                text: "You now get 48-hour early access to all new product launches!",
-                icon: "🔔",
-                color: "#FF6B6B"
-            },
-            { 
-                title: "Double Loyalty Points!",
-                text: "We're doubling the loyalty points on your next purchase!",
-                icon: "🪙",
-                color: "#DAA520"
-            },
-            { 
-                title: "Personal Shopping Assistant!",
-                text: "Book a free 30-minute virtual styling session with our expert!",
-                icon: "💁‍♀️",
-                color: "#9370DB"
-            },
-            { 
-                title: "Free Product Sample Pack!",
-                text: "We're including a free sample pack with your next order!",
-                icon: "🧴",
-                color: "#87CEEB"
-            }
-        ];
-        
-        // Create leaves (12 total - 4 for Amy, 8 for e-commerce rewards)
-        for (let i = 0; i < 12; i++) {
+        positions.forEach((pos, index) => {
             const leaf = document.createElement('div');
             leaf.className = 'leaf';
-            leaf.innerHTML = '🍃';
-            leaf.dataset.index = i;
+            leaf.style.top = pos.top;
+            leaf.style.left = pos.left;
             
-            // Mark the first 4 leaves as Amy's special leaves
-            if (i < 4) {
-                leaf.classList.add('amy-leaf');
-            }
+            const front = document.createElement('div');
+            front.className = 'leaf-front';
             
-            leaf.addEventListener('click', revealReward);
-            leavesContainer.appendChild(leaf);
-        }
-        
-        function revealReward(e) {
-            const leafIndex = e.target.dataset.index;
-            const selectedLeaf = e.target;
-            let reward;
+            const back = document.createElement('div');
+            back.className = 'leaf-back';
+            back.textContent = messages[index % messages.length];
             
-            // Determine if this is one of Amy's special leaves
-            if (leafIndex < 4) {
-                reward = amyMessages[leafIndex];
-            } else {
-                // Get random e-commerce reward
-                reward = ecomRewards[Math.floor(Math.random() * ecomRewards.length)];
-            }
+            leaf.appendChild(front);
+            leaf.appendChild(back);
+            container.appendChild(leaf);
             
-            // Disable all leaves
-            document.querySelectorAll('.leaf').forEach(leaf => {
-                leaf.style.pointerEvents = 'none';
-                if (leaf !== selectedLeaf) {
-                    leaf.style.opacity = '0.5';
-                    leaf.style.filter = 'grayscale(80%)';
-                }
-            });
-            
-            // Animate selected leaf
-            selectedLeaf.style.transform = 'rotate(-45deg) scale(1.3)';
-            selectedLeaf.style.backgroundColor = reward.color;
-            selectedLeaf.style.color = 'white';
-            selectedLeaf.style.boxShadow = '0 0 20px ' + reward.color;
-            
-            // Set reward content
-            rewardTitle.textContent = reward.title;
-            rewardText.textContent = reward.text;
-            rewardIcon.textContent = reward.icon;
-            rewardIcon.style.color = reward.color;
-            
-            // Show coupon code if it exists
-            if (reward.coupon) {
-                couponCode.textContent = reward.coupon;
-                couponCode.style.display = 'inline-block';
-            } else {
-                couponCode.style.display = 'none';
-            }
-            
-            // Show signature if it's an Amy message
-            if (reward.signature) {
-                rewardSignature.textContent = reward.signature;
-                rewardSignature.style.display = 'block';
-            } else {
-                rewardSignature.style.display = 'none';
-            }
-            
-            // Show reward card after delay
-            setTimeout(() => {
-                rewardCard.classList.add('visible');
-                createConfetti(reward.color);
-            }, 800);
-        }
-        
-        function createConfetti(color) {
-            const container = document.querySelector('.scene');
-            const colors = [color, '#FFD700', '#FF69B4', '#4169E1', '#4a8f68'];
-            
-            for (let i = 0; i < 60; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = Math.random() * 12 + 6 + 'px';
-                confetti.style.height = Math.random() * 12 + 6 + 'px';
-                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-                
-                container.appendChild(confetti);
-                
-                const animationDuration = Math.random() * 3 + 2;
-                confetti.style.animation = `confettiFall ${animationDuration}s linear forwards`;
-                
-                setTimeout(() => {
-                    confetti.remove();
-                }, animationDuration * 1000);
-            }
-        }
-        
-        // Reset animation for demo purposes
-        rewardCard.addEventListener('click', (e) => {
-            if (e.target.classList.contains('share-btn')) {
-                alert('This would normally share your reward on social media!');
-                return;
-            }
-            
-            rewardCard.classList.remove('visible');
-            
-            // Reset leaves
-            document.querySelectorAll('.leaf').forEach(leaf => {
-                leaf.style.opacity = '1';
-                leaf.style.filter = 'none';
-                leaf.style.pointerEvents = 'auto';
-                leaf.style.transform = 'rotate(-45deg)';
-                leaf.style.backgroundColor = '';
-                leaf.style.color = '';
-                leaf.style.boxShadow = '';
+            // Add click handler
+            leaf.addEventListener('click', function() {
+                this.classList.toggle('flipped');
             });
         });
     </script>
 </body>
-    </html>
+</html>
