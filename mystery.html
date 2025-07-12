@@ -45,13 +45,11 @@
             perspective: 1000px;
         }
         
-        /* Realistic Tree */
         .tree {
             position: absolute;
             width: 100%;
             height: 100%;
             background: 
-                /* Tree silhouette */
                 conic-gradient(
                     at 50% 30%,
                     #1a3a1a 0deg,
@@ -79,7 +77,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
-        /* Tree trunk */
         .tree:after {
             content: "";
             position: absolute;
@@ -93,13 +90,12 @@
             z-index: 2;
         }
         
-        /* Realistic leaves/ornaments */
         .leaf {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             cursor: pointer;
-            transition: all 0.6s ease;
+            transition: transform 0.6s ease;
             transform-style: preserve-3d;
             z-index: 3;
         }
@@ -116,7 +112,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
         
-        /* Pine needle texture front */
         .leaf-front {
             background: 
                 radial-gradient(circle at 30% 30%, #3cb371, #2e8b57),
@@ -130,22 +125,21 @@
             transform: rotateY(0deg);
         }
         
-        /* Message back side */
         .leaf-back {
             background: white;
             transform: rotateY(180deg);
-            padding: 5px;
-            font-size: 10px;
+            padding: 8px;
+            font-size: 12px;
             text-align: center;
             color: #333;
             font-weight: 600;
+            word-wrap: break-word;
         }
         
         .leaf.flipped {
             transform: rotateY(180deg);
         }
         
-        /* Snow on ground */
         .ground {
             position: absolute;
             bottom: 0;
@@ -161,7 +155,6 @@
             z-index: 1;
         }
         
-        /* Falling snow animation */
         .snow {
             position: absolute;
             width: 100%;
@@ -181,18 +174,6 @@
         @keyframes snowFall {
             from { background-position: 0 0 }
             to { background-position: 0 200px }
-        }
-        
-        @media (max-width: 480px) {
-            .tree-container {
-                width: 280px;
-                height: 450px;
-            }
-            
-            .leaf {
-                width: 35px;
-                height: 35px;
-            }
         }
     </style>
 </head>
@@ -228,25 +209,25 @@
         // Position leaves in a natural tree pattern
         const positions = [
             // Top section
-            {top: '15%', left: '45%', size: 0.9},
-            {top: '20%', left: '35%', size: 1},
-            {top: '20%', left: '55%', size: 1},
+            {top: '15%', left: '45%'},
+            {top: '20%', left: '35%'},
+            {top: '20%', left: '55%'},
             // Middle section
-            {top: '30%', left: '30%', size: 1.1},
-            {top: '30%', left: '50%', size: 1.2},
-            {top: '30%', left: '70%', size: 1.1},
-            {top: '40%', left: '25%', size: 1.3},
-            {top: '40%', left: '45%', size: 1.4},
-            {top: '40%', left: '65%', size: 1.3},
+            {top: '30%', left: '30%'},
+            {top: '30%', left: '50%'},
+            {top: '30%', left: '70%'},
+            {top: '40%', left: '25%'},
+            {top: '40%', left: '45%'},
+            {top: '40%', left: '65%'},
             // Bottom section
-            {top: '55%', left: '20%', size: 1.5},
-            {top: '55%', left: '40%', size: 1.6},
-            {top: '55%', left: '60%', size: 1.5},
-            {top: '55%', left: '80%', size: 1.4},
-            {top: '65%', left: '15%', size: 1.7},
-            {top: '65%', left: '35%', size: 1.8},
-            {top: '65%', left: '55%', size: 1.7},
-            {top: '65%', left: '75%', size: 1.6}
+            {top: '55%', left: '20%'},
+            {top: '55%', left: '40%'},
+            {top: '55%', left: '60%'},
+            {top: '55%', left: '80%'},
+            {top: '65%', left: '15%'},
+            {top: '65%', left: '35%'},
+            {top: '65%', left: '55%'},
+            {top: '65%', left: '75%'}
         ];
         
         // Create and position leaves
@@ -255,7 +236,6 @@
             leaf.className = 'leaf';
             leaf.style.top = pos.top;
             leaf.style.left = pos.left;
-            leaf.style.transform = `scale(${pos.size})`;
             
             const front = document.createElement('div');
             front.className = 'leaf-front';
@@ -271,6 +251,15 @@
             // Add click handler to flip leaf
             leaf.addEventListener('click', function() {
                 this.classList.toggle('flipped');
+                
+                // Close other leaves when opening a new one
+                if(this.classList.contains('flipped')) {
+                    document.querySelectorAll('.leaf').forEach(otherLeaf => {
+                        if(otherLeaf !== this) {
+                            otherLeaf.classList.remove('flipped');
+                        }
+                    });
+                }
             });
         });
     </script>
