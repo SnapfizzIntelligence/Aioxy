@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Gratitude Tree</title>
+    <title>Realistic Tree with Falling Leaves</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -42,25 +42,81 @@
         .tree-container {
             position: relative;
             width: 100%;
-            max-width: 500px;
+            max-width: 400px;
             height: 600px;
         }
         
-        /* Realistic Tree Image */
-        .tree-img {
+        /* Tree from your image */
+        .tree {
             position: absolute;
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            object-position: bottom;
+            background: 
+                /* Tree trunk */
+                linear-gradient(
+                    90deg,
+                    #8B4513 0%,
+                    #A0522D 50%,
+                    #8B4513 100%
+                ),
+                /* Tree branches */
+                radial-gradient(
+                    ellipse at 50% 30%,
+                    transparent 0%,
+                    transparent 65%,
+                    #2e8b57 65%,
+                    #2e8b57 70%,
+                    transparent 70%
+                ),
+                radial-gradient(
+                    ellipse at 50% 45%,
+                    transparent 0%,
+                    transparent 60%,
+                    #2e8b57 60%,
+                    #2e8b57 75%,
+                    transparent 75%
+                ),
+                radial-gradient(
+                    ellipse at 50% 60%,
+                    transparent 0%,
+                    transparent 55%,
+                    #2e8b57 55%,
+                    #2e8b57 80%,
+                    transparent 80%
+                ),
+                radial-gradient(
+                    ellipse at 50% 75%,
+                    transparent 0%,
+                    transparent 50%,
+                    #2e8b57 50%,
+                    #2e8b57 85%,
+                    transparent 85%
+                );
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            background-size: 40px 100px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+            clip-path: polygon(
+                50% 0%,
+                30% 20%,
+                20% 40%,
+                15% 60%,
+                10% 80%,
+                0% 100%,
+                100% 100%,
+                90% 80%,
+                85% 60%,
+                80% 40%,
+                70% 20%
+            );
             z-index: 1;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
         }
         
         /* Realistic Leaves */
         .leaf {
             position: absolute;
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: 
                 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 0 C70 20 90 40 80 60 C70 80 50 90 30 80 C10 70 20 40 50 0 Z" fill="%233cb371"/><path d="M50 0 Q60 30 50 50 Q40 70 30 80" stroke="%231a3a1a" stroke-width="1" fill="none"/><path d="M50 50 Q55 60 50 70 Q45 80 40 85" stroke="%231a3a1a" stroke-width="0.8" fill="none"/></svg>') 
                 no-repeat center center;
@@ -135,11 +191,12 @@
         @media (max-width: 500px) {
             .tree-container {
                 height: 500px;
+                max-width: 350px;
             }
             
             .leaf {
-                width: 40px;
-                height: 40px;
+                width: 35px;
+                height: 35px;
             }
             
             .message-box {
@@ -151,13 +208,12 @@
 </head>
 <body>
     <div class="header">
-        <h1>Gratitude Tree</h1>
+        <h1>Magical Tree</h1>
         <p>Click leaves to see them fall and reveal messages</p>
     </div>
     
     <div class="tree-container">
-        <!-- Tree image placeholder - replace with your actual image -->
-        <img class="tree-img" src="tree.png" alt="Realistic Tree">
+        <div class="tree"></div>
         <div class="ground"></div>
         <!-- Leaves will be added here by JavaScript -->
     </div>
@@ -180,62 +236,60 @@
         // Create realistic leaves on the tree
         const container = document.querySelector('.tree-container');
         const messageBox = document.getElementById('messageBox');
-        const treeImg = document.querySelector('.tree-img');
         
-        // Wait for tree image to load
-        treeImg.onload = function() {
-            // Position leaves in a natural pattern
-            const positions = [
-                // Upper branches
-                {top: '15%', left: '48%', rotation: '-5deg'},
-                {top: '20%', left: '38%', rotation: '-25deg'},
-                {top: '20%', left: '58%', rotation: '20deg'},
-                // Middle branches
-                {top: '30%', left: '33%', rotation: '-35deg'},
-                {top: '30%', left: '53%', rotation: '5deg'},
-                {top: '30%', left: '73%', rotation: '35deg'},
-                {top: '40%', left: '28%', rotation: '-45deg'},
-                {top: '40%', left: '48%', rotation: '-10deg'},
-                {top: '40%', left: '68%', rotation: '30deg'},
-                // Lower branches
-                {top: '50%', left: '23%', rotation: '-50deg'},
-                {top: '50%', left: '43%', rotation: '-15deg'},
-                {top: '50%', left: '63%', rotation: '25deg'},
-                {top: '50%', left: '83%', rotation: '50deg'}
-            ];
+        // Position leaves in a natural pattern (adjusted for this tree shape)
+        const positions = [
+            // Top section
+            {top: '18%', left: '48%', rotation: '-5deg'},
+            {top: '22%', left: '38%', rotation: '-25deg'},
+            {top: '22%', left: '58%', rotation: '20deg'},
+            // Middle section
+            {top: '32%', left: '33%', rotation: '-35deg'},
+            {top: '32%', left: '53%', rotation: '5deg'},
+            {top: '32%', left: '73%', rotation: '35deg'},
+            {top: '42%', left: '28%', rotation: '-45deg'},
+            {top: '42%', left: '48%', rotation: '-10deg'},
+            {top: '42%', left: '68%', rotation: '30deg'},
+            // Lower section
+            {top: '52%', left: '23%', rotation: '-50deg'},
+            {top: '52%', left: '43%', rotation: '-15deg'},
+            {top: '52%', left: '63%', rotation: '25deg'},
+            {top: '52%', left: '83%', rotation: '50deg'},
+            // Very bottom
+            {top: '62%', left: '18%', rotation: '-55deg'},
+            {top: '62%', left: '38%', rotation: '-20deg'},
+            {top: '62%', left: '58%', rotation: '20deg'},
+            {top: '62%', left: '78%', rotation: '55deg'}
+        ];
+        
+        // Create and position leaves
+        positions.forEach((pos, index) => {
+            const leaf = document.createElement('div');
+            leaf.className = 'leaf';
+            leaf.style.top = pos.top;
+            leaf.style.left = pos.left;
+            leaf.style.transform = `rotate(${pos.rotation})`;
             
-            // Create and position leaves
-            positions.forEach((pos, index) => {
-                const leaf = document.createElement('div');
-                leaf.className = 'leaf';
-                leaf.style.top = pos.top;
-                leaf.style.left = pos.left;
-                leaf.style.transform = `rotate(${pos.rotation})`;
+            // Add message to leaf
+            leaf.dataset.message = messages[index % messages.length];
+            
+            container.appendChild(leaf);
+            
+            // Add click handler
+            leaf.addEventListener('click', function() {
+                // Show message
+                messageBox.textContent = this.dataset.message;
+                messageBox.classList.add('show');
                 
-                // Add message to leaf
-                leaf.dataset.message = messages[index % messages.length];
+                // Make leaf fall with slower animation
+                this.classList.add('falling');
                 
-                container.appendChild(leaf);
-                
-                // Add click handler
-                leaf.addEventListener('click', function() {
-                    // Show message
-                    messageBox.textContent = this.dataset.message;
-                    messageBox.classList.add('show');
-                    
-                    // Make leaf fall with slower animation
-                    this.classList.add('falling');
-                    
-                    // Remove leaf after animation
-                    setTimeout(() => {
-                        this.remove();
-                    }, 3000);
-                });
+                // Remove leaf after animation
+                setTimeout(() => {
+                    this.remove();
+                }, 3000);
             });
-        };
-        
-        // Fallback in case image is cached
-        if (treeImg.complete) treeImg.onload();
+        });
         
         // Close message box when clicking anywhere
         document.addEventListener('click', function(e) {
@@ -245,4 +299,4 @@
         });
     </script>
 </body>
-</html>
+        </html>
