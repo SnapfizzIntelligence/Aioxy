@@ -3,174 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gratitude Tree</title>
+    <title>Interactive Gratitude Tree</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap');
+        :root {
+            --primary: #2e8b57;
+            --secondary: #d4a017;
+            --accent: #e3342f;
+        }
         
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
-            overflow: hidden;
-            user-select: none;
-            touch-action: manipulation;
-            height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+            color: #333;
+            margin: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #2e8b57;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
         }
         
         .tree-container {
             position: relative;
-            width: 90vmin;
-            height: 90vmin;
-            max-width: 800px;
-            max-height: 800px;
+            width: 100%;
+            max-width: 500px;
+            height: 600px;
+            margin: 0 auto;
         }
         
-        .tree-bg {
+        /* Tree image */
+        .tree-img {
+            position: absolute;
             width: 100%;
             height: 100%;
             object-fit: contain;
-            position: absolute;
+            object-position: bottom;
             z-index: 1;
             pointer-events: none;
         }
         
+        /* Leaves */
         .leaf {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 50px;
+            height: 50px;
             background-image: url('leaf.png');
             background-size: contain;
             background-repeat: no-repeat;
             cursor: pointer;
             z-index: 2;
-            transition: all 0.3s ease;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+            transform-origin: center top;
+            transition: transform 0.2s ease;
         }
         
         .leaf:hover {
-            filter: drop-shadow(0 0 8px rgba(139, 195, 74, 0.6));
             transform: scale(1.1);
         }
         
-        .message-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            opacity: 0;
+        .leaf.falling {
+            animation: fall 3s ease-in forwards;
             pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        
-        .message-modal.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        .message-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 80%;
-            text-align: center;
-            position: relative;
-            font-size: 1.2rem;
-            color: #333;
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #888;
-        }
-        
-        .leaf-fall {
-            position: absolute;
-            z-index: 3;
-            width: 30px;
-            height: 30px;
-            background-image: url('leaf.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            animation: fall linear forwards;
         }
         
         @keyframes fall {
-            0% {
-                transform: translate(0, 0) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(20px, 100vh) rotate(360deg);
-                opacity: 0;
-            }
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            30% { transform: translateY(50px) rotate(15deg); }
+            70% { transform: translateY(150px) rotate(-15deg); }
+            100% { transform: translateY(300px) rotate(0deg); opacity: 0; }
         }
         
-        /* Debug mode (remove in production) */
-        .debug .branch-zone {
+        /* Message box */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            z-index: 10;
+            max-width: 80%;
+            text-align: center;
+            display: none;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid rgba(46, 139, 87, 0.2);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -45%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        
+        /* Ground */
+        .ground {
             position: absolute;
-            background: rgba(0,255,0,0.1);
-            border: 1px dashed rgba(0,255,0,0.3);
+            bottom: 0;
+            width: 120%;
+            height: 80px;
+            background: linear-gradient(to top, #8B4513, #A0522D);
+            border-radius: 50% / 100%;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            z-index: 3;
+        }
+        
+        @media (max-width: 500px) {
+            .tree-container {
+                height: 500px;
+            }
+            
+            .leaf {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .message-box {
+                padding: 20px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="tree-container">
-        <img src="tree.png" alt="Tree without leaves" class="tree-bg">
-        <!-- Leaves will be added here dynamically -->
+    <div class="header">
+        <h1>Gratitude Tree</h1>
+        <p>Click leaves to see them fall and reveal messages</p>
     </div>
     
-    <div class="message-modal">
-        <div class="message-content">
-            <span class="close-btn">×</span>
-            <p class="message-text"></p>
-        </div>
+    <div class="tree-container">
+        <img class="tree-img" src="tree.png" alt="Gratitude Tree">
+        <div class="ground"></div>
+        <!-- Leaves will be added here by JavaScript -->
     </div>
-
-    <audio id="rustleSound" preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-forest-leaves-1380.mp3" type="audio/mpeg">
-    </audio>
+    
+    <div class="message-box" id="messageBox"></div>
 
     <script>
-        // Debug mode - set to false for production
-        const DEBUG_MODE = false;
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const treeContainer = document.querySelector('.tree-container');
-            const messageModal = document.querySelector('.message-modal');
-            const messageText = document.querySelector('.message-text');
-            const closeBtn = document.querySelector('.close-btn');
-            const rustleSound = document.getElementById('rustleSound');
-            rustleSound.volume = 0.3;
-            
-            // Branch zones for YOUR tree.png (x%, y%, rotation range)
-            const branchZones = [
-                // Left branches
-                { x: [15, 30], y: [25, 45], angle: [-30, 0] },   // Primary left
-                { x: [10, 25], y: [50, 70], angle: [-45, -15] }, // Lower left
-                // Right branches
-                { x: [65, 80], y: [20, 40], angle: [0, 30] },    // Primary right
-                { x: [70, 85], y: [45, 65], angle: [15, 45] },   // Lower right
-                // Upper canopy
-                { x: [35, 65], y: [5, 25], angle: [-20, 20] }     // Top branches
-            ];
-            
-            const messages = [
-                "Amy, you're a beam of light! 🌞",
+        // Leaf messages
+        const messages = [
+            "Amy, you're a beam of light! 🌞",
                 "Your Spartan energy is unmatched! 💪",
                 "You juggle it all like a superhero mom! 🦸‍♀️",
                 "The world needs more hearts like yours. 💚",
@@ -188,92 +179,70 @@
                 "Early Access to Next Drop ⏰",
                 "Unlock a 3-Day Gratitude Pass 🗓️",
                 "Shipping Upgrade — On Us! 🚀"
-            ];
+        ];
+        
+        // Leaf positions (top, left, rotation)
+        const leafPositions = [
+            // Top branches
+            {top: '15%', left: '50%', rotation: '0deg'},
+            {top: '18%', left: '40%', rotation: '-20deg'},
+            {top: '18%', left: '60%', rotation: '20deg'},
+            // Middle branches
+            {top: '30%', left: '35%', rotation: '-30deg'},
+            {top: '30%', left: '50%', rotation: '5deg'},
+            {top: '30%', left: '65%', rotation: '30deg'},
+            {top: '40%', left: '30%', rotation: '-40deg'},
+            {top: '40%', left: '45%', rotation: '-10deg'},
+            {top: '40%', left: '60%', rotation: '25deg'},
+            {top: '40%', left: '75%', rotation: '45deg'},
+            // Lower branches
+            {top: '55%', left: '25%', rotation: '-50deg'},
+            {top: '55%', left: '40%', rotation: '-15deg'},
+            {top: '55%', left: '55%', rotation: '15deg'},
+            {top: '55%', left: '70%', rotation: '50deg'}
+        ];
+        
+        // Initialize the tree
+        function initTree() {
+            const container = document.querySelector('.tree-container');
+            const messageBox = document.getElementById('messageBox');
             
-            // Debug: Visualize branch zones
-            if (DEBUG_MODE) {
-                branchZones.forEach(zone => {
-                    const div = document.createElement('div');
-                    div.className = 'branch-zone';
-                    div.style.left = `${zone.x[0]}%`;
-                    div.style.top = `${zone.y[0]}%`;
-                    div.style.width = `${zone.x[1] - zone.x[0]}%`;
-                    div.style.height = `${zone.y[1] - zone.y[0]}%`;
-                    treeContainer.appendChild(div);
-                });
-                treeContainer.classList.add('debug');
-            }
-            
-            // Create leaves (50 total, first 18 are message leaves)
-            for (let i = 0; i < 50; i++) {
-                createLeaf(i < 18);
-            }
-            
-            function createLeaf(isMessageLeaf) {
+            // Create leaves
+            leafPositions.forEach((pos, index) => {
                 const leaf = document.createElement('div');
                 leaf.className = 'leaf';
+                leaf.style.top = pos.top;
+                leaf.style.left = pos.left;
+                leaf.style.transform = `rotate(${pos.rotation})`;
+                leaf.dataset.message = messages[index % messages.length];
                 
-                // Get random position on valid branches
-                const zone = branchZones[Math.floor(Math.random() * branchZones.length)];
-                const x = zone.x[0] + Math.random() * (zone.x[1] - zone.x[0]);
-                const y = zone.y[0] + Math.random() * (zone.y[1] - zone.y[0]);
-                const angle = zone.angle[0] + Math.random() * (zone.angle[1] - zone.angle[0]);
-                const size = 0.7 + Math.random() * 0.6;
-                
-                leaf.style.left = `${x}%`;
-                leaf.style.top = `${y}%`;
-                leaf.style.transform = `rotate(${angle}deg) scale(${size})`;
-                
-                // Click handler
-                leaf.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    rustleSound.currentTime = 0;
-                    rustleSound.play();
+                leaf.addEventListener('click', function() {
+                    // Show message
+                    messageBox.textContent = this.dataset.message;
+                    messageBox.style.display = 'block';
                     
-                    // Create falling leaf
-                    const fallingLeaf = leaf.cloneNode();
-                    fallingLeaf.classList.remove('leaf');
-                    fallingLeaf.classList.add('leaf-fall');
-                    fallingLeaf.style.left = leaf.style.left;
-                    fallingLeaf.style.top = leaf.style.top;
-                    fallingLeaf.style.animationDuration = `${2 + Math.random() * 3}s`;
-                    treeContainer.appendChild(fallingLeaf);
+                    // Make leaf fall
+                    this.classList.add('falling');
                     
-                    // Remove original leaf
-                    leaf.style.display = 'none';
-                    
-                    // Clean up fallen leaf
+                    // Remove leaf after animation
                     setTimeout(() => {
-                        treeContainer.removeChild(fallingLeaf);
-                    }, 5000);
-                    
-                    // Show message if applicable
-                    if (isMessageLeaf) {
-                        showRandomMessage();
-                    }
+                        this.remove();
+                    }, 3000);
                 });
                 
-                treeContainer.appendChild(leaf);
-            }
-            
-            function showRandomMessage() {
-                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-                messageText.textContent = randomMessage;
-                messageModal.classList.add('active');
-            }
-            
-            // Close modal
-            closeBtn.addEventListener('click', hideMessage);
-            messageModal.addEventListener('click', function(e) {
-                if (e.target === messageModal) {
-                    hideMessage();
-                }
+                container.appendChild(leaf);
             });
             
-            function hideMessage() {
-                messageModal.classList.remove('active');
-            }
-        });
+            // Close message box when clicking anywhere
+            document.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('leaf') && e.target.id !== 'messageBox') {
+                    messageBox.style.display = 'none';
+                }
+            });
+        }
+        
+        // Start when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initTree);
     </script>
 </body>
 </html>
