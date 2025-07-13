@@ -42,6 +42,7 @@
             position: absolute;
             width: 30px;
             height: 30px;
+            background-image: url('leaf.png');
             background-size: contain;
             background-repeat: no-repeat;
             cursor: pointer;
@@ -102,6 +103,7 @@
             z-index: 3;
             width: 30px;
             height: 30px;
+            background-image: url('leaf.png');
             background-size: contain;
             background-repeat: no-repeat;
             animation: fall linear forwards;
@@ -118,11 +120,11 @@
             }
         }
         
-        @media (max-width: 600px) {
-            .message-content {
-                padding: 20px;
-                font-size: 1rem;
-            }
+        /* Debug mode (remove in production) */
+        .debug .branch-zone {
+            position: absolute;
+            background: rgba(0,255,0,0.1);
+            border: 1px dashed rgba(0,255,0,0.3);
         }
     </style>
 </head>
@@ -144,26 +146,27 @@
     </audio>
 
     <script>
+        // Debug mode - set to false for production
+        const DEBUG_MODE = false;
+        
         document.addEventListener('DOMContentLoaded', function() {
             const treeContainer = document.querySelector('.tree-container');
             const messageModal = document.querySelector('.message-modal');
             const messageText = document.querySelector('.message-text');
             const closeBtn = document.querySelector('.close-btn');
             const rustleSound = document.getElementById('rustleSound');
-            rustleSound.volume = 0.3; // Set to 30% volume
+            rustleSound.volume = 0.3;
             
-            // Branch coordinates for leaf placement (x%, y%, rotation degrees)
-            const branchPoints = [
-                // Left main branches
-                [25, 30, -20], [28, 35, -15], [22, 40, -25],
-                [30, 25, 0], [33, 30, -5], [27, 35, -10],
-                // Right main branches
-                [65, 35, 40], [62, 40, 30], [68, 30, 45],
-                [70, 25, 10], [67, 30, 20], [72, 35, 15],
-                // Smaller branches
-                [40, 50, -10], [45, 45, 5], [50, 55, 15],
-                [55, 50, 25], [60, 45, 35], [35, 60, -5],
-                [65, 60, 30], [40, 65, 10], [50, 70, 20]
+            // Branch zones for YOUR tree.png (x%, y%, rotation range)
+            const branchZones = [
+                // Left branches
+                { x: [15, 30], y: [25, 45], angle: [-30, 0] },   // Primary left
+                { x: [10, 25], y: [50, 70], angle: [-45, -15] }, // Lower left
+                // Right branches
+                { x: [65, 80], y: [20, 40], angle: [0, 30] },    // Primary right
+                { x: [70, 85], y: [45, 65], angle: [15, 45] },   // Lower right
+                // Upper canopy
+                { x: [35, 65], y: [5, 25], angle: [-20, 20] }     // Top branches
             ];
             
             const messages = [
@@ -187,6 +190,20 @@
                 "Shipping Upgrade — On Us! 🚀"
             ];
             
+            // Debug: Visualize branch zones
+            if (DEBUG_MODE) {
+                branchZones.forEach(zone => {
+                    const div = document.createElement('div');
+                    div.className = 'branch-zone';
+                    div.style.left = `${zone.x[0]}%`;
+                    div.style.top = `${zone.y[0]}%`;
+                    div.style.width = `${zone.x[1] - zone.x[0]}%`;
+                    div.style.height = `${zone.y[1] - zone.y[0]}%`;
+                    treeContainer.appendChild(div);
+                });
+                treeContainer.classList.add('debug');
+            }
+            
             // Create leaves (50 total, first 18 are message leaves)
             for (let i = 0; i < 50; i++) {
                 createLeaf(i < 18);
@@ -196,27 +213,24 @@
                 const leaf = document.createElement('div');
                 leaf.className = 'leaf';
                 
-                // Get random branch position
-                const branch = branchPoints[Math.floor(Math.random() * branchPoints.length)];
-                const left = branch[0] + (Math.random() * 6 - 3); // Slight variation
-                const top = branch[1] + (Math.random() * 6 - 3);
-                const rotation = branch[2] + (Math.random() * 20 - 10);
+                // Get random position on valid branches
+                const zone = branchZones[Math.floor(Math.random() * branchZones.length)];
+                const x = zone.x[0] + Math.random() * (zone.x[1] - zone.x[0]);
+                const y = zone.y[0] + Math.random() * (zone.y[1] - zone.y[0]);
+                const angle = zone.angle[0] + Math.random() * (zone.angle[1] - zone.angle[0]);
+                const size = 0.7 + Math.random() * 0.6;
                 
-                // Create leaf (using your leaf.png)
-                leaf.style.left = `${left}%`;
-                leaf.style.top = `${top}%`;
-                leaf.style.transform = `rotate(${rotation}deg) scale(${0.7 + Math.random() * 0.6})`;
-                leaf.style.backgroundImage = 'url("leaf.png")';
+                leaf.style.left = `${x}%`;
+                leaf.style.top = `${y}%`;
+                leaf.style.transform = `rotate(${angle}deg) scale(${size})`;
                 
                 // Click handler
                 leaf.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    
-                    // Play rustle sound
                     rustleSound.currentTime = 0;
                     rustleSound.play();
                     
-                    // Create falling leaf animation
+                    // Create falling leaf
                     const fallingLeaf = leaf.cloneNode();
                     fallingLeaf.classList.remove('leaf');
                     fallingLeaf.classList.add('leaf-fall');
@@ -228,12 +242,12 @@
                     // Remove original leaf
                     leaf.style.display = 'none';
                     
-                    // Remove falling leaf after animation
+                    // Clean up fallen leaf
                     setTimeout(() => {
                         treeContainer.removeChild(fallingLeaf);
                     }, 5000);
                     
-                    // Show message if this is a message leaf
+                    // Show message if applicable
                     if (isMessageLeaf) {
                         showRandomMessage();
                     }
