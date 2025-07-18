@@ -109,6 +109,12 @@
             animation: fadeIn 0.3s ease;
         }
         
+        /* Special message box style */
+        .message-box.special {
+            background-color: #f8f4e5;
+            border-color: var(--secondary);
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translate(-50%, -45%); }
             to { opacity: 1; transform: translate(-50%, -50%); }
@@ -162,23 +168,23 @@
         // Leaf messages
         const messages = [
             "Amy, you're a beam of light! 🌞",
-                "Your Spartan energy is unmatched! 💪",
-                "You juggle it all like a superhero mom! 🦸‍♀️",
-                "The world needs more hearts like yours. 💚",
-                "Remember to breathe and smile, Amy! ☀️",
-                "This one is for your peaceful dog park moments. 🐾",
-                "Supermom Mode: Activated! ⚡",  
-                "20% OFF Your Next Purchase! 💰",  
-                "We're Planting a Tree in Your Name! 🌳",  
-                "Free Eco-Friendly Gift! 🎁",  
-                "15% OFF + Free Shipping! 🚚",  
-                "Exclusive Member Discount! 👑",  
-                "Surprise Gift at Checkout! ✨",
-                "Mystery Bonus Item Added to Cart 🎉",
-                "Double Loyalty Points Just for You 🔁",
-                "Early Access to Next Drop ⏰",
-                "Unlock a 3-Day Gratitude Pass 🗓️",
-                "Shipping Upgrade — On Us! 🚀"
+            "Your Spartan energy is unmatched! 💪",
+            "You juggle it all like a superhero mom! 🦸‍♀️",
+            "The world needs more hearts like yours. 💚",
+            "Remember to breathe and smile, Amy! ☀️",
+            "This one is for your peaceful dog park moments. 🐾",
+            "Supermom Mode: Activated! ⚡",  
+            "20% OFF Your Next Purchase! 💰",  
+            "We're Planting a Tree in Your Name! 🌳",  
+            "Free Eco-Friendly Gift! 🎁",  
+            "15% OFF + Free Shipping! 🚚",  
+            "Exclusive Member Discount! 👑",  
+            "Surprise Gift at Checkout! ✨",
+            "Mystery Bonus Item Added to Cart 🎉",
+            "Double Loyalty Points Just for You 🔁",
+            "Early Access to Next Drop ⏰",
+            "Unlock a 3-Day Gratitude Pass 🗓️",
+            "Shipping Upgrade — On Us! 🚀"
         ];
         
         // Leaf positions (top, left, rotation)
@@ -202,6 +208,9 @@
             {top: '55%', left: '70%', rotation: '50deg'}
         ];
         
+        // Track if a leaf has been clicked
+        let leafClicked = false;
+        
         // Initialize the tree
         function initTree() {
             const container = document.querySelector('.tree-container');
@@ -217,8 +226,26 @@
                 leaf.dataset.message = messages[index % messages.length];
                 
                 leaf.addEventListener('click', function() {
+                    if (leafClicked) {
+                        // Show special message if another leaf is clicked
+                        messageBox.textContent = "Want to revolutionize every purchase into gratitude? DM me!";
+                        messageBox.classList.add('special');
+                        messageBox.style.display = 'block';
+                        
+                        // Hide after 3 seconds
+                        setTimeout(() => {
+                            messageBox.style.display = 'none';
+                            messageBox.classList.remove('special');
+                        }, 3000);
+                        return;
+                    }
+                    
+                    // Mark that a leaf has been clicked
+                    leafClicked = true;
+                    
                     // Show message
                     messageBox.textContent = this.dataset.message;
+                    messageBox.classList.remove('special');
                     messageBox.style.display = 'block';
                     
                     // Make leaf fall
