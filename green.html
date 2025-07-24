@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AIOXY Greenwashing Polygraph</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; color: #333; line-height: 1.6; }
+    h1 { color: #ff4757; text-align: center; margin-bottom: 30px; }
+    .search-box { display: flex; margin: 30px 0; gap: 10px; }
+    #brandInput { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; }
+    button { background: #ff4757; color: white; border: none; padding: 0 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .brand-report { background: #f9f9f9; border-radius: 8px; padding: 25px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .risk-high { color: #ff4757; font-weight: bold; }
+    .risk-moderate { color: #e67e22; font-weight: bold; }
+    .risk-low { color: #2ecc71; font-weight: bold; }
+    .claim, .law { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    .fix { background: #f1f2f6; padding: 12px; border-radius: 5px; margin-top: 10px; }
+    .country-flag { font-size: 1.2em; margin-right: 8px; }
+    .hidden { display: none; }
+    #loading { text-align: center; margin: 20px 0; font-style: italic; }
+    .material-icons { vertical-align: middle; margin-right: 5px; }
+    .toggle { color: #3498db; cursor: pointer; text-decoration: underline; }
+    a { color: #3498db; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <h1><span class="material-icons">warning</span> AIOXY Greenwashing Polygraph</h1>
+  <p>Analyze fashion brands against 2025 sustainability regulations:</p>
+  
+  <div class="search-box">
+    <input type="text" id="brandInput" placeholder="E.g., Puma, Veja, Allbirds..." list="brands" autocomplete="off">
+    <datalist id="brands">
+      <option value="Puma">
+      <option value="Veja">
+      <option value="Allbirds">
+      <option value="Vaude">
+      <option value="Armedangels">
+      <option value="Sheep Inc">
+    </datalist>
+    <button onclick="analyzeBrand()"><span class="material-icons">search</span> Analyze</button>
+  </div>
+  
+  <div id="loading" class="hidden"><span id="loadingDots"></span> Scanning 4,200+ regulatory data points...</div>
+  <div id="results"></div>
+
+  <script src="green.js"></script>
+</body>
+</html>
