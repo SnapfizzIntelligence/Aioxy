@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOXY Food Emissions Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        button {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .ingredient-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ingredient-item {
+            background: var(--light);
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .emission-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin: 1rem 0;
+        }
+        
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 8px;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 1.5rem 0;
+        }
+        
+        .qr-code {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+        
+        #qrCanvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .narrative {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-style: italic;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            color: var(--gray);
+            border-top: 1px solid #ddd;
+        }
+        
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ingredient-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AIOXY Food Emissions Calculator</h1>
+        <p class="tagline">Calculate the environmental impact of food products with country-specific accuracy</p>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title">Product Information</h2>
+            
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" placeholder="e.g., Beef Burger">
+            </div>
+            
+            <div class="form-group">
+                <label for="country">Country of Origin</label>
+                <select id="country">
+                    <option value="FR">France</option>
+                    <option value="DE">Germany</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="IT">Italy</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="AU">Australia</option>
+                    <option value="NZ">New Zealand</option>
+                </select>
+            </div>
+            
+            <h3 style="margin: 1.5rem 0 1rem 0;">Ingredients</h3>
+            
+            <div class="ingredient-list" id="ingredientList">
+                <div class="ingredient-item">
+                    <label for="ingredient1">Ingredient</label>
+                    <select class="ingredient-select">
+                        <option value="beef">Beef</option>
+                        <option value="lamb">Lamb & Mutton</option>
+                        <option value="pork">Pork</option>
+                        <option value="poultry">Poultry (Chicken)</option>
+                        <option value="milk">Dairy Milk</option>
+                        <option value="cheese">Cheese</option>
+                        <option value="eggs">Eggs</option>
+                        <option value="fish">Farmed Fish</option>
+                        <option value="rice">Rice</option>
+                        <option value="wheat">Wheat</option>
+                        <option value="corn">Maize (Corn)</option>
+                        <option value="soy">Soybeans</option>
+                        <option value="oats">Oats</option>
+                        <option value="lentils">Lentils/Pulses</option>
+                        <option value="coffee">Coffee</option>
+                        <option value="cocoa">Cocoa</option>
+                        <option value="palm">Palm Oil</option>
+                        <option value="potatoes">Potatoes</option>
+                        <option value="sugar">Sugar</option>
+                        <option value="tomatoes">Tomatoes</option>
+                        <option value="bread">Bread/Buns</option>
+                        <option value="oil">Plant Oils</option>
+                    </select>
+                    <label for="quantity1" style="margin-top: 10px;">Quantity (kg)</label>
+                    <input type="number" class="ingredient-quantity" value="0.1" step="0.01" min="0">
+                </div>
+            </div>
+            
+            <button id="addIngredient">+ Add Another Ingredient</button>
+            
+            <h3 style="margin: 1.5rem 0 1rem 0;">Packaging</h3>
+            
+            <div class="form-group">
+                <label for="packagingType">Packaging Material</label>
+                <select id="packagingType">
+                    <option value="pet">PET Plastic</option>
+                    <option value="hdpe">HDPE/PP Plastic</option>
+                    <option value="glass">Glass</option>
+                    <option value="aluminum">Aluminum</option>
+                    <option value="paper">Paper/Cardboard</option>
+                    <option value="none">None</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="packagingWeight">Packaging Weight (kg)</label>
+                <input type="number" id="packagingWeight" value="0.02" step="0.001" min="0">
+            </div>
+            
+            <h3 style="margin: 1.5rem 0 1rem 0;">Transport</h3>
+            
+            <div class="form-group">
+                <label for="transportDistance">Transport Distance (km)</label>
+                <input type="number" id="transportDistance" value="100" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="transportMode">Transport Mode</label>
+                <select id="transportMode">
+                    <option value="sea">Sea Freight</option>
+                    <option value="road">Road Freight (Truck)</option>
+                    <option value="rail">Rail Freight</option>
+                    <option value="air">Air Freight</option>
+                </select>
+            </div>
+            
+            <button id="calculateBtn" style="width: 100%; padding: 16px; margin-top: 1.5rem;">
+                Calculate Environmental Impact
+            </button>
+        </div>
+        
+        <div class="card" id="resultsSection" style="display: none;">
+            <h2 class="card-title">Results for <span id="resultProductName"></span></h2>
+            
+            <div class="narrative">
+                <p id="narrativeText"></p>
+            </div>
+            
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Carbon Footprint</h3>
+                    <div class="emission-value" id="co2Result">0.0 kg CO₂e</div>
+                    <p>Industry Average: <span id="industryAverageCo2">0.0 kg CO₂e</span></p>
+                    
+                    <div class="comparison">
+                        <div>
+                            <strong>Your Product</strong>
+                            <div id="productCo2">0.0 kg</div>
+                        </div>
+                        <div>
+                            <strong>Industry Avg</strong>
+                            <div id="avgCo2">0.0 kg</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-card">
+                    <h3>Water Footprint</h3>
+                    <div class="emission-value" id="waterResult">0.0 L</div>
+                    <p>Industry Average: <span id="industryAverageWater">0.0 L</span></p>
+                    
+                    <div class="comparison">
+                        <div>
+                            <strong>Your Product</strong>
+                            <div id="productWater">0.0 L</div>
+                        </div>
+                        <div>
+                            <strong>Industry Avg</strong>
+                            <div id="avgWater">0.0 L</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 style="margin: 2rem 0 1rem 0;">Emission Breakdown</h3>
+            <div class="chart-container">
+                <canvas id="emissionChart"></canvas>
+            </div>
+            
+            <h3 style="margin: 2rem 0 1rem 0;">Water Usage Breakdown</h3>
+            <div class="chart-container">
+                <canvas id="waterChart"></canvas>
+            </div>
+            
+            <div class="qr-code">
+                <h3>Product Passport QR Code</h3>
+                <p>Scan to view environmental impact details</p>
+                <canvas id="qrCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>AIOXY Food Emissions Calculator v1.0 | Partner Project</p>
+    </footer>
+
+    <script>
+        // Emission factors (kg CO₂e per kg product)
+        const emissionFactors = {
+            beef: 27.0,
+            lamb: 24.0,
+            pork: 7.0,
+            poultry: 6.0,
+            milk: 1.3,
+            cheese: 21.0,
+            eggs: 4.5,
+            fish: 5.0,
+            rice: 4.0,
+            wheat: 1.4,
+            corn: 1.0,
+            soy: 2.1,
+            oats: 0.9,
+            lentils: 0.9,
+            coffee: 17.0,
+            cocoa: 5.1,
+            palm: 3.6,
+            potatoes: 0.5,
+            sugar: 0.8,
+            tomatoes: 1.4,
+            bread: 1.0,
+            oil: 2.5
+        };
+
+        // Water factors (liters per kg product)
+        const waterFactors = {
+            beef: 15000,
+            lamb: 10000,
+            pork: 6000,
+            poultry: 4300,
+            milk: 628,
+            cheese: 5000,
+            fish: 0, // Placeholder
+            rice: 2500,
+            wheat: 1800,
+            corn: 900,
+            soy: 2100,
+            oats: 0, // Placeholder
+            lentils: 0, // Placeholder
+            coffee: 18900,
+            cocoa: 27000,
+            palm: 0, // Placeholder
+            potatoes: 290,
+            sugar: 1500,
+            tomatoes: 0, // Placeholder
+            bread: 0, // Placeholder
+            oil: 0  // Placeholder
+        };
+
+        // Country modifiers
+        const gridModifiers = {
+            FR: 0.05,
+            DE: 0.35,
+            UK: 0.20,
+            IT: 0.23,
+            US: 0.38,
+            CA: 0.12,
+            AU: 0.60,
+            NZ: 0.10
+        };
+
+        const methaneModifiers = {
+            FR: 0.95,
+            DE: 1.00,
+            UK: 1.00,
+            IT: 1.00,
+            US: 1.05,
+            CA: 1.00,
+            AU: 1.10,
+            NZ: 1.15
+        };
+
+        // Transport factors (kg CO₂e per ton-km)
+        const transportFactors = {
+            sea: 0.013,
+            rail: 0.020,
+            road: 0.062,
+            air: 0.600
+        };
+
+        // Packaging factors (kg CO₂e per kg material)
+        const packagingFactors = {
+            pet: 2.7,
+            hdpe: 2.0,
+            glass: 1.2,
+            aluminum: 10.0,
+            paper: 0.8,
+            none: 0
+        };
+
+        // Industry averages for common products (kg CO₂e)
+        const industryAverages = {
+            "Beef Burger": { co2: 3.8, water: 2250 },
+            "Chicken Sandwich": { co2: 1.5, water: 750 },
+            "Veggie Wrap": { co2: 0.8, water: 350 },
+            "Rice Bowl": { co2: 1.2, water: 600 },
+            "Salad": { co2: 0.6, water: 200 }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const addIngredientBtn = document.getElementById('addIngredient');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const ingredientList = document.getElementById('ingredientList');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            let ingredientCount = 1;
+            
+            // Add ingredient row
+            addIngredientBtn.addEventListener('click', function() {
+                ingredientCount++;
+                const newIngredient = document.createElement('div');
+                newIngredient.className = 'ingredient-item';
+                newIngredient.innerHTML = `
+                    <label for="ingredient${ingredientCount}">Ingredient</label>
+                    <select class="ingredient-select">
+                        <option value="beef">Beef</option>
+                        <option value="lamb">Lamb & Mutton</option>
+                        <option value="pork">Pork</option>
+                        <option value="poultry">Poultry (Chicken)</option>
+                        <option value="milk">Dairy Milk</option>
+                        <option value="cheese">Cheese</option>
+                        <option value="eggs">Eggs</option>
+                        <option value="fish">Farmed Fish</option>
+                        <option value="rice">Rice</option>
+                        <option value="wheat">Wheat</option>
+                        <option value="corn">Maize (Corn)</option>
+                        <option value="soy">Soybeans</option>
+                        <option value="oats">Oats</option>
+                        <option value="lentils">Lentils/Pulses</option>
+                        <option value="coffee">Coffee</option>
+                        <option value="cocoa">Cocoa</option>
+                        <option value="palm">Palm Oil</option>
+                        <option value="potatoes">Potatoes</option>
+                        <option value="sugar">Sugar</option>
+                        <option value="tomatoes">Tomatoes</option>
+                        <option value="bread">Bread/Buns</option>
+                        <option value="oil">Plant Oils</option>
+                    </select>
+                    <label for="quantity${ingredientCount}" style="margin-top: 10px;">Quantity (kg)</label>
+                    <input type="number" class="ingredient-quantity" value="0.1" step="0.01" min="0">
+                `;
+                ingredientList.appendChild(newIngredient);
+            });
+            
+            // Calculate environmental impact
+            calculateBtn.addEventListener('click', function() {
+                const productName = document.getElementById('productName').value || 'Food Product';
+                const country = document.getElementById('country').value;
+                
+                // Get all ingredients
+                const ingredients = [];
+                const ingredientSelects = document.querySelectorAll('.ingredient-select');
+                const ingredientQuantities = document.querySelectorAll('.ingredient-quantity');
+                
+                for (let i = 0; i < ingredientSelects.length; i++) {
+                    const type = ingredientSelects[i].value;
+                    const quantity = parseFloat(ingredientQuantities[i].value) || 0;
+                    ingredients.push({ type, quantity });
+                }
+                
+                // Get packaging data
+                const packagingType = document.getElementById('packagingType').value;
+                const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
+                
+                // Get transport data
+                const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
+                const transportMode = document.getElementById('transportMode').value;
+                
+                // Calculate impacts
+                const result = computeFoodImpact(
+                    ingredients, 
+                    country, 
+                    packagingType, 
+                    packagingWeight,
+                    transportMode,
+                    transportDistance
+                );
+                
+                // Format and display results
+                displayResults(productName, result, country);
+                
+                // Show results section
+                resultsSection.style.display = 'block';
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            function computeFoodImpact(ingredients, country, packagingType, packagingWeight, transportMode, transportDistance) {
+                let totalCo2 = 0;
+                let totalWater = 0;
+                const co2Breakdown = {
+                    ingredients: 0,
+                    packaging: 0,
+                    transport: 0
+                };
+                
+                const waterBreakdown = {};
+                
+                // Calculate ingredient impacts
+                ingredients.forEach(ingredient => {
+                    if (ingredient.quantity > 0) {
+                        const baseCo2 = emissionFactors[ingredient.type] * ingredient.quantity;
+                        const baseWater = (waterFactors[ingredient.type] || 0) * ingredient.quantity;
+                        
+                        // Apply country modifiers for specific ingredients
+                        let ingredientCo2 = baseCo2;
+                        if (['beef', 'lamb', 'milk', 'cheese', 'rice'].includes(ingredient.type)) {
+                            // Apply methane modifier for agriculture share (70%)
+                            const agShare = baseCo2 * 0.7 * methaneModifiers[country];
+                            // Apply grid modifier for processing share (20%)
+                            const processingShare = baseCo2 * 0.2 * gridModifiers[country];
+                            // Retail share remains unchanged (10%)
+                            const retailShare = baseCo2 * 0.1;
+                            
+                            ingredientCo2 = agShare + processingShare + retailShare;
+                        } else {
+                            // For other ingredients, apply grid modifier to processing share
+                            const agShare = baseCo2 * 0.7;
+                            const processingShare = baseCo2 * 0.2 * gridModifiers[country];
+                            const retailShare = baseCo2 * 0.1;
+                            
+                            ingredientCo2 = agShare + processingShare + retailShare;
+                        }
+                        
+                        totalCo2 += ingredientCo2;
+                        totalWater += baseWater;
+                        
+                        co2Breakdown.ingredients += ingredientCo2;
+                        waterBreakdown[ingredient.type] = baseWater;
+                    }
+                });
+                
+                // Calculate packaging impact
+                const packagingCo2 = packagingFactors[packagingType] * packagingWeight;
+                totalCo2 += packagingCo2;
+                co2Breakdown.packaging = packagingCo2;
+                
+                // Calculate transport impact (convert product weight to tons)
+                const totalWeight = ingredients.reduce((sum, ing) => sum + ing.quantity, 0);
+                const transportCo2 = transportFactors[transportMode] * (totalWeight / 1000) * transportDistance;
+                totalCo2 += transportCo2;
+                co2Breakdown.transport = transportCo2;
+                
+                return {
+                    totalCo2,
+                    totalWater,
+                    co2Breakdown,
+                    waterBreakdown
+                };
+            }
+            
+            function displayResults(productName, result, country) {
+                // Update product name
+                document.getElementById('resultProductName').textContent = productName;
+                
+                // Format and display CO2 result
+                const co2Result = document.getElementById('co2Result');
+                co2Result.textContent = `${result.totalCo2.toFixed(2)} kg CO₂e`;
+                
+                // Format and display water result
+                const waterResult = document.getElementById('waterResult');
+                waterResult.textContent = `${result.totalWater.toFixed(0)} L`;
+                
+                // Find industry average or use default
+                const industryAvg = industryAverages[productName] || { co2: result.totalCo2 * 0.9, water: result.totalWater * 0.9 };
+                
+                document.getElementById('industryAverageCo2').textContent = `${industryAvg.co2.toFixed(2)} kg CO₂e`;
+                document.getElementById('industryAverageWater').textContent = `${industryAvg.water.toFixed(0)} L`;
+                
+                document.getElementById('productCo2').textContent = `${result.totalCo2.toFixed(2)} kg`;
+                document.getElementById('avgCo2').textContent = `${industryAvg.co2.toFixed(2)} kg`;
+                
+                document.getElementById('productWater').textContent = `${result.totalWater.toFixed(0)} L`;
+                document.getElementById('avgWater').textContent = `${industryAvg.water.toFixed(0)} L`;
+                
+                // Generate narrative
+                generateNarrative(productName, result, country, industryAvg);
+                
+                // Create charts
+                createEmissionChart(result.co2Breakdown);
+                createWaterChart(result.waterBreakdown);
+                
+                // Generate QR code
+                generateQRCode(productName, result, country);
+            }
+            
+            function generateNarrative(productName, result, country, industryAvg) {
+                const narrativeText = document.getElementById('narrativeText');
+                
+                let narrative = '';
+                const countryName = getCountryName(country);
+                
+                if (result.totalCo2 < industryAvg.co2) {
+                    narrative = `This ${productName} from ${countryName} has a lower carbon footprint than the industry average. `;
+                    narrative += `With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, `;
+                    narrative += `it represents a ${((1 - result.totalCo2/industryAvg.co2) * 100).toFixed(0)}% reduction in emissions.`;
+                } else {
+                    narrative = `This ${productName} from ${countryName} has a higher carbon footprint than the industry average. `;
+                    narrative += `With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, `;
+                    narrative += `it represents a ${((result.totalCo2/industryAvg.co2 - 1) * 100).toFixed(0)}% increase in emissions.`;
+                }
+                
+                narrativeText.textContent = narrative;
+            }
+            
+            function getCountryName(code) {
+                const countries = {
+                    FR: 'France',
+                    DE: 'Germany',
+                    UK: 'United Kingdom',
+                    IT: 'Italy',
+                    US: 'United States',
+                    CA: 'Canada',
+                    AU: 'Australia',
+                    NZ: 'New Zealand'
+                };
+                return countries[code];
+            }
+            
+            function createEmissionChart(breakdown) {
+                const ctx = document.getElementById('emissionChart').getContext('2d');
+                
+                if (window.emissionChartInstance) {
+                    window.emissionChartInstance.destroy();
+                }
+                
+                window.emissionChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Ingredients', 'Packaging', 'Transport'],
+                        datasets: [{
+                            data: [breakdown.ingredients, breakdown.packaging, breakdown.transport],
+                            backgroundColor: [
+                                '#2ecc71',
+                                '#3498db',
+                                '#e74c3c'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw.toFixed(2)} kg CO₂e`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function createWaterChart(breakdown) {
+                const ctx = document.getElementById('waterChart').getContext('2d');
+                
+                // Prepare data for water chart
+                const labels = [];
+                const data = [];
+                const colors = [
+                    '#2ecc71', '#3498db', '#e74c3c', '#f1c40f', '#9b59b6', 
+                    '#1abc9c', '#d35400', '#34495e', '#16a085', '#27ae60'
+                ];
+                
+                for (const [ingredient, water] of Object.entries(breakdown)) {
+                    if (water > 0) {
+                        labels.push(ingredient.charAt(0).toUpperCase() + ingredient.slice(1));
+                        data.push(water);
+                    }
+                }
+                
+                if (window.waterChartInstance) {
+                    window.waterChartInstance.destroy();
+                }
+                
+                window.waterChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw.toFixed(0)} L`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function generateQRCode(productName, result, country) {
+                const qrCanvas = document.getElementById('qrCanvas');
+                const countryName = getCountryName(country);
+                
+                // Create QR content
+                const qrContent = `
+AIOXY Food Passport
+Product: ${productName}
+Origin: ${countryName}
+Carbon: ${result.totalCo2.toFixed(2)} kg CO₂e
+Water: ${result.totalWater.toFixed(0)} L
+Compared to industry average: ${(result.totalCo2 < (industryAverages[productName]?.co2 || result.totalCo2 * 0.9) ? 'Better' : 'Worse')}
+                `.trim();
+                
+                // Clear previous QR code
+                qrCanvas.width = 200;
+                qrCanvas.height = 200;
+                const ctx = qrCanvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
+                
+                // Generate QR code
+                const qr = qrcode(0, 'M');
+                qr.addData(qrContent);
+                qr.make();
+                
+                // Draw QR code on canvas
+                const cellSize = 4;
+                const margin = 10;
+                const size = qr.getModuleCount() * cellSize + margin * 2;
+                
+                qrCanvas.width = size;
+                qrCanvas.height = size;
+                
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, size, size);
+                ctx.fillStyle = 'black';
+                
+                for (let row = 0; row < qr.getModuleCount(); row++) {
+                    for (let col = 0; col < qr.getModuleCount(); col++) {
+                        if (qr.isDark(row, col)) {
+                            ctx.fillRect(
+                                margin + col * cellSize,
+                                margin + row * cellSize,
+                                cellSize,
+                                cellSize
+                            );
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
