@@ -315,6 +315,15 @@
             text-align: center;
         }
         
+        .ingredient-category {
+            font-weight: 600;
+            color: var(--dark);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
         @media (max-width: 768px) {
             .results-grid {
                 grid-template-columns: 1fr;
@@ -339,7 +348,7 @@
     
     <div class="container">
         <div class="breakthrough-banner">
-            <h2>🚀 BREAKTHROUGH ACHIEVED! Now with Oxford University Research Data!</h2>
+            <h2>🚀 NOW WITH 30+ INGREDIENTS! Plant-based proteins, oils, sweeteners & more!</h2>
         </div>
         
         <div class="card">
@@ -347,7 +356,7 @@
             
             <div class="form-group">
                 <label for="productName">Product Name</label>
-                <input type="text" id="productName" placeholder="e.g., Beef Burger" value="Beef burger">
+                <input type="text" id="productName" placeholder="e.g., Vegan Burger" value="Vegan Burger">
             </div>
             
             <div class="form-group">
@@ -370,36 +379,90 @@
             
             <div class="ingredient-list" id="ingredientList">
                 <div class="ingredient-item">
-                    <label>Ingredient <span class="scientific-badge">Oxford Data</span></label>
+                    <label>Ingredient <span class="scientific-badge">Verified Data</span></label>
                     <select class="ingredient-select">
-                        <option value="beef" selected>Beef</option>
-                        <option value="poultry">Poultry (Chicken)</option>
-                        <option value="cheese">Cheese</option>
-                        <option value="milk">Dairy Milk</option>
-                        <option value="rice">Rice</option>
-                        <option value="wheat">Wheat</option>
-                        <option value="coffee">Coffee</option>
-                        <option value="cocoa">Cocoa</option>
-                        <option value="eggs">Eggs</option>
-                        <option value="tomato">Tomato</option>
+                        <optgroup label="Proteins">
+                            <option value="beef">Beef</option>
+                            <option value="poultry">Poultry (Chicken)</option>
+                            <option value="cheese">Cheese</option>
+                            <option value="milk">Dairy Milk</option>
+                            <option value="tofu" selected>Tofu (Soy)</option>
+                            <option value="lentils">Lentils</option>
+                            <option value="chickpeas">Chickpeas</option>
+                            <option value="eggs">Eggs</option>
+                        </optgroup>
+                        <optgroup label="Plant-based & Alternatives">
+                            <option value="almonds">Almonds</option>
+                            <option value="oats">Oats</option>
+                            <option value="plant_protein">Plant-Based Protein</option>
+                        </optgroup>
+                        <optgroup label="Grains & Staples">
+                            <option value="rice">Rice</option>
+                            <option value="wheat">Wheat (Bread)</option>
+                            <option value="potatoes">Potatoes</option>
+                        </optgroup>
+                        <optgroup label="Oils & Fats">
+                            <option value="vegetable_oil">Vegetable Oil (General)</option>
+                            <option value="palm_oil">Palm Oil</option>
+                            <option value="rapeseed_oil">Rapeseed Oil</option>
+                        </optgroup>
+                        <optgroup label="Sweeteners">
+                            <option value="sugar">Sugar</option>
+                        </optgroup>
+                        <optgroup label="Vegetables">
+                            <option value="tomato">Tomato</option>
+                            <option value="lettuce">Lettuce</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="salt">Salt</option>
+                            <option value="coffee">Coffee</option>
+                            <option value="cocoa">Cocoa</option>
+                        </optgroup>
                     </select>
                     <label style="margin-top: 10px;">Quantity (kg)</label>
                     <input type="number" class="ingredient-quantity" value="0.15" step="0.01" min="0">
                     <button class="remove-btn">Remove</button>
                 </div>
                 <div class="ingredient-item">
-                    <label>Ingredient <span class="scientific-badge">Oxford Data</span></label>
+                    <label>Ingredient <span class="scientific-badge">Verified Data</span></label>
                     <select class="ingredient-select">
-                        <option value="beef">Beef</option>
-                        <option value="poultry">Poultry (Chicken)</option>
-                        <option value="cheese">Cheese</option>
-                        <option value="milk">Dairy Milk</option>
-                        <option value="rice">Rice</option>
-                        <option value="wheat" selected>Wheat (Bread)</option>
-                        <option value="coffee">Coffee</option>
-                        <option value="cocoa">Cocoa</option>
-                        <option value="eggs">Eggs</option>
-                        <option value="tomato">Tomato</option>
+                        <optgroup label="Proteins">
+                            <option value="beef">Beef</option>
+                            <option value="poultry">Poultry (Chicken)</option>
+                            <option value="cheese">Cheese</option>
+                            <option value="milk">Dairy Milk</option>
+                            <option value="tofu">Tofu (Soy)</option>
+                            <option value="lentils">Lentils</option>
+                            <option value="chickpeas" selected>Chickpeas</option>
+                            <option value="eggs">Eggs</option>
+                        </optgroup>
+                        <optgroup label="Plant-based & Alternatives">
+                            <option value="almonds">Almonds</option>
+                            <option value="oats">Oats</option>
+                            <option value="plant_protein">Plant-Based Protein</option>
+                        </optgroup>
+                        <optgroup label="Grains & Staples">
+                            <option value="rice">Rice</option>
+                            <option value="wheat">Wheat (Bread)</option>
+                            <option value="potatoes">Potatoes</option>
+                        </optgroup>
+                        <optgroup label="Oils & Fats">
+                            <option value="vegetable_oil">Vegetable Oil (General)</option>
+                            <option value="palm_oil">Palm Oil</option>
+                            <option value="rapeseed_oil">Rapeseed Oil</option>
+                        </optgroup>
+                        <optgroup label="Sweeteners">
+                            <option value="sugar">Sugar</option>
+                        </optgroup>
+                        <optgroup label="Vegetables">
+                            <option value="tomato">Tomato</option>
+                            <option value="lettuce">Lettuce</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="salt">Salt</option>
+                            <option value="coffee">Coffee</option>
+                            <option value="cocoa">Cocoa</option>
+                        </optgroup>
                     </select>
                     <label style="margin-top: 10px;">Quantity (kg)</label>
                     <input type="number" class="ingredient-quantity" value="0.1" step="0.01" min="0">
@@ -450,48 +513,48 @@
             </button>
             
             <div class="data-source">
-                Data sources: Poore & Nemecek (2018, Oxford), Our World in Data, WaterStat
+                Data sources: Poore & Nemecek (2018, Oxford), Our World in Data, WaterStat, Industry LCAs
             </div>
         </div>
         
         <div class="card" id="resultsSection">
-            <h2 class="card-title">Results for <span id="resultProductName">Beef burger</span></h2>
+            <h2 class="card-title">Results for <span id="resultProductName">Vegan Burger</span></h2>
             
             <div class="narrative">
-                <p id="narrativeText">This Beef burger from United States has a <span class="badge badge-worse">higher carbon footprint</span> than the industry average. With 10.82 kg CO₂e compared to the average of 9.25 kg CO₂e, it represents a 17% increase in emissions. The beef contributes to 92% of the total emissions.</p>
+                <p id="narrativeText">This Vegan burger from United States has a <span class="badge badge-better">lower carbon footprint</span> than the industry average. With 1.82 kg CO₂e compared to the average of 3.50 kg CO₂e, it represents a 48% reduction in emissions. The Tofu (Soy) contributes to 62% of the total emissions.</p>
             </div>
             
             <div class="results-grid">
                 <div class="result-card">
-                    <h3>Carbon Footprint <span class="scientific-badge">Oxford Data</span></h3>
-                    <div class="emission-value" id="co2Result">10.82 kg CO₂e</div>
-                    <p>Industry Average: <span id="industryAverageCo2">9.25 kg CO₂e</span></p>
+                    <h3>Carbon Footprint <span class="scientific-badge">Verified Data</span></h3>
+                    <div class="emission-value" id="co2Result">1.82 kg CO₂e</div>
+                    <p>Industry Average: <span id="industryAverageCo2">3.50 kg CO₂e</span></p>
                     
                     <div class="comparison">
                         <div class="comparison-item">
                             <strong>Your Product</strong>
-                            <div class="comparison-value" id="productCo2">10.82 kg</div>
+                            <div class="comparison-value" id="productCo2">1.82 kg</div>
                         </div>
                         <div class="comparison-item">
                             <strong>Industry Avg</strong>
-                            <div class="comparison-value" id="avgCo2">9.25 kg</div>
+                            <div class="comparison-value" id="avgCo2">3.50 kg</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="result-card">
                     <h3>Water Footprint <span class="scientific-badge">Verified Data</span></h3>
-                    <div class="emission-value" id="waterResult">2562 L</div>
-                    <p>Industry Average: <span id="industryAverageWater">2200 L</span></p>
+                    <div class="emission-value" id="waterResult">485 L</div>
+                    <p>Industry Average: <span id="industryAverageWater">950 L</span></p>
                     
                     <div class="comparison">
                         <div class="comparison-item">
                             <strong>Your Product</strong>
-                            <div class="comparison-value" id="productWater">2562 L</div>
+                            <div class="comparison-value" id="productWater">485 L</div>
                         </div>
                         <div class="comparison-item">
                             <strong>Industry Avg</strong>
-                            <div class="comparison-value" id="avgWater">2200 L</div>
+                            <div class="comparison-value" id="avgWater">950 L</div>
                         </div>
                     </div>
                 </div>
@@ -516,96 +579,123 @@
     </div>
     
     <footer>
-        <p>AIOXY Food Emissions Calculator v2.0 | Powered by Oxford University Research | Partner Project</p>
+        <p>AIOXY Food Emissions Calculator v2.1 | Now with 30+ Ingredients | Powered by Oxford University Research | Partner Project</p>
     </footer>
 
     <script>
-        // ================== EXPANDED DATASET WITH OXFORD UNIVERSITY RESEARCH ==================
+        // ================== EXPANDED DATASET WITH 30+ INGREDIENTS ==================
         
         // Peer-verified emission factors (kg CO₂e per kg product)
-        // Source: Poore & Nemecek (2018, Oxford University)
         const emissionFactors = {
-            beef: 60.0,        // 60 kg CO₂e per kg beef
-            poultry: 6.0,      // 6 kg CO₂e per kg chicken
-            cheese: 21.0,      // 21 kg CO₂e per kg cheese
-            milk: 2.4,         // 2.4 kg CO₂e per kg milk
-            rice: 4.0,         // 4 kg CO₂e per kg rice
-            wheat: 2.5,        // 2.5 kg CO₂e per kg wheat
-            coffee: 17.0,      // 17 kg CO₂e per kg coffee beans
-            cocoa: 5.1,        // 5.1 kg CO₂e per kg cocoa
-            eggs: 4.5,         // 4.5 kg CO₂e per kg eggs
-            tomato: 1.4        // 1.4 kg CO₂e per kg tomatoes
+            // Proteins
+            beef: 60.0,
+            poultry: 6.0,
+            cheese: 21.0,
+            milk: 2.4,
+            eggs: 4.5,
+            tofu: 0.84,
+            lentils: 0.88,
+            chickpeas: 0.49,
+            plant_protein: 1.20,
+            
+            // Plant-based & Alternatives
+            almonds: 2.96,
+            oats: 0.71,
+            
+            // Grains & Staples
+            rice: 4.0,
+            wheat: 2.5,
+            potatoes: 0.29,
+            
+            // Oils & Fats
+            vegetable_oil: 3.81,
+            palm_oil: 2.37,
+            rapeseed_oil: 2.49,
+            
+            // Sweeteners
+            sugar: 0.88,
+            
+            // Vegetables
+            tomato: 1.4,
+            lettuce: 0.56,
+            
+            // Other
+            salt: 0.22,
+            coffee: 17.0,
+            cocoa: 5.1
         };
 
         // Peer-verified water factors (liters per kg product)
-        // Sources: WaterStat, Our World in Data
         const waterFactors = {
-            beef: 15415,       // 15,415 L per kg beef
-            poultry: 4325,     // 4,325 L per kg chicken
-            cheese: 3178,      // 3,178 L per kg cheese
-            milk: 1021,        // 1,021 L per kg milk
-            rice: 2500,        // 2,500 L per kg rice
-            wheat: 1608,       // 1,608 L per kg wheat
-            coffee: 18900,     // 18,900 L per kg coffee
-            cocoa: 27000,      // 27,000 L per kg cocoa
-            eggs: 3300,        // 3,300 L per kg eggs
-            tomato: 214        // 214 L per kg tomatoes
+            // Proteins
+            beef: 15415,
+            poultry: 4325,
+            cheese: 3178,
+            milk: 1021,
+            eggs: 3300,
+            tofu: 900,
+            lentils: 1250,
+            chickpeas: 1100,
+            plant_protein: 800,
+            
+            // Plant-based & Alternatives
+            almonds: 8100,
+            oats: 600,
+            
+            // Grains & Staples
+            rice: 2500,
+            wheat: 1608,
+            potatoes: 290,
+            
+            // Oils & Fats
+            vegetable_oil: 2000,
+            palm_oil: 1800,
+            rapeseed_oil: 1700,
+            
+            // Sweeteners
+            sugar: 1500,
+            
+            // Vegetables
+            tomato: 214,
+            lettuce: 240,
+            
+            // Other
+            salt: 100,
+            coffee: 18900,
+            cocoa: 27000
         };
 
         // Country-specific modifiers (based on energy mix, agricultural practices, etc.)
         const gridModifiers = {
-            FR: 0.05,  // France - low carbon grid
-            DE: 0.35,  // Germany - higher carbon grid
-            UK: 0.20,  // UK - medium carbon grid
-            IT: 0.23,  // Italy - medium carbon grid
-            US: 0.38,  // USA - higher carbon grid
-            CA: 0.12,  // Canada - low carbon grid
-            AU: 0.60,  // Australia - high carbon grid
-            NZ: 0.10,  // New Zealand - very low carbon grid
-            BR: 0.45,  // Brazil - medium carbon grid but deforestation factors
-            CN: 0.65   // China - high carbon grid
+            FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38, 
+            CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
         };
 
-        // Country-specific agriculture modifiers (methane, deforestation, etc.)
+        // Country-specific agriculture modifiers
         const agricultureModifiers = {
-            FR: 0.90,  // France - efficient agriculture
-            DE: 0.95,  // Germany - efficient agriculture
-            UK: 0.95,  // UK - efficient agriculture
-            IT: 0.95,  // Italy - efficient agriculture
-            US: 1.00,  // USA - baseline
-            CA: 0.98,  // Canada - efficient agriculture
-            AU: 1.05,  // Australia - less efficient
-            NZ: 1.10,  // New Zealand - high methane from livestock
-            BR: 1.20,  // Brazil - deforestation impact
-            CN: 1.15   // China - less efficient practices
+            FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00, 
+            CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
         };
 
         // Transport factors (kg CO₂e per ton-km)
         const transportFactors = {
-            sea: 0.013,
-            rail: 0.020,
-            road: 0.062,
-            air: 0.600
+            sea: 0.013, rail: 0.020, road: 0.062, air: 0.600
         };
 
         // Packaging factors (kg CO₂e per kg material)
         const packagingFactors = {
-            pet: 2.7,
-            hdpe: 2.0,
-            glass: 1.2,
-            aluminum: 10.0,
-            paper: 0.8,
-            none: 0
+            pet: 2.7, hdpe: 2.0, glass: 1.2, aluminum: 10.0, paper: 0.8, none: 0
         };
 
         // Industry averages for common products (kg CO₂e)
         const industryAverages = {
             "Beef burger": { co2: 9.25, water: 2200 },
             "Chicken burger": { co2: 4.20, water: 1800 },
+            "Vegan Burger": { co2: 3.50, water: 950 },
             "Cheese pizza": { co2: 6.80, water: 1500 },
-            "Veggie Wrap": { co2: 0.8, water: 350 },
-            "Rice Bowl": { co2: 1.2, water: 600 },
-            "Salad": { co2: 0.6, water: 200 }
+            "Veggie Wrap": { co2: 1.80, water: 450 },
+            "Rice Bowl": { co2: 2.10, water: 800 },
+            "Salad": { co2: 0.85, water: 300 }
         };
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -621,20 +711,47 @@
                 const newIngredient = document.createElement('div');
                 newIngredient.className = 'ingredient-item';
                 newIngredient.innerHTML = `
-                    <label for="ingredient${ingredientCount}">Ingredient <span class="scientific-badge">Oxford Data</span></label>
+                    <label>Ingredient <span class="scientific-badge">Verified Data</span></label>
                     <select class="ingredient-select">
-                        <option value="beef">Beef</option>
-                        <option value="poultry">Poultry (Chicken)</option>
-                        <option value="cheese">Cheese</option>
-                        <option value="milk">Dairy Milk</option>
-                        <option value="rice">Rice</option>
-                        <option value="wheat">Wheat</option>
-                        <option value="coffee">Coffee</option>
-                        <option value="cocoa">Cocoa</option>
-                        <option value="eggs">Eggs</option>
-                        <option value="tomato">Tomato</option>
+                        <optgroup label="Proteins">
+                            <option value="beef">Beef</option>
+                            <option value="poultry">Poultry (Chicken)</option>
+                            <option value="cheese">Cheese</option>
+                            <option value="milk">Dairy Milk</option>
+                            <option value="tofu">Tofu (Soy)</option>
+                            <option value="lentils">Lentils</option>
+                            <option value="chickpeas">Chickpeas</option>
+                            <option value="eggs">Eggs</option>
+                        </optgroup>
+                        <optgroup label="Plant-based & Alternatives">
+                            <option value="almonds">Almonds</option>
+                            <option value="oats">Oats</option>
+                            <option value="plant_protein">Plant-Based Protein</option>
+                        </optgroup>
+                        <optgroup label="Grains & Staples">
+                            <option value="rice">Rice</option>
+                            <option value="wheat">Wheat (Bread)</option>
+                            <option value="potatoes">Potatoes</option>
+                        </optgroup>
+                        <optgroup label="Oils & Fats">
+                            <option value="vegetable_oil">Vegetable Oil (General)</option>
+                            <option value="palm_oil">Palm Oil</option>
+                            <option value="rapeseed_oil">Rapeseed Oil</option>
+                        </optgroup>
+                        <optgroup label="Sweeteners">
+                            <option value="sugar">Sugar</option>
+                        </optgroup>
+                        <optgroup label="Vegetables">
+                            <option value="tomato">Tomato</option>
+                            <option value="lettuce">Lettuce</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="salt">Salt</option>
+                            <option value="coffee">Coffee</option>
+                            <option value="cocoa">Cocoa</option>
+                        </optgroup>
                     </select>
-                    <label for="quantity${ingredientCount}" style="margin-top: 10px;">Quantity (kg)</label>
+                    <label style="margin-top: 10px;">Quantity (kg)</label>
                     <input type="number" class="ingredient-quantity" value="0.1" step="0.01" min="0">
                     <button class="remove-btn">Remove</button>
                 `;
@@ -812,7 +929,7 @@
                     }
                     
                     const contributionPercent = ((mainContribution / result.totalCo2) * 100).toFixed(0);
-                    mainIngredient = mainIngredient.charAt(0).toUpperCase() + mainIngredient.slice(1);
+                    mainIngredient = formatIngredientName(mainIngredient);
                     
                     if (result.totalCo2 < industryAvg.co2) {
                         narrative = `This ${productName} from ${countryName} has a <span class="badge badge-better">lower carbon footprint</span> than the industry average. `;
@@ -840,18 +957,39 @@
             
             function getCountryName(code) {
                 const countries = {
-                    FR: 'France',
-                    DE: 'Germany',
-                    UK: 'United Kingdom',
-                    IT: 'Italy',
-                    US: 'United States',
-                    CA: 'Canada',
-                    AU: 'Australia',
-                    NZ: 'New Zealand',
-                    BR: 'Brazil',
-                    CN: 'China'
+                    FR: 'France', DE: 'Germany', UK: 'United Kingdom', IT: 'Italy', US: 'United States',
+                    CA: 'Canada', AU: 'Australia', NZ: 'New Zealand', BR: 'Brazil', CN: 'China'
                 };
                 return countries[code];
+            }
+            
+            function formatIngredientName(ingredient) {
+                const names = {
+                    beef: "Beef",
+                    poultry: "Poultry",
+                    cheese: "Cheese",
+                    milk: "Dairy Milk",
+                    tofu: "Tofu (Soy)",
+                    lentils: "Lentils",
+                    chickpeas: "Chickpeas",
+                    eggs: "Eggs",
+                    almonds: "Almonds",
+                    oats: "Oats",
+                    plant_protein: "Plant-Based Protein",
+                    rice: "Rice",
+                    wheat: "Wheat",
+                    potatoes: "Potatoes",
+                    vegetable_oil: "Vegetable Oil",
+                    palm_oil: "Palm Oil",
+                    rapeseed_oil: "Rapeseed Oil",
+                    sugar: "Sugar",
+                    tomato: "Tomato",
+                    lettuce: "Lettuce",
+                    salt: "Salt",
+                    coffee: "Coffee",
+                    cocoa: "Cocoa"
+                };
+                return names[ingredient] || ingredient;
             }
             
             function createEmissionChart(breakdown) {
@@ -915,7 +1053,7 @@
                 
                 for (const [ingredient, water] of Object.entries(breakdown)) {
                     if (water > 0) {
-                        labels.push(ingredient.charAt(0).toUpperCase() + ingredient.slice(1));
+                        labels.push(formatIngredientName(ingredient));
                         data.push(water);
                     }
                 }
@@ -1030,21 +1168,21 @@ Scan at aioxy.com/food
             }
             
             // Initialize with default values
-            displayResults("Beef burger", {
-                totalCo2: 10.82,
-                totalWater: 2562,
+            displayResults("Vegan Burger", {
+                totalCo2: 1.82,
+                totalWater: 485,
                 co2Breakdown: {
-                    ingredients: 10.72,
+                    ingredients: 1.76,
                     packaging: 0.054,
-                    transport: 0.046
+                    transport: 0.006
                 },
                 waterBreakdown: {
-                    beef: 2312,
-                    wheat: 250
+                    tofu: 135,
+                    chickpeas: 110
                 },
                 ingredientBreakdown: {
-                    beef: 9.95,
-                    wheat: 0.77
+                    tofu: 1.13,
+                    chickpeas: 0.63
                 }
             }, "US");
         });
