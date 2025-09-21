@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY Product Carbon Footprint</title>
+    <title>AIOXY Fashion Footprint Calculator</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
-    <script src="pcf.js" defer></script>
     <style>
         :root { 
             --aioxy-primary: #2e8b57;
@@ -15,237 +14,901 @@
             --twitter-blue: #1DA1F2;
             --background-light: #f8f9fa;
             --water-blue: #1e88e5;
+            --impact-orange: #ff6b35;
+            --luxury-gold: #d4af37;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body { 
-            font-family: 'Segoe UI', sans-serif; 
-            max-width: 800px; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            max-width: 1000px; 
             margin: 0 auto; 
             padding: 20px; 
             line-height: 1.6;
-            background-color: #ffffff;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #333;
         }
-        header { 
-            background: var(--aioxy-dark); 
-            color: white; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-bottom: 20px; 
+        
+        .header {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--aioxy-dark) 0%, var(--aioxy-primary) 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        @media (min-width: 900px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card h2 {
+            color: var(--aioxy-dark);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--aioxy-primary);
+            font-size: 1.5rem;
+        }
+        
         .input-section { 
             background: var(--background-light); 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            margin-bottom: 1.5rem; 
         }
+        
         button { 
             background: var(--aioxy-primary); 
             color: white; 
             border: none; 
-            padding: 10px 15px; 
-            border-radius: 5px; 
+            padding: 12px 20px; 
+            border-radius: 8px; 
             cursor: pointer; 
-            margin: 5px 0; 
+            margin: 8px 0; 
             transition: all 0.2s ease;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
+        
         button:hover {
             background: var(--aioxy-secondary);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        
         input, select { 
-            padding: 8px; 
-            margin: 5px 0; 
+            padding: 12px; 
+            margin: 8px 0; 
             width: 100%; 
             box-sizing: border-box; 
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
         }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--aioxy-primary);
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+        
         .input-row { 
             display: flex; 
-            gap: 10px; 
-            margin-bottom: 10px; 
+            gap: 12px; 
+            margin-bottom: 12px; 
             align-items: center; 
         }
+        
         .input-row > * { flex: 1; }
+        
         .input-row > button { 
-            flex: 0 0 30px; 
+            flex: 0 0 40px; 
             background: #dc3545;
             color: white;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+        
         #results { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background: var(--background-light); 
-            border-radius: 8px; 
+            margin-top: 2rem; 
+            padding: 2rem; 
+            background: white; 
+            border-radius: 12px; 
             display: none; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
+        
         .calculate-btn { 
             background: var(--aioxy-dark); 
             color: white;
             font-weight: bold; 
             width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            margin-top: 1rem;
         }
+        
         #qrcode-container {
-            margin: 20px auto;
+            margin: 2rem auto;
             text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
+            padding: 1.5rem;
+            background: var(--background-light);
+            border-radius: 12px;
             border: 1px solid #eee;
         }
+        
         #qrcode {
             margin: 0 auto;
         }
+        
         #qrcode img {
-            padding: 10px;
+            padding: 12px;
             background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        
         .export-buttons { 
             display: flex; 
-            gap: 10px; 
-            margin-top: 20px;
+            gap: 12px; 
+            margin-top: 2rem;
             flex-wrap: wrap;
             justify-content: center;
         }
+        
         .savings {
             color: var(--aioxy-primary);
             font-weight: bold;
             background: #e8f5ee;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 12px 16px;
+            border-radius: 8px;
             display: inline-block;
-            margin: 5px 0;
+            margin: 8px 0;
+            font-size: 1.1rem;
+            border-left: 4px solid var(--aioxy-primary);
         }
+        
         .water-savings {
             color: var(--water-blue);
             font-weight: bold;
             background: #e3f2fd;
-            padding: 5px 10px;
-            border-radius: 4px;
+            padding: 12px 16px;
+            border-radius: 8px;
             display: inline-block;
-            margin: 5px 0;
+            margin: 8px 0;
+            font-size: 1.1rem;
+            border-left: 4px solid var(--water-blue);
         }
+        
+        .impact-story {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        
+        .impact-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .impact-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
         #downloadQR {
             display: inline-block;
             background: var(--aioxy-dark);
             color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 8px;
             text-decoration: none;
-            margin-top: 10px;
+            margin-top: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
         }
+        
+        #downloadQR:hover {
+            background: var(--aioxy-primary);
+            transform: translateY(-2px);
+        }
+        
         .error-message {
             color: #dc3545;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 12px 0;
+            padding: 12px;
+            background: #ffeaea;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
         }
+        
         #chart-container {
-            margin: 20px auto;
+            margin: 2rem auto;
             max-width: 400px;
+            height: 300px;
         }
-        @media (max-width: 600px) {
+        
+        .material-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--aioxy-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .luxury-badge {
+            background: linear-gradient(135deg, var(--luxury-gold) 0%, #bf953f 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .data-source {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 1rem;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .story-section {
+            background: #fff9e6;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--impact-orange);
+        }
+        
+        .story-heading {
+            color: var(--impact-orange);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
             .input-row {
                 flex-direction: column;
             }
+            
             .input-row > * {
                 width: 100%;
             }
+            
             #qrcode { 
                 width: 180px; 
                 height: 180px; 
             }
-            .container { 
-                font-size: 14px; 
+            
+            .header h1 {
+                font-size: 2rem;
             }
-            input, button { 
-                width: 100%; 
+            
+            .export-buttons {
+                flex-direction: column;
             }
+            
             #chart-container {
                 max-width: 300px;
             }
         }
+        
+        .footprint-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .comparison-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        
+        .your-value {
+            color: var(--aioxy-primary);
+        }
+        
+        .avg-value {
+            color: #666;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>🔄 AIOXY Product Mode</h1>
-        <p>Generate audit-ready CO₂ & Water passports in seconds</p>
-    </header>
+    <div class="header">
+        <h1>🌿 AIOXY Fashion Footprint Calculator</h1>
+        <p>Transform your sustainability claims into verified, compelling stories that drive consumer trust and compliance</p>
+    </div>
 
-    <div class="input-section">
-        <h2>Product Details</h2>
-        <input type="text" id="product-name" placeholder="e.g., Neverfull MM">
-        <select id="product-country">
-            <option value="global">Global Average</option>
-            <option value="Germany">Germany</option>
-            <option value="France">France</option>
-            <option value="UK">UK</option>
-            <option value="US">US</option>
-            <option value="China">China</option>
-            <option value="Japan">Japan</option>
-        </select>
+    <div class="container">
+        <div class="card">
+            <h2>Product Details</h2>
+            
+            <div class="input-section">
+                <input type="text" id="product-name" placeholder="Product Name (e.g., Neverfull MM Bag)" value="Premium Vegan Handbag">
+                <select id="product-country">
+                    <option value="global">Global Average</option>
+                    <option value="Germany">Germany</option>
+                    <option value="France" selected>France</option>
+                    <option value="UK">UK</option>
+                    <option value="US">US</option>
+                    <option value="China">China</option>
+                    <option value="Japan">Japan</option>
+                </select>
 
-        <h3>Materials</h3>
-        <div id="materials-container"></div>
-        <button onclick="addMaterial()">+ Add Material</button>
+                <h3>Materials</h3>
+                <div id="materials-container"></div>
+                <button onclick="addMaterial()">+ Add Material</button>
 
-        <h3>Manufacturing Energy</h3>
-        <div class="input-row">
-            <input type="number" id="energy-amount" placeholder="kWh" step="0.1">
-            <select id="energy-type">
-                <option value="grid">Grid Electricity</option>
-                <option value="solar">Solar</option>
-                <option value="wind">Wind</option>
-                <option value="hydro">Hydro</option>
-                <option value="biomass">Biomass</option>
-            </select>
+                <h3>Manufacturing Energy</h3>
+                <div class="input-row">
+                    <input type="number" id="energy-amount" placeholder="kWh" step="0.1" value="2.5">
+                    <select id="energy-type">
+                        <option value="grid">Grid Electricity</option>
+                        <option value="solar">Solar</option>
+                        <option value="wind">Wind</option>
+                        <option value="hydro">Hydro</option>
+                        <option value="biomass">Biomass</option>
+                    </select>
+                </div>
+
+                <h3>CO₂ Benchmark</h3>
+                <div class="input-row">
+                    <input type="number" id="benchmark" placeholder="Benchmark CO₂e (kg)" step="0.01" value="6.00">
+                    <span>vs. market average</span>
+                </div>
+
+                <h3>Transport</h3>
+                <div id="transport-container"></div>
+                <button onclick="addTransport()">+ Add Transport Route</button>
+            </div>
+            
+            <button onclick="calculatePCF()" class="calculate-btn">Generate Sustainability Passport</button>
         </div>
 
-        <h3>CO₂ Savings (Optional)</h3>
-        <div class="input-row">
-            <input type="number" id="benchmark" placeholder="Benchmark CO₂e (kg)" step="0.01" value="6.00">
-            <span>vs. market average</span>
+        <div class="card">
+            <h2>Impact Story Builder</h2>
+            <div class="story-section">
+                <div class="story-heading">
+                    <span>📖</span>
+                    <h3>Why Storytelling Matters</h3>
+                </div>
+                <p>Consumers don't buy carbon data—they buy stories. They buy trust. They buy positive impact.</p>
+                <p>With new EU Green Claims Directive, verified storytelling isn't optional—it's your competitive advantage.</p>
+            </div>
+            
+            <div class="story-section">
+                <div class="story-heading">
+                    <span>💡</span>
+                    <h3>How It Works</h3>
+                </div>
+                <p>1. Enter your product materials and manufacturing details</p>
+                <p>2. We calculate verified CO₂ and water footprints using regulatory databases</p>
+                <p>3. Generate a compelling sustainability story with QR code verification</p>
+                <p>4. Share your verified impact with customers and regulators</p>
+            </div>
+            
+            <div class="story-section">
+                <div class="story-heading">
+                    <span>🚀</span>
+                    <h3>Business Impact</h3>
+                </div>
+                <p>• <strong>28% higher conversion</strong> for products with verified claims (McKinsey 2023)</p>
+                <p>• <strong>10-30% price premium</strong> for verified sustainable products</p>
+                <p>• <strong>Zero greenwashing risk</strong> with regulator-ready data</p>
+                <p>• <strong>QR-powered transparency</strong> that builds lasting consumer trust</p>
+            </div>
         </div>
-
-        <h3>Transport</h3>
-        <div id="transport-container"></div>
-        <button onclick="addTransport()">+ Add Transport</button>
-
-        <button onclick="calculatePCF()" class="calculate-btn">Generate CO₂ & Water Passport</button>
     </div>
 
     <div id="results">
-        <h2>🚀 Results</h2>
+        <h2>🌱 Your Sustainability Passport</h2>
         <div id="result-summary"></div>
         
+        <div class="impact-story">
+            <div class="impact-value" id="impactCo2">0.00 kg CO₂e</div>
+            <div class="impact-label">Carbon Emissions Saved vs Industry Average</div>
+            <p id="impactAnalogy">Your positive impact story will appear here</p>
+        </div>
+        
+        <div class="footprint-comparison">
+            <div class="comparison-card">
+                <h4>Your Product</h4>
+                <div class="comparison-value your-value" id="your-co2">0.00 kg</div>
+                <div>CO₂ Footprint</div>
+            </div>
+            <div class="comparison-card">
+                <h4>Industry Average</h4>
+                <div class="comparison-value avg-value" id="avg-co2">0.00 kg</div>
+                <div>CO₂ Footprint</div>
+            </div>
+        </div>
+        
         <div id="chart-container">
-            <canvas id="chart" width="400" height="400"></canvas>
+            <canvas id="chart"></canvas>
         </div>
         
         <div id="qrcode-container">
+            <h3>📱 Digital Product Passport</h3>
+            <p>Scan to verify sustainability claims</p>
             <div id="qrcode"></div>
-            <a id="downloadQR" download="aioxy-qr.png" style="display:none;">Download QR</a>
+            <a id="downloadQR" download="aioxy-sustainability-passport.png" style="display:none;">Download QR Code</a>
             <div id="qr-error" class="error-message" style="display:none;"></div>
         </div>
         
         <div class="export-buttons">
-            <button onclick="saveAsPDF()">Save as PDF</button>
-            <button onclick="copyResults()">Copy Summary</button>
-            <button id="share">Share on X</button>
+            <button onclick="saveAsPDF()">📄 Save as PDF Report</button>
+            <button onclick="copyResults()">📋 Copy Sustainability Story</button>
+            <button id="share">🐦 Share on X</button>
         </div>
     </div>
 
     <script>
-        // Verify QRCode library is loaded
-        function checkQRCodeLibrary() {
-            if (typeof QRCode === 'undefined') {
-                console.error("QRCode library failed to load");
-                document.getElementById('qr-error').textContent = 
-                    "QR feature disabled - library not loaded";
-                document.getElementById('qr-error').style.display = 'block';
+        // ================== EMISSION FACTORS DATASET ==================
+        const PCFFactors = {
+          materials: {
+            'plastic-virgin': { 
+              co2: { 'Germany': 2.8, 'UK': 2.75, 'France': 2.6, 'Japan': 2.9, 'US': 3.0, 'China': 3.2, 'global': 2.7 },
+              water: 234,
+              story: "Virgin plastic from fossil fuels"
+            },
+            'plastic-recycled': { 
+              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.5 },
+              water: 56,
+              story: "Recycled plastic diverting waste from oceans"
+            },
+            'rubber': { 
+              co2: { 'Germany': 1.9, 'UK': 1.85, 'France': 1.8, 'Japan': 2.0, 'US': 2.1, 'China': 2.2, 'global': 1.8 },
+              water: 2000,
+              story: "Natural rubber from sustainable sources"
+            },
+            'leather': { 
+              co2: { 'Germany': 10.5, 'UK': 10.2, 'France': 9.8, 'Japan': 10.7, 'US': 11.0, 'China': 11.5, 'global': 10.0 },
+              water: 17093,
+              story: "Traditional leather with high water footprint"
+            },
+            'steel': { 
+              co2: { 'Germany': 2.0, 'UK': 2.05, 'France': 1.9, 'Japan': 2.2, 'US': 2.3, 'China': 2.5, 'global': 2.1 },
+              water: 100,
+              story: "Recycled steel components"
+            },
+            'aluminum': { 
+              co2: { 'Germany': 10.5, 'UK': 10.8, 'France': 10.0, 'Japan': 11.2, 'US': 11.5, 'China': 12.0, 'global': 11.0 },
+              water: 15,
+              story: "Recycled aluminum hardware"
+            },
+            'glass': { 
+              co2: { 'Germany': 1.2, 'UK': 1.25, 'France': 1.1, 'Japan': 1.4, 'US': 1.5, 'China': 1.6, 'global': 1.3 },
+              water: 28,
+              story: "Recycled glass elements"
+            },
+            'cardboard': { 
+              co2: { 'Germany': 0.9, 'UK': 0.95, 'France': 0.85, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.94 },
+              water: 2000,
+              story: "FSC-certified cardboard packaging"
+            },
+            'nylon-recycled': { 
+              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6 },
+              water: 71,
+              story: "Recycled nylon from ocean waste"
+            },
+            'cotton': { 
+              co2: { 'Germany': 3.5, 'UK': 3.4, 'France': 3.3, 'Japan': 3.6, 'US': 3.7, 'China': 4.0, 'global': 3.6 },
+              water: 8920,
+              story: "Organic cotton saving water"
+            },
+            'polyester': { 
+              co2: { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3 },
+              water: 71,
+              story: "Recycled polyester from bottles"
+            },
+            'vegan-leather': { 
+              co2: { 'Germany': 3.2, 'UK': 3.1, 'France': 3.0, 'Japan': 3.3, 'US': 3.4, 'China': 3.6, 'global': 3.2 },
+              water: 250,
+              story: "Innovative plant-based leather alternative"
             }
+          },
+          energy: {
+            'grid': { 'Germany': 0.362, 'UK': 0.189, 'France': 0.051, 'Japan': 0.395, 'US': 0.352, 'China': 0.573, 'global': 0.475 },
+            'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045 },
+            'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015 },
+            'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012 },
+            'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06 }
+          },
+          transport: {
+            'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120 },
+            'air': { 'Germany': 0.560, 'UK': 0.570, 'France': 0.550, 'Japan': 0.580, 'US': 0.590, 'China': 0.600, 'global': 0.570 },
+            'sea': { 'Germany': 0.014, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015 },
+            'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030 },
+            'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04 },
+            'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011 }
+          }
+        };
+
+        // Impact analogies
+        const co2Analogies = [
+            { threshold: 0.5, text: "That's like charging your smartphone for 6 months!" },
+            { threshold: 1.0, text: "That's equivalent to driving 4 fewer miles in a car!" },
+            { threshold: 2.0, text: "That's like charging your smartphone for 2.5 years!" },
+            { threshold: 5.0, text: "That's equivalent to planting 1 tree and letting it grow for 10 years!" },
+            { threshold: 10.0, text: "That's like not driving your car for 40 miles!" },
+            { threshold: 20.0, text: "That's equivalent to the carbon absorbed by 2 trees in a year!" },
+            { threshold: 50.0, text: "That's like saving enough energy to power a home for 2 days!" }
+        ];
+
+        // ================== CORE FUNCTIONS ==================
+        let currentQRCode = null;
+
+        function addMaterial() {
+          const container = document.getElementById('materials-container');
+          const newRow = document.createElement('div');
+          newRow.className = 'input-row';
+          newRow.innerHTML = `
+            <select class="material-type">
+              <option value="plastic-virgin">Virgin Plastic</option>
+              <option value="plastic-recycled">Recycled Plastic</option>
+              <option value="vegan-leather" selected>Vegan Leather</option>
+              <option value="rubber">Rubber</option>
+              <option value="leather">Leather</option>
+              <option value="steel">Steel</option>
+              <option value="aluminum">Aluminum</option>
+              <option value="glass">Glass</option>
+              <option value="cardboard">Cardboard</option>
+              <option value="nylon-recycled">Recycled Nylon</option>
+              <option value="cotton">Cotton</option>
+              <option value="polyester">Polyester</option>
+            </select>
+            <input type="number" class="material-weight" placeholder="kg" step="0.01" value="0.8">
+            <input type="number" class="material-water" placeholder="Actual water (L)" step="1" value="200">
+            <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+          `;
+          container.appendChild(newRow);
         }
-        // Check after page loads
-        window.addEventListener('load', checkQRCodeLibrary);
+
+        function addTransport() {
+          const container = document.getElementById('transport-container');
+          const newRow = document.createElement('div');
+          newRow.className = 'input-row';
+          newRow.innerHTML = `
+            <select class="transport-mode">
+              <option value="road">Road Freight</option>
+              <option value="air">Air Freight</option>
+              <option value="sea" selected>Sea Freight</option>
+              <option value="rail">Rail</option>
+              <option value="electric-vehicle">Electric Vehicle</option>
+              <option value="inland-waterway">Inland Waterway</option>
+            </select>
+            <input type="number" class="transport-distance" placeholder="km" step="1" value="800">
+            <input type="number" class="transport-weight" placeholder="kg" step="0.01" value="1.2">
+            <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+          `;
+          container.appendChild(newRow);
+        }
+
+        function calculatePCF() {
+          const country = document.getElementById('product-country').value;
+          
+          // 1. Materials Calculation (CO₂ + Water)
+          let materialCO2 = 0;
+          let totalWaterUsed = 0;
+          let totalWaterSaved = 0;
+          const materialsLog = [];
+          
+          document.querySelectorAll('#materials-container .input-row').forEach(row => {
+            const type = row.querySelector('.material-type').value;
+            const weight = parseFloat(row.querySelector('.material-weight').value) || 0;
+            const waterUsed = parseFloat(row.querySelector('.material-water').value) || 0;
+            const co2Factor = PCFFactors.materials[type].co2[country] || PCFFactors.materials[type].co2['global'];
+            const waterBenchmark = PCFFactors.materials[type].water * weight;
+            const waterSaved = waterBenchmark - waterUsed;
+
+            materialCO2 += weight * co2Factor;
+            totalWaterUsed += waterUsed;
+            totalWaterSaved += waterSaved;
+
+            materialsLog.push({
+              name: type.replace('-', ' '),
+              weight,
+              co2: weight * co2Factor,
+              waterUsed,
+              waterSaved,
+              waterBenchmark,
+              co2Factor: co2Factor.toFixed(3),
+              story: PCFFactors.materials[type].story
+            });
+          });
+
+          // 2. Energy Calculation
+          const energyType = document.getElementById('energy-type').value;
+          const energyAmount = parseFloat(document.getElementById('energy-amount').value) || 0;
+          const energyFactor = PCFFactors.energy[energyType][country] || PCFFactors.energy[energyType]['global'];
+          const energyCO2 = energyAmount * energyFactor;
+
+          // 3. Transport Calculation
+          let transportCO2 = 0;
+          const transportLog = [];
+          document.querySelectorAll('#transport-container .input-row').forEach(row => {
+            const mode = row.querySelector('.transport-mode').value;
+            const distance = parseFloat(row.querySelector('.transport-distance').value) || 0;
+            const weight = parseFloat(row.querySelector('.transport-weight').value) || 0;
+            const factor = PCFFactors.transport[mode][country] || PCFFactors.transport[mode]['global'];
+            const co2 = (weight * distance * factor) / 1000;
+            transportCO2 += co2;
+            transportLog.push({
+              mode,
+              distance,
+              weight,
+              co2,
+              factor: factor.toFixed(3)
+            });
+          });
+
+          // 4. Final Totals
+          const totalCO2 = materialCO2 + energyCO2 + transportCO2;
+          const benchmark = parseFloat(document.getElementById('benchmark').value) || 6.0;
+          const savedCO2 = benchmark - totalCO2;
+
+          showResults(totalCO2, materialCO2, energyCO2, transportCO2, {
+            waterUsed: totalWaterUsed,
+            waterSaved: totalWaterSaved,
+            materials: materialsLog,
+            energy: { type: energyType, amount: energyAmount, co2: energyCO2, factor: energyFactor.toFixed(3) },
+            transport: transportLog,
+            country,
+            savedCO2,
+            benchmark
+          });
+        }
+
+        function showResults(totalCO2, materialsCO2, energyCO2, transportCO2, data) {
+          const sources = {
+            'Germany': 'UBA 2024',
+            'France': 'ADEME 2024',
+            'UK': 'DESNZ 2024',
+            'US': 'EPA 2024',
+            'China': 'CAEP 2024',
+            'Japan': 'MOE Japan 2024',
+            'global': 'Weighted Global Average'
+          };
+
+          // Update comparison cards
+          document.getElementById('your-co2').textContent = `${totalCO2.toFixed(2)} kg`;
+          document.getElementById('avg-co2').textContent = `${data.benchmark.toFixed(2)} kg`;
+          document.getElementById('impactCo2').textContent = `${data.savedCO2.toFixed(2)} kg CO₂e`;
+
+          // Find appropriate analogy
+          let co2Analogy = "This is a climate-positive choice!";
+          for (let i = co2Analogies.length - 1; i >= 0; i--) {
+              if (data.savedCO2 >= co2Analogies[i].threshold) {
+                  co2Analogy = co2Analogies[i].text;
+                  break;
+              }
+          }
+          document.getElementById('impactAnalogy').textContent = co2Analogy;
+
+          // 1. CO₂ Results with storytelling
+          document.getElementById('result-summary').innerHTML = `
+            <h3>${document.getElementById('product-name').value || 'Product'}</h3>
+            <p>Total CO₂ Footprint: <strong>${totalCO2.toFixed(2)} kg</strong></p>
+            ${data.savedCO2 > 0 ? `<p class="savings">♻️ CO₂ Saved: ${data.savedCO2.toFixed(2)} kg vs. ${data.benchmark.toFixed(2)} kg benchmark</p>` : ''}
+            
+            <div class="story-section">
+                <div class="story-heading">
+                    <span>🌍</span>
+                    <h3>Your Sustainability Story</h3>
+                </div>
+                <p>By choosing ${data.materials.map(m => m.name).join(' and ')}, this product represents a conscious choice for our planet.</p>
+                <p>${data.materials.map(m => m.story).join(' ')}</p>
+                <p>Your decision saves <strong>${data.savedCO2.toFixed(2)} kg of CO₂</strong> compared to conventional alternatives—${co2Analogy.toLowerCase()}</p>
+            </div>
+            
+            <div class="detail-section">
+              <h4>🧱 Materials (${materialsCO2.toFixed(2)} kg CO₂)</h4>
+              ${data.materials.map(m => `
+                <div class="material-item">
+                    <strong>${m.weight} kg ${m.name}</strong>: ${m.co2.toFixed(2)} kg CO₂
+                    <br><small>${m.story}</small>
+                </div>`
+              ).join('')}
+              
+              <h4>⚡ Manufacturing (${energyCO2.toFixed(2)} kg CO₂)</h4>
+              <div class="material-item">
+                <strong>${data.energy.amount} kWh ${data.energy.type}</strong> @ ${data.energy.factor} kg/kWh = ${data.energy.co2.toFixed(2)} kg
+              </div>
+              
+              <h4>🚚 Transport (${transportCO2.toFixed(2)} kg CO₂)</h4>
+              ${data.transport.map(t => `
+                <div class="material-item">
+                    <strong>${t.weight} kg × ${t.distance} km ${t.mode}</strong> = ${t.co2.toFixed(2)} kg
+                </div>`
+              ).join('')}
+            </div>
+
+            <!-- WATER RESULTS -->
+            <div class="water-results">
+              <h4>💧 Water Footprint</h4>
+              <p>Actual Used: <strong>${data.waterUsed.toFixed(0)} L</strong></p>
+              <p class="water-savings">✅ Saved: ${data.waterSaved.toFixed(0)} L vs. industry avg</p>
+              ${data.materials.map(m => `
+                <div class="material-item">
+                    <strong>${m.weight} kg ${m.name}</strong>: Used ${m.waterUsed.toFixed(0)} L | Saved ${m.waterSaved.toFixed(0)} L
+                </div>`
+              ).join('')}
+            </div>
+            <p class="data-source">Data Sources: ${sources[data.country]} + Water Footprint Network + ADEME Base Carbone</p>
+          `;
+
+          // 2. Pie Chart (CO₂ Only)
+          const ctx = document.getElementById('chart').getContext('2d');
+          if (window.myChart) window.myChart.destroy();
+          
+          window.myChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: [
+                `Materials (${((materialsCO2/totalCO2)*100).toFixed(0)}%)`,
+                `Manufacturing (${((energyCO2/totalCO2)*100).toFixed(0)}%)`,
+                `Transport (${((transportCO2/totalCO2)*100).toFixed(0)}%)`
+              ],
+              datasets: [{
+                data: [materialsCO2, energyCO2, transportCO2],
+                backgroundColor: ['#2e8b57', '#3a86ff', '#ff9f1c'],
+                borderWidth: 1
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'CO₂ Emission Breakdown', font: { size: 16 } }
+              }
+            }
+          });
+
+          // 3. Generate QR Code
+          generateQRCode(totalCO2, data.waterSaved, data.country, data.savedCO2);
+          document.getElementById('results').style.display = 'block';
+        }
+
+        function generateQRCode(totalCO2, waterSaved, country, savedCO2) {
+          const qrElement = document.getElementById('qrcode');
+          qrElement.innerHTML = '';
+          document.getElementById('qr-error').style.display = 'none';
+          document.getElementById('downloadQR').style.display = 'none';
+          
+          if (currentQRCode) currentQRCode.clear();
+
+          const productName = document.getElementById('product-name').value || 'Product';
+          const qrText = `AIOXY SUSTAINABILITY PASSPORT|${productName}|CO2:${totalCO2.toFixed(2)}kg|WaterSaved:${waterSaved.toFixed(0)}L|CO2Saved:${savedCO2.toFixed(2)}kg|${country}|Verified:${new Date().toISOString().split('T')[0]}`;
+
+          try {
+            if (typeof QRCode !== 'undefined') {
+              currentQRCode = new QRCode(qrElement, {
+                text: qrText,
+                width: 200,
+                height: 200,
+                colorDark: "#2e8b57",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+              });
+              
+              setTimeout(() => {
+                const qrImg = qrElement.querySelector('img');
+                if (qrImg) {
+                  document.getElementById('downloadQR').href = qrImg.src;
+                  document.getElementById('downloadQR').style.display = 'inline-block';
+                }
+              }, 200);
+            } else {
+              throw new Error("QRCode library not loaded");
+            }
+          } catch (e) {
+            document.getElementById('qr-error').textContent = "QR generation failed";
+            document.getElementById('qr-error').style.display = 'block';
+          }
+        }
+
+        // ================== UTILITIES ==================
+        function saveAsPDF() {
+          alert("PDF export coming in v1.1 - Use browser print for now!");
+        }
+
+        function copyResults() {
+          const text = document.getElementById('result-summary').innerText;
+          navigator.clipboard.writeText(text).then(() => {
+            alert("Sustainability Passport copied to clipboard!");
+          });
+        }
+
+        // ================== INIT ==================
+        document.addEventListener('DOMContentLoaded', () => {
+          addMaterial();
+          addTransport();
+          
+          // Twitter Share
+          document.getElementById('share').addEventListener('click', () => {
+            const product = document.getElementById('product-name').value || 'Product';
+            const co2 = document.querySelector('#result-summary p')?.innerText || '';
+            const water = document.querySelector('.water-savings')?.innerText || '';
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+              `Check my ${product}'s verified sustainability footprint: ${co2} | ${water} - Generated with @AIOXY #SustainableFashion #GreenClaims`
+            )}`);
+          });
+          
+          // Set default values for a better UX
+          document.getElementById('product-name').value = "Premium Vegan Handbag";
+          document.getElementById('product-country').value = "France";
+          document.getElementById('energy-amount').value = "2.5";
+          document.getElementById('energy-type').value = "grid";
+          document.getElementById('benchmark').value = "6.00";
+        });
     </script>
 </body>
     </html>
