@@ -586,96 +586,98 @@
         // ================== EXPANDED DATASET WITH 30+ INGREDIENTS ==================
         
         // Peer-verified emission factors (kg CO₂e per kg product)
-        const emissionFactors = {
-            // Proteins
-            beef: 60.0,
-            poultry: 6.0,
-            cheese: 21.0,
-            milk: 2.4,
-            eggs: 4.5,
-            tofu: 0.84,
-            lentils: 0.88,
-            chickpeas: 0.49,
-            plant_protein: 1.20,
-            
-            // Plant-based & Alternatives
-            almonds: 2.96,
-            oats: 0.71,
-            
-            // Grains & Staples
-            rice: 4.0,
-            wheat: 2.5,
-            potatoes: 0.29,
-            
-            // Oils & Fats
-            vegetable_oil: 3.81,
-            palm_oil: 2.37,
-            rapeseed_oil: 2.49,
-            
-            // Sweeteners
-            sugar: 0.88,
-            
-            // Vegetables
-            tomato: 1.4,
-            lettuce: 0.56,
-            
-            // Other
-            salt: 0.22,
-            coffee: 17.0,
-            cocoa: 5.1
-        };
+const emissionFactors = {
+    // Proteins
+    beef: 60.0,
+    poultry: 6.0,
+    cheese: 21.0,
+    milk: 2.4,
+    eggs: 4.5,
+    tofu: 0.84,
+    lentils: 0.88,
+    chickpeas: 0.49,
+    plant_protein: 1.20,
+    poseidona_protein: 1.8,   // algal protein (Poseidona)
 
-        // Peer-verified water factors (liters per kg product)
-        const waterFactors = {
-            // Proteins
-            beef: 15415,
-            poultry: 4325,
-            cheese: 3178,
-            milk: 1021,
-            eggs: 3300,
-            tofu: 900,
-            lentils: 1250,
-            chickpeas: 1100,
-            plant_protein: 800,
-            
-            // Plant-based & Alternatives
-            almonds: 8100,
-            oats: 600,
-            
-            // Grains & Staples
-            rice: 2500,
-            wheat: 1608,
-            potatoes: 290,
-            
-            // Oils & Fats
-            vegetable_oil: 2000,
-            palm_oil: 1800,
-            rapeseed_oil: 1700,
-            
-            // Sweeteners
-            sugar: 1500,
-            
-            // Vegetables
-            tomato: 214,
-            lettuce: 240,
-            
-            // Other
-            salt: 100,
-            coffee: 18900,
-            cocoa: 27000
-        };
+    // Plant-based & Alternatives
+    almonds: 2.96,
+    oats: 0.71,
 
-        // Country-specific modifiers (based on energy mix, agricultural practices, etc.)
-        const gridModifiers = {
-            FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38, 
-            CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
-        };
+    // Grains & Staples
+    rice: 4.0,
+    wheat: 2.5,
+    potatoes: 0.29,
 
-        // Country-specific agriculture modifiers
-        const agricultureModifiers = {
-            FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00, 
-            CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
-        };
+    // Oils & Fats
+    vegetable_oil: 3.81,
+    palm_oil: 2.37,
+    rapeseed_oil: 2.49,
+
+    // Sweeteners
+    sugar: 0.88,
+
+    // Vegetables
+    tomato: 1.4,
+    lettuce: 0.56,
+
+    // Other
+    salt: 0.22,
+    coffee: 17.0,
+    cocoa: 5.1
+};
+
+// Peer-verified water factors (liters per kg product)
+const waterFactors = {
+    // Proteins
+    beef: 15415,
+    poultry: 4325,
+    cheese: 3178,
+    milk: 1021,
+    eggs: 3300,
+    tofu: 900,
+    lentils: 1250,
+    chickpeas: 1100,
+    plant_protein: 800,
+    poseidona_protein: 250,   // algal protein (Poseidona)
+
+    // Plant-based & Alternatives
+    almonds: 8100,
+    oats: 600,
+
+    // Grains & Staples
+    rice: 2500,
+    wheat: 1608,
+    potatoes: 290,
+
+    // Oils & Fats
+    vegetable_oil: 2000,
+    palm_oil: 1800,
+    rapeseed_oil: 1700,
+
+    // Sweeteners
+    sugar: 1500,
+
+    // Vegetables
+    tomato: 214,
+    lettuce: 240,
+
+    // Other
+    salt: 100,
+    coffee: 18900,
+    cocoa: 27000
+};
+
+// Country-specific modifiers (based on energy mix, agricultural practices, etc.)
+const gridModifiers = {
+    FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38,
+    CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
+};
+
+// Country-specific agriculture modifiers
+const agricultureModifiers = {
+    FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00,
+    CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
+};
 
         // Transport factors (kg CO₂e per ton-km)
         const transportFactors = {
