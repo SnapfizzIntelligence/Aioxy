@@ -256,6 +256,27 @@
             border-left: 4px solid var(--primary);
         }
         
+        .impact-story {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        
+        .impact-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0.5rem 0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .impact-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
         .badge {
             display: inline-block;
             padding: 4px 8px;
@@ -390,6 +411,7 @@
                             <option value="lentils">Lentils</option>
                             <option value="chickpeas">Chickpeas</option>
                             <option value="eggs">Eggs</option>
+                            <option value="poseidona_protein">Poseidona Protein</option>
                         </optgroup>
                         <optgroup label="Plant-based & Alternatives">
                             <option value="almonds">Almonds</option>
@@ -435,6 +457,7 @@
                             <option value="lentils">Lentils</option>
                             <option value="chickpeas" selected>Chickpeas</option>
                             <option value="eggs">Eggs</option>
+                            <option value="poseidona_protein">Poseidona Protein</option>
                         </optgroup>
                         <optgroup label="Plant-based & Alternatives">
                             <option value="almonds">Almonds</option>
@@ -524,6 +547,12 @@
                 <p id="narrativeText">This Vegan burger from United States has a <span class="badge badge-better">lower carbon footprint</span> than the industry average. With 1.82 kg CO₂e compared to the average of 3.50 kg CO₂e, it represents a 48% reduction in emissions. The Tofu (Soy) contributes to 62% of the total emissions.</p>
             </div>
             
+            <div class="impact-story">
+                <div class="impact-value" id="impactCo2">1.68 kg CO₂e</div>
+                <div class="impact-label">Carbon Emissions Saved vs Industry Average</div>
+                <p>That's equivalent to charging your smartphone for 2.5 years!</p>
+            </div>
+            
             <div class="results-grid">
                 <div class="result-card">
                     <h3>Carbon Footprint <span class="scientific-badge">Verified Data</span></h3>
@@ -586,98 +615,98 @@
         // ================== EXPANDED DATASET WITH 30+ INGREDIENTS ==================
         
         // Peer-verified emission factors (kg CO₂e per kg product)
-const emissionFactors = {
-    // Proteins
-    beef: 60.0,
-    poultry: 6.0,
-    cheese: 21.0,
-    milk: 2.4,
-    eggs: 4.5,
-    tofu: 0.84,
-    lentils: 0.88,
-    chickpeas: 0.49,
-    plant_protein: 1.20,
-    poseidona_protein: 1.8,   // algal protein (Poseidona)
+        const emissionFactors = {
+            // Proteins
+            beef: 60.0,
+            poultry: 6.0,
+            cheese: 21.0,
+            milk: 2.4,
+            eggs: 4.5,
+            tofu: 0.84,
+            lentils: 0.88,
+            chickpeas: 0.49,
+            plant_protein: 1.20,
+            poseidona_protein: 1.8,   // algal protein (Poseidona)
 
-    // Plant-based & Alternatives
-    almonds: 2.96,
-    oats: 0.71,
+            // Plant-based & Alternatives
+            almonds: 2.96,
+            oats: 0.71,
 
-    // Grains & Staples
-    rice: 4.0,
-    wheat: 2.5,
-    potatoes: 0.29,
+            // Grains & Staples
+            rice: 4.0,
+            wheat: 2.5,
+            potatoes: 0.29,
 
-    // Oils & Fats
-    vegetable_oil: 3.81,
-    palm_oil: 2.37,
-    rapeseed_oil: 2.49,
+            // Oils & Fats
+            vegetable_oil: 3.81,
+            palm_oil: 2.37,
+            rapeseed_oil: 2.49,
 
-    // Sweeteners
-    sugar: 0.88,
+            // Sweeteners
+            sugar: 0.88,
 
-    // Vegetables
-    tomato: 1.4,
-    lettuce: 0.56,
+            // Vegetables
+            tomato: 1.4,
+            lettuce: 0.56,
 
-    // Other
-    salt: 0.22,
-    coffee: 17.0,
-    cocoa: 5.1
-};
+            // Other
+            salt: 0.22,
+            coffee: 17.0,
+            cocoa: 5.1
+        };
 
-// Peer-verified water factors (liters per kg product)
-const waterFactors = {
-    // Proteins
-    beef: 15415,
-    poultry: 4325,
-    cheese: 3178,
-    milk: 1021,
-    eggs: 3300,
-    tofu: 900,
-    lentils: 1250,
-    chickpeas: 1100,
-    plant_protein: 800,
-    poseidona_protein: 250,   // algal protein (Poseidona)
+        // Peer-verified water factors (liters per kg product)
+        const waterFactors = {
+            // Proteins
+            beef: 15415,
+            poultry: 4325,
+            cheese: 3178,
+            milk: 1021,
+            eggs: 3300,
+            tofu: 900,
+            lentils: 1250,
+            chickpeas: 1100,
+            plant_protein: 800,
+            poseidona_protein: 250,   // algal protein (Poseidona)
 
-    // Plant-based & Alternatives
-    almonds: 8100,
-    oats: 600,
+            // Plant-based & Alternatives
+            almonds: 8100,
+            oats: 600,
 
-    // Grains & Staples
-    rice: 2500,
-    wheat: 1608,
-    potatoes: 290,
+            // Grains & Staples
+            rice: 2500,
+            wheat: 1608,
+            potatoes: 290,
 
-    // Oils & Fats
-    vegetable_oil: 2000,
-    palm_oil: 1800,
-    rapeseed_oil: 1700,
+            // Oils & Fats
+            vegetable_oil: 2000,
+            palm_oil: 1800,
+            rapeseed_oil: 1700,
 
-    // Sweeteners
-    sugar: 1500,
+            // Sweeteners
+            sugar: 1500,
 
-    // Vegetables
-    tomato: 214,
-    lettuce: 240,
+            // Vegetables
+            tomato: 214,
+            lettuce: 240,
 
-    // Other
-    salt: 100,
-    coffee: 18900,
-    cocoa: 27000
-};
+            // Other
+            salt: 100,
+            coffee: 18900,
+            cocoa: 27000
+        };
 
-// Country-specific modifiers (based on energy mix, agricultural practices, etc.)
-const gridModifiers = {
-    FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38,
-    CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
-};
+        // Country-specific modifiers (based on energy mix, agricultural practices, etc.)
+        const gridModifiers = {
+            FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38,
+            CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
+        };
 
-// Country-specific agriculture modifiers
-const agricultureModifiers = {
-    FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00,
-    CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
-};
+        // Country-specific agriculture modifiers
+        const agricultureModifiers = {
+            FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00,
+            CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
+        };
 
         // Transport factors (kg CO₂e per ton-km)
         const transportFactors = {
@@ -699,6 +728,26 @@ const agricultureModifiers = {
             "Rice Bowl": { co2: 2.10, water: 800 },
             "Salad": { co2: 0.85, water: 300 }
         };
+
+        // Analogies for CO2 savings
+        const co2Analogies = [
+            { threshold: 0.5, text: "That's like charging your smartphone for 6 months!" },
+            { threshold: 1.0, text: "That's equivalent to driving 4 fewer miles in a car!" },
+            { threshold: 2.0, text: "That's like charging your smartphone for 2.5 years!" },
+            { threshold: 5.0, text: "That's equivalent to planting 1 tree and letting it grow for 10 years!" },
+            { threshold: 10.0, text: "That's like not driving your car for 40 miles!" },
+            { threshold: 20.0, text: "That's equivalent to the carbon absorbed by 2 trees in a year!" },
+            { threshold: 50.0, text: "That's like saving enough energy to power a home for 2 days!" }
+        ];
+
+        // Analogies for water savings
+        const waterAnalogies = [
+            { threshold: 100, text: "That's enough water for 5 people to drink for a day!" },
+            { threshold: 500, text: "That's like saving 10 full bathtubs of water!" },
+            { threshold: 1000, text: "That's enough water for 50 people to drink for a day!" },
+            { threshold: 5000, text: "That's like saving a small swimming pool of water!" },
+            { threshold: 10000, text: "That's enough water for 500 people to drink for a day!" }
+        ];
 
         document.addEventListener('DOMContentLoaded', function() {
             const addIngredientBtn = document.getElementById('addIngredient');
@@ -724,11 +773,11 @@ const agricultureModifiers = {
                             <option value="lentils">Lentils</option>
                             <option value="chickpeas">Chickpeas</option>
                             <option value="eggs">Eggs</option>
+                            <option value="poseidona_protein">Poseidona Protein</option>
                         </optgroup>
                         <optgroup label="Plant-based & Alternatives">
                             <option value="almonds">Almonds</option>
                             <option value="oats">Oats</option>
-                            <option value="poseidona_protein">Poseidona Protein</option>
                             <option value="plant_protein">Plant-Based Protein</option>
                         </optgroup>
                         <optgroup label="Grains & Staples">
@@ -901,18 +950,23 @@ const agricultureModifiers = {
                 document.getElementById('productWater').textContent = `${result.totalWater.toFixed(0)} L`;
                 document.getElementById('avgWater').textContent = `${industryAvg.water.toFixed(0)} L`;
                 
-                // Generate narrative
-                generateNarrative(productName, result, country, industryAvg);
+                // Calculate savings and generate narrative
+                const co2Saved = industryAvg.co2 - result.totalCo2;
+                const waterSaved = industryAvg.water - result.totalWater;
+                
+                document.getElementById('impactCo2').textContent = `${co2Saved.toFixed(2)} kg CO₂e`;
+                
+                generateNarrative(productName, result, country, industryAvg, co2Saved, waterSaved);
                 
                 // Create charts
                 createEmissionChart(result.co2Breakdown);
                 createWaterChart(result.waterBreakdown);
                 
                 // Generate QR code
-                generateQRCode(productName, result, country);
+                generateQRCode(productName, result, country, co2Saved, waterSaved);
             }
             
-            function generateNarrative(productName, result, country, industryAvg) {
+            function generateNarrative(productName, result, country, industryAvg, co2Saved, waterSaved) {
                 const narrativeText = document.getElementById('narrativeText');
                 
                 let narrative = '';
@@ -956,6 +1010,17 @@ const agricultureModifiers = {
                 }
                 
                 narrativeText.innerHTML = narrative;
+                
+                // Add impact analogy
+                let co2Analogy = "This is a climate-positive choice!";
+                for (let i = co2Analogies.length - 1; i >= 0; i--) {
+                    if (co2Saved >= co2Analogies[i].threshold) {
+                        co2Analogy = co2Analogies[i].text;
+                        break;
+                    }
+                }
+                
+                document.querySelector('.impact-story p').textContent = co2Analogy;
             }
             
             function getCountryName(code) {
@@ -979,6 +1044,7 @@ const agricultureModifiers = {
                     almonds: "Almonds",
                     oats: "Oats",
                     plant_protein: "Plant-Based Protein",
+                    poseidona_protein: "Poseidona Protein",
                     rice: "Rice",
                     wheat: "Wheat",
                     potatoes: "Potatoes",
@@ -1102,20 +1168,29 @@ const agricultureModifiers = {
                 });
             }
             
-            function generateQRCode(productName, result, country) {
+            function generateQRCode(productName, result, country, co2Saved, waterSaved) {
                 const qrCanvas = document.getElementById('qrCanvas');
                 const countryName = getCountryName(country);
                 
-                // Create QR content
+                // Create QR content with storytelling
                 const qrContent = `
 AIOXY FOOD PASSPORT
-Product: ${productName}
-Origin: ${countryName}
-Carbon: ${result.totalCo2.toFixed(2)} kg CO₂e
-Water: ${result.totalWater.toFixed(0)} L
-Data Source: Oxford University Research
-Compared to avg: ${result.totalCo2 < (industryAverages[productName]?.co2 || result.totalCo2 * 0.9) ? 'Better' : 'Worse'}
+🌱 ${productName}
+📍 Origin: ${countryName}
+
+CARBON FOOTPRINT
+${result.totalCo2.toFixed(2)} kg CO₂e
+Saved: ${co2Saved.toFixed(2)} kg vs average
+
+WATER FOOTPRINT
+${result.totalWater.toFixed(0)} Liters
+Saved: ${waterSaved.toFixed(0)} L vs average
+
+📊 Data Source: Oxford University Research
+✅ Verified: ${result.totalCo2 < (industryAverages[productName]?.co2 || result.totalCo2 * 0.9) ? 'Better than Average' : 'Industry Standard'}
+
 Scan at aioxy.com/food
+#SustainableChoice #AIOXY
                 `.trim();
                 
                 // Clear previous QR code
@@ -1191,4 +1266,4 @@ Scan at aioxy.com/food
         });
     </script>
 </body>
-                        </html>
+    </html>
