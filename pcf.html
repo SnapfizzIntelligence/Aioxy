@@ -572,6 +572,17 @@
               co2: { 'Germany': 3.2, 'UK': 3.1, 'France': 3.0, 'Japan': 3.3, 'US': 3.4, 'China': 3.6, 'global': 3.2 },
               water: 250,
               story: "Innovative plant-based leather alternative"
+            },
+            // NEW WOOL OPTIONS - ADDED AS REQUESTED
+            'wool-virgin': { 
+              co2: { 'Germany': 30.0, 'UK': 30.0, 'France': 28.0, 'Japan': 35.0, 'US': 40.0, 'China': 45.0, 'global': 30.0 },
+              water: 8000,
+              story: "Virgin wool from responsibly reared sheep"
+            },
+            'wool-recycled': { 
+              co2: { 'Germany': 2.0, 'UK': 2.5, 'France': 2.0, 'Japan': 3.0, 'US': 4.0, 'China': 5.0, 'global': 3.0 },
+              water: 2000,
+              story: "Recycled wool blend saving water and climate impact"
             }
           },
           energy: {
@@ -623,6 +634,9 @@
               <option value="nylon-recycled">Recycled Nylon</option>
               <option value="cotton">Cotton</option>
               <option value="polyester">Polyester</option>
+              <!-- NEW WOOL OPTIONS - ADDED AS REQUESTED -->
+              <option value="wool-virgin">Virgin Wool</option>
+              <option value="wool-recycled">Recycled Wool</option>
             </select>
             <input type="number" class="material-weight" placeholder="kg" step="0.01" value="0.8">
             <input type="number" class="material-water" placeholder="Actual water (L)" step="1" value="200">
