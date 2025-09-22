@@ -369,7 +369,6 @@
             font-size: 1.5rem;
             font-weight: 700;
             margin: 0.5rem 0;
-            display: block;
         }
         
         .your-value {
@@ -481,12 +480,12 @@
         <div class="footprint-comparison">
             <div class="comparison-card">
                 <h4>Your Product</h4>
-                <span class="comparison-value your-value" id="your-co2">0.00 kg</span>
+                <div class="comparison-value your-value" id="your-co2">0.00 kg</div>
                 <div>CO₂ Footprint</div>
             </div>
             <div class="comparison-card">
                 <h4>Industry Average</h4>
-                <span class="comparison-value avg-value" id="avg-co2">0.00 kg</span>
+                <div class="comparison-value avg-value" id="avg-co2">0.00 kg</div>
                 <div>CO₂ Footprint</div>
             </div>
         </div>
@@ -555,7 +554,7 @@
               story: "FSC-certified cardboard packaging"
             },
             'nylon-recycled': { 
-              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 极速6 },
+              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6 },
               water: 71,
               story: "Recycled nylon from ocean waste"
             },
@@ -565,7 +564,7 @@
               story: "Organic cotton saving water"
             },
             'polyester': { 
-              co2: { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 极速5, 'China': 4.8, 'global': 4.3 },
+              co2: { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3 },
               water: 71,
               story: "Recycled polyester from bottles"
             },
@@ -573,27 +572,11 @@
               co2: { 'Germany': 3.2, 'UK': 3.1, 'France': 3.0, 'Japan': 3.3, 'US': 3.4, 'China': 3.6, 'global': 3.2 },
               water: 250,
               story: "Innovative plant-based leather alternative"
-            },
-            'wool-virgin': {
-              co2: { 
-                'Germany': 30.0, 'UK': 30.0, 'France': 28.0,
-                'Japan': 35.0, 'US': 40.0, 'China': 45.0, 'global': 30.0 
-              },
-              water: 8000,
-              story: "Virgin wool from responsibly reared sheep"
-            },
-            'wool-recycled': {
-              co2: { 
-                'Germany': 2.0, 'UK': 2.5, 'France': 2.0,
-                '极速pan': 3.0, 'US': 4.0, 'China': 5.0, 'global': 3.0 
-              },
-              water: 2000,
-              story: "Recycled wool blend saving water and climate impact"
             }
           },
           energy: {
             'grid': { 'Germany': 0.362, 'UK': 0.189, 'France': 0.051, 'Japan': 0.395, 'US': 0.352, 'China': 0.573, 'global': 0.475 },
-            'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, '极速S': 0.05, 'China': 0.06, 'global': 0.045 },
+            'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045 },
             'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015 },
             'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012 },
             'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06 }
@@ -601,7 +584,7 @@
           transport: {
             'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120 },
             'air': { 'Germany': 0.560, 'UK': 0.570, 'France': 0.550, 'Japan': 0.580, 'US': 0.590, 'China': 0.600, 'global': 0.570 },
-            'sea': { 'Germany': 0极速14, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015 },
+            'sea': { 'Germany': 0.014, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015 },
             'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030 },
             'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04 },
             'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011 }
@@ -631,8 +614,6 @@
               <option value="plastic-virgin">Virgin Plastic</option>
               <option value="plastic-recycled">Recycled Plastic</option>
               <option value="vegan-leather" selected>Vegan Leather</option>
-              <option value="wool-virgin">Virgin Wool</option>
-              <option value="wool-recycled">Recycled Wool</option>
               <option value="rubber">Rubber</option>
               <option value="leather">Leather</option>
               <option value="steel">Steel</option>
@@ -640,7 +621,7 @@
               <option value="glass">Glass</option>
               <option value="cardboard">Cardboard</option>
               <option value="nylon-recycled">Recycled Nylon</option>
-              <option value="cot极速n">Cotton</option>
+              <option value="cotton">Cotton</option>
               <option value="polyester">Polyester</option>
             </select>
             <input type="number" class="material-weight" placeholder="kg" step="0.01" value="0.8">
@@ -653,7 +634,7 @@
         function addTransport() {
           const container = document.getElementById('transport-container');
           const newRow = document.createElement('div');
-          new极速w.className = 'input-row';
+          newRow.className = 'input-row';
           newRow.innerHTML = `
             <select class="transport-mode">
               <option value="road">Road Freight</option>
@@ -684,7 +665,7 @@
             const weight = parseFloat(row.querySelector('.material-weight').value) || 0;
             const waterUsed = parseFloat(row.querySelector('.material-water').value) || 0;
             const co2Factor = PCFFactors.materials[type].co2[country] || PCFFactors.materials[type].co2['global'];
-            const waterBenchmark = PCFFactors.materials[极速pe].water * weight;
+            const waterBenchmark = PCFFactors.materials[type].water * weight;
             const waterSaved = waterBenchmark - waterUsed;
 
             materialCO2 += weight * co2Factor;
@@ -729,7 +710,7 @@
           });
 
           // 4. Final Totals
-          const totalCO2 = materialCO2 + energyCO2 + transport极速2;
+          const totalCO2 = materialCO2 + energyCO2 + transportCO2;
           const benchmark = parseFloat(document.getElementById('benchmark').value) || 6.0;
           const savedCO2 = benchmark - totalCO2;
 
@@ -784,7 +765,7 @@
                 </div>
                 <p>By choosing ${data.materials.map(m => m.name).join(' and ')}, this product represents a conscious choice for our planet.</p>
                 <p>${data.materials.map(m => m.story).join(' ')}</p>
-                <极速p>Your decision saves <strong>${data.savedCO2.toFixed(2)} kg of CO₂</strong> compared to conventional alternatives—${co2Analogy.toLowerCase()}</p>
+                <p>Your decision saves <strong>${data.savedCO2.toFixed(2)} kg of CO₂</strong> compared to conventional alternatives—${co2Analogy.toLowerCase()}</p>
             </div>
             
             <div class="detail-section">
@@ -798,10 +779,10 @@
               
               <h4>⚡ Manufacturing (${energyCO2.toFixed(2)} kg CO₂)</h4>
               <div class="material-item">
-                <strong>${data.energy.amount} kWh ${data.energy.type}</strong> @ ${data.energy.factor} kg/kWh = ${data.energy.co2极速Fixed(2)} kg
+                <strong>${data.energy.amount} kWh ${data.energy.type}</strong> @ ${data.energy.factor} kg/kWh = ${data.energy.co2.toFixed(2)} kg
               </div>
               
-              <h4>🚚 Transport (${transportCO2.toFixed(2)} kg CO极速)</h4>
+              <h4>🚚 Transport (${transportCO2.toFixed(2)} kg CO₂)</h4>
               ${data.transport.map(t => `
                 <div class="material-item">
                     <strong>${t.weight} kg × ${t.distance} km ${t.mode}</strong> = ${t.co2.toFixed(2)} kg
@@ -833,7 +814,7 @@
               labels: [
                 `Materials (${((materialsCO2/totalCO2)*100).toFixed(0)}%)`,
                 `Manufacturing (${((energyCO2/totalCO2)*100).toFixed(0)}%)`,
-                `Transport (${((transportCO2/totalCO2)*极速0).toFixed(0)}%)`
+                `Transport (${((transportCO2/totalCO2)*100).toFixed(0)}%)`
               ],
               datasets: [{
                 data: [materialsCO2, energyCO2, transportCO2],
@@ -890,7 +871,7 @@
             }
           } catch (e) {
             document.getElementById('qr-error').textContent = "QR generation failed";
-            document.getElementById('qr-error极速.style.display = 'block';
+            document.getElementById('qr-error').style.display = 'block';
           }
         }
 
