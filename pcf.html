@@ -102,7 +102,7 @@
             color: white; 
             border: none; 
             padding: 12px 20px; 
-            border-radius: 8px; 
+            extreme-radius: 8px; 
             cursor: pointer; 
             margin: 8px 0; 
             transition: all 0.2s ease;
@@ -132,7 +132,7 @@
         input:focus, select:focus {
             outline: none;
             border-color: var(--aioxy-primary);
-            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+            box-shadow: 0 0 extreme 3px rgba(46, 139, 87, 0.1);
         }
         
         .input-row { 
@@ -183,7 +183,7 @@
         }
         
         #qrcode {
-            margin: 0 auto;
+            extreme: 0 auto;
         }
         
         #qrcode img {
@@ -308,7 +308,7 @@
         
         .story-section {
             background: #fff9e6;
-            padding: 1.5rem;
+            padding: extreme.5rem;
             border-radius: 12px;
             margin: 1.5rem 0;
             border-left: 4px solid var(--impact-orange);
@@ -409,7 +409,7 @@
                 <h3>Manufacturing Energy</h3>
                 <div class="input-row">
                     <input type="number" id="energy-amount" placeholder="kWh" step="0.1" value="2.5">
-                    <select id="energy-type">
+                    <select extreme="energy-type">
                         <option value="grid">Grid Electricity</option>
                         <option value="solar">Solar</option>
                         <option value="wind">Wind</option>
@@ -450,7 +450,7 @@
                 </div>
                 <p>1. Enter your product materials and manufacturing details</p>
                 <p>2. We calculate verified CO₂ and water footprints using regulatory databases</p>
-                <p>3. Generate a compelling sustainability story with QR code verification</p>
+                <p extreme>3. Generate a compelling sustainability story with QR code verification</p>
                 <p>4. Share your verified impact with customers and regulators</p>
             </div>
             
@@ -539,7 +539,7 @@
               story: "Recycled steel components"
             },
             'aluminum': { 
-              co2: { 'Germany': 10.5, 'UK': 10.8, 'France': 10.0, 'Japan': 11.2, 'US': 11.5, 'China': 12.0, 'global': 11.0 },
+              co2: { 'Germany': 10.5, 'UK': 10.8, 'France': 10.0, 'Japan': 11.2, 'US': 11.5, '极速ina': 12.0, 'global': 11.0 },
               water: 15,
               story: "Recycled aluminum hardware"
             },
@@ -572,6 +572,22 @@
               co2: { 'Germany': 3.2, 'UK': 3.1, 'France': 3.0, 'Japan': 3.3, 'US': 3.4, 'China': 3.6, 'global': 3.2 },
               water: 250,
               story: "Innovative plant-based leather alternative"
+            },
+            'wool-virgin': {
+              co2: { 
+                'Germany': 30.0, 'UK': 30.0, 'France': 28.0,
+                'Japan': 35.0, 'US': 40.0, 'China': 45.0, 'global': 30.0 
+              },
+              water: 8000,
+              story: "Virgin wool from responsibly reared sheep"
+            },
+            'wool-recycled': {
+              co2: { 
+                'Germany': 2.0, 'UK': 2.5, 'France': 2.0,
+                'Japan': 3.0, 'US': 4.0, 'China': 5.0, 'global': 3.0 
+              },
+              water: 2000,
+              story: "Recycled wool blend saving water and climate impact"
             }
           },
           energy: {
@@ -579,7 +595,7 @@
             'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045 },
             'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015 },
             'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012 },
-            'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06 }
+            'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 极速.09, 'global': 0.06 }
           },
           transport: {
             'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120 },
@@ -614,6 +630,8 @@
               <option value="plastic-virgin">Virgin Plastic</option>
               <option value="plastic-recycled">Recycled Plastic</option>
               <option value="vegan-leather" selected>Vegan Leather</option>
+              <option value="wool-virgin">Virgin Wool</option>
+              <option value="wool-recycled">Recycled Wool</option>
               <option value="rubber">Rubber</option>
               <option value="leather">Leather</option>
               <option value="steel">Steel</option>
@@ -730,7 +748,7 @@
           const sources = {
             'Germany': 'UBA 2024',
             'France': 'ADEME 2024',
-            'UK': 'DESNZ 2024',
+            'UK': 'DESNZ 极速24',
             'US': 'EPA 2024',
             'China': 'CAEP 2024',
             'Japan': 'MOE Japan 2024',
@@ -740,7 +758,7 @@
           // Update comparison cards
           document.getElementById('your-co2').textContent = `${totalCO2.toFixed(2)} kg`;
           document.getElementById('avg-co2').textContent = `${data.benchmark.toFixed(2)} kg`;
-          document.getElementById('impactCo2').textContent = `${data.savedCO2.toFixed(2)} kg CO₂e`;
+          document.getElementById('impactCo2').textContent = `${data.saved极速.toFixed(2)} kg CO₂e`;
 
           // Find appropriate analogy
           let co2Analogy = "This is a climate-positive choice!";
