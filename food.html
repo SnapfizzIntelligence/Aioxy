@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY Food Emissions Calculator</title>
+    <title>AIOXY Food Emissions Calculator v3.0 - Master Dataset</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <style>
@@ -12,6 +12,7 @@
             --primary-dark: #27ae60;
             --secondary: #3498db;
             --accent: #e74c3c;
+            --land-color: #d35400;
             --dark: #2c3e50;
             --light: #ecf0f1;
             --gray: #95a5a6;
@@ -176,218 +177,161 @@
             font-size: 0.8rem;
         }
         
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-        
-        .result-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: all 0.3s;
-        }
-        
-        .result-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-        }
-        
-        .emission-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--secondary);
-            margin: 1rem 0;
-            text-align: center;
-        }
-        
-        .comparison {
-            display: flex;
-            justify-content: space-between;
-            margin: 1.5rem 0;
-            padding: 1rem;
-            background: var(--light);
-            border-radius: 8px;
-        }
-        
-        .comparison-item {
-            text-align: center;
-            flex: 1;
-        }
-        
-        .comparison-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        
-        .chart-container {
-            height: 300px;
-            margin: 1.5rem 0;
-            position: relative;
-        }
-        
-        .qr-code {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: var(--light);
-            border-radius: 8px;
-        }
-        
-        #qrCanvas {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            background: white;
-            margin-top: 1rem;
-        }
-        
-        .narrative {
-            background: var(--light);
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
-            font-style: italic;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .impact-story {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        .impact-breakthrough {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: var(--shadow);
+        }
+        
+        .impact-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
             margin: 1.5rem 0;
+        }
+        
+        .metric {
+            background: rgba(255,255,255,0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
         
-        .impact-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 0.5rem 0;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        .metric-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
         }
         
-        .impact-label {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .certification-badges {
+            display: flex;
+            gap: 0.8rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         
         .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
+            padding: 0.8rem 1.2rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
             font-weight: 600;
-            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         
-        .badge-better {
-            background-color: var(--primary);
-            color: white;
-        }
+        .badge.organic { background: #27ae60; color: white; }
+        .badge.fairtrade { background: #e67e22; color: white; }
+        .badge.vegan { background: #2ecc71; color: white; }
         
-        .badge-worse {
-            background-color: var(--accent);
-            color: white;
-        }
-        
-        .scientific-badge {
-            background-color: #9b59b6;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 5px;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 3rem;
+        .comparison-highlight {
+            background: rgba(255,255,255,0.15);
             padding: 1.5rem;
-            color: var(--gray);
-            border-top: 1px solid #ddd;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            border-left: 4px solid rgba(255,255,255,0.5);
         }
         
-        .breakthrough-banner {
+        .triple-metric {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--primary);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 1rem 0;
+        }
+        
+        .metric-co2 { color: var(--secondary); }
+        .metric-water { color: #3498db; }
+        .metric-land { color: var(--land-color); }
+        
+        .protein-comparison {
             background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
             color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .comparison-item {
+            background: rgba(255,255,255,0.2);
             padding: 1rem;
-            text-align: center;
             border-radius: 8px;
-            margin-bottom: 2rem;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
-        }
-        
-        .data-source {
-            font-size: 0.8rem;
-            color: var(--gray);
-            margin-top: 0.5rem;
             text-align: center;
-        }
-        
-        .ingredient-category {
-            font-weight: 600;
-            color: var(--dark);
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.3rem;
-            border-bottom: 1px solid #ddd;
         }
         
         @media (max-width: 768px) {
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .ingredient-list {
                 grid-template-columns: 1fr;
             }
             
-            .comparison {
-                flex-direction: column;
-                gap: 1rem;
+            .impact-metrics, .triple-metric, .comparison-grid {
+                grid-template-columns: 1fr;
             }
+            
+            .certification-badges {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        .master-badge {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>AIOXY Food Emissions Calculator</h1>
-        <p class="tagline">Calculate the environmental impact of food products with country-specific accuracy</p>
+        <h1>🌱 AIOXY Food Calculator v3.0 <span class="master-badge">MASTER DATASET</span></h1>
+        <p class="tagline">30+ Ingredients • Carbon + Water + Land Metrics • Certification Ready • Consumer Stories</p>
     </header>
     
     <div class="container">
-        <div class="breakthrough-banner">
-            <h2>🚀 NOW WITH 30+ INGREDIENTS! Plant-based proteins, oils, sweeteners & more!</h2>
-        </div>
-        
         <div class="card">
             <h2 class="card-title">Product Information</h2>
             
             <div class="form-group">
                 <label for="productName">Product Name</label>
-                <input type="text" id="productName" placeholder="e.g., Vegan Burger" value="Vegan Burger">
+                <input type="text" id="productName" placeholder="e.g., Premium Pea Protein Shake" value="Premium Pea Protein Shake">
             </div>
             
             <div class="form-group">
                 <label for="country">Country of Origin</label>
                 <select id="country">
+                    <option value="US" selected>United States</option>
                     <option value="FR">France</option>
                     <option value="DE">Germany</option>
                     <option value="UK">United Kingdom</option>
                     <option value="IT">Italy</option>
-                    <option value="US" selected>United States</option>
                     <option value="CA">Canada</option>
                     <option value="AU">Australia</option>
                     <option value="NZ">New Zealand</option>
@@ -396,411 +340,264 @@
                 </select>
             </div>
             
-            <h3 style="margin: 1.5rem 0 1rem 0;">Ingredients</h3>
+            <h3 style="margin: 1.5rem 0 1rem 0;">Ingredients <span class="master-badge">30+ OPTIONS</span></h3>
             
             <div class="ingredient-list" id="ingredientList">
                 <div class="ingredient-item">
-                    <label>Ingredient <span class="scientific-badge">Verified Data</span></label>
+                    <label>Ingredient</label>
                     <select class="ingredient-select">
                         <optgroup label="Proteins">
                             <option value="beef">Beef</option>
+                            <option value="lamb">Lamb</option>
+                            <option value="pork">Pork</option>
                             <option value="poultry">Poultry (Chicken)</option>
-                            <option value="cheese">Cheese</option>
+                            <option value="fish_farmed">Fish (Farmed)</option>
                             <option value="milk">Dairy Milk</option>
-                            <option value="tofu" selected>Tofu (Soy)</option>
+                            <option value="cheese">Cheese</option>
+                            <option value="eggs">Eggs</option>
+                            <option value="tofu">Tofu (Soy)</option>
+                            <option value="soybeans">Soybeans</option>
                             <option value="lentils">Lentils</option>
                             <option value="chickpeas">Chickpeas</option>
-                            <option value="eggs">Eggs</option>
-                            <option value="poseidona_protein">Poseidona Protein</option>
-                        </optgroup>
-                        <optgroup label="Plant-based & Alternatives">
-                            <option value="almonds">Almonds</option>
-                            <option value="oats">Oats</option>
-                            <option value="plant_protein">Plant-Based Protein</option>
+                            <option value="pea_protein" selected>Pea Protein Isolate</option>
+                            <option value="mycoprotein">Mycoprotein</option>
+                            <option value="algal_protein">Algal Protein</option>
                         </optgroup>
                         <optgroup label="Grains & Staples">
+                            <option value="oats">Oats</option>
                             <option value="rice">Rice</option>
-                            <option value="wheat">Wheat (Bread)</option>
+                            <option value="wheat">Wheat</option>
+                            <option value="maize">Maize (Corn)</option>
                             <option value="potatoes">Potatoes</option>
                         </optgroup>
-                        <optgroup label="Oils & Fats">
-                            <option value="vegetable_oil">Vegetable Oil (General)</option>
-                            <option value="palm_oil">Palm Oil</option>
-                            <option value="rapeseed_oil">Rapeseed Oil</option>
-                        </optgroup>
-                        <optgroup label="Sweeteners">
-                            <option value="sugar">Sugar</option>
-                        </optgroup>
-                        <optgroup label="Vegetables">
-                            <option value="tomato">Tomato</option>
-                            <option value="lettuce">Lettuce</option>
+                        <optgroup label="Fruits & Vegetables">
+                            <option value="tomatoes">Tomatoes</option>
+                            <option value="bananas">Bananas</option>
+                            <option value="apples">Apples</option>
+                            <option value="oranges">Oranges</option>
                         </optgroup>
                         <optgroup label="Other">
-                            <option value="salt">Salt</option>
                             <option value="coffee">Coffee</option>
                             <option value="cocoa">Cocoa</option>
+                            <option value="sugar_cane">Sugar Cane</option>
                         </optgroup>
                     </select>
                     <label style="margin-top: 10px;">Quantity (kg)</label>
                     <input type="number" class="ingredient-quantity" value="0.15" step="0.01" min="0">
                     <button class="remove-btn">Remove</button>
                 </div>
-                <div class="ingredient-item">
-                    <label>Ingredient <span class="scientific-badge">Verified Data</span></label>
-                    <select class="ingredient-select">
-                        <optgroup label="Proteins">
-                            <option value="beef">Beef</option>
-                            <option value="poultry">Poultry (Chicken)</option>
-                            <option value="cheese">Cheese</option>
-                            <option value="milk">Dairy Milk</option>
-                            <option value="tofu">Tofu (Soy)</option>
-                            <option value="lentils">Lentils</option>
-                            <option value="chickpeas" selected>Chickpeas</option>
-                            <option value="eggs">Eggs</option>
-                            <option value="poseidona_protein">Poseidona Protein</option>
-                        </optgroup>
-                        <optgroup label="Plant-based & Alternatives">
-                            <option value="almonds">Almonds</option>
-                            <option value="oats">Oats</option>
-                            <option value="plant_protein">Plant-Based Protein</option>
-                        </optgroup>
-                        <optgroup label="Grains & Staples">
-                            <option value="rice">Rice</option>
-                            <option value="wheat">Wheat (Bread)</option>
-                            <option value="potatoes">Potatoes</option>
-                        </optgroup>
-                        <optgroup label="Oils & Fats">
-                            <option value="vegetable_oil">Vegetable Oil (General)</option>
-                            <option value="palm_oil">Palm Oil</option>
-                            <option value="rapeseed_oil">Rapeseed Oil</option>
-                        </optgroup>
-                        <optgroup label="Sweeteners">
-                            <option value="sugar">Sugar</option>
-                        </optgroup>
-                        <optgroup label="Vegetables">
-                            <option value="tomato">Tomato</option>
-                            <option value="lettuce">Lettuce</option>
-                        </optgroup>
-                        <optgroup label="Other">
-                            <option value="salt">Salt</option>
-                            <option value="coffee">Coffee</option>
-                            <option value="cocoa">Cocoa</option>
-                        </optgroup>
-                    </select>
-                    <label style="margin-top: 10px;">Quantity (kg)</label>
-                    <input type="number" class="ingredient-quantity" value="0.1" step="0.01" min="0">
-                    <button class="remove-btn">Remove</button>
-                </div>
             </div>
             
             <button id="addIngredient">+ Add Another Ingredient</button>
             
-            <h3 style="margin: 1.5rem 0 1rem 0;">Packaging</h3>
-            
-            <div class="form-group">
-                <label for="packagingType">Packaging Material</label>
-                <select id="packagingType">
-                    <option value="pet" selected>PET Plastic</option>
-                    <option value="hdpe">HDPE/PP Plastic</option>
-                    <option value="glass">Glass</option>
-                    <option value="aluminum">Aluminum</option>
-                    <option value="paper">Paper/Cardboard</option>
-                    <option value="none">None</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="packagingWeight">Packaging Weight (kg)</label>
-                <input type="number" id="packagingWeight" value="0.02" step="0.001" min="0">
-            </div>
-            
-            <h3 style="margin: 1.5rem 0 1rem 0;">Transport</h3>
-            
-            <div class="form-group">
-                <label for="transportDistance">Transport Distance (km)</label>
-                <input type="number" id="transportDistance" value="100" min="0">
-            </div>
-            
-            <div class="form-group">
-                <label for="transportMode">Transport Mode</label>
-                <select id="transportMode">
-                    <option value="sea">Sea Freight</option>
-                    <option value="road" selected>Road Freight (Truck)</option>
-                    <option value="rail">Rail Freight</option>
-                    <option value="air">Air Freight</option>
-                </select>
-            </div>
-            
-            <button id="calculateBtn" style="width: 100%; padding: 16px; margin-top: 1.5rem;">
-                Calculate Environmental Impact
+            <button id="calculateBtn" style="width: 100%; padding: 16px; margin-top: 2rem; font-size: 1.1rem;">
+                🚀 Generate Sustainability Passport
             </button>
-            
-            <div class="data-source">
-                Data sources: Poore & Nemecek (2018, Oxford), Our World in Data, WaterStat, Industry LCAs
-            </div>
         </div>
         
-        <div class="card" id="resultsSection">
-            <h2 class="card-title">Results for <span id="resultProductName">Vegan Burger</span></h2>
-            
-            <div class="narrative">
-                <p id="narrativeText">This Vegan burger from United States has a <span class="badge badge-better">lower carbon footprint</span> than the industry average. With 1.82 kg CO₂e compared to the average of 3.50 kg CO₂e, it represents a 48% reduction in emissions. The Tofu (Soy) contributes to 62% of the total emissions.</p>
-            </div>
-            
-            <div class="impact-story">
-                <div class="impact-value" id="impactCo2">1.68 kg CO₂e</div>
-                <div class="impact-label">Carbon Emissions Saved vs Industry Average</div>
-                <p>That's equivalent to charging your smartphone for 2.5 years!</p>
-            </div>
-            
-            <div class="results-grid">
-                <div class="result-card">
-                    <h3>Carbon Footprint <span class="scientific-badge">Verified Data</span></h3>
-                    <div class="emission-value" id="co2Result">1.82 kg CO₂e</div>
-                    <p>Industry Average: <span id="industryAverageCo2">3.50 kg CO₂e</span></p>
-                    
-                    <div class="comparison">
-                        <div class="comparison-item">
-                            <strong>Your Product</strong>
-                            <div class="comparison-value" id="productCo2">1.82 kg</div>
-                        </div>
-                        <div class="comparison-item">
-                            <strong>Industry Avg</strong>
-                            <div class="comparison-value" id="avgCo2">3.50 kg</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="result-card">
-                    <h3>Water Footprint <span class="scientific-badge">Verified Data</span></h3>
-                    <div class="emission-value" id="waterResult">485 L</div>
-                    <p>Industry Average: <span id="industryAverageWater">950 L</span></p>
-                    
-                    <div class="comparison">
-                        <div class="comparison-item">
-                            <strong>Your Product</strong>
-                            <div class="comparison-value" id="productWater">485 L</div>
-                        </div>
-                        <div class="comparison-item">
-                            <strong>Industry Avg</strong>
-                            <div class="comparison-value" id="avgWater">950 L</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <h3 style="margin: 2rem 0 1rem 0;">Emission Breakdown</h3>
-            <div class="chart-container">
-                <canvas id="emissionChart"></canvas>
-            </div>
-            
-            <h3 style="margin: 2rem 0 1rem 0;">Water Usage Breakdown</h3>
-            <div class="chart-container">
-                <canvas id="waterChart"></canvas>
-            </div>
-            
-            <div class="qr-code">
-                <h3>Product Passport QR Code</h3>
-                <p>Scan to view environmental impact details</p>
-                <canvas id="qrCanvas"></canvas>
-            </div>
-        </div>
+        <div id="resultsSection"></div>
     </div>
-    
-    <footer>
-        <p>AIOXY Food Emissions Calculator v2.1 | Now with 30+ Ingredients | Powered by Oxford University Research | Partner Project</p>
-    </footer>
 
     <script>
-        // ================== EXPANDED DATASET WITH 30+ INGREDIENTS ==================
-        
-        // Peer-verified emission factors (kg CO₂e per kg product)
-        const emissionFactors = {
-            // Proteins
-            beef: 60.0,
-            poultry: 6.0,
-            cheese: 21.0,
-            milk: 2.4,
-            eggs: 4.5,
-            tofu: 0.84,
-            lentils: 0.88,
-            chickpeas: 0.49,
-            plant_protein: 1.20,
-            poseidona_protein: 1.8,   // algal protein (Poseidona)
-
-            // Plant-based & Alternatives
-            almonds: 2.96,
-            oats: 0.71,
-
-            // Grains & Staples
-            rice: 4.0,
-            wheat: 2.5,
-            potatoes: 0.29,
-
-            // Oils & Fats
-            vegetable_oil: 3.81,
-            palm_oil: 2.37,
-            rapeseed_oil: 2.49,
-
-            // Sweeteners
-            sugar: 0.88,
-
-            // Vegetables
-            tomato: 1.4,
-            lettuce: 0.56,
-
-            // Other
-            salt: 0.22,
-            coffee: 17.0,
-            cocoa: 5.1
+        // ================== MASTER DATASET v3.0 - COMPLETE ==================
+        const foodMasterDataset = {
+            "beef": { 
+                "co2e": 60.0, "water": 15415, "land": 326,
+                "analogies": {"co2": "2 days of powering a home", "water": "2 weeks of family water", "land": "3 football fields"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+            },
+            "lamb": { 
+                "co2e": 24.0, "water": 10413, "land": 185,
+                "analogies": {"co2": "1,500 km car drive", "water": "80 showers", "land": "2 football fields"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+            },
+            "pork": { 
+                "co2e": 7.0, "water": 6000, "land": 17,
+                "analogies": {"co2": "30 km car drive", "water": "40 bathtubs", "land": "half tennis court"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+            },
+            "poultry": { 
+                "co2e": 6.0, "water": 4325, "land": 12,
+                "analogies": {"co2": "planting a tree for a year", "water": "25 bathtubs", "land": "basketball court"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+            },
+            "fish_farmed": { 
+                "co2e": 5.0, "water": 3000, "land": 8,
+                "analogies": {"co2": "20 km car drive", "water": "20 bathtubs", "land": "half basketball court"},
+                "certification": {"organicEligible": false, "fairTradeRelevant": true, "veganRelevant": false}
+            },
+            "milk": { 
+                "co2e": 2.4, "water": 1021, "land": 9,
+                "analogies": {"co2": "4 km petrol car", "water": "3 months drinking water", "land": "basketball court"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+            },
+            "cheese": { 
+                "co2e": 21.0, "water": 3178, "land": 88,
+                "analogies": {"co2": "40 km car drive", "water": "25 bathtubs", "land": "football field"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+            },
+            "eggs": { 
+                "co2e": 4.5, "water": 3300, "land": 7,
+                "analogies": {"co2": "20 km car drive", "water": "20 bathtubs", "land": "2 yoga mats"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+            },
+            "tofu": { 
+                "co2e": 0.84, "water": 900, "land": 3.0,
+                "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "soybeans": { 
+                "co2e": 2.0, "water": 1800, "land": 5,
+                "analogies": {"co2": "10 km car drive", "water": "10 bathtubs", "land": "2 yoga mats"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "lentils": { 
+                "co2e": 0.88, "water": 1250, "land": 3.5,
+                "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "chickpeas": { 
+                "co2e": 0.49, "water": 1100, "land": 3.0,
+                "analogies": {"co2": "6 months phone charging", "water": "3 months drinking water", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "pea_protein": { 
+                "co2e": 1.2, "water": 900, "land": 2.5,
+                "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "mycoprotein": { 
+                "co2e": 1.6, "water": 500, "land": 2,
+                "analogies": {"co2": "10h lightbulb", "water": "2 showers", "land": "small desk"},
+                "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "algal_protein": { 
+                "co2e": 1.8, "water": 250, "land": 1.0,
+                "analogies": {"co2": "25h lightbulb", "water": "5-min shower", "land": "yoga mat"},
+                "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "oats": { 
+                "co2e": 2.5, "water": 1800, "land": 10,
+                "analogies": {"co2": "15 km car drive", "water": "12 bathtubs", "land": "half tennis court"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "rice": { 
+                "co2e": 4.0, "water": 2500, "land": 25,
+                "analogies": {"co2": "20 km car drive", "water": "25 bathtubs", "land": "half tennis court"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "wheat": { 
+                "co2e": 1.4, "water": 1827, "land": 7,
+                "analogies": {"co2": "7 km car drive", "water": "10 bathtubs", "land": "2 yoga mats"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "maize": { 
+                "co2e": 1.0, "water": 1200, "land": 6,
+                "analogies": {"co2": "5 km car drive", "water": "7 bathtubs", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "potatoes": { 
+                "co2e": 0.46, "water": 290, "land": 1,
+                "analogies": {"co2": "2 km car drive", "water": "2 bathtubs", "land": "desk"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "tomatoes": { 
+                "co2e": 2.1, "water": 214, "land": 3,
+                "analogies": {"co2": "10 km car drive", "water": "1 bathtub", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+            },
+            "bananas": { 
+                "co2e": 0.86, "water": 790, "land": 2,
+                "analogies": {"co2": "4 km car drive", "water": "5 bathtubs", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "apples": { 
+                "co2e": 0.43, "water": 822, "land": 1,
+                "analogies": {"co2": "2 km car drive", "water": "5 bathtubs", "land": "desk"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "oranges": { 
+                "co2e": 0.42, "water": 560, "land": 1,
+                "analogies": {"co2": "2 km car drive", "water": "3 bathtubs", "land": "desk"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "coffee": { 
+                "co2e": 17.0, "water": 18900, "land": 22,
+                "analogies": {"co2": "40 km car drive", "water": "100 days laundry", "land": "half tennis court"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "cocoa": { 
+                "co2e": 5.1, "water": 27000, "land": 20,
+                "analogies": {"co2": "planting a tree for a year", "water": "100 days laundry", "land": "half tennis court"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            },
+            "sugar_cane": { 
+                "co2e": 0.6, "water": 1500, "land": 2,
+                "analogies": {"co2": "3 km car drive", "water": "8 bathtubs", "land": "yoga mat"},
+                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+            }
         };
 
-        // Peer-verified water factors (liters per kg product)
-        const waterFactors = {
-            // Proteins
-            beef: 15415,
-            poultry: 4325,
-            cheese: 3178,
-            milk: 1021,
-            eggs: 3300,
-            tofu: 900,
-            lentils: 1250,
-            chickpeas: 1100,
-            plant_protein: 800,
-            poseidona_protein: 250,   // algal protein (Poseidona)
-
-            // Plant-based & Alternatives
-            almonds: 8100,
-            oats: 600,
-
-            // Grains & Staples
-            rice: 2500,
-            wheat: 1608,
-            potatoes: 290,
-
-            // Oils & Fats
-            vegetable_oil: 2000,
-            palm_oil: 1800,
-            rapeseed_oil: 1700,
-
-            // Sweeteners
-            sugar: 1500,
-
-            // Vegetables
-            tomato: 214,
-            lettuce: 240,
-
-            // Other
-            salt: 100,
-            coffee: 18900,
-            cocoa: 27000
-        };
-
-        // Country-specific modifiers (based on energy mix, agricultural practices, etc.)
-        const gridModifiers = {
-            FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38,
-            CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
-        };
-
-        // Country-specific agriculture modifiers
-        const agricultureModifiers = {
-            FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00,
-            CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
-        };
-
-        // Transport factors (kg CO₂e per ton-km)
-        const transportFactors = {
-            sea: 0.013, rail: 0.020, road: 0.062, air: 0.600
-        };
-
-        // Packaging factors (kg CO₂e per kg material)
-        const packagingFactors = {
-            pet: 2.7, hdpe: 2.0, glass: 1.2, aluminum: 10.0, paper: 0.8, none: 0
-        };
-
-        // Industry averages for common products (kg CO₂e)
+        // Industry averages for common products
         const industryAverages = {
-            "Beef burger": { co2: 9.25, water: 2200 },
-            "Chicken burger": { co2: 4.20, water: 1800 },
-            "Vegan Burger": { co2: 3.50, water: 950 },
-            "Cheese pizza": { co2: 6.80, water: 1500 },
-            "Veggie Wrap": { co2: 1.80, water: 450 },
-            "Rice Bowl": { co2: 2.10, water: 800 },
-            "Salad": { co2: 0.85, water: 300 }
+            "Beef burger": { co2: 9.25, water: 2200, land: 0.5 },
+            "Chicken burger": { co2: 4.20, water: 1800, land: 0.1 },
+            "Vegan Burger": { co2: 3.50, water: 950, land: 0.35 },
+            "Cheese pizza": { co2: 6.80, water: 1500, land: 1.2 },
+            "Veggie Wrap": { co2: 1.80, water: 450, land: 0.15 },
+            "Rice Bowl": { co2: 2.10, water: 800, land: 0.3 },
+            "Salad": { co2: 0.85, water: 300, land: 0.08 },
+            "Premium Pea Protein Shake": { co2: 3.50, water: 950, land: 0.35 },
+            "Protein Bar": { co2: 2.80, water: 700, land: 0.25 }
         };
-
-        // Analogies for CO2 savings
-        const co2Analogies = [
-            { threshold: 0.5, text: "That's like charging your smartphone for 6 months!" },
-            { threshold: 1.0, text: "That's equivalent to driving 4 fewer miles in a car!" },
-            { threshold: 2.0, text: "That's like charging your smartphone for 2.5 years!" },
-            { threshold: 5.0, text: "That's equivalent to planting 1 tree and letting it grow for 10 years!" },
-            { threshold: 10.0, text: "That's like not driving your car for 40 miles!" },
-            { threshold: 20.0, text: "That's equivalent to the carbon absorbed by 2 trees in a year!" },
-            { threshold: 50.0, text: "That's like saving enough energy to power a home for 2 days!" }
-        ];
-
-        // Analogies for water savings
-        const waterAnalogies = [
-            { threshold: 100, text: "That's enough water for 5 people to drink for a day!" },
-            { threshold: 500, text: "That's like saving 10 full bathtubs of water!" },
-            { threshold: 1000, text: "That's enough water for 50 people to drink for a day!" },
-            { threshold: 5000, text: "That's like saving a small swimming pool of water!" },
-            { threshold: 10000, text: "That's enough water for 500 people to drink for a day!" }
-        ];
 
         document.addEventListener('DOMContentLoaded', function() {
             const addIngredientBtn = document.getElementById('addIngredient');
             const calculateBtn = document.getElementById('calculateBtn');
             const ingredientList = document.getElementById('ingredientList');
-            
-            let ingredientCount = 2;
+            const resultsSection = document.getElementById('resultsSection');
             
             // Add ingredient row
             addIngredientBtn.addEventListener('click', function() {
-                ingredientCount++;
                 const newIngredient = document.createElement('div');
                 newIngredient.className = 'ingredient-item';
                 newIngredient.innerHTML = `
-                    <label>Ingredient <span class="scientific-badge">Verified Data</span></label>
+                    <label>Ingredient</label>
                     <select class="ingredient-select">
                         <optgroup label="Proteins">
                             <option value="beef">Beef</option>
+                            <option value="lamb">Lamb</option>
+                            <option value="pork">Pork</option>
                             <option value="poultry">Poultry (Chicken)</option>
-                            <option value="cheese">Cheese</option>
+                            <option value="fish_farmed">Fish (Farmed)</option>
                             <option value="milk">Dairy Milk</option>
+                            <option value="cheese">Cheese</option>
+                            <option value="eggs">Eggs</option>
                             <option value="tofu">Tofu (Soy)</option>
+                            <option value="soybeans">Soybeans</option>
                             <option value="lentils">Lentils</option>
                             <option value="chickpeas">Chickpeas</option>
-                            <option value="eggs">Eggs</option>
-                            <option value="poseidona_protein">Poseidona Protein</option>
-                        </optgroup>
-                        <optgroup label="Plant-based & Alternatives">
-                            <option value="almonds">Almonds</option>
-                            <option value="oats">Oats</option>
-                            <option value="plant_protein">Plant-Based Protein</option>
+                            <option value="pea_protein">Pea Protein Isolate</option>
+                            <option value="mycoprotein">Mycoprotein</option>
+                            <option value="algal_protein">Algal Protein</option>
                         </optgroup>
                         <optgroup label="Grains & Staples">
+                            <option value="oats">Oats</option>
                             <option value="rice">Rice</option>
-                            <option value="wheat">Wheat (Bread)</option>
+                            <option value="wheat">Wheat</option>
+                            <option value="maize">Maize (Corn)</option>
                             <option value="potatoes">Potatoes</option>
                         </optgroup>
-                        <optgroup label="Oils & Fats">
-                            <option value="vegetable_oil">Vegetable Oil (General)</option>
-                            <option value="palm_oil">Palm Oil</option>
-                            <option value="rapeseed_oil">Rapeseed Oil</option>
-                        </optgroup>
-                        <optgroup label="Sweeteners">
-                            <option value="sugar">Sugar</option>
-                        </optgroup>
-                        <optgroup label="Vegetables">
-                            <option value="tomato">Tomato</option>
-                            <option value="lettuce">Lettuce</option>
+                        <optgroup label="Fruits & Vegetables">
+                            <option value="tomatoes">Tomatoes</option>
+                            <option value="bananas">Bananas</option>
+                            <option value="apples">Apples</option>
+                            <option value="oranges">Oranges</option>
                         </optgroup>
                         <optgroup label="Other">
-                            <option value="salt">Salt</option>
                             <option value="coffee">Coffee</option>
                             <option value="cocoa">Cocoa</option>
+                            <option value="sugar_cane">Sugar Cane</option>
                         </optgroup>
                     </select>
                     <label style="margin-top: 10px;">Quantity (kg)</label>
@@ -809,7 +606,6 @@
                 `;
                 ingredientList.appendChild(newIngredient);
                 
-                // Add event listener to the remove button
                 newIngredient.querySelector('.remove-btn').addEventListener('click', function() {
                     if (document.querySelectorAll('.ingredient-item').length > 1) {
                         newIngredient.remove();
@@ -846,423 +642,167 @@
                     ingredients.push({ type, quantity });
                 }
                 
-                // Get packaging data
-                const packagingType = document.getElementById('packagingType').value;
-                const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
-                
-                // Get transport data
-                const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
-                const transportMode = document.getElementById('transportMode').value;
-                
                 // Calculate impacts
-                const result = computeFoodImpact(
-                    ingredients, 
-                    country, 
-                    packagingType, 
-                    packagingWeight,
-                    transportMode,
-                    transportDistance
-                );
+                const result = computeFoodImpact(ingredients);
+                const industryAvg = industryAverages[productName] || { co2: 3.5, water: 950, land: 0.35 };
                 
                 // Format and display results
-                displayResults(productName, result, country);
+                displayResults(productName, result, industryAvg, country);
             });
             
-            function computeFoodImpact(ingredients, country, packagingType, packagingWeight, transportMode, transportDistance) {
+            function computeFoodImpact(ingredients) {
                 let totalCo2 = 0;
                 let totalWater = 0;
-                const co2Breakdown = {
-                    ingredients: 0,
-                    packaging: 0,
-                    transport: 0
-                };
+                let totalLand = 0;
                 
-                const waterBreakdown = {};
-                const ingredientBreakdown = {};
-                
-                // Calculate ingredient impacts
                 ingredients.forEach(ingredient => {
                     if (ingredient.quantity > 0) {
-                        const baseCo2 = emissionFactors[ingredient.type] * ingredient.quantity;
-                        const baseWater = (waterFactors[ingredient.type] || 0) * ingredient.quantity;
-                        
-                        // Apply country-specific modifiers
-                        const agModifier = agricultureModifiers[country] || 1.0;
-                        const gridModifier = gridModifiers[country] || 0.38;
-                        
-                        // Calculate with country-specific adjustments
-                        const agShare = baseCo2 * 0.7 * agModifier;
-                        const processingShare = baseCo2 * 0.2 * gridModifier;
-                        const retailShare = baseCo2 * 0.1;
-                        
-                        const ingredientCo2 = agShare + processingShare + retailShare;
-                        
-                        totalCo2 += ingredientCo2;
-                        totalWater += baseWater;
-                        
-                        co2Breakdown.ingredients += ingredientCo2;
-                        waterBreakdown[ingredient.type] = (waterBreakdown[ingredient.type] || 0) + baseWater;
-                        ingredientBreakdown[ingredient.type] = (ingredientBreakdown[ingredient.type] || 0) + ingredientCo2;
+                        const data = foodMasterDataset[ingredient.type];
+                        totalCo2 += data.co2e * ingredient.quantity;
+                        totalWater += data.water * ingredient.quantity;
+                        totalLand += data.land * ingredient.quantity;
                     }
                 });
                 
-                // Calculate packaging impact
-                const packagingCo2 = packagingFactors[packagingType] * packagingWeight;
-                totalCo2 += packagingCo2;
-                co2Breakdown.packaging = packagingCo2;
-                
-                // Calculate transport impact (convert product weight to tons)
-                const totalWeight = ingredients.reduce((sum, ing) => sum + ing.quantity, 0);
-                const transportCo2 = transportFactors[transportMode] * (totalWeight / 1000) * transportDistance;
-                totalCo2 += transportCo2;
-                co2Breakdown.transport = transportCo2;
-                
-                return {
-                    totalCo2,
-                    totalWater,
-                    co2Breakdown,
-                    waterBreakdown,
-                    ingredientBreakdown
+                return { totalCo2, totalWater, totalLand };
+            }
+            
+            function displayResults(productName, result, industryAvg, country) {
+                const savings = {
+                    co2: industryAvg.co2 - result.totalCo2,
+                    water: industryAvg.water - result.totalWater,
+                    land: industryAvg.land - result.totalLand
                 };
-            }
-            
-            function displayResults(productName, result, country) {
-                // Update product name
-                document.getElementById('resultProductName').textContent = productName;
                 
-                // Format and display CO2 result
-                const co2Result = document.getElementById('co2Result');
-                co2Result.textContent = `${result.totalCo2.toFixed(2)} kg CO₂e`;
+                const mainIngredient = document.querySelector('.ingredient-select').value;
                 
-                // Format and display water result
-                const waterResult = document.getElementById('waterResult');
-                waterResult.textContent = `${result.totalWater.toFixed(0)} L`;
-                
-                // Find industry average or use default
-                const industryAvg = industryAverages[productName] || { co2: result.totalCo2 * 0.9, water: result.totalWater * 0.9 };
-                
-                document.getElementById('industryAverageCo2').textContent = `${industryAvg.co2.toFixed(2)} kg CO₂e`;
-                document.getElementById('industryAverageWater').textContent = `${industryAvg.water.toFixed(0)} L`;
-                
-                document.getElementById('productCo2').textContent = `${result.totalCo2.toFixed(2)} kg`;
-                document.getElementById('avgCo2').textContent = `${industryAvg.co2.toFixed(2)} kg`;
-                
-                document.getElementById('productWater').textContent = `${result.totalWater.toFixed(0)} L`;
-                document.getElementById('avgWater').textContent = `${industryAvg.water.toFixed(0)} L`;
-                
-                // Calculate savings and generate narrative
-                const co2Saved = industryAvg.co2 - result.totalCo2;
-                const waterSaved = industryAvg.water - result.totalWater;
-                
-                document.getElementById('impactCo2').textContent = `${co2Saved.toFixed(2)} kg CO₂e`;
-                
-                generateNarrative(productName, result, country, industryAvg, co2Saved, waterSaved);
-                
-                // Create charts
-                createEmissionChart(result.co2Breakdown);
-                createWaterChart(result.waterBreakdown);
-                
-                // Generate QR code
-                generateQRCode(productName, result, country, co2Saved, waterSaved);
-            }
-            
-            function generateNarrative(productName, result, country, industryAvg, co2Saved, waterSaved) {
-                const narrativeText = document.getElementById('narrativeText');
-                
-                let narrative = '';
-                const countryName = getCountryName(country);
-                const percentageDiff = ((result.totalCo2 - industryAvg.co2) / industryAvg.co2 * 100).toFixed(0);
-                
-                // Find the main contributing ingredient
-                let mainIngredient = '';
-                let mainContribution = 0;
-                
-                if (result.ingredientBreakdown) {
-                    for (const [ingredient, value] of Object.entries(result.ingredientBreakdown)) {
-                        if (value > mainContribution) {
-                            mainContribution = value;
-                            mainIngredient = ingredient;
-                        }
-                    }
+                resultsSection.innerHTML = `
+                    <div class="card">
+                        <h2 class="card-title">🌱 Sustainability Passport: ${productName}</h2>
+                        ${generateImpactNarrative(productName, mainIngredient, result, savings, industryAvg)}
+                    </div>
                     
-                    const contributionPercent = ((mainContribution / result.totalCo2) * 100).toFixed(0);
-                    mainIngredient = formatIngredientName(mainIngredient);
+                    <div class="card">
+                        <h2 class="card-title">📊 Environmental Metrics</h2>
+                        <div class="triple-metric">
+                            <div class="metric-card">
+                                <h3>Carbon Footprint</h3>
+                                <div class="metric-value metric-co2">${result.totalCo2.toFixed(2)} kg CO₂e</div>
+                                <p>Industry Average: ${industryAvg.co2.toFixed(2)} kg</p>
+                                <div style="color: ${savings.co2 > 0 ? '#27ae60' : '#e74c3c'}; font-weight: bold;">
+                                    ${savings.co2 > 0 ? '✅ ' : '⚠️ '}${Math.abs(savings.co2).toFixed(2)} kg ${savings.co2 > 0 ? 'saved' : 'more'}
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <h3>Water Usage</h3>
+                                <div class="metric-value metric-water">${result.totalWater.toFixed(0)} L</div>
+                                <p>Industry Average: ${industryAvg.water.toFixed(0)} L</p>
+                                <div style="color: ${savings.water > 0 ? '#27ae60' : '#e74c3c'}; font-weight: bold;">
+                                    ${savings.water > 0 ? '✅ ' : '⚠️ '}${Math.abs(savings.water).toFixed(0)} L ${savings.water > 0 ? 'saved' : 'more'}
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <h3>Land Use</h3>
+                                <div class="metric-value metric-land">${result.totalLand.toFixed(2)} m²-year</div>
+                                <p>Industry Average: ${industryAvg.land.toFixed(2)} m²-year</p>
+                                <div style="color: ${savings.land > 0 ? '#27ae60' : '#e74c3c'}; font-weight: bold;">
+                                    ${savings.land > 0 ? '✅ ' : '⚠️ '}${Math.abs(savings.land).toFixed(2)} m²-year ${savings.land > 0 ? 'saved' : 'more'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
-                    if (result.totalCo2 < industryAvg.co2) {
-                        narrative = `This ${productName} from ${countryName} has a <span class="badge badge-better">lower carbon footprint</span> than the industry average. `;
-                        narrative += `With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, `;
-                        narrative += `it represents a ${Math.abs(percentageDiff)}% reduction in emissions. The ${mainIngredient} contributes to ${contributionPercent}% of the total emissions.`;
-                    } else {
-                        narrative = `This ${productName} from ${countryName} has a <span class="badge badge-worse">higher carbon footprint</span> than the industry average. `;
-                        narrative += `With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, `;
-                        narrative += `it represents a ${percentageDiff}% increase in emissions. The ${mainIngredient} contributes to ${contributionPercent}% of the total emissions.`;
-                    }
-                } else {
-                    if (result.totalCo2 < industryAvg.co2) {
-                        narrative = `This ${productName} from ${countryName} has a <span class="badge badge-better">lower carbon footprint</span> than the industry average. `;
-                        narrative += `With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, `;
-                        narrative += `it represents a ${Math.abs(percentageDiff)}% reduction in emissions.`;
-                    } else {
-                        narrative = `This ${productName} from ${countryName} has a <span class="badge badge-worse">higher carbon footprint</span> than the industry average. `;
-                        narrative += `With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, `;
-                        narrative += `it represents a ${percentageDiff}% increase in emissions.`;
-                    }
-                }
-                
-                narrativeText.innerHTML = narrative;
-                
-                // Add impact analogy
-                let co2Analogy = "This is a climate-positive choice!";
-                for (let i = co2Analogies.length - 1; i >= 0; i--) {
-                    if (co2Saved >= co2Analogies[i].threshold) {
-                        co2Analogy = co2Analogies[i].text;
-                        break;
-                    }
-                }
-                
-                document.querySelector('.impact-story p').textContent = co2Analogy;
+                    ${generateProteinComparison(mainIngredient)}
+                `;
             }
             
-            function getCountryName(code) {
-                const countries = {
-                    FR: 'France', DE: 'Germany', UK: 'United Kingdom', IT: 'Italy', US: 'United States',
-                    CA: 'Canada', AU: 'Australia', NZ: 'New Zealand', BR: 'Brazil', CN: 'China'
-                };
-                return countries[code];
+            function generateImpactNarrative(productName, mainIngredient, result, savings, industryAvg) {
+                const ingredientData = foodMasterDataset[mainIngredient];
+                const co2Reduction = ((1 - (result.totalCo2 / industryAvg.co2)) * 100).toFixed(1);
+                
+                return `
+                    <div class="impact-breakthrough">
+                        <h3>🚀 Sustainability Breakthrough Achieved!</h3>
+                        <p>Your <strong>${productName}</strong> demonstrates exceptional environmental leadership:</p>
+                        
+                        <div class="impact-metrics">
+                            <div class="metric">
+                                <span class="metric-icon">💨</span>
+                                <strong>${savings.co2.toFixed(2)} kg CO₂e saved</strong>
+                                <small>${ingredientData.analogies.co2}</small>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-icon">💧</span>
+                                <strong>${savings.water.toFixed(0)} liters water saved</strong>
+                                <small>${ingredientData.analogies.water}</small>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-icon">🌍</span>
+                                <strong>${savings.land.toFixed(2)} m²-year land preserved</strong>
+                                <small>${ingredientData.analogies.land}</small>
+                            </div>
+                        </div>
+                        
+                        ${generateCertificationBadges(mainIngredient)}
+                        
+                        <div class="comparison-highlight">
+                            <h4>📈 Market Advantage</h4>
+                            <p>Your product achieves <strong>${co2Reduction}% reduction</strong> in carbon footprint compared to industry average.</p>
+                            <p>This represents a <strong>competitive sustainability advantage</strong> that resonates with conscious consumers.</p>
+                        </div>
+                    </div>
+                `;
             }
             
-            function formatIngredientName(ingredient) {
-                const names = {
-                    beef: "Beef",
-                    poultry: "Poultry",
-                    cheese: "Cheese",
-                    milk: "Dairy Milk",
-                    tofu: "Tofu (Soy)",
-                    lentils: "Lentils",
-                    chickpeas: "Chickpeas",
-                    eggs: "Eggs",
-                    almonds: "Almonds",
-                    oats: "Oats",
-                    plant_protein: "Plant-Based Protein",
-                    poseidona_protein: "Poseidona Protein",
-                    rice: "Rice",
-                    wheat: "Wheat",
-                    potatoes: "Potatoes",
-                    vegetable_oil: "Vegetable Oil",
-                    palm_oil: "Palm Oil",
-                    rapeseed_oil: "Rapeseed Oil",
-                    sugar: "Sugar",
-                    tomato: "Tomato",
-                    lettuce: "Lettuce",
-                    salt: "Salt",
-                    coffee: "Coffee",
-                    cocoa: "Cocoa"
-                };
-                return names[ingredient] || ingredient;
+            function generateCertificationBadges(ingredientType) {
+                const certs = foodMasterDataset[ingredientType].certification;
+                let badges = '<div class="certification-badges">';
+                
+                if (certs.organicEligible) badges += '<span class="badge organic">🌿 Organic Eligible</span>';
+                if (certs.fairTradeRelevant) badges += '<span class="badge fairtrade">⚖️ FairTrade Ready</span>';
+                if (certs.veganRelevant) badges += '<span class="badge vegan">🌱 Vegan Certified</span>';
+                
+                badges += '</div>';
+                return badges;
             }
             
-            function createEmissionChart(breakdown) {
-                const ctx = document.getElementById('emissionChart').getContext('2d');
+            function generateProteinComparison(plantProtein, animalProtein = 'beef') {
+                const plantData = foodMasterDataset[plantProtein];
+                const animalData = foodMasterDataset[animalProtein];
                 
-                if (window.emissionChartInstance) {
-                    window.emissionChartInstance.destroy();
-                }
+                const co2Reduction = ((1 - plantData.co2e / animalData.co2e) * 100).toFixed(1);
+                const waterReduction = ((1 - plantData.water / animalData.water) * 100).toFixed(1);
+                const landReduction = ((1 - plantData.land / animalData.land) * 100).toFixed(1);
                 
-                window.emissionChartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Ingredients', 'Packaging', 'Transport'],
-                        datasets: [{
-                            data: [breakdown.ingredients, breakdown.packaging, breakdown.transport],
-                            backgroundColor: [
-                                '#2ecc71',
-                                '#3498db',
-                                '#e74c3c'
-                            ],
-                            borderWidth: 1,
-                            hoverOffset: 12
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    font: {
-                                        size: 14
-                                    },
-                                    padding: 20
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `${context.label}: ${context.raw.toFixed(2)} kg CO₂e (${((context.raw / (breakdown.ingredients + breakdown.packaging + breakdown.transport)) * 100).toFixed(1)}%)`;
-                                    }
-                                }
-                            }
-                        },
-                        cutout: '60%'
-                    }
-                });
+                return `
+                    <div class="card">
+                        <h2 class="card-title">🥩 vs 🌱 Protein Comparison</h2>
+                        <div class="protein-comparison">
+                            <h3>Choosing ${plantProtein.replace('_', ' ')} over ${animalProtein} saves:</h3>
+                            <div class="comparison-grid">
+                                <div class="comparison-item">
+                                    <strong>${co2Reduction}%</strong>
+                                    <div>Carbon Emissions</div>
+                                </div>
+                                <div class="comparison-item">
+                                    <strong>${waterReduction}%</strong>
+                                    <div>Water Usage</div>
+                                </div>
+                                <div class="comparison-item">
+                                    <strong>${landReduction}%</strong>
+                                    <div>Land Use</div>
+                                </div>
+                            </div>
+                            <p style="margin-top: 1rem; font-style: italic;">This dramatic reduction showcases the power of plant-based choices for planetary health.</p>
+                        </div>
+                    </div>
+                `;
             }
             
-            function createWaterChart(breakdown) {
-                const ctx = document.getElementById('waterChart').getContext('2d');
-                
-                // Prepare data for water chart
-                const labels = [];
-                const data = [];
-                const colors = [
-                    '#2ecc71', '#3498db', '#e74c3c', '#f1c40f', '#9b59b6', 
-                    '#1abc9c', '#d35400', '#34495e', '#16a085', '#27ae60'
-                ];
-                
-                for (const [ingredient, water] of Object.entries(breakdown)) {
-                    if (water > 0) {
-                        labels.push(formatIngredientName(ingredient));
-                        data.push(water);
-                    }
-                }
-                
-                if (window.waterChartInstance) {
-                    window.waterChartInstance.destroy();
-                }
-                
-                window.waterChartInstance = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: data,
-                            backgroundColor: colors.slice(0, labels.length),
-                            borderWidth: 1,
-                            hoverOffset: 12
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    font: {
-                                        size: 14
-                                    },
-                                    padding: 20
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = data.reduce((a, b) => a + b, 0);
-                                        return `${context.label}: ${context.raw.toFixed(0)} L (${((context.raw / total) * 100).toFixed(1)}%)`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-            
-            function generateQRCode(productName, result, country, co2Saved, waterSaved) {
-                const qrCanvas = document.getElementById('qrCanvas');
-                const countryName = getCountryName(country);
-                
-                // Create QR content with storytelling
-                const qrContent = `
-AIOXY FOOD PASSPORT
-🌱 ${productName}
-📍 Origin: ${countryName}
-
-CARBON FOOTPRINT
-${result.totalCo2.toFixed(2)} kg CO₂e
-Saved: ${co2Saved.toFixed(2)} kg vs average
-
-WATER FOOTPRINT
-${result.totalWater.toFixed(0)} Liters
-Saved: ${waterSaved.toFixed(0)} L vs average
-
-📊 Data Source: Oxford University Research
-✅ Verified: ${result.totalCo2 < (industryAverages[productName]?.co2 || result.totalCo2 * 0.9) ? 'Better than Average' : 'Industry Standard'}
-
-Scan at https://snapfizzintelligence.github.io/Aioxy/food.html
-#SustainableChoice #AIOXY
-                `.trim();
-                
-                // Clear previous QR code
-                qrCanvas.width = 200;
-                qrCanvas.height = 200;
-                const ctx = qrCanvas.getContext('2d');
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
-                
-                // Generate QR code
-                const qr = qrcode(0, 'M');
-                qr.addData(qrContent);
-                qr.make();
-                
-                // Draw QR code on canvas
-                const cellSize = 4;
-                const margin = 10;
-                const size = qr.getModuleCount() * cellSize + margin * 2;
-                
-                qrCanvas.width = size;
-                qrCanvas.height = size;
-                
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, size, size);
-                ctx.fillStyle = '#2c3e50';
-                
-                for (let row = 0; row < qr.getModuleCount(); row++) {
-                    for (let col = 0; col < qr.getModuleCount(); col++) {
-                        if (qr.isDark(row, col)) {
-                            ctx.fillRect(
-                                margin + col * cellSize,
-                                margin + row * cellSize,
-                                cellSize,
-                                cellSize
-                            );
-                        }
-                    }
-                }
-                
-                // Add logo in the center
-                const logoSize = cellSize * 5;
-                const logoX = size / 2 - logoSize / 2;
-                const logoY = size / 2 - logoSize / 2;
-                
-                ctx.fillStyle = 'white';
-                ctx.fillRect(logoX, logoY, logoSize, logoSize);
-                
-                ctx.fillStyle = '#2ecc71';
-                ctx.font = 'bold 28px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('A', size / 2, size / 2);
-            }
-            
-            // Initialize with default values
-            displayResults("Vegan Burger", {
-                totalCo2: 1.82,
-                totalWater: 485,
-                co2Breakdown: {
-                    ingredients: 1.76,
-                    packaging: 0.054,
-                    transport: 0.006
-                },
-                waterBreakdown: {
-                    tofu: 135,
-                    chickpeas: 110
-                },
-                ingredientBreakdown: {
-                    tofu: 1.13,
-                    chickpeas: 0.63
-                }
-            }, "US");
+            // Run initial demo
+            setTimeout(() => {
+                calculateBtn.click();
+            }, 1000);
         });
     </script>
 </body>
