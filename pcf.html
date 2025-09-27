@@ -456,9 +456,32 @@
             font-weight: 600;
             margin-left: 10px;
         }
+        
+        /* USAGE LIMIT STYLES */
+        #usage-limit-message {
+            display: none;
+            margin: 2rem 0;
+        }
+        
+        .usage-counter {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--aioxy-dark);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
+    <!-- Usage Counter Display -->
+    <div class="usage-counter" id="usage-counter">Uses: 0/2</div>
+
     <div class="header">
         <h1>🌿 AIOXY Fashion Footprint Calculator <span class="master-badge">v2.0 ENHANCED</span></h1>
         <p>Master Dataset Integrated • 20+ Sustainable Materials • Enhanced Storytelling</p>
@@ -546,6 +569,9 @@
         </div>
     </div>
 
+    <!-- Usage Limit Message (Hidden by default) -->
+    <div id="usage-limit-message"></div>
+
     <div id="results">
         <h2>🌱 Your Sustainability Passport</h2>
         <div id="result-summary"></div>
@@ -589,6 +615,92 @@
     </div>
 
     <script>
+        // ================== USAGE LIMIT SYSTEM ==================
+        const USAGE_LIMIT = 2; // 2 free uses per session
+        const FOUNDER_BYPASS = true; // TRUE FOR US - FALSE FOR PUBLIC
+
+        // Initialize usage counter
+        if (!sessionStorage.getItem('aioxy_usage_count')) {
+            sessionStorage.setItem('aioxy_usage_count', '0');
+        }
+
+        function checkUsageLimit() {
+            if (FOUNDER_BYPASS) {
+                console.log("🔓 Founder access - unlimited usage");
+                return true;
+            }
+            
+            const usageCount = parseInt(sessionStorage.getItem('aioxy_usage_count'));
+            return usageCount < USAGE_LIMIT;
+        }
+
+        function incrementUsage() {
+            if (!FOUNDER_BYPASS) {
+                const currentCount = parseInt(sessionStorage.getItem('aioxy_usage_count'));
+                sessionStorage.setItem('aioxy_usage_count', (currentCount + 1).toString());
+                updateUsageCounter();
+            }
+        }
+
+        function updateUsageCounter() {
+            const counter = document.getElementById('usage-counter');
+            const usageCount = parseInt(sessionStorage.getItem('aioxy_usage_count'));
+            if (counter) {
+                counter.textContent = `Uses: ${usageCount}/${USAGE_LIMIT}`;
+                if (usageCount >= USAGE_LIMIT && !FOUNDER_BYPASS) {
+                    counter.style.background = '#dc3545';
+                }
+            }
+        }
+
+        function showLimitMessage() {
+            // Hide results
+            document.getElementById('results').style.display = 'none';
+            
+            // Create limit message
+            const limitMessage = document.getElementById('usage-limit-message');
+            limitMessage.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); 
+                    color: white; 
+                    padding: 2rem; 
+                    border-radius: 12px; 
+                    text-align: center; 
+                    margin: 2rem 0;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                ">
+                    <h2 style="margin-bottom: 1rem;">🚀 Ready for Unlimited Access?</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
+                        You've experienced the power of AIOXY! This free demo is limited to ${USAGE_LIMIT} passports.
+                    </p>
+                    <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
+                        <h3 style="margin-bottom: 1rem;">💼 Partnership Benefits:</h3>
+                        <ul style="text-align: left; display: inline-block; margin: 0 auto;">
+                            <li>✅ Unlimited passport generation</li>
+                            <li>✅ White-label branding (your logo & colors)</li>
+                            <li>✅ API access for direct integration</li>
+                            <li>✅ Management dashboard</li>
+                            <li>✅ Priority support</li>
+                        </ul>
+                    </div>
+                    <p style="font-size: 1.1rem; font-weight: 600;">
+                        Contact us at <strong>partnerships@aioxy.com</strong> for enterprise access!
+                    </p>
+                    <button onclick="resetUsageCounter()" style="margin-top: 1rem; background: rgba(255,255,255,0.3); border: 1px solid white;">
+                        🔄 Start New Session
+                    </button>
+                </div>
+            `;
+            limitMessage.style.display = 'block';
+        }
+
+        function resetUsageCounter() {
+            sessionStorage.setItem('aioxy_usage_count', '0');
+            document.getElementById('usage-limit-message').style.display = 'none';
+            updateUsageCounter();
+            alert('Session reset! You have 2 free uses available.');
+        }
+
         // ================== ENHANCED EMISSION FACTORS DATASET ==================
         const PCFFactors = {
           materials: {
@@ -851,6 +963,12 @@
         }
 
         function calculatePCF() {
+          // 🔒 USAGE LIMIT CHECK - CRITICAL SECURITY
+          if (!checkUsageLimit()) {
+              showLimitMessage();
+              return;
+          }
+          
           const country = document.getElementById('product-country').value;
           
           // 1. Materials Calculation (CO₂ + Water)
@@ -917,6 +1035,9 @@
           const totalCO2 = materialCO2 + energyCO2 + transportCO2;
           const benchmark = parseFloat(document.getElementById('benchmark').value) || 6.0;
           const savedCO2 = benchmark - totalCO2;
+
+          // 🔒 INCREMENT USAGE COUNTER
+          incrementUsage();
 
           showResults(totalCO2, materialCO2, energyCO2, transportCO2, {
             waterUsed: totalWaterUsed,
@@ -1161,6 +1282,7 @@
         document.addEventListener('DOMContentLoaded', () => {
           addMaterial();
           addTransport();
+          updateUsageCounter(); // Initialize counter display
           
           // Twitter Share
           document.getElementById('share').addEventListener('click', () => {
