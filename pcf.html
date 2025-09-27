@@ -476,11 +476,26 @@
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
+        
+        .test-btn {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
     <!-- Usage Counter Display -->
     <div class="usage-counter" id="usage-counter">Uses: 0/2</div>
+    
+    <!-- Test Button (Remove after testing) -->
+    <button class="test-btn" onclick="testCounter()">TEST COUNTER</button>
 
     <div class="header">
         <h1>🌿 AIOXY Fashion Footprint Calculator <span class="master-badge">v2.0 ENHANCED</span></h1>
@@ -615,13 +630,16 @@
     </div>
 
     <script>
-        // ================== USAGE LIMIT SYSTEM ==================
-        const USAGE_LIMIT = 2; // 2 free uses per session
-        const FOUNDER_BYPASS = true; // TRUE FOR US - FALSE FOR PUBLIC
+        // ================== BULLETPROOF USAGE LIMIT SYSTEM ==================
+        const USAGE_LIMIT = 2;
+        const FOUNDER_BYPASS = true; // TRUE FOR US - CHANGE TO FALSE FOR PUBLIC
 
-        // Initialize usage counter
-        if (!sessionStorage.getItem('aioxy_usage_count')) {
-            sessionStorage.setItem('aioxy_usage_count', '0');
+        // Simple counter variable
+        let usageCount = 0;
+
+        // Check if we have a saved count
+        if (sessionStorage.getItem('aioxy_usage_count')) {
+            usageCount = parseInt(sessionStorage.getItem('aioxy_usage_count'));
         }
 
         function checkUsageLimit() {
@@ -630,21 +648,21 @@
                 return true;
             }
             
-            const usageCount = parseInt(sessionStorage.getItem('aioxy_usage_count'));
+            console.log(`📊 Current usage: ${usageCount}/${USAGE_LIMIT}`);
             return usageCount < USAGE_LIMIT;
         }
 
         function incrementUsage() {
             if (!FOUNDER_BYPASS) {
-                const currentCount = parseInt(sessionStorage.getItem('aioxy_usage_count'));
-                sessionStorage.setItem('aioxy_usage_count', (currentCount + 1).toString());
+                usageCount++;
+                sessionStorage.setItem('aioxy_usage_count', usageCount.toString());
                 updateUsageCounter();
+                console.log(`➕ Usage incremented to: ${usageCount}`);
             }
         }
 
         function updateUsageCounter() {
             const counter = document.getElementById('usage-counter');
-            const usageCount = parseInt(sessionStorage.getItem('aioxy_usage_count'));
             if (counter) {
                 counter.textContent = `Uses: ${usageCount}/${USAGE_LIMIT}`;
                 if (usageCount >= USAGE_LIMIT && !FOUNDER_BYPASS) {
@@ -654,39 +672,18 @@
         }
 
         function showLimitMessage() {
+            console.log("🚫 Showing limit message");
+            
             // Hide results
             document.getElementById('results').style.display = 'none';
             
-            // Create limit message
+            // Show limit message
             const limitMessage = document.getElementById('usage-limit-message');
             limitMessage.innerHTML = `
-                <div style="
-                    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); 
-                    color: white; 
-                    padding: 2rem; 
-                    border-radius: 12px; 
-                    text-align: center; 
-                    margin: 2rem 0;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                ">
-                    <h2 style="margin-bottom: 1rem;">🚀 Ready for Unlimited Access?</h2>
-                    <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">
-                        You've experienced the power of AIOXY! This free demo is limited to ${USAGE_LIMIT} passports.
-                    </p>
-                    <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
-                        <h3 style="margin-bottom: 1rem;">💼 Partnership Benefits:</h3>
-                        <ul style="text-align: left; display: inline-block; margin: 0 auto;">
-                            <li>✅ Unlimited passport generation</li>
-                            <li>✅ White-label branding (your logo & colors)</li>
-                            <li>✅ API access for direct integration</li>
-                            <li>✅ Management dashboard</li>
-                            <li>✅ Priority support</li>
-                        </ul>
-                    </div>
-                    <p style="font-size: 1.1rem; font-weight: 600;">
-                        Contact us at <strong>partnerships@aioxy.com</strong> for enterprise access!
-                    </p>
-                    <button onclick="resetUsageCounter()" style="margin-top: 1rem; background: rgba(255,255,255,0.3); border: 1px solid white;">
+                <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 2rem; border-radius: 12px; text-align: center;">
+                    <h2>🚀 Ready for Unlimited Access?</h2>
+                    <p>You've used your ${USAGE_LIMIT} free passports. Contact partnerships@aioxy.com!</p>
+                    <button onclick="resetUsageCounter()" style="margin-top: 1rem; padding: 10px 20px; background: white; color: #ff6b6b; border: none; border-radius: 5px;">
                         🔄 Start New Session
                     </button>
                 </div>
@@ -695,10 +692,20 @@
         }
 
         function resetUsageCounter() {
+            usageCount = 0;
             sessionStorage.setItem('aioxy_usage_count', '0');
             document.getElementById('usage-limit-message').style.display = 'none';
             updateUsageCounter();
             alert('Session reset! You have 2 free uses available.');
+        }
+
+        // Test function (remove after testing)
+        function testCounter() {
+            console.log("=== TEST COUNTER ===");
+            console.log("Usage count:", usageCount);
+            console.log("Founder bypass:", FOUNDER_BYPASS);
+            console.log("Session storage:", sessionStorage.getItem('aioxy_usage_count'));
+            console.log("Within limit?", checkUsageLimit());
         }
 
         // ================== ENHANCED EMISSION FACTORS DATASET ==================
@@ -963,11 +970,16 @@
         }
 
         function calculatePCF() {
+          console.log("🔍 Checking usage limit...");
+          
           // 🔒 USAGE LIMIT CHECK - CRITICAL SECURITY
           if (!checkUsageLimit()) {
+              console.log("❌ LIMIT REACHED - Blocking calculation");
               showLimitMessage();
-              return;
+              return; // STOP EXECUTION HERE
           }
+          
+          console.log("✅ Within usage limit - Proceeding with calculation");
           
           const country = document.getElementById('product-country').value;
           
@@ -1300,6 +1312,10 @@
           document.getElementById('energy-amount').value = "2.5";
           document.getElementById('energy-type').value = "solar";
           document.getElementById('benchmark').value = "6.00";
+          
+          console.log("🚀 AIOXY Calculator LOADED with Usage Limits");
+          console.log("🔓 Founder Bypass:", FOUNDER_BYPASS);
+          console.log("📊 Current Usage:", usageCount + "/" + USAGE_LIMIT);
         });
     </script>
 </body>
