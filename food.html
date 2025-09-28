@@ -6,6 +6,8 @@
     <title>AIOXY Food Emissions Calculator v3.0 - PROTECTED</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    
+    <!-- === ACCESS CONTROL STYLES (ADDED ON TOP) === -->
     <style>
         /* ================== ACCESS PROMPT STYLES ================== */
         .access-prompt {
@@ -22,7 +24,7 @@
         }
         
         .access-box {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            background: linear-gradient(135deg, #2e8b57 0%, #1a3e2d 100%);
             padding: 3rem;
             border-radius: 15px;
             text-align: center;
@@ -62,12 +64,12 @@
             cursor: pointer;
             margin: 10px;
         }
-
+        
         .usage-counter {
             position: fixed;
             top: 10px;
             right: 10px;
-            background: #2c3e50;
+            background: #2e8b57;
             color: white;
             padding: 8px 12px;
             border-radius: 20px;
@@ -76,8 +78,19 @@
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
+        
+        #usage-limit-message {
+            display: none;
+            margin: 2rem 0;
+        }
+        
+        #calculatorContent {
+            display: none;
+        }
+    </style>
 
-        /* === ALL EXISTING FOOD CALCULATOR STYLES PRESERVED === */
+    <!-- === ALL EXISTING STYLES PRESERVED EXACTLY === -->
+    <style>
         :root {
             --primary: #2ecc71;
             --primary-dark: #27ae60;
@@ -541,12 +554,6 @@
             font-weight: 600;
             margin-left: 10px;
         }
-
-        /* USAGE LIMIT MESSAGE */
-        #usage-limit-message {
-            display: none;
-            margin: 2rem 0;
-        }
         
         @media (max-width: 768px) {
             .results-grid {
@@ -574,7 +581,7 @@
     </style>
 </head>
 <body>
-    <!-- ACCESS PROMPT (SHOWS FIRST) -->
+    <!-- === ACCESS PROMPT (SHOWS FIRST) === -->
     <div id="accessPrompt" class="access-prompt">
         <div class="access-box">
             <h1>🔐 AIOXY FOUNDER ACCESS</h1>
@@ -604,11 +611,12 @@
         </div>
     </div>
 
-    <!-- CALCULATOR CONTENT (HIDDEN UNTIL ACCESS GRANTED) -->
-    <div id="calculatorContent" style="display:none;">
+    <!-- === CALCULATOR CONTENT (HIDDEN UNTIL ACCESS GRANTED) === -->
+    <div id="calculatorContent">
         <!-- Usage Counter Display -->
         <div class="usage-counter" id="usage-counter">Loading...</div>
 
+        <!-- === ALL EXISTING HTML CONTENT PRESERVED EXACTLY === -->
         <header>
             <h1>AIOXY Food Emissions Calculator <span class="master-badge">v3.0 PROTECTED</span></h1>
             <p class="tagline">Master Dataset Integrated • 30+ Ingredients • Carbon + Water + Land • All Features Preserved</p>
@@ -619,7 +627,6 @@
                 <h2>🚀 ENHANCED: Now with 30+ Ingredients, Land Use Metrics & Certification Badges!</h2>
             </div>
             
-            <!-- === EXISTING FORM SECTION - FULLY PRESERVED === -->
             <div class="card">
                 <h2 class="card-title">Product Information</h2>
                 
@@ -739,9 +746,6 @@
                 </div>
             </div>
             
-            <!-- Usage Limit Message -->
-            <div id="usage-limit-message"></div>
-            
             <div class="card" id="resultsSection">
                 <!-- Results will be dynamically populated -->
             </div>
@@ -754,7 +758,7 @@
 
     <script>
         // ================== ACCESS CONTROL SYSTEM ==================
-        const FOUNDER_PASSWORD = "AIOXY2024"; // OUR PASSWORD
+        const FOUNDER_PASSWORD = "AIOXY2024"; // SAME PASSWORD
         const FOUNDER_EMAILS = ['pariyartulasi766@gmail.com', 'tulasipariyar120@gmail.com'];
         const PUBLIC_USAGE_LIMIT = 2;
         
@@ -763,8 +767,8 @@
         
         // Check existing access on page load
         function checkExistingAccess() {
-            const founderAccess = localStorage.getItem('aioxy_founder_access');
-            const publicAccess = localStorage.getItem('aioxy_public_access');
+            const founderAccess = localStorage.getItem('aioxy_founder_access_food');
+            const publicAccess = localStorage.getItem('aioxy_public_access_food');
             
             if (founderAccess === 'true') {
                 isFounder = true;
@@ -775,7 +779,7 @@
             
             if (publicAccess === 'true') {
                 isFounder = false;
-                publicUsageCount = parseInt(localStorage.getItem('aioxy_public_usage') || '0');
+                publicUsageCount = parseInt(localStorage.getItem('aioxy_public_usage_food') || '0');
                 showCalculator();
                 console.log("🚀 Public access restored - Usage: " + publicUsageCount);
                 return true;
@@ -789,7 +793,7 @@
             if (password === FOUNDER_PASSWORD) {
                 // FOUNDER ACCESS GRANTED
                 isFounder = true;
-                localStorage.setItem('aioxy_founder_access', 'true');
+                localStorage.setItem('aioxy_founder_access_food', 'true');
                 localStorage.setItem('aioxy_founder_email', FOUNDER_EMAILS[0]);
                 showCalculator();
                 alert('✅ FOUNDER ACCESS GRANTED!\nUnlimited usage activated for: ' + FOUNDER_EMAILS[0]);
@@ -803,9 +807,9 @@
         function usePublicAccess() {
             // PUBLIC ACCESS - LIMITED
             isFounder = false;
-            localStorage.setItem('aioxy_public_access', 'true');
+            localStorage.setItem('aioxy_public_access_food', 'true');
             publicUsageCount = 0;
-            localStorage.setItem('aioxy_public_usage', '0');
+            localStorage.setItem('aioxy_public_usage_food', '0');
             showCalculator();
             alert('🔐 PUBLIC DEMO ACCESS\nYou have ' + PUBLIC_USAGE_LIMIT + ' free calculations.\nContact partnerships@aioxy.com for unlimited access!');
         }
@@ -814,7 +818,7 @@
             document.getElementById('accessPrompt').style.display = 'none';
             document.getElementById('calculatorContent').style.display = 'block';
             updateUsageDisplay();
-            initializeCalculator();
+            initializeFoodCalculator();
         }
         
         function updateUsageDisplay() {
@@ -825,7 +829,7 @@
                     counter.style.background = '#d4af37'; // Gold color
                 } else {
                     counter.innerHTML = `🚀 PUBLIC: ${publicUsageCount}/${PUBLIC_USAGE_LIMIT} USES`;
-                    counter.style.background = (publicUsageCount >= PUBLIC_USAGE_LIMIT) ? '#dc3545' : '#2ecc71';
+                    counter.style.background = (publicUsageCount >= PUBLIC_USAGE_LIMIT) ? '#dc3545' : '#2e8b57';
                 }
             }
         }
@@ -849,7 +853,7 @@
         function incrementUsage() {
             if (!isFounder) {
                 publicUsageCount++;
-                localStorage.setItem('aioxy_public_usage', publicUsageCount.toString());
+                localStorage.setItem('aioxy_public_usage_food', publicUsageCount.toString());
                 updateUsageDisplay();
                 console.log(`➕ Public usage incremented to: ${publicUsageCount}`);
             }
@@ -858,7 +862,7 @@
         function showLimitMessage() {
             document.getElementById('resultsSection').innerHTML = '';
             
-            const limitMessage = document.getElementById('usage-limit-message');
+            const limitMessage = document.createElement('div');
             limitMessage.innerHTML = `
                 <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 2rem; border-radius: 12px; text-align: center;">
                     <h2>🚀 Ready for Unlimited Access?</h2>
@@ -884,200 +888,219 @@
                     </button>
                 </div>
             `;
-            limitMessage.style.display = 'block';
+            document.getElementById('resultsSection').appendChild(limitMessage);
         }
         
         function resetPublicAccess() {
             publicUsageCount = 0;
-            localStorage.setItem('aioxy_public_usage', '0');
-            document.getElementById('usage-limit-message').style.display = 'none';
+            localStorage.setItem('aioxy_public_usage_food', '0');
             updateUsageDisplay();
             alert('Demo reset! You have ' + PUBLIC_USAGE_LIMIT + ' uses available.');
+            document.getElementById('calculateBtn').click();
         }
 
-        // ================== EXISTING FOOD CALCULATOR CODE ==================
-        // === MASTER DATASET v3.0 - NEW ENHANCEMENT ===
-        const foodMasterDataset = {
-            "beef": { 
-                "co2e": 60.0, "water": 15415, "land": 326,
-                "analogies": {"co2": "2 days of powering a home", "water": "2 weeks of family water", "land": "3 football fields"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
-            },
-            "lamb": { 
-                "co2e": 24.0, "water": 10413, "land": 185,
-                "analogies": {"co2": "1,500 km car drive", "water": "80 showers", "land": "2 football fields"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
-            },
-            "pork": { 
-                "co2e": 7.0, "water": 6000, "land": 17,
-                "analogies": {"co2": "30 km car drive", "water": "40 bathtubs", "land": "half tennis court"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
-            },
-            "poultry": { 
-                "co2e": 6.0, "water": 4325, "land": 12,
-                "analogies": {"co2": "planting a tree for a year", "water": "25 bathtubs", "land": "basketball court"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
-            },
-            "fish_farmed": { 
-                "co2e": 5.0, "water": 3000, "land": 8,
-                "analogies": {"co2": "20 km car drive", "water": "20 bathtubs", "land": "half basketball court"},
-                "certification": {"organicEligible": false, "fairTradeRelevant": true, "veganRelevant": false}
-            },
-            "milk": { 
-                "co2e": 2.4, "water": 1021, "land": 9,
-                "analogies": {"co2": "4 km petrol car", "water": "3 months drinking water", "land": "basketball court"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
-            },
-            "cheese": { 
-                "co2e": 21.0, "water": 3178, "land": 88,
-                "analogies": {"co2": "40 km car drive", "water": "25 bathtubs", "land": "football field"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
-            },
-            "eggs": { 
-                "co2e": 4.5, "water": 3300, "land": 7,
-                "analogies": {"co2": "20 km car drive", "water": "20 bathtubs", "land": "2 yoga mats"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
-            },
-            "tofu": { 
-                "co2e": 0.84, "water": 900, "land": 3.0,
-                "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "soybeans": { 
-                "co2e": 2.0, "water": 1800, "land": 5,
-                "analogies": {"co2": "10 km car drive", "water": "10 bathtubs", "land": "2 yoga mats"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "lentils": { 
-                "co2e": 0.88, "water": 1250, "land": 3.5,
-                "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "chickpeas": { 
-                "co2e": 0.49, "water": 1100, "land": 3.0,
-                "analogies": {"co2": "6 months phone charging", "water": "3 months drinking water", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "pea_protein": { 
-                "co2e": 1.2, "water": 900, "land": 2.5,
-                "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "mycoprotein": { 
-                "co2e": 1.6, "water": 500, "land": 2,
-                "analogies": {"co2": "10h lightbulb", "water": "2 showers", "land": "small desk"},
-                "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "algal_protein": { 
-                "co2e": 1.8, "water": 250, "land": 1.0,
-                "analogies": {"co2": "25h lightbulb", "water": "5-min shower", "land": "yoga mat"},
-                "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "oats": { 
-                "co2e": 2.5, "water": 1800, "land": 10,
-                "analogies": {"co2": "15 km car drive", "water": "12 bathtubs", "land": "half tennis court"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "rice": { 
-                "co2e": 4.0, "water": 2500, "land": 25,
-                "analogies": {"co2": "20 km car drive", "water": "25 bathtubs", "land": "half tennis court"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "wheat": { 
-                "co2e": 1.4, "water": 1827, "land": 7,
-                "analogies": {"co2": "7 km car drive", "water": "10 bathtubs", "land": "2 yoga mats"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "maize": { 
-                "co2e": 1.0, "water": 1200, "land": 6,
-                "analogies": {"co2": "5 km car drive", "water": "7 bathtubs", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "potatoes": { 
-                "co2e": 0.46, "water": 290, "land": 1,
-                "analogies": {"co2": "2 km car drive", "water": "2 bathtubs", "land": "desk"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "tomatoes": { 
-                "co2e": 2.1, "water": 214, "land": 3,
-                "analogies": {"co2": "10 km car drive", "water": "1 bathtub", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
-            },
-            "bananas": { 
-                "co2e": 0.86, "water": 790, "land": 2,
-                "analogies": {"co2": "4 km car drive", "water": "5 bathtubs", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "apples": { 
-                "co2e": 0.43, "water": 822, "land": 1,
-                "analogies": {"co2": "2 km car drive", "water": "5 bathtubs", "land": "desk"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "oranges": { 
-                "co2e": 0.42, "water": 560, "land": 1,
-                "analogies": {"co2": "2 km car drive", "water": "3 bathtubs", "land": "desk"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "coffee": { 
-                "co2e": 17.0, "water": 18900, "land": 22,
-                "analogies": {"co2": "40 km car drive", "water": "100 days laundry", "land": "half tennis court"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "cocoa": { 
-                "co2e": 5.1, "water": 27000, "land": 20,
-                "analogies": {"co2": "planting a tree for a year", "water": "100 days laundry", "land": "half tennis court"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            },
-            "sugar_cane": { 
-                "co2e": 0.6, "water": 1500, "land": 2,
-                "analogies": {"co2": "3 km car drive", "water": "8 bathtubs", "land": "yoga mat"},
-                "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
-            }
-        };
+        // ================== EXISTING FOOD CALCULATOR CODE - 100% PRESERVED ==================
+        function initializeFoodCalculator() {
+            // === MASTER DATASET v3.0 - NEW ENHANCEMENT ===
+            const foodMasterDataset = {
+                "beef": { 
+                    "co2e": 60.0, "water": 15415, "land": 326,
+                    "analogies": {"co2": "2 days of powering a home", "water": "2 weeks of family water", "land": "3 football fields"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+                },
+                "lamb": { 
+                    "co2e": 24.0, "water": 10413, "land": 185,
+                    "analogies": {"co2": "1,500 km car drive", "water": "80 showers", "land": "2 football fields"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+                },
+                "pork": { 
+                    "co2e": 7.0, "water": 6000, "land": 17,
+                    "analogies": {"co2": "30 km car drive", "water": "40 bathtubs", "land": "half tennis court"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+                },
+                "poultry": { 
+                    "co2e": 6.0, "water": 4325, "land": 12,
+                    "analogies": {"co2": "planting a tree for a year", "water": "25 bathtubs", "land": "basketball court"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+                },
+                "fish_farmed": { 
+                    "co2e": 5.0, "water": 3000, "land": 8,
+                    "analogies": {"co2": "20 km car drive", "water": "20 bathtubs", "land": "half basketball court"},
+                    "certification": {"organicEligible": false, "fairTradeRelevant": true, "veganRelevant": false}
+                },
+                "milk": { 
+                    "co2e": 2.4, "water": 1021, "land": 9,
+                    "analogies": {"co2": "4 km petrol car", "water": "3 months drinking water", "land": "basketball court"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+                },
+                "cheese": { 
+                    "co2e": 21.0, "water": 3178, "land": 88,
+                    "analogies": {"co2": "40 km car drive", "water": "25 bathtubs", "land": "football field"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+                },
+                "eggs": { 
+                    "co2e": 4.5, "water": 3300, "land": 7,
+                    "analogies": {"co2": "20 km car drive", "water": "20 bathtubs", "land": "2 yoga mats"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": false}
+                },
+                "tofu": { 
+                    "co2e": 0.84, "water": 900, "land": 3.0,
+                    "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "soybeans": { 
+                    "co2e": 2.0, "water": 1800, "land": 5,
+                    "analogies": {"co2": "10 km car drive", "water": "10 bathtubs", "land": "2 yoga mats"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "lentils": { 
+                    "co2e": 0.88, "water": 1250, "land": 3.5,
+                    "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "chickpeas": { 
+                    "co2e": 0.49, "water": 1100, "land": 3.0,
+                    "analogies": {"co2": "6 months phone charging", "water": "3 months drinking water", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "pea_protein": { 
+                    "co2e": 1.2, "water": 900, "land": 2.5,
+                    "analogies": {"co2": "25h lightbulb", "water": "3 months drinking water", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "mycoprotein": { 
+                    "co2e": 1.6, "water": 500, "land": 2,
+                    "analogies": {"co2": "10h lightbulb", "water": "2 showers", "land": "small desk"},
+                    "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "algal_protein": { 
+                    "co2e": 1.8, "water": 250, "land": 1.0,
+                    "analogies": {"co2": "25h lightbulb", "water": "5-min shower", "land": "yoga mat"},
+                    "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "oats": { 
+                    "co2e": 2.5, "water": 1800, "land": 10,
+                    "analogies": {"co2": "15 km car drive", "water": "12 bathtubs", "land": "half tennis court"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "rice": { 
+                    "co2e": 4.0, "water": 2500, "land": 25,
+                    "analogies": {"co2": "20 km car drive", "water": "25 bathtubs", "land": "half tennis court"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "wheat": { 
+                    "co2e": 1.4, "water": 1827, "land": 7,
+                    "analogies": {"co2": "7 km car drive", "water": "10 bathtubs", "land": "2 yoga mats"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "maize": { 
+                    "co2e": 1.0, "water": 1200, "land": 6,
+                    "analogies": {"co2": "5 km car drive", "water": "7 bathtubs", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "potatoes": { 
+                    "co2e": 0.46, "water": 290, "land": 1,
+                    "analogies": {"co2": "2 km car drive", "water": "2 bathtubs", "land": "desk"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "tomatoes": { 
+                    "co2e": 2.1, "water": 214, "land": 3,
+                    "analogies": {"co2": "10 km car drive", "water": "1 bathtub", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": false, "veganRelevant": true}
+                },
+                "bananas": { 
+                    "co2e": 0.86, "water": 790, "land": 2,
+                    "analogies": {"co2": "4 km car drive", "water": "5 bathtubs", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "apples": { 
+                    "co2e": 0.43, "water": 822, "land": 1,
+                    "analogies": {"co2": "2 km car drive", "water": "5 bathtubs", "land": "desk"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "oranges": { 
+                    "co2e": 0.42, "water": 560, "land": 1,
+                    "analogies": {"co2": "2 km car drive", "water": "3 bathtubs", "land": "desk"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "coffee": { 
+                    "co2e": 17.0, "water": 18900, "land": 22,
+                    "analogies": {"co2": "40 km car drive", "water": "100 days laundry", "land": "half tennis court"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "cocoa": { 
+                    "co2e": 5.1, "water": 27000, "land": 20,
+                    "analogies": {"co2": "planting a tree for a year", "water": "100 days laundry", "land": "half tennis court"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                },
+                "sugar_cane": { 
+                    "co2e": 0.6, "water": 1500, "land": 2,
+                    "analogies": {"co2": "3 km car drive", "water": "8 bathtubs", "land": "yoga mat"},
+                    "certification": {"organicEligible": true, "fairTradeRelevant": true, "veganRelevant": true}
+                }
+            };
 
-        // === EXISTING DATASETS PRESERVED ===
-        const gridModifiers = {
-            FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38,
-            CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
-        };
+            // === EXISTING DATASETS PRESERVED ===
+            const gridModifiers = {
+                FR: 0.05, DE: 0.35, UK: 0.20, IT: 0.23, US: 0.38,
+                CA: 0.12, AU: 0.60, NZ: 0.10, BR: 0.45, CN: 0.65
+            };
 
-        const agricultureModifiers = {
-            FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00,
-            CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
-        };
+            const agricultureModifiers = {
+                FR: 0.90, DE: 0.95, UK: 0.95, IT: 0.95, US: 1.00,
+                CA: 0.98, AU: 1.05, NZ: 1.10, BR: 1.20, CN: 1.15
+            };
 
-        const transportFactors = {
-            sea: 0.013, rail: 0.020, road: 0.062, air: 0.600
-        };
+            const transportFactors = {
+                sea: 0.013, rail: 0.020, road: 0.062, air: 0.600
+            };
 
-        const packagingFactors = {
-            pet: 2.7, hdpe: 2.0, glass: 1.2, aluminum: 10.0, paper: 0.8, none: 0
-        };
+            const packagingFactors = {
+                pet: 2.7, hdpe: 2.0, glass: 1.2, aluminum: 10.0, paper: 0.8, none: 0
+            };
 
-        const industryAverages = {
-            "Beef burger": { co2: 9.25, water: 2200, land: 0.5 },
-            "Chicken burger": { co2: 4.20, water: 1800, land: 0.1 },
-            "Vegan Burger": { co2: 3.50, water: 950, land: 0.35 },
-            "Cheese pizza": { co2: 6.80, water: 1500, land: 1.2 },
-            "Veggie Wrap": { co2: 1.80, water: 450, land: 0.15 },
-            "Rice Bowl": { co2: 2.10, water: 800, land: 0.3 },
-            "Salad": { co2: 0.85, water: 300, land: 0.08 },
-            "Premium Pea Protein Shake": { co2: 3.50, water: 950, land: 0.35 },
-            "Protein Bar": { co2: 2.80, water: 700, land: 0.25 }
-        };
+            const industryAverages = {
+                "Beef burger": { co2: 9.25, water: 2200, land: 0.5 },
+                "Chicken burger": { co2: 4.20, water: 1800, land: 0.1 },
+                "Vegan Burger": { co2: 3.50, water: 950, land: 0.35 },
+                "Cheese pizza": { co2: 6.80, water: 1500, land: 1.2 },
+                "Veggie Wrap": { co2: 1.80, water: 450, land: 0.15 },
+                "Rice Bowl": { co2: 2.10, water: 800, land: 0.3 },
+                "Salad": { co2: 0.85, water: 300, land: 0.08 },
+                "Premium Pea Protein Shake": { co2: 3.50, water: 950, land: 0.35 },
+                "Protein Bar": { co2: 2.80, water: 700, land: 0.25 }
+            };
 
-        const co2Analogies = [
-            { threshold: 0.5, text: "That's like charging your smartphone for 6 months!" },
-            { threshold: 1.0, text: "That's equivalent to driving 4 fewer miles in a car!" },
-            { threshold: 2.0, text: "That's like charging your smartphone for 2.5 years!" },
-            { threshold: 5.0, text: "That's equivalent to planting 1 tree and letting it grow for 10 years!" },
-            { threshold: 10.0, text: "That's like not driving your car for 40 miles!" }
-        ];
+            const co2Analogies = [
+                { threshold: 0.5, text: "That's like charging your smartphone for 6 months!" },
+                { threshold: 1.0, text: "That's equivalent to driving 4 fewer miles in a car!" },
+                { threshold: 2.0, text: "That's like charging your smartphone for 2.5 years!" },
+                { threshold: 5.0, text: "That's equivalent to planting 1 tree and letting it grow for 10 years!" },
+                { threshold: 10.0, text: "That's like not driving your car for 40 miles!" },
+                { threshold: 20.0, text: "That's equivalent to the carbon absorbed by 2 trees in a year!" },
+                { threshold: 50.0, text: "That's like saving enough energy to power a home for 2 days!" }
+            ];
 
-        function initializeCalculator() {
+            const waterAnalogies = [
+                { threshold: 100, text: "That's enough water for 5 people to drink for a day!" },
+                { threshold: 500, text: "That's like saving 10 full bathtubs of water!" },
+                { threshold: 1000, text: "That's enough water for 50 people to drink for a day!" },
+                { threshold: 5000, text: "That's like saving a small swimming pool of water!" },
+                { threshold: 10000, text: "That's enough water for 500 people to drink for a day!" }
+            ];
+
+            const landAnalogies = [
+                { threshold: 0.1, text: "That's like preserving a small garden plot!" },
+                { threshold: 0.5, text: "That's equivalent to saving a parking space for a year!" },
+                { threshold: 1.0, text: "That's like preserving a small urban farm plot!" },
+                { threshold: 5.0, text: "That's equivalent to saving a tennis court-sized area!" },
+                { threshold: 10.0, text: "That's like preserving a community garden for a year!" }
+            ];
+
             const addIngredientBtn = document.getElementById('addIngredient');
             const calculateBtn = document.getElementById('calculateBtn');
             const ingredientList = document.getElementById('ingredientList');
+            const resultsSection = document.getElementById('resultsSection');
             
             let ingredientCount = 1;
             
@@ -1151,7 +1174,7 @@
                 });
             });
             
-            // Calculate environmental impact - ENHANCED WITH ACCESS CONTROL
+            // Calculate environmental impact - ENHANCED FUNCTIONALITY
             calculateBtn.addEventListener('click', function() {
                 console.log("🔍 Checking usage limit...");
                 
@@ -1177,15 +1200,15 @@
                     ingredients.push({ type, quantity });
                 }
                 
-                // Get packaging data
+                // Get packaging data - PRESERVED
                 const packagingType = document.getElementById('packagingType').value;
                 const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
                 
-                // Get transport data
+                // Get transport data - PRESERVED
                 const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
                 const transportMode = document.getElementById('transportMode').value;
                 
-                // Calculate impacts
+                // Calculate impacts - ENHANCED WITH LAND USE
                 const result = computeFoodImpact(
                     ingredients, 
                     country, 
@@ -1198,7 +1221,7 @@
                 // 🔒 INCREMENT USAGE COUNTER
                 incrementUsage();
                 
-                // Format and display results
+                // Format and display results - ENHANCED
                 displayResults(productName, result, country);
             });
             
@@ -1206,7 +1229,7 @@
             function computeFoodImpact(ingredients, country, packagingType, packagingWeight, transportMode, transportDistance) {
                 let totalCo2 = 0;
                 let totalWater = 0;
-                let totalLand = 0;
+                let totalLand = 0; // NEW: Land use calculation
                 const co2Breakdown = {
                     ingredients: 0,
                     packaging: 0,
@@ -1214,20 +1237,22 @@
                 };
                 
                 const waterBreakdown = {};
-                const landBreakdown = {};
+                const landBreakdown = {}; // NEW: Land breakdown
                 const ingredientBreakdown = {};
                 
-                // Calculate ingredient impacts
+                // Calculate ingredient impacts - ENHANCED WITH LAND
                 ingredients.forEach(ingredient => {
                     if (ingredient.quantity > 0) {
                         const ingredientData = foodMasterDataset[ingredient.type];
                         const baseCo2 = ingredientData.co2e * ingredient.quantity;
                         const baseWater = ingredientData.water * ingredient.quantity;
-                        const baseLand = ingredientData.land * ingredient.quantity;
+                        const baseLand = ingredientData.land * ingredient.quantity; // NEW
                         
+                        // Apply country-specific modifiers - PRESERVED
                         const agModifier = agricultureModifiers[country] || 1.0;
                         const gridModifier = gridModifiers[country] || 0.38;
                         
+                        // Calculate with country-specific adjustments - PRESERVED
                         const agShare = baseCo2 * 0.7 * agModifier;
                         const processingShare = baseCo2 * 0.2 * gridModifier;
                         const retailShare = baseCo2 * 0.1;
@@ -1236,21 +1261,21 @@
                         
                         totalCo2 += ingredientCo2;
                         totalWater += baseWater;
-                        totalLand += baseLand;
+                        totalLand += baseLand; // NEW
                         
                         co2Breakdown.ingredients += ingredientCo2;
                         waterBreakdown[ingredient.type] = (waterBreakdown[ingredient.type] || 0) + baseWater;
-                        landBreakdown[ingredient.type] = (landBreakdown[ingredient.type] || 0) + baseLand;
+                        landBreakdown[ingredient.type] = (landBreakdown[ingredient.type] || 0) + baseLand; // NEW
                         ingredientBreakdown[ingredient.type] = (ingredientBreakdown[ingredient.type] || 0) + ingredientCo2;
                     }
                 });
                 
-                // Calculate packaging impact
+                // Calculate packaging impact - PRESERVED
                 const packagingCo2 = packagingFactors[packagingType] * packagingWeight;
                 totalCo2 += packagingCo2;
                 co2Breakdown.packaging = packagingCo2;
                 
-                // Calculate transport impact
+                // Calculate transport impact (convert product weight to tons) - PRESERVED
                 const totalWeight = ingredients.reduce((sum, ing) => sum + ing.quantity, 0);
                 const transportCo2 = transportFactors[transportMode] * (totalWeight / 1000) * transportDistance;
                 totalCo2 += transportCo2;
@@ -1259,15 +1284,15 @@
                 return {
                     totalCo2,
                     totalWater,
-                    totalLand,
+                    totalLand, // NEW
                     co2Breakdown,
                     waterBreakdown,
-                    landBreakdown,
+                    landBreakdown, // NEW
                     ingredientBreakdown
                 };
             }
             
-            // ENHANCED display function
+            // ENHANCED display function with new features
             function displayResults(productName, result, country) {
                 const industryAvg = industryAverages[productName] || { 
                     co2: result.totalCo2 * 0.9, 
@@ -1284,7 +1309,7 @@
                 const mainIngredient = document.querySelector('.ingredient-select').value;
                 
                 // ENHANCED RESULTS DISPLAY
-                document.getElementById('resultsSection').innerHTML = `
+                resultsSection.innerHTML = `
                     <h2 class="card-title">Results for <span id="resultProductName">${productName}</span></h2>
                     
                     <!-- NEW: IMPACT BREAKTHROUGH SECTION -->
@@ -1309,6 +1334,13 @@
                                 <small>${foodMasterDataset[mainIngredient].analogies.land}</small>
                             </div>
                         </div>
+                        
+                        ${generateCertificationBadges(mainIngredient)}
+                    </div>
+                    
+                    <!-- PRESERVED: NARRATIVE SECTION -->
+                    <div class="narrative">
+                        <p id="narrativeText">${generateNarrativeText(productName, result, country, industryAvg, savings, mainIngredient)}</p>
                     </div>
                     
                     <!-- PRESERVED: IMPACT STORY -->
@@ -1382,7 +1414,121 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- NEW: PROTEIN COMPARISON -->
+                    ${generateProteinComparison(mainIngredient)}
+                    
+                    <!-- PRESERVED: CHARTS -->
+                    <h3 style="margin: 2rem 0 1rem 0;">Emission Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="emissionChart"></canvas>
+                    </div>
+                    
+                    <h3 style="margin: 2rem 0 1rem 0;">Water Usage Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="waterChart"></canvas>
+                    </div>
+                    
+                    <!-- NEW: LAND USE CHART -->
+                    <h3 style="margin: 2rem 0 1rem 0;">Land Use Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="landChart"></canvas>
+                    </div>
+                    
+                    <!-- PRESERVED: QR CODE -->
+                    <div class="qr-code">
+                        <h3>Product Passport QR Code</h3>
+                        <p>Scan to view environmental impact details</p>
+                        <canvas id="qrCanvas"></canvas>
+                    </div>
                 `;
+                
+                // PRESERVED: Create charts
+                createEmissionChart(result.co2Breakdown);
+                createWaterChart(result.waterBreakdown);
+                createLandChart(result.landBreakdown); // NEW
+                
+                // PRESERVED: Generate QR code
+                generateQRCode(productName, result, country, savings.co2, savings.water, savings.land);
+            }
+            
+            // NEW: Certification badges generator
+            function generateCertificationBadges(ingredientType) {
+                const certs = foodMasterDataset[ingredientType].certification;
+                let badges = '<div class="certification-badges">';
+                
+                if (certs.organicEligible) badges += '<span class="cert-badge organic">🌿 Organic Eligible</span>';
+                if (certs.fairTradeRelevant) badges += '<span class="cert-badge fairtrade">⚖️ FairTrade Ready</span>';
+                if (certs.veganRelevant) badges += '<span class="cert-badge vegan">🌱 Vegan Certified</span>';
+                
+                badges += '</div>';
+                return badges;
+            }
+            
+            // NEW: Protein comparison generator
+            function generateProteinComparison(plantProtein, animalProtein = 'beef') {
+                const plantData = foodMasterDataset[plantProtein];
+                const animalData = foodMasterDataset[animalProtein];
+                
+                const co2Reduction = ((1 - plantData.co2e / animalData.co2e) * 100).toFixed(1);
+                const waterReduction = ((1 - plantData.water / animalData.water) * 100).toFixed(1);
+                const landReduction = ((1 - plantData.land / animalData.land) * 100).toFixed(1);
+                
+                return `
+                    <div class="protein-comparison">
+                        <h3>🥩 vs 🌱 Protein Comparison</h3>
+                        <p>Choosing ${plantProtein.replace('_', ' ')} over ${animalProtein} saves:</p>
+                        <div class="comparison-grid">
+                            <div class="comparison-item-enhanced">
+                                <strong>${co2Reduction}%</strong>
+                                <div>Carbon Emissions</div>
+                            </div>
+                            <div class="comparison-item-enhanced">
+                                <strong>${waterReduction}%</strong>
+                                <div>Water Usage</div>
+                            </div>
+                            <div class="comparison-item-enhanced">
+                                <strong>${landReduction}%</strong>
+                                <div>Land Use</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // PRESERVED: Narrative generator (enhanced)
+            function generateNarrativeText(productName, result, country, industryAvg, savings, mainIngredient) {
+                const countryName = getCountryName(country);
+                const percentageDiff = ((result.totalCo2 - industryAvg.co2) / industryAvg.co2 * 100).toFixed(0);
+                const mainIngredientName = formatIngredientName(mainIngredient);
+                
+                if (result.totalCo2 < industryAvg.co2) {
+                    return `This ${productName} from ${countryName} has a <span class="badge badge-better">lower environmental impact</span> than the industry average. With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, it represents a ${Math.abs(percentageDiff)}% reduction in emissions. The ${mainIngredientName} contributes significantly to these sustainability achievements.`;
+                } else {
+                    return `This ${productName} from ${countryName} has a <span class="badge badge-worse">higher environmental impact</span> than the industry average. With ${result.totalCo2.toFixed(2)} kg CO₂e compared to the average of ${industryAvg.co2.toFixed(2)} kg CO₂e, it represents a ${percentageDiff}% increase in emissions. Consider optimizing your ingredient selection for better sustainability.`;
+                }
+            }
+            
+            // PRESERVED: Helper functions
+            function getCountryName(code) {
+                const countries = {
+                    FR: 'France', DE: 'Germany', UK: 'United Kingdom', IT: 'Italy', US: 'United States',
+                    CA: 'Canada', AU: 'Australia', NZ: 'New Zealand', BR: 'Brazil', CN: 'China'
+                };
+                return countries[code];
+            }
+            
+            function formatIngredientName(ingredient) {
+                const names = {
+                    beef: "Beef", lamb: "Lamb", pork: "Pork", poultry: "Poultry",
+                    fish_farmed: "Farmed Fish", milk: "Dairy Milk", cheese: "Cheese", eggs: "Eggs",
+                    tofu: "Tofu (Soy)", soybeans: "Soybeans", lentils: "Lentils", chickpeas: "Chickpeas",
+                    pea_protein: "Pea Protein", mycoprotein: "Mycoprotein", algal_protein: "Algal Protein",
+                    oats: "Oats", rice: "Rice", wheat: "Wheat", maize: "Maize", potatoes: "Potatoes",
+                    tomatoes: "Tomatoes", bananas: "Bananas", apples: "Apples", oranges: "Oranges",
+                    coffee: "Coffee", cocoa: "Cocoa", sugar_cane: "Sugar Cane"
+                };
+                return names[ingredient] || ingredient.replace('_', ' ');
             }
             
             function getCo2Analogy(saved) {
@@ -1394,9 +1540,209 @@
                 return "This is a climate-positive choice!";
             }
             
+            // PRESERVED: Chart functions
+            function createEmissionChart(breakdown) {
+                const ctx = document.getElementById('emissionChart').getContext('2d');
+                
+                if (window.emissionChartInstance) {
+                    window.emissionChartInstance.destroy();
+                }
+                
+                window.emissionChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Ingredients', 'Packaging', 'Transport'],
+                        datasets: [{
+                            data: [breakdown.ingredients, breakdown.packaging, breakdown.transport],
+                            backgroundColor: ['#2ecc71', '#3498db', '#e74c3c'],
+                            borderWidth: 1,
+                            hoverOffset: 12
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw.toFixed(2)} kg CO₂e (${((context.raw / (breakdown.ingredients + breakdown.packaging + breakdown.transport)) * 100).toFixed(1)}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '60%'
+                    }
+                });
+            }
+            
+            function createWaterChart(breakdown) {
+                const ctx = document.getElementById('waterChart').getContext('2d');
+                const labels = [];
+                const data = [];
+                const colors = ['#2ecc71', '#3498db', '#e74c3c', '#f1c40f', '#9b59b6', '#1abc9c'];
+                
+                for (const [ingredient, water] of Object.entries(breakdown)) {
+                    if (water > 0) {
+                        labels.push(formatIngredientName(ingredient));
+                        data.push(water);
+                    }
+                }
+                
+                if (window.waterChartInstance) {
+                    window.waterChartInstance.destroy();
+                }
+                
+                window.waterChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 1,
+                            hoverOffset: 12
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = data.reduce((a, b) => a + b, 0);
+                                        return `${context.label}: ${context.raw.toFixed(0)} L (${((context.raw / total) * 100).toFixed(1)}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // NEW: Land use chart
+            function createLandChart(breakdown) {
+                const ctx = document.getElementById('landChart').getContext('2d');
+                const labels = [];
+                const data = [];
+                const colors = ['#d35400', '#e67e22', '#f39c12', '#f1c40f', '#2ecc71', '#3498db'];
+                
+                for (const [ingredient, land] of Object.entries(breakdown)) {
+                    if (land > 0) {
+                        labels.push(formatIngredientName(ingredient));
+                        data.push(land);
+                    }
+                }
+                
+                if (window.landChartInstance) {
+                    window.landChartInstance.destroy();
+                }
+                
+                window.landChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderWidth: 1,
+                            hoverOffset: 12
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const total = data.reduce((a, b) => a + b, 0);
+                                        return `${context.label}: ${context.raw.toFixed(2)} m²-year (${((context.raw / total) * 100).toFixed(1)}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // PRESERVED: QR code generator (enhanced)
+            function generateQRCode(productName, result, country, co2Saved, waterSaved, landSaved) {
+                const qrCanvas = document.getElementById('qrCanvas');
+                const countryName = getCountryName(country);
+                
+                const qrContent = `
+AIOXY FOOD PASSPORT v3.0
+🌱 ${productName}
+📍 Origin: ${countryName}
+
+ENVIRONMENTAL IMPACT
+CO₂: ${result.totalCo2.toFixed(2)} kg (Saved: ${co2Saved.toFixed(2)} kg)
+Water: ${result.totalWater.toFixed(0)} L (Saved: ${waterSaved.toFixed(0)} L)
+Land: ${result.totalLand.toFixed(2)} m²-year (Saved: ${landSaved.toFixed(2)} m²-year)
+
+📊 Enhanced with Master Dataset
+✅ Triple Metrics: Carbon + Water + Land
+
+Scan at https://snapfizzintelligence.github.io/Aioxy/food.html
+#SustainableChoice #AIOXYv3
+                `.trim();
+                
+                qrCanvas.width = 200;
+                qrCanvas.height = 200;
+                const ctx = qrCanvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
+                
+                const qr = qrcode(0, 'M');
+                qr.addData(qrContent);
+                qr.make();
+                
+                const cellSize = 4;
+                const margin = 10;
+                const size = qr.getModuleCount() * cellSize + margin * 2;
+                
+                qrCanvas.width = size;
+                qrCanvas.height = size;
+                
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, size, size);
+                ctx.fillStyle = '#2c3e50';
+                
+                for (let row = 0; row < qr.getModuleCount(); row++) {
+                    for (let col = 0; col < qr.getModuleCount(); col++) {
+                        if (qr.isDark(row, col)) {
+                            ctx.fillRect(
+                                margin + col * cellSize,
+                                margin + row * cellSize,
+                                cellSize,
+                                cellSize
+                            );
+                        }
+                    }
+                }
+                
+                const logoSize = cellSize * 5;
+                const logoX = size / 2 - logoSize / 2;
+                const logoY = size / 2 - logoSize / 2;
+                
+                ctx.fillStyle = 'white';
+                ctx.fillRect(logoX, logoY, logoSize, logoSize);
+                
+                ctx.fillStyle = '#2ecc71';
+                ctx.font = 'bold 28px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('A', size / 2, size / 2);
+            }
+            
             // Initialize with default values
             setTimeout(() => {
-                document.getElementById('calculateBtn').click();
+                calculateBtn.click();
             }, 1000);
         }
 
