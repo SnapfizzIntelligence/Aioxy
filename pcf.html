@@ -588,6 +588,8 @@
                         <option value="France" selected>France</option>
                         <option value="UK">UK</option>
                         <option value="US">US</option>
+                        <option value="The Netherlands">Netherlands</option>
+                        <option value="Italy">Italy</option>
                         <option value="China">China</option>
                         <option value="Japan">Japan</option>
                     </select>
@@ -847,155 +849,155 @@
             alert('Demo reset! You have ' + PUBLIC_USAGE_LIMIT + ' uses available.');
         }
 
-        // ================== ENHANCED EMISSION FACTORS DATASET ==================
+        // ================== ENHANCED EMISSION FACTORS DATASET (v2.1) ==================
         const PCFFactors = {
           materials: {
             'plastic-virgin': { 
-              co2: { 'Germany': 2.8, 'UK': 2.75, 'France': 2.6, 'Japan': 2.9, 'US': 3.0, 'China': 3.2, 'global': 2.7 },
+              co2: { 'Germany': 2.8, 'UK': 2.75, 'France': 2.6, 'Japan': 2.9, 'US': 3.0, 'China': 3.2, 'global': 2.7, 'NL': 2.8, 'IT': 2.7 },
               water: 234,
               story: "Virgin plastic from fossil fuels",
-              certifications: []
+              certifications:
             },
             'plastic-recycled': { 
-              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.5 },
+              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.5, 'NL': 0.6, 'IT': 0.55 },
               water: 56,
               story: "Recycled plastic diverting waste from oceans",
               certifications: ['recycled']
             },
             'rubber': { 
-              co2: { 'Germany': 1.9, 'UK': 1.85, 'France': 1.8, 'Japan': 2.0, 'US': 2.1, 'China': 2.2, 'global': 1.8 },
+              co2: { 'Germany': 1.9, 'UK': 1.85, 'France': 1.8, 'Japan': 2.0, 'US': 2.1, 'China': 2.2, 'global': 1.8, 'NL': 1.85, 'IT': 1.8 },
               water: 2000,
               story: "Natural rubber from sustainable sources",
-              certifications: []
+              certifications:
             },
             'leather': { 
-              co2: { 'Germany': 10.5, 'UK': 10.2, 'France': 9.8, 'Japan': 10.7, 'US': 11.0, 'China': 11.5, 'global': 10.0 },
+              co2: { 'Germany': 10.5, 'UK': 10.2, 'France': 9.8, 'Japan': 10.7, 'US': 11.0, 'China': 11.5, 'global': 10.0, 'NL': 10.4, 'IT': 10.0 },
               water: 17093,
               story: "Traditional leather with high water footprint",
-              certifications: []
+              certifications:
             },
             'steel': { 
-              co2: { 'Germany': 2.0, 'UK': 2.05, 'France': 1.9, 'Japan': 2.2, 'US': 2.3, 'China': 2.5, 'global': 2.1 },
+              co2: { 'Germany': 2.0, 'UK': 2.05, 'France': 1.9, 'Japan': 2.2, 'US': 2.3, 'China': 2.5, 'global': 2.1, 'NL': 2.0, 'IT': 1.95 },
               water: 100,
               story: "Recycled steel components",
               certifications: ['recycled']
             },
             'aluminum': { 
-              co2: { 'Germany': 10.5, 'UK': 10.8, 'France': 10.0, 'Japan': 11.2, 'US': 11.5, 'China': 12.0, 'global': 11.0 },
+              co2: { 'Germany': 10.5, 'UK': 10.8, 'France': 10.0, 'Japan': 11.2, 'US': 11.5, 'China': 12.0, 'global': 11.0, 'NL': 10.5, 'IT': 10.2 },
               water: 15,
               story: "Recycled aluminum hardware",
               certifications: ['recycled']
             },
             'glass': { 
-              co2: { 'Germany': 1.2, 'UK': 1.25, 'France': 1.1, 'Japan': 1.4, 'US': 1.5, 'China': 1.6, 'global': 1.3 },
+              co2: { 'Germany': 1.2, 'UK': 1.25, 'France': 1.1, 'Japan': 1.4, 'US': 1.5, 'China': 1.6, 'global': 1.3, 'NL': 1.2, 'IT': 1.15 },
               water: 28,
               story: "Recycled glass elements",
               certifications: ['recycled']
             },
             'cardboard': { 
-              co2: { 'Germany': 0.9, 'UK': 0.95, 'France': 0.85, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.94 },
+              co2: { 'Germany': 0.9, 'UK': 0.95, 'France': 0.85, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.94, 'NL': 0.92, 'IT': 0.88 },
               water: 2000,
               story: "FSC-certified cardboard packaging",
               certifications: ['organic', 'recycled']
             },
             'nylon-recycled': { 
-              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6 },
+              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6, 'NL': 0.58, 'IT': 0.53 },
               water: 71,
               story: "Recycled nylon from ocean waste",
               certifications: ['recycled']
             },
             'cotton': { 
-              co2: { 'Germany': 3.5, 'UK': 3.4, 'France': 3.3, 'Japan': 3.6, 'US': 3.7, 'China': 4.0, 'global': 3.6 },
+              co2: { 'Germany': 3.5, 'UK': 3.4, 'France': 3.3, 'Japan': 3.6, 'US': 3.7, 'China': 4.0, 'global': 3.6, 'NL': 3.45, 'IT': 3.35 },
               water: 8920,
               story: "Organic cotton saving water",
               certifications: ['organic']
             },
             'polyester': { 
-              co2: { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3 },
+              co2: { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3, 'NL': 4.15, 'IT': 4.05 },
               water: 71,
               story: "Recycled polyester from bottles",
               certifications: ['recycled']
             },
             'vegan-leather': { 
-              co2: { 'Germany': 3.2, 'UK': 3.1, 'France': 3.0, 'Japan': 3.3, 'US': 3.4, 'China': 3.6, 'global': 3.2 },
+              co2: { 'Germany': 3.2, 'UK': 3.1, 'France': 3.0, 'Japan': 3.3, 'US': 3.4, 'China': 3.6, 'global': 3.2, 'NL': 3.15, 'IT': 3.05 },
               water: 250,
               story: "Innovative plant-based leather alternative",
               certifications: ['vegan']
             },
             'wool-virgin': { 
-              co2: { 'Germany': 30.0, 'UK': 30.0, 'France': 28.0, 'Japan': 35.0, 'US': 40.0, 'China': 45.0, 'global': 30.0 },
+              co2: { 'Germany': 30.0, 'UK': 30.0, 'France': 28.0, 'Japan': 35.0, 'US': 40.0, 'China': 45.0, 'global': 30.0, 'NL': 30.0, 'IT': 29.0 },
               water: 8000,
               story: "Virgin wool from responsibly reared sheep",
               certifications: ['organic']
             },
             'wool-recycled': { 
-              co2: { 'Germany': 2.0, 'UK': 2.5, 'France': 2.0, 'Japan': 3.0, 'US': 4.0, 'China': 5.0, 'global': 3.0 },
+              co2: { 'Germany': 2.0, 'UK': 2.5, 'France': 2.0, 'Japan': 3.0, 'US': 4.0, 'China': 5.0, 'global': 3.0, 'NL': 2.5, 'IT': 2.0 },
               water: 2000,
               story: "Recycled wool blend saving water and climate impact",
               certifications: ['recycled']
             },
             // 🌱 NEW SUSTAINABLE MATERIALS
             'hemp': {
-              co2: { 'Germany': 1.5, 'UK': 1.4, 'France': 1.3, 'Japan': 1.6, 'US': 1.7, 'China': 1.8, 'global': 1.5 },
+              co2: { 'Germany': 1.5, 'UK': 1.4, 'France': 1.3, 'Japan': 1.6, 'US': 1.7, 'China': 1.8, 'global': 1.5, 'NL': 1.45, 'IT': 1.35 },
               water: 300,
               story: "Hemp: low-input fiber with regenerative potential",
               certifications: ['organic', 'vegan']
             },
             'linen': {
-              co2: { 'Germany': 1.6, 'UK': 1.5, 'France': 1.4, 'Japan': 1.7, 'US': 1.8, 'China': 1.9, 'global': 1.6 },
+              co2: { 'Germany': 1.6, 'UK': 1.5, 'France': 1.4, 'Japan': 1.7, 'US': 1.8, 'China': 1.9, 'global': 1.6, 'NL': 1.55, 'IT': 1.45 },
               water: 650,
               story: "Linen: ancient, durable, and water-efficient",
               certifications: ['organic', 'vegan']
             },
             'tencel': {
-              co2: { 'Germany': 2.0, 'UK': 1.9, 'France': 1.8, 'Japan': 2.1, 'US': 2.2, 'China': 2.3, 'global': 2.0 },
+              co2: { 'Germany': 2.0, 'UK': 1.9, 'France': 1.8, 'Japan': 2.1, 'US': 2.2, 'China': 2.3, 'global': 2.0, 'NL': 1.95, 'IT': 1.85 },
               water: 500,
               story: "Tencel (Lyocell): closed-loop cellulose fiber",
               certifications: ['organic', 'vegan', 'innovation']
             },
             'mycelium-leather': {
-              co2: { 'Germany': 1.2, 'UK': 1.1, 'France': 1.0, 'Japan': 1.3, 'US': 1.4, 'China': 1.5, 'global': 1.2 },
+              co2: { 'Germany': 1.2, 'UK': 1.1, 'France': 1.0, 'Japan': 1.3, 'US': 1.4, 'China': 1.5, 'global': 1.2, 'NL': 1.15, 'IT': 1.05 },
               water: 100,
               story: "Futuristic leather grown from fungi mycelium",
               certifications: ['vegan', 'innovation']
             },
             'pinatex': {
-              co2: { 'Germany': 2.5, 'UK': 2.4, 'France': 2.3, 'Japan': 2.6, 'US': 2.7, 'China': 2.9, 'global': 2.5 },
+              co2: { 'Germany': 2.5, 'UK': 2.4, 'France': 2.3, 'Japan': 2.6, 'US': 2.7, 'China': 2.9, 'global': 2.5, 'NL': 2.45, 'IT': 2.35 },
               water: 400,
               story: "Piñatex: pineapple leaf waste turned into leather",
               certifications: ['vegan', 'innovation']
             },
             'cork': {
-              co2: { 'Germany': 0.9, 'UK': 0.8, 'France': 0.7, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.9 },
+              co2: { 'Germany': 0.9, 'UK': 0.8, 'France': 0.7, 'Japan': 1.0, 'US': 1.1, 'China': 1.2, 'global': 0.9, 'NL': 0.85, 'IT': 0.75 },
               water: 50,
               story: "Cork: bark harvested without cutting trees",
               certifications: ['organic', 'vegan']
             },
             'bioplastic': {
-              co2: { 'Germany': 1.8, 'UK': 1.7, 'France': 1.6, 'Japan': 2.0, 'US': 2.1, 'China': 2.3, 'global': 1.9 },
+              co2: { 'Germany': 1.8, 'UK': 1.7, 'France': 1.6, 'Japan': 2.0, 'US': 2.1, 'China': 2.3, 'global': 1.9, 'NL': 1.75, 'IT': 1.65 },
               water: 120,
               story: "Bio-based plastic: made from renewable crops",
               certifications: ['vegan', 'innovation']
             }
           },
           energy: {
-            'grid': { 'Germany': 0.362, 'UK': 0.189, 'France': 0.051, 'Japan': 0.395, 'US': 0.352, 'China': 0.573, 'global': 0.475 },
-            'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045 },
-            'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015 },
-            'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012 },
-            'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06 },
-            'geothermal': { 'Germany': 0.015, 'UK': 0.018, 'France': 0.012, 'Japan': 0.02, 'US': 0.025, 'China': 0.03, 'global': 0.02 }
+            'grid': { 'Germany': 0.362, 'UK': 0.189, 'France': 0.051, 'Japan': 0.395, 'US': 0.352, 'China': 0.573, 'global': 0.475, 'NL': 0.350, 'IT': 0.280 },
+            'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045, 'NL': 0.04, 'IT': 0.038 },
+            'wind': { 'Germany': 0.012, 'UK': 0.015, 'France': 0.01, 'Japan': 0.018, 'US': 0.015, 'China': 0.02, 'global': 0.015, 'NL': 0.015, 'IT': 0.012 },
+            'hydro': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.008, 'Japan': 0.015, 'US': 0.013, 'China': 0.018, 'global': 0.012, 'NL': 0.01, 'IT': 0.009 },
+            'biomass': { 'Germany': 0.05, 'UK': 0.06, 'France': 0.045, 'Japan': 0.07, 'US': 0.08, 'China': 0.09, 'global': 0.06, 'NL': 0.055, 'IT': 0.05 },
+            'geothermal': { 'Germany': 0.015, 'UK': 0.018, 'France': 0.012, 'Japan': 0.02, 'US': 0.025, 'China': 0.03, 'global': 0.02, 'NL': 0.018, 'IT': 0.015 }
           },
           transport: {
-            'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120 },
-            'air': { 'Germany': 0.560, 'UK': 0.570, 'France': 0.550, 'Japan': 0.580, 'US': 0.590, 'China': 0.600, 'global': 0.570 },
-            'sea': { 'Germany': 0.014, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015 },
-            'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030 },
-            'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04 },
-            'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011 },
-            'last-mile-van': { 'Germany': 0.18, 'UK': 0.19, 'France': 0.17, 'Japan': 0.20, 'US': 0.22, 'China': 0.25, 'global': 0.20 },
-            'cargo-bike': { 'Germany': 0.005, 'UK': 0.006, 'France': 0.004, 'Japan': 0.007, 'US': 0.008, 'China': 0.009, 'global': 0.006 },
-            'pipeline': { 'Germany': 0.02, 'UK': 0.021, 'France': 0.019, 'Japan': 0.022, 'US': 0.023, 'China': 0.025, 'global': 0.021 }
+            'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120, 'NL': 0.118, 'IT': 0.112 },
+            'air': { 'Germany': 0.560, 'UK': 0.570, 'France': 0.550, 'Japan': 0.580, 'US': 0.590, 'China': 0.600, 'global': 0.570, 'NL': 0.565, 'IT': 0.555 },
+            'sea': { 'Germany': 0.014, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015, 'NL': 0.014, 'IT': 0.0135 },
+            'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030, 'NL': 0.029, 'IT': 0.027 },
+            'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04, 'NL': 0.038, 'IT': 0.030 },
+            'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011, 'NL': 0.011, 'IT': 0.01 },
+            'last-mile-van': { 'Germany': 0.18, 'UK': 0.19, 'France': 0.17, 'Japan': 0.20, 'US': 0.22, 'China': 0.25, 'global': 0.20, 'NL': 0.185, 'IT': 0.175 },
+            'cargo-bike': { 'Germany': 0.005, 'UK': 0.006, 'France': 0.004, 'Japan': 0.007, 'US': 0.008, 'China': 0.009, 'global': 0.006, 'NL': 0.005, 'IT': 0.0045 },
+            'pipeline': { 'Germany': 0.02, 'UK': 0.021, 'France': 0.019, 'Japan': 0.022, 'US': 0.023, 'China': 0.025, 'global': 0.021, 'NL': 0.0205, 'IT': 0.0195 }
           }
         };
 
