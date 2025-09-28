@@ -673,6 +673,7 @@
                                 <option value="pea_protein" selected>Pea Protein Isolate</option>
                                 <option value="mycoprotein">Mycoprotein</option>
                                 <option value="algal_protein">Algal Protein</option>
+                                <option value="cultivated_beef">Cultivated Beef</option>
                             </optgroup>
                             <optgroup label="Grains & Staples">
                                 <option value="oats">Oats</option>
@@ -978,6 +979,12 @@
                     "analogies": {"co2": "25h lightbulb", "water": "5-min shower", "land": "yoga mat"},
                     "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true}
                 },
+                "cultivated_beef": { 
+                    "co2e": 4.0, "water": 1200, "land": 2.0,
+                    "analogies": {"co2": "12 km car drive", "water": "7 bathtubs", "land": "yoga mat"},
+                    "certification": {"organicEligible": false, "fairTradeRelevant": false, "veganRelevant": true},
+                    "notes": "Based on CE Delft ex-ante LCA. Range: 2–12 kg CO₂e/kg depending on renewable vs fossil-heavy electricity. AIOXY shows midpoint for simplicity."
+                },
                 "oats": { 
                     "co2e": 2.5, "water": 1800, "land": 10,
                     "analogies": {"co2": "15 km car drive", "water": "12 bathtubs", "land": "half tennis court"},
@@ -1128,6 +1135,7 @@
                             <option value="pea_protein">Pea Protein Isolate</option>
                             <option value="mycoprotein">Mycoprotein</option>
                             <option value="algal_protein">Algal Protein</option>
+                            <option value="cultivated_beef">Cultivated Beef</option>
                         </optgroup>
                         <optgroup label="Grains & Staples">
                             <option value="oats">Oats</option>
@@ -1524,6 +1532,7 @@
                     fish_farmed: "Farmed Fish", milk: "Dairy Milk", cheese: "Cheese", eggs: "Eggs",
                     tofu: "Tofu (Soy)", soybeans: "Soybeans", lentils: "Lentils", chickpeas: "Chickpeas",
                     pea_protein: "Pea Protein", mycoprotein: "Mycoprotein", algal_protein: "Algal Protein",
+                    cultivated_beef: "Cultivated Beef",
                     oats: "Oats", rice: "Rice", wheat: "Wheat", maize: "Maize", potatoes: "Potatoes",
                     tomatoes: "Tomatoes", bananas: "Bananas", apples: "Apples", oranges: "Oranges",
                     coffee: "Coffee", cocoa: "Cocoa", sugar_cane: "Sugar Cane"
