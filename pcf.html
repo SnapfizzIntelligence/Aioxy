@@ -980,6 +980,31 @@
               certifications: ['vegan', 'innovation']
             }
           },
+            // === ENHANCED BAMBOO MATERIALS WITH CREDIBILITY TIERS ===
+'bamboo-lyocell-organic': {
+  co2: { 'Germany': 6.9, 'UK': 6.8, 'France': 6.73, 'Japan': 7.1, 'US': 7.2, 'China': 7.5, 'global': 6.73, 'Netherlands': 6.8, 'Italy': 6.75 },
+  water: 22.2,
+  story: "Organic bamboo processed via lyocell (closed-loop). Lower-impact MMCF, solvent recovery.",
+  source: "GreenStory LCA (Boody) 2022, ecoinvent-based",
+  confidence: "medium",
+  certifications: ['organic', 'innovation', 'vegan']
+},
+'bamboo-viscose-generic': {
+  co2: { 'Germany': 10.2, 'UK': 10.1, 'France': 10.0, 'Japan': 10.5, 'US': 10.7, 'China': 11.0, 'global': 10.0, 'Netherlands': 10.1, 'Italy': 10.0 },
+  water: 350,
+  story: "Conventional viscose route (chemicals, higher variability).",
+  source: "Literature (Shen & Patel 2010, MMCF LCA meta-analyses)",
+  confidence: "low", 
+  certifications: ['vegan']
+},
+'bamboo-mechanical': {
+  co2: { 'Germany': 1.6, 'UK': 1.55, 'France': 1.5, 'Japan': 1.7, 'US': 1.8, 'China': 2.0, 'global': 1.5, 'Netherlands': 1.55, 'Italy': 1.5 },
+  water: 300,
+  story: "Mechanical bamboo fibre (rare, linen-like). Limited commercial scale.",
+  source: "Academic LCA reviews", 
+  confidence: "low",
+  certifications: ['organic', 'innovation', 'vegan']
+}
           energy: {
             'grid': { 'Germany': 0.362, 'UK': 0.189, 'France': 0.051, 'Japan': 0.395, 'US': 0.352, 'China': 0.573, 'global': 0.475, 'Netherlands': 0.350, 'Italy': 0.280 },
             'solar': { 'Germany': 0.04, 'UK': 0.045, 'France': 0.035, 'Japan': 0.05, 'US': 0.05, 'China': 0.06, 'global': 0.045, 'Netherlands': 0.04, 'Italy': 0.038 },
@@ -1064,6 +1089,10 @@
                 <option value="pinatex">Piñatex</option>
                 <option value="cork">Cork</option>
                 <option value="bioplastic">Bioplastic</option>
+                <optgroup label="Bamboo Materials">
+  <option value="bamboo-lyocell-organic">Bamboo Lyocell (Organic)</option>
+  <option value="bamboo-viscose-generic">Bamboo Viscose (Generic)</option>
+  <option value="bamboo-mechanical">Bamboo Mechanical</option>
               </optgroup>
               <optgroup label="Other Materials">
                 <option value="rubber">Rubber</option>
