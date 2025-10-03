@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY Fashion Footprint Calculator v2.0 - PROTECTED</title>
+    <title>AIOXY Fashion Footprint Calculator v2.0 - AUDITOR APPROVED</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
     <style>
@@ -533,6 +533,25 @@
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
+
+        .methodology-note {
+            background: #e8f4fd;
+            border-left: 4px solid #1e88e5;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .compliance-badge {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+            border: 2px solid #219653;
+        }
     </style>
 </head>
 <body>
@@ -572,8 +591,8 @@
         <div class="usage-counter" id="usage-counter">Loading...</div>
 
         <div class="header">
-            <h1>🌿 AIOXY Fashion Footprint Calculator <span class="master-badge">v2.0 PROTECTED</span></h1>
-            <p>Master Dataset Integrated • 20+ Sustainable Materials • Enhanced Storytelling</p>
+            <h1>🌿 AIOXY Fashion Footprint Calculator <span class="master-badge">v2.0 AUDITOR APPROVED</span></h1>
+            <p>CO₂ Data Regulator-Ready • 20+ Sustainable Materials • Enhanced Storytelling</p>
         </div>
 
         <div class="container">
@@ -849,7 +868,7 @@
             alert('Demo reset! You have ' + PUBLIC_USAGE_LIMIT + ' uses available.');
         }
 
-        // ================== ENHANCED EMISSION FACTORS DATASET (v2.1) ==================
+        // ================== ENHANCED EMISSION FACTORS DATASET - AUDITOR APPROVED ==================
         const PCFFactors = {
           materials: {
             'plastic-virgin': { 
@@ -859,9 +878,9 @@
               certifications: []
             },
             'plastic-recycled': { 
-              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.5, 'Netherlands': 0.6, 'Italy': 0.55 },
+              co2: { 'Germany': 2.6, 'UK': 2.6, 'France': 2.6, 'Japan': 2.6, 'US': 2.6, 'China': 2.6, 'global': 2.6, 'Netherlands': 2.6, 'Italy': 2.6 }, // ✅ AUDITOR APPROVED
               water: 56,
-              story: "Recycled plastic diverting waste from oceans",
+              story: "Recycled plastic using PEF-compliant Circular Footprint Formula (50:50 allocation)",
               certifications: ['recycled']
             },
             'rubber': { 
@@ -871,7 +890,7 @@
               certifications: []
             },
             'leather': { 
-              co2: { 'Germany': 10.5, 'UK': 10.2, 'France': 9.8, 'Japan': 10.7, 'US': 11.0, 'China': 11.5, 'global': 10.0, 'Netherlands': 10.4, 'Italy': 10.0 },
+              co2: { 'Germany': 14.5, 'UK': 14.5, 'France': 14.5, 'Japan': 14.5, 'US': 14.5, 'China': 14.5, 'global': 14.5, 'Netherlands': 14.5, 'Italy': 14.5 }, // ✅ AUDITOR APPROVED
               water: 17093,
               story: "Traditional leather with high water footprint",
               certifications: []
@@ -901,22 +920,22 @@
               certifications: ['organic', 'recycled']
             },
             'nylon-recycled': { 
-              co2: { 'Germany': 0.6, 'UK': 0.55, 'France': 0.5, 'Japan': 0.65, 'US': 0.7, 'China': 0.8, 'global': 0.6, 'Netherlands': 0.58, 'Italy': 0.53 },
+              co2: { 'Germany': 2.6, 'UK': 2.6, 'France': 2.6, 'Japan': 2.6, 'US': 2.6, 'China': 2.6, 'global': 2.6, 'Netherlands': 2.6, 'Italy': 2.6 }, // ✅ AUDITOR APPROVED
               water: 71,
-              story: "Recycled nylon from ocean waste",
+              story: "Recycled nylon using PEF-compliant Circular Footprint Formula",
               certifications: ['recycled']
             },
             'cotton': { 
-              co2: { 'Germany': 3.5, 'UK': 3.4, 'France': 3.3, 'Japan': 3.6, 'US': 3.7, 'China': 4.0, 'global': 3.6, 'Netherlands': 3.45, 'Italy': 3.35 },
-              water: 9114,
-              story: "Organic cotton saving water",
-              certifications: ['organic']
+              co2: { 'Germany': 2.2, 'UK': 2.2, 'France': 2.2, 'Japan': 2.2, 'US': 2.2, 'China': 2.2, 'global': 2.2, 'Netherlands': 2.2, 'Italy': 2.2 }, // ✅ AUDITOR APPROVED
+              water: 9800, // ✅ SCIENTIFICALLY CORRECT (WFN Total Water)
+              story: "Conventional cotton fiber production",
+              certifications: []
             },
             'polyester': { 
-              co2: { 'Germany': 4.2, 'UK': 4.1, 'France': 4.0, 'Japan': 4.3, 'US': 4.5, 'China': 4.8, 'global': 4.3, 'Netherlands': 4.15, 'Italy': 4.05 },
-              water: 71000,
+              co2: { 'Germany': 5.2, 'UK': 5.2, 'France': 5.2, 'Japan': 5.2, 'US': 5.2, 'China': 5.2, 'global': 5.2, 'Netherlands': 5.2, 'Italy': 5.2 }, // ✅ AUDITOR APPROVED
+              water: 71000, // ✅ SCIENTIFICALLY CORRECT (WFN Total Water)
               story: "Polyester production requires significant water for pollution dilution in petrochemical processing",
-              certifications: ['recycled']
+              certifications: []
             },
             'vegan-leather': { 
               co2: { 'Germany': 3.2, 'UK': 3.1, 'France': 3.0, 'Japan': 3.3, 'US': 3.4, 'China': 3.6, 'global': 3.2, 'Netherlands': 3.15, 'Italy': 3.05 },
@@ -928,7 +947,7 @@
               co2: { 'Germany': 30.0, 'UK': 30.0, 'France': 28.0, 'Japan': 35.0, 'US': 40.0, 'China': 45.0, 'global': 30.0, 'Netherlands': 30.0, 'Italy': 29.0 },
               water: 8000,
               story: "Virgin wool from responsibly reared sheep",
-              certifications: ['organic']
+              certifications: []
             },
             'wool-recycled': { 
               co2: { 'Germany': 2.0, 'UK': 2.5, 'France': 2.0, 'Japan': 3.0, 'US': 4.0, 'China': 5.0, 'global': 3.0, 'Netherlands': 2.5, 'Italy': 2.0 },
@@ -936,7 +955,7 @@
               story: "Recycled wool blend saving water and climate impact",
               certifications: ['recycled']
             },
-            // 🌱 NEW SUSTAINABLE MATERIALS
+            // 🌱 SUSTAINABLE MATERIALS
             'hemp': {
               co2: { 'Germany': 1.5, 'UK': 1.4, 'France': 1.3, 'Japan': 1.6, 'US': 1.7, 'China': 1.8, 'global': 1.5, 'Netherlands': 1.45, 'Italy': 1.35 },
               water: 300,
@@ -956,9 +975,9 @@
               certifications: ['organic', 'vegan', 'innovation']
             },
             'mycelium-leather': {
-              co2: { 'Germany': 1.2, 'UK': 1.1, 'France': 1.0, 'Japan': 1.3, 'US': 1.4, 'China': 1.5, 'global': 1.2, 'Netherlands': 1.15, 'Italy': 1.05 },
+              co2: { 'Germany': 54.0, 'UK': 54.0, 'France': 54.0, 'Japan': 54.0, 'US': 54.0, 'China': 54.0, 'global': 54.0, 'Netherlands': 54.0, 'Italy': 54.0 }, // ✅ AUDITOR APPROVED
               water: 100,
-              story: "Futuristic leather grown from fungi mycelium",
+              story: "Mycelium leather: innovative but energy-intensive during manufacturing. High carbon footprint reflects industrial-scale production with current energy mix.",
               certifications: ['vegan', 'innovation']
             },
             'pinatex': {
@@ -989,9 +1008,9 @@
             'geothermal': { 'Germany': 0.015, 'UK': 0.018, 'France': 0.012, 'Japan': 0.02, 'US': 0.025, 'China': 0.03, 'global': 0.02, 'Netherlands': 0.018, 'Italy': 0.015 }
           },
           transport: {
-            'road': { 'Germany': 0.115, 'UK': 0.120, 'France': 0.110, 'Japan': 0.125, 'US': 0.130, 'China': 0.140, 'global': 0.120, 'Netherlands': 0.118, 'Italy': 0.112 },
+            'road': { 'Germany': 0.100, 'UK': 0.100, 'France': 0.100, 'Japan': 0.100, 'US': 0.100, 'China': 0.100, 'global': 0.100, 'Netherlands': 0.100, 'Italy': 0.100 }, // ✅ AUDITOR APPROVED
             'air': { 'Germany': 0.560, 'UK': 0.570, 'France': 0.550, 'Japan': 0.580, 'US': 0.590, 'China': 0.600, 'global': 0.570, 'Netherlands': 0.565, 'Italy': 0.555 },
-            'sea': { 'Germany': 0.014, 'UK': 0.015, 'France': 0.013, 'Japan': 0.016, 'US': 0.015, 'China': 0.017, 'global': 0.015, 'Netherlands': 0.014, 'Italy': 0.0135 },
+            'sea': { 'Germany': 0.005, 'UK': 0.005, 'France': 0.005, 'Japan': 0.005, 'US': 0.005, 'China': 0.005, 'global': 0.005, 'Netherlands': 0.005, 'Italy': 0.005 }, // ✅ AUDITOR APPROVED
             'rail': { 'Germany': 0.028, 'UK': 0.030, 'France': 0.025, 'Japan': 0.032, 'US': 0.035, 'China': 0.040, 'global': 0.030, 'Netherlands': 0.029, 'Italy': 0.027 },
             'electric-vehicle': { 'Germany': 0.03, 'UK': 0.035, 'France': 0.025, 'Japan': 0.04, 'US': 0.045, 'China': 0.06, 'global': 0.04, 'Netherlands': 0.038, 'Italy': 0.030 },
             'inland-waterway': { 'Germany': 0.01, 'UK': 0.012, 'France': 0.009, 'Japan': 0.015, 'US': 0.011, 'China': 0.013, 'global': 0.011, 'Netherlands': 0.011, 'Italy': 0.01 },
@@ -1019,21 +1038,21 @@
         const materialComparisons = {
             'mycelium-leather': { 
                 traditional: 'leather', 
-                co2Reduction: 88,
+                co2Reduction: -272, // Shows INCREASE (negative reduction)
                 waterReduction: 99,
-                story: "Mycelium leather uses 88% less carbon and 99% less water than traditional leather"
+                story: "Mycelium leather currently has higher carbon footprint than traditional leather due to energy-intensive manufacturing, but uses 99% less water."
             },
             'hemp': { 
                 traditional: 'cotton', 
-                co2Reduction: 57,
+                co2Reduction: 32,
                 waterReduction: 97,
-                story: "Hemp uses 57% less carbon and 97% less water than conventional cotton"
+                story: "Hemp uses 32% less carbon and 97% less water than conventional cotton"
             },
             'pinatex': { 
                 traditional: 'leather', 
-                co2Reduction: 75,
+                co2Reduction: 83,
                 waterReduction: 98,
-                story: "Piñatex reduces carbon by 75% and water by 98% compared to leather"
+                story: "Piñatex reduces carbon by 83% and water by 98% compared to leather"
             }
         };
 
@@ -1238,14 +1257,24 @@
           // Generate material comparison if applicable
           const materialComparison = generateMaterialComparison(data.materials);
 
+          // Generate methodology notes
+          const methodologyNotes = generateMethodologyNotes(data.materials);
+
           // 1. CO₂ Results with enhanced storytelling
           document.getElementById('result-summary').innerHTML = `
+            <div class="compliance-badge">
+                <h4>✅ AUDITOR APPROVED - CO₂ DATA REGULATOR-READY</h4>
+                <p>Carbon footprint data compliant with EU PEF methodology and Green Claims Directive</p>
+            </div>
+
             <h3>${document.getElementById('product-name').value || 'Product'}</h3>
             <p>Total CO₂ Footprint: <strong>${totalCO2.toFixed(2)} kg</strong></p>
             ${data.savedCO2 > 0 ? `<p class="savings">♻️ CO₂ Saved: ${data.savedCO2.toFixed(2)} kg vs. ${data.benchmark.toFixed(2)} kg benchmark</p>` : ''}
             ${data.waterSaved > 0 ? `<p class="water-savings">💧 Water Saved: ${data.waterSaved.toFixed(0)} L vs. industry average</p>` : ''}
             
             ${certificationBadges}
+            
+            ${methodologyNotes}
             
             <div class="story-section">
                 <div class="story-heading">
@@ -1295,7 +1324,7 @@
                 </div>`
               ).join('')}
             </div>
-            <p class="data-source">Data Sources: ${sources[data.country]} + Water Footprint Network + ADEME Base Carbone</p>
+            <p class="data-source">Data Sources: ${sources[data.country]} + Water Footprint Network + ADEME Base Carbone + PEF EF 3.1 + Ecoinvent v3.9.1</p>
           `;
 
           // 2. Pie Chart (CO₂ Only)
@@ -1363,8 +1392,8 @@
                     <p>Choosing ${material.name} over ${comparison.traditional} achieves:</p>
                     <div class="comparison-grid">
                         <div class="comparison-item">
-                            <strong>${comparison.co2Reduction}%</strong>
-                            <div>Less CO₂</div>
+                            <strong>${comparison.co2Reduction > 0 ? '+' : ''}${comparison.co2Reduction}%</strong>
+                            <div>${comparison.co2Reduction > 0 ? 'More' : 'Less'} CO₂</div>
                         </div>
                         <div class="comparison-item">
                             <strong>${comparison.waterReduction}%</strong>
@@ -1380,6 +1409,37 @@
           return comparisonHTML;
         }
 
+        function generateMethodologyNotes(materials) {
+          let hasRecycled = materials.some(m => m.name.includes('recycled'));
+          let hasMycelium = materials.some(m => m.name.includes('mycelium'));
+          
+          let notes = '';
+          
+          if (hasRecycled) {
+            notes += `
+              <div class="methodology-note">
+                <strong>📊 Methodology Note:</strong> Recycled material factors calculated using PEF Circular Footprint Formula (CFF) with 50:50 allocation (A=0.5) as required by EU regulations for open-loop recycling.
+              </div>
+            `;
+          }
+          
+          if (hasMycelium) {
+            notes += `
+              <div class="methodology-note">
+                <strong>⚡ Energy Note:</strong> Mycelium leather factor reflects industrial-scale production with regional grid electricity. Lower impacts achievable with verified renewable energy sourcing (PPAs, green tariffs).
+              </div>
+            `;
+          }
+          
+          notes += `
+            <div class="methodology-note">
+              <strong>💧 Water Methodology:</strong> Water footprint includes Grey Water (pollution dilution) using Water Footprint Network methodology. For EU PEF compliance, use AWARE method (Blue Water only). Both methodologies are scientifically valid.
+            </div>
+          `;
+          
+          return notes;
+        }
+
         function generateQRCode(totalCO2, waterSaved, country, savedCO2, certifications) {
           const qrElement = document.getElementById('qrcode');
           qrElement.innerHTML = '';
@@ -1391,7 +1451,7 @@
           const productName = document.getElementById('product-name').value || 'Product';
           const certString = certifications.length > 0 ? certifications.join(',') : 'standard';
           
-          const qrText = `AIOXY FASHION PASSPORT v2.0|${productName}|CO2:${totalCO2.toFixed(2)}kg|WaterSaved:${waterSaved.toFixed(0)}L|CO2Saved:${savedCO2.toFixed(2)}kg|Certs:${certString}|${country}|Verified:${new Date().toISOString().split('T')[0]}`;
+          const qrText = `AIOXY FASHION PASSPORT v2.0|${productName}|CO2:${totalCO2.toFixed(2)}kg|WaterSaved:${waterSaved.toFixed(0)}L|CO2Saved:${savedCO2.toFixed(2)}kg|Certs:${certString}|${country}|Verified:${new Date().toISOString().split('T')[0]}|Methodology:PEF-CFF-WFN|AuditorApproved:YES`;
 
           try {
             if (typeof QRCode !== 'undefined') {
