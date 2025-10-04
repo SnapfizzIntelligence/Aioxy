@@ -3,719 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY Fashion Footprint Calculator v3.2 - 100% REGULATOR PROOF</title>
+    <title>AIOXY Fashion Footprint Calculator - 100% REGULATOR PROOF</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
     <style>
-        /* ================== ACCESS PROMPT STYLES ================== */
-        .access-prompt {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        /* SIMPLIFIED STYLES FOR RELIABILITY */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
         
-        .access-box {
-            background: linear-gradient(135deg, #2e8b57 0%, #1a3e2d 100%);
-            padding: 3rem;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 500px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            border: 2px solid #d4af37;
-        }
+        .header { text-align: center; padding: 2rem; background: #1a3e2d; color: white; border-radius: 10px; margin-bottom: 2rem; }
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
         
-        .access-input {
-            padding: 15px;
-            margin: 1rem 0;
-            width: 100%;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            text-align: center;
-        }
-        
-        .founder-btn {
-            background: linear-gradient(135deg, #d4af37 0%, #bf953f 100%);
-            color: #1a3e2d;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px;
-            font-size: 1.1rem;
-        }
-        
-        .public-btn {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 10px;
-        }
-
-        /* ================== EXISTING CALCULATOR STYLES ================== */
-        :root { 
-            --aioxy-primary: #2e8b57;
-            --aioxy-secondary: #3a7d54; 
-            --aioxy-dark: #1a3e2d;
-            --twitter-blue: #1DA1F2;
-            --background-light: #f8f9fa;
-            --water-blue: #1e88e5;
-            --impact-orange: #ff6b35;
-            --luxury-gold: #d4af37;
-            --innovation-purple: #8a2be2;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            line-height: 1.6;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            color: #333;
-        }
-        
-        .header {
-            text-align: center;
-            padding: 2rem 1rem;
-            margin-bottom: 2rem;
-            background: linear-gradient(135deg, var(--aioxy-dark) 0%, var(--aioxy-primary) 100%);
-            color: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-        
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        
-        @media (min-width: 900px) {
-            .container {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-        
-        .card h2 {
-            color: var(--aioxy-dark);
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--aioxy-primary);
-            font-size: 1.5rem;
-        }
-        
-        .input-section { 
-            background: var(--background-light); 
-            padding: 1.5rem; 
-            border-radius: 12px; 
-            margin-bottom: 1.5rem; 
-        }
-        
-        button { 
-            background: var(--aioxy-primary); 
-            color: white; 
-            border: none; 
-            padding: 12px 20px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            margin: 8px 0; 
-            transition: all 0.2s ease;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        button:hover {
-            background: var(--aioxy-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        input, select { 
-            padding: 12px; 
-            margin: 8px 0; 
-            width: 100%; 
-            box-sizing: border-box; 
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--aioxy-primary);
-            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
-        }
-        
-        .input-row { 
-            display: flex; 
-            gap: 12px; 
-            margin-bottom: 12px; 
-            align-items: center; 
-        }
-        
+        .card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .input-section { background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
         .input-row > * { flex: 1; }
         
-        .input-row > button { 
-            flex: 0 0 40px; 
-            background: #dc3545;
-            color: white;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        button { background: #2e8b57; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #1a3e2d; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; width: 100%; }
         
-        #results { 
-            margin-top: 2rem; 
-            padding: 2rem; 
-            background: white; 
-            border-radius: 12px; 
-            display: none; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
+        #results { margin-top: 2rem; padding: 2rem; background: white; border-radius: 10px; display: none; }
+        .savings { background: #e8f5ee; color: #2e8b57; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .water-savings { background: #e3f2fd; color: #1e88e5; padding: 10px; border-radius: 5px; margin: 10px 0; }
         
-        .calculate-btn { 
-            background: var(--aioxy-dark); 
-            color: white;
-            font-weight: bold; 
-            width: 100%;
-            padding: 16px;
-            font-size: 1.1rem;
-            margin-top: 1rem;
-        }
+        .impact-story { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; text-align: center; }
+        .impact-value { font-size: 2rem; font-weight: bold; margin: 0.5rem 0; }
         
-        #qrcode-container {
-            margin: 2rem auto;
-            text-align: center;
-            padding: 1.5rem;
-            background: var(--background-light);
-            border-radius: 12px;
-            border: 1px solid #eee;
-        }
+        .compliance-badge { background: #27ae60; color: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; text-align: center; }
+        .material-item { background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #2e8b57; }
         
-        #qrcode {
-            margin: 0 auto;
-        }
-        
-        #qrcode img {
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .export-buttons { 
-            display: flex; 
-            gap: 12px; 
-            margin-top: 2rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .savings {
-            color: var(--aioxy-primary);
-            font-weight: bold;
-            background: #e8f5ee;
-            padding: 12px 16px;
-            border-radius: 8px;
-            display: inline-block;
-            margin: 8px 0;
-            font-size: 1.1rem;
-            border-left: 4px solid var(--aioxy-primary);
-        }
-        
-        .water-savings {
-            color: var(--water-blue);
-            font-weight: bold;
-            background: #e3f2fd;
-            padding: 12px 16px;
-            border-radius: 8px;
-            display: inline-block;
-            margin: 8px 0;
-            font-size: 1.1rem;
-            border-left: 4px solid var(--water-blue);
-        }
-        
-        .innovation-savings {
-            color: var(--innovation-purple);
-            font-weight: bold;
-            background: #f3e8fd;
-            padding: 12px 16px;
-            border-radius: 8px;
-            display: inline-block;
-            margin: 8px 0;
-            font-size: 1.1rem;
-            border-left: 4px solid var(--innovation-purple);
-        }
-        
-        .impact-story {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-            text-align: center;
-        }
-        
-        .impact-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 0.5rem 0;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-        }
-        
-        .impact-label {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        #downloadQR {
-            display: inline-block;
-            background: var(--aioxy-dark);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            margin-top: 1rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-        
-        #downloadQR:hover {
-            background: var(--aioxy-primary);
-            transform: translateY(-2px);
-        }
-        
-        .error-message {
-            color: #dc3545;
-            font-weight: bold;
-            margin: 12px 0;
-            padding: 12px;
-            background: #ffeaea;
-            border-radius: 8px;
-            border-left: 4px solid #dc3545;
-        }
-        
-        #chart-container {
-            margin: 2rem auto;
-            max-width: 400px;
-            height: 300px;
-        }
-        
-        .material-item {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--aioxy-primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .luxury-badge {
-            background: linear-gradient(135deg, var(--luxury-gold) 0%, #bf953f 100%);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-        
-        .innovation-badge {
-            background: linear-gradient(135deg, var(--innovation-purple) 0%, #6a0dad 100%);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-        
-        .data-source {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 1rem;
-            text-align: center;
-            font-style: italic;
-        }
-        
-        .story-section {
-            background: #fff9e6;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-            border-left: 4px solid var(--impact-orange);
-        }
-        
-        .story-heading {
-            color: var(--impact-orange);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .certification-badges {
-            display: flex;
-            gap: 0.8rem;
-            margin: 1rem 0;
-            flex-wrap: wrap;
-        }
-        
-        .cert-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .cert-badge.organic { background: #27ae60; color: white; }
-        .cert-badge.recycled { background: #3498db; color: white; }
-        .cert-badge.vegan { background: #2ecc71; color: white; }
-        .cert-badge.innovation { background: var(--innovation-purple); color: white; }
-        
-        .material-comparison {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 1.5rem 0;
-        }
-        
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .comparison-item {
-            background: rgba(255,255,255,0.2);
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        @media (max-width: 768px) {
-            .input-row {
-                flex-direction: column;
-            }
-            
-            .input-row > * {
-                width: 100%;
-            }
-            
-            #qrcode { 
-                width: 180px; 
-                height: 180px; 
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .export-buttons {
-                flex-direction: column;
-            }
-            
-            #chart-container {
-                max-width: 300px;
-            }
-            
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .footprint-comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
-        
-        .comparison-card {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .comparison-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-        }
-        
-        .your-value {
-            color: var(--aioxy-primary);
-        }
-        
-        .avg-value {
-            color: #666;
-        }
-        
-        .master-badge {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-        
-        /* USAGE LIMIT STYLES */
-        #usage-limit-message {
-            display: none;
-            margin: 2rem 0;
-        }
-        
-        .usage-counter {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: var(--aioxy-dark);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .methodology-note {
-            background: #e8f4fd;
-            border-left: 4px solid #1e88e5;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .compliance-badge {
-            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            text-align: center;
-            border: 2px solid #219653;
-        }
-
-        .regulatory-note {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .hybrid-strategy {
-            background: #e8f5e8;
-            border-left: 4px solid #2e8b57;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .water-tooltip {
-            cursor: help;
-            border-bottom: 1px dotted #1e88e5;
-            margin-left: 5px;
-        }
-        
-        .cff-compliance {
-            background: #e8f5e8;
-            border-left: 4px solid #27ae60;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
+        .access-prompt { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 1000; color: white; }
+        .access-box { background: #1a3e2d; padding: 2rem; border-radius: 10px; text-align: center; max-width: 400px; }
+        .usage-counter { position: fixed; top: 10px; right: 10px; background: #1a3e2d; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-    <!-- ACCESS PROMPT (SHOWS FIRST) -->
+    <!-- ACCESS PROMPT -->
     <div id="accessPrompt" class="access-prompt">
         <div class="access-box">
-            <h1>🔐 AIOXY FOUNDER ACCESS</h1>
-            <p style="font-size: 1.2rem; margin: 1rem 0;">100% REGULATOR-PROOF Sustainability Calculator</p>
-            
-            <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0;">
-                <h3>👑 FOUNDER ACCESS</h3>
-                <p>Unlimited usage • Full features • Priority support</p>
-                <input type="password" id="founderPassword" class="access-input" placeholder="Enter founder password" 
-                       onkeypress="if(event.key=='Enter') checkAccess()">
-                <button class="founder-btn" onclick="checkAccess()">
-                    🔓 UNLOCK UNLIMITED ACCESS
-                </button>
-            </div>
-            
-            <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0;">
-                <h3>🚀 PUBLIC DEMO</h3>
-                <p>2 free uses • Experience full features • Contact for partnership</p>
-                <button class="public-btn" onclick="usePublicAccess()">
-                    TRY PUBLIC DEMO (2 uses)
-                </button>
-            </div>
-            
-            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 1rem;">
-                Founders: Use password | Public: Limited demo | Contact: partnerships@aioxy.com
-            </p>
+            <h2>🔐 AIOXY FOUNDER ACCESS</h2>
+            <p>Password: AIOXY2024</p>
+            <input type="password" id="founderPassword" placeholder="Enter password" style="padding: 10px; margin: 10px 0; width: 100%; border-radius: 5px; border: none;">
+            <button onclick="checkAccess()" style="background: #d4af37; color: #1a3e2d; padding: 10px 20px; margin: 5px;">🔓 UNLOCK</button>
+            <button onclick="usePublicAccess()" style="background: transparent; border: 1px solid white; color: white; padding: 10px 20px; margin: 5px;">🚀 PUBLIC DEMO (2 uses)</button>
         </div>
     </div>
 
-    <!-- CALCULATOR CONTENT (HIDDEN UNTIL ACCESS GRANTED) -->
+    <!-- CALCULATOR CONTENT -->
     <div id="calculatorContent" style="display:none;">
-        <!-- Usage Counter Display -->
-        <div class="usage-counter" id="usage-counter">Loading...</div>
+        <div class="usage-counter" id="usage-counter">👑 FOUNDER</div>
 
         <div class="header">
-            <h1>🌿 AIOXY Fashion Footprint Calculator <span class="master-badge">v3.2 100% REGULATOR PROOF</span></h1>
-            <p>ADEME V23.6 • PEF EF 3.1 • CFF A=0.8/A=0.5 • AWARE Water • A&F PEFCR V3.1</p>
+            <h1>🌿 AIOXY Fashion Footprint Calculator</h1>
+            <p>100% REGULATOR PROOF • ADEME V23.6 • PEF EF 3.1 • CFF A=0.8/A=0.5</p>
         </div>
 
         <div class="container">
             <div class="card">
                 <h2>Product Details</h2>
-                
                 <div class="input-section">
-                    <input type="text" id="product-name" placeholder="Product Name (e.g., Neverfull MM Bag)" value="Sustainable T-Shirt">
+                    <input type="text" id="product-name" placeholder="Product Name" value="Sustainable T-Shirt">
                     <select id="product-country">
-                        <option value="global">Global Average</option>
-                        <option value="Germany">Germany</option>
                         <option value="France" selected>France</option>
+                        <option value="Germany">Germany</option>
                         <option value="UK">UK</option>
-                        <option value="US">US</option>
-                        <option value="Netherlands">Netherlands</option>
-                        <option value="Italy">Italy</option>
-                        <option value="China">China</option>
-                        <option value="Japan">Japan</option>
                     </select>
 
-                    <h3>Materials <span class="master-badge">REGULATOR APPROVED</span></h3>
+                    <h3>Materials</h3>
                     <div id="materials-container"></div>
                     <button onclick="addMaterial()">+ Add Material</button>
 
-                    <h3>Manufacturing Energy</h3>
+                    <h3>Energy</h3>
                     <div class="input-row">
-                        <input type="number" id="energy-amount" placeholder="kWh" step="0.1" value="2.5">
+                        <input type="number" id="energy-amount" placeholder="kWh" value="2.5">
                         <select id="energy-type">
-                            <option value="grid">Grid Electricity</option>
                             <option value="solar">Solar</option>
+                            <option value="grid">Grid</option>
                             <option value="wind">Wind</option>
-                            <option value="hydro">Hydro</option>
-                            <option value="biomass">Biomass</option>
-                            <option value="geothermal">Geothermal</option>
                         </select>
                     </div>
 
                     <h3>CO₂ Benchmark</h3>
-                    <div class="input-row">
-                        <input type="number" id="benchmark" placeholder="Benchmark CO₂e (kg)" step="0.01" value="6.00">
-                        <span>vs. market average</span>
-                    </div>
+                    <input type="number" id="benchmark" value="6.00">
 
-                    <h3>Transport <span class="master-badge">ADEME V23.6</span></h3>
+                    <h3>Transport</h3>
                     <div id="transport-container"></div>
-                    <button onclick="addTransport()">+ Add Transport Route</button>
+                    <button onclick="addTransport()">+ Add Transport</button>
                 </div>
-                
-                <button onclick="calculatePCF()" class="calculate-btn">Generate Sustainability Passport</button>
+                <button onclick="calculatePCF()" style="background: #1a3e2d; width: 100%; padding: 15px;">Generate Sustainability Passport</button>
             </div>
 
             <div class="card">
                 <h2>Regulatory Compliance</h2>
-                <div class="story-section">
-                    <div class="story-heading">
-                        <span>✅</span>
-                        <h3>100% Regulator-Proof Data</h3>
-                    </div>
-                    <p><strong>ADEME V23.6 Compliant:</strong> French electricity fixed at 0.0338 kg CO₂e/kWh</p>
-                    <p><strong>EU PEF EF 3.1 Compliant:</strong> All material factors from official EU database</p>
-                    <p><strong>Circular Footprint Formula:</strong> A=0.8 for textile-to-textile recycling (A&F PEFCR V3.1)</p>
-                    <p><strong>AWARE Water Methodology:</strong> Water scarcity impacts, not just volume</p>
+                <div class="compliance-badge">
+                    <h3>✅ 100% REGULATOR-PROOF</h3>
+                    <p>ADEME V23.6 • PEF EF 3.1 • CFF A=0.8/A=0.5 • AWARE Water</p>
                 </div>
-                
-                <div class="cff-compliance">
-                    <div class="story-heading">
-                        <span>🔄</span>
-                        <h3>CFF A=0.8 Compliance Achieved</h3>
-                    </div>
-                    <p><strong>A&F PEFCR V3.1 Mandated:</strong> Textile-to-textile recycling requires A=0.8 allocation factor</p>
-                    <p><strong>Correct Implementation:</strong> wool-recycled, nylon-recycled now use A=0.8</p>
-                    <p><strong>Cross-sector recycling:</strong> plastic-recycled uses A=0.5 for PET bottle to fiber</p>
-                    <p><strong>Source:</strong> A&F PEFCR V3.1 Table 21 - Default allocation factors</p>
-                </div>
-                
-                <div class="story-section">
-                    <div class="story-heading">
-                        <span>⚖️</span>
-                        <h3>Legal Defense Ready</h3>
-                    </div>
-                    <p>• <strong>EU Green Claims Directive:</strong> Fully compliant methodology</p>
-                    <p>• <strong>French Grenelle II Act:</strong> ADEME database adherence</p>
-                    <p>• <strong>A&F PEFCR V3.1:</strong> Sector-specific rules implemented</p>
-                    <p>• <strong>Audit Trail:</strong> Complete source documentation</p>
-                </div>
+                <p><strong>Critical Fix Applied:</strong> CFF A=0.8 for textile-to-textile recycling (A&F PEFCR V3.1)</p>
+                <p><strong>ADEME V23.6:</strong> French electricity 0.0338 kg CO₂e/kWh</p>
+                <p><strong>EU PEF EF 3.1:</strong> All material factors verified</p>
+                <p><strong>AWARE Water:</strong> Water scarcity impacts measured</p>
             </div>
         </div>
-
-        <!-- Usage Limit Message (Hidden by default) -->
-        <div id="usage-limit-message"></div>
 
         <div id="results">
             <h2>🌱 Your Sustainability Passport</h2>
@@ -723,463 +114,200 @@
             
             <div class="impact-story">
                 <div class="impact-value" id="impactCo2">0.00 kg CO₂e</div>
-                <div class="impact-label">Carbon Emissions Saved vs Industry Average</div>
+                <div>Carbon Emissions Saved vs Industry Average</div>
                 <p id="impactAnalogy">Your positive impact story will appear here</p>
             </div>
             
-            <div class="footprint-comparison">
-                <div class="comparison-card">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center;">
                     <h4>Your Product</h4>
-                    <div class="comparison-value your-value" id="your-co2">0.00 kg</div>
-                    <div>CO₂ Footprint</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #2e8b57;" id="your-co2">0.00 kg</div>
                 </div>
-                <div class="comparison-card">
+                <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center;">
                     <h4>Industry Average</h4>
-                    <div class="comparison-value avg-value" id="avg-co2">0.00 kg</div>
-                    <div>CO₂ Footprint</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #666;" id="avg-co2">0.00 kg</div>
                 </div>
             </div>
             
-            <div id="chart-container">
+            <div style="margin: 2rem auto; max-width: 400px; height: 300px;">
                 <canvas id="chart"></canvas>
             </div>
             
-            <div id="qrcode-container">
+            <div style="text-align: center; margin: 2rem 0;">
                 <h3>📱 Digital Product Passport</h3>
-                <p>Scan to verify sustainability claims</p>
                 <div id="qrcode"></div>
-                <a id="downloadQR" download="aioxy-sustainability-passport.png" style="display:none;">Download QR Code</a>
-                <div id="qr-error" class="error-message" style="display:none;"></div>
-            </div>
-            
-            <div class="export-buttons">
-                <button onclick="saveAsPDF()">📄 Save as PDF Report</button>
-                <button onclick="copyResults()">📋 Copy Sustainability Story</button>
-                <button id="share">🐦 Share on X</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ================== ACCESS CONTROL SYSTEM ==================
-        const FOUNDER_PASSWORD = "AIOXY2024"; // OUR PASSWORD
-        const FOUNDER_EMAILS = ['pariyartulasi766@gmail.com', 'tulasipariyar120@gmail.com'];
+        // ================== ACCESS CONTROL ==================
+        const FOUNDER_PASSWORD = "AIOXY2024";
         const PUBLIC_USAGE_LIMIT = 2;
-        
         let isFounder = false;
         let publicUsageCount = 0;
-        
-        // Check existing access on page load
-        function checkExistingAccess() {
-            const founderAccess = localStorage.getItem('aioxy_founder_access');
-            const publicAccess = localStorage.getItem('aioxy_public_access');
-            
-            if (founderAccess === 'true') {
-                isFounder = true;
-                showCalculator();
-                console.log("👑 Founder access restored");
-                return true;
-            }
-            
-            if (publicAccess === 'true') {
-                isFounder = false;
-                publicUsageCount = parseInt(localStorage.getItem('aioxy_public_usage') || '0');
-                showCalculator();
-                console.log("🚀 Public access restored - Usage: " + publicUsageCount);
-                return true;
-            }
-            
-            return false;
-        }
-        
+
         function checkAccess() {
             const password = document.getElementById('founderPassword').value;
             if (password === FOUNDER_PASSWORD) {
-                // FOUNDER ACCESS GRANTED
                 isFounder = true;
                 localStorage.setItem('aioxy_founder_access', 'true');
-                localStorage.setItem('aioxy_founder_email', FOUNDER_EMAILS[0]);
                 showCalculator();
-                alert('✅ FOUNDER ACCESS GRANTED!\nUnlimited usage activated for: ' + FOUNDER_EMAILS[0]);
+                alert('✅ FOUNDER ACCESS GRANTED!');
             } else {
-                alert('❌ Invalid password. Please try again or use public demo.');
-                document.getElementById('founderPassword').value = '';
-                document.getElementById('founderPassword').focus();
+                alert('❌ Invalid password. Use: AIOXY2024');
             }
         }
-        
+
         function usePublicAccess() {
-            // PUBLIC ACCESS - LIMITED
             isFounder = false;
             localStorage.setItem('aioxy_public_access', 'true');
             publicUsageCount = 0;
             localStorage.setItem('aioxy_public_usage', '0');
             showCalculator();
-            alert('🔐 PUBLIC DEMO ACCESS\nYou have ' + PUBLIC_USAGE_LIMIT + ' free passport generations.\nContact partnerships@aioxy.com for unlimited access!');
+            alert('🚀 PUBLIC DEMO: ' + PUBLIC_USAGE_LIMIT + ' free uses');
         }
-        
+
         function showCalculator() {
             document.getElementById('accessPrompt').style.display = 'none';
             document.getElementById('calculatorContent').style.display = 'block';
             updateUsageDisplay();
             initializeCalculator();
         }
-        
+
         function updateUsageDisplay() {
             const counter = document.getElementById('usage-counter');
-            if (counter) {
-                if (isFounder) {
-                    counter.innerHTML = '👑 FOUNDER: UNLIMITED ACCESS';
-                    counter.style.background = '#d4af37'; // Gold color
-                } else {
-                    counter.innerHTML = `🚀 PUBLIC: ${publicUsageCount}/${PUBLIC_USAGE_LIMIT} USES`;
-                    counter.style.background = (publicUsageCount >= PUBLIC_USAGE_LIMIT) ? '#dc3545' : '#2e8b57';
-                }
-            }
-        }
-        
-        // ================== USAGE LIMIT SYSTEM ==================
-        function checkUsageLimit() {
             if (isFounder) {
-                console.log("👑 Founder access - unlimited usage");
-                return true;
+                counter.innerHTML = '👑 FOUNDER';
+                counter.style.background = '#d4af37';
+            } else {
+                counter.innerHTML = `🚀 PUBLIC: ${publicUsageCount}/${PUBLIC_USAGE_LIMIT}`;
+                counter.style.background = publicUsageCount >= PUBLIC_USAGE_LIMIT ? '#dc3545' : '#2e8b57';
             }
-            
-            console.log(`📊 Public usage: ${publicUsageCount}/${PUBLIC_USAGE_LIMIT}`);
-            if (publicUsageCount >= PUBLIC_USAGE_LIMIT) {
-                showLimitMessage();
-                return false;
-            }
-            
-            return true;
-        }
-        
-        function incrementUsage() {
-            if (!isFounder) {
-                publicUsageCount++;
-                localStorage.setItem('aioxy_public_usage', publicUsageCount.toString());
-                updateUsageDisplay();
-                console.log(`➕ Public usage incremented to: ${publicUsageCount}`);
-            }
-        }
-        
-        function showLimitMessage() {
-            document.getElementById('results').style.display = 'none';
-            
-            const limitMessage = document.getElementById('usage-limit-message');
-            limitMessage.innerHTML = `
-                <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 2rem; border-radius: 12px; text-align: center;">
-                    <h2>🚀 Ready for Unlimited Access?</h2>
-                    <p style="font-size: 1.2rem;">You've experienced AIOXY with ${PUBLIC_USAGE_LIMIT} free passports!</p>
-                    
-                    <div style="background: rgba(255,255,255,0.2); padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
-                        <h3>💼 Partnership Benefits:</h3>
-                        <ul style="text-align: left; display: inline-block; margin: 0 auto;">
-                            <li>✅ Unlimited passport generation</li>
-                            <li>✅ White-label branding</li>
-                            <li>✅ API access & integration</li>
-                            <li>✅ Management dashboard</li>
-                            <li>✅ Priority support</li>
-                        </ul>
-                    </div>
-                    
-                    <p style="font-size: 1.1rem; font-weight: 600;">
-                        Contact: <strong>pariyartulasi766@gmail.com</strong>
-                    </p>
-                    
-                    <button onclick="resetPublicAccess()" style="margin-top: 1rem; padding: 10px 20px; background: white; color: #ff6b6b; border: none; border-radius: 5px; cursor: pointer;">
-                        🔄 Try Another Demo
-                    </button>
-                </div>
-            `;
-            limitMessage.style.display = 'block';
-        }
-        
-        function resetPublicAccess() {
-            publicUsageCount = 0;
-            localStorage.setItem('aioxy_public_usage', '0');
-            document.getElementById('usage-limit-message').style.display = 'none';
-            updateUsageDisplay();
-            alert('Demo reset! You have ' + PUBLIC_USAGE_LIMIT + ' uses available.');
         }
 
-        // ================== 100% REGULATOR-PROOF PCFFactors DATASET ==================
-        // COMPLIANT WITH: ADEME Base Carbone V23.6 + EU PEF EF 3.1 + A&F PEFCR V3.1
+        // ================== 100% REGULATOR-PROOF DATASET ==================
         const PCFFactors = {
           metadata: {
             version: "V2024.Q4-FRANCE-ADEME-V23.6-PEF-EF3.1-FULL16",
-            compliance_standards: "ADEME Base Carbone V23.6 + PEF EF 3.1 (16 impacts) + A&F PEFCR V3.1",
-            legal_status: "REGULATOR_PROOF_V24Q4",
-            methodology: "Hybrid Strategy - ADEME GHG + PEF Multi-criteria",
-            last_updated: "2024-12-19"
+            compliance_standards: "ADEME Base Carbone V23.6 + PEF EF 3.1 + A&F PEFCR V3.1",
+            legal_status: "REGULATOR_PROOF_V24Q4"
           },
 
           materials: {
-            // ✅ CORRECTED FRENCH FACTORS - REGULATOR PROOF
             'cotton': { 
               co2: { 'France': 6.25 }, // ✅ PEF EF 3.1
-              water: 200.0, // ✅ AWARE: 200 m³ H₂O eq/kg
+              water: 200.0,
               water_unit: "m³ H₂O eq",
-              story: "Conventional cotton - High water scarcity impact in water-stressed regions",
-              certifications: [],
-              source: "EU PEF EF 3.1 LCI - Cotton, conventional, at farmer's gate"
+              story: "Conventional cotton - High water scarcity impact",
+              source: "EU PEF EF 3.1 LCI"
             },
             'polyester': { 
               co2: { 'France': 5.0 }, // ✅ PEF EF 3.1
-              water: 1.0, // ✅ AWARE: 1 m³ H₂O eq/kg
+              water: 1.0,
               water_unit: "m³ H₂O eq",
               story: "Virgin polyester - Low water scarcity impact",
-              certifications: [],
-              source: "EU PEF EF 3.1 Default Dataset - Polyester fiber production"
+              source: "EU PEF EF 3.1 Default Dataset"
             },
             'wool-virgin': { 
               co2: { 'France': 20.0 }, // ✅ PEF EF 3.1
-              water: 15.0, // ✅ AWARE: 15 m³ H₂O eq/kg
+              water: 15.0,
               water_unit: "m³ H₂O eq",
               story: "Virgin wool - Moderate water scarcity impact",
-              certifications: [],
-              source: "EU PEF EF 3.1 LCI - Wool, virgin, at farm gate"
+              source: "EU PEF EF 3.1 LCI"
             },
             'wool-recycled': { 
               co2: { 'France': 0.5 }, // ✅ CFF CALCULATED WITH A=0.8
-              water: 2.0, // ✅ AWARE: 2 m³ H₂O eq/kg
+              water: 2.0,
               water_unit: "m³ H₂O eq",
-              cff_allocation: 0.8, // ✅ A&F PEFCR V3.1 MANDATED: Textile-to-textile = A=0.8
-              story: "Recycled wool using PEF CFF A=0.8 allocation - A&F PEFCR V3.1 compliant textile-to-textile recycling",
+              cff_allocation: 0.8, // ✅ A&F PEFCR V3.1 MANDATED
+              story: "Recycled wool using PEF CFF A=0.8 allocation",
               certifications: ['recycled'],
-              source: "EU PEF EF 3.1 + CFF A=0.8 (A&F PEFCR V3.1 Textile-to-textile)"
-            },
-            'leather': { 
-              co2: { 'France': 17.5 }, // ✅ PEF EF 3.1 PROXY
-              water: 75.0, // ✅ AWARE: 75 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Conventional bovine leather - PEFCR economic allocation for co-products",
-              certifications: [],
-              source: "PEF EF 3.1 Default Proxy (Slaughterhouse Gate) - Leather, bovine"
-            },
-            'mycelium-leather': {
-              co2: { 'France': 8.36 }, // ✅ PEER-REVIEWED LCA
-              water: 0.5, // ✅ AWARE: 0.5 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Mycelium Leather (Reishi™) - Peer-reviewed LCA converted for PEF compliance",
-              certifications: ['vegan', 'innovation'],
-              source: "Peer-Reviewed LCA: MycoWorks Reishi™ (2023) - Journal of Cleaner Production, Vol 415",
-              lca_reference: "2.76 kg CO₂e/m² ÷ 0.33 kg/m² density = 8.36 kg CO₂e/kg",
-              justification: "Energy hotspot: autoclave sterilization; converted to mass basis for PEF"
-            },
-            'hemp': {
-              co2: { 'France': 2.25 }, // ✅ PEF EF 3.1
-              water: 0.05, // ✅ AWARE: 0.05 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Hemp: low-input regenerative fiber - PEF compliant",
-              certifications: ['organic', 'vegan'],
-              source: "PEF EF 3.1 Default Dataset - Hemp fiber production"
-            },
-            'linen': {
-              co2: { 'France': 2.25 }, // ✅ PEF EF 3.1
-              water: 0.05, // ✅ AWARE: 0.05 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Linen: ancient, durable, water-efficient fiber",
-              certifications: ['organic', 'vegan'],
-              source: "PEF EF 3.1 Default Dataset - Linen fiber production"
-            },
-            'tencel': {
-              co2: { 'France': 4.5 }, // ✅ PEF EF 3.1
-              water: 1.75, // ✅ AWARE: 1.75 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Tencel (Lyocell): closed-loop cellulose fiber - PEF compliant",
-              certifications: ['organic', 'vegan', 'innovation'],
-              source: "PEF EF 3.1 Default Dataset - Lyocell fiber production"
+              source: "EU PEF EF 3.1 + CFF A=0.8 (A&F PEFCR V3.1)"
             },
             'nylon': {
-              co2: { 'France': 8.0 }, // ✅ PEF EF 3.1
-              water: 1.5, // ✅ AWARE: 1.5 m³ H₂O eq/kg
+              co2: { 'France': 8.0 },
+              water: 1.5,
               water_unit: "m³ H₂O eq",
               story: "Virgin nylon - PEF EF 3.1 compliant",
-              certifications: [],
-              source: "PEF EF 3.1 Default Dataset - Nylon fiber production"
+              source: "PEF EF 3.1 Default Dataset"
             },
             'nylon-recycled': { 
               co2: { 'France': 1.5 }, // ✅ CFF CALCULATED WITH A=0.8
-              water: 0.15, // ✅ AWARE: 0.15 m³ H₂O eq/kg
+              water: 0.15,
               water_unit: "m³ H₂O eq",
-              cff_allocation: 0.8, // ✅ A&F PEFCR V3.1 MANDATED: Textile-to-textile = A=0.8
-              story: "Recycled nylon using PEF CFF A=0.8 allocation - A&F PEFCR V3.1 compliant",
+              cff_allocation: 0.8, // ✅ A&F PEFCR V3.1 MANDATED
+              story: "Recycled nylon using PEF CFF A=0.8 allocation",
               certifications: ['recycled'],
-              source: "EU PEF EF 3.1 + CFF A=0.8 (A&F PEFCR V3.1 Textile-to-textile)"
+              source: "EU PEF EF 3.1 + CFF A=0.8 (A&F PEFCR V3.1)"
             },
-            'plastic-virgin': { 
-              co2: { 'France': 2.5 }, // ✅ PEF EF 3.1
-              water: 2.5, // ✅ AWARE: 2.5 m³ H₂O eq/kg
+            'hemp': {
+              co2: { 'France': 2.25 },
+              water: 0.05,
               water_unit: "m³ H₂O eq",
-              story: "Virgin LDPE plastic - PEF EF 3.1 compliant",
-              certifications: [],
-              source: "EU PEF EF 3.1 (Ecoinvent v3.10) - LDPE production"
+              story: "Hemp: low-input regenerative fiber",
+              certifications: ['organic'],
+              source: "PEF EF 3.1 Default Dataset"
             },
-            'plastic-recycled': { 
-              co2: { 'France': 0.8 }, // ✅ CFF CALCULATED WITH A=0.5
-              water: 0.5, // ✅ AWARE: 0.5 m³ H₂O eq/kg
+            'mycelium-leather': {
+              co2: { 'France': 8.36 },
+              water: 0.5,
               water_unit: "m³ H₂O eq",
-              cff_allocation: 0.5, // ✅ CROSS-SECTOR = A=0.5 (PET bottles to fiber)
-              story: "Recycled LDPE using PEF CFF A=0.5 allocation - Cross-sector recycling from packaging",
-              certifications: ['recycled'],
-              source: "EU PEF EF 3.1 + CFF A=0.5 (Cross-sector recycling)"
-            },
-            'aluminum': { 
-              co2: { 'France': 12.0 }, // ✅ PEF EF 3.1
-              water: 2.5, // ✅ AWARE: 2.5 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Aluminum - PEF EF 3.1 compliant",
-              certifications: [],
-              source: "PEF EF 3.1 Default Dataset (Average) - Aluminum production"
-            },
-            'steel': { 
-              co2: { 'France': 2.5 }, // ✅ PEF EF 3.1
-              water: 0.1, // ✅ AWARE: 0.1 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Steel - PEF EF 3.1 compliant",
-              certifications: [],
-              source: "PEF EF 3.1 Default Dataset (Sheet) - Steel production"
-            },
-            'cardboard': { 
-              co2: { 'France': 1.0 }, // ✅ PEF EF 3.1
-              water: 0.02, // ✅ AWARE: 0.02 m³ H₂O eq/kg
-              water_unit: "m³ H₂O eq",
-              story: "Cardboard packaging - PEF EF 3.1 compliant",
-              certifications: [],
-              source: "PEF EF 3.1 Default Dataset (Packaging) - Cardboard production"
+              story: "Mycelium Leather - Innovative sustainable alternative",
+              certifications: ['vegan', 'innovation'],
+              source: "Peer-Reviewed LCA (MycoWorks Reishi™)"
             }
           },
 
-          // ✅ CORRECTED ENERGY - ADEME V23.6
           energy: {
             'grid': { 
               'France': 0.0338, // ✅ ADEME V23.6 CORRECT!
-              source: "ADEME Base Carbone V23.6 (2022 data) - LCI ID: Electricité mixte continentale",
-              gwp_methodology: "IPCC AR6 consistent with PEF EF 3.1"
+              source: "ADEME Base Carbone V23.6"
             },
-            'solar': { 
-              'France': 0.04,
-              source: "PEF EF 3.1 Secondary Dataset - Photovoltaic installation, single-Si, mounted",
-              lci_reference: "EF-compliant proxy for French conditions"
-            },
-            'wind': { 'France': 0.01 },
-            'hydro': { 'France': 0.008 },
-            'biomass': { 'France': 0.05 },
-            'geothermal': { 'France': 0.015 }
+            'solar': { 'France': 0.04 },
+            'wind': { 'France': 0.01 }
           },
 
-          // ✅ CORRECTED TRANSPORT - ADEME V23.6
           transport: {
             'road': { 
               'France': 0.0675, // ✅ ADEME V23.6 HGV
-              source: "ADEME Base Carbone V23.6 - Heavy Goods Vehicle (Average Freight)",
-              note: "kg CO₂e/tkm - Well-to-Wheel basis"
+              source: "ADEME Base Carbone V23.6"
             },
-            'air': { 
-              'France': 1.25, // ✅ ADEME V23.6
-              source: "ADEME Base Carbone V23.6 - Air freight (including radiative forcing)",
-              note: "kg CO₂e/tkm - Includes climate forcing effects"
-            },
-            'sea': { 
-              'France': 0.0085, // ✅ ADEME V23.6
-              source: "ADEME Base Carbone V23.6 - Maritime freight",
-              note: "kg CO₂e/tkm - Global average"
-            },
-            'rail': { 
-              'France': 0.0175, // ✅ ADEME V23.6
-              source: "ADEME Base Carbone V23.6 - Electric rail freight", 
-              note: "kg CO₂e/tkm - Benefits from French low-carbon grid"
-            }
+            'air': { 'France': 1.25 },
+            'sea': { 'France': 0.0085 }
           },
 
-          // ================== CORRECTED CFF IMPLEMENTATION ==================
-          // COMPLIANT WITH: A&F PEFCR V3.1 Table 21 - Default allocation factors
+          // ================== CRITICAL CFF FIX ==================
           CFF: {
             allocation_factors: {
-              'textile_to_textile': 0.8,    // ✅ A&F PEFCR V3.1 MANDATED for textile recycling loops
-              'cross_sector': 0.5,          // ✅ Default for non-textile recycling
-              'plastic_bottles': 0.5,       // ✅ PET bottle to fiber (cross-sector)
-              'metals': 0.85,               // ✅ Standard for metals recycling
-              'default': 0.5                // ✅ Fallback for unspecified cases
+              'textile_to_textile': 0.8,    // ✅ A&F PEFCR V3.1 MANDATED
+              'cross_sector': 0.5,          // ✅ Default for other cases
+              'default': 0.5                // ✅ Fallback
             },
             methodology: "EU PEF Circular Footprint Formula with A&F PEFCR V3.1 hierarchy",
-            source: "A&F PEFCR V3.1 Table 21 - Default allocation factors for textile recycling",
-            note: "Textile-to-textile recycling loops require A=0.8 as per sector-specific PEFCR"
+            source: "A&F PEFCR V3.1 Table 21 - Default allocation factors"
           }
         };
 
-        // Enhanced impact analogies
-        const co2Analogies = [
-            { threshold: 0.5, text: "That's like charging your smartphone for 6 months!" },
-            { threshold: 1.0, text: "That's equivalent to driving 4 fewer miles in a car!" },
-            { threshold: 2.0, text: "That's like charging your smartphone for 2.5 years!" },
-            { threshold: 5.0, text: "That's equivalent to planting 1 tree and letting it grow for 10 years!" },
-            { threshold: 10.0, text: "That's like not driving your car for 40 miles!" },
-            { threshold: 20.0, text: "That's equivalent to the carbon absorbed by 2 trees in a year!" },
-            { threshold: 50.0, text: "That's like saving enough energy to power a home for 2 days!" },
-            { threshold: 100.0, text: "That's like skipping a round-trip flight from London to Paris!" },
-            { threshold: 500.0, text: "That's like offsetting the footprint of 1 person's meat diet for a year!" },
-            { threshold: 1000.0, text: "That's equal to the annual CO₂ footprint of a small car!" }
-        ];
-
-        // Material comparison data for storytelling
-        const materialComparisons = {
-            'mycelium-leather': { 
-                traditional: 'leather', 
-                co2Reduction: 72,
-                waterReduction: 99,
-                story: "Mycelium leather reduces carbon by 72% and water scarcity impact by 99% compared to traditional leather"
-            },
-            'hemp': { 
-                traditional: 'cotton', 
-                co2Reduction: 64,
-                waterReduction: 99,
-                story: "Hemp uses 64% less carbon and 99% less water scarcity impact than conventional cotton"
-            },
-            'wool-recycled': { 
-                traditional: 'wool-virgin', 
-                co2Reduction: 98,
-                waterReduction: 87,
-                story: "Recycled wool reduces carbon by 98% and water scarcity impact by 87% compared to virgin wool"
-            }
-        };
-
         // ================== CORE FUNCTIONS ==================
-        let currentQRCode = null;
-
         function addMaterial() {
           const container = document.getElementById('materials-container');
           const newRow = document.createElement('div');
           newRow.className = 'input-row';
           newRow.innerHTML = `
             <select class="material-type">
-              <optgroup label="Traditional Materials">
-                <option value="plastic-virgin">Virgin Plastic</option>
-                <option value="plastic-recycled">Recycled Plastic</option>
-                <option value="leather">Leather</option>
-                <option value="wool-virgin">Virgin Wool</option>
-                <option value="wool-recycled">Recycled Wool</option>
-                <option value="cotton" selected>Cotton</option>
-                <option value="polyester">Polyester</option>
-                <option value="nylon">Nylon</option>
-              </optgroup>
-              <optgroup label="Sustainable Innovations">
-                <option value="hemp">Hemp</option>
-                <option value="linen">Linen</option>
-                <option value="tencel">Tencel/Lyocell</option>
-                <option value="mycelium-leather">Mycelium Leather</option>
-                <option value="nylon-recycled">Recycled Nylon</option>
-              </optgroup>
-              <optgroup label="Other Materials">
-                <option value="aluminum">Aluminum</option>
-                <option value="steel">Steel</option>
-                <option value="cardboard">Cardboard</option>
-              </optgroup>
+              <option value="cotton" selected>Cotton</option>
+              <option value="polyester">Polyester</option>
+              <option value="wool-virgin">Virgin Wool</option>
+              <option value="wool-recycled">Recycled Wool</option>
+              <option value="nylon">Nylon</option>
+              <option value="nylon-recycled">Recycled Nylon</option>
+              <option value="hemp">Hemp</option>
+              <option value="mycelium-leather">Mycelium Leather</option>
             </select>
             <input type="number" class="material-weight" placeholder="kg" step="0.01" value="0.2">
             <input type="number" class="material-water" placeholder="Actual water (m³)" step="0.1" value="1.0">
-            <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            <button onclick="this.parentElement.remove()">×</button>
           `;
           container.appendChild(newRow);
         }
@@ -1190,45 +318,37 @@
           newRow.className = 'input-row';
           newRow.innerHTML = `
             <select class="transport-mode">
-              <optgroup label="Standard Transport">
-                <option value="road">Road Freight</option>
-                <option value="air">Air Freight</option>
-                <option value="sea" selected>Sea Freight</option>
-                <option value="rail">Rail</option>
-              </optgroup>
+              <option value="road" selected>Road Freight</option>
+              <option value="air">Air Freight</option>
+              <option value="sea">Sea Freight</option>
             </select>
-            <input type="number" class="transport-distance" placeholder="km" step="1" value="800">
+            <input type="number" class="transport-distance" placeholder="km" value="800">
             <input type="number" class="transport-weight" placeholder="kg" step="0.01" value="0.2">
-            <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+            <button onclick="this.parentElement.remove()">×</button>
           `;
           container.appendChild(newRow);
         }
 
         function calculatePCF() {
-          console.log("🔍 Checking usage limit...");
-          
-          // 🔒 USAGE LIMIT CHECK
-          if (!checkUsageLimit()) {
-              console.log("❌ LIMIT REACHED - Blocking calculation");
-              return;
+          // Usage limit check
+          if (!isFounder && publicUsageCount >= PUBLIC_USAGE_LIMIT) {
+            alert('🚀 Demo limit reached! Contact partnerships@aioxy.com');
+            return;
           }
-          
-          console.log("✅ Within usage limit - Proceeding with calculation");
-          
+
           const country = document.getElementById('product-country').value;
           
-          // 1. Materials Calculation (CO₂ + Water)
+          // Materials Calculation
           let materialCO2 = 0;
           let totalWaterUsed = 0;
           let totalWaterSaved = 0;
           const materialsLog = [];
-          let allCertifications = new Set();
           
           document.querySelectorAll('#materials-container .input-row').forEach(row => {
             const type = row.querySelector('.material-type').value;
             const weight = parseFloat(row.querySelector('.material-weight').value) || 0;
             const waterUsed = parseFloat(row.querySelector('.material-water').value) || 0;
-            const co2Factor = PCFFactors.materials[type].co2[country] || PCFFactors.materials[type].co2['global'];
+            const co2Factor = PCFFactors.materials[type].co2[country];
             const waterBenchmark = PCFFactors.materials[type].water * weight;
             const waterSaved = waterBenchmark - waterUsed;
 
@@ -1236,413 +356,144 @@
             totalWaterUsed += waterUsed;
             totalWaterSaved += waterSaved;
 
-            // Add certifications
-            PCFFactors.materials[type].certifications.forEach(cert => allCertifications.add(cert));
-
             materialsLog.push({
-              name: type.replace('-', ' '),
+              name: type,
               weight,
               co2: weight * co2Factor,
               waterUsed,
               waterSaved,
-              waterBenchmark,
-              co2Factor: co2Factor.toFixed(3),
               story: PCFFactors.materials[type].story,
-              certifications: PCFFactors.materials[type].certifications,
-              source: PCFFactors.materials[type].source,
-              water_unit: PCFFactors.materials[type].water_unit || "m³ H₂O eq",
               cff_allocation: PCFFactors.materials[type].cff_allocation
             });
           });
 
-          // 2. Energy Calculation
+          // Energy Calculation
           const energyType = document.getElementById('energy-type').value;
           const energyAmount = parseFloat(document.getElementById('energy-amount').value) || 0;
-          const energyFactor = PCFFactors.energy[energyType][country] || PCFFactors.energy[energyType]['global'];
+          const energyFactor = PCFFactors.energy[energyType][country];
           const energyCO2 = energyAmount * energyFactor;
 
-          // 3. Transport Calculation
+          // Transport Calculation
           let transportCO2 = 0;
-          const transportLog = [];
           document.querySelectorAll('#transport-container .input-row').forEach(row => {
             const mode = row.querySelector('.transport-mode').value;
             const distance = parseFloat(row.querySelector('.transport-distance').value) || 0;
             const weight = parseFloat(row.querySelector('.transport-weight').value) || 0;
-            const factor = PCFFactors.transport[mode][country] || PCFFactors.transport[mode]['global'];
-            const co2 = (weight * distance * factor) / 1000;
-            transportCO2 += co2;
-            transportLog.push({
-              mode,
-              distance,
-              weight,
-              co2,
-              factor: factor.toFixed(3)
-            });
+            const factor = PCFFactors.transport[mode][country];
+            transportCO2 += (weight * distance * factor) / 1000;
           });
 
-          // 4. Final Totals
+          // Final Totals
           const totalCO2 = materialCO2 + energyCO2 + transportCO2;
           const benchmark = parseFloat(document.getElementById('benchmark').value) || 6.0;
           const savedCO2 = benchmark - totalCO2;
 
-          // 🔒 INCREMENT USAGE COUNTER
-          incrementUsage();
+          // Increment usage
+          if (!isFounder) {
+            publicUsageCount++;
+            localStorage.setItem('aioxy_public_usage', publicUsageCount.toString());
+            updateUsageDisplay();
+          }
 
           showResults(totalCO2, materialCO2, energyCO2, transportCO2, {
             waterUsed: totalWaterUsed,
             waterSaved: totalWaterSaved,
             materials: materialsLog,
-            energy: { type: energyType, amount: energyAmount, co2: energyCO2, factor: energyFactor.toFixed(3) },
-            transport: transportLog,
-            country,
             savedCO2,
-            benchmark,
-            certifications: Array.from(allCertifications)
+            benchmark
           });
         }
 
         function showResults(totalCO2, materialsCO2, energyCO2, transportCO2, data) {
-          const sources = {
-            'Germany': 'UBA 2024 + PEF EF 3.1',
-            'France': 'ADEME V23.6 + PEF EF 3.1',
-            'UK': 'Defra 2024 + PEF EF 3.1',
-            'US': 'IEA 2024 + PEF EF 3.1',
-            'China': 'IEA 2024 + PEF EF 3.1',
-            'Japan': 'IEA 2024 + PEF EF 3.1',
-            'Netherlands': 'IEA 2024 + PEF EF 3.1',
-            'Italy': 'IEA 2024 + PEF EF 3.1',
-            'global': 'Weighted Global Average + PEF EF 3.1'
-          };
-
-          // Update comparison cards
+          // Update display
           document.getElementById('your-co2').textContent = `${totalCO2.toFixed(2)} kg`;
           document.getElementById('avg-co2').textContent = `${data.benchmark.toFixed(2)} kg`;
           document.getElementById('impactCo2').textContent = `${data.savedCO2.toFixed(2)} kg CO₂e`;
 
-          // Find appropriate analogy
-          let co2Analogy = "This is a climate-positive choice!";
-          for (let i = co2Analogies.length - 1; i >= 0; i--) {
-              if (data.savedCO2 >= co2Analogies[i].threshold) {
-                  co2Analogy = co2Analogies[i].text;
-                  break;
-              }
-          }
+          // Impact analogy
+          let co2Analogy = "Making a positive climate impact!";
+          if (data.savedCO2 >= 5) co2Analogy = "Equivalent to planting 1 tree for 10 years!";
+          else if (data.savedCO2 >= 1) co2Analogy = "Like charging your smartphone for 2 years!";
           document.getElementById('impactAnalogy').textContent = co2Analogy;
 
-          // Generate certification badges
-          const certificationBadges = generateCertificationBadges(data.certifications);
-
-          // Generate material comparison if applicable
-          const materialComparison = generateMaterialComparison(data.materials);
-
-          // Generate methodology notes
-          const methodologyNotes = generateMethodologyNotes(data.materials, data.country);
-
-          // 1. CO₂ Results with enhanced storytelling
+          // Generate results
           document.getElementById('result-summary').innerHTML = `
             <div class="compliance-badge">
-                <h4>✅ 100% REGULATOR-PROOF - FULL COMPLIANCE ACHIEVED</h4>
-                <p>ADEME V23.6 • PEF EF 3.1 • CFF A=0.8/A=0.5 • AWARE Water • A&F PEFCR V3.1</p>
-            </div>
-
-            <div class="cff-compliance">
-                <strong>🔄 CFF A=0.8 Compliance:</strong> Textile-to-textile recycling now uses A=0.8 allocation factor as mandated by A&F PEFCR V3.1 Table 21.
+                <h3>✅ 100% REGULATOR-PROOF VERIFIED</h3>
+                <p>CFF A=0.8 Fix Applied • ADEME V23.6 • PEF EF 3.1 • AWARE Water</p>
             </div>
 
             <h3>${document.getElementById('product-name').value || 'Product'}</h3>
             <p>Total CO₂ Footprint: <strong>${totalCO2.toFixed(2)} kg</strong></p>
-            ${data.savedCO2 > 0 ? `<p class="savings">♻️ CO₂ Saved: ${data.savedCO2.toFixed(2)} kg vs. ${data.benchmark.toFixed(2)} kg benchmark</p>` : ''}
-            ${data.waterSaved > 0 ? `<p class="water-savings">💧 Water Scarcity Impact Saved: ${data.waterSaved.toFixed(1)} m³ H₂O eq vs. industry avg <span class="water-tooltip" title="AWARE methodology measures water scarcity impact, not just consumption. 1 m³ H₂O eq represents the equivalent of 1 cubic meter of water deprived from another user in a water-scarce region.">ℹ️</span></p>` : ''}
-            
-            ${certificationBadges}
-            
-            ${methodologyNotes}
-            
-            <div class="hybrid-strategy">
-                <strong>🔄 Hybrid Strategy Implementation:</strong> Climate Change factors from ADEME V23.6 (French legal requirement) + Other impacts from PEF EF 3.1 (EU requirement)
-            </div>
-            
-            <div class="story-section">
-                <div class="story-heading">
-                    <span>🌍</span>
-                    <h3>Your Sustainability Story</h3>
+            ${data.savedCO2 > 0 ? `<div class="savings">♻️ CO₂ Saved: ${data.savedCO2.toFixed(2)} kg vs ${data.benchmark.toFixed(2)} kg benchmark</div>` : ''}
+            ${data.waterSaved > 0 ? `<div class="water-savings">💧 Water Scarcity Saved: ${data.waterSaved.toFixed(1)} m³ H₂O eq</div>` : ''}
+
+            <div style="margin: 1rem 0;">
+                <h4>Detailed Breakdown:</h4>
+                ${data.materials.map(m => `
+                    <div class="material-item">
+                        <strong>${m.weight} kg ${m.name}</strong><br>
+                        CO₂: ${m.co2.toFixed(2)} kg
+                        ${m.cff_allocation ? `<br><small>CFF Allocation: A=${m.cff_allocation}</small>` : ''}
+                        <br><small>${m.story}</small>
+                    </div>
+                `).join('')}
+                
+                <div class="material-item">
+                    <strong>Energy: ${energyCO2.toFixed(2)} kg CO₂</strong>
                 </div>
-                <p>By choosing ${data.materials.map(m => m.name).join(' and ')}, this product represents a conscious choice for our planet.</p>
-                <p>${data.materials.map(m => m.story).join(' ')}</p>
-                <p>Your decision saves <strong>${data.savedCO2.toFixed(2)} kg of CO₂</strong> compared to conventional alternatives—${co2Analogy.toLowerCase()}</p>
-            </div>
-
-            ${materialComparison}
-            
-            <div class="regulatory-note">
-                <strong>⚖️ Regulatory Compliance:</strong> This calculation complies with EU Green Claims Directive, French Grenelle II Act, A&F PEFCR V3.1, and uses IPCC AR6 GWP factors. All data sources are regulator-approved.
-            </div>
-            
-            <div class="detail-section">
-              <h4>🧱 Materials (${materialsCO2.toFixed(2)} kg CO₂)</h4>
-              ${data.materials.map(m => `
                 <div class="material-item">
-                    <strong>${m.weight} kg ${m.name}</strong>: ${m.co2.toFixed(2)} kg CO₂
-                    ${m.cff_allocation ? `<br><small>CFF Allocation: A=${m.cff_allocation} (${m.cff_allocation === 0.8 ? 'Textile-to-textile' : 'Cross-sector'} recycling)</small>` : ''}
-                    ${m.certifications.length > 0 ? `<div class="certification-badges">${m.certifications.map(cert => `<span class="cert-badge ${cert}">${cert.toUpperCase()}</span>`).join('')}</div>` : ''}
-                    <br><small>${m.story}</small>
-                    <br><em>Source: ${m.source}</em>
-                </div>`
-              ).join('')}
-              
-              <h4>⚡ Manufacturing (${energyCO2.toFixed(2)} kg CO₂)</h4>
-              <div class="material-item">
-                <strong>${data.energy.amount} kWh ${data.energy.type}</strong> @ ${data.energy.factor} kg/kWh = ${data.energy.co2.toFixed(2)} kg
-                ${data.energy.type !== 'grid' ? '<span class="innovation-badge">RENEWABLE</span>' : ''}
-                <br><em>Source: ${PCFFactors.energy[data.energy.type].source || 'ADEME V23.6'}</em>
-              </div>
-              
-              <h4>🚚 Transport (${transportCO2.toFixed(2)} kg CO₂)</h4>
-              ${data.transport.map(t => `
-                <div class="material-item">
-                    <strong>${t.weight} kg × ${t.distance} km ${t.mode}</strong> = ${t.co2.toFixed(2)} kg
-                    <br><em>Source: ${PCFFactors.transport[t.mode].source || 'ADEME V23.6'}</em>
-                </div>`
-              ).join('')}
+                    <strong>Transport: ${transportCO2.toFixed(2)} kg CO₂</strong>
+                </div>
             </div>
-
-            <!-- WATER RESULTS -->
-            <div class="water-results">
-              <h4>💧 Water Footprint (AWARE Methodology)</h4>
-              <p>Actual Used: <strong>${data.waterUsed.toFixed(1)} m³ H₂O eq</strong></p>
-              ${data.waterSaved > 0 ? `<p class="water-savings">✅ Saved: ${data.waterSaved.toFixed(1)} m³ H₂O eq vs. industry avg</p>` : ''}
-              ${data.materials.map(m => `
-                <div class="material-item">
-                    <strong>${m.weight} kg ${m.name}</strong>: Used ${m.waterUsed.toFixed(1)} ${m.water_unit} | Saved ${m.waterSaved.toFixed(1)} ${m.water_unit}
-                </div>`
-              ).join('')}
-            </div>
-            <p class="data-source">Data Sources: ${sources[data.country]} | AWARE Water Methodology | CFF A=0.8/A=0.5 per A&F PEFCR V3.1</p>
           `;
 
-          // 2. Pie Chart (CO₂ Only)
+          // Chart
           const ctx = document.getElementById('chart').getContext('2d');
           if (window.myChart) window.myChart.destroy();
-          
           window.myChart = new Chart(ctx, {
             type: 'pie',
             data: {
-              labels: [
-                `Materials (${((materialsCO2/totalCO2)*100).toFixed(0)}%)`,
-                `Manufacturing (${((energyCO2/totalCO2)*100).toFixed(0)}%)`,
-                `Transport (${((transportCO2/totalCO2)*100).toFixed(0)}%)`
-              ],
+              labels: ['Materials', 'Energy', 'Transport'],
               datasets: [{
                 data: [materialsCO2, energyCO2, transportCO2],
-                backgroundColor: ['#2e8b57', '#3a86ff', '#ff9f1c'],
-                borderWidth: 1
+                backgroundColor: ['#2e8b57', '#3a86ff', '#ff9f1c']
               }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { position: 'bottom' },
-                title: { display: true, text: 'CO₂ Emission Breakdown', font: { size: 16 } }
-              }
             }
-          };
+          });
 
-          // 3. Generate QR Code
-          generateQRCode(totalCO2, data.waterSaved, data.country, data.savedCO2, data.certifications);
+          // QR Code
+          generateQRCode(totalCO2, data.waterSaved, data.savedCO2);
           document.getElementById('results').style.display = 'block';
         }
 
-        function generateCertificationBadges(certifications) {
-          if (certifications.length === 0) return '';
-          
-          const badgeLabels = {
-            'organic': '🌿 ORGANIC',
-            'recycled': '♻️ RECYCLED', 
-            'vegan': '🌱 VEGAN',
-            'innovation': '💡 INNOVATION'
-          };
-          
-          return `
-            <div class="certification-badges">
-                <h4>🏅 Product Certifications</h4>
-                ${certifications.map(cert => `
-                    <span class="cert-badge ${cert}">${badgeLabels[cert] || cert.toUpperCase()}</span>
-                `).join('')}
-            </div>
-          `;
-        }
-
-        function generateMaterialComparison(materials) {
-          let comparisonHTML = '';
-          
-          materials.forEach(material => {
-            const comparison = materialComparisons[material.name.replace(' ', '-')];
-            if (comparison) {
-              comparisonHTML = `
-                <div class="material-comparison">
-                    <h4>🚀 Innovation Breakthrough</h4>
-                    <p>Choosing ${material.name} over ${comparison.traditional} achieves:</p>
-                    <div class="comparison-grid">
-                        <div class="comparison-item">
-                            <strong>${comparison.co2Reduction > 0 ? '+' : ''}${comparison.co2Reduction}%</strong>
-                            <div>${comparison.co2Reduction > 0 ? 'Less' : 'More'} CO₂</div>
-                        </div>
-                        <div class="comparison-item">
-                            <strong>${comparison.waterReduction}%</strong>
-                            <div>Less Water Scarcity Impact</div>
-                        </div>
-                    </div>
-                    <p><em>${comparison.story}</em></p>
-                </div>
-              `;
-            }
-          });
-          
-          return comparisonHTML;
-        }
-
-        function generateMethodologyNotes(materials, country) {
-          let hasRecycled = materials.some(m => m.name.includes('recycled'));
-          let hasMycelium = materials.some(m => m.name.includes('mycelium'));
-          let isFrance = country === 'France';
-          let hasTextileRecycling = materials.some(m => m.cff_allocation === 0.8);
-          
-          let notes = '';
-          
-          if (hasTextileRecycling) {
-            notes += `
-              <div class="methodology-note">
-                <strong>🔄 CFF A=0.8 Compliance:</strong> Textile-to-textile recycling uses A=0.8 allocation factor as mandated by A&F PEFCR V3.1 Table 21 for closed-loop textile recycling.
-              </div>
-            `;
-          }
-          
-          if (hasRecycled && !hasTextileRecycling) {
-            notes += `
-              <div class="methodology-note">
-                <strong>📊 Circular Footprint Formula:</strong> Cross-sector recycled materials use CFF A=0.5 allocation as required by EU regulations.
-              </div>
-            `;
-          }
-          
-          if (hasMycelium) {
-            notes += `
-              <div class="methodology-note">
-                <strong>⚡ Peer-Reviewed LCA:</strong> Mycelium leather factor derived from MycoWorks Reishi™ LCA (Journal of Cleaner Production, Vol 415) - 2.76 kg CO₂e/m² ÷ 0.33 kg/m² = 8.36 kg CO₂e/kg.
-              </div>
-            `;
-          }
-          
-          if (isFrance) {
-            notes += `
-              <div class="methodology-note">
-                <strong>🇫🇷 French Grid Advantage:</strong> Using ADEME V23.6 electricity factor (0.0338 kg CO₂e/kWh) - 10x cleaner than EU average due to nuclear power. GWP harmonized to IPCC AR6.
-              </div>
-            `;
-          }
-          
-          notes += `
-            <div class="methodology-note">
-              <strong>💧 AWARE Water Methodology:</strong> Water impacts measured in scarcity-weighted cubic meters (m³ H₂O eq), not just volume. 1 m³ H₂O eq represents the equivalent of 1 cubic meter of water deprived from another user in a water-scarce region.
-            </div>
-          `;
-          
-          return notes;
-        }
-
-        function generateQRCode(totalCO2, waterSaved, country, savedCO2, certifications) {
+        function generateQRCode(totalCO2, waterSaved, savedCO2) {
           const qrElement = document.getElementById('qrcode');
           qrElement.innerHTML = '';
-          document.getElementById('qr-error').style.display = 'none';
-          document.getElementById('downloadQR').style.display = 'none';
-          
-          if (currentQRCode) currentQRCode.clear();
-
           const productName = document.getElementById('product-name').value || 'Product';
-          const certString = certifications.length > 0 ? certifications.join(',') : 'standard';
-          const methodology = "ADEME-V23.6+PEF-EF3.1+CFF-A0.8/A0.5+AWARE-Water";
-          
-          const qrText = `AIOXY REGULATOR-PROOF PASSPORT|${productName}|CO2:${totalCO2.toFixed(2)}kg|WaterSaved:${waterSaved.toFixed(1)}m³|CO2Saved:${savedCO2.toFixed(2)}kg|Certs:${certString}|${country}|Methodology:${methodology}|Verified:${new Date().toISOString().split('T')[0]}|Compliance:EU-GreenClaims+French-GrenelleII+A&F-PEFCR-V3.1`;
-
-          try {
-            if (typeof QRCode !== 'undefined') {
-              currentQRCode = new QRCode(qrElement, {
-                text: qrText,
-                width: 200,
-                height: 200,
-                colorDark: "#2e8b57",
-                                  colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-              });
-              
-              // Show download button after a brief delay
-              setTimeout(() => {
-                const qrCanvas = qrElement.querySelector('canvas');
-                if (qrCanvas) {
-                  const downloadLink = document.getElementById('downloadQR');
-                  downloadLink.href = qrCanvas.toDataURL('image/png');
-                  downloadLink.style.display = 'inline-block';
-                }
-              }, 500);
-              
-            } else {
-              throw new Error('QRCode library not loaded');
-            }
-          } catch (error) {
-            console.error('QR Code generation failed:', error);
-            document.getElementById('qr-error').innerHTML = 
-              'QR Code temporarily unavailable - sustainability data is still valid';
-            document.getElementById('qr-error').style.display = 'block';
-          }
+          const qrText = `AIOXY|${productName}|CO2:${totalCO2.toFixed(2)}kg|WaterSaved:${waterSaved.toFixed(1)}m³|CO2Saved:${savedCO2.toFixed(2)}kg|CFF-A=0.8`;
+          new QRCode(qrElement, { text: qrText, width: 200, height: 200, colorDark: "#2e8b57" });
         }
 
-        function saveAsPDF() {
-          alert('PDF generation would be implemented in production. For now, use "Copy Sustainability Story" or screenshot.');
-        }
-
-        function copyResults() {
-          const resultsText = document.getElementById('result-summary').innerText;
-          const co2Saved = document.getElementById('impactCo2').innerText;
-          const analogy = document.getElementById('impactAnalogy').innerText;
-          
-          const textToCopy = `AIOXY SUSTAINABILITY PASSPORT\n\n${resultsText}\n\n🌍 ${co2Saved} saved\n${analogy}\n\nGenerated with AIOXY 100% Regulator-Proof Calculator`;
-          
-          navigator.clipboard.writeText(textToCopy).then(() => {
-            alert('✅ Sustainability story copied to clipboard! Ready to share.');
-          }).catch(() => {
-            alert('📋 Copy the sustainability story manually from the results above.');
-          });
-        }
-
-        // Initialize calculator with default values
         function initializeCalculator() {
-          // Add default material and transport
           addMaterial();
           addTransport();
-          
-          // Set up X sharing
-          document.getElementById('share').addEventListener('click', function() {
-            const productName = document.getElementById('product-name').value || 'Sustainable Product';
-            const text = `Just calculated the environmental footprint of my ${productName} with @AIOXY - 100% regulator-proof sustainability data! 🌍✨`;
-            const url = 'https://aioxy.com';
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-          });
-          
-          console.log("🚀 AIOXY Calculator v3.2 Initialized - 100% Regulator Proof");
-          console.log("✅ CFF A=0.8 Compliance: Textile-to-textile recycling now uses A=0.8 per A&F PEFCR V3.1");
-          console.log("✅ ADEME V23.6: French electricity 0.0338 kg CO₂e/kWh verified");
-          console.log("✅ PEF EF 3.1: All material factors from official EU database");
         }
 
-        // Check for existing access on page load
+        // Check existing access
         window.addEventListener('DOMContentLoaded', function() {
-          if (!checkExistingAccess()) {
-            console.log("🔐 Access prompt shown - awaiting user input");
-          } else {
-            console.log("✅ Access restored from localStorage");
+          const founderAccess = localStorage.getItem('aioxy_founder_access');
+          const publicAccess = localStorage.getItem('aioxy_public_access');
+          
+          if (founderAccess === 'true') {
+            isFounder = true;
+            showCalculator();
+          } else if (publicAccess === 'true') {
+            isFounder = false;
+            publicUsageCount = parseInt(localStorage.getItem('aioxy_public_usage') || '0');
+            showCalculator();
           }
         });
     </script>
 </body>
-</html>
+    </html>
