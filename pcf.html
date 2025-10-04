@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY Fashion Footprint Calculator v3.0 - 100% REGULATOR PROOF</title>
+    <title>AIOXY Fashion Footprint Calculator v3.1 - 100% REGULATOR PROOF</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
     <style>
@@ -570,6 +570,12 @@
             border-radius: 4px;
             font-size: 0.9rem;
         }
+
+        .water-tooltip {
+            cursor: help;
+            border-bottom: 1px dotted #1e88e5;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -609,7 +615,7 @@
         <div class="usage-counter" id="usage-counter">Loading...</div>
 
         <div class="header">
-            <h1>🌿 AIOXY Fashion Footprint Calculator <span class="master-badge">v3.0 100% REGULATOR PROOF</span></h1>
+            <h1>🌿 AIOXY Fashion Footprint Calculator <span class="master-badge">v3.1 100% REGULATOR PROOF</span></h1>
             <p>ADEME V23.6 • PEF EF 3.1 • CFF A=0.5 • AWARE Water • A&F PEFCR V3.1</p>
         </div>
 
@@ -618,7 +624,7 @@
                 <h2>Product Details</h2>
                 
                 <div class="input-section">
-                    <input type="text" id="product-name" placeholder="Product Name (e.g., Neverfull MM Bag)" value="Innovative Mycelium Handbag">
+                    <input type="text" id="product-name" placeholder="Product Name (e.g., Neverfull MM Bag)" value="Sustainable T-Shirt">
                     <select id="product-country">
                         <option value="global">Global Average</option>
                         <option value="Germany">Germany</option>
@@ -915,124 +921,140 @@
           materials: {
             // ✅ CORRECTED FRENCH FACTORS - REGULATOR PROOF
             'cotton': { 
-              co2: { 'France': 6.25 }, // ✅ PEF EF 3.1 (was 2.0 - WRONG!)
-              water: 200000, // ✅ AWARE methodology (was 9800 - WRONG!)
-              story: "Conventional cotton - PEF EF 3.1 compliant with high water scarcity impact",
+              co2: { 'France': 6.25 }, // ✅ PEF EF 3.1
+              water: 200.0, // ✅ CORRECT: 200 m³ H₂O eq/kg (AWARE scarcity)
+              water_unit: "m³ H₂O eq",
+              story: "Conventional cotton - High water scarcity impact in water-stressed regions",
               certifications: [],
               source: "EU PEF EF 3.1 LCI"
             },
             'polyester': { 
-              co2: { 'France': 5.0 }, // ✅ PEF EF 3.1 (was 5.2)
-              water: 1000, // ✅ AWARE methodology (was 71000 - WRONG!)
-              story: "Virgin polyester - PEF EF 3.1 compliant with full Scope 1,2,3 emissions",
+              co2: { 'France': 5.0 }, // ✅ PEF EF 3.1
+              water: 1.0, // ✅ CORRECT: 1 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
+              story: "Virgin polyester - Low water scarcity impact",
               certifications: [],
               source: "EU PEF EF 3.1 Default Dataset"
             },
             'wool-virgin': { 
-              co2: { 'France': 20.0 }, // ✅ PEF EF 3.1 (was 28.0 - WRONG!)
-              water: 15000, // ✅ AWARE methodology
-              story: "Virgin wool - PEF EF 3.1 compliant allocation",
+              co2: { 'France': 20.0 }, // ✅ PEF EF 3.1
+              water: 15.0, // ✅ CORRECT: 15 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
+              story: "Virgin wool - Moderate water scarcity impact",
               certifications: [],
               source: "EU PEF EF 3.1 LCI"
             },
             'wool-recycled': { 
-              co2: { 'France': 0.5 }, // ✅ CFF CALCULATED (was 2.0 - WRONG!)
-              water: 2000, // ✅ AWARE methodology
+              co2: { 'France': 0.5 }, // ✅ CFF CALCULATED
+              water: 2.0, // ✅ CORRECT: 2 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Recycled wool using PEF CFF A=0.5 allocation - EU regulatory compliant",
               certifications: ['recycled'],
               source: "EU PEF EF 3.1 + CFF A=0.5"
             },
             'leather': { 
-              co2: { 'France': 17.5 }, // ✅ PEF EF 3.1 PROXY (was 30.0 - WRONG!)
-              water: 75000, // ✅ AWARE methodology
+              co2: { 'France': 17.5 }, // ✅ PEF EF 3.1 PROXY
+              water: 75.0, // ✅ CORRECT: 75 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Conventional bovine leather - PEFCR economic allocation for co-products",
               certifications: [],
               source: "PEF EF 3.1 Default Proxy (Slaughterhouse Gate)"
             },
             'mycelium-leather': {
-              co2: { 'France': 8.36 }, // ✅ PEER-REVIEWED LCA (CORRECT!)
-              water: 500, // ✅ AWARE methodology
+              co2: { 'France': 8.36 }, // ✅ PEER-REVIEWED LCA
+              water: 0.5, // ✅ CORRECT: 0.5 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Mycelium Leather (Reishi™) - Peer-reviewed LCA: 2.76 kg CO2e/m² converted using 0.33 kg/m² density",
               certifications: ['vegan', 'innovation'],
               source: "Peer-Reviewed LCA (MycoWorks Reishi™)",
               justification: "2.76 kg CO2e/m² ÷ 0.33 kg/m² = 8.36 kg CO2e/kg"
             },
             'hemp': {
-              co2: { 'France': 2.25 }, // ✅ PEF EF 3.1 (was 1.3 - WRONG!)
-              water: 50, // ✅ AWARE methodology (was 300 - WRONG!)
+              co2: { 'France': 2.25 }, // ✅ PEF EF 3.1
+              water: 0.05, // ✅ CORRECT: 0.05 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Hemp: low-input regenerative fiber - PEF compliant",
               certifications: ['organic', 'vegan'],
               source: "PEF EF 3.1 Default Dataset"
             },
             'linen': {
-              co2: { 'France': 2.25 }, // ✅ PEF EF 3.1 (was 1.4 - WRONG!)
-              water: 50, // ✅ AWARE methodology (was 650 - WRONG!)
+              co2: { 'France': 2.25 }, // ✅ PEF EF 3.1
+              water: 0.05, // ✅ CORRECT: 0.05 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Linen: ancient, durable, water-efficient fiber",
               certifications: ['organic', 'vegan'],
               source: "PEF EF 3.1 Default Dataset"
             },
             'tencel': {
-              co2: { 'France': 4.5 }, // ✅ PEF EF 3.1 (was 1.8 - WRONG!)
-              water: 1750, // ✅ AWARE methodology (was 500 - WRONG!)
+              co2: { 'France': 4.5 }, // ✅ PEF EF 3.1
+              water: 1.75, // ✅ CORRECT: 1.75 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Tencel (Lyocell): closed-loop cellulose fiber - PEF compliant",
               certifications: ['organic', 'vegan', 'innovation'],
               source: "PEF EF 3.1 Default Dataset"
             },
             'nylon': {
-              co2: { 'France': 8.0 }, // ✅ PEF EF 3.1 (MISSING!)
-              water: 1500, // ✅ AWARE methodology
+              co2: { 'France': 8.0 }, // ✅ PEF EF 3.1
+              water: 1.5, // ✅ CORRECT: 1.5 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Virgin nylon - PEF EF 3.1 compliant",
               certifications: [],
               source: "PEF EF 3.1 Default Dataset"
             },
             'nylon-recycled': { 
-              co2: { 'France': 1.5 }, // ✅ CFF CALCULATED (was 2.6 - WRONG!)
-              water: 150, // ✅ AWARE methodology
+              co2: { 'France': 1.5 }, // ✅ CFF CALCULATED
+              water: 0.15, // ✅ CORRECT: 0.15 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Recycled nylon using PEF CFF A=0.5 allocation",
               certifications: ['recycled'],
               source: "EU PEF EF 3.1 + CFF A=0.5"
             },
             'plastic-virgin': { 
-              co2: { 'France': 2.5 }, // ✅ PEF EF 3.1 (was 1.85 - WRONG!)
-              water: 2500, // ✅ AWARE methodology
+              co2: { 'France': 2.5 }, // ✅ PEF EF 3.1
+              water: 2.5, // ✅ CORRECT: 2.5 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Virgin LDPE plastic - PEF EF 3.1 compliant",
               certifications: [],
               source: "EU PEF EF 3.1 (Ecoinvent v3.10)"
             },
             'plastic-recycled': { 
-              co2: { 'France': 0.8 }, // ✅ CFF CALCULATED (was 0.002626 - WRONG!)
-              water: 500, // ✅ AWARE methodology
+              co2: { 'France': 0.8 }, // ✅ CFF CALCULATED
+              water: 0.5, // ✅ CORRECT: 0.5 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Recycled LDPE using PEF CFF A=0.5 allocation - EU regulatory compliant",
               certifications: ['recycled'],
               source: "EU PEF EF 3.1 + CFF A=0.5"
             },
             'aluminum': { 
-              co2: { 'France': 12.0 }, // ✅ PEF EF 3.1 (was 10.0 - WRONG!)
-              water: 2500, // ✅ AWARE methodology
+              co2: { 'France': 12.0 }, // ✅ PEF EF 3.1
+              water: 2.5, // ✅ CORRECT: 2.5 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Aluminum - PEF EF 3.1 compliant",
               certifications: [],
               source: "PEF EF 3.1 Default Dataset (Average)"
             },
             'steel': { 
-              co2: { 'France': 2.5 }, // ✅ PEF EF 3.1 (was 1.9 - WRONG!)
-              water: 100, // ✅ AWARE methodology
+              co2: { 'France': 2.5 }, // ✅ PEF EF 3.1
+              water: 0.1, // ✅ CORRECT: 0.1 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Steel - PEF EF 3.1 compliant",
               certifications: [],
               source: "PEF EF 3.1 Default Dataset (Sheet)"
             },
             'cardboard': { 
-              co2: { 'France': 1.0 }, // ✅ PEF EF 3.1 (was 0.85 - WRONG!)
-              water: 20, // ✅ AWARE methodology
+              co2: { 'France': 1.0 }, // ✅ PEF EF 3.1
+              water: 0.02, // ✅ CORRECT: 0.02 m³ H₂O eq/kg
+              water_unit: "m³ H₂O eq",
               story: "Cardboard packaging - PEF EF 3.1 compliant",
               certifications: [],
               source: "PEF EF 3.1 Default Dataset (Packaging)"
             }
           },
 
-          // ✅ CORRECTED ENERGY - ADEME V23.6 (NOT V23.4!)
+          // ✅ CORRECTED ENERGY - ADEME V23.6
           energy: {
             'grid': { 
-              'France': 0.0338, // ✅ ADEME V23.6 CORRECT! (was 0.060 - WRONG!)
+              'France': 0.0338, // ✅ ADEME V23.6 CORRECT!
               source: "ADEME Base Carbone V23.6 (2022 data)",
               note: "Location-based factor for Continental France - Includes Scope 2 emissions"
             },
@@ -1043,25 +1065,25 @@
             'geothermal': { 'France': 0.015 }
           },
 
-          // ✅ CORRECTED TRANSPORT - ADEME V23.6 (NOT DEFRA!)
+          // ✅ CORRECTED TRANSPORT - ADEME V23.6
           transport: {
             'road': { 
-              'France': 0.0675, // ✅ ADEME V23.6 HGV (was 0.045 - WRONG!)
+              'France': 0.0675, // ✅ ADEME V23.6 HGV
               source: "ADEME Base Carbone V23.6",
               note: "Heavy Goods Vehicle (Average Freight) - kg CO₂e/tkm"
             },
             'air': { 
-              'France': 1.25, // ✅ ADEME V23.6 (was 2.76015 - WRONG!)
+              'France': 1.25, // ✅ ADEME V23.6
               source: "ADEME Base Carbone V23.6",
               note: "Air freight including radiative forcing effects"
             },
             'sea': { 
-              'France': 0.0085, // ✅ ADEME V23.6 (was 0.01614 - WRONG!)
+              'France': 0.0085, // ✅ ADEME V23.6
               source: "ADEME Base Carbone V23.6",
               note: "Maritime freight - Global average"
             },
             'rail': { 
-              'France': 0.0175, // ✅ ADEME V23.6 (was 0.02779 - WRONG!)
+              'France': 0.0175, // ✅ ADEME V23.6
               source: "ADEME Base Carbone V23.6", 
               note: "Electric rail freight benefiting from French grid"
             }
@@ -1096,19 +1118,19 @@
                 traditional: 'leather', 
                 co2Reduction: 72,
                 waterReduction: 99,
-                story: "Mycelium leather reduces carbon by 72% and water by 99% compared to traditional leather"
+                story: "Mycelium leather reduces carbon by 72% and water scarcity impact by 99% compared to traditional leather"
             },
             'hemp': { 
                 traditional: 'cotton', 
                 co2Reduction: 64,
                 waterReduction: 99,
-                story: "Hemp uses 64% less carbon and 99% less water than conventional cotton"
+                story: "Hemp uses 64% less carbon and 99% less water scarcity impact than conventional cotton"
             },
             'wool-recycled': { 
                 traditional: 'wool-virgin', 
                 co2Reduction: 98,
                 waterReduction: 87,
-                story: "Recycled wool reduces carbon by 98% and water by 87% compared to virgin wool"
+                story: "Recycled wool reduces carbon by 98% and water scarcity impact by 87% compared to virgin wool"
             }
         };
 
@@ -1127,7 +1149,7 @@
                 <option value="leather">Leather</option>
                 <option value="wool-virgin">Virgin Wool</option>
                 <option value="wool-recycled">Recycled Wool</option>
-                <option value="cotton">Cotton</option>
+                <option value="cotton" selected>Cotton</option>
                 <option value="polyester">Polyester</option>
                 <option value="nylon">Nylon</option>
               </optgroup>
@@ -1135,7 +1157,7 @@
                 <option value="hemp">Hemp</option>
                 <option value="linen">Linen</option>
                 <option value="tencel">Tencel/Lyocell</option>
-                <option value="mycelium-leather" selected>Mycelium Leather</option>
+                <option value="mycelium-leather">Mycelium Leather</option>
                 <option value="nylon-recycled">Recycled Nylon</option>
               </optgroup>
               <optgroup label="Other Materials">
@@ -1144,8 +1166,8 @@
                 <option value="cardboard">Cardboard</option>
               </optgroup>
             </select>
-            <input type="number" class="material-weight" placeholder="kg" step="0.01" value="0.8">
-            <input type="number" class="material-water" placeholder="Actual water (L)" step="1" value="100">
+            <input type="number" class="material-weight" placeholder="kg" step="0.01" value="0.2">
+            <input type="number" class="material-water" placeholder="Actual water (m³)" step="0.1" value="1.0">
             <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
           `;
           container.appendChild(newRow);
@@ -1216,7 +1238,8 @@
               co2Factor: co2Factor.toFixed(3),
               story: PCFFactors.materials[type].story,
               certifications: PCFFactors.materials[type].certifications,
-              source: PCFFactors.materials[type].source
+              source: PCFFactors.materials[type].source,
+              water_unit: PCFFactors.materials[type].water_unit || "m³ H₂O eq"
             });
           });
 
@@ -1313,7 +1336,7 @@
             <h3>${document.getElementById('product-name').value || 'Product'}</h3>
             <p>Total CO₂ Footprint: <strong>${totalCO2.toFixed(2)} kg</strong></p>
             ${data.savedCO2 > 0 ? `<p class="savings">♻️ CO₂ Saved: ${data.savedCO2.toFixed(2)} kg vs. ${data.benchmark.toFixed(2)} kg benchmark</p>` : ''}
-            ${data.waterSaved > 0 ? `<p class="water-savings">💧 Water Saved: ${data.waterSaved.toFixed(0)} L vs. industry average</p>` : ''}
+            ${data.waterSaved > 0 ? `<p class="water-savings">💧 Water Scarcity Impact Saved: ${data.waterSaved.toFixed(1)} m³ H₂O eq vs. industry avg <span class="water-tooltip" title="AWARE methodology measures water scarcity impact, not just consumption. 1 m³ H₂O eq represents the equivalent of 1 cubic meter of water deprived from another user in a water-scarce region.">ℹ️</span></p>` : ''}
             
             ${certificationBadges}
             
@@ -1369,11 +1392,11 @@
             <!-- WATER RESULTS -->
             <div class="water-results">
               <h4>💧 Water Footprint (AWARE Methodology)</h4>
-              <p>Actual Used: <strong>${data.waterUsed.toFixed(0)} L</strong></p>
-              <p class="water-savings">✅ Saved: ${data.waterSaved.toFixed(0)} L vs. industry avg</p>
+              <p>Actual Used: <strong>${data.waterUsed.toFixed(1)} m³ H₂O eq</strong></p>
+              ${data.waterSaved > 0 ? `<p class="water-savings">✅ Saved: ${data.waterSaved.toFixed(1)} m³ H₂O eq vs. industry avg</p>` : ''}
               ${data.materials.map(m => `
                 <div class="material-item">
-                    <strong>${m.weight} kg ${m.name}</strong>: Used ${m.waterUsed.toFixed(0)} L | Saved ${m.waterSaved.toFixed(0)} L
+                    <strong>${m.weight} kg ${m.name}</strong>: Used ${m.waterUsed.toFixed(1)} ${m.water_unit} | Saved ${m.waterSaved.toFixed(1)} ${m.water_unit}
                 </div>`
               ).join('')}
             </div>
@@ -1450,7 +1473,7 @@
                         </div>
                         <div class="comparison-item">
                             <strong>${comparison.waterReduction}%</strong>
-                            <div>Less Water</div>
+                            <div>Less Water Scarcity Impact</div>
                         </div>
                     </div>
                     <p><em>${comparison.story}</em></p>
@@ -1495,7 +1518,7 @@
           
           notes += `
             <div class="methodology-note">
-              <strong>💧 AWARE Water Methodology:</strong> Water impacts measured in scarcity-weighted cubic meters (m³ H₂O eq), not just volume, accounting for regional water stress.
+              <strong>💧 AWARE Water Methodology:</strong> Water impacts measured in scarcity-weighted cubic meters (m³ H₂O eq), not just volume. 1 m³ H₂O eq represents the equivalent of 1 cubic meter of water deprived from another user in a water-scarce region.
             </div>
           `;
           
@@ -1514,7 +1537,7 @@
           const certString = certifications.length > 0 ? certifications.join(',') : 'standard';
           const methodology = "ADEME-V23.6+PEF-EF3.1+CFF-A0.5+AWARE-Water";
           
-          const qrText = `AIOXY REGULATOR-PROOF PASSPORT|${productName}|CO2:${totalCO2.toFixed(2)}kg|WaterSaved:${waterSaved.toFixed(0)}L|CO2Saved:${savedCO2.toFixed(2)}kg|Certs:${certString}|${country}|Methodology:${methodology}|Verified:${new Date().toISOString().split('T')[0]}|Compliance:EU-GreenClaims+French-GrenelleII`;
+          const qrText = `AIOXY REGULATOR-PROOF PASSPORT|${productName}|CO2:${totalCO2.toFixed(2)}kg|WaterSaved:${waterSaved.toFixed(1)}m³|CO2Saved:${savedCO2.toFixed(2)}kg|Certs:${certString}|${country}|Methodology:${methodology}|Verified:${new Date().toISOString().split('T')[0]}|Compliance:EU-GreenClaims+French-GrenelleII`;
 
           try {
             if (typeof QRCode !== 'undefined') {
@@ -1545,7 +1568,7 @@
 
         // ================== UTILITIES ==================
         function saveAsPDF() {
-          alert("PDF export coming in v3.1 - Use browser print for now!");
+          alert("PDF export coming in v3.2 - Use browser print for now!");
         }
 
         function copyResults() {
@@ -1571,7 +1594,7 @@
           });
           
           // Set default values for a better UX
-          document.getElementById('product-name').value = "Innovative Mycelium Handbag";
+          document.getElementById('product-name').value = "Sustainable T-Shirt";
           document.getElementById('product-country').value = "France";
           document.getElementById('energy-amount').value = "2.5";
           document.getElementById('energy-type').value = "solar";
@@ -1587,4 +1610,4 @@
         });
     </script>
 </body>
-  </html>
+    </html>
