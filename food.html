@@ -45,7 +45,6 @@
             margin: 0 auto;
         }
 
-        /* Header Styles */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
@@ -91,7 +90,6 @@
             vertical-align: middle;
         }
 
-        /* Scope Selector */
         .scope-selector {
             background: white;
             padding: 1.5rem;
@@ -136,7 +134,6 @@
             display: block;
         }
 
-        /* Grid Layout */
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -149,7 +146,6 @@
             }
         }
 
-        /* Card Styles */
         .card {
             background: white;
             border-radius: var(--radius);
@@ -178,7 +174,6 @@
             color: var(--primary-light);
         }
 
-        /* Input Section */
         .input-section {
             background: var(--light);
             padding: 1.5rem;
@@ -258,7 +253,6 @@
             font-size: 1.1rem;
         }
 
-        /* Results Section */
         #results {
             margin-top: 2rem;
             display: none;
@@ -345,14 +339,12 @@
             color: var(--gray);
         }
 
-        /* Chart Container */
         .chart-container {
             margin: 2rem auto;
             max-width: 400px;
             height: 300px;
         }
 
-        /* QR Code */
         #qrcode-container {
             margin: 2rem auto;
             text-align: center;
@@ -370,7 +362,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
-        /* Export Buttons */
         .export-buttons {
             display: flex;
             gap: 1rem;
@@ -379,7 +370,6 @@
             justify-content: center;
         }
 
-        /* Material Items */
         .material-item {
             background: white;
             padding: 1rem;
@@ -389,7 +379,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        /* Compliance Badge */
         .compliance-badge {
             background: linear-gradient(135deg, var(--success) 0%, #4caf50 100%);
             color: white;
@@ -400,7 +389,6 @@
             box-shadow: var(--shadow);
         }
 
-        /* Hero Material Badge */
         .hero-badge {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
             color: white;
@@ -412,7 +400,6 @@
             font-size: 0.9rem;
         }
 
-        /* Scientific Badge */
         .scientific-badge {
             background: #9b59b6;
             color: white;
@@ -422,7 +409,6 @@
             margin-left: 5px;
         }
 
-        /* Source References */
         .source-reference {
             background: var(--light);
             padding: 1rem;
@@ -432,7 +418,6 @@
             border-left: 3px solid var(--secondary);
         }
 
-        /* Story Elements */
         .story-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -450,7 +435,6 @@
             backdrop-filter: blur(10px);
         }
 
-        /* Access Prompt */
         .access-prompt {
             position: fixed;
             top: 0;
@@ -486,7 +470,6 @@
             text-align: center;
         }
 
-        /* Usage Counter */
         .usage-counter {
             position: fixed;
             top: 20px;
@@ -504,7 +487,6 @@
             gap: 5px;
         }
 
-        /* Loading Spinner */
         .spinner {
             display: inline-block;
             width: 20px;
@@ -519,7 +501,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Tooltip */
         .tooltip {
             position: relative;
             display: inline-block;
@@ -551,7 +532,6 @@
             opacity: 1;
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             margin-bottom: 1.5rem;
@@ -579,7 +559,6 @@
             display: block;
         }
 
-        /* Triple Metric Cards */
         .triple-metric {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -606,7 +585,6 @@
         .metric-water { color: var(--water); }
         .metric-land { color: var(--land); }
 
-        /* Scope Methodology Display */
         .methodology-display {
             background: var(--light);
             padding: 1.5rem;
@@ -615,7 +593,6 @@
             border-left: 4px solid var(--secondary);
         }
 
-        /* Pie Chart Legend */
         .pie-legend {
             display: flex;
             justify-content: center;
@@ -637,7 +614,6 @@
             border-radius: 3px;
         }
 
-        /* Enhanced Styles */
         .export-panel {
             background: var(--light);
             padding: 1.5rem;
@@ -846,11 +822,11 @@
                     <div class="form-group">
                         <label for="energy-mix">Manufacturing Country Energy Mix</label>
                         <select id="energy-mix">
-                            <option value="global">Global Average (0.475 kg CO₂/kWh)</option>
+                            <option value="global">Global Average (0.48 kg CO₂/kWh)</option>
                             <option value="FR">France (0.06 kg CO₂/kWh)</option>
                             <option value="DE">Germany (0.33 kg CO₂/kWh)</option>
-                            <option value="US" selected>United States (0.40 kg CO₂/kWh)</option>
-                            <option value="CN">China (0.60 kg CO₂/kWh)</option>
+                            <option value="US" selected>United States (0.385 kg CO₂/kWh)</option>
+                            <option value="CN">China (0.581 kg CO₂/kWh)</option>
                             <option value="SE">Sweden (0.02 kg CO₂/kWh)</option>
                         </select>
                     </div>
@@ -905,15 +881,15 @@
 
         // ================== ENHANCED ENTERPRISE DATASET ==================
         
-        // 🎯 ENHANCED TRANSPORT WITH COUNTRY-SPECIFIC FACTORS
+        // 🎯 ENHANCED TRANSPORT WITH COUNTRY-SPECIFIC FACTORS (CORRECTED)
         const ENHANCED_TRANSPORT = {
           'road': {
-            'US': { co2: 0.100, source: "EPA 2024", methodology: "Heavy-duty trucks" },
+            'US': { co2: 0.145, source: "EPA 2024 Actual Fleet", methodology: "Current US truck fleet average" },
             'FR': { co2: 0.062, source: "ADEME 2024", methodology: "Euro VI HGV" },
             'DE': { co2: 0.062, source: "GLEC 2.0", methodology: "Well-to-wheel" },
             'UK': { co2: 0.061, source: "DEFRA 2024", methodology: "HGV articulated" },
             'CN': { co2: 0.085, source: "GLEC 2.0", methodology: "Heavy trucks" },
-            'global': { co2: 0.062, source: "GLEC 2.0", methodology: "Global average" }
+            'global': { co2: 0.075, source: "GLEC 2.0", methodology: "Global average" }
           },
           'air': {
             'global': { co2: 0.950, source: "ICAO 2024", methodology: "Includes RF factor 1.9" }
@@ -924,7 +900,7 @@
           'rail': {
             'FR': { co2: 0.022, source: "ADEME 2024", methodology: "Electric rail" },
             'DE': { co2: 0.025, source: "GLEC 2.0", methodology: "Electric rail" },
-            'global': { co2: 0.022, source: "GLEC 2.0", methodology: "Electric rail average" }
+            'global': { co2: 0.030, source: "GLEC 2.0", methodology: "Electric rail average" }
           }
         };
 
@@ -988,7 +964,7 @@
           }
         };
 
-        // 🎯 MAIN DOMINANCE DATASET
+        // 🎯 COMPLETE DOMINANCE DATASET (ALL INGREDIENTS + CORRECTED DATA)
         const DOMINANCE_DATASET = {
           comprehensive: {
             'beef': { co2: 99.48, water: 15415, land: 326, story: "Beef has the highest environmental footprint - your sustainable choice saves massive resources!", hero: false },
@@ -1046,13 +1022,13 @@
             'chocolate': { co2: 19, water: 19928, land: 15, story: "Cocoa farming requires careful sourcing!", hero: false }
           },
 
-          // SUPPORTING DATA MODULES
+          // 🎯 CORRECTED ENERGY DATA (USING GROK'S PRECISION + GEMINI VALIDATION)
           energy: {
-            'global': { co2: 0.475, renewable: 30, source: "IEA 2023" },
+            'global': { co2: 0.48, renewable: 30, source: "IEA 2023" },
             'FR': { co2: 0.06, renewable: 75, source: "ADEME 2023" },
             'DE': { co2: 0.33, renewable: 48, source: "DEFRA 2023" },
-            'US': { co2: 0.40, renewable: 21, source: "IEA 2023" },
-            'CN': { co2: 0.60, renewable: 29, source: "IEA 2023" },
+            'US': { co2: 0.385, renewable: 21, source: "IEA 2023" },
+            'CN': { co2: 0.581, renewable: 29, source: "IEA 2023" },
             'SE': { co2: 0.02, renewable: 98, source: "IPCC 2023" }
           },
 
@@ -1537,9 +1513,11 @@ Generated: ${new Date().toLocaleString()}
               });
             });
 
-            // Processing emissions based on energy mix
-            const processingEnergy = DOMINANCE_DATASET.energy[energyMix].co2;
-            const processingCO2 = ingredientsCO2 * 0.1 * processingEnergy;
+            // 🎯 CORRECTED PROCESSING CALCULATION (FIXED FROM GEMINI)
+            const energyFactor = DOMINANCE_DATASET.energy[energyMix].co2;
+            const PROCESSING_INTENSITY_FACTOR = 0.5; // kWh per kg of product
+            const totalIngredientWeight = ingredientsLog.reduce((sum, item) => sum + item.weight, 0);
+            const processingCO2 = totalIngredientWeight * PROCESSING_INTENSITY_FACTOR * energyFactor;
 
             // Enhanced packaging calculation
             const packagingType = document.getElementById('packaging-type').value;
