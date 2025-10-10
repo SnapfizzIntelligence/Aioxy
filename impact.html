@@ -28,7 +28,7 @@
     .highlight {
       color: #00FF88;
       font-weight: bold;
-      text-shadow: 0 0 15px #00FF88;
+      text-shadow: 0 0 10px #00FF88;
     }
 
     @keyframes fadeIn {
@@ -37,32 +37,29 @@
     }
 
     @keyframes gentleAppear {
-      0% { opacity: 0; transform: scale(0.9); }
+      0% { opacity: 0; transform: scale(0.95); }
+      70% { opacity: 1; transform: scale(1.02); }
       100% { opacity: 1; transform: scale(1); }
     }
 
-    @keyframes slowGlow {
-      0%, 100% { text-shadow: 0 0 15px #00FF88; }
-      50% { text-shadow: 0 0 25px #00FF88, 0 0 35px #00FF88; }
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 10px #00FF88; }
+      50% { text-shadow: 0 0 20px #00FF88, 0 0 30px #00FF88; }
     }
 
     .show {
-      animation: fadeIn 1.5s forwards;
+      animation: fadeIn 1.2s forwards;
     }
 
     .gentle-appear {
-      animation: gentleAppear 2s forwards;
+      animation: gentleAppear 2s forwards, glowPulse 3s infinite 2s;
     }
 
-    .slow-glow {
-      animation: slowGlow 4s infinite 2s;
-    }
-
-    .delay-1 { animation-delay: 0.8s; }
-    .delay-2 { animation-delay: 2.5s; }
-    .delay-3 { animation-delay: 4.5s; }
-    .delay-4 { animation-delay: 7s; }
-    .delay-5 { animation-delay: 8.5s; }
+    .delay-1 { animation-delay: 0.5s; }
+    .delay-2 { animation-delay: 1.8s; }
+    .delay-3 { animation-delay: 3.2s; }
+    .delay-4 { animation-delay: 5.5s; }
+    .delay-5 { animation-delay: 6.5s; }
 
     #line3 {
       font-size: 1.8rem;
@@ -95,18 +92,12 @@
       document.getElementById('line5')
     ];
 
-    // Much slower, more elegant timing
-    setTimeout(() => elements[0].classList.add('show', 'delay-1'), 800);
-    setTimeout(() => elements[1].classList.add('show', 'delay-2'), 2500);
-    setTimeout(() => {
-      elements[2].classList.add('gentle-appear', 'delay-3');
-      // Add glow AFTER the text fully appears (2 second delay)
-      setTimeout(() => {
-        elements[2].classList.add('slow-glow');
-      }, 2000);
-    }, 4500);
-    setTimeout(() => elements[3].classList.add('show', 'delay-4'), 7000);
-    setTimeout(() => elements[4].classList.add('show', 'delay-5'), 8500);
+    // Slower, more elegant timing
+    setTimeout(() => elements[0].classList.add('show', 'delay-1'), 500);
+    setTimeout(() => elements[1].classList.add('show', 'delay-2'), 1800);
+    setTimeout(() => elements[2].classList.add('gentle-appear', 'delay-3'), 3200);
+    setTimeout(() => elements[3].classList.add('show', 'delay-4'), 5500);
+    setTimeout(() => elements[4].classList.add('show', 'delay-5'), 6500);
   </script>
 </body>
 </html>
