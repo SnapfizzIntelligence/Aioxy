@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,66 +17,87 @@
       font-family: 'Poppins', sans-serif;
       overflow: hidden;
       text-align: center;
-    }h1, h2, p {
-  opacity: 0;
-  margin: 0.4em 0;
-}
+      padding: 20px;
+    }
 
-.highlight {
-  color: #00FF88;
-  font-weight: bold;
-  text-shadow: 0 0 10px #00FF88;
-}
+    h1, h2, p {
+      opacity: 0;
+      margin: 0.4em 0;
+    }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+    .highlight {
+      color: #00FF88;
+      font-weight: bold;
+      text-shadow: 0 0 10px #00FF88;
+    }
 
-@keyframes bounceIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  60% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); }
-}
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-@keyframes glowPulse {
-  0%, 100% { text-shadow: 0 0 10px #00FF88; }
-  50% { text-shadow: 0 0 25px #00FF88; }
-}
+    @keyframes gentleAppear {
+      0% { opacity: 0; transform: scale(0.95); }
+      70% { opacity: 1; transform: scale(1.02); }
+      100% { opacity: 1; transform: scale(1); }
+    }
 
-.show {
-  animation: fadeIn 1s forwards;
-}
+    @keyframes glowPulse {
+      0%, 100% { text-shadow: 0 0 10px #00FF88; }
+      50% { text-shadow: 0 0 20px #00FF88, 0 0 30px #00FF88; }
+    }
 
-.bounce {
-  animation: bounceIn 1.2s forwards, glowPulse 2s infinite;
-}
+    .show {
+      animation: fadeIn 1.2s forwards;
+    }
 
-.delay-1 { animation-delay: 0.5s; }
-.delay-2 { animation-delay: 1.5s; }
-.delay-3 { animation-delay: 2.8s; }
-.delay-4 { animation-delay: 4s; }
+    .gentle-appear {
+      animation: gentleAppear 2s forwards, glowPulse 3s infinite 2s;
+    }
 
+    .delay-1 { animation-delay: 0.5s; }
+    .delay-2 { animation-delay: 1.8s; }
+    .delay-3 { animation-delay: 3.2s; }
+    .delay-4 { animation-delay: 5.5s; }
+    .delay-5 { animation-delay: 6.5s; }
+
+    #line3 {
+      font-size: 1.8rem;
+      margin: 1.5rem 0;
+    }
+
+    #line4 {
+      font-size: 1.1rem;
+      margin-top: 2rem;
+    }
+
+    #line5 {
+      margin-top: 1.5rem;
+    }
   </style>
 </head>
 <body>
   <h1 id="line1">Hey Tulasi,</h1>
-  <h2 id="line2">your choice saved</h2>
+  <h2 id="line2">your choice saved...</h2>
   <h1 id="line3"><span class="highlight">2.1 kg CO₂e</span> and <span class="highlight">1,200 L</span> of water 🌱</h1>
   <p id="line4">Powered by a 7-year fight to make truth measurable — Tulasi</p>
-  <p id="line5" style="color:#888888; font-size: 0.9em;">AIOXY — turning data into stories that change the world.</p>  <script>
+  <p id="line5" style="color:#888888; font-size: 0.9em;">AIOXY — turning data into stories that change the world.</p>
+  
+  <script>
     const elements = [
       document.getElementById('line1'),
-      document.getElementById('line2'),
+      document.getElementById('line2'), 
       document.getElementById('line3'),
       document.getElementById('line4'),
       document.getElementById('line5')
     ];
 
-    setTimeout(() => elements[0].classList.add('show', 'delay-1'), 200);
-    setTimeout(() => elements[1].classList.add('show', 'delay-2'), 1200);
-    setTimeout(() => elements[2].classList.add('bounce', 'delay-3'), 2400);
-    setTimeout(() => elements[3].classList.add('show', 'delay-4'), 4000);
-    setTimeout(() => elements[4].classList.add('show', 'delay-4'), 5000);
-  </script></body>
+    // Slower, more elegant timing
+    setTimeout(() => elements[0].classList.add('show', 'delay-1'), 500);
+    setTimeout(() => elements[1].classList.add('show', 'delay-2'), 1800);
+    setTimeout(() => elements[2].classList.add('gentle-appear', 'delay-3'), 3200);
+    setTimeout(() => elements[3].classList.add('show', 'delay-4'), 5500);
+    setTimeout(() => elements[4].classList.add('show', 'delay-5'), 6500);
+  </script>
+</body>
 </html>
