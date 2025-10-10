@@ -1,174 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Impact | AIOXY</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
-        body {
-            margin: 0;
-            padding: 0;
-            background: #000;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIOXY Impact Story</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      text-align: center;
+    }h1, h2, p {
+  opacity: 0;
+  margin: 0.4em 0;
+}
 
-        .container {
-            text-align: center;
-            max-width: 400px;
-            padding: 2rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 1s ease-out 0.5s forwards;
-        }
+.highlight {
+  color: #00FF88;
+  font-weight: bold;
+  text-shadow: 0 0 10px #00FF88;
+}
 
-        .greeting {
-            font-size: 1.5rem;
-            font-weight: 300;
-            margin-bottom: 1rem;
-            opacity: 0;
-            animation: fadeIn 0.8s ease-out 1s forwards;
-        }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-        .message {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            opacity: 0;
-            animation: fadeIn 0.8s ease-out 1.5s forwards;
-        }
+@keyframes bounceIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
 
-        .impact-numbers {
-            margin: 2rem 0;
-        }
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 10px #00FF88; }
+  50% { text-shadow: 0 0 25px #00FF88; }
+}
 
-        .impact-item {
-            margin: 1.5rem 0;
-            opacity: 0;
-            transform: scale(0.9);
-        }
+.show {
+  animation: fadeIn 1s forwards;
+}
 
-        .number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: block;
-            line-height: 1.2;
-        }
+.bounce {
+  animation: bounceIn 1.2s forwards, glowPulse 2s infinite;
+}
 
-        .label {
-            font-size: 1rem;
-            color: #ccc;
-            margin-top: 0.5rem;
-        }
+.delay-1 { animation-delay: 0.5s; }
+.delay-2 { animation-delay: 1.5s; }
+.delay-3 { animation-delay: 2.8s; }
+.delay-4 { animation-delay: 4s; }
 
-        .signature {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid #333;
-            opacity: 0;
-            animation: fadeIn 0.8s ease-out 3s forwards;
-        }
-
-        .powered-by {
-            font-size: 0.9rem;
-            color: #888;
-            margin-bottom: 1rem;
-        }
-
-        .aioxy-link {
-            display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            color: #000;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .aioxy-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes scaleIn {
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* Individual animations for impact items */
-        .impact-item:nth-child(1) {
-            animation: scaleIn 0.8s ease-out 2s forwards;
-        }
-        .impact-item:nth-child(2) {
-            animation: scaleIn 0.8s ease-out 2.3s forwards;
-        }
-    </style>
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="greeting">Hey Tulasi,</div>
-        <div class="message">your choice saved...</div>
-        
-        <div class="impact-numbers">
-            <div class="impact-item">
-                <span class="number">2.1 kg</span>
-                <div class="label">of CO₂e</div>
-            </div>
-            <div class="impact-item">
-                <span class="number">1,200 L</span>
-                <div class="label">of water 🌱</div>
-            </div>
-        </div>
+  <h1 id="line1">Hey Tulasi,</h1>
+  <h2 id="line2">your choice saved</h2>
+  <h1 id="line3"><span class="highlight">2.1 kg CO₂e</span> and <span class="highlight">1,200 L</span> of water 🌱</h1>
+  <p id="line4">Powered by a 7-year fight to make truth measurable — Tulasi</p>
+  <p id="line5" style="color:#888888; font-size: 0.9em;">AIOXY — turning data into stories that change the world.</p>  <script>
+    const elements = [
+      document.getElementById('line1'),
+      document.getElementById('line2'),
+      document.getElementById('line3'),
+      document.getElementById('line4'),
+      document.getElementById('line5')
+    ];
 
-        <div class="signature">
-            <div class="powered-by">Powered by a 7-year fight to make truth measurable</div>
-            <a href="https://snapfizzintelligence.github.io/Aioxy/" class="aioxy-link">Powered by AIOXY</a>
-        </div>
-    </div>
-
-    <script>
-        // Add some interactive sparkle effects
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.querySelector('.container');
-            
-            // Add subtle floating animation
-            container.style.animation = 'float 6s ease-in-out infinite';
-            
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes float {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-10px); }
-                }
-            `;
-            document.head.appendChild(style);
-        });
-    </script>
-</body>
+    setTimeout(() => elements[0].classList.add('show', 'delay-1'), 200);
+    setTimeout(() => elements[1].classList.add('show', 'delay-2'), 1200);
+    setTimeout(() => elements[2].classList.add('bounce', 'delay-3'), 2400);
+    setTimeout(() => elements[3].classList.add('show', 'delay-4'), 4000);
+    setTimeout(() => elements[4].classList.add('show', 'delay-4'), 5000);
+  </script></body>
 </html>
