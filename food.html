@@ -5,57 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIOXY | EU-Compliant Sustainability Platform</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
         :root {
             --primary: #1a5276;
             --primary-dark: #154360;
-            --primary-light: #2e86c1;
             --secondary: #27ae60;
-            --secondary-dark: #229954;
             --accent: #e74c3c;
             --light: #f8f9fa;
             --dark: #2c3e50;
             --gray: #7f8c8d;
             --border: #bdc3c7;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --radius: 8px;
-            --radius-lg: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            line-height: 1.6;
-            color: var(--dark);
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            font-weight: 400;
+            padding: 20px;
+            color: var(--dark);
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
-        }
-
-        .app-container {
             background: white;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
-            min-height: 95vh;
         }
 
         .header {
@@ -73,44 +55,29 @@
             right: 0;
             width: 300px;
             height: 300px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.1);
             border-radius: 50%;
             transform: translate(30%, -30%);
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
         }
 
         .logo {
             font-size: 2.5rem;
             font-weight: 700;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
         }
 
-        .logo i {
-            font-size: 2.75rem;
-        }
-
         .compliance-badge {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.2);
             padding: 0.5rem 1rem;
             border-radius: 20px;
             font-size: 0.875rem;
             font-weight: 600;
             backdrop-filter: blur(10px);
-        }
-
-        .tagline {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 600px;
-            line-height: 1.5;
+            display: inline-block;
+            margin-top: 0.5rem;
         }
 
         .nav-tabs {
@@ -124,25 +91,16 @@
             padding: 1rem 1.5rem;
             background: none;
             border: none;
-            font-size: 0.95rem;
             font-weight: 500;
             color: var(--gray);
             cursor: pointer;
             border-bottom: 3px solid transparent;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            transition: all 0.3s;
         }
 
         .nav-tab.active {
             color: var(--primary);
             border-bottom-color: var(--primary);
-        }
-
-        .nav-tab:hover {
-            color: var(--primary-dark);
-            background: #f8f9fa;
         }
 
         .main-content {
@@ -161,184 +119,97 @@
         .card {
             background: white;
             border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-lg);
-        }
-
-        .card-header {
+            border-radius: 12px;
             padding: 1.5rem;
-            border-bottom: 1px solid var(--border);
-            background: #f8f9fa;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
             color: var(--primary-dark);
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-        }
-
-        .card-body {
-            padding: 1.5rem;
+            gap: 0.5rem;
         }
 
         .form-group {
             margin-bottom: 1.25rem;
         }
 
-        .form-label {
+        label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: var(--dark);
-            font-size: 0.95rem;
         }
 
-        .form-control {
+        select, input {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem;
             border: 2px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 0.95rem;
-            transition: var(--transition);
-            background: white;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
         }
 
-        .form-control:focus {
+        select:focus, input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(26, 82, 118, 0.1);
-        }
-
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.75rem center;
-            background-repeat: no-repeat;
-            background-size: 1rem;
         }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
             border: none;
-            border-radius: var(--radius);
-            font-size: 0.95rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
+        .btn:hover {
             background: var(--primary-dark);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
-        .btn-secondary {
+        .btn-success {
             background: var(--secondary);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: var(--secondary-dark);
-            transform: translateY(-1px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
         }
 
         .ingredient-list {
             max-height: 400px;
             overflow-y: auto;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 8px;
+            padding: 1rem;
         }
 
         .ingredient-item {
             display: flex;
+            justify-content: space-between;
             align-items: center;
             padding: 1rem;
             border-bottom: 1px solid var(--border);
-            transition: var(--transition);
-        }
-
-        .ingredient-item:hover {
-            background: #f8f9fa;
         }
 
         .ingredient-item:last-child {
             border-bottom: none;
         }
 
-        .ingredient-info {
-            flex: 1;
-        }
-
-        .ingredient-name {
-            font-weight: 500;
-            color: var(--dark);
-        }
-
-        .ingredient-meta {
-            font-size: 0.875rem;
-            color: var(--gray);
-            margin-top: 0.25rem;
-        }
-
-        .ingredient-quantity {
-            width: 120px;
-            margin: 0 1rem;
-        }
-
-        .quantity-input {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            text-align: center;
-        }
-
         .remove-btn {
-            background: var(--danger);
+            background: var(--accent);
             color: white;
             border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border-radius: 4px;
+            padding: 0.5rem;
             cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .remove-btn:hover {
-            background: #c0392b;
-            transform: scale(1.1);
         }
 
         .results-grid {
@@ -351,28 +222,16 @@
         .metric-card {
             background: white;
             padding: 1.5rem;
-            border-radius: var(--radius);
+            border-radius: 10px;
             text-align: center;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             border-left: 4px solid var(--primary);
-            transition: var(--transition);
-        }
-
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .metric-icon {
-            font-size: 2rem;
-            margin-bottom: 0.75rem;
-            color: var(--primary);
         }
 
         .metric-value {
             font-size: 1.75rem;
             font-weight: 700;
-            color: var(--primary-dark);
+            color: var(--primary);
             margin: 0.5rem 0;
         }
 
@@ -380,11 +239,10 @@
             font-size: 0.875rem;
             color: var(--gray);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .savings-badge {
-            background: var(--success);
+            background: var(--secondary);
             color: white;
             padding: 0.375rem 0.75rem;
             border-radius: 20px;
@@ -397,79 +255,27 @@
         .chart-container {
             height: 300px;
             margin: 2rem 0;
-            position: relative;
         }
 
         .environmental-story {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             padding: 2rem;
-            border-radius: var(--radius-lg);
+            border-radius: 12px;
             margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .environmental-story::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: rotate(45deg);
-        }
-
-        .story-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .story-content {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            position: relative;
-        }
-
-        .qr-section {
-            text-align: center;
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: var(--radius-lg);
-            margin: 2rem 0;
-        }
-
-        #qrcode {
-            display: inline-block;
-            background: white;
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin: 1rem 0;
         }
 
         .compliance-notice {
             background: #e3f2fd;
             border: 1px solid #2196f3;
-            border-radius: var(--radius);
+            border-radius: 8px;
             padding: 1.25rem;
             margin: 1.5rem 0;
             font-size: 0.9rem;
-            line-height: 1.5;
         }
 
-        .compliance-notice strong {
-            color: #1976d2;
-        }
-
-        .export-section {
-            display: flex;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
+        .hidden {
+            display: none;
         }
 
         .loading {
@@ -484,16 +290,12 @@
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 1.5rem;
+            margin: 0 auto 1rem;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .hidden {
-            display: none !important;
         }
 
         .transport-section {
@@ -504,313 +306,226 @@
         }
 
         .advanced-options {
-            background: #f8f9fa;
-            border-radius: var(--radius);
+            background: var(--light);
+            border-radius: 8px;
             padding: 1.5rem;
             margin-top: 1rem;
-        }
-
-        .advanced-toggle {
-            background: none;
-            border: none;
-            color: var(--primary);
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0;
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                padding: 1.5rem;
-            }
-            
-            .main-content {
-                padding: 1rem;
-            }
-            
-            .nav-tabs {
-                padding: 0 1rem;
-                overflow-x: auto;
-            }
-            
-            .transport-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .export-section {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="app-container">
-            <!-- Header -->
-            <div class="header">
-                <div class="logo-section">
-                    <div class="logo">
-                        <i class="fas fa-leaf"></i>
-                        AIOXY
-                    </div>
-                    <div class="compliance-badge">
-                        <i class="fas fa-shield-alt"></i>
-                        EU Green Claims Directive Compliant
+        <div class="header">
+            <div class="logo">🌱 AIOXY</div>
+            <div>EU-Compliant Sustainability Calculator</div>
+            <div class="compliance-badge">✅ EU Green Claims Directive Compliant</div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('calculator')">📊 Calculator</button>
+            <button class="nav-tab" onclick="showTab('results')">📈 Results</button>
+            <button class="nav-tab" onclick="showTab('compliance')">📋 Compliance</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Calculator Tab -->
+            <div id="calculator-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-title">📦 Product Information</div>
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" id="productName" value="Plant-Based Protein Burger" class="form-control">
                     </div>
                 </div>
-                <div class="tagline">
-                    Transform your products with auditable, EU-compliant sustainability data. 
-                    Calculate footprints, generate compelling environmental stories, and create Digital Product Passports.
+
+                <div class="card">
+                    <div class="card-title">🍎 Ingredients (35+ Options)</div>
+                    <div class="form-group">
+                        <label>Select Ingredient</label>
+                        <select id="ingredientSelect" class="form-control">
+                            <option value="">Choose from 35+ ingredients...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity (kg)</label>
+                        <input type="number" id="ingredientQuantity" value="0.150" step="0.001" min="0" class="form-control">
+                    </div>
+                    <button class="btn" onclick="addIngredient()">➕ Add Ingredient</button>
+                    
+                    <div class="ingredient-list" id="ingredientList">
+                        <!-- Ingredients will be added here -->
+                    </div>
                 </div>
-            </div>
 
-            <!-- Navigation -->
-            <div class="nav-tabs">
-                <button class="nav-tab active" onclick="showTab('calculator')">
-                    <i class="fas fa-calculator"></i>
-                    Footprint Calculator
-                </button>
-                <button class="nav-tab" onclick="showTab('results')">
-                    <i class="fas fa-chart-bar"></i>
-                    Results & Analysis
-                </button>
-                <button class="nav-tab" onclick="showTab('compliance')">
-                    <i class="fas fa-file-contract"></i>
-                    Compliance Documents
-                </button>
-            </div>
+                <div class="card">
+                    <div class="card-title">🏭 Manufacturing & Supply Chain</div>
+                    <div class="form-group">
+                        <label>Manufacturing Country (22 Countries)</label>
+                        <select id="manufacturingCountry" class="form-control">
+                            <option value="">Select country...</option>
+                        </select>
+                    </div>
 
-            <!-- Main Content -->
-            <div class="main-content">
-                <!-- Calculator Tab -->
-                <div id="calculator-tab" class="tab-content">
-                    <!-- Product Basics -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <i class="fas fa-box"></i>
-                                Product Information
+                    <div class="form-group">
+                        <label>Processing Method</label>
+                        <select id="processingMethod" class="form-control">
+                            <option value="none">No Additional Processing</option>
+                            <option value="pasteurization">Pasteurization</option>
+                            <option value="sterilization">Sterilization</option>
+                            <option value="baking">Baking</option>
+                            <option value="frying">Frying</option>
+                            <option value="freezing">Freezing (IQF)</option>
+                            <option value="drying">Spray Drying</option>
+                            <option value="milling">Milling</option>
+                            <option value="mixing">Mixing</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Transportation</label>
+                        <div class="transport-section">
+                            <div>
+                                <label>Distance (km)</label>
+                                <input type="number" id="transportDistance" value="300" min="0" class="form-control">
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="form-label">Product Name</label>
-                                <input type="text" class="form-control" id="productName" 
-                                       placeholder="e.g., Sustainable Coffee Blend" 
-                                       value="Plant-Based Protein Burger">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Product Category</label>
-                                <select class="form-control form-select" id="productCategory">
-                                    <option value="food">Food Product</option>
-                                    <option value="beverage">Beverage</option>
-                                    <option value="snack">Snack</option>
-                                    <option value="ready-meal">Ready Meal</option>
+                            <div>
+                                <label>Transport Mode</label>
+                                <select id="transportMode" class="form-control">
+                                    <option value="road">Road (HGV Diesel)</option>
+                                    <option value="rail">Rail (Electric)</option>
+                                    <option value="sea">Sea (Container)</option>
+                                    <option value="air">Air Freight</option>
+                                    <option value="lastmile">Last-mile Delivery</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Ingredients -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <i class="fas fa-apple-alt"></i>
-                                Ingredients & Formulation
-                            </div>
+                    <button class="btn" onclick="toggleAdvanced()">⚙️ Advanced Options</button>
+
+                    <div class="advanced-options hidden" id="advancedOptions">
+                        <div class="form-group">
+                            <label>Refrigerated Transport</label>
+                            <select id="refrigeratedTransport" class="form-control">
+                                <option value="no">No Refrigeration</option>
+                                <option value="yes">Refrigerated (+20% emissions)</option>
+                            </select>
                         </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="form-label">Select Ingredient</label>
-                                <select class="form-control form-select" id="ingredientSelect">
-                                    <option value="">Choose from 35+ ingredients...</option>
-                                </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📦 Packaging Materials</div>
+                    <div class="form-group">
+                        <label>Primary Packaging Material</label>
+                        <select id="packagingMaterial" class="form-control">
+                            <option value="cardboard">Cardboard (Coated)</option>
+                            <option value="PET">PET Plastic</option>
+                            <option value="HDPE">HDPE Plastic</option>
+                            <option value="LDPE">LDPE Plastic</option>
+                            <option value="PP">PP Plastic</option>
+                            <option value="glass">Glass</option>
+                            <option value="aluminum">Aluminum</option>
+                            <option value="steel">Steel</option>
+                            <option value="PLA">PLA Bioplastic</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Packaging Weight (kg)</label>
+                        <input type="number" id="packagingWeight" value="0.050" step="0.001" min="0" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Recycled Content (%)</label>
+                        <input type="number" id="recycledContent" value="30" min="0" max="100" class="form-control">
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="calculateImpact()" style="width: 100%; padding: 1rem;">
+                    🚀 Calculate Environmental Impact
+                </button>
+            </div>
+
+            <!-- Results Tab -->
+            <div id="results-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-title">📊 Sustainability Impact Analysis</div>
+                    
+                    <div class="loading hidden" id="loadingResults">
+                        <div class="spinner"></div>
+                        <p>Calculating comprehensive environmental impact...</p>
+                        <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                            Processing 35+ ingredients with regionalized AWARE factors and CFF packaging calculations
+                        </p>
+                    </div>
+
+                    <div id="resultsContent">
+                        <div class="results-grid">
+                            <div class="metric-card">
+                                <div class="metric-value" id="co2Value">0.00 kg</div>
+                                <div class="metric-label">CO₂e per kg</div>
+                                <div class="savings-badge" id="co2Savings">0% saved</div>
                             </div>
                             
-                            <div class="form-group">
-                                <label class="form-label">Quantity (kg)</label>
-                                <input type="number" class="form-control" id="ingredientQuantity" 
-                                       placeholder="0.000" step="0.001" min="0" value="0.150">
+                            <div class="metric-card">
+                                <div class="metric-value" id="waterValue">0 L</div>
+                                <div class="metric-label">Water per kg</div>
+                                <div class="savings-badge" id="waterSavings">0% saved</div>
                             </div>
-
-                            <button class="btn btn-primary" onclick="addIngredient()" style="width: 100%;">
-                                <i class="fas fa-plus"></i>
-                                Add Ingredient to Formulation
-                            </button>
-
-                            <div class="ingredient-list" id="ingredientList" style="margin-top: 1rem;">
-                                <!-- Ingredients will be populated here -->
+                            
+                            <div class="metric-card">
+                                <div class="metric-value" id="landValue">0.00 m²</div>
+                                <div class="metric-label">Land Use per kg</div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Manufacturing & Supply Chain -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <i class="fas fa-industry"></i>
-                                Manufacturing & Supply Chain
+                            
+                            <div class="metric-card">
+                                <div class="metric-value" id="waterScarcityValue">0.000</div>
+                                <div class="metric-label">Water Scarcity (m³ eq)</div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="form-label">Manufacturing Country</label>
-                                <select class="form-control form-select" id="manufacturingCountry">
-                                    <option value="">Select country...</option>
-                                </select>
-                            </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Processing Method</label>
-                                <select class="form-control form-select" id="processingMethod">
-                                    <option value="none">No Additional Processing</option>
-                                    <option value="pasteurization">Pasteurization</option>
-                                    <option value="sterilization">Sterilization</option>
-                                    <option value="baking">Baking</option>
-                                    <option value="frying">Frying</option>
-                                    <option value="freezing">Freezing (IQF)</option>
-                                    <option value="drying">Spray Drying</option>
-                                    <option value="milling">Milling</option>
-                                    <option value="mixing">Mixing</option>
-                                </select>
-                            </div>
-
-                            <!-- Transportation -->
-                            <div class="form-group">
-                                <label class="form-label">Transportation Distance</label>
-                                <div class="transport-section">
-                                    <div>
-                                        <label class="form-label">Distance (km)</label>
-                                        <input type="number" class="form-control" id="transportDistance" 
-                                               placeholder="e.g., 500" value="300" min="0">
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Transport Mode</label>
-                                        <select class="form-control form-select" id="transportMode">
-                                            <option value="road">Road (HGV Diesel)</option>
-                                            <option value="rail">Rail (Electric)</option>
-                                            <option value="sea">Sea (Container)</option>
-                                            <option value="air">Air Freight</option>
-                                            <option value="lastmile">Last-mile Delivery</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="advanced-toggle" onclick="toggleAdvanced()">
-                                <i class="fas fa-cog"></i>
-                                Advanced Supply Chain Options
-                            </button>
-
-                            <div class="advanced-options hidden" id="advancedOptions">
-                                <div class="form-group">
-                                    <label class="form-label">Refrigerated Transport</label>
-                                    <select class="form-control form-select" id="refrigeratedTransport">
-                                        <option value="no">No Refrigeration</option>
-                                        <option value="yes">Refrigerated (+20% emissions)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label">Ingredient Sourcing Region</label>
-                                    <select class="form-control form-select" id="sourcingRegion">
-                                        <option value="EU">European Union</option>
-                                        <option value="US">United States</option>
-                                        <option value="CN">China</option>
-                                        <option value="IN">India</option>
-                                        <option value="BR">Brazil</option>
-                                        <option value="global">Global Average</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="chart-container">
+                            <canvas id="emissionChart"></canvas>
                         </div>
-                    </div>
 
-                    <!-- Packaging -->
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <i class="fas fa-box-open"></i>
-                                Packaging Materials
-                            </div>
+                        <div class="environmental-story">
+                            <div class="story-title">🌍 Environmental Impact Story</div>
+                            <div id="storyContent">Add ingredients to see your sustainability story...</div>
                         </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="form-label">Primary Packaging Material</label>
-                                <select class="form-control form-select" id="packagingMaterial">
-                                    <option value="cardboard">Cardboard (Coated)</option>
-                                    <option value="PET">PET Plastic</option>
-                                    <option value="HDPE">HDPE Plastic</option>
-                                    <option value="LDPE">LDPE Plastic</option>
-                                    <option value="PP">PP Plastic</option>
-                                    <option value="glass">Glass</option>
-                                    <option value="aluminum">Aluminum</option>
-                                    <option value="steel">Steel</option>
-                                    <option value="PLA">PLA Bioplastic</option>
-                                </select>
-                            </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Packaging Weight (kg)</label>
-                                <input type="number" class="form-control" id="packagingWeight" 
-                                       placeholder="0.000" step="0.001" min="0" value="0.050">
-                            </div>
+                        <div class="compliance-notice">
+                            ✅ <strong>EU Green Claims Directive Compliant</strong><br>
+                            This assessment follows PEF methodology using AGRIBALYSE 3.2, JRC EF 3.2, and AWARE 2.0 data. 
+                            All claims are substantiated and auditable.
+                        </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Recycled Content (%)</label>
-                                <input type="number" class="form-control" id="recycledContent" 
-                                       placeholder="0-100" min="0" max="100" value="30">
-                                <small style="color: var(--gray); font-size: 0.875rem;">
-                                    Percentage of recycled material in packaging
-                                </small>
-                            </div>
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button class="btn">📄 Export DPP Report</button>
+                            <button class="btn">🔍 Generate Verification</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Results Tab -->
-                <div id="results-tab" class="tab-content hidden">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <i class="fas fa-chart-line"></i>
-                                Sustainability Impact Analysis
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="loading hidden" id="loadingResults">
-                                <div class="spinner"></div>
-                                <p>Calculating comprehensive environmental impact...</p>
-                                <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
-                                    Processing 35+ ingredients with regionalized AWARE factors and CFF packaging calculations
-                                </p>
-                            </div>
-
-                            <div id="resultsContent">
-                                <!-- Results will be populated here -->
-                            </div>
-                        </div>
+            <!-- Compliance Tab -->
+            <div id="compliance-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-title">📋 Compliance & Documentation</div>
+                    <div class="compliance-notice">
+                        <strong>EU Regulatory Compliance Statement</strong><br><br>
+                        Environmental claims made by AIOXY regarding this product are substantiated by a Life Cycle Assessment (LCA) conducted in accordance with the Product Environmental Footprint (PEF) methodology as defined by the European Commission Joint Research Centre (JRC).<br><br>
+                        The specific methodology, including data sources (AGRIBALYSE 3.2, JRC EF 3.2, GLEC v3.1) and calculation rules (CFF, AWARE, Economic Allocation), is fully documented and auditable via the Digital Product Passport (DPP). This claim refers exclusively to, and not to the product's overall environmental performance.
                     </div>
-                </div>
-
-                <!-- Compliance Tab -->
-                <div id="compliance-tab" class="tab-content hidden">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">
-                                <i class="fas fa-file-certificate"></i>
-                                Compliance & Documentation
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="complianceContent">
-                                <!-- Compliance content will be populated here -->
-                            </div>
-                        </div>
-                    </div>
+                    
+                    <h3 style="margin: 2rem 0 1rem 0; color: var(--primary-dark);">Methodology Used</h3>
+                    <ul style="line-height: 1.6; margin-left: 1.5rem;">
+                        <li><strong>AWARE Water Scarcity</strong>: Regionalized water impact assessment with 0.1-100 constraint factors</li>
+                        <li><strong>Circular Footprint Formula (CFF)</strong>: Packaging end-of-life calculations with R1, R2, Q parameters</li>
+                        <li><strong>Economic Allocation</strong>: PEF-compliant allocation for co-products</li>
+                        <li><strong>Regionalized Factors</strong>: Country-specific electricity and water scarcity factors</li>
+                        <li><strong>Food Loss Accounting</strong>: Complete supply chain loss quantification</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -819,332 +534,151 @@
     <script>
         // ================== COMPLETE AIOXY DATASET FROM GEMINI ==================
         const aioxyData = {
+            // ALL 35 INGREDIENTS FROM GEMINI TABLE A
             ingredients: {
-                "beef": { 
-                    name: "Beef (Cattle, EU Conventional)", 
-                    co2: 22.10, waterBlue: 120.0, waterGreen: 1500.0, waterGrey: 15.0, 
-                    landUse: 14.5, loss: 0.035, allocation: "economic", region: "EU"
-                },
-                "chicken": { 
-                    name: "Chicken (Broiler, EU Average)", 
-                    co2: 4.30, waterBlue: 5.5, waterGreen: 65.0, waterGrey: 2.5, 
-                    landUse: 1.8, loss: 0.025, allocation: "economic/mass", region: "EU"
-                },
-                "pork": { 
-                    name: "Pork (Pig, EU Average)", 
-                    co2: 7.40, waterBlue: 15.0, waterGreen: 180.0, waterGrey: 4.0, 
-                    landUse: 2.9, loss: 0.020, allocation: "economic", region: "EU"
-                },
-                "salmon": { 
-                    name: "Salmon (Farmed)", 
-                    co2: 3.60, waterBlue: 0.8, waterGreen: 0.5, waterGrey: 0.1, 
-                    landUse: 0.5, loss: 0.010, allocation: "economic", region: "EU"
-                },
-                "milk": { 
-                    name: "Milk (Cow, UHT)", 
-                    co2: 1.15, waterBlue: 1.2, waterGreen: 8.0, waterGrey: 0.5, 
-                    landUse: 0.9, loss: 0.005, allocation: "economic", region: "EU"
-                },
-                "eggs": { 
-                    name: "Eggs (Chicken)", 
-                    co2: 3.20, waterBlue: 2.5, waterGreen: 25.0, waterGrey: 1.0, 
-                    landUse: 1.1, loss: 0.005, allocation: "mass", region: "EU"
-                },
-                "wheat": { 
-                    name: "Wheat (Grain)", 
-                    co2: 0.50, waterBlue: 5.0, waterGreen: 550.0, waterGrey: 3.5, 
-                    landUse: 0.3, loss: 0.030, allocation: "mass", region: "EU"
-                },
-                "rice": { 
-                    name: "Rice (Paddy)", 
-                    co2: 3.50, waterBlue: 85.0, waterGreen: 1100.0, waterGrey: 10.0, 
-                    landUse: 0.9, loss: 0.050, allocation: "mass", region: "imported"
-                },
-                "corn": { 
-                    name: "Corn (Maize)", 
-                    co2: 0.60, waterBlue: 4.5, waterGreen: 400.0, waterGrey: 2.0, 
-                    landUse: 0.4, loss: 0.040, allocation: "mass", region: "EU"
-                },
-                "oats": { 
-                    name: "Oats (Grain)", 
-                    co2: 0.45, waterBlue: 3.0, waterGreen: 350.0, waterGrey: 1.5, 
-                    landUse: 0.2, loss: 0.030, allocation: "mass", region: "EU"
-                },
-                "soybeans": { 
-                    name: "Soybeans (Dried)", 
-                    co2: 0.75, waterBlue: 10.0, waterGreen: 1200.0, waterGrey: 5.0, 
-                    landUse: 1.5, loss: 0.020, allocation: "economic", region: "imported"
-                },
-                "peas": { 
-                    name: "Peas (Dried)", 
-                    co2: 0.40, waterBlue: 1.5, waterGreen: 450.0, waterGrey: 1.0, 
-                    landUse: 0.3, loss: 0.010, allocation: "mass", region: "EU"
-                },
-                "lentils": { 
-                    name: "Lentils (Dried)", 
-                    co2: 0.85, waterBlue: 10.0, waterGreen: 700.0, waterGrey: 3.0, 
-                    landUse: 0.5, loss: 0.010, allocation: "mass", region: "imported"
-                },
-                "chickpeas": { 
-                    name: "Chickpeas (Dried)", 
-                    co2: 0.95, waterBlue: 15.0, waterGreen: 850.0, waterGrey: 4.0, 
-                    landUse: 0.7, loss: 0.010, allocation: "mass", region: "imported"
-                },
-                "almonds": { 
-                    name: "Almonds (Kernel)", 
-                    co2: 7.50, waterBlue: 550.0, waterGreen: 1500.0, waterGrey: 20.0, 
-                    landUse: 2.5, loss: 0.005, allocation: "mass", region: "imported"
-                },
-                "potatoes": { 
-                    name: "Potatoes (Fresh)", 
-                    co2: 0.30, waterBlue: 1.0, waterGreen: 120.0, waterGrey: 0.5, 
-                    landUse: 0.1, loss: 0.050, allocation: "mass", region: "EU"
-                },
-                "tomatoes": { 
-                    name: "Tomatoes (Fresh, Field)", 
-                    co2: 0.55, waterBlue: 5.0, waterGreen: 150.0, waterGrey: 1.0, 
-                    landUse: 0.3, loss: 0.040, allocation: "mass", region: "EU"
-                },
-                "onions": { 
-                    name: "Onions (Fresh)", 
-                    co2: 0.25, waterBlue: 0.8, waterGreen: 80.0, waterGrey: 0.3, 
-                    landUse: 0.1, loss: 0.040, allocation: "mass", region: "EU"
-                },
-                "carrots": { 
-                    name: "Carrots (Fresh)", 
-                    co2: 0.20, waterBlue: 0.5, waterGreen: 60.0, waterGrey: 0.2, 
-                    landUse: 0.1, loss: 0.030, allocation: "mass", region: "EU"
-                },
-                "apples": { 
-                    name: "Apples (Fresh)", 
-                    co2: 0.40, waterBlue: 2.0, waterGreen: 180.0, waterGrey: 0.5, 
-                    landUse: 0.2, loss: 0.030, allocation: "mass", region: "EU"
-                },
-                "bananas": { 
-                    name: "Bananas (Fresh)", 
-                    co2: 0.95, waterBlue: 1.5, waterGreen: 150.0, waterGrey: 0.8, 
-                    landUse: 0.4, loss: 0.020, allocation: "mass", region: "imported"
-                },
-                "oranges": { 
-                    name: "Oranges (Fresh)", 
-                    co2: 0.50, waterBlue: 3.0, waterGreen: 200.0, waterGrey: 1.0, 
-                    landUse: 0.3, loss: 0.020, allocation: "mass", region: "imported"
-                },
-                "berries": { 
-                    name: "Berries (Mixed, Fresh)", 
-                    co2: 1.80, waterBlue: 10.0, waterGreen: 300.0, waterGrey: 5.0, 
-                    landUse: 0.6, loss: 0.050, allocation: "mass", region: "EU"
-                },
-                "palm-oil": { 
-                    name: "Palm Oil (Crude)", 
-                    co2: 3.50, waterBlue: 15.0, waterGreen: 200.0, waterGrey: 5.0, 
-                    landUse: 3.0, loss: 0.010, allocation: "mass", region: "imported"
-                },
-                "olive-oil": { 
-                    name: "Olive Oil", 
-                    co2: 6.00, waterBlue: 120.0, waterGreen: 1500.0, waterGrey: 8.0, 
-                    landUse: 4.0, loss: 0.010, allocation: "economic", region: "EU"
-                },
-                "sunflower-oil": { 
-                    name: "Sunflower Oil", 
-                    co2: 1.50, waterBlue: 5.0, waterGreen: 500.0, waterGrey: 2.5, 
-                    landUse: 0.8, loss: 0.010, allocation: "economic", region: "EU"
-                },
-                "sugar-cane": { 
-                    name: "Sugar Cane", 
-                    co2: 0.70, waterBlue: 80.0, waterGreen: 1000.0, waterGrey: 6.0, 
-                    landUse: 0.5, loss: 0.030, allocation: "mass", region: "imported"
-                },
-                "sugar-beet": { 
-                    name: "Sugar Beet", 
-                    co2: 0.60, waterBlue: 5.0, waterGreen: 400.0, waterGrey: 2.0, 
-                    landUse: 0.3, loss: 0.020, allocation: "mass", region: "EU"
-                },
-                "honey": { 
-                    name: "Honey", 
-                    co2: 1.30, waterBlue: 1.0, waterGreen: 20.0, waterGrey: 0.1, 
-                    landUse: 0.5, loss: 0.005, allocation: "mass", region: "EU"
-                },
-                "coffee": { 
-                    name: "Coffee (Roasted)", 
-                    co2: 17.50, waterBlue: 80.0, waterGreen: 1500.0, waterGrey: 12.0, 
-                    landUse: 8.0, loss: 0.010, allocation: "mass", region: "imported"
-                },
-                "cocoa": { 
-                    name: "Cocoa (Powder)", 
-                    co2: 22.50, waterBlue: 150.0, waterGreen: 2500.0, waterGrey: 18.0, 
-                    landUse: 12.0, loss: 0.010, allocation: "economic", region: "imported"
-                },
-                "tea": { 
-                    name: "Tea (Black, Dried)", 
-                    co2: 2.20, waterBlue: 5.0, waterGreen: 400.0, waterGrey: 3.0, 
-                    landUse: 0.8, loss: 0.005, allocation: "mass", region: "imported"
-                },
-                "salt": { 
-                    name: "Salt", 
-                    co2: 0.01, waterBlue: 0.0, waterGreen: 0.0, waterGrey: 0.0, 
-                    landUse: 0.0, loss: 0.000, allocation: "mass", region: "EU"
-                },
-                "yeast": { 
-                    name: "Yeast (Brewer's)", 
-                    co2: 1.20, waterBlue: 4.0, waterGreen: 10.0, waterGrey: 0.5, 
-                    landUse: 0.1, loss: 0.001, allocation: "economic", region: "EU"
-                },
-                "algae-protein": { 
-                    name: "Algae Protein (Microalgae)", 
-                    co2: 1.70, waterBlue: 8.0, waterGreen: 2.0, waterGrey: 0.1, 
-                    landUse: 0.2, loss: 0.005, allocation: "system-expansion", region: "EU"
-                }
+                "beef": { name: "Beef (Cattle, EU Conventional)", co2: 22.10, waterBlue: 120.0, waterGreen: 1500.0, waterGrey: 15.0, landUse: 14.5, loss: 0.035 },
+                "chicken": { name: "Chicken (Broiler, EU Average)", co2: 4.30, waterBlue: 5.5, waterGreen: 65.0, waterGrey: 2.5, landUse: 1.8, loss: 0.025 },
+                "pork": { name: "Pork (Pig, EU Average)", co2: 7.40, waterBlue: 15.0, waterGreen: 180.0, waterGrey: 4.0, landUse: 2.9, loss: 0.020 },
+                "salmon": { name: "Salmon (Farmed)", co2: 3.60, waterBlue: 0.8, waterGreen: 0.5, waterGrey: 0.1, landUse: 0.5, loss: 0.010 },
+                "milk": { name: "Milk (Cow, UHT)", co2: 1.15, waterBlue: 1.2, waterGreen: 8.0, waterGrey: 0.5, landUse: 0.9, loss: 0.005 },
+                "eggs": { name: "Eggs (Chicken)", co2: 3.20, waterBlue: 2.5, waterGreen: 25.0, waterGrey: 1.0, landUse: 1.1, loss: 0.005 },
+                "wheat": { name: "Wheat (Grain)", co2: 0.50, waterBlue: 5.0, waterGreen: 550.0, waterGrey: 3.5, landUse: 0.3, loss: 0.030 },
+                "rice": { name: "Rice (Paddy)", co2: 3.50, waterBlue: 85.0, waterGreen: 1100.0, waterGrey: 10.0, landUse: 0.9, loss: 0.050 },
+                "corn": { name: "Corn (Maize)", co2: 0.60, waterBlue: 4.5, waterGreen: 400.0, waterGrey: 2.0, landUse: 0.4, loss: 0.040 },
+                "oats": { name: "Oats (Grain)", co2: 0.45, waterBlue: 3.0, waterGreen: 350.0, waterGrey: 1.5, landUse: 0.2, loss: 0.030 },
+                "soybeans": { name: "Soybeans (Dried)", co2: 0.75, waterBlue: 10.0, waterGreen: 1200.0, waterGrey: 5.0, landUse: 1.5, loss: 0.020 },
+                "peas": { name: "Peas (Dried)", co2: 0.40, waterBlue: 1.5, waterGreen: 450.0, waterGrey: 1.0, landUse: 0.3, loss: 0.010 },
+                "lentils": { name: "Lentils (Dried)", co2: 0.85, waterBlue: 10.0, waterGreen: 700.0, waterGrey: 3.0, landUse: 0.5, loss: 0.010 },
+                "chickpeas": { name: "Chickpeas (Dried)", co2: 0.95, waterBlue: 15.0, waterGreen: 850.0, waterGrey: 4.0, landUse: 0.7, loss: 0.010 },
+                "almonds": { name: "Almonds (Kernel)", co2: 7.50, waterBlue: 550.0, waterGreen: 1500.0, waterGrey: 20.0, landUse: 2.5, loss: 0.005 },
+                "potatoes": { name: "Potatoes (Fresh)", co2: 0.30, waterBlue: 1.0, waterGreen: 120.0, waterGrey: 0.5, landUse: 0.1, loss: 0.050 },
+                "tomatoes": { name: "Tomatoes (Fresh, Field)", co2: 0.55, waterBlue: 5.0, waterGreen: 150.0, waterGrey: 1.0, landUse: 0.3, loss: 0.040 },
+                "onions": { name: "Onions (Fresh)", co2: 0.25, waterBlue: 0.8, waterGreen: 80.0, waterGrey: 0.3, landUse: 0.1, loss: 0.040 },
+                "carrots": { name: "Carrots (Fresh)", co2: 0.20, waterBlue: 0.5, waterGreen: 60.0, waterGrey: 0.2, landUse: 0.1, loss: 0.030 },
+                "apples": { name: "Apples (Fresh)", co2: 0.40, waterBlue: 2.0, waterGreen: 180.0, waterGrey: 0.5, landUse: 0.2, loss: 0.030 },
+                "bananas": { name: "Bananas (Fresh)", co2: 0.95, waterBlue: 1.5, waterGreen: 150.0, waterGrey: 0.8, landUse: 0.4, loss: 0.020 },
+                "oranges": { name: "Oranges (Fresh)", co2: 0.50, waterBlue: 3.0, waterGreen: 200.0, waterGrey: 1.0, landUse: 0.3, loss: 0.020 },
+                "berries": { name: "Berries (Mixed, Fresh)", co2: 1.80, waterBlue: 10.0, waterGreen: 300.0, waterGrey: 5.0, landUse: 0.6, loss: 0.050 },
+                "palm-oil": { name: "Palm Oil (Crude)", co2: 3.50, waterBlue: 15.0, waterGreen: 200.0, waterGrey: 5.0, landUse: 3.0, loss: 0.010 },
+                "olive-oil": { name: "Olive Oil", co2: 6.00, waterBlue: 120.0, waterGreen: 1500.0, waterGrey: 8.0, landUse: 4.0, loss: 0.010 },
+                "sunflower-oil": { name: "Sunflower Oil", co2: 1.50, waterBlue: 5.0, waterGreen: 500.0, waterGrey: 2.5, landUse: 0.8, loss: 0.010 },
+                "sugar-cane": { name: "Sugar Cane", co2: 0.70, waterBlue: 80.0, waterGreen: 1000.0, waterGrey: 6.0, landUse: 0.5, loss: 0.030 },
+                "sugar-beet": { name: "Sugar Beet", co2: 0.60, waterBlue: 5.0, waterGreen: 400.0, waterGrey: 2.0, landUse: 0.3, loss: 0.020 },
+                "honey": { name: "Honey", co2: 1.30, waterBlue: 1.0, waterGreen: 20.0, waterGrey: 0.1, landUse: 0.5, loss: 0.005 },
+                "coffee": { name: "Coffee (Roasted)", co2: 17.50, waterBlue: 80.0, waterGreen: 1500.0, waterGrey: 12.0, landUse: 8.0, loss: 0.010 },
+                "cocoa": { name: "Cocoa (Powder)", co2: 22.50, waterBlue: 150.0, waterGreen: 2500.0, waterGrey: 18.0, landUse: 12.0, loss: 0.010 },
+                "tea": { name: "Tea (Black, Dried)", co2: 2.20, waterBlue: 5.0, waterGreen: 400.0, waterGrey: 3.0, landUse: 0.8, loss: 0.005 },
+                "salt": { name: "Salt", co2: 0.01, waterBlue: 0.0, waterGreen: 0.0, waterGrey: 0.0, landUse: 0.0, loss: 0.000 },
+                "yeast": { name: "Yeast (Brewer's)", co2: 1.20, waterBlue: 4.0, waterGreen: 10.0, waterGrey: 0.5, landUse: 0.1, loss: 0.001 },
+                "algae-protein": { name: "Algae Protein (Microalgae)", co2: 1.70, waterBlue: 8.0, waterGreen: 2.0, waterGrey: 0.1, landUse: 0.2, loss: 0.005 }
             },
 
-            // Country-specific factors (Table E from Gemini)
+            // 22 COUNTRIES FROM GEMINI TABLE E
             countries: {
-                "DE": { name: "Germany", electricityCO2: 365.0, awareFactor: 0.85, recyclingRate: 68.0 },
-                "FR": { name: "France", electricityCO2: 70.0, awareFactor: 1.10, recyclingRate: 65.0 },
-                "IT": { name: "Italy", electricityCO2: 350.0, awareFactor: 1.80, recyclingRate: 60.0 },
-                "ES": { name: "Spain", electricityCO2: 220.0, awareFactor: 2.50, recyclingRate: 58.0 },
-                "NL": { name: "Netherlands", electricityCO2: 390.0, awareFactor: 0.95, recyclingRate: 62.0 },
-                "PL": { name: "Poland", electricityCO2: 700.0, awareFactor: 0.75, recyclingRate: 45.0 },
-                "SE": { name: "Sweden", electricityCO2: 35.0, awareFactor: 0.10, recyclingRate: 50.0 },
-                "DK": { name: "Denmark", electricityCO2: 150.0, awareFactor: 0.15, recyclingRate: 55.0 },
-                "BE": { name: "Belgium", electricityCO2: 250.0, awareFactor: 1.00, recyclingRate: 59.0 },
-                "UK": { name: "United Kingdom", electricityCO2: 270.0, awareFactor: 1.20, recyclingRate: 52.0 },
-                "IE": { name: "Ireland", electricityCO2: 330.0, awareFactor: 0.90, recyclingRate: 48.0 },
-                "AT": { name: "Austria", electricityCO2: 120.0, awareFactor: 0.50, recyclingRate: 60.0 },
-                "FI": { name: "Finland", electricityCO2: 110.0, awareFactor: 0.10, recyclingRate: 42.0 },
-                "PT": { name: "Portugal", electricityCO2: 180.0, awareFactor: 1.90, recyclingRate: 54.0 },
-                "GR": { name: "Greece", electricityCO2: 480.0, awareFactor: 3.00, recyclingRate: 38.0 },
-                "US": { name: "United States", electricityCO2: 400.0, awareFactor: 1.50, recyclingRate: 30.0 },
-                "CA": { name: "Canada", electricityCO2: 150.0, awareFactor: 0.40, recyclingRate: 35.0 },
-                "AU": { name: "Australia", electricityCO2: 550.0, awareFactor: 2.20, recyclingRate: 25.0 },
-                "JP": { name: "Japan", electricityCO2: 450.0, awareFactor: 0.80, recyclingRate: 40.0 },
-                "CN": { name: "China", electricityCO2: 580.0, awareFactor: 5.00, recyclingRate: 20.0 },
-                "IN": { name: "India", electricityCO2: 650.0, awareFactor: 15.00, recyclingRate: 15.0 },
-                "BR": { name: "Brazil", electricityCO2: 120.0, awareFactor: 3.50, recyclingRate: 25.0 }
+                "DE": { name: "Germany", electricityCO2: 365.0, awareFactor: 0.85 },
+                "FR": { name: "France", electricityCO2: 70.0, awareFactor: 1.10 },
+                "IT": { name: "Italy", electricityCO2: 350.0, awareFactor: 1.80 },
+                "ES": { name: "Spain", electricityCO2: 220.0, awareFactor: 2.50 },
+                "NL": { name: "Netherlands", electricityCO2: 390.0, awareFactor: 0.95 },
+                "PL": { name: "Poland", electricityCO2: 700.0, awareFactor: 0.75 },
+                "SE": { name: "Sweden", electricityCO2: 35.0, awareFactor: 0.10 },
+                "DK": { name: "Denmark", electricityCO2: 150.0, awareFactor: 0.15 },
+                "BE": { name: "Belgium", electricityCO2: 250.0, awareFactor: 1.00 },
+                "UK": { name: "United Kingdom", electricityCO2: 270.0, awareFactor: 1.20 },
+                "IE": { name: "Ireland", electricityCO2: 330.0, awareFactor: 0.90 },
+                "AT": { name: "Austria", electricityCO2: 120.0, awareFactor: 0.50 },
+                "FI": { name: "Finland", electricityCO2: 110.0, awareFactor: 0.10 },
+                "PT": { name: "Portugal", electricityCO2: 180.0, awareFactor: 1.90 },
+                "GR": { name: "Greece", electricityCO2: 480.0, awareFactor: 3.00 },
+                "US": { name: "United States", electricityCO2: 400.0, awareFactor: 1.50 },
+                "CA": { name: "Canada", electricityCO2: 150.0, awareFactor: 0.40 },
+                "AU": { name: "Australia", electricityCO2: 550.0, awareFactor: 2.20 },
+                "JP": { name: "Japan", electricityCO2: 450.0, awareFactor: 0.80 },
+                "CN": { name: "China", electricityCO2: 580.0, awareFactor: 5.00 },
+                "IN": { name: "India", electricityCO2: 650.0, awareFactor: 15.00 },
+                "BR": { name: "Brazil", electricityCO2: 120.0, awareFactor: 3.50 }
             },
 
-            // Processing methods (Table C from Gemini)
+            // PROCESSING METHODS FROM GEMINI TABLE C
             processing: {
-                "none": { energy: 0, water: 0, yield: 1.00, loss: 0.000, co2: 0 },
-                "pasteurization": { energy: 0.05, water: 0.50, yield: 0.995, loss: 0.005, co2: 0.012 },
-                "sterilization": { energy: 0.12, water: 0.70, yield: 0.980, loss: 0.020, co2: 0.029 },
-                "baking": { energy: 0.40, water: 0.10, yield: 0.970, loss: 0.030, co2: 0.096 },
-                "frying": { energy: 0.35, water: 0.05, yield: 0.965, loss: 0.035, co2: 0.084 },
-                "freezing": { energy: 0.55, water: 0.20, yield: 0.990, loss: 0.010, co2: 0.132 },
-                "drying": { energy: 1.50, water: 0.80, yield: 0.950, loss: 0.050, co2: 0.360 },
-                "milling": { energy: 0.03, water: 0.05, yield: 0.985, loss: 0.015, co2: 0.007 },
-                "mixing": { energy: 0.01, water: 0.15, yield: 0.998, loss: 0.002, co2: 0.002 }
+                "none": { energy: 0, water: 0, yield: 1.00, loss: 0.000 },
+                "pasteurization": { energy: 0.05, water: 0.50, yield: 0.995, loss: 0.005 },
+                "sterilization": { energy: 0.12, water: 0.70, yield: 0.980, loss: 0.020 },
+                "baking": { energy: 0.40, water: 0.10, yield: 0.970, loss: 0.030 },
+                "frying": { energy: 0.35, water: 0.05, yield: 0.965, loss: 0.035 },
+                "freezing": { energy: 0.55, water: 0.20, yield: 0.990, loss: 0.010 },
+                "drying": { energy: 1.50, water: 0.80, yield: 0.950, loss: 0.050 },
+                "milling": { energy: 0.03, water: 0.05, yield: 0.985, loss: 0.015 },
+                "mixing": { energy: 0.01, water: 0.15, yield: 0.998, loss: 0.002 }
             },
 
-            // Transportation factors (Table D from Gemini)
+            // TRANSPORTATION FROM GEMINI TABLE D
             transportation: {
-                "road": { co2: 0.075, load: 0.64, empty: 0.36, refrigerated: 0.20 },
-                "rail": { co2: 0.015, load: 0.70, empty: 0.30, refrigerated: 0.00 },
-                "sea": { co2: 0.010, load: 0.65, empty: 0.35, refrigerated: 0.05 },
-                "air": { co2: 0.950, load: 0.60, empty: 0.40, refrigerated: 0.00 },
-                "lastmile": { co2: 0.350, load: 0.45, empty: 0.55, refrigerated: 0.00 }
+                "road": { co2: 0.075, refrigerated: 0.20 },
+                "rail": { co2: 0.015, refrigerated: 0.00 },
+                "sea": { co2: 0.010, refrigerated: 0.05 },
+                "air": { co2: 0.950, refrigerated: 0.00 },
+                "lastmile": { co2: 0.350, refrigerated: 0.00 }
             },
 
-            // Packaging materials with CFF parameters (Table B from Gemini)
+            // PACKAGING FROM GEMINI TABLE B
             packaging: {
-                "cardboard": { co2: 1.30, r1: 0.60, r2: 0.72, q: 0.95, substitution: 0.95 },
-                "PET": { co2: 2.30, r1: 0.70, r2: 0.45, q: 1.00, substitution: 1.00 },
-                "HDPE": { co2: 1.95, r1: 0.30, r2: 0.38, q: 0.90, substitution: 0.90 },
-                "LDPE": { co2: 1.85, r1: 0.20, r2: 0.36, q: 0.80, substitution: 0.80 },
-                "PP": { co2: 2.05, r1: 0.25, r2: 0.40, q: 0.85, substitution: 0.85 },
-                "glass": { co2: 0.65, r1: 0.85, r2: 0.80, q: 1.00, substitution: 1.00 },
-                "aluminum": { co2: 8.50, r1: 0.95, r2: 0.75, q: 1.00, substitution: 1.00 },
-                "steel": { co2: 1.90, r1: 0.95, r2: 0.84, q: 1.00, substitution: 1.00 },
-                "PLA": { co2: 1.70, r1: 0.05, r2: 0.01, q: 0.80, substitution: 0.80 }
-            },
-
-            // Industry benchmarks (Table H from Gemini)
-            benchmarks: {
-                "beef": { global: 60.0, euConventional: 22.0, euSustainable: 14.0 },
-                "chicken": { global: 6.0, euConventional: 4.3, euSustainable: 3.0 },
-                "pork": { global: 12.0, euConventional: 7.4, euSustainable: 5.0 },
-                "milk": { global: 2.5, euConventional: 1.15, euSustainable: 0.8 },
-                "eggs": { global: 4.5, euConventional: 3.2, euSustainable: 2.2 },
-                "wheat": { global: 0.5, euConventional: 0.4, euSustainable: 0.2 },
-                "rice": { global: 4.0, euConventional: 3.5, euSustainable: 2.0 },
-                "soybeans": { global: 0.8, euConventional: 0.6, euSustainable: 0.3 },
-                "coffee": { global: 18.0, euConventional: 15.0, euSustainable: 8.0 },
-                "cocoa": { global: 25.0, euConventional: 20.0, euSustainable: 12.0 }
+                "cardboard": { co2: 1.30, r1: 0.60, r2: 0.72, q: 0.95 },
+                "PET": { co2: 2.30, r1: 0.70, r2: 0.45, q: 1.00 },
+                "HDPE": { co2: 1.95, r1: 0.30, r2: 0.38, q: 0.90 },
+                "LDPE": { co2: 1.85, r1: 0.20, r2: 0.36, q: 0.80 },
+                "PP": { co2: 2.05, r1: 0.25, r2: 0.40, q: 0.85 },
+                "glass": { co2: 0.65, r1: 0.85, r2: 0.80, q: 1.00 },
+                "aluminum": { co2: 8.50, r1: 0.95, r2: 0.75, q: 1.00 },
+                "steel": { co2: 1.90, r1: 0.95, r2: 0.84, q: 1.00 },
+                "PLA": { co2: 1.70, r1: 0.05, r2: 0.01, q: 0.80 }
             }
         };
 
-        // Global variables
         let selectedIngredients = [];
         let currentChart = null;
 
-        // Initialize application
         function initApp() {
-            console.log("🚀 Initializing Aioxy App...");
-            
             populateIngredientSelect();
             populateCountrySelect();
             setupDemoData();
-            
-            // Calculate impact immediately to show results
             calculateImpact();
-            
-            // Add event listeners
-            const inputs = [
-                'manufacturingCountry', 'processingMethod', 'transportMode', 
-                'transportDistance', 'packagingMaterial', 'packagingWeight',
-                'recycledContent', 'refrigeratedTransport', 'sourcingRegion'
-            ];
-            
-            inputs.forEach(inputId => {
-                const element = document.getElementById(inputId);
-                if (element) {
-                    element.addEventListener('change', calculateImpact);
-                    element.addEventListener('input', calculateImpact);
-                }
-            });
-
-            console.log("✅ Aioxy App Initialized Successfully!");
         }
 
-        // Populate ingredient dropdown
         function populateIngredientSelect() {
             const select = document.getElementById('ingredientSelect');
             select.innerHTML = '<option value="">Choose from 35+ ingredients...</option>';
             
-            Object.entries(aioxyData.ingredients).forEach(([key, ingredient]) => {
+            for (const [key, ingredient] of Object.entries(aioxyData.ingredients)) {
                 const option = document.createElement('option');
                 option.value = key;
                 option.textContent = ingredient.name;
                 select.appendChild(option);
-            });
+            }
         }
 
-        // Populate country dropdown
         function populateCountrySelect() {
             const select = document.getElementById('manufacturingCountry');
             select.innerHTML = '<option value="">Select country...</option>';
             
-            Object.entries(aioxyData.countries).forEach(([code, country]) => {
+            for (const [code, country] of Object.entries(aioxyData.countries)) {
                 const option = document.createElement('option');
                 option.value = code;
-                option.textContent = `${country.name} (${code})`;
+                option.textContent = country.name;
                 if (code === 'FR') option.selected = true;
                 select.appendChild(option);
-            });
+            }
         }
 
-        // Setup demo data
         function setupDemoData() {
             selectedIngredients = [
                 { id: 'peas', name: 'Peas (Dried)', quantity: 0.15, data: aioxyData.ingredients.peas },
                 { id: 'wheat', name: 'Wheat (Grain)', quantity: 0.10, data: aioxyData.ingredients.wheat },
-                { id: 'tomatoes', name: 'Tomatoes (Fresh, Field)', quantity: 0.05, data: aioxyData.ingredients.tomatoes },
-                { id: 'onions', name: 'Onions (Fresh)', quantity: 0.03, data: aioxyData.ingredients.onions }
+                { id: 'tomatoes', name: 'Tomatoes (Fresh, Field)', quantity: 0.05, data: aioxyData.ingredients.tomatoes }
             ];
             updateIngredientList();
         }
 
-        // Add ingredient to formulation
         function addIngredient() {
             const select = document.getElementById('ingredientSelect');
             const quantityInput = document.getElementById('ingredientQuantity');
@@ -1168,31 +702,22 @@
             updateIngredientList();
             calculateImpact();
             
-            // Reset form
             select.value = '';
             quantityInput.value = '0.150';
         }
 
-        // Remove ingredient
         function removeIngredient(index) {
             selectedIngredients.splice(index, 1);
             updateIngredientList();
             calculateImpact();
         }
 
-        // Update ingredient quantity
-        function updateIngredientQuantity(index, newQuantity) {
-            selectedIngredients[index].quantity = parseFloat(newQuantity);
-            calculateImpact();
-        }
-
-        // Update ingredient list UI
         function updateIngredientList() {
             const list = document.getElementById('ingredientList');
             list.innerHTML = '';
             
             if (selectedIngredients.length === 0) {
-                list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--gray);">No ingredients added yet</div>';
+                list.innerHTML = '<div style="text-align: center; color: var(--gray); padding: 2rem;">No ingredients added yet</div>';
                 return;
             }
             
@@ -1200,121 +725,76 @@
                 const item = document.createElement('div');
                 item.className = 'ingredient-item';
                 item.innerHTML = `
-                    <div class="ingredient-info">
-                        <div class="ingredient-name">${ingredient.name}</div>
-                        <div class="ingredient-meta">
-                            ${ingredient.data.co2} kg CO₂e/kg • 
-                            ${ingredient.data.waterBlue + ingredient.data.waterGreen + ingredient.data.waterGrey} L water/kg
-                        </div>
+                    <div>
+                        <strong>${ingredient.name}</strong><br>
+                        <small>${ingredient.data.co2} kg CO₂e/kg • ${ingredient.data.waterBlue + ingredient.data.waterGreen + ingredient.data.waterGrey} L water/kg</small>
                     </div>
-                    <div class="ingredient-quantity">
-                        <input type="number" class="quantity-input" 
-                               value="${ingredient.quantity}" step="0.001" min="0"
+                    <div>
+                        <input type="number" value="${ingredient.quantity}" step="0.001" min="0" 
+                               style="width: 80px; padding: 0.25rem; margin-right: 0.5rem;"
                                onchange="updateIngredientQuantity(${index}, this.value)">
+                        <button class="remove-btn" onclick="removeIngredient(${index})">×</button>
                     </div>
-                    <button class="remove-btn" onclick="removeIngredient(${index})">
-                        <i class="fas fa-times"></i>
-                    </button>
                 `;
                 list.appendChild(item);
             });
         }
 
-        // Show/hide advanced options
+        function updateIngredientQuantity(index, newQuantity) {
+            selectedIngredients[index].quantity = parseFloat(newQuantity);
+            calculateImpact();
+        }
+
         function toggleAdvanced() {
             const advanced = document.getElementById('advancedOptions');
             advanced.classList.toggle('hidden');
         }
 
-        // Tab navigation
         function showTab(tabName) {
-            console.log(`Switching to tab: ${tabName}`);
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Show selected tab
-            const targetTab = document.getElementById(`${tabName}-tab`);
-            if (targetTab) {
-                targetTab.classList.remove('hidden');
-            }
-            
-            // Add active class to clicked tab
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
             event.currentTarget.classList.add('active');
             
-            // Ensure calculations are up to date
-            if (tabName === 'results') {
-                calculateImpact();
-            } else if (tabName === 'compliance') {
-                generateComplianceContent();
-            }
+            if (tabName === 'results') calculateImpact();
         }
 
-        // Main calculation function
         function calculateImpact() {
-            console.log("🔄 Calculating impact...");
-            
-            if (selectedIngredients.length === 0) {
-                console.log("❌ No ingredients selected");
-                return;
-            }
+            if (selectedIngredients.length === 0) return;
 
-            // Show loading in results tab
             const loadingElement = document.getElementById('loadingResults');
             const resultsContent = document.getElementById('resultsContent');
             
-            if (loadingElement) loadingElement.classList.remove('hidden');
-            if (resultsContent) resultsContent.classList.add('hidden');
+            loadingElement.classList.remove('hidden');
+            resultsContent.classList.add('hidden');
 
-            // Use setTimeout to allow UI to update
             setTimeout(() => {
-                try {
-                    const results = performCalculations();
-                    updateResultsUI(results);
-                    
-                    if (loadingElement) loadingElement.classList.add('hidden');
-                    if (resultsContent) resultsContent.classList.remove('hidden');
-                    
-                    console.log("✅ Calculations completed successfully!", results);
-                } catch (error) {
-                    console.error("❌ Calculation error:", error);
-                    if (loadingElement) {
-                        loadingElement.innerHTML = `
-                            <div style="color: var(--danger); text-align: center;">
-                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                                <p>Calculation Error</p>
-                                <p style="font-size: 0.9rem;">${error.message}</p>
-                            </div>
-                        `;
-                    }
-                }
-            }, 500);
+                const results = performCalculations();
+                updateResultsUI(results);
+                
+                loadingElement.classList.add('hidden');
+                resultsContent.classList.remove('hidden');
+            }, 800);
         }
 
-        // Perform all calculations
         function performCalculations() {
-            // Get all inputs with proper defaults
-            const countryCode = document.getElementById('manufacturingCountry')?.value || 'FR';
-            const processingType = document.getElementById('processingMethod')?.value || 'none';
-            const transportMode = document.getElementById('transportMode')?.value || 'road';
-            const transportDistance = parseFloat(document.getElementById('transportDistance')?.value) || 0;
-            const packagingType = document.getElementById('packagingMaterial')?.value || 'cardboard';
-            const packagingWeight = parseFloat(document.getElementById('packagingWeight')?.value) || 0;
-            const recycledContent = parseFloat(document.getElementById('recycledContent')?.value) || 0;
+            // Get all inputs
+            const countryCode = document.getElementById('manufacturingCountry').value || 'FR';
+            const processingType = document.getElementById('processingMethod').value;
+            const transportMode = document.getElementById('transportMode').value;
+            const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
+            const packagingType = document.getElementById('packagingMaterial').value;
+            const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
+            const recycledContent = parseFloat(document.getElementById('recycledContent').value) || 0;
+            const isRefrigerated = document.getElementById('refrigeratedTransport').value === 'yes';
 
-            const country = aioxyData.countries[countryCode] || aioxyData.countries['FR'];
-            const processing = aioxyData.processing[processingType] || aioxyData.processing['none'];
-            const transport = aioxyData.transportation[transportMode] || aioxyData.transportation['road'];
-            const packaging = aioxyData.packaging[packagingType] || aioxyData.packaging['cardboard'];
+            const country = aioxyData.countries[countryCode];
+            const processing = aioxyData.processing[processingType];
+            const transport = aioxyData.transportation[transportMode];
+            const packaging = aioxyData.packaging[packagingType];
 
-            // Calculate ingredient impacts
+            // Calculate ingredient impacts with food loss adjustment
             let totalCO2 = 0;
             let totalWaterBlue = 0;
             let totalWaterGreen = 0;
@@ -1333,16 +813,19 @@
                 totalWeight += ingredient.quantity;
             });
 
-            // Add processing impact
+            // Add processing impact with regional electricity factor
             const processingCO2 = processing.energy * (country.electricityCO2 / 1000) * totalWeight;
             totalCO2 += processingCO2;
             totalWeight *= processing.yield;
 
             // Add transportation impact
-            const transportCO2 = transportDistance * transport.co2 * (totalWeight / 1000);
+            let transportCO2 = transportDistance * transport.co2 * (totalWeight / 1000);
+            if (isRefrigerated) {
+                transportCO2 *= (1 + transport.refrigerated);
+            }
             totalCO2 += transportCO2;
 
-            // Add packaging impact
+            // Add packaging impact with CFF calculation
             const packagingCO2 = calculateCFFImpact(packaging, packagingWeight, recycledContent);
             totalCO2 += packagingCO2;
 
@@ -1365,158 +848,58 @@
             const waterSavingsPercent = totalWeight > 0 ? ((waterSaved / (industryAvgWater * totalWeight)) * 100) : 0;
 
             return {
-                totalCO2: totalCO2 || 0,
-                totalWater: (totalWaterBlue + totalWaterGreen + totalWaterGrey) || 0,
-                waterScarcity: waterScarcity || 0,
-                landUse: totalLandUse || 0,
-                co2PerKg: co2PerKg || 0,
-                waterPerKg: waterPerKg || 0,
-                landUsePerKg: landUsePerKg || 0,
-                co2Saved: co2Saved || 0,
-                waterSaved: waterSaved || 0,
-                co2SavingsPercent: co2SavingsPercent || 0,
-                waterSavingsPercent: waterSavingsPercent || 0,
-                processingCO2: processingCO2 || 0,
-                transportCO2: transportCO2 || 0,
-                packagingCO2: packagingCO2 || 0,
-                totalWeight: totalWeight || 0
+                co2PerKg, waterPerKg, landUsePerKg, waterScarcity,
+                co2Saved, waterSaved, co2SavingsPercent, waterSavingsPercent,
+                processingCO2, transportCO2, packagingCO2,
+                ingredientsCO2: totalCO2 - processingCO2 - transportCO2 - packagingCO2
             };
         }
 
-        // Calculate CFF impact for packaging
+        // GROK RECOMMENDATION: CFF Calculation
         function calculateCFFImpact(packaging, weight, recycledContent) {
             const R1 = Math.min(recycledContent / 100, packaging.r1);
             const virginImpact = packaging.co2 * weight * (1 - R1);
-            const recycledImpact = packaging.co2 * weight * R1 * packaging.substitution;
+            const recycledImpact = packaging.co2 * weight * R1 * packaging.q;
             return virginImpact + recycledImpact;
         }
 
-        // Calculate AWARE water scarcity impact
+        // GROK RECOMMENDATION: AWARE Water Scarcity
         function calculateAWAREImpact(waterBlue, awareFactor) {
             const consumption_m3_per_kg = waterBlue / 1000.0;
             const cf_constrained = Math.min(Math.max(awareFactor, 0.1), 100.0);
             return consumption_m3_per_kg * cf_constrained;
         }
 
-        // Update results UI
         function updateResultsUI(results) {
-            const resultsContent = document.getElementById('resultsContent');
-            if (!resultsContent) return;
-
-            resultsContent.innerHTML = `
-                <div class="results-grid">
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-cloud"></i>
-                        </div>
-                        <div class="metric-value">${results.co2PerKg.toFixed(2)} kg</div>
-                        <div class="metric-label">CO₂e per kg</div>
-                        <div class="savings-badge">${results.co2SavingsPercent.toFixed(1)}% less than average</div>
-                    </div>
-                    
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-tint"></i>
-                        </div>
-                        <div class="metric-value">${Math.round(results.waterPerKg)} L</div>
-                        <div class="metric-label">Water per kg</div>
-                        <div class="savings-badge">${results.waterSavingsPercent.toFixed(1)}% less than average</div>
-                    </div>
-                    
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-mountain"></i>
-                        </div>
-                        <div class="metric-value">${results.landUsePerKg.toFixed(2)} m²</div>
-                        <div class="metric-label">Land Use per kg</div>
-                    </div>
-                    
-                    <div class="metric-card">
-                        <div class="metric-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="metric-value">${results.waterScarcity.toFixed(3)}</div>
-                        <div class="metric-label">Water Scarcity (m³ eq)</div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <canvas id="emissionChart"></canvas>
-                </div>
-
-                <div class="environmental-story">
-                    <div class="story-title">
-                        <i class="fas fa-seedling"></i>
-                        Environmental Impact Story
-                    </div>
-                    <div class="story-content">
-                        ${generateEnvironmentalStory(results)}
-                    </div>
-                </div>
-
-                <div class="qr-section">
-                    <div class="card-title">
-                        <i class="fas fa-qrcode"></i>
-                        Digital Product Passport
-                    </div>
-                    <p>Scan QR code to access complete sustainability data</p>
-                    <div id="qrcode"></div>
-                    <div class="compliance-notice">
-                        <strong>EU Green Claims Directive Compliant</strong><br>
-                        This assessment follows PEF methodology using AGRIBALYSE 3.2, JRC EF 3.2, and AWARE 2.0 data. 
-                        All claims are substantiated and auditable.
-                    </div>
-                </div>
-
-                <div class="export-section">
-                    <button class="btn btn-primary" onclick="exportDPP()">
-                        <i class="fas fa-download"></i>
-                        Export DPP Report
-                    </button>
-                    <button class="btn btn-secondary" onclick="generateVerificationStatement()">
-                        <i class="fas fa-file-certificate"></i>
-                        Generate Verification Statement
-                    </button>
-                    <button class="btn btn-outline" onclick="updateQRCode()">
-                        <i class="fas fa-sync"></i>
-                        Update QR Code
-                    </button>
-                </div>
-            `;
-
-            createEmissionChart(results);
-            updateQRCode();
-        }
-
-        // Generate environmental story
-        function generateEnvironmentalStory(results) {
-            const stories = [];
+            document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
+            document.getElementById('waterValue').textContent = Math.round(results.waterPerKg) + ' L';
+            document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(2) + ' m²';
+            document.getElementById('waterScarcityValue').textContent = results.waterScarcity.toFixed(3);
             
+            document.getElementById('co2Savings').textContent = results.co2SavingsPercent.toFixed(1) + '% saved';
+            document.getElementById('waterSavings').textContent = results.waterSavingsPercent.toFixed(1) + '% saved';
+
+            // Environmental story
+            const storyContent = document.getElementById('storyContent');
             if (results.co2Saved > 0) {
                 const carKm = (results.co2Saved * 1000 / 120).toFixed(0);
-                stories.push(`🌱 <strong>${results.co2Saved.toFixed(1)} kg CO₂e saved</strong> - equivalent to not driving ${carKm} km in a petrol car`);
-            }
-            
-            if (results.waterSaved > 0) {
                 const showers = (results.waterSaved / 60).toFixed(0);
-                stories.push(`💧 <strong>${Math.round(results.waterSaved)} liters of water saved</strong> - enough for ${showers} average showers`);
+                storyContent.innerHTML = `
+                    🌱 <strong>${results.co2Saved.toFixed(1)} kg CO₂e saved</strong> - equivalent to not driving ${carKm} km<br><br>
+                    💧 <strong>${Math.round(results.waterSaved)} liters of water saved</strong> - enough for ${showers} average showers<br><br>
+                    📊 <strong>Full EU-compliant assessment</strong> with regionalized AWARE factors and CFF packaging
+                `;
+            } else {
+                storyContent.innerHTML = 'Consider optimizing your ingredient selection for better sustainability.';
             }
-            
-            stories.push(`📊 <strong>Full lifecycle assessment</strong> includes ingredients, processing, packaging, and transportation with regionalized factors`);
-            
-            return stories.join('<br><br>');
+
+            createEmissionChart(results);
         }
 
-        // Create emission breakdown chart
         function createEmissionChart(results) {
-            const ctx = document.getElementById('emissionChart')?.getContext('2d');
-            if (!ctx) return;
-
-            if (currentChart) {
-                currentChart.destroy();
-            }
-
-            const ingredientsCO2 = results.totalCO2 - results.processingCO2 - results.transportCO2 - results.packagingCO2;
+            const ctx = document.getElementById('emissionChart').getContext('2d');
+            
+            if (currentChart) currentChart.destroy();
             
             currentChart = new Chart(ctx, {
                 type: 'doughnut',
@@ -1524,7 +907,7 @@
                     labels: ['Ingredients', 'Processing', 'Transportation', 'Packaging'],
                     datasets: [{
                         data: [
-                            Math.max(ingredientsCO2, 0),
+                            Math.max(results.ingredientsCO2, 0),
                             Math.max(results.processingCO2, 0),
                             Math.max(results.transportCO2, 0),
                             Math.max(results.packagingCO2, 0)
@@ -1538,116 +921,14 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const percentage = ((value / results.totalCO2) * 100).toFixed(1);
-                                    return `${context.label}: ${value.toFixed(2)} kg (${percentage}%)`;
-                                }
-                            }
-                        }
+                        legend: { position: 'bottom' }
                     },
                     cutout: '60%'
                 }
             });
         }
 
-        // Update QR code - FIXED VERSION
-        function updateQRCode() {
-            const productName = document.getElementById('productName')?.value || 'Aioxy Product';
-            const qrContainer = document.getElementById('qrcode');
-            if (!qrContainer) return;
-
-            qrContainer.innerHTML = '';
-            
-            const productData = {
-                product: productName,
-                timestamp: new Date().toISOString(),
-                compliance: "EU Green Claims Directive 2024",
-                methodology: "PEF with AGRIBALYSE 3.2, JRC EF 3.2, AWARE 2.0"
-            };
-            
-            // FIXED: Use the correct QRCode library function
-            QRCode.toCanvas(qrContainer, JSON.stringify(productData, null, 2), {
-                width: 180,
-                height: 180,
-                margin: 1,
-                color: { dark: '#1a5276', light: '#ffffff' }
-            }, function(error) {
-                if (error) {
-                    console.error('QR Code generation error:', error);
-                    // Fallback: Create simple QR code display
-                    qrContainer.innerHTML = `
-                        <div style="background: #1a5276; color: white; padding: 2rem; border-radius: 8px; text-align: center;">
-                            <i class="fas fa-qrcode" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                            <p>Product: ${productName}</p>
-                            <p>EU Compliant Sustainability Data</p>
-                        </div>
-                    `;
-                }
-            });
-        }
-
-        // Generate compliance content
-        function generateComplianceContent() {
-            const complianceContent = document.getElementById('complianceContent');
-            
-            complianceContent.innerHTML = `
-                <div class="compliance-notice">
-                    <strong>EU Regulatory Compliance Ready</strong><br>
-                    All calculations follow the Product Environmental Footprint (PEF) methodology as defined by the European Commission Joint Research Centre.
-                </div>
-
-                <div style="margin: 2rem 0;">
-                    <h3 style="color: var(--primary-dark); margin-bottom: 1rem;">
-                        <i class="fas fa-shield-alt"></i>
-                        Required Compliance Statements
-                    </h3>
-                    
-                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: var(--radius); border-left: 4px solid var(--primary);">
-                        <p><strong>Environmental claims made by AIOXY regarding this product are substantiated by a Life Cycle Assessment (LCA) conducted in accordance with the Product Environmental Footprint (PEF) methodology as defined by the European Commission Joint Research Centre (JRC).</strong></p>
-                        
-                        <p style="margin-top: 1rem;">The specific methodology, including data sources (AGRIBALYSE 3.2, JRC EF 3.2, GLEC v3.1) and calculation rules (CFF, AWARE, Economic Allocation), is fully documented and auditable via the Digital Product Passport (DPP). This claim refers exclusively to, and not to the product's overall environmental performance.</p>
-                    </div>
-                </div>
-
-                <div class="export-section">
-                    <button class="btn btn-primary" onclick="exportCompliancePackage()">
-                        <i class="fas fa-file-archive"></i>
-                        Download Full Compliance Package
-                    </button>
-                    <button class="btn btn-secondary" onclick="generateDPPSchema()">
-                        <i class="fas fa-code"></i>
-                        Generate DPP JSON Schema
-                    </button>
-                </div>
-            `;
-        }
-
-        // Export functions
-        function exportDPP() {
-            alert('Digital Product Passport export functionality would be implemented here');
-        }
-
-        function generateVerificationStatement() {
-            alert('Verification statement generation would be implemented here');
-        }
-
-        function exportCompliancePackage() {
-            alert('Full compliance package export would be implemented here');
-        }
-
-        function generateDPPSchema() {
-            alert('DPP JSON schema generation would be implemented here');
-        }
-
-        // Initialize app when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("📄 DOM Loaded - Starting Aioxy...");
-            initApp();
-        });
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
-    </html>
+                            </html>
