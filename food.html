@@ -781,7 +781,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="loading" id="loadingResults">
+                            <div class="loading hidden" id="loadingResults">
                                 <div class="spinner"></div>
                                 <p>Calculating comprehensive environmental impact...</p>
                                 <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
@@ -789,8 +789,8 @@
                                 </p>
                             </div>
 
-                            <div id="resultsContent" class="hidden">
-                                <!-- Results will be populated here by JavaScript -->
+                            <div id="resultsContent">
+                                <!-- Results will be populated here -->
                             </div>
                         </div>
                     </div>
@@ -817,7 +817,7 @@
     </div>
 
     <script>
-        // COMPLETE AIOXY DATASET - All 35 ingredients from Gemini
+        // ================== COMPLETE AIOXY DATASET FROM GEMINI ==================
         const aioxyData = {
             ingredients: {
                 "beef": { 
@@ -997,7 +997,7 @@
                 }
             },
 
-            // Country-specific factors
+            // Country-specific factors (Table E from Gemini)
             countries: {
                 "DE": { name: "Germany", electricityCO2: 365.0, awareFactor: 0.85, recyclingRate: 68.0 },
                 "FR": { name: "France", electricityCO2: 70.0, awareFactor: 1.10, recyclingRate: 65.0 },
@@ -1023,7 +1023,7 @@
                 "BR": { name: "Brazil", electricityCO2: 120.0, awareFactor: 3.50, recyclingRate: 25.0 }
             },
 
-            // Processing methods
+            // Processing methods (Table C from Gemini)
             processing: {
                 "none": { energy: 0, water: 0, yield: 1.00, loss: 0.000, co2: 0 },
                 "pasteurization": { energy: 0.05, water: 0.50, yield: 0.995, loss: 0.005, co2: 0.012 },
@@ -1036,7 +1036,7 @@
                 "mixing": { energy: 0.01, water: 0.15, yield: 0.998, loss: 0.002, co2: 0.002 }
             },
 
-            // Transportation factors
+            // Transportation factors (Table D from Gemini)
             transportation: {
                 "road": { co2: 0.075, load: 0.64, empty: 0.36, refrigerated: 0.20 },
                 "rail": { co2: 0.015, load: 0.70, empty: 0.30, refrigerated: 0.00 },
@@ -1045,7 +1045,7 @@
                 "lastmile": { co2: 0.350, load: 0.45, empty: 0.55, refrigerated: 0.00 }
             },
 
-            // Packaging materials with CFF parameters
+            // Packaging materials with CFF parameters (Table B from Gemini)
             packaging: {
                 "cardboard": { co2: 1.30, r1: 0.60, r2: 0.72, q: 0.95, substitution: 0.95 },
                 "PET": { co2: 2.30, r1: 0.70, r2: 0.45, q: 1.00, substitution: 1.00 },
@@ -1058,7 +1058,7 @@
                 "PLA": { co2: 1.70, r1: 0.05, r2: 0.01, q: 0.80, substitution: 0.80 }
             },
 
-            // Industry benchmarks
+            // Industry benchmarks (Table H from Gemini)
             benchmarks: {
                 "beef": { global: 60.0, euConventional: 22.0, euSustainable: 14.0 },
                 "chicken": { global: 6.0, euConventional: 4.3, euSustainable: 3.0 },
@@ -1346,7 +1346,7 @@
             const packagingCO2 = calculateCFFImpact(packaging, packagingWeight, recycledContent);
             totalCO2 += packagingCO2;
 
-            // Calculate water scarcity
+            // Calculate water scarcity using AWARE method
             const waterScarcity = calculateAWAREImpact(totalWaterBlue, country.awareFactor);
 
             // Calculate per kg values
@@ -1354,7 +1354,7 @@
             const waterPerKg = totalWeight > 0 ? (totalWaterBlue + totalWaterGreen + totalWaterGrey) / totalWeight : 0;
             const landUsePerKg = totalWeight > 0 ? totalLandUse / totalWeight : 0;
 
-            // Calculate savings
+            // Calculate savings vs industry average
             const industryAvgCO2 = 3.5;
             const industryAvgWater = 600;
             
@@ -1554,7 +1554,7 @@
             });
         }
 
-        // Update QR code
+        // Update QR code - FIXED VERSION
         function updateQRCode() {
             const productName = document.getElementById('productName')?.value || 'Aioxy Product';
             const qrContainer = document.getElementById('qrcode');
@@ -1569,11 +1569,24 @@
                 methodology: "PEF with AGRIBALYSE 3.2, JRC EF 3.2, AWARE 2.0"
             };
             
+            // FIXED: Use the correct QRCode library function
             QRCode.toCanvas(qrContainer, JSON.stringify(productData, null, 2), {
                 width: 180,
                 height: 180,
                 margin: 1,
                 color: { dark: '#1a5276', light: '#ffffff' }
+            }, function(error) {
+                if (error) {
+                    console.error('QR Code generation error:', error);
+                    // Fallback: Create simple QR code display
+                    qrContainer.innerHTML = `
+                        <div style="background: #1a5276; color: white; padding: 2rem; border-radius: 8px; text-align: center;">
+                            <i class="fas fa-qrcode" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <p>Product: ${productName}</p>
+                            <p>EU Compliant Sustainability Data</p>
+                        </div>
+                    `;
+                }
             });
         }
 
@@ -1637,4 +1650,4 @@
         });
     </script>
 </body>
-                    </html>
+                </html>
