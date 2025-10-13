@@ -58,7 +58,6 @@
             min-height: 95vh;
         }
 
-        /* Header */
         .header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
@@ -82,7 +81,7 @@
         .logo-section {
             display: flex;
             align-items: center;
-            justify-content: between;
+            justify-content: space-between;
             margin-bottom: 1rem;
         }
 
@@ -105,7 +104,6 @@
             font-size: 0.875rem;
             font-weight: 600;
             backdrop-filter: blur(10px);
-            margin-left: auto;
         }
 
         .tagline {
@@ -115,7 +113,6 @@
             line-height: 1.5;
         }
 
-        /* Navigation */
         .nav-tabs {
             display: flex;
             background: white;
@@ -148,7 +145,6 @@
             background: #f8f9fa;
         }
 
-        /* Main Content */
         .main-content {
             padding: 2rem 3rem;
             display: grid;
@@ -162,7 +158,6 @@
             }
         }
 
-        /* Cards */
         .card {
             background: white;
             border: 1px solid var(--border);
@@ -194,7 +189,6 @@
             padding: 1.5rem;
         }
 
-        /* Forms */
         .form-group {
             margin-bottom: 1.25rem;
         }
@@ -231,7 +225,6 @@
             background-size: 1rem;
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -278,7 +271,6 @@
             color: white;
         }
 
-        /* Ingredient List */
         .ingredient-list {
             max-height: 400px;
             overflow-y: auto;
@@ -349,7 +341,6 @@
             transform: scale(1.1);
         }
 
-        /* Results */
         .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -403,14 +394,12 @@
             display: inline-block;
         }
 
-        /* Charts */
         .chart-container {
             height: 300px;
             margin: 2rem 0;
             position: relative;
         }
 
-        /* Environmental Story */
         .environmental-story {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
@@ -445,7 +434,6 @@
             position: relative;
         }
 
-        /* QR Section */
         .qr-section {
             text-align: center;
             padding: 2rem;
@@ -463,7 +451,6 @@
             margin: 1rem 0;
         }
 
-        /* Compliance */
         .compliance-notice {
             background: #e3f2fd;
             border: 1px solid #2196f3;
@@ -478,7 +465,6 @@
             color: #1976d2;
         }
 
-        /* Export Section */
         .export-section {
             display: flex;
             gap: 1rem;
@@ -486,7 +472,6 @@
             flex-wrap: wrap;
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 3rem;
@@ -508,10 +493,9 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
-        /* Transportation Section */
         .transport-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -519,7 +503,6 @@
             margin-top: 1rem;
         }
 
-        /* Advanced Options */
         .advanced-options {
             background: #f8f9fa;
             border-radius: var(--radius);
@@ -539,7 +522,6 @@
             padding: 0;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .header {
                 padding: 1.5rem;
@@ -603,7 +585,7 @@
 
             <!-- Main Content -->
             <div class="main-content">
-                <!-- Left Column - Calculator -->
+                <!-- Calculator Tab -->
                 <div id="calculator-tab" class="tab-content">
                     <!-- Product Basics -->
                     <div class="card">
@@ -789,7 +771,7 @@
                     </div>
                 </div>
 
-                <!-- Right Column - Results -->
+                <!-- Results Tab -->
                 <div id="results-tab" class="tab-content hidden">
                     <div class="card">
                         <div class="card-header">
@@ -799,7 +781,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="loading hidden" id="loadingResults">
+                            <div class="loading" id="loadingResults">
                                 <div class="spinner"></div>
                                 <p>Calculating comprehensive environmental impact...</p>
                                 <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
@@ -807,8 +789,8 @@
                                 </p>
                             </div>
 
-                            <div id="resultsContent">
-                                <!-- Results will be populated here -->
+                            <div id="resultsContent" class="hidden">
+                                <!-- Results will be populated here by JavaScript -->
                             </div>
                         </div>
                     </div>
@@ -1015,7 +997,7 @@
                 }
             },
 
-            // Country-specific factors (Table E)
+            // Country-specific factors
             countries: {
                 "DE": { name: "Germany", electricityCO2: 365.0, awareFactor: 0.85, recyclingRate: 68.0 },
                 "FR": { name: "France", electricityCO2: 70.0, awareFactor: 1.10, recyclingRate: 65.0 },
@@ -1041,7 +1023,7 @@
                 "BR": { name: "Brazil", electricityCO2: 120.0, awareFactor: 3.50, recyclingRate: 25.0 }
             },
 
-            // Processing methods (Table C)
+            // Processing methods
             processing: {
                 "none": { energy: 0, water: 0, yield: 1.00, loss: 0.000, co2: 0 },
                 "pasteurization": { energy: 0.05, water: 0.50, yield: 0.995, loss: 0.005, co2: 0.012 },
@@ -1054,7 +1036,7 @@
                 "mixing": { energy: 0.01, water: 0.15, yield: 0.998, loss: 0.002, co2: 0.002 }
             },
 
-            // Transportation factors (Table D)
+            // Transportation factors
             transportation: {
                 "road": { co2: 0.075, load: 0.64, empty: 0.36, refrigerated: 0.20 },
                 "rail": { co2: 0.015, load: 0.70, empty: 0.30, refrigerated: 0.00 },
@@ -1063,7 +1045,7 @@
                 "lastmile": { co2: 0.350, load: 0.45, empty: 0.55, refrigerated: 0.00 }
             },
 
-            // Packaging materials with CFF parameters (Table B)
+            // Packaging materials with CFF parameters
             packaging: {
                 "cardboard": { co2: 1.30, r1: 0.60, r2: 0.72, q: 0.95, substitution: 0.95 },
                 "PET": { co2: 2.30, r1: 0.70, r2: 0.45, q: 1.00, substitution: 1.00 },
@@ -1076,7 +1058,7 @@
                 "PLA": { co2: 1.70, r1: 0.05, r2: 0.01, q: 0.80, substitution: 0.80 }
             },
 
-            // Industry benchmarks (Table H)
+            // Industry benchmarks
             benchmarks: {
                 "beef": { global: 60.0, euConventional: 22.0, euSustainable: 14.0 },
                 "chicken": { global: 6.0, euConventional: 4.3, euSustainable: 3.0 },
@@ -1097,21 +1079,31 @@
 
         // Initialize application
         function initApp() {
+            console.log("🚀 Initializing Aioxy App...");
+            
             populateIngredientSelect();
             populateCountrySelect();
             setupDemoData();
+            
+            // Calculate impact immediately to show results
             calculateImpact();
             
-            // Add event listeners for real-time calculation
-            document.getElementById('manufacturingCountry').addEventListener('change', calculateImpact);
-            document.getElementById('processingMethod').addEventListener('change', calculateImpact);
-            document.getElementById('transportMode').addEventListener('change', calculateImpact);
-            document.getElementById('transportDistance').addEventListener('input', calculateImpact);
-            document.getElementById('packagingMaterial').addEventListener('change', calculateImpact);
-            document.getElementById('packagingWeight').addEventListener('input', calculateImpact);
-            document.getElementById('recycledContent').addEventListener('input', calculateImpact);
-            document.getElementById('refrigeratedTransport').addEventListener('change', calculateImpact);
-            document.getElementById('sourcingRegion').addEventListener('change', calculateImpact);
+            // Add event listeners
+            const inputs = [
+                'manufacturingCountry', 'processingMethod', 'transportMode', 
+                'transportDistance', 'packagingMaterial', 'packagingWeight',
+                'recycledContent', 'refrigeratedTransport', 'sourcingRegion'
+            ];
+            
+            inputs.forEach(inputId => {
+                const element = document.getElementById(inputId);
+                if (element) {
+                    element.addEventListener('change', calculateImpact);
+                    element.addEventListener('input', calculateImpact);
+                }
+            });
+
+            console.log("✅ Aioxy App Initialized Successfully!");
         }
 
         // Populate ingredient dropdown
@@ -1236,6 +1228,8 @@
 
         // Tab navigation
         function showTab(tabName) {
+            console.log(`Switching to tab: ${tabName}`);
+            
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
@@ -1247,12 +1241,15 @@
             });
             
             // Show selected tab
-            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            const targetTab = document.getElementById(`${tabName}-tab`);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
             
             // Add active class to clicked tab
             event.currentTarget.classList.add('active');
             
-            // If showing results tab, ensure calculations are up to date
+            // Ensure calculations are up to date
             if (tabName === 'results') {
                 calculateImpact();
             } else if (tabName === 'compliance') {
@@ -1262,37 +1259,60 @@
 
         // Main calculation function
         function calculateImpact() {
+            console.log("🔄 Calculating impact...");
+            
             if (selectedIngredients.length === 0) {
+                console.log("❌ No ingredients selected");
                 return;
             }
 
-            // Show loading
-            document.getElementById('loadingResults').classList.remove('hidden');
-            document.getElementById('resultsContent').classList.add('hidden');
+            // Show loading in results tab
+            const loadingElement = document.getElementById('loadingResults');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            if (loadingElement) loadingElement.classList.remove('hidden');
+            if (resultsContent) resultsContent.classList.add('hidden');
 
-            // Simulate calculation time
+            // Use setTimeout to allow UI to update
             setTimeout(() => {
-                performCalculations();
-            }, 800);
+                try {
+                    const results = performCalculations();
+                    updateResultsUI(results);
+                    
+                    if (loadingElement) loadingElement.classList.add('hidden');
+                    if (resultsContent) resultsContent.classList.remove('hidden');
+                    
+                    console.log("✅ Calculations completed successfully!", results);
+                } catch (error) {
+                    console.error("❌ Calculation error:", error);
+                    if (loadingElement) {
+                        loadingElement.innerHTML = `
+                            <div style="color: var(--danger); text-align: center;">
+                                <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                                <p>Calculation Error</p>
+                                <p style="font-size: 0.9rem;">${error.message}</p>
+                            </div>
+                        `;
+                    }
+                }
+            }, 500);
         }
 
         // Perform all calculations
         function performCalculations() {
-            // Get all inputs
-            const countryCode = document.getElementById('manufacturingCountry').value || 'FR';
-            const processingType = document.getElementById('processingMethod').value;
-            const transportMode = document.getElementById('transportMode').value;
-            const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
-            const packagingType = document.getElementById('packagingMaterial').value;
-            const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
-            const recycledContent = parseFloat(document.getElementById('recycledContent').value) || 0;
-            const isRefrigerated = document.getElementById('refrigeratedTransport').value === 'yes';
-            const sourcingRegion = document.getElementById('sourcingRegion').value;
+            // Get all inputs with proper defaults
+            const countryCode = document.getElementById('manufacturingCountry')?.value || 'FR';
+            const processingType = document.getElementById('processingMethod')?.value || 'none';
+            const transportMode = document.getElementById('transportMode')?.value || 'road';
+            const transportDistance = parseFloat(document.getElementById('transportDistance')?.value) || 0;
+            const packagingType = document.getElementById('packagingMaterial')?.value || 'cardboard';
+            const packagingWeight = parseFloat(document.getElementById('packagingWeight')?.value) || 0;
+            const recycledContent = parseFloat(document.getElementById('recycledContent')?.value) || 0;
 
-            const country = aioxyData.countries[countryCode];
-            const processing = aioxyData.processing[processingType];
-            const transport = aioxyData.transportation[transportMode];
-            const packaging = aioxyData.packaging[packagingType];
+            const country = aioxyData.countries[countryCode] || aioxyData.countries['FR'];
+            const processing = aioxyData.processing[processingType] || aioxyData.processing['none'];
+            const transport = aioxyData.transportation[transportMode] || aioxyData.transportation['road'];
+            const packaging = aioxyData.packaging[packagingType] || aioxyData.packaging['cardboard'];
 
             // Calculate ingredient impacts
             let totalCO2 = 0;
@@ -1303,7 +1323,6 @@
             let totalWeight = 0;
 
             selectedIngredients.forEach(ingredient => {
-                // Adjust for food loss
                 const adjustedQuantity = ingredient.quantity / (1 - ingredient.data.loss);
                 
                 totalCO2 += adjustedQuantity * ingredient.data.co2;
@@ -1314,70 +1333,58 @@
                 totalWeight += ingredient.quantity;
             });
 
-            // Add processing impact with regional electricity factor
+            // Add processing impact
             const processingCO2 = processing.energy * (country.electricityCO2 / 1000) * totalWeight;
             totalCO2 += processingCO2;
-
-            // Apply processing yield
             totalWeight *= processing.yield;
 
             // Add transportation impact
-            const transportCO2 = transportDistance * transport.co2 * (totalWeight / 1000); // Convert to tons
-            if (isRefrigerated) {
-                totalCO2 += transportCO2 * (1 + transport.refrigerated);
-            } else {
-                totalCO2 += transportCO2;
-            }
+            const transportCO2 = transportDistance * transport.co2 * (totalWeight / 1000);
+            totalCO2 += transportCO2;
 
-            // Add packaging impact with CFF calculation
+            // Add packaging impact
             const packagingCO2 = calculateCFFImpact(packaging, packagingWeight, recycledContent);
             totalCO2 += packagingCO2;
 
-            // Calculate water scarcity using AWARE method
+            // Calculate water scarcity
             const waterScarcity = calculateAWAREImpact(totalWaterBlue, country.awareFactor);
 
             // Calculate per kg values
-            const co2PerKg = totalCO2 / totalWeight;
-            const waterPerKg = (totalWaterBlue + totalWaterGreen + totalWaterGrey) / totalWeight;
-            const landUsePerKg = totalLandUse / totalWeight;
+            const co2PerKg = totalWeight > 0 ? totalCO2 / totalWeight : 0;
+            const waterPerKg = totalWeight > 0 ? (totalWaterBlue + totalWaterGreen + totalWaterGrey) / totalWeight : 0;
+            const landUsePerKg = totalWeight > 0 ? totalLandUse / totalWeight : 0;
 
-            // Calculate savings vs industry average
-            const industryAvgCO2 = 3.5; // Conservative industry average
+            // Calculate savings
+            const industryAvgCO2 = 3.5;
             const industryAvgWater = 600;
             
             const co2Saved = Math.max(industryAvgCO2 - co2PerKg, 0) * totalWeight;
             const waterSaved = Math.max(industryAvgWater - waterPerKg, 0) * totalWeight;
             
-            const co2SavingsPercent = ((co2Saved / (industryAvgCO2 * totalWeight)) * 100).toFixed(1);
-            const waterSavingsPercent = ((waterSaved / (industryAvgWater * totalWeight)) * 100).toFixed(1);
+            const co2SavingsPercent = totalWeight > 0 ? ((co2Saved / (industryAvgCO2 * totalWeight)) * 100) : 0;
+            const waterSavingsPercent = totalWeight > 0 ? ((waterSaved / (industryAvgWater * totalWeight)) * 100) : 0;
 
-            // Update UI with results
-            updateResultsUI({
-                totalCO2,
-                totalWater: totalWaterBlue + totalWaterGreen + totalWaterGrey,
-                waterScarcity,
-                landUse: totalLandUse,
-                co2PerKg,
-                waterPerKg,
-                landUsePerKg,
-                co2Saved,
-                waterSaved,
-                co2SavingsPercent,
-                waterSavingsPercent,
-                processingCO2,
-                transportCO2,
-                packagingCO2,
-                totalWeight
-            });
-
-            // Hide loading and show results
-            document.getElementById('loadingResults').classList.add('hidden');
-            document.getElementById('resultsContent').classList.remove('hidden');
+            return {
+                totalCO2: totalCO2 || 0,
+                totalWater: (totalWaterBlue + totalWaterGreen + totalWaterGrey) || 0,
+                waterScarcity: waterScarcity || 0,
+                landUse: totalLandUse || 0,
+                co2PerKg: co2PerKg || 0,
+                waterPerKg: waterPerKg || 0,
+                landUsePerKg: landUsePerKg || 0,
+                co2Saved: co2Saved || 0,
+                waterSaved: waterSaved || 0,
+                co2SavingsPercent: co2SavingsPercent || 0,
+                waterSavingsPercent: waterSavingsPercent || 0,
+                processingCO2: processingCO2 || 0,
+                transportCO2: transportCO2 || 0,
+                packagingCO2: packagingCO2 || 0,
+                totalWeight: totalWeight || 0
+            };
         }
 
         // Calculate CFF impact for packaging
         function calculateCFFImpact(packaging, weight, recycledContent) {
-            // Simplified CFF calculation
             const R1 = Math.min(recycledContent / 100, packaging.r1);
             const virginImpact = packaging.co2 * weight * (1 - R1);
             const recycledImpact = packaging.co2 * weight * R1 * packaging.substitution;
@@ -1394,7 +1401,8 @@
         // Update results UI
         function updateResultsUI(results) {
             const resultsContent = document.getElementById('resultsContent');
-            
+            if (!resultsContent) return;
+
             resultsContent.innerHTML = `
                 <div class="results-grid">
                     <div class="metric-card">
@@ -1403,7 +1411,7 @@
                         </div>
                         <div class="metric-value">${results.co2PerKg.toFixed(2)} kg</div>
                         <div class="metric-label">CO₂e per kg</div>
-                        <div class="savings-badge">${results.co2SavingsPercent}% less than average</div>
+                        <div class="savings-badge">${results.co2SavingsPercent.toFixed(1)}% less than average</div>
                     </div>
                     
                     <div class="metric-card">
@@ -1412,7 +1420,7 @@
                         </div>
                         <div class="metric-value">${Math.round(results.waterPerKg)} L</div>
                         <div class="metric-label">Water per kg</div>
-                        <div class="savings-badge">${results.waterSavingsPercent}% less than average</div>
+                        <div class="savings-badge">${results.waterSavingsPercent.toFixed(1)}% less than average</div>
                     </div>
                     
                     <div class="metric-card">
@@ -1476,9 +1484,7 @@
                 </div>
             `;
 
-            // Create emission breakdown chart
             createEmissionChart(results);
-            // Generate QR code
             updateQRCode();
         }
 
@@ -1496,10 +1502,6 @@
                 stories.push(`💧 <strong>${Math.round(results.waterSaved)} liters of water saved</strong> - enough for ${showers} average showers`);
             }
             
-            if (results.co2PerKg < 2.0) {
-                stories.push(`🎯 <strong>Low carbon footprint</strong> of ${results.co2PerKg.toFixed(2)} kg CO₂e per kg puts this product in the top sustainable tier`);
-            }
-            
             stories.push(`📊 <strong>Full lifecycle assessment</strong> includes ingredients, processing, packaging, and transportation with regionalized factors`);
             
             return stories.join('<br><br>');
@@ -1507,12 +1509,13 @@
 
         // Create emission breakdown chart
         function createEmissionChart(results) {
-            const ctx = document.getElementById('emissionChart').getContext('2d');
-            
+            const ctx = document.getElementById('emissionChart')?.getContext('2d');
+            if (!ctx) return;
+
             if (currentChart) {
                 currentChart.destroy();
             }
-            
+
             const ingredientsCO2 = results.totalCO2 - results.processingCO2 - results.transportCO2 - results.packagingCO2;
             
             currentChart = new Chart(ctx, {
@@ -1521,17 +1524,12 @@
                     labels: ['Ingredients', 'Processing', 'Transportation', 'Packaging'],
                     datasets: [{
                         data: [
-                            ingredientsCO2,
-                            results.processingCO2,
-                            results.transportCO2,
-                            results.packagingCO2
+                            Math.max(ingredientsCO2, 0),
+                            Math.max(results.processingCO2, 0),
+                            Math.max(results.transportCO2, 0),
+                            Math.max(results.packagingCO2, 0)
                         ],
-                        backgroundColor: [
-                            '#2E86C1',
-                            '#27AE60',
-                            '#F39C12',
-                            '#E74C3C'
-                        ],
+                        backgroundColor: ['#2E86C1', '#27AE60', '#F39C12', '#E74C3C'],
                         borderWidth: 2,
                         borderColor: '#ffffff'
                     }]
@@ -1540,16 +1538,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        },
+                        legend: { position: 'bottom' },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -1567,8 +1556,10 @@
 
         // Update QR code
         function updateQRCode() {
-            const productName = document.getElementById('productName').value;
+            const productName = document.getElementById('productName')?.value || 'Aioxy Product';
             const qrContainer = document.getElementById('qrcode');
+            if (!qrContainer) return;
+
             qrContainer.innerHTML = '';
             
             const productData = {
@@ -1582,12 +1573,7 @@
                 width: 180,
                 height: 180,
                 margin: 1,
-                color: {
-                    dark: '#1a5276',
-                    light: '#ffffff'
-                }
-            }, function(error) {
-                if (error) console.error(error);
+                color: { dark: '#1a5276', light: '#ffffff' }
             });
         }
 
@@ -1627,7 +1613,7 @@
             `;
         }
 
-        // Export functions (placeholder implementations)
+        // Export functions
         function exportDPP() {
             alert('Digital Product Passport export functionality would be implemented here');
         }
@@ -1645,7 +1631,10 @@
         }
 
         // Initialize app when page loads
-        document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("📄 DOM Loaded - Starting Aioxy...");
+            initApp();
+        });
     </script>
 </body>
-            </html>
+                    </html>
