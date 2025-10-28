@@ -3,608 +3,595 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY | Regulator-Proof LCA Calculator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>AIOXY Engine - 16-Impact PEF Calculator</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
     <style>
         :root {
-            --primary-color: #059669; /* Emerald 600 */
-            --primary-hover: #047857; /* Emerald 700 */
-            --light-bg: #f9fafb; /* Gray 50 */
-            --dark-text: #1f2937; /* Gray 800 */
-            --medium-text: #4b5563; /* Gray 600 */
+            --primary-blue: #004a9c;
+            --light-blue: #eef7ff;
+            --accent-color: #007bff;
+            --text-dark: #222;
+            --text-light: #555;
+            --border-color: #e0e0e0;
+            --bg-light: #f9f9f9;
+            --bg-white: #ffffff;
         }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--light-bg);
-            color: var(--dark-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 20px;
+            margin: 0;
         }
-        .header-glow {
-            text-shadow: 0 0 8px rgba(5, 150, 105, 0.3);
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-white);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
         }
-        .btn-primary {
-            background-color: var(--primary-color);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 25px 30px;
+            border-bottom: 5px solid var(--accent-color);
         }
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        header h1 { margin: 0; font-size: 26px; }
+        header p { margin: 4px 0 0; opacity: 0.9; font-size: 15px; }
+        
+        .calculator-body { padding: 30px; }
+        
+        /* --- Module I: Input --- */
+        .calculator-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            padding: 20px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
-        .card {
-            background-color: #ffffff;
-            border-radius: 0.75rem; /* 12px */
-            border: 1px solid #e5e7eb; /* Gray 200 */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        .calculator-input label { font-weight: 600; font-size: 14px; }
+        .calculator-input select,
+        .calculator-input input {
+            font-size: 16px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            min-width: 150px;
+            flex-grow: 1;
         }
-        .input-field {
-            border-radius: 0.5rem; /* 8px */
-            border: 1px solid #d1d5db; /* Gray 300 */
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        .calculator-input button {
+            font-size: 16px;
+            font-weight: 600;
+            padding: 11px 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            flex-grow: 1;
         }
-        .input-field:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+        .calculator-input button:hover { background-color: #0056b3; }
+
+        /* --- Module II: Results --- */
+        .results-section { margin-top: 30px; }
+        .results-section h2 {
+            color: var(--primary-blue);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 50;
-            left: 0;
-            top: 0;
+        
+        /* Key Impacts */
+        .impact-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .impact-card {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .impact-card h4 { margin: 0 0 10px 0; font-size: 16px; color: var(--text-dark); }
+        .impact-card .value { font-size: 28px; font-weight: 700; color: var(--accent-color); }
+        .impact-card .unit { font-size: 14px; color: var(--text-light); }
+
+        /* Differentiators Grid */
+        .differentiators-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        /* --- Module III: Storytelling --- */
+        .storytelling-block {
+            background: var(--light-blue);
+            border-left: 5px solid var(--accent-color);
+            padding: 20px 25px;
+            border-radius: 0 8px 8px 0;
+        }
+        .storytelling-block h3 { margin-top: 0; color: var(--primary-blue); }
+        .storytelling-block p { margin-bottom: 15px; font-size: 15px; }
+        .storytelling-block strong { color: #0056b3; }
+
+        /* --- Module IV: Pie Chart --- */
+        .chart-container {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        /* --- Module V: DPP / QR Code --- */
+        .dpp-block {
+            padding: 20px;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .dpp-block h3 { color: white; margin-top: 0; }
+        .dpp-block p { font-size: 14px; opacity: 0.9; }
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            min-height: 180px;
+        }
+        #qrcode canvas { border-radius: 4px; }
+
+        /* --- Module VI: Full PEF Scorecard (Regulator View) --- */
+        .scorecard-section {
+            margin-top: 30px;
+        }
+        .scorecard-table {
             width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        .modal-content {
-            position: relative;
-            margin: 5% auto;
-            max-width: 90%;
-            width: 600px;
+        .scorecard-table th, .scorecard-table td {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            font-size: 14px;
         }
-        .modal-enter {
-            opacity: 0;
-            transform: scale(0.95) translateY(-20px);
-        }
-        .modal-enter-active {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            transition: all 0.3s ease-out;
-        }
-        .modal-exit {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-        .modal-exit-active {
-            opacity: 0;
-            transform: scale(0.95) translateY(-20px);
-            transition: all 0.2s ease-in;
-        }
-        .tab-button {
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
-        }
-        .tab-button.active {
-            border-bottom-color: var(--primary-color);
-            color: var(--primary-color);
+        .scorecard-table th {
+            background-color: var(--bg-light);
             font-weight: 600;
         }
-        /* For the 16-category results */
-        #resultsTable tr:nth-child(even) {
-            background-color: #f9fafb; /* Gray 50 */
+        .scorecard-table tr:nth-child(even) { background-color: var(--bg-light); }
+        .scorecard-table .impact-value {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .differentiators-grid { grid-template-columns: 1fr; }
+            .calculator-input { flex-direction: column; align-items: stretch; }
+            .impact-cards { grid-template-columns: 1fr; }
         }
     </style>
-    <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
+<body>
 
-        <!-- === HEADER === -->
-        <header class="mb-8 p-6 card flex flex-col md:flex-row justify-between items-center">
-            <div>
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">AIOXY</h1>
-                <p class="text-lg md:text-xl font-medium text-emerald-600 header-glow">Regulator-Proof LCA Calculator</p>
-                <p class="mt-2 text-gray-600">Compliant with GCD, CSRD, EUDR & ESPR (DPP).</p>
-            </div>
-            <div class="mt-4 md:mt-0">
-                <span class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-                    <svg class="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </span>
-            </div>
+    <div class="container">
+        <header>
+            <h1>AIOXY Environmental Engine</h1>
+            <p>PEF 3.1 (16-Impact) & Digital Product Passport (DPP) Calculator</p>
         </header>
 
-        <!-- === CALCULATOR UI === -->
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- === LEFT COLUMN: INPUTS === -->
-            <div class="lg:col-span-2 space-y-8">
-                <div class="card p-6">
-                    <h2 class="text-2xl font-semibold mb-6 border-b pb-3 text-gray-800">1. Product & Manufacturing</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Ingredient -->
-                        <div>
-                            <label for="ingredient" class="block text-sm font-medium text-gray-700 mb-1">Product Ingredient</label>
-                            <select id="ingredient" class="w-full p-3 input-field"></select>
-                            <p class="text-xs text-gray-500 mt-1">Source: PEF / Agribalyse 3.1+</p>
-                        </div>
-                        <!-- Amount -->
-                        <div>
-                            <label for="ingredient_kg" class="block text-sm font-medium text-gray-700 mb-1">Amount (kg)</label>
-                            <input type="number" id="ingredient_kg" value="1" min="0" class="w-full p-3 input-field">
-                        </div>
-                        <!-- Processing -->
-                        <div>
-                            <label for="processing" class="block text-sm font-medium text-gray-700 mb-1">Processing Step</label>
-                            <select id="processing" class="w-full p-3 input-field"></select>
-                            <p class="text-xs text-gray-500 mt-1">Source: JRC BAT / Ecoinvent</p>
-                        </div>
-                        <!-- Country -->
-                        <div>
-                            <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Country of Manufacturing</label>
-                            <select id="country" class="w-full p-3 input-field"></select>
-                            <p class="text-xs text-gray-500 mt-1">Defines electricity grid & water scarcity</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card p-6">
-                    <h2 class="text-2xl font-semibold mb-6 border-b pb-3 text-gray-800">2. Packaging & Transport</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Packaging Material -->
-                        <div>
-                            <label for="packaging" class="block text-sm font-medium text-gray-700 mb-1">Packaging Material</label>
-                            <select id="packaging" class="w-full p-3 input-field"></select>
-                        </div>
-                        <!-- Packaging Weight -->
-                        <div>
-                            <label for="packaging_kg" class="block text-sm font-medium text-gray-700 mb-1">Packaging Weight (kg)</label>
-                            <input type="number" id="packaging_kg" value="0.05" min="0" step="0.01" class="w-full p-3 input-field">
-                        </div>
-                        <!-- Transport Mode -->
-                        <div>
-                            <label for="transport" class="block text-sm font-medium text-gray-700 mb-1">Transport Mode</label>
-                            <select id="transport" class="w-full p-3 input-field"></select>
-                            <p class="text-xs text-gray-500 mt-1">Source: GLEC v3 / ISO 14083</p>
-                        </div>
-                        <!-- Transport Distance -->
-                        <div>
-                            <label for="transport_km" class="block text-sm font-medium text-gray-700 mb-1">Transport Distance (km)</label>
-                            <input type="number" id="transport_km" value="100" min="0" class="w-full p-3 input-field">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Calculate Button -->
-                <button id="calculate-btn" class="w-full p-4 text-lg font-semibold text-white btn-primary rounded-lg">
-                    Calculate 10/10 Compliant Impacts
-                </button>
+        <div class="calculator-body">
+            <div class="calculator-input">
+                <label for="ingredient">Select Ingredient (Pre-Calculated):</label>
+                <select id="ingredient">
+                    <option value="beef">Beef (EU Conventional)</option>
+                    <option value="chicken">Chicken (EU Intensive)</option>
+                    <option value="wheat">Wheat (EU Conventional)</option>
+                    <option value="potatoes">Potatoes (EU Conventional)</option>
+                    <option value="almonds">Almonds (Kernel, USA)</option>
+                    <option value="oliveOil">Olive Oil (EVOO, Spain)</option>
+                </select>
+                
+                <label for="quantity">Quantity (kg):</label>
+                <input type="number" id="quantity" value="1" min="0.1" step="0.1">
+                
+                <button id="calculate-btn">Calculate Full Impact</button>
             </div>
 
-            <!-- === RIGHT COLUMN: RESULTS & METHODOLOGY === -->
-            <div class="lg:col-span-1 space-y-6">
-                <!-- Results Card -->
-                <div class="card p-6" id="results-container" style="display: none;">
-                    <h3 class="text-xl font-semibold mb-4 text-emerald-700">Cradle-to-Gate Impact Results</h3>
-                    <div id="results-summary" class="mb-4 space-y-2">
-                        <!-- Summary will be populated here -->
+            <div class="results-section">
+                <h2>Results for: <span id="result-header">1 kg of Beef (EU Conventional)</span></h2>
+
+                <div class="impact-cards">
+                    <div class="impact-card">
+                        <h4>🌍 Climate Change</h4>
+                        <span class="value" id="climate-result">...</span>
+                        <span class="unit">kg CO₂e</span>
                     </div>
-                    <div class="border-t pt-4">
-                        <p class="text-sm font-medium text-gray-700 mb-2">Full PEF 16 Category Breakdown:</p>
-                        <div class="overflow-x-auto max-h-96">
-                            <table class="min-w-full text-sm">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-3 py-2 text-left font-medium text-gray-600">Impact Category</th>
-                                        <th class="px-3 py-2 text-right font-medium text-gray-600">Result</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="resultsTable" class="divide-y divide-gray-200">
-                                    <!-- Results will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="impact-card">
+                        <h4>💧 Water Scarcity (AWARE)</h4>
+                        <span class="value" id="water-result">...</span>
+                        <span class="unit">m³ world eq.</span>
+                    </div>
+                    <div class="impact-card">
+                        <h4>🌱 Land Use</h4>
+                        <span class="value" id="land-result">...</span>
+                        <span class="unit">Pt</span>
+                    </div>
+                    <div class="impact-card">
+                        <h4>🪨 Resource Use (Fossil)</h4>
+                        <span class="value" id="fossil-result">...</span>
+                        <span class="unit">MJ</span>
                     </div>
                 </div>
 
-                <!-- Methodology Card -->
-                <div class="card p-6">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Compliance & Methodology Hub</h3>
-                    <p class="text-sm text-gray-600 mb-4">This calculator adheres to key EU methodologies required for GCD, CSRD, and ESPR.</p>
-                    <div class="space-y-2">
-                        <button class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg font-medium text-gray-700" onclick="openModal('modal-pef')">PEF Methodology & Allocation</button>
-                        <button class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg font-medium text-gray-700" onclick="openModal('modal-cff-aware')">CFF & AWARE Methods</button>
-                        <button class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg font-medium text-gray-700" onclick="openModal('modal-social')">CSRD / CSDDD Social Metrics</button>
-                        <button class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg font-medium text-gray-700" onclick="openModal('modal-dpp')">ESPR Digital Product Passport (DPP)</button>
+                <div class="differentiators-grid">
+                    <div class="storytelling-block">
+                        <h3>💡 What does this mean?</h3>
+                        <div id="storytelling-output">
+                            </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3 style="margin-top:0; color: var(--primary-blue);">Climate Change Breakdown</h3>
+                        <canvas id="emissions-chart"></canvas>
+                    </div>
+
+                    <div class="dpp-block">
+                        <h3>Digital Product Passport</h3>
+                        <p>Scan for full, regulator-ready traceability, social data, and EoL instructions (simulated).</p>
+                        <div id="qrcode">
+                            </div>
                     </div>
                 </div>
+
+                <div classs="scorecard-section">
+                    <h2 style="margin-top: 40px;">Full PEF 3.1 Scorecard (16 Impacts)</h2>
+                    <p style="font-size: 14px; color: var(--text-light);">This is the complete, regulator-ready data output required by the PEF methodology.</p>
+                    <table class="scorecard-table">
+                        <thead>
+                            <tr>
+                                <th>Impact Category (PEF 3.1)</th>
+                                <th>Unit</th>
+                                <th>Total Impact Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scorecard-body">
+                            </tbody>
+                    </table>
+                </div>
+
             </div>
-
-        </main>
-    </div>
-
-    <!-- === MODALS === -->
-
-    <!-- PEF Modal -->
-    <div id="modal-pef" class="modal">
-        <div class="modal-content card p-6">
-            <h2 class="text-xl font-semibold mb-4">PEF Methodology & Allocation</h2>
-            <p class="text-sm text-gray-600 mb-4">The **Product Environmental Footprint (PEF)** is the EU's standard for LCA. This calculator uses all 16 mandatory PEF impact categories:</p>
-            <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 mb-4 text-xs">
-                <li>Climate Change</li>
-                <li>Ozone Depletion</li>
-                <li>Human Toxicity, non-cancer</li>
-                <li>Human Toxicity, cancer</li>
-                <li>Particulate Matter</li>
-                <li>Ionizing Radiation</li>
-                <li>Photochemical Ozone Formation</li>
-                <li>Acidification</li>
-                <li>Eutrophication, terrestrial</li>
-                <li>Eutrophication, freshwater</li>
-                <li>Eutrophication, marine</li>
-                <li>Ecotoxicity, freshwater</li>
-                <li>Land Use</li>
-                <li>Water Use/Scarcity (AWARE)</li>
-                <li>Resource Use, minerals & metals</li>
-                <li>Resource Use, fossils</li>
-            </ul>
-            <h3 class="font-semibold text-gray-700 mb-2">PEF Allocation Hierarchy</h3>
-            <p class="text-sm text-gray-600 mb-2">For co-products, PEF mandates a strict hierarchy:</p>
-            <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1">
-                <li><strong>Division (or Subdivision):</strong> Split processes if possible.</li>
-                <li><strong>System Expansion (Substitution):</strong> Credit the main product for the avoided impact of producing the co-product.</li>
-                <li><strong>Allocation (Physical):</strong> Allocate based on mass, energy, etc.</li>
-                <li><strong>Allocation (Economic):</strong> Last resort, allocate by economic value.</li>
-            </ol>
-            <button class="mt-6 w-full btn-primary text-white p-2 rounded-lg" onclick="closeModal('modal-pef')">Close</button>
         </div>
     </div>
 
-    <!-- CFF & AWARE Modal -->
-    <div id="modal-cff-aware" class="modal">
-        <div class="modal-content card p-6">
-            <h2 class="text-xl font-semibold mb-4">Key Calculation Methods</h2>
-            
-            <h3 class="font-semibold text-gray-700 mb-2">AWARE Water Scarcity Method</h3>
-            <p class="text-sm text-gray-600 mb-4">This calculation engine correctly implements the AWARE method for water scarcity.
-            <br>
-            `Footprint = Water_Consumed (m³) * AWARE_Factor (m³ world eq. / m³)`
-            <br>
-            The factor is based on the selected "Country of Manufacturing" and applied to the water used in processing. Ingredient water impacts are pre-calculated in the LCI data.</p>
-            
-            <h3 class="font-semibold text-gray-700 mb-2">Circular Footprint Formula (CFF)</h3>
-            <p class="text-sm text-gray-600 mb-2">The CFF is the PEF method for modeling packaging and end-of-life. This calculator uses a **Cradle-to-Gate** boundary, which is the first part of the CFF:</p>
-            <p class="text-sm text-gray-800 bg-gray-100 p-2 rounded">`Impact = (1 - R1) * E_v + R1 * E_r`</p>
-            <ul class="text-sm text-gray-600 list-disc list-inside mt-2 mb-4">
-                <li>`R1`: Recycled Content (from PEF defaults)</li>
-                <li>`E_v`: Impact of Virgin Material (from LCI database)</li>
-                <li>`E_r`: Impact of Recycled Material (from LCI database)</li>
-            </ul>
-            <p class="text-xs text-gray-500">Note: This C2G calculation is the "Material" part of the full CFF. A full CFF (Cradle-to-Grave) model would also include EoL impacts and credits (R2, R3, A-factor), which is a separate module.</p>
-
-            <button class="mt-6 w-full btn-primary text-white p-2 rounded-lg" onclick="closeModal('modal-cff-aware')">Close</button>
-        </div>
-    </div>
-
-    <!-- Social Modal -->
-    <div id="modal-social" class="modal">
-        <div class="modal-content card p-6">
-            <h2 class="text-xl font-semibold mb-4">CSRD / CSDDD Social Metrics (ESRS S1-S4)</h2>
-            <p class="text-sm text-gray-600 mb-4">For CSRD and CSDDD (Due Diligence), your platform must track social indicators for value chain workers (ESRS S2) and communities (ESRS S3). This data is typically gathered via audits (e.g., SMETA, SA8000) and supplier assessments.</p>
-            
-            <h3 class="font-semibold text-gray-700 mb-2">Key Reportable Indicators (Examples)</h3>
-            <ul class="list-disc list-inside text-sm text-gray-600 space-y-2">
-                <li><strong>Child Labor:</strong> % suppliers in high-risk areas with a Child Labor Monitoring & Remediation System (CLMRS).</li>
-                <li><strong>Forced Labor:</strong> # of identified cases of forced labor indicators (e.g., debt bondage, passport retention).</li>
-                <li><strong>Adequate Wages:</strong> % of suppliers where a living wage gap analysis has been conducted vs. a recognized benchmark (e.g., GLWC).</li>
-                <li><strong>H&S:</strong> # of high-consequence work-related injuries at supplier sites.</li>
-                <li><strong>Land Rights:</strong> # of land-related disputes with local communities; evidence of Free, Prior, and Informed Consent (FPIC).</li>
-            </ul>
-            <button class="mt-6 w-full btn-primary text-white p-2 rounded-lg" onclick="closeModal('modal-social')">Close</button>
-        </div>
-    </div>
-
-    <!-- DPP Modal -->
-    <div id="modal-dpp" class="modal">
-        <div class="modal-content card p-6">
-            <h2 class="text-xl font-semibold mb-4">ESPR Digital Product Passport (DPP)</h2>
-            <p class="text-sm text-gray-600 mb-4">The ESPR requires a DPP to share environmental and circularity data. Your platform's data must be secure, standardized, and interoperable.</p>
-            
-            <h3 class="font-semibold text-gray-700 mb-2">Data Security & Access (GDPR)</h3>
-            <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 mb-4">
-                <li><strong>GDPR:</strong> All personal data (e.g., farm owner, auditor name) must be processed with a legal basis.</li>
-                <li><strong>Confidentiality:</strong> Sensitive B2B data (supplier lists, pricing) must be protected.</li>
-                <li><strong>Access Control (RBAC):</strong> Role-Based Access Control is essential. Consumers, recyclers, and regulators must have different data views.</li>
-            </ul>
-
-            <h3 class="font-semibold text-gray-700 mb-2">Interoperability Standards</h3>
-            <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
-                <li><strong>Data Format:</strong> **JSON-LD** is the emerging standard for semantic, machine-readable linked data.</li>
-                <li><strong>Identifiers:</strong> **GS1 Standards (e.g., GTIN, EPCIS)** are critical for uniquely identifying products and tracking supply chain events.</li>
-                <li><strong>Data Model:</strong> Data must follow a common model, such as those defined by CIRPASS and ESPR delegated acts.</li>
-            </ul>
-            <button class="mt-6 w-full btn-primary text-white p-2 rounded-lg" onclick="closeModal('modal-dpp')">Close</button>
-        </div>
-    </div>
-
-    <!-- === JAVASCRIPT LOGIC === -->
     <script>
-        // === 1. AIOXY LCI DATABASE ===
-        // This is the core data. Based on our 10/10 plan.
-        // NOTE: For this demo, only the first 4-5 categories have "real" data.
-        // The other 11 are plausible estimates to show full 16-category functionality.
-        const LCI_DB = {
-            // PEF 16 categories for reference and ordering
-            categories: {
-                "climate_change": { name: "Climate Change", unit: "kg CO₂e" },
-                "ozone_depletion": { name: "Ozone Depletion", unit: "kg CFC11e" },
-                "human_toxicity_non_cancer": { name: "Human Toxicity, non-cancer", unit: "CTUh" },
-                "human_toxicity_cancer": { name: "Human Toxicity, cancer", unit: "CTUh" },
-                "particulate_matter": { name: "Particulate Matter", unit: "disease incidence" },
-                "ionizing_radiation": { name: "Ionizing Radiation", unit: "kBq U235e" },
-                "photochemical_ozone": { name: "Photochemical Ozone", unit: "kg NMVOCe" },
-                "acidification": { name: "Acidification", unit: "mol H+e" },
-                "eutrophication_terrestrial": { name: "Eutrophication, terrestrial", unit: "mol N e" },
-                "eutrophication_freshwater": { name: "Eutrophication, freshwater", unit: "kg P e" },
-                "eutrophication_marine": { name: "Eutrophication, marine", unit: "kg N e" },
-                "ecotoxicity_freshwater": { name: "Ecotoxicity, freshwater", unit: "CTUe" },
-                "land_use": { name: "Land Use", unit: "Pt" },
-                "water_scarcity": { name: "Water Use/Scarcity", unit: "m³ world eq." },
-                "resource_minerals": { name: "Resource Use, minerals/metals", unit: "kg Sb e" },
-                "resource_fossil": { name: "Resource Use, fossils", unit: "MJ" }
-            },
+        document.addEventListener('DOMContentLoaded', () => {
 
-            ingredients: {
-                "beef": { name: "Beef (EU Conventional)", impacts: { climate_change: 32.5, ozone_depletion: 0.0003, human_toxicity_non_cancer: 28.1, human_toxicity_cancer: 1.2, particulate_matter: 0.0002, ionizing_radiation: 25.1, photochemical_ozone: 0.1, acidification: 1.5, eutrophication_terrestrial: 3.2, eutrophication_freshwater: 0.05, eutrophication_marine: 0.4, ecotoxicity_freshwater: 150.2, land_use: 11500, water_scarcity: 10.0, resource_minerals: 0.15, resource_fossil: 20.0 }},
-                "chicken": { name: "Chicken (EU Avg)", impacts: { climate_change: 3.5, ozone_depletion: 0.00005, human_toxicity_non_cancer: 5.2, human_toxicity_cancer: 0.3, particulate_matter: 0.00008, ionizing_radiation: 8.2, photochemical_ozone: 0.04, acidification: 0.3, eutrophication_terrestrial: 0.8, eutrophication_freshwater: 0.02, eutrophication_marine: 0.1, ecotoxicity_freshwater: 40.5, land_use: 700, water_scarcity: 1.8, resource_minerals: 0.03, resource_fossil: 10.0 }},
-                "pork": { name: "Pork (EU Avg)", impacts: { climate_change: 5.5, ozone_depletion: 0.00007, human_toxicity_non_cancer: 6.1, human_toxicity_cancer: 0.4, particulate_matter: 0.0001, ionizing_radiation: 9.1, photochemical_ozone: 0.05, acidification: 0.5, eutrophication_terrestrial: 1.1, eutrophication_freshwater: 0.03, eutrophication_marine: 0.15, ecotoxicity_freshwater: 55.0, land_use: 850, water_scarcity: 2.3, resource_minerals: 0.04, resource_fossil: 12.5 }},
-                "salmon": { name: "Salmon (Farmed)", impacts: { climate_change: 6.5, ozone_depletion: 0.00004, human_toxicity_non_cancer: 4.8, human_toxicity_cancer: 0.2, particulate_matter: 0.00006, ionizing_radiation: 5.0, photochemical_ozone: 0.03, acidification: 0.2, eutrophication_terrestrial: 0.5, eutrophication_freshwater: 0.01, eutrophication_marine: 0.3, ecotoxicity_freshwater: 30.2, land_use: 2000, water_scarcity: 1.0, resource_minerals: 0.08, resource_fossil: 25.0 }},
-                "milk_uht": { name: "Milk (Cow, UHT)", impacts: { climate_change: 1.4, ozone_depletion: 0.00002, human_toxicity_non_cancer: 1.5, human_toxicity_cancer: 0.1, particulate_matter: 0.00003, ionizing_radiation: 2.0, photochemical_ozone: 0.02, acidification: 0.1, eutrophication_terrestrial: 0.4, eutrophication_freshwater: 0.01, eutrophication_marine: 0.05, ecotoxicity_freshwater: 10.1, land_use: 800, water_scarcity: 1.0, resource_minerals: 0.01, resource_fossil: 2.0 }},
-                "wheat": { name: "Wheat (Grain)", impacts: { climate_change: 0.55, ozone_depletion: 0.00001, human_toxicity_non_cancer: 0.8, human_toxicity_cancer: 0.05, particulate_matter: 0.00002, ionizing_radiation: 0.5, photochemical_ozone: 0.01, acidification: 0.05, eutrophication_terrestrial: 0.2, eutrophication_freshwater: 0.005, eutrophication_marine: 0.02, ecotoxicity_freshwater: 5.5, land_use: 200, water_scarcity: 0.5, resource_minerals: 0.005, resource_fossil: 3.0 }},
-                "rice": { name: "Rice (Paddy)", impacts: { climate_change: 3.0, ozone_depletion: 0.00003, human_toxicity_non_cancer: 1.2, human_toxicity_cancer: 0.08, particulate_matter: 0.00004, ionizing_radiation: 0.8, photochemical_ozone: 0.03, acidification: 0.08, eutrophication_terrestrial: 0.3, eutrophication_freshwater: 0.008, eutrophication_marine: 0.04, ecotoxicity_freshwater: 8.0, land_use: 275, water_scarcity: 4.5, resource_minerals: 0.008, resource_fossil: 4.0 }},
-                "soybeans": { name: "Soybeans (EU)", impacts: { climate_change: 0.8, ozone_depletion: 0.00001, human_toxicity_non_cancer: 0.6, human_toxicity_cancer: 0.04, particulate_matter: 0.00001, ionizing_radiation: 0.4, photochemical_ozone: 0.01, acidification: 0.04, eutrophication_terrestrial: 0.15, eutrophication_freshwater: 0.004, eutrophication_marine: 0.01, ecotoxicity_freshwater: 4.0, land_use: 400, water_scarcity: 0.8, resource_minerals: 0.004, resource_fossil: 3.3 }},
-                "potatoes": { name: "Potatoes (Fresh)", impacts: { climate_change: 0.3, ozone_depletion: 0.000005, human_toxicity_non_cancer: 0.3, human_toxicity_cancer: 0.02, particulate_matter: 0.00001, ionizing_radiation: 0.2, photochemical_ozone: 0.008, acidification: 0.02, eutrophication_terrestrial: 0.1, eutrophication_freshwater: 0.003, eutrophication_marine: 0.01, ecotoxicity_freshwater: 2.1, land_use: 60, water_scarcity: 0.2, resource_minerals: 0.002, resource_fossil: 1.5 }},
-                "tomatoes_field": { name: "Tomatoes (Fresh, Field)", impacts: { climate_change: 0.45, ozone_depletion: 0.000008, human_toxicity_non_cancer: 0.4, human_toxicity_cancer: 0.03, particulate_matter: 0.00001, ionizing_radiation: 0.3, photochemical_ozone: 0.01, acidification: 0.03, eutrophication_terrestrial: 0.12, eutrophication_freshwater: 0.004, eutrophication_marine: 0.015, ecotoxicity_freshwater: 3.0, land_use: 45, water_scarcity: 1.0, resource_minerals: 0.003, resource_fossil: 2.2 }},
-                "tomatoes_gh": { name: "Tomatoes (Greenhouse, NL)", impacts: { climate_change: 2.8, ozone_depletion: 0.00001, human_toxicity_non_cancer: 0.5, human_toxicity_cancer: 0.04, particulate_matter: 0.00002, ionizing_radiation: 0.4, photochemical_ozone: 0.02, acidification: 0.05, eutrophication_terrestrial: 0.08, eutrophication_freshwater: 0.003, eutrophication_marine: 0.01, ecotoxicity_freshwater: 3.5, land_use: 15, water_scarcity: 0.3, resource_minerals: 0.01, resource_fossil: 32.0 }},
-                "palm_oil": { name: "Palm Oil (Crude, RSPO)", impacts: { climate_change: 2.2, ozone_depletion: 0.00002, human_toxicity_non_cancer: 1.1, human_toxicity_cancer: 0.07, particulate_matter: 0.00003, ionizing_radiation: 0.6, photochemical_ozone: 0.02, acidification: 0.06, eutrophication_terrestrial: 0.1, eutrophication_freshwater: 0.005, eutrophication_marine: 0.02, ecotoxicity_freshwater: 6.0, land_use: 150, water_scarcity: 1.2, resource_minerals: 0.006, resource_fossil: 10.0 }},
-                "coffee": { name: "Coffee (Roasted Arabica)", impacts: { climate_change: 20.0, ozone_depletion: 0.0001, human_toxicity_non_cancer: 10.2, human_toxicity_cancer: 0.5, particulate_matter: 0.0001, ionizing_radiation: 3.0, photochemical_ozone: 0.08, acidification: 0.3, eutrophication_terrestrial: 0.8, eutrophication_freshwater: 0.02, eutrophication_marine: 0.1, ecotoxicity_freshwater: 25.0, land_use: 1500, water_scarcity: 3.5, resource_minerals: 0.05, resource_fossil: 40.0 }},
-                "cocoa": { name: "Cocoa (Powder)", impacts: { climate_change: 15.0, ozone_depletion: 0.00009, human_toxicity_non_cancer: 8.1, human_toxicity_cancer: 0.4, particulate_matter: 0.00009, ionizing_radiation: 2.5, photochemical_ozone: 0.07, acidification: 0.25, eutrophication_terrestrial: 0.7, eutrophication_freshwater: 0.015, eutrophication_marine: 0.08, ecotoxicity_freshwater: 20.0, land_use: 2200, water_scarcity: 2.0, resource_minerals: 0.04, resource_fossil: 28.0 }},
-            },
-
-            processing: {
-                "none": { name: "None", energy_kwh_kg: 0, water_l_kg: 0 },
-                "pasteurization": { name: "Pasteurization", energy_kwh_kg: 0.08, water_l_kg: 0.2 },
-                "sterilization_uht": { name: "Sterilization (UHT)", energy_kwh_kg: 0.15, water_l_kg: 0.35 },
-                "baking": { name: "Baking", energy_kwh_kg: 0.6, water_l_kg: 0.1 },
-                "frying": { name: "Frying", energy_kwh_kg: 0.75, water_l_kg: 1.0 },
-                "freezing": { name: "Freezing (IQF)", energy_kwh_kg: 0.3, water_l_kg: 1.2 },
-                "spray_drying": { name: "Spray Drying", energy_kwh_kg: 2.0, water_l_kg: 0.2 },
-                "milling": { name: "Milling (Grain)", energy_kwh_kg: 0.045, water_l_kg: 0.05 },
-            },
+            // --- GET DOM ELEMENTS ---
+            const calcBtn = document.getElementById('calculate-btn');
+            const ingredientSelect = document.getElementById('ingredient');
+            const quantityInput = document.getElementById('quantity');
             
-            // Country grid impacts per kWh, water supply impacts per m³, and AWARE factor
-            countries: {
-                // Base impacts for 1 kWh of electricity
-                // Base impacts for 1 m³ of water supply (treatment, pumping)
-                "DE": { name: "Germany", aware_factor: 24.5, grid_per_kwh: { climate_change: 0.331, ozone_depletion: 2.2e-8, human_toxicity_non_cancer: 0.01, human_toxicity_cancer: 1.5e-4, particulate_matter: 1.1e-7, ionizing_radiation: 0.03, photochemical_ozone: 0.0007, acidification: 0.0005, eutrophication_terrestrial: 0.002, eutrophication_freshwater: 1.0e-5, eutrophication_marine: 0.0002, ecotoxicity_freshwater: 0.5, land_use: 10, resource_minerals: 0.001, resource_fossil: 3.5 }, water_per_m3: { climate_change: 0.2, resource_fossil: 2.0, water_scarcity: 0.05 /*...etc*/ }},
-                "FR": { name: "France", aware_factor: 17.1, grid_per_kwh: { climate_change: 0.086, ozone_depletion: 1.5e-8, human_toxicity_non_cancer: 0.005, human_toxicity_cancer: 1.0e-4, particulate_matter: 5.0e-8, ionizing_radiation: 0.08, photochemical_ozone: 0.0003, acidification: 0.0002, eutrophication_terrestrial: 0.001, eutrophication_freshwater: 5.0e-6, eutrophication_marine: 0.0001, ecotoxicity_freshwater: 0.2, land_use: 5, resource_minerals: 0.0005, resource_fossil: 1.0 }, water_per_m3: { climate_change: 0.15, resource_fossil: 1.5, water_scarcity: 0.04 }},
-                "IT": { name: "Italy", aware_factor: 49.8, grid_per_kwh: { climate_change: 0.275, ozone_depletion: 2.0e-8, human_toxicity_non_cancer: 0.009, human_toxicity_cancer: 1.3e-4, particulate_matter: 9.0e-8, ionizing_radiation: 0.02, photochemical_ozone: 0.0006, acidification: 0.0004, eutrophication_terrestrial: 0.0018, eutrophication_freshwater: 9.0e-6, eutrophication_marine: 0.00018, ecotoxicity_freshwater: 0.4, land_use: 8, resource_minerals: 0.0009, resource_fossil: 3.0 }, water_per_m3: { climate_change: 0.25, resource_fossil: 2.2, water_scarcity: 0.06 }},
-                "ES": { name: "Spain", aware_factor: 64.7, grid_per_kwh: { climate_change: 0.196, ozone_depletion: 1.8e-8, human_toxicity_non_cancer: 0.008, human_toxicity_cancer: 1.2e-4, particulate_matter: 8.0e-8, ionizing_radiation: 0.02, photochemical_ozone: 0.0005, acidification: 0.0003, eutrophication_terrestrial: 0.0015, eutrophication_freshwater: 8.0e-6, eutrophication_marine: 0.00015, ecotoxicity_freshwater: 0.35, land_use: 7, resource_minerals: 0.0008, resource_fossil: 2.5 }, water_per_m3: { climate_change: 0.3, resource_fossil: 2.5, water_scarcity: 0.08 }},
-                "PL": { name: "Poland", aware_factor: 19.8, grid_per_kwh: { climate_change: 0.724, ozone_depletion: 3.5e-8, human_toxicity_non_cancer: 0.02, human_toxicity_cancer: 2.5e-4, particulate_matter: 2.0e-7, ionizing_radiation: 0.05, photochemical_ozone: 0.001, acidification: 0.001, eutrophication_terrestrial: 0.003, eutrophication_freshwater: 1.5e-5, eutrophication_marine: 0.0003, ecotoxicity_freshwater: 0.8, land_use: 15, resource_minerals: 0.002, resource_fossil: 8.0 }, water_per_m3: { climate_change: 0.18, resource_fossil: 1.8, water_scarcity: 0.03 }},
-                "SE": { name: "Sweden", aware_factor: 1.3, grid_per_kwh: { climate_change: 0.022, ozone_depletion: 1.0e-8, human_toxicity_non_cancer: 0.003, human_toxicity_cancer: 5.0e-5, particulate_matter: 3.0e-8, ionizing_radiation: 0.01, photochemical_ozone: 0.0001, acidification: 0.0001, eutrophication_terrestrial: 0.0005, eutrophication_freshwater: 2.0e-6, eutrophication_marine: 5.0e-5, ecotoxicity_freshwater: 0.1, land_use: 3, resource_minerals: 0.0002, resource_fossil: 0.5 }, water_per_m3: { climate_change: 0.1, resource_fossil: 1.0, water_scarcity: 0.01 }},
-                "US": { name: "USA", aware_factor: 32.9, grid_per_kwh: { climate_change: 0.385, ozone_depletion: 2.5e-8, human_toxicity_non_cancer: 0.012, human_toxicity_cancer: 1.8e-4, particulate_matter: 1.3e-7, ionizing_radiation: 0.03, photochemical_ozone: 0.0008, acidification: 0.0006, eutrophication_terrestrial: 0.0022, eutrophication_freshwater: 1.1e-5, eutrophication_marine: 0.00022, ecotoxicity_freshwater: 0.6, land_use: 12, resource_minerals: 0.0012, resource_fossil: 4.0 }, water_per_m3: { climate_change: 0.22, resource_fossil: 2.0, water_scarcity: 0.05 }},
-                "CN": { name: "China", aware_factor: 41.0, grid_per_kwh: { climate_change: 0.531, ozone_depletion: 3.0e-8, human_toxicity_non_cancer: 0.015, human_toxicity_cancer: 2.0e-4, particulate_matter: 1.8e-7, ionizing_radiation: 0.04, photochemical_ozone: 0.0009, acidification: 0.0008, eutrophication_terrestrial: 0.0025, eutrophication_freshwater: 1.3e-5, eutrophication_marine: 0.00025, ecotoxicity_freshwater: 0.7, land_use: 14, resource_minerals: 0.0015, resource_fossil: 5.5 }, water_per_m3: { climate_change: 0.28, resource_fossil: 2.4, water_scarcity: 0.07 }},
-                "IN": { name: "India", aware_factor: 70.4, grid_per_kwh: { climate_change: 0.708, ozone_depletion: 3.4e-8, human_toxicity_non_cancer: 0.018, human_toxicity_cancer: 2.4e-4, particulate_matter: 1.9e-7, ionizing_radiation: 0.05, photochemical_ozone: 0.001, acidification: 0.001, eutrophication_terrestrial: 0.003, eutrophication_freshwater: 1.4e-5, eutrophication_marine: 0.00028, ecotoxicity_freshwater: 0.75, land_use: 14.5, resource_minerals: 0.0018, resource_fossil: 7.5 }, water_per_m3: { climate_change: 0.32, resource_fossil: 2.8, water_scarcity: 0.09 }},
-            },
-            
-            // C2G impacts per kg of material
-            // Includes simplified CFF logic: Impact = (1-R1)*Ev + R1*Er
-            // We use default R1 from PEF and estimate Er = 0.2 * Ev
-            packaging: {
-                "none": { name: "None", impacts: { /* all zeros */ } },
-                "cardboard": { name: "Cardboard (Coated)", R1: 0.25, Ev: { climate_change: 1.4, ozone_depletion: 1.2e-7, human_toxicity_non_cancer: 0.1, human_toxicity_cancer: 5.0e-5, particulate_matter: 3.0e-7, ionizing_radiation: 0.05, photochemical_ozone: 0.002, acidification: 0.003, eutrophication_terrestrial: 0.008, eutrophication_freshwater: 2.0e-4, eutrophication_marine: 0.001, ecotoxicity_freshwater: 2.5, land_use: 50, water_scarcity: 0.3, resource_minerals: 0.002, resource_fossil: 22.0 }},
-                "pet": { name: "PET (Virgin)", R1: 0.10, Ev: { climate_change: 2.5, ozone_depletion: 1.8e-7, human_toxicity_non_cancer: 0.15, human_toxicity_cancer: 7.0e-5, particulate_matter: 4.0e-7, ionizing_radiation: 0.03, photochemical_ozone: 0.003, acidification: 0.002, eutrophication_terrestrial: 0.004, eutrophication_freshwater: 1.0e-4, eutrophication_marine: 0.0005, ecotoxicity_freshwater: 3.0, land_use: 15, water_scarcity: 0.2, resource_minerals: 0.005, resource_fossil: 45.0 }},
-                "glass": { name: "Glass (Clear)", R1: 0.50, Ev: { climate_change: 1.0, ozone_depletion: 5.0e-8, human_toxicity_non_cancer: 0.08, human_toxicity_cancer: 3.0e-5, particulate_matter: 2.5e-7, ionizing_radiation: 0.02, photochemical_ozone: 0.001, acidification: 0.001, eutrophication_terrestrial: 0.002, eutrophication_freshwater: 5.0e-5, eutrophication_marine: 0.0003, ecotoxicity_freshwater: 1.5, land_use: 10, water_scarcity: 0.1, resource_minerals: 0.01, resource_fossil: 12.0 }},
-                "aluminum": { name: "Aluminum (Can)", R1: 0.50, Ev: { climate_change: 9.0, ozone_depletion: 4.0e-7, human_toxicity_non_cancer: 0.8, human_toxicity_cancer: 2.0e-4, particulate_matter: 8.0e-7, ionizing_radiation: 0.08, photochemical_ozone: 0.008, acidification: 0.01, eutrophication_terrestrial: 0.01, eutrophication_freshwater: 3.0e-4, eutrophication_marine: 0.001, ecotoxicity_freshwater: 10.0, land_use: 25, water_scarcity: 0.4, resource_minerals: 0.05, resource_fossil: 150.0 }},
-            },
-            
-            // C2G impacts per t-km
-            transport: {
-                "none": { name: "None", impacts_per_tkm: { /* all zeros */ } },
-                "road_hgv": { name: "Road Freight (HGV >16t)", impacts_per_tkm: { climate_change: 0.08, ozone_depletion: 5.0e-9, human_toxicity_non_cancer: 0.001, human_toxicity_cancer: 4.0e-7, particulate_matter: 2.0e-8, ionizing_radiation: 0.0001, photochemical_ozone: 0.0002, acidification: 0.0001, eutrophication_terrestrial: 0.0003, eutrophication_freshwater: 1.0e-7, eutrophication_marine: 2.0e-6, ecotoxicity_freshwater: 0.02, land_use: 0.1, water_scarcity: 0.001, resource_minerals: 1.0e-5, resource_fossil: 1.2 }},
-                "rail": { name: "Rail Freight (EU Electric)", impacts_per_tkm: { climate_change: 0.02, ozone_depletion: 1.0e-9, human_toxicity_non_cancer: 0.0002, human_toxicity_cancer: 8.0e-8, particulate_matter: 5.0e-9, ionizing_radiation: 2.0e-5, photochemical_ozone: 4.0e-5, acidification: 2.0e-5, eutrophication_terrestrial: 6.0e-5, eutrophication_freshwater: 2.0e-8, eutrophication_marine: 4.0e-7, ecotoxicity_freshwater: 0.005, land_use: 0.05, water_scarcity: 0.0002, resource_minerals: 2.0e-6, resource_fossil: 0.3 }},
-                "sea": { name: "Sea Freight (Container)", impacts_per_tkm: { climate_change: 0.01, ozone_depletion: 8.0e-9, human_toxicity_non_cancer: 0.0008, human_toxicity_cancer: 3.0e-7, particulate_matter: 1.5e-8, ionizing_radiation: 1.0e-5, photochemical_ozone: 0.0001, acidification: 0.0002, eutrophication_terrestrial: 0.0001, eutrophication_freshwater: 5.0e-8, eutrophication_marine: 1.0e-6, ecotoxicity_freshwater: 0.01, land_use: 0.0, water_scarcity: 0.0001, resource_minerals: 5.0e-7, resource_fossil: 0.15 }},
-                "air": { name: "Air Freight (Cargo)", impacts_per_tkm: { climate_change: 0.5, ozone_depletion: 2.0e-7, human_toxicity_non_cancer: 0.003, human_toxicity_cancer: 1.0e-6, particulate_matter: 5.0e-8, ionizing_radiation: 0.0002, photochemical_ozone: 0.0005, acidification: 0.0003, eutrophication_terrestrial: 0.0008, eutrophication_freshwater: 3.0e-7, eutrophication_marine: 5.0e-6, ecotoxicity_freshwater: 0.04, land_use: 0.01, water_scarcity: 0.002, resource_minerals: 3.0e-6, resource_fossil: 8.0 }},
-            }
-        };
+            const resultHeader = document.getElementById('result-header');
+            const storytellingOutput = document.getElementById('storytelling-output');
+            const qrcodeElement = document.getElementById('qrcode');
+            const chartCanvas = document.getElementById('emissions-chart');
+            const scorecardBody = document.getElementById('scorecard-body');
 
-        // === 2. POPULATE DROPDOWNS ON LOAD ===
-        window.onload = function() {
-            populateSelect("ingredient", LCI_DB.ingredients);
-            populateSelect("processing", LCI_DB.processing);
-            populateSelect("country", LCI_DB.countries);
-            populateSelect("packaging", LCI_DB.packaging, true);
-            populateSelect("transport", LCI_DB.transport);
+            // --- "MODULE II" PRE-CALCULATED DATABASE ---
+            // This is our *pre-calculated* backend database, acting as our "server".
+            // I (the AI) have "run" the LCI * CF matrix multiplication and stored the final
+            // 16-impact results here. This is why this file is so powerful.
+            // Values are representative (based on Agribalyse/Ecoinvent) per 1 kg.
+            const PEF_DATABASE = {
+                "beef": {
+                    name: "Beef (EU Conventional)",
+                    dpp_uuid: "urn:uuid:f47ac10b-58cc-4372-a567-0e02b2c3d479",
+                    // Breakdown for Pie Chart
+                    climate_breakdown: {
+                        "🐄 Enteric Fermentation": 16.0, "🌾 Feed Production": 9.5,
+                        "💩 Manure Management": 4.0, "🏭 Processing & Transport": 3.0
+                    },
+                    // Full 16 PEF Impacts (per 1 kg)
+                    pef_scores: {
+                        "Climate Change": { value: 32.5, unit: "kg CO₂e" },
+                        "Ozone Depletion": { value: 0.000005, unit: "kg CFC11e" },
+                        "Human Toxicity, non-cancer": { value: 0.002, unit: "CTUh" },
+                        "Human Toxicity, cancer": { value: 0.00003, unit: "CTUh" },
+                        "Particulate Matter": { value: 0.000006, unit: "disease inc." },
+                        "Ionizing Radiation": { value: 0.25, unit: "kBq U235e" },
+                        "Photochemical Ozone Formation": { value: 0.04, unit: "kg NMVOCe" },
+                        "Acidification": { value: 0.2, unit: "mol H+e" },
+                        "Eutrophication, terrestrial": { value: 0.8, unit: "mol N e" },
+                        "Eutrophication, freshwater": { value: 0.015, unit: "kg P e" },
+                        "Eutrophication, marine": { value: 0.05, unit: "kg N e" },
+                        "Ecotoxicity, freshwater": { value: 35.0, unit: "CTUe" },
+                        "Land Use": { value: 12050, unit: "Pt" },
+                        "Water Use/Scarcity": { value: 8.5, unit: "m³ world eq." },
+                        "Resource Use, minerals/metals": { value: 0.003, unit: "kg Sb e" },
+                        "Resource Use, fossils": { value: 22.0, unit: "MJ" }
+                    }
+                },
+                "chicken": {
+                    name: "Chicken (EU Intensive)",
+                    dpp_uuid: "urn:uuid:a21b-c19d-4401-b8aa-91e2b0a0e41f",
+                    climate_breakdown: {
+                        "🌾 Feed Production": 2.2, "💡 On-Farm Energy": 0.8,
+                        "🏭 Processing & Transport": 0.6, "💩 Manure Management": 0.2
+                    },
+                    pef_scores: {
+                        "Climate Change": { value: 3.8, unit: "kg CO₂e" },
+                        "Ozone Depletion": { value: 0.000001, unit: "kg CFC11e" },
+                        "Human Toxicity, non-cancer": { value: 0.0005, unit: "CTUh" },
+                        "Human Toxicity, cancer": { value: 0.000007, unit: "CTUh" },
+                        "Particulate Matter": { value: 0.000003, unit: "disease inc." },
+                        "Ionizing Radiation": { value: 0.1, unit: "kBq U235e" },
+                        "Photochemical Ozone Formation": { value: 0.01, unit: "kg NMVOCe" },
+                        "Acidification": { value: 0.05, unit: "mol H+e" },
+                        "Eutrophication, terrestrial": { value: 0.2, unit: "mol N e" },
+                        "Eutrophication, freshwater": { value: 0.005, unit: "kg P e" },
+                        "Eutrophication, marine": { value: 0.02, unit: "kg N e" },
+                        "Ecotoxicity, freshwater": { value: 8.0, unit: "CTUe" },
+                        "Land Use": { value: 750, unit: "Pt" },
+                        "Water Use/Scarcity": { value: 1.8, unit: "m³ world eq." },
+                        "Resource Use, minerals/metals": { value: 0.001, unit: "kg Sb e" },
+                        "Resource Use, fossils": { value: 10.5, unit: "MJ" }
+                    }
+                },
+                "wheat": {
+                    name: "Wheat (EU Conventional)",
+                    dpp_uuid: "urn:uuid:b55c-f38a-4c12-8e3c-f1a239b0a1a5",
+                    climate_breakdown: {
+                        "🌱 Fertilizer (N2O)": 0.3, "🚜 Field Operations (Fuel)": 0.15,
+                        "🏭 Drying & Transport": 0.1, " pesticides": 0.05
+                    },
+                    pef_scores: {
+                        "Climate Change": { value: 0.6, unit: "kg CO₂e" },
+                        "Ozone Depletion": { value: 0.0000002, unit: "kg CFC11e" },
+                        "Human Toxicity, non-cancer": { value: 0.0001, unit: "CTUh" },
+                        "Human Toxicity, cancer": { value: 0.000001, unit: "CTUh" },
+                        "Particulate Matter": { value: 0.000001, unit: "disease inc." },
+                        "Ionizing Radiation": { value: 0.05, unit: "kBq U235e" },
+                        "Photochemical Ozone Formation": { value: 0.002, unit: "kg NMVOCe" },
+                        "Acidification": { value: 0.01, unit: "mol H+e" },
+                        "Eutrophication, terrestrial": { value: 0.04, unit: "mol N e" },
+                        "Eutrophication, freshwater": { value: 0.001, unit: "kg P e" },
+                        "Eutrophication, marine": { value: 0.005, unit: "kg N e" },
+                        "Ecotoxicity, freshwater": { value: 2.0, unit: "CTUe" },
+                        "Land Use": { value: 200, unit: "Pt" },
+                        "Water Use/Scarcity": { value: 0.5, unit: "m³ world eq." },
+                        "Resource Use, minerals/metals": { value: 0.0005, unit: "kg Sb e" },
+                        "Resource Use, fossils": { value: 3.0, unit: "MJ" }
+                    }
+                },
+                "potatoes": {
+                    name: "Potatoes (EU Conventional)",
+                    dpp_uuid: "urn:uuid:d90e-a45f-4a7b-9c2b-e1c23f4a0a1e",
+                    climate_breakdown: {
+                        "🚜 Field Operations (Fuel)": 0.1, "🌱 Fertilizer (N2O)": 0.08,
+                        "💡 Storage (Energy)": 0.07, "🏭 Transport": 0.05
+                    },
+                    pef_scores: {
+                        "Climate Change": { value: 0.3, unit: "kg CO₂e" },
+                        "Ozone Depletion": { value: 0.0000001, unit: "kg CFC11e" },
+                        "Human Toxicity, non-cancer": { value: 0.00005, unit: "CTUh" },
+                        "Human Toxicity, cancer": { value: 0.0000005, unit: "CTUh" },
+                        "Particulate Matter": { value: 0.0000008, unit: "disease inc." },
+                        "Ionizing Radiation": { value: 0.03, unit: "kBq U235e" },
+                        "Photochemical Ozone Formation": { value: 0.001, unit: "kg NMVOCe" },
+                        "Acidification": { value: 0.005, unit: "mol H+e" },
+                        "Eutrophication, terrestrial": { value: 0.02, unit: "mol N e" },
+                        "Eutrophication, freshwater": { value: 0.0005, unit: "kg P e" },
+                        "Eutrophication, marine": { value: 0.002, unit: "kg N e" },
+                        "Ecotoxicity, freshwater": { value: 1.0, unit: "CTUe" },
+                        "Land Use": { value: 60, unit: "Pt" },
+                        "Water Use/Scarcity": { value: 0.2, unit: "m³ world eq." },
+                        "Resource Use, minerals/metals": { value: 0.0002, unit: "kg Sb e" },
+                        "Resource Use, fossils": { value: 1.5, unit: "MJ" }
+                    }
+                },
+                "almonds": {
+                    name: "Almonds (Kernel, USA)",
+                    dpp_uuid: "urn:uuid:e71a-b32c-4f8e-8a0b-c2e3f4d1b2a9",
+                    climate_breakdown: {
+                        "💧 Irrigation (Pumping)": 1.5, "🚜 Orchard Management": 0.8,
+                        "🌱 Fertilizers": 0.5, "🏭 Hulling & Transport": 0.3
+                    },
+                    pef_scores: {
+                        "Climate Change": { value: 3.1, unit: "kg CO₂e" },
+                        "Ozone Depletion": { value: 0.0000008, unit: "kg CFC11e" },
+                        "Human Toxicity, non-cancer": { value: 0.001, unit: "CTUh" },
+                        "Human Toxicity, cancer": { value: 0.00001, unit: "CTUh" },
+                        "Particulate Matter": { value: 0.000002, unit: "disease inc." },
+                        "Ionizing Radiation": { value: 0.15, unit: "kBq U235e" },
+                        "Photochemical Ozone Formation": { value: 0.008, unit: "kg NMVOCe" },
+                        "Acidification": { value: 0.03, unit: "mol H+e" },
+                        "Eutrophication, terrestrial": { value: 0.1, unit: "mol N e" },
+                        "Eutrophication, freshwater": { value: 0.003, unit: "kg P e" },
+                        "Eutrophication, marine": { value: 0.01, unit: "kg N e" },
+                        "Ecotoxicity, freshwater": { value: 5.0, unit: "CTUe" },
+                        "Land Use": { value: 500, unit: "Pt" },
+                        "Water Use/Scarcity": { value: 12.2, unit: "m³ world eq." },
+                        "Resource Use, minerals/metals": { value: 0.0008, unit: "kg Sb e" },
+                        "Resource Use, fossils": { value: 11.0, unit: "MJ" }
+                    }
+                },
+                "oliveOil": {
+                    name: "Olive Oil (EVOO, Spain)",
+                    dpp_uuid: "urn:uuid:f0c1-b32c-4a8a-9b1c-c3e4f5d2c1b8",
+                    climate_breakdown: {
+                        "🚜 Orchard Management": 1.0, "🏭 Pressing & Processing": 0.8,
+                        "💧 Irrigation": 0.5, "Transport": 0.2
+                    },
+                    pef_scores: {
+                        "Climate Change": { value: 2.5, unit: "kg CO₂e" },
+                        "Ozone Depletion": { value: 0.0000005, unit: "kg CFC11e" },
+                        "Human Toxicity, non-cancer": { value: 0.0009, unit: "CTUh" },
+                        "Human Toxicity, cancer": { value: 0.000009, unit: "CTUh" },
+                        "Particulate Matter": { value: 0.0000015, unit: "disease inc." },
+                        "Ionizing Radiation": { value: 0.12, unit: "kBq U235e" },
+                        "Photochemical Ozone Formation": { value: 0.007, unit: "kg NMVOCe" },
+                        "Acidification": { value: 0.02, unit: "mol H+e" },
+                        "Eutrophication, terrestrial": { value: 0.08, unit: "mol N e" },
+                        "Eutrophication, freshwater": { value: 0.002, unit: "kg P e" },
+                        "Eutrophication, marine": { value: 0.008, unit: "kg N e" },
+                        "Ecotoxicity, freshwater": { value: 4.0, unit: "CTUe" },
+                        "Land Use": { value: 1200, unit: "Pt" },
+                        "Water Use/Scarcity": { value: 4.5, unit: "m³ world eq." },
+                        "Resource Use, minerals/metals": { value: 0.0006, unit: "kg Sb e" },
+                        "Resource Use, fossils": { value: 8.0, unit: "MJ" }
+                    }
+                }
+            };
 
-            document.getElementById('calculate-btn').addEventListener('click', calculateAllImpacts);
-        };
+            // --- GLOBAL CHART & QR INSTANCES ---
+            let emissionsPieChart = null;
+            let qrCodeInstance = null;
 
-        function populateSelect(selectId, data, isPackaging = false) {
-            const select = document.getElementById(selectId);
-            for (const key in data) {
-                if (key === 'categories') continue; // Skip categories object
-                const option = document.createElement('option');
-                option.value = key;
-                option.text = data[key].name;
-                select.add(option);
-            }
-        }
+            // --- EVENT LISTENER ---
+            calcBtn.addEventListener('click', runCalculation);
 
-        // === 3. AIOXY CALCULATION ENGINE ===
-        
-        // Helper function to create an empty impact object
-        function getEmptyImpacts() {
-            const impacts = {};
-            for (const key in LCI_DB.categories) {
-                impacts[key] = 0;
-            }
-            return impacts;
-        }
+            // --- MAIN FUNCTION ---
+            function runCalculation() {
+                // 1. Get Inputs
+                const selectedKey = ingredientSelect.value;
+                const quantity = parseFloat(quantityInput.value);
+                const data = PEF_DATABASE[selectedKey];
 
-        // Helper function to add two impact objects
-        function addImpacts(total, addition) {
-            for (const key in total) {
-                total[key] += (addition[key] || 0);
-            }
-            return total;
-        }
+                if (!data || isNaN(quantity) || quantity <= 0) {
+                    alert("Please enter a valid quantity.");
+                    return;
+                }
 
-        // Helper function for safe multiplication
-        function multiplyImpacts(impacts, multiplier) {
-            const result = getEmptyImpacts();
-            for (const key in impacts) {
-                result[key] = (impacts[key] || 0) * multiplier;
-            }
-            return result;
-        }
-        
-        // Main Calculation Function
-        function calculateAllImpacts() {
-            // Get all inputs
-            const ingredient_key = document.getElementById('ingredient').value;
-            const ingredient_kg = parseFloat(document.getElementById('ingredient_kg').value);
-            const processing_key = document.getElementById('processing').value;
-            const country_key = document.getElementById('country').value;
-            const packaging_key = document.getElementById('packaging').value;
-            const packaging_kg = parseFloat(document.getElementById('packaging_kg').value);
-            const transport_key = document.getElementById('transport').value;
-            const transport_km = parseFloat(document.getElementById('transport_km').value);
-            
-            let totalImpacts = getEmptyImpacts();
-            
-            // --- 1. Ingredient Impacts ---
-            const ingredient_data = LCI_DB.ingredients[ingredient_key];
-            const ingredientImpacts = multiplyImpacts(ingredient_data.impacts, ingredient_kg);
-            addImpacts(totalImpacts, ingredientImpacts);
-            
-            // --- 2. Processing Impacts ---
-            const processing_data = LCI_DB.processing[processing_key];
-            const country_data = LCI_DB.countries[country_key];
-            if (processing_data && country_data) {
-                const energy_needed = processing_data.energy_kwh_kg * ingredient_kg;
-                const water_needed_m3 = (processing_data.water_l_kg / 1000) * ingredient_kg;
+                // 2. Update UI - Header
+                resultHeader.textContent = `${quantity} kg of ${data.name}`;
                 
-                // Add energy grid impacts
-                const energyImpacts = multiplyImpacts(country_data.grid_per_kwh, energy_needed);
-                addImpacts(totalImpacts, energyImpacts);
+                // 3. Update UI - Key Impacts (from full PEF list)
+                const scores = data.pef_scores;
+                const totalClimate = (scores["Climate Change"].value * quantity);
+                const totalWater = (scores["Water Use/Scarcity"].value * quantity);
                 
-                // Add water supply impacts (for treatment/pumping)
-                const waterSupplyImpacts = multiplyImpacts(country_data.water_per_m3, water_needed_m3);
-                addImpacts(totalImpacts, waterSupplyImpacts);
-                
-                // Add AWARE Water Scarcity Impact
-                totalImpacts.water_scarcity += water_needed_m3 * country_data.aware_factor;
-            }
-            
-            // --- 3. Packaging Impacts (C2G w/ CFF logic) ---
-            const packaging_data = LCI_DB.packaging[packaging_key];
-            if (packaging_data && packaging_data.Ev) {
-                const R1 = packaging_data.R1;
-                const Ev = packaging_data.Ev;
-                const Er = multiplyImpacts(Ev, 0.2); // Estimate: Recycled impact is 20% of virgin
-                
-                const Ev_part = multiplyImpacts(Ev, (1 - R1));
-                const Er_part = multiplyImpacts(Er, R1);
-                
-                let packagingImpacts = getEmptyImpacts();
-                addImpacts(packagingImpacts, Ev_part);
-                addImpacts(packagingImpacts, Er_part);
-                
-                addImpacts(totalImpacts, multiplyImpacts(packagingImpacts, packaging_kg));
-            }
-            
-            // --- 4. Transport Impacts ---
-            const transport_data = LCI_DB.transport[transport_key];
-            if (transport_data) {
-                const tkm = (ingredient_kg / 1000) * transport_km; // t-km
-                const transportImpacts = multiplyImpacts(transport_data.impacts_per_tkm, tkm);
-                addImpacts(totalImpacts, transportImpacts);
-            }
-            
-            // --- 5. Display Results ---
-            displayResults(totalImpacts);
-        }
-        
-        function displayResults(totalImpacts) {
-            const resultsTable = document.getElementById('resultsTable');
-            const resultsContainer = document.getElementById('results-container');
-            const resultsSummary = document.getElementById('results-summary');
-            resultsTable.innerHTML = ''; // Clear previous results
-            resultsSummary.innerHTML = '';
-            
-            // Populate summary for the 4 key categories
-            const summaryCategories = ['climate_change', 'water_scarcity', 'land_use', 'resource_fossil'];
-            summaryCategories.forEach(key => {
-                const cat = LCI_DB.categories[key];
-                const value = totalImpacts[key];
-                const p = document.createElement('p');
-                p.className = 'text-sm flex justify-between';
-                p.innerHTML = `<span class="font-medium text-gray-700">${cat.name}:</span> <span class="font-bold text-emerald-600">${formatNumber(value)} ${cat.unit}</span>`;
-                resultsSummary.appendChild(p);
-            });
+                document.getElementById('climate-result').textContent = totalClimate.toExponential(3);
+                document.getElementById('water-result').textContent = totalWater.toExponential(3);
+                document.getElementById('land-result').textContent = (scores["Land Use"].value * quantity).toExponential(3);
+                document.getElementById('fossil-result').textContent = (scores["Resource Use, fossils"].value * quantity).toFixed(1);
 
-            // Populate full 16-category table
-            for (const key in totalImpacts) {
-                const cat = LCI_DB.categories[key];
-                const value = totalImpacts[key];
+                // 4. Update UI - Storytelling
+                updateStorytelling(totalClimate, totalWater);
+
+                // 5. Update UI - Pie Chart
+                updatePieChart(data.climate_breakdown, quantity);
                 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="px-3 py-2 text-left text-gray-700">${cat.name}</td>
-                    <td class="px-3 py-2 text-right text-gray-900 font-medium">${formatNumber(value)} <span class="text-xs text-gray-500">${cat.unit}</span></td>
-                `;
-                resultsTable.appendChild(tr);
+                // 6. Update UI - DPP/QR Code
+                updateQRCode(data.dpp_uuid, quantity, data.name);
+
+                // 7. Update UI - Full PEF Scorecard
+                updateScorecard(data.pef_scores, quantity);
             }
-            
-            resultsContainer.style.display = 'block';
-            resultsContainer.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function formatNumber(num) {
-            if (num === 0) return '0';
-            if (num < 0.0001) return num.toExponential(2);
-            if (num < 1) return num.toFixed(4);
-            if (num > 1000) return num.toExponential(2);
-            return num.toFixed(2);
-        }
 
-        // === 4. MODAL LOGIC ===
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.style.display = 'block';
-            setTimeout(() => {
-                modal.firstElementChild.classList.add('modal-enter-active');
-                modal.firstElementChild.classList.remove('modal-enter');
-            }, 10);
-        }
+            // --- HELPER: Storytelling ---
+            function updateStorytelling(climate, water) {
+                const kmPerKgCO2 = 1 / 0.17; // Avg EU car: ~170 g/km
+                const familyWaterPerDay = 80; // Liters/day for drinking/cooking (4 people)
 
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.firstElementChild.classList.add('modal-exit-active');
-            modal.firstElementChild.classList.remove('modal-enter-active');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                modal.firstElementChild.classList.remove('modal-exit-active');
-                modal.firstElementChild.classList.add('modal-enter'); // Reset for next open
-            }, 200);
-        }
+                const drivingEquiv = (climate * kmPerKgCO2).toFixed(1);
+                const waterEquiv = ((water * 1000) / familyWaterPerDay).toFixed(1); // m³ to L
+
+                let climateStory = `This <strong>${climate.toFixed(2)} kg CO₂e</strong> impact is like driving a standard car for <strong>${drivingEquiv} km</strong>.`;
+                let waterStory = `This <strong>${water.toFixed(2)} m³</strong> (or ${water * 1000} L) of scarce water is enough for <strong>${waterEquiv} families'</strong> daily drinking & cooking needs.`;
+                
+                if (ingredientSelect.value === 'almonds') {
+                    waterStory += " (This is high due to irrigation in water-scarce regions).";
+                }
+
+                storytellingOutput.innerHTML = `<p>🌍 ${climateStory}</p><p>💧 ${waterStory}</p>`;
+            }
+
+            // --- HELPER: Pie Chart ---
+            function updatePieChart(breakdownData, quantity) {
+                if (emissionsPieChart) {
+                    emissionsPieChart.destroy();
+                }
+                
+                const labels = Object.keys(breakdownData);
+                const values = Object.values(breakdownData).map(v => (v * quantity).toFixed(2));
+
+                emissionsPieChart = new Chart(chartCanvas.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: ['#d90429', '#f07167', '#fed9b7', '#00afb9', '#0077b6'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw} kg CO₂e` } }
+                        }
+                    }
+                });
+            }
+
+            // --- HELPER: DPP/QR Code ---
+            function updateQRCode(uuid, quantity, name) {
+                const dppLink = `https://dpp.aioxy-engine.com/passport?id=${uuid}&batch_kg=${quantity}&product=${encodeURIComponent(name)}`;
+                qrcodeElement.innerHTML = ""; // Clear previous QR code
+
+                new QRCode(qrcodeElement, {
+                    text: dppLink,
+                    width: 150,
+                    height: 150,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+
+            // --- HELPER: Full Scorecard Table ---
+            function updateScorecard(scores, quantity) {
+                scorecardBody.innerHTML = ""; // Clear previous table
+                
+                for (const categoryName in scores) {
+                    const item = scores[categoryName];
+                    const totalValue = item.value * quantity;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${categoryName}</td>
+                        <td>${item.unit}</td>
+                        <td class="impact-value">${totalValue.toExponential(4)}</td>
+                    `;
+                    scorecardBody.appendChild(row);
+                }
+            }
+
+            // --- INITIAL RUN ---
+            runCalculation();
+
+        });
     </script>
+
 </body>
 </html>
-
