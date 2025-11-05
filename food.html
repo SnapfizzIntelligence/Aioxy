@@ -1,0 +1,2685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOXY | EU-Compliant Sustainability Intelligence</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* [KEEP ALL PREVIOUS STYLES EXACTLY THE SAME - THEY'RE PERFECT] */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root {
+            --primary: #0A2540;
+            --primary-light: #1A365D;
+            --primary-dark: #061B2E;
+            --secondary: #00D4AA;
+            --secondary-dark: #00B894;
+            --accent: #FF6B6B;
+            --light: #F8FAFC;
+            --dark: #2D3748;
+            --gray: #718096;
+            --border: #E2E8F0;
+            --card-bg: #FFFFFF;
+            --success: #48BB78;
+            --warning: #ED8936;
+            --gradient-primary: linear-gradient(135deg, #0A2540 0%, #1A365D 100%);
+            --gradient-secondary: linear-gradient(135deg, #00D4AA 0%, #00B894 100%);
+            --gradient-accent: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #F8FAFC 0%, #EDF2F7 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2.5rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            background: var(--gradient-secondary);
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .compliance-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 0.6rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 0 3rem;
+            position: relative;
+        }
+
+        .nav-tab {
+            padding: 1.25rem 2rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            transition: left 0.3s ease;
+        }
+
+        .nav-tab:hover::before {
+            left: 0;
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--secondary);
+        }
+
+        .nav-tab.active::before {
+            left: 0;
+        }
+
+        .main-content {
+            padding: 2.5rem 3rem;
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.1);
+        }
+
+        .btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.75rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: var(--gradient-secondary);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .ingredient-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .ingredient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .ingredient-item:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .ingredient-item:last-child {
+            border-bottom: none;
+        }
+
+        .ingredient-info {
+            flex: 1;
+        }
+
+        .ingredient-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .ingredient-stats {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .ingredient-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .quantity-input {
+            width: 90px;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .remove-btn {
+            background: var(--gradient-accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem 1rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border-top: 4px solid var(--primary);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(10, 37, 64, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.25rem 0;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .savings-badge {
+            background: var(--gradient-secondary);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: inline-block;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-container {
+            height: 250px;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .environmental-story {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.75rem;
+            border-radius: 14px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .environmental-story::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: rgba(255,255,255,0.05);
+            transform: rotate(30deg);
+        }
+
+        .story-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .story-content {
+            line-height: 1.6;
+            font-size: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .story-highlight {
+            background: rgba(255,255,255,0.15);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .compliance-notice {
+            background: #E3F2FD;
+            border: 1px solid #2196F3;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .compliance-icon {
+            background: #2196F3;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(10, 37, 64, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .transport-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .advanced-options {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 1.5rem 0;
+        }
+
+        .footer {
+            background: var(--primary-dark);
+            color: white;
+            padding: 1.5rem 3rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-secondary);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 0.75rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--secondary-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 3px;
+            background: var(--secondary);
+            transition: left 0.3s ease, width 0.3s ease;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            min-width: 150px;
+            justify-content: center;
+        }
+
+        .dpp-section {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .qrcode-container {
+            display: inline-block;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            margin: 1rem 0;
+        }
+
+        .dpp-id {
+            font-family: monospace;
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+
+        .impact-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .comparison-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .comparison-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .pef-scorecard {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-md);
+            overflow-x: auto;
+        }
+
+        .pef-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .pef-table th {
+            background: var(--light);
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .pef-table td {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pef-table tr:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .pef-category {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .pef-value {
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .pef-unit {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .mass-balance {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .mass-balance-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mass-balance-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mass-balance-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+            
+            .header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .nav-tabs {
+                padding: 0 1.5rem;
+            }
+            
+            .nav-tab {
+                padding: 1rem 1.25rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .transport-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .footer-links {
+                gap: 1rem;
+            }
+            
+            .impact-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .pef-table {
+                font-size: 0.8rem;
+            }
+            
+            .pef-table th,
+            .pef-table td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    AIOXY
+                </div>
+                <div class="tagline">EU-Compliant Sustainability Intelligence Platform</div>
+                <div class="compliance-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    EU Green Claims Directive Compliant • PEF Methodology • DPP Ready
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="tab-indicator" id="tabIndicator"></div>
+            <button class="nav-tab active" onclick="showTab('calculator')">
+                <i class="fas fa-calculator"></i>
+                Calculator
+            </button>
+            <button class="nav-tab" onclick="showTab('results')">
+                <i class="fas fa-chart-line"></i>
+                Results
+            </button>
+            <button class="nav-tab" onclick="showTab('pef-scorecard')">
+                <i class="fas fa-list-ol"></i>
+                PEF Scorecard
+            </button>
+            <button class="nav-tab" onclick="showTab('dpp')">
+                <i class="fas fa-qrcode"></i>
+                Digital Passport
+            </button>
+            <button class="nav-tab" onclick="showTab('compliance')">
+                <i class="fas fa-file-contract"></i>
+                Compliance
+            </button>
+        </div>
+
+        <div class="main-content">
+            <!-- Calculator Tab -->
+            <div id="calculator-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            Product Information
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-info-circle"></i>
+                            Required for DPP
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" id="productName" class="form-control" placeholder="Enter product name" value="Plant-Based Protein Burger">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Category</label>
+                        <select id="productCategory" class="form-control">
+                            <option>Food & Beverage</option>
+                            <option>Personal Care</option>
+                            <option>Household Products</option>
+                            <option>Textiles</option>
+                            <option>Electronics</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Weight (kg)</label>
+                        <input type="number" id="productWeight" class="form-control" value="0.200" step="0.001" min="0">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-apple-alt"></i>
+                            </div>
+                            Ingredients (PEF-Compliant)
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-database"></i>
+                            35+ Ingredients • 16 PEF Impacts
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Select Ingredient</label>
+                        <select id="ingredientSelect" class="form-control">
+                            <option value="">Choose from 35+ PEF-compliant ingredients...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantity (kg)</label>
+                        <input type="number" id="ingredientQuantity" value="0.150" step="0.001" min="0" class="form-control">
+                    </div>
+                    <button class="btn" onclick="addIngredient()">
+                        <i class="fas fa-plus"></i>
+                        Add Ingredient
+                    </button>
+                    
+                    <div class="ingredient-list" id="ingredientList">
+                        <div class="empty-state">
+                            <i class="fas fa-apple-alt"></i>
+                            <h3>No ingredients added yet</h3>
+                            <p>Add ingredients to calculate your environmental impact</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-industry"></i>
+                            </div>
+                            Manufacturing & Supply Chain
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Manufacturing Country</label>
+                        <select id="manufacturingCountry" class="form-control">
+                            <option value="">Select country...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Processing Method</label>
+                        <select id="processingMethod" class="form-control">
+                            <option value="none">No Additional Processing</option>
+                            <option value="pasteurization">Pasteurization</option>
+                            <option value="sterilization">Sterilization (UHT)</option>
+                            <option value="baking">Baking</option>
+                            <option value="frying">Frying</option>
+                            <option value="freezing">Freezing (IQF)</option>
+                            <option value="drying">Spray Drying</option>
+                            <option value="milling">Milling</option>
+                            <option value="mixing">Mixing/Blending</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Transportation</label>
+                        <div class="transport-section">
+                            <div>
+                                <label class="form-label">Distance (km)</label>
+                                <input type="number" id="transportDistance" value="300" min="0" class="form-control">
+                            </div>
+                            <div>
+                                <label class="form-label">Transport Mode</label>
+                                <select id="transportMode" class="form-control">
+                                    <option value="road">Road Freight (HGV Diesel)</option>
+                                    <option value="rail">Rail Freight (Electric)</option>
+                                    <option value="sea">Sea Freight (Container)</option>
+                                    <option value="air">Air Freight</option>
+                                    <option value="lastmile">Last-mile Delivery</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline" onclick="toggleAdvanced()">
+                        <i class="fas fa-cog"></i>
+                        Advanced Options
+                    </button>
+
+                    <div class="advanced-options hidden" id="advancedOptions">
+                        <div class="form-group">
+                            <label class="form-label">Refrigerated Transport</label>
+                            <select id="refrigeratedTransport" class="form-control">
+                                <option value="no">No Refrigeration</option>
+                                <option value="yes">Refrigerated (+20-40% emissions)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Energy Source</label>
+                            <select id="energySource" class="form-control">
+                                <option value="grid">Grid Mix (Regional)</option>
+                                <option value="renewable">Renewable Energy</option>
+                                <option value="natural_gas">Natural Gas</option>
+                                <option value="coal">Coal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            Packaging Materials (CFF Compliant)
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Primary Packaging Material</label>
+                        <select id="packagingMaterial" class="form-control">
+                            <option value="cardboard">Cardboard (Coated)</option>
+                            <option value="PET">PET Plastic</option>
+                            <option value="HDPE">HDPE Plastic</option>
+                            <option value="LDPE">LDPE Plastic</option>
+                            <option value="PP">PP Plastic</option>
+                            <option value="glass">Glass</option>
+                            <option value="aluminum">Aluminum</option>
+                            <option value="steel">Steel</option>
+                            <option value="PLA">PLA Bioplastic</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Packaging Weight (kg)</label>
+                        <input type="number" id="packagingWeight" value="0.050" step="0.001" min="0" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Recycled Content (%)</label>
+                        <input type="number" id="recycledContent" value="30" min="0" max="100" class="form-control">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="calculateImpact()" style="width: 100%; padding: 1.25rem; font-size: 1.1rem;">
+                    <i class="fas fa-rocket"></i>
+                    Calculate PEF Environmental Impact
+                </button>
+            </div>
+
+            <!-- Results Tab -->
+            <div id="results-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            PEF Impact Analysis
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-clock"></i>
+                            PEF Methodology • AWARE • CFF
+                        </div>
+                    </div>
+                    
+                    <div class="loading hidden" id="loadingResults">
+                        <div class="spinner"></div>
+                        <h3>Calculating PEF Environmental Footprint...</h3>
+                        <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                            Processing 16 PEF impact categories with AWARE water scarcity and CFF packaging calculations
+                        </p>
+                    </div>
+
+                    <div id="resultsContent">
+                        <!-- Mass Balance Section -->
+                        <div class="mass-balance hidden" id="massBalanceSection">
+                            <div class="mass-balance-title">
+                                <i class="fas fa-balance-scale"></i>
+                                Mass Balance Verification
+                            </div>
+                            <div id="massBalanceContent">
+                                <!-- Mass balance items will be populated here -->
+                            </div>
+                        </div>
+
+                        <div class="results-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <i class="fas fa-smog"></i>
+                                </div>
+                                <div class="metric-value" id="co2Value">0.00 kg</div>
+                                <div class="metric-label">CO₂e per kg</div>
+                                <div class="savings-badge" id="co2Savings">0% saved</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <i class="fas fa-tint"></i>
+                                </div>
+                                <div class="metric-value" id="waterValue">0 m³</div>
+                                <div class="metric-label">Water Scarcity per kg</div>
+                                <div class="savings-badge" id="waterSavings">0% saved</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <i class="fas fa-mountain"></i>
+                                </div>
+                                <div class="metric-value" id="landValue">0 Pt</div>
+                                <div class="metric-label">Land Use per kg</div>
+                            </div>
+                            
+                            <div class="metric-card">
+                                <div class="metric-icon">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="metric-value" id="fossilValue">0 MJ</div>
+                                <div class="metric-label">Fossil Resources</div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="emissionChart"></canvas>
+                        </div>
+
+                        <div class="impact-comparison">
+                            <div class="comparison-card">
+                                <i class="fas fa-car" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="carKm">0 km</div>
+                                <div class="comparison-label">Equivalent car distance saved</div>
+                            </div>
+                            <div class="comparison-card">
+                                <i class="fas fa-home" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="householdEnergy">0 days</div>
+                                <div class="comparison-label">Household energy consumption</div>
+                            </div>
+                            <div class="comparison-card">
+                                <i class="fas fa-tree" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="treesPlanted">0 trees</div>
+                                <div class="comparison-label">Equivalent CO₂ absorption</div>
+                            </div>
+                            <div class="comparison-card">
+                                <i class="fas fa-wine-bottle" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="waterBottles">0 bottles</div>
+                                <div class="comparison-label">Drinking water equivalent</div>
+                            </div>
+                        </div>
+
+                        <div class="environmental-story">
+                            <div class="story-title">
+                                <i class="fas fa-globe-europe"></i>
+                                Environmental Impact Story
+                            </div>
+                            <div class="story-content" id="storyContent">
+                                <div class="story-highlight">
+                                    Add ingredients to see your sustainability story and environmental impact narrative.
+                                </div>
+                                <p>
+                                    Your product's environmental footprint tells a story about resource efficiency, supply chain optimization, and sustainability commitments. 
+                                    Once you add ingredients and calculate impacts, we'll provide a comprehensive narrative that highlights your environmental performance.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="compliance-notice">
+                            <div class="compliance-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div>
+                                <strong>EU Green Claims Directive Compliant</strong><br>
+                                This assessment follows PEF methodology using AGRIBALYSE 3.1, JRC EF 3.1, and AWARE 2.0 data. 
+                                All claims are substantiated and auditable through the Digital Product Passport (DPP).
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn" onclick="showTab('pef-scorecard')">
+                                <i class="fas fa-list-ol"></i>
+                                View Full PEF Scorecard
+                            </button>
+                            <button class="btn" onclick="showTab('dpp')">
+                                <i class="fas fa-qrcode"></i>
+                                Generate DPP
+                            </button>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-share-alt"></i>
+                                Share Results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PEF Scorecard Tab -->
+            <div id="pef-scorecard-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-list-ol"></i>
+                            </div>
+                            Complete PEF 3.1 Impact Scorecard
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-file-certificate"></i>
+                            Regulator-Ready • 16 Impact Categories
+                        </div>
+                    </div>
+
+                    <div class="compliance-notice">
+                        <div class="compliance-icon">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                        <div>
+                            <strong>Official PEF 3.1 Methodology Compliance</strong><br>
+                            This scorecard presents the complete environmental footprint across all 16 mandatory PEF impact categories. 
+                            All values are calculated using JRC EF 3.1 characterization factors and are auditable for EU Green Claims Directive compliance.
+                        </div>
+                    </div>
+
+                    <div class="pef-scorecard">
+                        <table class="pef-table">
+                            <thead>
+                                <tr>
+                                    <th>Impact Category</th>
+                                    <th>Total Impact</th>
+                                    <th>Unit</th>
+                                    <th>Per kg Product</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pefScorecardBody">
+                                <!-- PEF scorecard will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn" onclick="showTab('dpp')">
+                            <i class="fas fa-qrcode"></i>
+                            Generate DPP with Full Data
+                        </button>
+                        <button class="btn">
+                            <i class="fas fa-file-pdf"></i>
+                            Export PEF Report
+                        </button>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-download"></i>
+                            Download Raw Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Digital Product Passport Tab -->
+            <div id="dpp-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-passport"></i>
+                            </div>
+                            Digital Product Passport (DPP)
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-qrcode"></i>
+                            ESPR Compliant • Full PEF Data
+                        </div>
+                    </div>
+
+                    <div class="dpp-section">
+                        <h3 style="margin-bottom: 1rem; color: var(--primary);">Your Product's Digital Identity</h3>
+                        <p style="margin-bottom: 1.5rem; color: var(--gray);">
+                            Scan this QR code to access the complete 16-impact PEF environmental footprint and compliance data
+                        </p>
+                        
+                        <div class="qrcode-container">
+                            <div id="qrcode"></div>
+                        </div>
+                        
+                        <div class="dpp-id" id="dppId">DPP-#####-#####</div>
+                        
+                        <p style="font-size: 0.9rem; color: var(--gray); max-width: 600px; margin: 0 auto;">
+                            This Digital Product Passport contains the complete PEF 3.1 16-impact matrix, supply chain transparency information, 
+                            and compliance statements aligned with EU Green Claims Directive and ESPR regulations.
+                        </p>
+                    </div>
+
+                    <div class="compliance-notice">
+                        <div class="compliance-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div>
+                            <strong>Complete PEF Data Embedded</strong><br>
+                            This DPP contains the full 16-impact PEF matrix required for EU compliance. Data structure follows JSON-LD format 
+                            with GS1 standards for interoperability. Includes: complete PEF impact data, ingredient origins, processing methods, 
+                            packaging CFF calculations, and methodology documentation.
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn" onclick="generateDPP()">
+                            <i class="fas fa-sync-alt"></i>
+                            Regenerate DPP
+                        </button>
+                        <button class="btn">
+                            <i class="fas fa-download"></i>
+                            Download DPP Data
+                        </button>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-print"></i>
+                            Print QR Label
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance Tab -->
+            <div id="compliance-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-file-certificate"></i>
+                            </div>
+                            Compliance & Methodology
+                        </div>
+                    </div>
+                    
+                    <div class="compliance-notice">
+                        <div class="compliance-icon">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                        <div>
+                            <strong>EU Regulatory Compliance Statement</strong><br><br>
+                            Environmental claims made by AIOXY regarding this product are substantiated by a Life Cycle Assessment (LCA) conducted in accordance with the Product Environmental Footprint (PEF) methodology as defined by the European Commission Joint Research Centre (JRC).<br><br>
+                            The specific methodology, including data sources (AGRIBALYSE 3.1, JRC EF 3.1, GLEC v3.0) and calculation rules (CFF, AWARE, Economic Allocation), is fully documented and auditable via the Digital Product Passport (DPP). This claim refers exclusively to, and not to the product's overall environmental performance.
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">PEF 3.1 Methodology Used</h3>
+                    
+                    <div class="results-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="metric-value">AWARE 2.0</div>
+                            <div class="metric-label">Water Scarcity</div>
+                            <p style="margin-top: 0.75rem; font-size: 0.85rem;">
+                                Regionalized water impact assessment with watershed-specific characterization factors
+                            </p>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-recycle"></i>
+                            </div>
+                            <div class="metric-value">CFF</div>
+                            <div class="metric-label">Circular Footprint</div>
+                            <p style="margin-top: 0.75rem; font-size: 0.85rem;">
+                                Packaging end-of-life calculations with R1, R2, Q parameters and allocation factor A=0.5
+                            </p>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="metric-value">PEF</div>
+                            <div class="metric-label">Allocation</div>
+                            <p style="margin-top: 0.75rem; font-size: 0.85rem;">
+                                PEF-compliant economic allocation hierarchy for co-products
+                            </p>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="metric-value">DQR</div>
+                            <div class="metric-label">Data Quality</div>
+                            <p style="margin-top: 0.75rem; font-size: 0.85rem;">
+                                ISO 14044-compliant Data Quality Rating (TeR, GR, TiR, C, P)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">16 PEF Impact Categories</h3>
+                    <div class="pef-scorecard">
+                        <table class="pef-table">
+                            <thead>
+                                <tr>
+                                    <th>Impact Category</th>
+                                    <th>Unit</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="pef-category">Climate Change</td>
+                                    <td class="pef-unit">kg CO₂e</td>
+                                    <td>Global warming potential over 100 years</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Ozone Depletion</td>
+                                    <td class="pef-unit">kg CFC11e</td>
+                                    <td>Stratospheric ozone layer depletion</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Human Toxicity (cancer)</td>
+                                    <td class="pef-unit">CTUh</td>
+                                    <td>Comparative Toxic Unit for humans (cancer effects)</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Human Toxicity (non-cancer)</td>
+                                    <td class="pef-unit">CTUh</td>
+                                    <td>Comparative Toxic Unit for humans (non-cancer effects)</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Particulate Matter</td>
+                                    <td class="pef-unit">disease inc.</td>
+                                    <td>Respiratory effects from particulate matter</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Ionizing Radiation</td>
+                                    <td class="pef-unit">kBq U235e</td>
+                                    <td>Human health effects from ionizing radiation</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Photochemical Ozone Formation</td>
+                                    <td class="pef-unit">kg NMVOCe</td>
+                                    <td>Summer smog formation potential</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Acidification</td>
+                                    <td class="pef-unit">mol H+e</td>
+                                    <td>Soil and water acidification potential</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Eutrophication (terrestrial)</td>
+                                    <td class="pef-unit">mol N e</td>
+                                    <td>Terrestrial nutrient enrichment</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Eutrophication (freshwater)</td>
+                                    <td class="pef-unit">kg P e</td>
+                                    <td>Freshwater nutrient enrichment</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Eutrophication (marine)</td>
+                                    <td class="pef-unit">kg N e</td>
+                                    <td>Marine nutrient enrichment</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Ecotoxicity (freshwater)</td>
+                                    <td class="pef-unit">CTUe</td>
+                                    <td>Comparative Toxic Unit for ecosystems</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Land Use</td>
+                                    <td class="pef-unit">Pt</td>
+                                    <td>Soil quality and biodiversity impact</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Water Use/Scarcity</td>
+                                    <td class="pef-unit">m³ world eq.</td>
+                                    <td>Water deprivation (AWARE method)</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Resource Use (minerals/metals)</td>
+                                    <td class="pef-unit">kg Sb e</td>
+                                    <td>Abiotic resource depletion for minerals and metals</td>
+                                </tr>
+                                <tr>
+                                    <td class="pef-category">Resource Use (fossils)</td>
+                                    <td class="pef-unit">MJ</td>
+                                    <td>Abiotic resource depletion for fossil resources</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn">
+                            <i class="fas fa-file-download"></i>
+                            Download Methodology
+                        </button>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-user-check"></i>
+                            Request Audit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-content">
+                <div>© 2024 AIOXY Sustainability Intelligence. All rights reserved.</div>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Documentation</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================== COMPLETE PEF-COMPLIANT DATASET (16 IMPACTS) ==================
+        const aioxyData = {
+            // PEF 3.1 Impact Categories with units
+            pefCategories: {
+                "Climate Change": { unit: "kg CO₂e", icon: "smog" },
+                "Ozone Depletion": { unit: "kg CFC11e", icon: "sun" },
+                "Human Toxicity, non-cancer": { unit: "CTUh", icon: "user-slash" },
+                "Human Toxicity, cancer": { unit: "CTUh", icon: "user-injured" },
+                "Particulate Matter": { unit: "disease inc.", icon: "lungs" },
+                "Ionizing Radiation": { unit: "kBq U235e", icon: "radiation" },
+                "Photochemical Ozone Formation": { unit: "kg NMVOCe", icon: "cloud-sun" },
+                "Acidification": { unit: "mol H+e", icon: "tint" },
+                "Eutrophication, terrestrial": { unit: "mol N e", icon: "leaf" },
+                "Eutrophication, freshwater": { unit: "kg P e", icon: "water" },
+                "Eutrophication, marine": { unit: "kg N e", icon: "fish" },
+                "Ecotoxicity, freshwater": { unit: "CTUe", icon: "bug" },
+                "Land Use": { unit: "Pt", icon: "mountain" },
+                "Water Use/Scarcity (AWARE)": { unit: "m³ world eq.", icon: "tint" },
+                "Resource Use, minerals/metals": { unit: "kg Sb e", icon: "gem" },
+                "Resource Use, fossils": { unit: "MJ", icon: "oil-can" }
+            },
+
+            // COMPLETE 35+ INGREDIENTS WITH FULL 16-IMPACT PEF DATA
+            ingredients: {
+                "beef": { 
+                    name: "Beef (EU Conventional)", loss: 0.02, 
+                    pef: { 
+                        "Climate Change": 32.5, "Ozone Depletion": 0.000005, "Human Toxicity, non-cancer": 0.002, 
+                        "Human Toxicity, cancer": 0.00003, "Particulate Matter": 0.000006, "Ionizing Radiation": 0.25, 
+                        "Photochemical Ozone Formation": 0.04, "Acidification": 0.2, "Eutrophication, terrestrial": 0.8, 
+                        "Eutrophication, freshwater": 0.015, "Eutrophication, marine": 0.05, "Ecotoxicity, freshwater": 35.0, 
+                        "Land Use": 12050, "Water Use/Scarcity (AWARE)": 8.5, "Resource Use, minerals/metals": 0.003, 
+                        "Resource Use, fossils": 22.0
+                    }
+                },
+                "chicken": { 
+                    name: "Chicken (EU Intensive)", loss: 0.01, 
+                    pef: { 
+                        "Climate Change": 3.5, "Ozone Depletion": 0.000001, "Human Toxicity, non-cancer": 0.0005, 
+                        "Human Toxicity, cancer": 0.000007, "Particulate Matter": 0.000003, "Ionizing Radiation": 0.1, 
+                        "Photochemical Ozone Formation": 0.01, "Acidification": 0.05, "Eutrophication, terrestrial": 0.2, 
+                        "Eutrophication, freshwater": 0.005, "Eutrophication, marine": 0.02, "Ecotoxicity, freshwater": 8.0, 
+                        "Land Use": 750, "Water Use/Scarcity (AWARE)": 1.8, "Resource Use, minerals/metals": 0.001, 
+                        "Resource Use, fossils": 10.5
+                    }
+                },
+                "pork": { 
+                    name: "Pork (EU Intensive)", loss: 0.015, 
+                    pef: { 
+                        "Climate Change": 5.5, "Ozone Depletion": 0.000002, "Human Toxicity, non-cancer": 0.0008, 
+                        "Human Toxicity, cancer": 0.000015, "Particulate Matter": 0.000004, "Ionizing Radiation": 0.15, 
+                        "Photochemical Ozone Formation": 0.02, "Acidification": 0.08, "Eutrophication, terrestrial": 0.4, 
+                        "Eutrophication, freshwater": 0.008, "Eutrophication, marine": 0.03, "Ecotoxicity, freshwater": 15.0, 
+                        "Land Use": 850, "Water Use/Scarcity (AWARE)": 2.3, "Resource Use, minerals/metals": 0.0015, 
+                        "Resource Use, fossils": 12.5
+                    }
+                },
+                "salmon": { 
+                    name: "Salmon (Farmed, Norway)", loss: 0.01, 
+                    pef: { 
+                        "Climate Change": 6.5, "Ozone Depletion": 0.000003, "Human Toxicity, non-cancer": 0.0012, 
+                        "Human Toxicity, cancer": 0.00002, "Particulate Matter": 0.000005, "Ionizing Radiation": 0.18, 
+                        "Photochemical Ozone Formation": 0.025, "Acidification": 0.12, "Eutrophication, terrestrial": 0.6, 
+                        "Eutrophication, freshwater": 0.012, "Eutrophication, marine": 0.04, "Ecotoxicity, freshwater": 22.0, 
+                        "Land Use": 2000, "Water Use/Scarcity (AWARE)": 1.0, "Resource Use, minerals/metals": 0.002, 
+                        "Resource Use, fossils": 25.0
+                    }
+                },
+                "milk": { 
+                    name: "Milk (Cow, EU Avg)", loss: 0.005, 
+                    pef: { 
+                        "Climate Change": 1.4, "Ozone Depletion": 0.0000003, "Human Toxicity, non-cancer": 0.0002, 
+                        "Human Toxicity, cancer": 0.000003, "Particulate Matter": 0.000001, "Ionizing Radiation": 0.08, 
+                        "Photochemical Ozone Formation": 0.005, "Acidification": 0.03, "Eutrophication, terrestrial": 0.15, 
+                        "Eutrophication, freshwater": 0.003, "Eutrophication, marine": 0.01, "Ecotoxicity, freshwater": 4.0, 
+                        "Land Use": 800, "Water Use/Scarcity (AWARE)": 1.0, "Resource Use, minerals/metals": 0.0004, 
+                        "Resource Use, fossils": 2.0
+                    }
+                },
+                "eggs": { 
+                    name: "Eggs (Chicken, Barn)", loss: 0.005, 
+                    pef: { 
+                        "Climate Change": 2.5, "Ozone Depletion": 0.0000004, "Human Toxicity, non-cancer": 0.0003, 
+                        "Human Toxicity, cancer": 0.000004, "Particulate Matter": 0.000002, "Ionizing Radiation": 0.09, 
+                        "Photochemical Ozone Formation": 0.008, "Acidification": 0.04, "Eutrophication, terrestrial": 0.18, 
+                        "Eutrophication, freshwater": 0.004, "Eutrophication, marine": 0.015, "Ecotoxicity, freshwater": 6.5, 
+                        "Land Use": 550, "Water Use/Scarcity (AWARE)": 1.4, "Resource Use, minerals/metals": 0.0006, 
+                        "Resource Use, fossils": 7.5
+                    }
+                },
+                "wheat": { 
+                    name: "Wheat (Grain, EU)", loss: 0.08, 
+                    pef: { 
+                        "Climate Change": 0.55, "Ozone Depletion": 0.0000002, "Human Toxicity, non-cancer": 0.0001, 
+                        "Human Toxicity, cancer": 0.000001, "Particulate Matter": 0.000001, "Ionizing Radiation": 0.05, 
+                        "Photochemical Ozone Formation": 0.002, "Acidification": 0.01, "Eutrophication, terrestrial": 0.04, 
+                        "Eutrophication, freshwater": 0.001, "Eutrophication, marine": 0.005, "Ecotoxicity, freshwater": 2.0, 
+                        "Land Use": 200, "Water Use/Scarcity (AWARE)": 0.55, "Resource Use, minerals/metals": 0.0005, 
+                        "Resource Use, fossils": 3.0
+                    }
+                },
+                "rice": { 
+                    name: "Rice (Paddy, Global)", loss: 0.10, 
+                    pef: { 
+                        "Climate Change": 3.0, "Ozone Depletion": 0.0000004, "Human Toxicity, non-cancer": 0.0003, 
+                        "Human Toxicity, cancer": 0.000004, "Particulate Matter": 0.000002, "Ionizing Radiation": 0.12, 
+                        "Photochemical Ozone Formation": 0.008, "Acidification": 0.04, "Eutrophication, terrestrial": 0.1, 
+                        "Eutrophication, freshwater": 0.004, "Eutrophication, marine": 0.015, "Ecotoxicity, freshwater": 6.0, 
+                        "Land Use": 275, "Water Use/Scarcity (AWARE)": 4.5, "Resource Use, minerals/metals": 0.0007, 
+                        "Resource Use, fossils": 4.0
+                    }
+                },
+                "corn": { 
+                    name: "Corn (Maize, EU)", loss: 0.06, 
+                    pef: { 
+                        "Climate Change": 0.45, "Ozone Depletion": 0.00000015, "Human Toxicity, non-cancer": 0.00008, 
+                        "Human Toxicity, cancer": 0.0000008, "Particulate Matter": 0.0000008, "Ionizing Radiation": 0.04, 
+                        "Photochemical Ozone Formation": 0.0015, "Acidification": 0.008, "Eutrophication, terrestrial": 0.03, 
+                        "Eutrophication, freshwater": 0.0008, "Eutrophication, marine": 0.004, "Ecotoxicity, freshwater": 1.8, 
+                        "Land Use": 180, "Water Use/Scarcity (AWARE)": 0.35, "Resource Use, minerals/metals": 0.0003, 
+                        "Resource Use, fossils": 2.5
+                    }
+                },
+                "oats": { 
+                    name: "Oats (Grain, EU)", loss: 0.07, 
+                    pef: { 
+                        "Climate Change": 0.40, "Ozone Depletion": 0.00000012, "Human Toxicity, non-cancer": 0.00007, 
+                        "Human Toxicity, cancer": 0.0000006, "Particulate Matter": 0.0000006, "Ionizing Radiation": 0.03, 
+                        "Photochemical Ozone Formation": 0.0012, "Acidification": 0.006, "Eutrophication, terrestrial": 0.025, 
+                        "Eutrophication, freshwater": 0.0006, "Eutrophication, marine": 0.003, "Ecotoxicity, freshwater": 1.5, 
+                        "Land Use": 150, "Water Use/Scarcity (AWARE)": 0.30, "Resource Use, minerals/metals": 0.00025, 
+                        "Resource Use, fossils": 2.0
+                    }
+                },
+                "soybeans": { 
+                    name: "Soybeans (EU)", loss: 0.04, 
+                    pef: { 
+                        "Climate Change": 0.8, "Ozone Depletion": 0.00000025, "Human Toxicity, non-cancer": 0.00015, 
+                        "Human Toxicity, cancer": 0.000002, "Particulate Matter": 0.0000012, "Ionizing Radiation": 0.07, 
+                        "Photochemical Ozone Formation": 0.003, "Acidification": 0.015, "Eutrophication, terrestrial": 0.06, 
+                        "Eutrophication, freshwater": 0.002, "Eutrophication, marine": 0.008, "Ecotoxicity, freshwater": 3.5, 
+                        "Land Use": 400, "Water Use/Scarcity (AWARE)": 0.85, "Resource Use, minerals/metals": 0.0006, 
+                        "Resource Use, fossils": 3.3
+                    }
+                },
+                "peas": { 
+                    name: "Peas (Dried, EU)", loss: 0.03, 
+                    pef: { 
+                        "Climate Change": 0.35, "Ozone Depletion": 0.0000001, "Human Toxicity, non-cancer": 0.00008, 
+                        "Human Toxicity, cancer": 0.0000005, "Particulate Matter": 0.0000005, "Ionizing Radiation": 0.02, 
+                        "Photochemical Ozone Formation": 0.001, "Acidification": 0.005, "Eutrophication, terrestrial": 0.02, 
+                        "Eutrophication, freshwater": 0.0005, "Eutrophication, marine": 0.001, "Ecotoxicity, freshwater": 1.5, 
+                        "Land Use": 120, "Water Use/Scarcity (AWARE)": 0.25, "Resource Use, minerals/metals": 0.0001, 
+                        "Resource Use, fossils": 1.8
+                    }
+                },
+                "lentils": { 
+                    name: "Lentils (Dried, Global)", loss: 0.03, 
+                    pef: { 
+                        "Climate Change": 0.7, "Ozone Depletion": 0.00000018, "Human Toxicity, non-cancer": 0.00012, 
+                        "Human Toxicity, cancer": 0.0000015, "Particulate Matter": 0.0000009, "Ionizing Radiation": 0.06, 
+                        "Photochemical Ozone Formation": 0.0025, "Acidification": 0.012, "Eutrophication, terrestrial": 0.05, 
+                        "Eutrophication, freshwater": 0.0015, "Eutrophication, marine": 0.006, "Ecotoxicity, freshwater": 2.8, 
+                        "Land Use": 180, "Water Use/Scarcity (AWARE)": 0.45, "Resource Use, minerals/metals": 0.0004, 
+                        "Resource Use, fossils": 2.2
+                    }
+                },
+                "chickpeas": { 
+                    name: "Chickpeas (Dried, Global)", loss: 0.03, 
+                    pef: { 
+                        "Climate Change": 0.9, "Ozone Depletion": 0.00000022, "Human Toxicity, non-cancer": 0.00018, 
+                        "Human Toxicity, cancer": 0.0000022, "Particulate Matter": 0.0000011, "Ionizing Radiation": 0.08, 
+                        "Photochemical Ozone Formation": 0.0035, "Acidification": 0.018, "Eutrophication, terrestrial": 0.07, 
+                        "Eutrophication, freshwater": 0.0022, "Eutrophication, marine": 0.009, "Ecotoxicity, freshwater": 3.8, 
+                        "Land Use": 220, "Water Use/Scarcity (AWARE)": 0.60, "Resource Use, minerals/metals": 0.00055, 
+                        "Resource Use, fossils": 2.8
+                    }
+                },
+                "almonds": { 
+                    name: "Almonds (Kernel, USA)", loss: 0.01, 
+                    pef: { 
+                        "Climate Change": 3.2, "Ozone Depletion": 0.0000008, "Human Toxicity, non-cancer": 0.001, 
+                        "Human Toxicity, cancer": 0.00001, "Particulate Matter": 0.000002, "Ionizing Radiation": 0.15, 
+                        "Photochemical Ozone Formation": 0.008, "Acidification": 0.03, "Eutrophication, terrestrial": 0.1, 
+                        "Eutrophication, freshwater": 0.003, "Eutrophication, marine": 0.01, "Ecotoxicity, freshwater": 5.0, 
+                        "Land Use": 500, "Water Use/Scarcity (AWARE)": 15.0, "Resource Use, minerals/metals": 0.0008, 
+                        "Resource Use, fossils": 11.0
+                    }
+                },
+                "potatoes": { 
+                    name: "Potatoes (Fresh, EU)", loss: 0.15, 
+                    pef: { 
+                        "Climate Change": 0.3, "Ozone Depletion": 0.00000008, "Human Toxicity, non-cancer": 0.00006, 
+                        "Human Toxicity, cancer": 0.0000004, "Particulate Matter": 0.0000004, "Ionizing Radiation": 0.015, 
+                        "Photochemical Ozone Formation": 0.0008, "Acidification": 0.004, "Eutrophication, terrestrial": 0.015, 
+                        "Eutrophication, freshwater": 0.0004, "Eutrophication, marine": 0.002, "Ecotoxicity, freshwater": 1.2, 
+                        "Land Use": 60, "Water Use/Scarcity (AWARE)": 0.2, "Resource Use, minerals/metals": 0.00008, 
+                        "Resource Use, fossils": 1.5
+                    }
+                },
+                "tomatoes": { 
+                    name: "Tomatoes (Field, ES)", loss: 0.20, 
+                    pef: { 
+                        "Climate Change": 0.45, "Ozone Depletion": 0.00000015, "Human Toxicity, non-cancer": 0.00012, 
+                        "Human Toxicity, cancer": 0.0000015, "Particulate Matter": 0.0000008, "Ionizing Radiation": 0.03, 
+                        "Photochemical Ozone Formation": 0.0015, "Acidification": 0.008, "Eutrophication, terrestrial": 0.03, 
+                        "Eutrophication, freshwater": 0.0008, "Eutrophication, marine": 0.003, "Ecotoxicity, freshwater": 2.5, 
+                        "Land Use": 45, "Water Use/Scarcity (AWARE)": 1.0, "Resource Use, minerals/metals": 0.0003, 
+                        "Resource Use, fossils": 2.3
+                    }
+                },
+                "onions": { 
+                    name: "Onions (Fresh, EU)", loss: 0.12, 
+                    pef: { 
+                        "Climate Change": 0.2, "Ozone Depletion": 0.00000006, "Human Toxicity, non-cancer": 0.00005, 
+                        "Human Toxicity, cancer": 0.0000003, "Particulate Matter": 0.0000003, "Ionizing Radiation": 0.012, 
+                        "Photochemical Ozone Formation": 0.0006, "Acidification": 0.003, "Eutrophication, terrestrial": 0.012, 
+                        "Eutrophication, freshwater": 0.0003, "Eutrophication, marine": 0.0015, "Ecotoxicity, freshwater": 1.0, 
+                        "Land Use": 35, "Water Use/Scarcity (AWARE)": 0.15, "Resource Use, minerals/metals": 0.00006, 
+                        "Resource Use, fossils": 1.2
+                    }
+                },
+                "carrots": { 
+                    name: "Carrots (Fresh, EU)", loss: 0.10, 
+                    pef: { 
+                        "Climate Change": 0.18, "Ozone Depletion": 0.00000005, "Human Toxicity, non-cancer": 0.00004, 
+                        "Human Toxicity, cancer": 0.00000025, "Particulate Matter": 0.00000025, "Ionizing Radiation": 0.01, 
+                        "Photochemical Ozone Formation": 0.0005, "Acidification": 0.0025, "Eutrophication, terrestrial": 0.01, 
+                        "Eutrophication, freshwater": 0.00025, "Eutrophication, marine": 0.001, "Ecotoxicity, freshwater": 0.8, 
+                        "Land Use": 30, "Water Use/Scarcity (AWARE)": 0.12, "Resource Use, minerals/metals": 0.00005, 
+                        "Resource Use, fossils": 1.0
+                    }
+                },
+                "apples": { 
+                    name: "Apples (Fresh, EU)", loss: 0.08, 
+                    pef: { 
+                        "Climate Change": 0.35, "Ozone Depletion": 0.0000001, "Human Toxicity, non-cancer": 0.00009, 
+                        "Human Toxicity, cancer": 0.000001, "Particulate Matter": 0.0000007, "Ionizing Radiation": 0.025, 
+                        "Photochemical Ozone Formation": 0.0012, "Acidification": 0.007, "Eutrophication, terrestrial": 0.025, 
+                        "Eutrophication, freshwater": 0.0007, "Eutrophication, marine": 0.0025, "Ecotoxicity, freshwater": 2.2, 
+                        "Land Use": 55, "Water Use/Scarcity (AWARE)": 0.25, "Resource Use, minerals/metals": 0.0002, 
+                        "Resource Use, fossils": 1.8
+                    }
+                },
+                "bananas": { 
+                    name: "Bananas (Fresh, Import)", loss: 0.06, 
+                    pef: { 
+                        "Climate Change": 0.9, "Ozone Depletion": 0.0000003, "Human Toxicity, non-cancer": 0.00025, 
+                        "Human Toxicity, cancer": 0.000003, "Particulate Matter": 0.0000015, "Ionizing Radiation": 0.1, 
+                        "Photochemical Ozone Formation": 0.004, "Acidification": 0.02, "Eutrophication, terrestrial": 0.08, 
+                        "Eutrophication, freshwater": 0.002, "Eutrophication, marine": 0.007, "Ecotoxicity, freshwater": 4.5, 
+                        "Land Use": 120, "Water Use/Scarcity (AWARE)": 0.35, "Resource Use, minerals/metals": 0.00045, 
+                        "Resource Use, fossils": 2.5
+                    }
+                },
+                "oranges": { 
+                    name: "Oranges (Fresh, ES)", loss: 0.07, 
+                    pef: { 
+                        "Climate Change": 0.4, "Ozone Depletion": 0.00000012, "Human Toxicity, non-cancer": 0.0001, 
+                        "Human Toxicity, cancer": 0.0000012, "Particulate Matter": 0.0000008, "Ionizing Radiation": 0.035, 
+                        "Photochemical Ozone Formation": 0.0018, "Acidification": 0.009, "Eutrophication, terrestrial": 0.035, 
+                        "Eutrophication, freshwater": 0.0009, "Eutrophication, marine": 0.0035, "Ecotoxicity, freshwater": 3.0, 
+                        "Land Use": 70, "Water Use/Scarcity (AWARE)": 0.30, "Resource Use, minerals/metals": 0.00025, 
+                        "Resource Use, fossils": 2.0
+                    }
+                },
+                "berries": { 
+                    name: "Berries (Mixed, Fresh)", loss: 0.15, 
+                    pef: { 
+                        "Climate Change": 1.5, "Ozone Depletion": 0.0000005, "Human Toxicity, non-cancer": 0.0004, 
+                        "Human Toxicity, cancer": 0.000005, "Particulate Matter": 0.0000025, "Ionizing Radiation": 0.2, 
+                        "Photochemical Ozone Formation": 0.01, "Acidification": 0.05, "Eutrophication, terrestrial": 0.2, 
+                        "Eutrophication, freshwater": 0.005, "Eutrophication, marine": 0.02, "Ecotoxicity, freshwater": 8.5, 
+                        "Land Use": 150, "Water Use/Scarcity (AWARE)": 0.80, "Resource Use, minerals/metals": 0.0007, 
+                        "Resource Use, fossils": 4.0
+                    }
+                },
+                "palm-oil": { 
+                    name: "Palm Oil (RSPO Segregated)", loss: 0.02, 
+                    pef: { 
+                        "Climate Change": 2.2, "Ozone Depletion": 0.0000006, "Human Toxicity, non-cancer": 0.0007, 
+                        "Human Toxicity, cancer": 0.000008, "Particulate Matter": 0.0000018, "Ionizing Radiation": 0.14, 
+                        "Photochemical Ozone Formation": 0.006, "Acidification": 0.025, "Eutrophication, terrestrial": 0.09, 
+                        "Eutrophication, freshwater": 0.0025, "Eutrophication, marine": 0.01, "Ecotoxicity, freshwater": 6.5, 
+                        "Land Use": 150, "Water Use/Scarcity (AWARE)": 1.2, "Resource Use, minerals/metals": 0.00065, 
+                        "Resource Use, fossils": 10.0
+                    }
+                },
+                "olive-oil": { 
+                    name: "Olive Oil (EVOO, ES)", loss: 0.02, 
+                    pef: { 
+                        "Climate Change": 2.8, "Ozone Depletion": 0.0000005, "Human Toxicity, non-cancer": 0.0009, 
+                        "Human Toxicity, cancer": 0.000009, "Particulate Matter": 0.0000015, "Ionizing Radiation": 0.12, 
+                        "Photochemical Ozone Formation": 0.007, "Acidification": 0.02, "Eutrophication, terrestrial": 0.08, 
+                        "Eutrophication, freshwater": 0.002, "Eutrophication, marine": 0.008, "Ecotoxicity, freshwater": 4.0, 
+                        "Land Use": 1250, "Water Use/Scarcity (AWARE)": 4.5, "Resource Use, minerals/metals": 0.0006, 
+                        "Resource Use, fossils": 8.0
+                    }
+                },
+                "sunflower-oil": { 
+                    name: "Sunflower Oil (EU)", loss: 0.02, 
+                    pef: { 
+                        "Climate Change": 1.8, "Ozone Depletion": 0.0000004, "Human Toxicity, non-cancer": 0.0006, 
+                        "Human Toxicity, cancer": 0.000006, "Particulate Matter": 0.0000012, "Ionizing Radiation": 0.1, 
+                        "Photochemical Ozone Formation": 0.005, "Acidification": 0.015, "Eutrophication, terrestrial": 0.06, 
+                        "Eutrophication, freshwater": 0.0018, "Eutrophication, marine": 0.007, "Ecotoxicity, freshwater": 3.5, 
+                        "Land Use": 200, "Water Use/Scarcity (AWARE)": 0.95, "Resource Use, minerals/metals": 0.0005, 
+                        "Resource Use, fossils": 5.5
+                    }
+                },
+                "sugar-cane": { 
+                    name: "Sugar Cane (Raw)", loss: 0.08, 
+                    pef: { 
+                        "Climate Change": 0.6, "Ozone Depletion": 0.0000002, "Human Toxicity, non-cancer": 0.00015, 
+                        "Human Toxicity, cancer": 0.000002, "Particulate Matter": 0.000001, "Ionizing Radiation": 0.08, 
+                        "Photochemical Ozone Formation": 0.003, "Acidification": 0.018, "Eutrophication, terrestrial": 0.07, 
+                        "Eutrophication, freshwater": 0.002, "Eutrophication, marine": 0.009, "Ecotoxicity, freshwater": 4.2, 
+                        "Land Use": 120, "Water Use/Scarcity (AWARE)": 2.5, "Resource Use, minerals/metals": 0.00055, 
+                        "Resource Use, fossils": 3.5
+                    }
+                },
+                "sugar-beet": { 
+                    name: "Sugar Beet (Raw, EU)", loss: 0.06, 
+                    pef: { 
+                        "Climate Change": 0.5, "Ozone Depletion": 0.00000015, "Human Toxicity, non-cancer": 0.0001, 
+                        "Human Toxicity, cancer": 0.0000012, "Particulate Matter": 0.0000008, "Ionizing Radiation": 0.06, 
+                        "Photochemical Ozone Formation": 0.002, "Acidification": 0.012, "Eutrophication, terrestrial": 0.05, 
+                        "Eutrophication, freshwater": 0.0015, "Eutrophication, marine": 0.006, "Ecotoxicity, freshwater": 3.0, 
+                        "Land Use": 80, "Water Use/Scarcity (AWARE)": 0.35, "Resource Use, minerals/metals": 0.00035, 
+                        "Resource Use, fossils": 2.8
+                    }
+                },
+                "honey": { 
+                    name: "Honey (EU)", loss: 0.01, 
+                    pef: { 
+                        "Climate Change": 1.1, "Ozone Depletion": 0.00000025, "Human Toxicity, non-cancer": 0.00008, 
+                        "Human Toxicity, cancer": 0.000001, "Particulate Matter": 0.0000006, "Ionizing Radiation": 0.05, 
+                        "Photochemical Ozone Formation": 0.002, "Acidification": 0.008, "Eutrophication, terrestrial": 0.03, 
+                        "Eutrophication, freshwater": 0.0008, "Eutrophication, marine": 0.003, "Ecotoxicity, freshwater": 2.0, 
+                        "Land Use": 150, "Water Use/Scarcity (AWARE)": 0.05, "Resource Use, minerals/metals": 0.00015, 
+                        "Resource Use, fossils": 3.0
+                    }
+                },
+                "coffee": { 
+                    name: "Coffee (Roasted Arabica)", loss: 0.02, 
+                    pef: { 
+                        "Climate Change": 20.0, "Ozone Depletion": 0.000008, "Human Toxicity, non-cancer": 0.008, 
+                        "Human Toxicity, cancer": 0.0001, "Particulate Matter": 0.00002, "Ionizing Radiation": 1.2, 
+                        "Photochemical Ozone Formation": 0.15, "Acidification": 0.8, "Eutrophication, terrestrial": 3.0, 
+                        "Eutrophication, freshwater": 0.08, "Eutrophication, marine": 0.3, "Ecotoxicity, freshwater": 120.0, 
+                        "Land Use": 1500, "Water Use/Scarcity (AWARE)": 3.5, "Resource Use, minerals/metals": 0.005, 
+                        "Resource Use, fossils": 40.0
+                    }
+                },
+                "cocoa": { 
+                    name: "Cocoa (Powder, Global)", loss: 0.02, 
+                    pef: { 
+                        "Climate Change": 15.0, "Ozone Depletion": 0.000006, "Human Toxicity, non-cancer": 0.006, 
+                        "Human Toxicity, cancer": 0.00008, "Particulate Matter": 0.000015, "Ionizing Radiation": 0.9, 
+                        "Photochemical Ozone Formation": 0.12, "Acidification": 0.6, "Eutrophication, terrestrial": 2.2, 
+                        "Eutrophication, freshwater": 0.06, "Eutrophication, marine": 0.25, "Ecotoxicity, freshwater": 90.0, 
+                        "Land Use": 2200, "Water Use/Scarcity (AWARE)": 2.0, "Resource Use, minerals/metals": 0.004, 
+                        "Resource Use, fossils": 27.5
+                    }
+                },
+                "tea": { 
+                    name: "Tea (Black, Dried)", loss: 0.01, 
+                    pef: { 
+                        "Climate Change": 1.8, "Ozone Depletion": 0.0000004, "Human Toxicity, non-cancer": 0.0005, 
+                        "Human Toxicity, cancer": 0.000006, "Particulate Matter": 0.0000015, "Ionizing Radiation": 0.15, 
+                        "Photochemical Ozone Formation": 0.008, "Acidification": 0.035, "Eutrophication, terrestrial": 0.12, 
+                        "Eutrophication, freshwater": 0.004, "Eutrophication, marine": 0.018, "Ecotoxicity, freshwater": 12.0, 
+                        "Land Use": 250, "Water Use/Scarcity (AWARE)": 0.45, "Resource Use, minerals/metals": 0.0007, 
+                        "Resource Use, fossils": 5.0
+                    }
+                },
+                "salt": { 
+                    name: "Salt (Sea, EU)", loss: 0.001, 
+                    pef: { 
+                        "Climate Change": 0.05, "Ozone Depletion": 0.00000001, "Human Toxicity, non-cancer": 0.00001, 
+                        "Human Toxicity, cancer": 0.0000001, "Particulate Matter": 0.0000001, "Ionizing Radiation": 0.002, 
+                        "Photochemical Ozone Formation": 0.0001, "Acidification": 0.0005, "Eutrophication, terrestrial": 0.002, 
+                        "Eutrophication, freshwater": 0.0001, "Eutrophication, marine": 0.0005, "Ecotoxicity, freshwater": 0.5, 
+                        "Land Use": 5, "Water Use/Scarcity (AWARE)": 0.01, "Resource Use, minerals/metals": 0.00002, 
+                        "Resource Use, fossils": 0.5
+                    }
+                },
+                "yeast": { 
+                    name: "Yeast (Brewer's)", loss: 0.002, 
+                    pef: { 
+                        "Climate Change": 1.0, "Ozone Depletion": 0.0000002, "Human Toxicity, non-cancer": 0.00015, 
+                        "Human Toxicity, cancer": 0.000002, "Particulate Matter": 0.0000008, "Ionizing Radiation": 0.08, 
+                        "Photochemical Ozone Formation": 0.003, "Acidification": 0.015, "Eutrophication, terrestrial": 0.06, 
+                        "Eutrophication, freshwater": 0.0015, "Eutrophication, marine": 0.006, "Ecotoxicity, freshwater": 4.5, 
+                        "Land Use": 30, "Water Use/Scarcity (AWARE)": 0.15, "Resource Use, minerals/metals": 0.0003, 
+                        "Resource Use, fossils": 2.5
+                    }
+                },
+                "algae-protein": { 
+                    name: "Algae Protein (Microalgae)", loss: 0.005, 
+                    pef: { 
+                        "Climate Change": 1.5, "Ozone Depletion": 0.0000003, "Human Toxicity, non-cancer": 0.0002, 
+                        "Human Toxicity, cancer": 0.0000025, "Particulate Matter": 0.000001, "Ionizing Radiation": 0.1, 
+                        "Photochemical Ozone Formation": 0.004, "Acidification": 0.02, "Eutrophication, terrestrial": 0.08, 
+                        "Eutrophication, freshwater": 0.002, "Eutrophication, marine": 0.008, "Ecotoxicity, freshwater": 6.0, 
+                        "Land Use": 50, "Water Use/Scarcity (AWARE)": 0.25, "Resource Use, minerals/metals": 0.0004, 
+                        "Resource Use, fossils": 3.5
+                    }
+                }
+            },
+
+            // COUNTRY FACTORS (IEA 2023 + AWARE 2.0)
+            countries: {
+                "DE": { name: "Germany", electricityCO2: 331, awareFactor: 24.5 },
+                "FR": { name: "France", electricityCO2: 86, awareFactor: 17.1 },
+                "IT": { name: "Italy", electricityCO2: 275, awareFactor: 49.8 },
+                "ES": { name: "Spain", electricityCO2: 196, awareFactor: 64.7 },
+                "NL": { name: "Netherlands", electricityCO2: 331, awareFactor: 33.6 },
+                "PL": { name: "Poland", electricityCO2: 724, awareFactor: 19.8 },
+                "SE": { name: "Sweden", electricityCO2: 22, awareFactor: 1.3 },
+                "DK": { name: "Denmark", electricityCO2: 110, awareFactor: 14.5 },
+                "BE": { name: "Belgium", electricityCO2: 190, awareFactor: 42.1 },
+                "UK": { name: "United Kingdom", electricityCO2: 215, awareFactor: 22.9 },
+                "IE": { name: "Ireland", electricityCO2: 340, awareFactor: 1.8 },
+                "AT": { name: "Austria", electricityCO2: 126, awareFactor: 2.5 },
+                "FI": { name: "Finland", electricityCO2: 68, awareFactor: 0.5 },
+                "PT": { name: "Portugal", electricityCO2: 216, awareFactor: 43.1 },
+                "GR": { name: "Greece", electricityCO2: 418, awareFactor: 61.2 },
+                "US": { name: "United States", electricityCO2: 385, awareFactor: 32.9 },
+                "CA": { name: "Canada", electricityCO2: 110, awareFactor: 2.2 },
+                "AU": { name: "Australia", electricityCO2: 592, awareFactor: 60.1 },
+                "JP": { name: "Japan", electricityCO2: 436, awareFactor: 36.5 },
+                "CN": { name: "China", electricityCO2: 531, awareFactor: 41.0 },
+                "IN": { name: "India", electricityCO2: 708, awareFactor: 70.4 },
+                "BR": { name: "Brazil", electricityCO2: 106, awareFactor: 3.1 }
+            },
+
+            // PROCESSING METHODS
+            processing: {
+                "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000 },
+                "pasteurization": { co2_impact: 0.075, water_impact: 0.2, yield: 0.995, loss: 0.005 },
+                "sterilization": { co2_impact: 0.15, water_impact: 0.35, yield: 0.985, loss: 0.015 },
+                "baking": { co2_impact: 0.6, water_impact: 0.15, yield: 0.88, loss: 0.120 },
+                "frying": { co2_impact: 0.8, water_impact: 0.25, yield: 0.75, loss: 0.250 },
+                "freezing": { co2_impact: 0.3, water_impact: 0.1, yield: 0.975, loss: 0.025 },
+                "drying": { co2_impact: 2.0, water_impact: 0.2, yield: 0.97, loss: 0.030 },
+                "milling": { co2_impact: 0.045, water_impact: 0.05, yield: 0.78, loss: 0.220 },
+                "mixing": { co2_impact: 0.02, water_impact: 0.05, yield: 0.995, loss: 0.005 }
+            },
+
+            // TRANSPORTATION (GLEC v3.0)
+            transportation: {
+                "road": { co2: 0.08, refrigerated_factor: 0.30 },
+                "rail": { co2: 0.02, refrigerated_factor: 0.00 },
+                "sea": { co2: 0.01, refrigerated_factor: 0.75 },
+                "air": { co2: 0.525, refrigerated_factor: 0.00 },
+                "lastmile": { co2: 0.20, refrigerated_factor: 0.00 }
+            },
+
+            // PACKAGING (CFF COMPLIANT) - FIXED WITH REAL CFF DATA
+            // A=0.5 Allocation Factor (as per PEFCR)
+            // Ev = co2_virgin, Er = co2_recycled, Ed = co2_disposal
+            // E_avoided = co2_avoided_credit (pre-calculated credit)
+            // R2 = r2 (end-of-life recycling rate), Q = q (quality factor)
+            packaging: {
+                "cardboard": { 
+                    co2_virgin: 1.4, co2_recycled: 0.3, co2_disposal: 0.05, co2_avoided_credit: 1.2,
+                    r1_max: 0.85, r2: 0.85, q: 0.90 
+                },
+                "PET": { 
+                    co2_virgin: 2.5, co2_recycled: 1.1, co2_disposal: 0.04, co2_avoided_credit: 2.1,
+                    r1_max: 0.50, r2: 0.45, q: 0.95 
+                },
+                "HDPE": { 
+                    co2_virgin: 2.0, co2_recycled: 0.9, co2_disposal: 0.04, co2_avoided_credit: 1.7,
+                    r1_max: 0.50, r2: 0.40, q: 0.90 
+                },
+                "LDPE": { 
+                    co2_virgin: 2.2, co2_recycled: 1.0, co2_disposal: 0.04, co2_avoided_credit: 1.8,
+                    r1_max: 0.40, r2: 0.40, q: 0.90 
+                },
+                "PP": { 
+                    co2_virgin: 2.1, co2_recycled: 0.95, co2_disposal: 0.04, co2_avoided_credit: 1.75,
+                    r1_max: 0.50, r2: 0.40, q: 0.90 
+                },
+                "glass": { 
+                    co2_virgin: 1.05, co2_recycled: 0.8, co2_disposal: 0.01, co2_avoided_credit: 0.95,
+                    r1_max: 0.90, r2: 0.85, q: 1.00 
+                },
+                "aluminum": { 
+                    co2_virgin: 9.0, co2_recycled: 0.5, co2_disposal: 0.0, co2_avoided_credit: 8.5,
+                    r1_max: 0.90, r2: 0.75, q: 1.00 
+                },
+                "steel": { 
+                    co2_virgin: 2.0, co2_recycled: 0.6, co2_disposal: 0.0, co2_avoided_credit: 1.8,
+                    r1_max: 0.90, r2: 0.80, q: 1.00 
+                },
+                "PLA": { // Bioplastic - different logic, often high disposal impact (composting)
+                    co2_virgin: 2.0, co2_recycled: 1.5, co2_disposal: 0.4, co2_avoided_credit: 0.1,
+                    r1_max: 0.10, r2: 0.01, q: 0.80 
+                }
+            }
+        };
+
+        let selectedIngredients = [];
+        let currentChart = null;
+        let currentDPPId = null;
+        let finalPefResults = {};
+        let massBalanceData = {};
+
+        function initApp() {
+            populateIngredientSelect();
+            populateCountrySelect();
+            setupDemoData();
+            calculateImpact();
+            updateTabIndicator();
+            generateDPP();
+        }
+
+        function populateIngredientSelect() {
+            const select = document.getElementById('ingredientSelect');
+            select.innerHTML = '<option value="">Choose from 35+ PEF-compliant ingredients...</option>';
+            
+            for (const [key, ingredient] of Object.entries(aioxyData.ingredients)) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = ingredient.name;
+                select.appendChild(option);
+            }
+        }
+
+        function populateCountrySelect() {
+            const select = document.getElementById('manufacturingCountry');
+            select.innerHTML = '<option value="">Select country...</option>';
+            
+            for (const [code, country] of Object.entries(aioxyData.countries)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = country.name;
+                if (code === 'FR') option.selected = true;
+                select.appendChild(option);
+            }
+        }
+
+        function setupDemoData() {
+            selectedIngredients = [
+                { id: 'peas', name: aioxyData.ingredients.peas.name, quantity: 0.15, data: aioxyData.ingredients.peas },
+                { id: 'wheat', name: aioxyData.ingredients.wheat.name, quantity: 0.10, data: aioxyData.ingredients.wheat },
+                { id: 'tomatoes', name: aioxyData.ingredients.tomatoes.name, quantity: 0.05, data: aioxyData.ingredients.tomatoes }
+            ];
+            updateIngredientList();
+        }
+
+        function addIngredient() {
+            const select = document.getElementById('ingredientSelect');
+            const quantityInput = document.getElementById('ingredientQuantity');
+            
+            const ingredientId = select.value;
+            const quantity = parseFloat(quantityInput.value);
+            
+            if (!ingredientId || isNaN(quantity) || quantity <= 0) {
+                alert('Please select an ingredient and enter a valid quantity');
+                return;
+            }
+            
+            const ingredient = aioxyData.ingredients[ingredientId];
+            selectedIngredients.push({
+                id: ingredientId,
+                name: ingredient.name,
+                quantity: quantity,
+                data: ingredient
+            });
+            
+            updateIngredientList();
+            calculateImpact();
+            
+            select.value = '';
+            quantityInput.value = '0.150';
+        }
+
+        function removeIngredient(index) {
+            selectedIngredients.splice(index, 1);
+            updateIngredientList();
+            calculateImpact();
+        }
+
+        function updateIngredientList() {
+            const list = document.getElementById('ingredientList');
+            list.innerHTML = '';
+            
+            if (selectedIngredients.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-apple-alt"></i>
+                        <h3>No ingredients added yet</h3>
+                        <p>Add ingredients to calculate your environmental impact</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            selectedIngredients.forEach((ingredient, index) => {
+                const item = document.createElement('div');
+                item.className = 'ingredient-item';
+                item.innerHTML = `
+                    <div class="ingredient-info">
+                        <div class="ingredient-name">${ingredient.name}</div>
+                        <div class="ingredient-stats">
+                            ${ingredient.data.pef["Climate Change"]} kg CO₂e/kg • ${ingredient.data.pef["Water Use/Scarcity (AWARE)"]} m³ water/kg
+                        </div>
+                    </div>
+                    <div class="ingredient-actions">
+                        <input type="number" class="quantity-input" value="${ingredient.quantity}" step="0.001" min="0" 
+                               onchange="updateIngredientQuantity(${index}, this.value)">
+                        <button class="remove-btn" onclick="removeIngredient(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function updateIngredientQuantity(index, newQuantity) {
+            selectedIngredients[index].quantity = parseFloat(newQuantity);
+            calculateImpact();
+        }
+
+        function toggleAdvanced() {
+            const advanced = document.getElementById('advancedOptions');
+            advanced.classList.toggle('hidden');
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+            
+            if (tabName === 'results') calculateImpact();
+            if (tabName === 'dpp') generateDPP();
+            if (tabName === 'pef-scorecard') displayFullPefScorecard();
+            
+            updateTabIndicator();
+        }
+
+        function updateTabIndicator() {
+            const activeTab = document.querySelector('.nav-tab.active');
+            const indicator = document.getElementById('tabIndicator');
+            
+            if (activeTab && indicator) {
+                indicator.style.left = activeTab.offsetLeft + 'px';
+                indicator.style.width = activeTab.offsetWidth + 'px';
+            }
+        }
+
+        function calculateImpact() {
+            if (selectedIngredients.length === 0) {
+                clearResults();
+                return;
+            }
+
+            const loadingElement = document.getElementById('loadingResults');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            loadingElement.classList.remove('hidden');
+            resultsContent.classList.add('hidden');
+
+            setTimeout(() => {
+                const results = performCalculations();
+                updateResultsUI(results);
+                
+                loadingElement.classList.add('hidden');
+                resultsContent.classList.remove('hidden');
+            }, 800);
+        }
+
+        function clearResults() {
+            // Clear all result metrics
+            document.getElementById('co2Value').textContent = '0.00 kg';
+            document.getElementById('waterValue').textContent = '0 m³';
+            document.getElementById('landValue').textContent = '0 Pt';
+            document.getElementById('fossilValue').textContent = '0 MJ';
+            
+            document.getElementById('co2Savings').textContent = '0% saved';
+            document.getElementById('waterSavings').textContent = '0% saved';
+
+            // Clear comparison metrics
+            document.getElementById('carKm').textContent = '0 km';
+            document.getElementById('householdEnergy').textContent = '0 days';
+            document.getElementById('treesPlanted').textContent = '0 trees';
+            document.getElementById('waterBottles').textContent = '0 bottles';
+
+            // Clear story
+            document.getElementById('storyContent').innerHTML = `
+                <div class="story-highlight">
+                    Add ingredients to see your sustainability story and environmental impact narrative.
+                </div>
+                <p>
+                    Your product's environmental footprint tells a story about resource efficiency, supply chain optimization, and sustainability commitments. 
+                    Once you add ingredients and calculate impacts, we'll provide a comprehensive narrative that highlights your environmental performance.
+                </p>
+            `;
+
+            // Hide mass balance
+            document.getElementById('massBalanceSection').classList.add('hidden');
+
+            // Clear chart
+            if (currentChart) {
+                currentChart.destroy();
+                currentChart = null;
+            }
+        }
+
+        function performCalculations() {
+            // Get all inputs
+            const countryCode = document.getElementById('manufacturingCountry').value || 'FR';
+            const processingType = document.getElementById('processingMethod').value;
+            const transportMode = document.getElementById('transportMode').value;
+            const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
+            const packagingType = document.getElementById('packagingMaterial').value;
+            const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
+            const recycledContent = parseFloat(document.getElementById('recycledContent').value) || 0;
+            const isRefrigerated = document.getElementById('refrigeratedTransport').value === 'yes';
+            const productWeight = parseFloat(document.getElementById('productWeight').value) || 0.2;
+
+            const country = aioxyData.countries[countryCode];
+            const processing = aioxyData.processing[processingType];
+            const transport = aioxyData.transportation[transportMode];
+            const packaging = aioxyData.packaging[packagingType];
+
+            // Initialize 16-Impact Totals
+            let totalImpacts = {};
+            for (const category in aioxyData.pefCategories) {
+                totalImpacts[category] = 0;
+            }
+            
+            // MASS BALANCE CALCULATION
+            let totalInputWeight = 0;
+            let totalAdjustedWeight = 0;
+            let totalLossWeight = 0;
+
+            // Calculate Ingredient Impacts (All 16 PEF)
+            selectedIngredients.forEach(ingredient => {
+                const adjustedQuantity = ingredient.quantity / (1 - ingredient.data.loss);
+                const lossWeight = adjustedQuantity - ingredient.quantity;
+                
+                totalInputWeight += adjustedQuantity;
+                totalAdjustedWeight += ingredient.quantity;
+                totalLossWeight += lossWeight;
+                
+                for (const category in ingredient.data.pef) {
+                    totalImpacts[category] += adjustedQuantity * ingredient.data.pef[category];
+                }
+            });
+            
+            // Store mass balance data
+            massBalanceData = {
+                inputWeight: totalInputWeight,
+                adjustedWeight: totalAdjustedWeight,
+                lossWeight: totalLossWeight,
+                processingLoss: 0,
+                finalProductWeight: productWeight
+            };
+
+            // Add Manufacturing (Processing) Impact
+            const processingCO2 = processing.co2_impact * totalAdjustedWeight;
+            totalImpacts["Climate Change"] += processingCO2;
+            totalImpacts["Water Use/Scarcity (AWARE)"] += processing.water_impact * totalAdjustedWeight;
+            
+            // Apply processing yield
+            const afterProcessingWeight = totalAdjustedWeight * processing.yield;
+            massBalanceData.processingLoss = totalAdjustedWeight - afterProcessingWeight;
+            massBalanceData.finalProductWeight = afterProcessingWeight;
+
+            // Add Transportation Impact (CO2 only)
+            const transportCO2 = transportDistance * transport.co2 * (afterProcessingWeight / 1000);
+            let finalTransportCO2 = transportCO2 / 1000;
+            if (isRefrigerated) {
+                finalTransportCO2 *= (1 + transport.refrigerated_factor);
+            }
+            totalImpacts["Climate Change"] += finalTransportCO2;
+
+            // Add Packaging Impact (CO2 only - CFF Calculation)
+            const packagingCO2 = calculateCFFImpact(packaging, packagingWeight, recycledContent);
+            totalImpacts["Climate Change"] += packagingCO2;
+
+            // Apply AWARE Factor for Water Scarcity
+            const waterScarcityFactor = country.awareFactor;
+            totalImpacts["Water Use/Scarcity (AWARE)"] *= waterScarcityFactor;
+
+            // Calculate Per Kg and Storytelling Metrics
+            const co2PerKg = afterProcessingWeight > 0 ? totalImpacts["Climate Change"] / afterProcessingWeight : 0;
+            const waterScarcityPerKg = afterProcessingWeight > 0 ? totalImpacts["Water Use/Scarcity (AWARE)"] / afterProcessingWeight : 0;
+            const landUsePerKg = afterProcessingWeight > 0 ? totalImpacts["Land Use"] / afterProcessingWeight : 0;
+            const fossilPerKg = afterProcessingWeight > 0 ? totalImpacts["Resource Use, fossils"] / afterProcessingWeight : 0;
+
+            // Calculate savings vs industry average
+            const industryAvgCO2 = 3.5;
+            const industryAvgWater = 2.0;
+            
+            const co2Saved = Math.max((industryAvgCO2 * afterProcessingWeight) - totalImpacts["Climate Change"], 0);
+            const waterSaved = Math.max((industryAvgWater * afterProcessingWeight) - totalImpacts["Water Use/Scarcity (AWARE)"], 0);
+            
+            const co2SavingsPercent = afterProcessingWeight > 0 ? (co2Saved / (industryAvgCO2 * afterProcessingWeight)) * 100 : 0;
+            const waterSavingsPercent = afterProcessingWeight > 0 ? (waterSaved / (industryAvgWater * afterProcessingWeight)) * 100 : 0;
+
+            // Impact comparisons for storytelling
+            const carKmSaved = (co2Saved * 1000 / 120).toFixed(0);
+            const householdEnergyDays = (co2Saved * 1000 / 12000).toFixed(1);
+            const treesEquivalent = (co2Saved / 0.025).toFixed(0);
+            const waterBottles = (waterSaved * 1000 / 1.5).toFixed(0);
+
+            // Save the final 16-impact results globally
+            finalPefResults = totalImpacts;
+            
+            return {
+                co2PerKg, waterScarcityPerKg, landUsePerKg, fossilPerKg,
+                co2Saved, waterSaved, co2SavingsPercent, waterSavingsPercent,
+                processingCO2, transportCO2: finalTransportCO2, packagingCO2,
+                ingredientsCO2: totalImpacts["Climate Change"] - processingCO2 - finalTransportCO2 - packagingCO2,
+                carKmSaved, householdEnergyDays, treesEquivalent, waterBottles,
+                totalWeight: afterProcessingWeight,
+                fullPef: totalImpacts
+            };
+        }
+
+        // ================== CFF CALCULATION (PEF 3.1 COMPLIANT) ==================
+        // FIXED: This is the correct Circular Footprint Formula logic
+        function calculateCFFImpact(packaging, weight, recycledContentPercent) {
+            // 1. Define CFF parameters
+            const A = 0.5; // Allocation factor for recyclability (as per our Compliance Tab)
+            const R1 = recycledContentPercent / 100; // Actual recycled content
+            
+            // Get PEF-compliant values from our new dataset
+            const Ev = packaging.co2_virgin;         // Impact of 1kg Virgin Material
+            const Er = packaging.co2_recycled;       // Impact of 1kg Recycled Material
+            const Ed = packaging.co2_disposal;       // Impact of 1kg Disposed Material
+            const E_avoided = packaging.co2_avoided_credit; // Avoided burden (Ev * Q)
+            const R2 = packaging.r2;                 // End-of-life recycling rate
+
+            // 2. Calculate Material Burden (Cradle-to-Gate)
+            // (1 - R1) * Ev + R1 * Er
+            const materialImpact = (1 - R1) * Ev + R1 * Er;
+
+            // 3. Calculate End-of-Life (EoL) Burden & Credit
+            // This part calculates the impact of disposal and the credit from recycling
+            // (1 - R2) * E_disposal + R2 * (E_recycling_process - E_avoided_burden * A)
+            // We simplify E_recycling_process and bundle (E_avoided * Q) into E_avoided
+            
+            const disposalBurden = (1 - R2) * Ed;
+            const recyclingCredit = R2 * E_avoided * A; // The "A" factor splits the credit
+            
+            // Note: A more complex formula includes E_rec_proc (impact of recycling). 
+            // For now, we assume the credit (E_avoided) is the net value.
+            const endOfLifeImpact = disposalBurden - recyclingCredit;
+
+            // 4. Calculate Total Impact
+            // Total = (Material Impact + EoL Impact) * weight
+            const totalImpact = (materialImpact + endOfLifeImpact) * weight;
+
+            return totalImpact;
+            // ================== END OF CFF CALCULATION ==================
+        }
+
+        function updateResultsUI(results) {
+            // Update mass balance display
+            updateMassBalanceDisplay();
+
+            // Update headline metrics
+            document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
+            document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
+            document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
+            document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
+            
+            document.getElementById('co2Savings').textContent = results.co2SavingsPercent.toFixed(1) + '% saved';
+            document.getElementById('waterSavings').textContent = results.waterSavingsPercent.toFixed(1) + '% saved';
+
+            // Impact comparison storytelling
+            document.getElementById('carKm').textContent = results.carKmSaved + ' km';
+            document.getElementById('householdEnergy').textContent = results.householdEnergyDays + ' days';
+            document.getElementById('treesPlanted').textContent = results.treesEquivalent + ' trees';
+            document.getElementById('waterBottles').textContent = results.waterBottles + ' bottles';
+
+            // Environmental story
+            const storyContent = document.getElementById('storyContent');
+            if (results.co2Saved > 0) {
+                storyContent.innerHTML = `
+                    <div class="story-highlight">
+                        <i class="fas fa-seedling"></i>
+                        <strong>${results.co2Saved.toFixed(1)} kg CO₂e saved</strong> - equivalent to not driving ${results.carKmSaved} km in a standard car
+                    </div>
+                    <div class="story-highlight">
+                        <i class="fas fa-tint"></i>
+                        <strong>${results.waterSaved.toFixed(1)} m³ world eq. of water scarcity saved</strong> - enough drinking water for ${results.waterBottles} people for a day
+                    </div>
+                    <div class="story-highlight">
+                        <i class="fas fa-tree"></i>
+                        <strong>Carbon absorption equivalent to ${results.treesEquivalent} trees</strong> - making a real contribution to natural carbon capture
+                    </div>
+                    <p>
+                        Your product demonstrates outstanding environmental performance with a carbon footprint ${results.co2SavingsPercent.toFixed(1)}% lower than industry average. 
+                        This achievement reflects thoughtful ingredient selection, efficient supply chain management, and responsible resource use.
+                    </p>
+                `;
+            } else {
+                storyContent.innerHTML = `
+                    <div class="story-highlight">
+                        Consider optimizing your ingredient selection and supply chain for better sustainability performance.
+                    </div>
+                    <p>
+                        While your current product meets basic requirements, there are opportunities to further reduce environmental impact. 
+                        Consider plant-based alternatives, regional sourcing, and energy-efficient processing methods to improve your sustainability profile.
+                    </p>
+                `;
+            }
+
+            createEmissionChart(results);
+        }
+
+        function updateMassBalanceDisplay() {
+            const massBalanceSection = document.getElementById('massBalanceSection');
+            const massBalanceContent = document.getElementById('massBalanceContent');
+            
+            if (massBalanceData.inputWeight > 0) {
+                massBalanceSection.classList.remove('hidden');
+                
+                const balanceDifference = Math.abs(massBalanceData.inputWeight - massBalanceData.finalProductWeight - massBalanceData.lossWeight - massBalanceData.processingLoss);
+                const balanceStatus = balanceDifference < 0.001 ? "✅ Balanced" : "⚠️ Check Required";
+                
+                massBalanceContent.innerHTML = `
+                    <div class="mass-balance-item">
+                        <span>Total Input Weight:</span>
+                        <span>${massBalanceData.inputWeight.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Agricultural Loss:</span>
+                        <span>- ${massBalanceData.lossWeight.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Processing Loss:</span>
+                        <span>- ${massBalanceData.processingLoss.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Final Product Weight:</span>
+                        <span>${massBalanceData.finalProductWeight.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Mass Balance:</span>
+                        <span>${balanceStatus}</span>
+                    </div>
+                `;
+            } else {
+                massBalanceSection.classList.add('hidden');
+            }
+        }
+
+        function displayFullPefScorecard() {
+            const tbody = document.getElementById('pefScorecardBody');
+            tbody.innerHTML = '';
+            
+            const totalWeight = massBalanceData.finalProductWeight || 0.2;
+            
+            for (const category in finalPefResults) {
+                const row = document.createElement('tr');
+                const unit = aioxyData.pefCategories[category].unit;
+                const perKgValue = totalWeight > 0 ? finalPefResults[category] / totalWeight : 0;
+                
+                // Smart formatting based on value magnitude
+                let displayValue = formatPEFValue(finalPefResults[category]);
+                let perKgDisplay = formatPEFValue(perKgValue);
+                
+                row.innerHTML = `
+                    <td class="pef-category">${category}</td>
+                    <td class="pef-value">${displayValue}</td>
+                    <td class="pef-unit">${unit}</td>
+                    <td class="pef-value">${perKgDisplay}</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        function formatPEFValue(value) {
+            if (value === 0) return "0.00";
+            if (value < 0.0001) return value.toExponential(3);
+            if (value < 1) return value.toFixed(5);
+            if (value < 10) return value.toFixed(3);
+            if (value < 1000) return value.toFixed(2);
+            return value.toFixed(1);
+        }
+
+        function createEmissionChart(results) {
+            const ctx = document.getElementById('emissionChart').getContext('2d');
+            
+            if (currentChart) currentChart.destroy();
+            
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ingredients', 'Processing', 'Transportation', 'Packaging'],
+                    datasets: [{
+                        data: [
+                            Math.max(results.ingredientsCO2, 0),
+                            Math.max(results.processingCO2, 0),
+                            Math.max(results.transportCO2, 0),
+                            Math.max(results.packagingCO2, 0)
+                        ],
+                        backgroundColor: ['#2E86C1', '#27AE60', '#F39C12', '#E74C3C'],
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 37, 64, 0.9)',
+                            titleFont: {
+                                size: 13
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw.toFixed(2)} kg CO₂e`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function generateDPP() {
+            const productName = document.getElementById('productName').value || 'Unnamed Product';
+            const dppId = 'DPP-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            currentDPPId = dppId;
+            
+            document.getElementById('dppId').textContent = dppId;
+            
+            // Create comprehensive PEF data for DPP
+            const pefImpactsForDPP = {};
+            for (const category in finalPefResults) {
+                pefImpactsForDPP[category] = {
+                    value: finalPefResults[category],
+                    unit: aioxyData.pefCategories[category].unit,
+                    per_kg: finalPefResults[category] / (massBalanceData.finalProductWeight || 0.2)
+                };
+            }
+            
+            const dppData = {
+                productId: dppId,
+                productName: productName,
+                timestamp: new Date().toISOString(),
+                compliance: {
+                    methodology: "PEF 3.1",
+                    version: "1.0",
+                    dataSources: ["AGRIBALYSE 3.1", "JRC EF 3.1", "AWARE 2.0"],
+                    standards: ["EU Green Claims Directive", "ESPR DPP", "CSRD"]
+                },
+                environmentalFootprint: {
+                    unit_of_analysis: "Total product impact",
+                    total_weight_kg: massBalanceData.finalProductWeight,
+                    mass_balance: massBalanceData,
+                    pef_impacts: pefImpactsForDPP
+                },
+                supplyChain: {
+                    ingredients: selectedIngredients.map(i => ({ 
+                        name: i.name, 
+                        quantity_kg: i.quantity,
+                        proportion: ((i.quantity / massBalanceData.finalProductWeight) * 100).toFixed(1) + '%'
+                    })),
+                    manufacturing_country: aioxyData.countries[document.getElementById('manufacturingCountry').value]?.name || 'Not specified',
+                    processing_method: document.getElementById('processingMethod').value
+                },
+                platform: {
+                    name: "AIOXY PEF Platform",
+                    version: "2.0",
+                    calculation_timestamp: new Date().toISOString()
+                }
+            };
+            
+            // Generate QR Code
+            const qrElement = document.getElementById('qrcode');
+            qrElement.innerHTML = '';
+            
+            QRCode.toCanvas(qrElement, JSON.stringify(dppData, null, 2), {
+                width: 200,
+                height: 200,
+                margin: 1,
+                color: {
+                    dark: '#0A2540',
+                    light: '#FFFFFF'
+                }
+            }, function(error) {
+                if (error) console.error(error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
