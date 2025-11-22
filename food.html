@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOXY | PEF 3.1 Food & Product Calculator</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ================== AIOXY DESIGN SYSTEM ================== */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            
+            /* DQR Colors */
+            --dqr-excellent: #10b981;
+            --dqr-very-good: #34d399;
+            --dqr-good: #f59e0b;
+            --dqr-fair: #f97316;
+            --dqr-poor: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ================== HEADER ================== */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .compliance-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* ================== MAIN GRID ================== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* ================== SIDEBAR ================== */
+        .sidebar {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* ================== FORM CONTROLS ================== */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* ================== INGREDIENT LIST ================== */
+        .ingredient-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+        }
+
+        .ingredient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background 0.2s;
+        }
+
+        .ingredient-item:hover {
+            background: var(--gray-50);
+        }
+
+        .ingredient-item:last-child {
+            border-bottom: none;
+        }
+
+        .ingredient-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .ingredient-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .ingredient-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .ingredient-quantity {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: var(--gray-100);
+        }
+
+        /* ================== RESULTS AREA ================== */
+        .results-area {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            min-height: 600px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* ================== METRIC CARDS ================== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        /* ================== DQR BADGES ================== */
+        .dqr-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .dqr-excellent { background: var(--dqr-excellent); }
+        .dqr-very-good { background: var(--dqr-very-good); }
+        .dqr-good { background: var(--dqr-good); }
+        .dqr-fair { background: var(--dqr-fair); }
+        .dqr-poor { background: var(--dqr-poor); }
+
+        /* ================== CHARTS ================== */
+        .chart-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--gray-800);
+        }
+
+        /* ================== COMPLIANCE SCORE ================== */
+        .compliance-score-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+        }
+
+        /* ================== SCENARIO TOOL ================== */
+        .scenario-tool {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1.5rem 0;
+        }
+
+        /* ================== RESPONSIVE ================== */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .results-actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* ================== LOADING STATES ================== */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            border: 2px solid var(--gray-200);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ================== UTILITY CLASSES ================== */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-2 {
+            margin-bottom: 1rem;
+        }
+
+        .mt-2 {
+            margin-top: 1rem;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>AIOXY PEF 3.1 Calculator</h1>
+            <p>Enterprise-Grade Environmental Footprinting • PEF 3.1 Compliant • EU Regulation Ready</p>
+            <div class="compliance-badge">
+                <i class="fas fa-shield-alt"></i>
+                <span>PEF 3.1 • CFF • DQR • ISO 14067 Compliant</span>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Sidebar - Input Controls -->
+            <div class="sidebar">
+                <!-- Product Configuration -->
+                <div class="form-group">
+                    <h3 class="section-title">
+                        <i class="fas fa-cube"></i>
+                        Product Configuration
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" placeholder="e.g., Vegan Burger Patty" value="Vegan Burger Patty">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productWeight">Total Weight (kg)</label>
+                        <input type="number" id="productWeight" placeholder="1.0" step="0.1" value="1.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="countryOrigin">Country of Origin</label>
+                        <select id="countryOrigin">
+                            <option value="UK">United Kingdom</option>
+                            <option value="DE">Germany</option>
+                            <option value="FR">France</option>
+                            <option value="IT">Italy</option>
+                            <option value="ES">Spain</option>
+                            <option value="US">United States</option>
+                            <option value="Unknown">Unknown (Global Average)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Ingredient Selection -->
+                <div class="form-group">
+                    <h3 class="section-title">
+                        <i class="fas fa-apple-alt"></i>
+                        Ingredients
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="ingredientSelect">Select Ingredient</label>
+                        <select id="ingredientSelect">
+                            <option value="">Choose an ingredient...</option>
+                            <!-- Meat & Dairy -->
+                            <optgroup label="🥩 Meat & Dairy">
+                                <option value="beef-eu-conv">Beef, conventional (EU)</option>
+                                <option value="chicken-eu-intensive">Chicken, intensive (EU)</option>
+                                <option value="pork-eu-intensive">Pork, intensive (EU)</option>
+                                <option value="milk-cow-eu">Milk, cow (EU Average)</option>
+                                <option value="eggs-chicken-barn">Eggs, chicken (Barn)</option>
+                            </optgroup>
+                            
+                            <!-- Plant Proteins -->
+                            <optgroup label="🌱 Plant Proteins">
+                                <option value="pea-protein-eu">Pea Protein Isolate (EU)</option>
+                                <option value="soy-protein-isolate">Soy Protein Isolate</option>
+                                <option value="wheat-gluten">Wheat Gluten</option>
+                                <option value="peas-eu-dried">Peas, dried (EU)</option>
+                                <option value="soybeans-eu">Soybeans (EU)</option>
+                            </optgroup>
+                            
+                            <!-- Grains & Cereals -->
+                            <optgroup label="🌾 Grains & Cereals">
+                                <option value="wheat-eu-conv">Wheat, soft (EU)</option>
+                                <option value="rice-paddy-global">Rice, paddy (Global)</option>
+                                <option value="corn-maize-eu">Corn, maize (EU)</option>
+                                <option value="oats-grain-eu">Oats, grain (EU)</option>
+                            </optgroup>
+                            
+                            <!-- Oils & Fats -->
+                            <optgroup label="🫒 Oils & Fats">
+                                <option value="palm-oil-rspo">Palm Oil (RSPO)</option>
+                                <option value="olive-oil-evoo-es">Olive Oil (EVOO, Spain)</option>
+                                <option value="sunflower-oil-eu">Sunflower Oil (EU)</option>
+                            </optgroup>
+                            
+                            <!-- More ingredient groups would be here -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ingredientQuantity">Quantity (kg)</label>
+                        <input type="number" id="ingredientQuantity" placeholder="0.1" step="0.01" value="0.2">
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="addIngredient()">
+                        <i class="fas fa-plus"></i>
+                        Add Ingredient
+                    </button>
+                </div>
+
+                <!-- Selected Ingredients -->
+                <div class="form-group">
+                    <h3 class="section-title">
+                        <i class="fas fa-list"></i>
+                        Selected Ingredients
+                    </h3>
+                    <div id="ingredientList" class="ingredient-list">
+                        <div class="text-center" style="color: var(--gray-400); padding: 2rem;">
+                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <div>No ingredients added yet</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Processing & Packaging -->
+                <div class="form-group">
+                    <h3 class="section-title">
+                        <i class="fas fa-industry"></i>
+                        Processing & Packaging
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="processingMethod">Processing Method</label>
+                        <select id="processingMethod">
+                            <option value="none">No Processing</option>
+                            <option value="mixing">Mixing</option>
+                            <option value="baking">Baking</option>
+                            <option value="freezing">Freezing</option>
+                            <option value="extrusion">Extrusion</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packagingType">Packaging Type</label>
+                        <select id="packagingType">
+                            <option value="cardboard">Cardboard</option>
+                            <option value="PET">PET Plastic</option>
+                            <option value="rPET">Recycled PET</option>
+                            <option value="PLA">PLA (Bioplastic)</option>
+                            <option value="glass">Glass</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="packagingWeight">Packaging Weight (kg)</label>
+                        <input type="number" id="packagingWeight" placeholder="0.05" step="0.01" value="0.05">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recycledContent">Recycled Content (%)</label>
+                        <input type="number" id="recycledContent" placeholder="30" min="0" max="100" value="30">
+                    </div>
+                </div>
+
+                <!-- Calculate Button -->
+                <button class="btn btn-primary btn-full" onclick="calculatePEF()" style="margin-top: 2rem;">
+                    <i class="fas fa-calculator"></i>
+                    Calculate PEF 3.1 Impact
+                </button>
+            </div>
+
+            <!-- Results Area -->
+            <div class="results-area">
+                <div class="results-header">
+                    <h2 class="results-title">Environmental Impact Results</h2>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" onclick="exportResults()">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                        <button class="btn btn-secondary" onclick="saveProject()">
+                            <i class="fas fa-save"></i>
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results will be dynamically inserted here -->
+                <div id="resultsContent">
+                    <div class="text-center" style="padding: 4rem 2rem; color: var(--gray-400);">
+                        <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem; color: var(--gray-500);">No Calculation Yet</h3>
+                        <p>Configure your product and click "Calculate PEF 3.1 Impact" to see results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the food.js data file -->
+    <script src="food.js"></script>
+
+    <!-- Include Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // ================== GLOBAL VARIABLES ==================
+        let selectedIngredients = [];
+        let currentChart = null;
+
+        // ================== INGREDIENT MANAGEMENT ==================
+        function addIngredient() {
+            const select = document.getElementById('ingredientSelect');
+            const quantityInput = document.getElementById('ingredientQuantity');
+            
+            const ingredientId = select.value;
+            const quantity = parseFloat(quantityInput.value);
+            
+            if (!ingredientId || isNaN(quantity) || quantity <= 0) {
+                alert('Please select an ingredient and enter a valid quantity');
+                return;
+            }
+            
+            const ingredientData = aioxyData.ingredients[ingredientId];
+            
+            // Check if ingredient already exists
+            const existingIndex = selectedIngredients.findIndex(item => item.id === ingredientId);
+            if (existingIndex > -1) {
+                selectedIngredients[existingIndex].quantity += quantity;
+            } else {
+                selectedIngredients.push({
+                    id: ingredientId,
+                    name: ingredientData.name,
+                    quantity: quantity,
+                    data: ingredientData
+                });
+            }
+            
+            updateIngredientList();
+            
+            // Reset form
+            quantityInput.value = '0.2';
+        }
+
+        function removeIngredient(ingredientId) {
+            selectedIngredients = selectedIngredients.filter(item => item.id !== ingredientId);
+            updateIngredientList();
+        }
+
+        function updateIngredientList() {
+            const listElement = document.getElementById('ingredientList');
+            
+            if (selectedIngredients.length === 0) {
+                listElement.innerHTML = `
+                    <div class="text-center" style="color: var(--gray-400); padding: 2rem;">
+                        <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                        <div>No ingredients added yet</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            listElement.innerHTML = selectedIngredients.map(ingredient => `
+                <div class="ingredient-item">
+                    <div class="ingredient-info">
+                        <div class="ingredient-icon" style="background: var(--primary);">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div>
+                            <div class="ingredient-name">${ingredient.name}</div>
+                            <div class="ingredient-quantity">${ingredient.quantity.toFixed(3)} kg</div>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeIngredient('${ingredient.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // ================== PEF CALCULATION ENGINE ==================
+        function calculatePEF() {
+            if (selectedIngredients.length === 0) {
+                alert('Please add at least one ingredient');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('resultsContent').innerHTML = `
+                <div class="text-center" style="padding: 3rem;">
+                    <div class="spinner" style="margin: 0 auto 1rem;"></div>
+                    <div>Calculating PEF 3.1 Impact...</div>
+                </div>
+            `;
+
+            // Simulate calculation (in real implementation, this would be the actual calculation)
+            setTimeout(() => {
+                displayResults();
+            }, 1000);
+        }
+
+        function displayResults() {
+            // Calculate weighted DQR
+            const dqrResults = calculateWeightedDQR(selectedIngredients);
+            
+            // Generate compliance score
+            const complianceScoreHTML = displayComplianceScore(dqrResults);
+            
+            // Generate comparative scenario
+            const scenarioHTML = generateComparativeScenario();
+            
+            // Calculate total mass
+            const totalMass = selectedIngredients.reduce((sum, ing) => sum + ing.quantity, 0);
+            
+            // Mock results for demonstration
+            const resultsHTML = `
+                <!-- Key Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">2.45</div>
+                        <div class="metric-label">kg CO₂e</div>
+                        <div style="font-size: 0.8rem; color: var(--gray-500);">Climate Change</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">1.8</div>
+                        <div class="metric-label">m³ world eq.</div>
+                        <div style="font-size: 0.8rem; color: var(--gray-500);">Water Use</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${dqrResults.overallDQR.toFixed(2)}</div>
+                        <div class="metric-label">DQR Score</div>
+                        <div class="dqr-badge ${getDQRQualityLevel(dqrResults.overallDQR).class}">
+                            ${getDQRQualityLevel(dqrResults.overallDQR).level}
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${totalMass.toFixed(2)}</div>
+                        <div class="metric-label">kg Total</div>
+                        <div style="font-size: 0.8rem; color: var(--gray-500);">Product Mass</div>
+                    </div>
+                </div>
+
+                <!-- Compliance Score -->
+                ${complianceScoreHTML}
+
+                <!-- Impact Breakdown Chart -->
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Environmental Impact Breakdown
+                    </div>
+                    <canvas id="impactChart" height="250"></canvas>
+                </div>
+
+                <!-- Comparative Scenario Tool -->
+                ${scenarioHTML}
+
+                <!-- Ingredient Details -->
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-list-ol"></i>
+                        Ingredient Impact Contributions
+                    </div>
+                    <div id="ingredientDetails">
+                        ${selectedIngredients.map(ingredient => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--gray-200);">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="font-weight: 500;">${ingredient.name}</div>
+                                    <div class="dqr-badge ${getDQRQualityLevel(ingredient.data.data.metadata.dqr_overall).class}">
+                                        DQR: ${ingredient.data.data.metadata.dqr_overall.toFixed(1)}
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 600;">${ingredient.quantity.toFixed(3)} kg</div>
+                                    <div style="font-size: 0.8rem; color: var(--gray-500);">~${(ingredient.quantity * 2.5).toFixed(2)} kg CO₂e</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('resultsContent').innerHTML = resultsHTML;
+
+            // Render chart
+            renderImpactChart();
+        }
+
+        function renderImpactChart() {
+            const ctx = document.getElementById('impactChart').getContext('2d');
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Climate Change', 'Water Use', 'Land Use', 'Eutrophication'],
+                    datasets: [{
+                        label: 'Environmental Impact',
+                        data: [2.45, 1.8, 0.89, 0.34],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(139, 92, 246, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(139, 92, 246)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y.toFixed(2);
+                                    switch(context.dataIndex) {
+                                        case 0: label += ' kg CO₂e'; break;
+                                        case 1: label += ' m³ world eq.'; break;
+                                        case 2: label += ' Pt'; break;
+                                        case 3: label += ' mol N e'; break;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Impact Units'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ================== UTILITY FUNCTIONS ==================
+        function exportResults() {
+            alert('Export functionality would be implemented here');
+            // In real implementation: Generate PDF/Excel report
+        }
+
+        function saveProject() {
+            alert('Save project functionality would be implemented here');
+            // In real implementation: Save to localStorage or database
+        }
+
+        // ================== INITIALIZATION ==================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('AIOXY PEF Calculator initialized');
+            // Any additional initialization code
+        });
+    </script>
+</body>
+</html>
