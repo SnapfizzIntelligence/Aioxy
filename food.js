@@ -1,5 +1,3 @@
-'use strict';
-
 // food.js - 100% EU REGULATOR-PROOF PEF 3.1 CALCULATION ENGINE (FOOD ONLY)
 // ====================================================================================
 // - Full 16 impact categories with complete contribution tree for audit
