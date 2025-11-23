@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIOXY | EU-Compliant Sustainability Intelligence</title>
+    <title>AIOXY | Science-Based Sustainability Intelligence</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1196,10 +1196,10 @@
                     </div>
                     AIOXY
                 </div>
-                <div class="tagline">World's First 100% Regulator-Ready Sustainability Intelligence Platform</div>
+                <div class="tagline">Science-Based Sustainability Intelligence Platform</div>
                 <div class="compliance-badge">
                     <i class="fas fa-shield-alt"></i>
-                    EU Green Claims Directive Compliant • PEF 3.1 Methodology • ESPR DPP Ready
+                    Standard-Aligned • PEF 3.1 Methodology • Verification-Ready
                 </div>
             </div>
         </div>
@@ -1224,19 +1224,19 @@
             </button>
             <button class="nav-tab" onclick="showTab('dpp')">
                 <i class="fas fa-qrcode"></i>
-                Digital Passport
+                Transparency Card
             </button>
             <button class="nav-tab" onclick="showTab('export')">
                 <i class="fas fa-file-export"></i>
                 Export Reports
             </button>
-            <button class="nav-tab" onclick="showTab('audit')">
+            <button class="nav-tab" onclick="showTab('transparency')">
                 <i class="fas fa-search"></i>
-                Audit Trail
+                Transparency Log
             </button>
-            <button class="nav-tab" onclick="showTab('compliance')">
+            <button class="nav-tab" onclick="showTab('methodology')">
                 <i class="fas fa-file-contract"></i>
-                Compliance
+                Methodology
             </button>
         </div>
 
@@ -1253,7 +1253,7 @@
                         </div>
                         <div class="badge">
                             <i class="fas fa-info-circle"></i>
-                            Required for DPP
+                            Required for Transparency Card
                         </div>
                     </div>
                     <div class="form-group">
@@ -1280,9 +1280,68 @@
                     <div class="card-header">
                         <div class="card-title">
                             <div class="card-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            Performance Comparison
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Compare Against</label>
+                        <select id="comparisonBaseline" class="form-control" onchange="updateComparison()">
+                            <option value="auto">Auto-detect (Recommended)</option>
+                            
+                            <optgroup label="Food Products">
+                                <option value="beef-product">Conventional Beef Product</option>
+                                <option value="chicken-product">Conventional Chicken Product</option>
+                                <option value="pork-product">Conventional Pork Product</option>
+                                <option value="cheese-product">Conventional Cheese Product</option>
+                                <option value="coffee-product">Conventional Coffee Product</option>
+                                <option value="chocolate-product">Conventional Chocolate Product</option>
+                                <option value="bread-product">Conventional Bread Product</option>
+                            </optgroup>
+                            
+                            <optgroup label="Personal Care">
+                                <option value="shampoo-conventional">Conventional Shampoo</option>
+                                <option value="soap-conventional">Conventional Soap</option>
+                                <option value="lotion-conventional">Conventional Lotion</option>
+                            </optgroup>
+                            
+                            <optgroup label="Textiles">
+                                <option value="cotton-tshirt">Conventional Cotton T-Shirt</option>
+                                <option value="polyester-tshirt">Conventional Polyester T-Shirt</option>
+                            </optgroup>
+                            
+                            <optgroup label="Beverages">
+                                <option value="soda-drink">Conventional Soda Drink</option>
+                                <option value="juice-drink">Conventional Juice Drink</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Custom Baseline (kg CO₂e/kg)</label>
+                        <input type="number" id="customBaseline" class="form-control" placeholder="Enter custom competitor baseline" step="0.1" min="0">
+                        <small style="color: var(--gray); font-size: 0.8rem;">Use this to compare against specific competitors</small>
+                    </div>
+                    
+                    <div class="compliance-notice" style="margin-top: 1rem;">
+                        <div class="compliance-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <strong>Smart Detection Active</strong><br>
+                            System automatically detects product type and selects the most relevant comparison baseline.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
                                 <i class="fas fa-apple-alt"></i>
                             </div>
-                            Ingredients (PEF-Compliant)
+                            Ingredients (Science-Based)
                         </div>
                         <div class="badge">
                             <i class="fas fa-database"></i>
@@ -1292,7 +1351,7 @@
                     <div class="form-group">
                         <label class="form-label">Select Ingredient</label>
                         <select id="ingredientSelect" class="form-control">
-                            <option value="">Choose from PEF-compliant ingredients...</option>
+                            <option value="">Choose from science-based ingredients...</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1399,7 +1458,7 @@
                             <div class="card-icon">
                                 <i class="fas fa-box-open"></i>
                             </div>
-                            Packaging Materials (CFF Compliant)
+                            Packaging Materials
                         </div>
                     </div>
                     
@@ -1436,7 +1495,7 @@
 
                 <button class="btn btn-success" onclick="calculateImpact()" style="width: 100%; padding: 1.25rem; font-size: 1.1rem;">
                     <i class="fas fa-rocket"></i>
-                    Calculate PEF Environmental Impact
+                    Calculate Environmental Impact
                 </button>
             </div>
 
@@ -1448,19 +1507,19 @@
                             <div class="card-icon">
                                 <i class="fas fa-chart-pie"></i>
                             </div>
-                            PEF Impact Analysis
+                            Impact Analysis
                         </div>
                         <div class="badge">
                             <i class="fas fa-clock"></i>
-                            PEF 3.1 Methodology • AWARE • CFF • DQR Rated
+                            PEF 3.1 Methodology • AWARE • Data Quality Rated
                         </div>
                     </div>
                     
                     <div class="loading hidden" id="loadingResults">
                         <div class="spinner"></div>
-                        <h3>Calculating PEF Environmental Footprint...</h3>
+                        <h3>Calculating Environmental Footprint...</h3>
                         <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
-                            Processing 16 PEF impact categories with AGRIBALYSE 3.2 data and uncertainty calculations
+                            Processing 16 impact categories with AGRIBALYSE 3.2 data and uncertainty calculations
                         </p>
                     </div>
 
@@ -1575,9 +1634,9 @@
                                 <i class="fas fa-check"></i>
                             </div>
                             <div>
-                                <strong>EU Green Claims Directive Compliant</strong><br>
+                                <strong>Verification-Ready Assessment</strong><br>
                                 This assessment follows PEF 3.1 methodology using AGRIBALYSE 3.2, JRC EF 3.1, and AWARE 2.0 data. 
-                                All claims are substantiated and auditable through the Digital Product Passport (DPP).
+                                All claims are substantiated and transparent through the Digital Transparency Card.
                             </div>
                         </div>
 
@@ -1592,7 +1651,7 @@
                             </button>
                             <button class="btn" onclick="showTab('dpp')">
                                 <i class="fas fa-qrcode"></i>
-                                Generate DPP
+                                Generate Transparency Card
                             </button>
                             <button class="btn" onclick="generatePDFReport('comprehensive')">
                                 <i class="fas fa-file-pdf"></i>
@@ -1663,12 +1722,12 @@
 
                         <div class="compliance-notice" style="margin-top: 2rem;">
                             <div class="compliance-icon">
-                                <i class="fas fa-gavel"></i>
+                                <i class="fas fa-users"></i>
                             </div>
                             <div>
-                                <strong>Regulatory Risk Mitigation</strong><br>
-                                EU Green Claims Directive compliance eliminates regulatory risks and potential fines up to 4% of annual turnover. 
-                                CSRD reporting ready for 2025 mandates.
+                                <strong>Brand Value Enhancement</strong><br>
+                                Science-based sustainability data builds consumer trust and loyalty. 
+                                Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
                             </div>
                         </div>
 
@@ -1702,18 +1761,18 @@
                         </div>
                         <div class="badge">
                             <i class="fas fa-file-certificate"></i>
-                            Regulator-Ready • 16 Impact Categories • DQR Rated
+                            Science-Based • 16 Impact Categories • DQR Rated
                         </div>
                     </div>
 
                     <div class="compliance-notice">
                         <div class="compliance-icon">
-                            <i class="fas fa-gavel"></i>
+                            <i class="fas fa-calculator"></i>
                         </div>
                         <div>
-                            <strong>Official PEF 3.1 Methodology Compliance</strong><br>
+                            <strong>Standard-Aligned PEF 3.1 Methodology</strong><br>
                             This scorecard presents the complete environmental footprint across all 16 mandatory PEF impact categories. 
-                            All values are calculated using JRC EF 3.1 characterization factors and are auditable for EU Green Claims Directive compliance.
+                            All values are calculated using JRC EF 3.1 characterization factors and are transparent for verification purposes.
                         </div>
                     </div>
 
@@ -1748,7 +1807,7 @@
                     <div class="action-buttons">
                         <button class="btn" onclick="showTab('dpp')">
                             <i class="fas fa-qrcode"></i>
-                            Generate DPP with Full Data
+                            Generate Transparency Card with Full Data
                         </button>
                         <button class="btn" onclick="generatePDFReport('technical')">
                             <i class="fas fa-file-pdf"></i>
@@ -1762,7 +1821,7 @@
                 </div>
             </div>
 
-            <!-- Digital Product Passport Tab -->
+            <!-- Digital Transparency Card Tab -->
             <div id="dpp-tab" class="tab-content hidden">
                 <div class="card">
                     <div class="card-header">
@@ -1770,29 +1829,29 @@
                             <div class="card-icon">
                                 <i class="fas fa-passport"></i>
                             </div>
-                            Digital Product Passport (DPP)
+                            Digital Transparency Card
                         </div>
                         <div class="badge">
                             <i class="fas fa-qrcode"></i>
-                            ESPR Compliant • Full PEF Data • DQR Embedded
+                            Science-Based • Full PEF Data • DQR Embedded
                         </div>
                     </div>
 
                     <div class="dpp-section">
-                        <h3 style="margin-bottom: 1rem; color: var(--primary);">Your Product's Digital Identity</h3>
+                        <h3 style="margin-bottom: 1rem; color: var(--primary);">Your Product's Environmental Profile</h3>
                         <p style="margin-bottom: 1.5rem; color: var(--gray);">
-                            Scan this QR code to access the complete 16-impact PEF environmental footprint and compliance data
+                            Scan this QR code to access the complete 16-impact environmental footprint and transparency data
                         </p>
                         
                         <div class="qrcode-container">
                             <div id="qrcode"></div>
                         </div>
                         
-                        <div class="dpp-id" id="dppId">DPP-#####-#####</div>
+                        <div class="dpp-id" id="dppId">TRC-#####-#####</div>
                         
                         <p style="font-size: 0.9rem; color: var(--gray); max-width: 600px; margin: 0 auto;">
-                            This Digital Product Passport contains the complete PEF 3.1 16-impact matrix, supply chain transparency information, 
-                            and compliance statements aligned with EU Green Claims Directive and ESPR regulations.
+                            This Digital Transparency Card contains the complete PEF 3.1 16-impact matrix, supply chain transparency information, 
+                            and methodology documentation aligned with science-based sustainability reporting.
                         </p>
                     </div>
 
@@ -1802,20 +1861,20 @@
                         </div>
                         <div>
                             <strong>Complete PEF Data Embedded</strong><br>
-                            This DPP contains the full 16-impact PEF matrix required for EU compliance. Data structure follows JSON-LD format 
-                            with GS1 standards for interoperability. Includes: complete PEF impact data, ingredient origins, processing methods, 
-                            packaging CFF calculations, and methodology documentation.
+                            This transparency card contains the full 16-impact PEF matrix. Data structure follows JSON-LD format 
+                            with interoperability standards. Includes: complete PEF impact data, ingredient origins, processing methods, 
+                            packaging calculations, and methodology documentation.
                         </div>
                     </div>
 
                     <div class="action-buttons">
                         <button class="btn" onclick="generateDPP()">
                             <i class="fas fa-sync-alt"></i>
-                            Regenerate DPP
+                            Regenerate Card
                         </button>
                         <button class="btn" onclick="downloadDPPData()">
                             <i class="fas fa-download"></i>
-                            Download DPP Data
+                            Download Card Data
                         </button>
                         <button class="btn btn-outline" onclick="generatePDFReport('dpp')">
                             <i class="fas fa-print"></i>
@@ -1833,36 +1892,36 @@
                             <div class="card-icon">
                                 <i class="fas fa-file-export"></i>
                             </div>
-                            Export Compliance Reports
+                            Export Reports
                         </div>
                         <div class="badge">
                             <i class="fas fa-file-pdf"></i>
-                            Professional Reports • Audit-Ready • Multiple Formats
+                            Professional Reports • Verification-Ready • Multiple Formats
                         </div>
                     </div>
 
                     <div class="export-section">
                         <h3 style="margin-bottom: 1rem; color: var(--primary); text-align: center;">
-                            Generate Professional Compliance Reports
+                            Generate Professional Reports
                         </h3>
                         <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">
-                            Download comprehensive reports for regulators, auditors, or internal compliance documentation
+                            Download comprehensive reports for stakeholders, marketing, or internal documentation
                         </p>
                         
                         <div class="export-options">
-                            <div class="export-card" onclick="generatePDFReport('compliance')">
+                            <div class="export-card" onclick="generatePDFReport('marketing')">
                                 <div class="export-icon">
-                                    <i class="fas fa-gavel"></i>
+                                    <i class="fas fa-chart-line"></i>
                                 </div>
-                                <div class="export-title">Regulatory Compliance Report</div>
+                                <div class="export-title">Marketing Report</div>
                                 <div class="export-desc">
-                                    Complete EU Green Claims Directive compliance documentation with full audit trail and methodology justification.
+                                    Consumer-friendly environmental performance overview with key metrics and storytelling elements.
                                 </div>
                             </div>
                             
                             <div class="export-card" onclick="generatePDFReport('executive')">
                                 <div class="export-icon">
-                                    <i class="fas fa-chart-line"></i>
+                                    <i class="fas fa-user-tie"></i>
                                 </div>
                                 <div class="export-title">Executive Summary</div>
                                 <div class="export-desc">
@@ -1874,19 +1933,19 @@
                                 <div class="export-icon">
                                     <i class="fas fa-calculator"></i>
                                 </div>
-                                <div class="export-title">Technical Audit Report</div>
+                                <div class="export-title">Technical Report</div>
                                 <div class="export-desc">
-                                    Detailed technical documentation for auditors with full calculation methodology and data sources.
+                                    Detailed technical documentation with full calculation methodology and data sources.
                                 </div>
                             </div>
                             
-                            <div class="export-card" onclick="generatePDFReport('dpp')">
+                            <div class="export-card" onclick="generatePDFReport('transparency')">
                                 <div class="export-icon">
                                     <i class="fas fa-qrcode"></i>
                                 </div>
-                                <div class="export-title">DPP Implementation Package</div>
+                                <div class="export-title">Transparency Package</div>
                                 <div class="export-desc">
-                                    Complete Digital Product Passport documentation with QR codes and compliance statements.
+                                    Complete Digital Transparency Card documentation with QR codes and methodology statements.
                                 </div>
                             </div>
                         </div>
@@ -1905,30 +1964,30 @@
                 </div>
             </div>
 
-            <!-- Audit Trail Tab -->
-            <div id="audit-tab" class="tab-content hidden">
+            <!-- Transparency Log Tab -->
+            <div id="transparency-tab" class="tab-content hidden">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
                             <div class="card-icon">
                                 <i class="fas fa-search"></i>
                             </div>
-                            Complete Audit Trail
+                            Transparency Log
                         </div>
                         <div class="badge">
                             <i class="fas fa-shield-alt"></i>
-                            Regulator-Ready • Full Transparency
+                            Science-Based • Full Transparency
                         </div>
                     </div>
 
                     <div class="compliance-notice">
                         <div class="compliance-icon">
-                            <i class="fas fa-gavel"></i>
+                            <i class="fas fa-calculator"></i>
                         </div>
                         <div>
                             <strong>Complete Calculation Transparency</strong><br>
-                            This audit trail shows every calculation step and data source used in the PEF assessment. 
-                            Regulators can verify every impact value back to its source data and methodology.
+                            This transparency log shows every calculation step and data source used in the environmental assessment. 
+                            Stakeholders can verify every impact value back to its source data and methodology.
                         </div>
                     </div>
 
@@ -1936,48 +1995,50 @@
                         <!-- Audit trail will be populated here -->
                         <div class="empty-state">
                             <i class="fas fa-calculator"></i>
-                            <h3>No audit data available</h3>
-                            <p>Calculate environmental impacts first to generate the audit trail</p>
+                            <h3>No calculation data available</h3>
+                            <p>Calculate environmental impacts first to generate the transparency log</p>
                         </div>
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn" onclick="calculateImpact(); showTab('audit')">
+                        <button class="btn" onclick="calculateImpact(); showTab('transparency')">
                             <i class="fas fa-sync-alt"></i>
-                            Regenerate Audit Trail
+                            Regenerate Log
                         </button>
                         <button class="btn" onclick="exportAuditData()">
                             <i class="fas fa-download"></i>
-                            Export Audit Data
+                            Export Log Data
                         </button>
-                        <button class="btn btn-outline" onclick="showTab('compliance')">
+                        <button class="btn btn-outline" onclick="showTab('methodology')">
                             <i class="fas fa-file-contract"></i>
-                            View Compliance Docs
+                            View Methodology
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Compliance Tab -->
-            <div id="compliance-tab" class="tab-content hidden">
+            <!-- Methodology Tab -->
+            <div id="methodology-tab" class="tab-content hidden">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">
                             <div class="card-icon">
                                 <i class="fas fa-file-certificate"></i>
                             </div>
-                            Compliance & Methodology
+                            Methodology
                         </div>
                     </div>
                     
                     <div class="compliance-notice">
                         <div class="compliance-icon">
-                            <i class="fas fa-gavel"></i>
+                            <i class="fas fa-flask"></i>
                         </div>
                         <div>
-                            <strong>EU Regulatory Compliance Statement</strong><br><br>
-                            Environmental claims made by AIOXY regarding this product are substantiated by a Life Cycle Assessment (LCA) conducted in accordance with the Product Environmental Footprint (PEF) methodology as defined by the European Commission Joint Research Centre (JRC).<br><br>
-                            The specific methodology, including data sources (AGRIBALYSE 3.2, JRC EF 3.1, GLEC v3.0) and calculation rules (CFF, AWARE, Economic Allocation), is fully documented and auditable via the Digital Product Passport (DPP). This claim refers exclusively to, and not to the product's overall environmental performance.
+                            <strong>Science-Based Methodology Statement</strong><br><br>
+                            Environmental estimates made by AIOXY regarding this product are based on a Life Cycle Assessment (LCA) 
+                            conducted using the Product Environmental Footprint (PEF) methodology as defined by the European Commission Joint Research Centre (JRC).<br><br>
+                            The specific methodology, including data sources (AGRIBALYSE 3.2, JRC EF 3.1, GLEC v3.0) and calculation rules (CFF, AWARE, Economic Allocation), 
+                            is fully documented and transparent via the Digital Transparency Card.
                         </div>
                     </div>
                     
@@ -2002,7 +2063,7 @@
                             <div class="metric-value">CFF</div>
                             <div class="metric-label">Circular Footprint</div>
                             <p style="margin-top: 0.75rem; font-size: 0.85rem;">
-                                Packaging end-of-life calculations with R1, R2, Q parameters and allocation factor A=0.5
+                                Packaging end-of-life calculations with allocation factors
                             </p>
                         </div>
                         
@@ -2177,7 +2238,7 @@
                         </button>
                         <button class="btn btn-outline" onclick="showTab('export')">
                             <i class="fas fa-user-check"></i>
-                            Request Audit
+                            Request Verification
                         </button>
                     </div>
                 </div>
@@ -2186,7 +2247,7 @@
 
         <div class="footer">
             <div class="footer-content">
-                <div>© 2024 AIOXY Sustainability Intelligence. All rights reserved.</div>
+                <div>© 2024 AIOXY Sustainability Intelligence. Estimates based on Agribalyse 3.1 data. For consumer information and marketing purposes only.</div>
                 <div class="footer-links">
                     <a href="#">Privacy Policy</a>
                     <a href="#">Terms of Service</a>
@@ -2200,11 +2261,201 @@
     <!-- PDF Loading Overlay -->
     <div id="pdf-loading-overlay">
         <div class="spinner"></div>
-        <h3>Generating Compliance Report...</h3>
+        <h3>Generating Report...</h3>
         <p>This may take a few moments.</p>
     </div>
 
     <script>
+        // ================== UNIVERSAL COMPARISON SYSTEM ==================
+        const UNIVERSAL_BASELINES = {
+            // FOOD & BEVERAGE
+            'beef-product': {
+                name: 'Conventional Beef Product',
+                category: 'food',
+                co2PerKg: 30.8,
+                waterPerKg: 8.1,
+                landUsePerKg: 11500,
+                fossilPerKg: 20.8
+            },
+            'chicken-product': {
+                name: 'Conventional Chicken Product',
+                category: 'food', 
+                co2PerKg: 3.3,
+                waterPerKg: 1.7,
+                landUsePerKg: 710,
+                fossilPerKg: 9.9
+            },
+            'pork-product': {
+                name: 'Conventional Pork Product',
+                category: 'food',
+                co2PerKg: 5.2,
+                waterPerKg: 2.2,
+                landUsePerKg: 810,
+                fossilPerKg: 11.8
+            },
+            'cheese-product': {
+                name: 'Conventional Cheese Product',
+                category: 'food',
+                co2PerKg: 8.5,
+                waterPerKg: 3.2,
+                landUsePerKg: 1200,
+                fossilPerKg: 6.8
+            },
+            'milk-product': {
+                name: 'Conventional Dairy Product',
+                category: 'food',
+                co2PerKg: 1.3,
+                waterPerKg: 0.95,
+                landUsePerKg: 760,
+                fossilPerKg: 1.9
+            },
+            'coffee-product': {
+                name: 'Conventional Coffee Product',
+                category: 'food',
+                co2PerKg: 19.5,
+                waterPerKg: 3.4,
+                landUsePerKg: 1450,
+                fossilPerKg: 39.0
+            },
+            'chocolate-product': {
+                name: 'Conventional Chocolate Product',
+                category: 'food',
+                co2PerKg: 14.5,
+                waterPerKg: 1.95,
+                landUsePerKg: 2150,
+                fossilPerKg: 26.5
+            },
+            'bread-product': {
+                name: 'Conventional Bread Product',
+                category: 'food',
+                co2PerKg: 0.8,
+                waterPerKg: 0.6,
+                landUsePerKg: 250,
+                fossilPerKg: 3.2
+            },
+            
+            // PERSONAL CARE
+            'shampoo-conventional': {
+                name: 'Conventional Shampoo',
+                category: 'personal-care',
+                co2PerKg: 2.8,
+                waterPerKg: 1.2,
+                landUsePerKg: 150,
+                fossilPerKg: 15.4
+            },
+            'soap-conventional': {
+                name: 'Conventional Soap',
+                category: 'personal-care',
+                co2PerKg: 1.8,
+                waterPerKg: 0.8,
+                landUsePerKg: 120,
+                fossilPerKg: 8.7
+            },
+            'lotion-conventional': {
+                name: 'Conventional Lotion',
+                category: 'personal-care',
+                co2PerKg: 3.2,
+                waterPerKg: 1.5,
+                landUsePerKg: 180,
+                fossilPerKg: 12.3
+            },
+            
+            // TEXTILES
+            'cotton-tshirt': {
+                name: 'Conventional Cotton T-Shirt',
+                category: 'textiles',
+                co2PerKg: 3.6,
+                waterPerKg: 13.8,
+                landUsePerKg: 2050,
+                fossilPerKg: 12.1
+            },
+            'polyester-tshirt': {
+                name: 'Conventional Polyester T-Shirt',
+                category: 'textiles',
+                co2PerKg: 4.1,
+                waterPerKg: 0.24,
+                landUsePerKg: 14,
+                fossilPerKg: 44.5
+            },
+            
+            // BEVERAGES
+            'soda-drink': {
+                name: 'Conventional Soda Drink',
+                category: 'beverage',
+                co2PerKg: 0.4,
+                waterPerKg: 0.8,
+                landUsePerKg: 85,
+                fossilPerKg: 2.1
+            },
+            'juice-drink': {
+                name: 'Conventional Juice Drink',
+                category: 'beverage',
+                co2PerKg: 1.2,
+                waterPerKg: 1.5,
+                landUsePerKg: 320,
+                fossilPerKg: 4.8
+            }
+        };
+
+        // ================== SMART CATEGORY DETECTION ==================
+        function detectProductCategory(productName, ingredients, selectedCategory) {
+            const name = productName.toLowerCase();
+            const category = selectedCategory.toLowerCase();
+            
+            // Check product name for clues
+            if (name.includes('burger') || name.includes('patty') || name.includes('sausage')) {
+                return detectFoodType(ingredients);
+            }
+            if (name.includes('pizza')) return 'cheese-product';
+            if (name.includes('coffee') || name.includes('espresso') || name.includes('latte')) return 'coffee-product';
+            if (name.includes('chocolate') || name.includes('cocoa') || name.includes('candy')) return 'chocolate-product';
+            if (name.includes('bread') || name.includes('bun') || name.includes('roll')) return 'bread-product';
+            if (name.includes('shampoo') || name.includes('conditioner')) return 'shampoo-conventional';
+            if (name.includes('soap') || name.includes('bar')) return 'soap-conventional';
+            if (name.includes('lotion') || name.includes('cream')) return 'lotion-conventional';
+            if (name.includes('tshirt') || name.includes('shirt') || name.includes('garment')) return detectTextileType(ingredients);
+            if (name.includes('soda') || name.includes('cola') || name.includes('soft drink')) return 'soda-drink';
+            if (name.includes('juice') || name.includes('smoothie')) return 'juice-drink';
+            
+            // Fall back to category selection
+            if (category.includes('personal care') || category.includes('cosmetic')) return 'shampoo-conventional';
+            if (category.includes('textile') || category.includes('clothing')) return 'cotton-tshirt';
+            if (category.includes('beverage') || category.includes('drink')) return 'soda-drink';
+            
+            // Default food comparison
+            return detectFoodType(ingredients);
+        }
+
+        function detectFoodType(ingredients) {
+            // Analyze ingredients to detect food type
+            const hasBeef = ingredients.some(ing => ing.id.includes('beef') || ing.id.includes('lamb'));
+            const hasChicken = ingredients.some(ing => ing.id.includes('chicken') || ing.id.includes('turkey'));
+            const hasPork = ingredients.some(ing => ing.id.includes('pork') || ing.id.includes('bacon'));
+            const hasDairy = ingredients.some(ing => ing.id.includes('milk') || ing.id.includes('cheese') || ing.id.includes('butter'));
+            const hasCoffee = ingredients.some(ing => ing.id.includes('coffee'));
+            const hasCocoa = ingredients.some(ing => ing.id.includes('cocoa') || ing.id.includes('chocolate'));
+            
+            if (hasBeef) return 'beef-product';
+            if (hasChicken) return 'chicken-product';
+            if (hasPork) return 'pork-product';
+            if (hasDairy) return 'cheese-product';
+            if (hasCoffee) return 'coffee-product';
+            if (hasCocoa) return 'chocolate-product';
+            
+            // Plant-based default
+            return 'bread-product';
+        }
+
+        function detectTextileType(ingredients) {
+            const hasCotton = ingredients.some(ing => ing.id.includes('cotton'));
+            const hasPolyester = ingredients.some(ing => ing.id.includes('polyester'));
+            
+            if (hasCotton) return 'cotton-tshirt';
+            if (hasPolyester) return 'polyester-tshirt';
+            
+            return 'cotton-tshirt'; // Default
+        }
+
         // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
         const aioxyData = {
             // PEF 3.1 Impact Categories with units
@@ -2267,7 +2518,7 @@
                 "Resource Use, fossils": 0.063
             },
 
-            // COMPLETE 50 INGREDIENTS DATABASE
+             // COMPLETE 50 INGREDIENTS DATABASE
             ingredients: {
                 "beef-eu-conv": { 
                     name: "Beef, conventional (EU)",
@@ -3478,6 +3729,7 @@
         let finalPefResults = {};
         let massBalanceData = {};
         let auditTrailData = {};
+        let currentComparisonBaseline = null;
 
         // ================== AIOXY ALGORITHM IMPLEMENTATION ==================
         const foodCalculationEngine = {
@@ -3533,6 +3785,12 @@
                 const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
                 const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
 
+                // SMART CATEGORY DETECTION
+                const productCategory = document.getElementById('productCategory').value;
+                const comparisonKey = detectProductCategory(productName, selectedIngredients, productCategory);
+                const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey];
+                currentComparisonBaseline = comparisonBaseline;
+
                 // Data fallbacks
                 const country = aioxyData.countries[manufacturingCountryCode] || aioxyData.countries.FR;
                 const processing = aioxyData.processing[processingMethod] || aioxyData.processing.none;
@@ -3543,12 +3801,13 @@
                 // Initialize audit trail
                 const auditTrail = {
                     productName,
-                    dppId: 'DPP-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                    dppId: 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
                     calculationTimestamp: new Date().toISOString(),
                     pefCategories: {},
                     mass_balance: {},
                     dqr_summary: {},
-                    uncertainty_analysis: {}
+                    uncertainty_analysis: {},
+                    comparison_baseline: comparisonBaseline
                 };
 
                 // Initialize all 16 categories
@@ -3698,6 +3957,15 @@
                 massBalanceData = auditTrail.mass_balance;
                 currentDPPId = auditTrail.dppId;
 
+                // Calculate comparison
+                const baselineCO2 = comparisonBaseline.co2PerKg * finalContentWeight;
+                const baselineWater = comparisonBaseline.waterPerKg * finalContentWeight;
+                const currentCO2 = auditTrail.pefCategories["Climate Change"].total;
+                const currentWater = auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total;
+
+                const co2Saved = Math.max(baselineCO2 - currentCO2, 0);
+                const waterSaved = Math.max(baselineWater - currentWater, 0);
+
                 return {
                     finalPefResults: auditTrail.pefCategories,
                     auditTrail: auditTrail,
@@ -3709,7 +3977,14 @@
                     co2PerKg: auditTrail.pefCategories["Climate Change"].total / finalContentWeight,
                     waterScarcityPerKg: auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total / finalContentWeight,
                     landUsePerKg: auditTrail.pefCategories["Land Use"].total / finalContentWeight,
-                    fossilPerKg: auditTrail.pefCategories["Resource Use, fossils"].total / finalContentWeight
+                    fossilPerKg: auditTrail.pefCategories["Resource Use, fossils"].total / finalContentWeight,
+                    comparison: {
+                        baseline: comparisonBaseline,
+                        co2Saved,
+                        waterSaved,
+                        co2SavedPerKg: co2Saved / finalContentWeight,
+                        waterSavedPerKg: waterSaved / finalContentWeight
+                    }
                 };
             }
         };
@@ -3717,11 +3992,9 @@
         // ================== BUSINESS CASE CALCULATOR ==================
         function calculateBusinessCase(results) {
             const co2PerKg = results.co2PerKg;
-            const industryAvgCO2 = 3.5; // kg CO2e per kg for conventional products
-            
-            // Calculate savings
-            const co2Reduction = Math.max(industryAvgCO2 - co2PerKg, 0);
-            const reductionPercentage = (co2Reduction / industryAvgCO2) * 100;
+            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
+            const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
+            const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
             
             // Business metrics
             const annualProduction = 10000; // kg per year (example)
@@ -3746,6 +4019,42 @@
             };
         }
 
+        // ================== ENHANCED STORYTELLING ==================
+        function getProductTypeDescription() {
+            const productName = document.getElementById('productName').value.toLowerCase();
+            if (productName.includes('shampoo') || productName.includes('conditioner')) return 'personal care product';
+            if (productName.includes('soap') || productName.includes('lotion')) return 'personal care product';
+            if (productName.includes('tshirt') || productName.includes('shirt')) return 'clothing item';
+            if (productName.includes('coffee')) return 'coffee product';
+            if (productName.includes('chocolate')) return 'chocolate product';
+            return 'product';
+        }
+
+        function getPerformanceLevel(currentCO2, baselineCO2) {
+            const reduction = ((baselineCO2 - currentCO2) / baselineCO2) * 100;
+            if (reduction >= 50) return 'outstanding';
+            if (reduction >= 30) return 'excellent';
+            if (reduction >= 15) return 'strong';
+            if (reduction >= 5) return 'good';
+            return 'modest';
+        }
+
+        function getCustomMessage(baselineName, currentCO2) {
+            const messages = {
+                'Conventional Beef Product': `This represents a major step forward in sustainable food production.`,
+                'Conventional Chicken Product': `Your approach shows clear environmental advantages over conventional poultry.`,
+                'Conventional Pork Product': `Significant resource savings demonstrate your commitment to sustainability.`,
+                'Conventional Cheese Product': `Innovative approach delivering both taste and environmental benefits.`,
+                'Conventional Coffee Product': `Sustainable sourcing practices protect ecosystems while delivering great flavor.`,
+                'Conventional Chocolate Product': `Ethical and environmental considerations make this a responsible choice.`,
+                'Conventional Shampoo': `Natural ingredients and sustainable formulation set a new standard.`,
+                'Conventional Soap': `Eco-friendly composition reduces environmental impact significantly.`,
+                'Conventional Cotton T-Shirt': `Sustainable textiles contribute to a cleaner fashion industry.`,
+                'Conventional Soda Drink': `Reduced environmental footprint in every serving.`
+            };
+            return messages[baselineName] || `This achievement reflects thoughtful ingredient selection and efficient supply chain management.`;
+        }
+
         // ================== INITIALIZATION ==================
         function initApp() {
             populateIngredientSelect();
@@ -3757,7 +4066,7 @@
 
         function populateIngredientSelect() {
             const select = document.getElementById('ingredientSelect');
-            select.innerHTML = '<option value="">Choose from PEF-compliant ingredients...</option>';
+            select.innerHTML = '<option value="">Choose from science-based ingredients...</option>';
             
             for (const [key, ingredient] of Object.entries(aioxyData.ingredients)) {
                 const option = document.createElement('option');
@@ -3880,6 +4189,10 @@
             advanced.classList.toggle('hidden');
         }
 
+        function updateComparison() {
+            calculateImpact();
+        }
+
         // ================== TAB MANAGEMENT ==================
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
@@ -3892,7 +4205,7 @@
             if (tabName === 'business-case') updateBusinessCase();
             if (tabName === 'dpp') generateDPP();
             if (tabName === 'pef-scorecard') displayFullPefScorecard();
-            if (tabName === 'audit') displayAuditTrail();
+            if (tabName === 'transparency') displayAuditTrail();
             
             updateTabIndicator();
         }
@@ -3963,18 +4276,19 @@
             document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
             document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
             
-            // Calculate savings compared to industry average
-            const industryAvgCO2 = 3.5;
-            const industryAvgWater = 2.0;
-            const co2SavingsPercent = ((industryAvgCO2 - results.co2PerKg) / industryAvgCO2 * 100).toFixed(1);
-            const waterSavingsPercent = ((industryAvgWater - results.waterScarcityPerKg) / industryAvgWater * 100).toFixed(1);
+            // Calculate savings compared to baseline
+            const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
+            const baselineWater = currentComparisonBaseline ? currentComparisonBaseline.waterPerKg : 8.1;
             
-            document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved';
-            document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved';
+            const co2SavingsPercent = ((baselineCO2 - results.co2PerKg) / baselineCO2 * 100).toFixed(1);
+            const waterSavingsPercent = ((baselineWater - results.waterScarcityPerKg) / baselineWater * 100).toFixed(1);
+            
+            document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
+            document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
 
             // Storytelling comparisons
-            const co2Saved = Math.max((industryAvgCO2 - results.co2PerKg) * results.finalContentWeight, 0);
-            const waterSaved = Math.max((industryAvgWater - results.waterScarcityPerKg) * results.finalContentWeight, 0);
+            const co2Saved = results.comparison.co2Saved;
+            const waterSaved = results.comparison.waterSaved;
             
             document.getElementById('carKm').textContent = Math.round(co2Saved * 1000 / 120) + ' km';
             document.getElementById('householdEnergy').textContent = (co2Saved * 1000 / 12000).toFixed(1) + ' days';
@@ -3989,8 +4303,8 @@
             const storyContent = document.getElementById('storyContent');
             const storyComparison = document.getElementById('storyComparison');
 
-            const industryAvgCO2 = 3.5;
-            const co2Saved = Math.max((industryAvgCO2 - results.co2PerKg) * results.finalContentWeight, 0);
+            const co2Saved = results.comparison.co2Saved;
+            const waterSaved = results.comparison.waterSaved;
             const carKm = Math.round(co2Saved * 1000 / 120);
             const trees = Math.round(co2Saved / 0.025);
 
@@ -3999,15 +4313,16 @@
             storyContent.innerHTML = `
                 <div class="story-highlight">
                     <i class="fas fa-seedling"></i>
-                    <strong>${co2Saved.toFixed(1)} kg CO₂e saved</strong> - equivalent to not driving ${carKm} km in a standard car
+                    <strong>${co2Saved.toFixed(1)} kg CO₂e saved vs ${results.comparison.baseline.name}</strong> - equivalent to not driving ${carKm} km in a standard car
                 </div>
                 <div class="story-highlight">
                     <i class="fas fa-tree"></i>
                     <strong>Carbon absorption equivalent to ${trees} trees</strong> - making a real contribution to natural carbon capture
                 </div>
                 <p>
-                    Your product demonstrates outstanding environmental performance with a carbon footprint ${((industryAvgCO2 - results.co2PerKg) / industryAvgCO2 * 100).toFixed(1)}% lower than industry average. 
-                    This achievement reflects thoughtful ingredient selection and efficient supply chain management.
+                    Your ${getProductTypeDescription()} demonstrates <strong>${getPerformanceLevel(results.co2PerKg, results.comparison.baseline.co2PerKg)} environmental performance</strong> with a carbon footprint 
+                    ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(1)}% lower than ${results.comparison.baseline.name}. 
+                    ${getCustomMessage(results.comparison.baseline.name, results.co2PerKg)}
                 </p>
             `;
 
@@ -4020,17 +4335,17 @@
                 <div class="story-item">
                     <div class="story-icon">🏠</div>
                     <div class="story-value">${(co2Saved * 1000 / 12000).toFixed(1)} days</div>
-                    <div class="story-label">Home energy consumption equivalent</div>
+                    <div class="story-label">Home energy equivalent</div>
                 </div>
                 <div class="story-item">
                     <div class="story-icon">🌳</div>
                     <div class="story-value">${trees}</div>
-                    <div class="story-label">Trees needed to absorb this CO₂</div>
+                    <div class="story-label">Trees for saved CO₂</div>
                 </div>
                 <div class="story-item">
                     <div class="story-icon">💧</div>
-                    <div class="story-value">${Math.round((Math.max(2.0 - results.waterScarcityPerKg, 0) * results.finalContentWeight * 1000 / 1.5))}</div>
-                    <div class="story-label">Water bottles saved from scarcity</div>
+                    <div class="story-value">${Math.round(waterSaved * 1000 / 1.5)}</div>
+                    <div class="story-label">Water bottles saved</div>
                 </div>
             `;
         }
@@ -4253,7 +4568,7 @@
             }
         }
 
-        // ================== AUDIT TRAIL ==================
+        // ================== TRANSPARENCY LOG ==================
         function displayAuditTrail() {
             const auditContent = document.getElementById('auditTrailContent');
             
@@ -4261,8 +4576,8 @@
                 auditContent.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-calculator"></i>
-                        <h3>No audit data available</h3>
-                        <p>Calculate environmental impacts first to generate the audit trail</p>
+                        <h3>No calculation data available</h3>
+                        <p>Calculate environmental impacts first to generate the transparency log</p>
                     </div>
                 `;
                 return;
@@ -4348,34 +4663,35 @@
             auditContent.innerHTML = auditHTML;
         }
 
-        // ================== DIGITAL PRODUCT PASSPORT ==================
+        // ================== DIGITAL TRANSPARENCY CARD ==================
         function generateDPP() {
             const productName = document.getElementById('productName').value || 'Unnamed Product';
-            const dppId = currentDPPId || 'DPP-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
             currentDPPId = dppId;
             
             document.getElementById('dppId').textContent = dppId;
             
-            // Build DPP data
-            const dppData = {
+            // Build transparency card data
+            const transparencyData = {
                 productId: dppId,
                 productName: productName,
                 timestamp: new Date().toISOString(),
-                compliance: {
-                    methodology: "PEF 3.1",
+                methodology: {
+                    approach: "PEF 3.1",
                     version: "1.0",
                     dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
-                    standards: ["EU Green Claims Directive", "ESPR DPP", "CSRD"]
+                    standards: ["Science-Based Reporting", "Transparent Methodology"]
                 },
                 environmentalFootprint: finalPefResults,
                 data_quality: auditTrailData.dqr_summary,
-                mass_balance: massBalanceData
+                mass_balance: massBalanceData,
+                comparison_baseline: currentComparisonBaseline
             };
             
             const qrElement = document.getElementById('qrcode');
             qrElement.innerHTML = '';
             
-            QRCode.toCanvas(qrElement, JSON.stringify(dppData, null, 2), {
+            QRCode.toCanvas(qrElement, JSON.stringify(transparencyData, null, 2), {
                 width: 200,
                 height: 200,
                 margin: 1,
@@ -4394,7 +4710,7 @@
             if (loadingOverlay) loadingOverlay.style.display = 'flex';
 
             setTimeout(() => {
-                alert(`Generating ${reportType} PDF report...\n\nIn a full implementation, this would generate a professional PDF with:\n- Complete PEF scorecard\n- Audit trail\n- Compliance statements\n- Business case analysis\n- DPP documentation`);
+                alert(`Generating ${reportType} PDF report...\n\nIn a full implementation, this would generate a professional PDF with:\n- Complete PEF scorecard\n- Transparency log\n- Methodology statements\n- Business case analysis\n- Digital Transparency Card documentation`);
                 
                 if (loadingOverlay) loadingOverlay.style.display = 'none';
             }, 1500);
@@ -4411,19 +4727,19 @@
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `aioxy-audit-data-${currentDPPId || 'export'}.json`;
+            link.download = `aioxy-transparency-data-${currentDPPId || 'export'}.json`;
             link.click();
             URL.revokeObjectURL(url);
         }
 
         function downloadDPPData() {
             if (!currentDPPId) {
-                alert('No DPP available. Please generate a Digital Product Passport first.');
+                alert('No transparency card available. Please generate a Digital Transparency Card first.');
                 return;
             }
             
             const productName = document.getElementById('productName').value || 'Unnamed Product';
-            const dppData = {
+            const transparencyData = {
                 productId: currentDPPId,
                 productName: productName,
                 timestamp: new Date().toISOString(),
@@ -4432,12 +4748,12 @@
                 mass_balance: massBalanceData
             };
             
-            const dataStr = JSON.stringify(dppData, null, 2);
+            const dataStr = JSON.stringify(transparencyData, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `aioxy-dpp-${currentDPPId}.json`;
+            link.download = `aioxy-transparency-card-${currentDPPId}.json`;
             link.click();
             URL.revokeObjectURL(url);
         }
@@ -4449,12 +4765,12 @@
             }
             
             const dataStr = JSON.stringify({
-                audit_trail: auditTrailData,
+                transparency_log: auditTrailData,
                 pef_results: finalPefResults,
                 mass_balance: massBalanceData,
                 ingredients: selectedIngredients,
                 metadata: {
-                    platform: "AIOXY 100% Regulator-Ready",
+                    platform: "AIOXY Science-Based Sustainability",
                     version: "2.1",
                     export_timestamp: new Date().toISOString()
                 }
@@ -4474,7 +4790,7 @@
         }
 
         function downloadMethodology() {
-            alert("Downloading complete methodology documentation...\n\nThis would include:\n- PEF 3.1 methodology guide\n- AGRIBALYSE 3.2 data sources\n- CFF calculation methodology\n- Uncertainty analysis approach\n- Peer review documentation");
+            alert("Downloading complete methodology documentation...\n\nThis would include:\n- PEF 3.1 methodology guide\n- AGRIBALYSE 3.2 data sources\n- CFF calculation methodology\n- Uncertainty analysis approach\n- Science-based reporting approach");
         }
 
         // ================== UTILITY FUNCTIONS ==================
