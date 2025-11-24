@@ -2404,7 +2404,8 @@
             
             // Check product name for clues
             if (name.includes('burger') || name.includes('patty') || name.includes('sausage')) {
-                return detectFoodType(ingredients);
+                // FIX: Plant-based burgers should be compared to beef, not cheese
+                return 'beef-product';
             }
             if (name.includes('pizza')) return 'cheese-product';
             if (name.includes('coffee') || name.includes('espresso') || name.includes('latte')) return 'coffee-product';
@@ -2442,8 +2443,8 @@
             if (hasCoffee) return 'coffee-product';
             if (hasCocoa) return 'chocolate-product';
             
-            // Plant-based default
-            return 'bread-product';
+            // Plant-based default - FIX: Compare to beef, not bread
+            return 'beef-product';
         }
 
         function detectTextileType(ingredients) {
@@ -3785,7 +3786,7 @@
                 const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
                 const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
 
-                // SMART CATEGORY DETECTION
+                // SMART CATEGORY DETECTION - FIXED
                 const productCategory = document.getElementById('productCategory').value;
                 const comparisonKey = detectProductCategory(productName, selectedIngredients, productCategory);
                 const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey];
