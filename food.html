@@ -1649,7 +1649,7 @@
                 </div>
             </div>
 
-            <!-- NEW: Business Case Tab -->
+            <!-- NEW: Business Case Tab - ENHANCED WITH VOLUME SLIDER -->
             <div id="business-case-tab" class="tab-content hidden">
                 <div class="card">
                     <div class="card-header">
@@ -1661,18 +1661,56 @@
                         </div>
                         <div class="badge">
                             <i class="fas fa-chart-line"></i>
-                            Financial Impact • ROI • Market Advantage
+                            Financial Impact • ROI • Market Advantage • Scales from 1 to Billions
                         </div>
                     </div>
 
                     <div class="business-case">
+                        <!-- VOLUME SELECTOR SYSTEM -->
+                        <div class="form-group" style="background: white; padding: 2rem; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 2rem;">
+                            <label class="form-label" style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+                                <i class="fas fa-boxes"></i>
+                                Annual Production Volume
+                            </label>
+                            
+                            <!-- Quick Select Buttons -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
+                                <button class="btn btn-outline" onclick="setVolume(100)">100 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(1000)">1,000 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(10000)">10,000 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(100000)">100,000 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(1000000)">1 Million</button>
+                                <button class="btn btn-outline" onclick="setVolume(10000000)">10 Million</button>
+                                <button class="btn btn-outline" onclick="setVolume(100000000)">100 Million</button>
+                                <button class="btn btn-outline" onclick="setVolume(1000000000)">1 Billion</button>
+                            </div>
+                            
+                            <!-- Precision Slider -->
+                            <div style="margin-bottom: 1rem;">
+                                <input type="range" id="salesVolume" min="1" max="1000000000" value="10000" 
+                                       step="1" style="width: 100%; height: 8px; border-radius: 4px;"
+                                       oninput="updateVolumeDisplay(this.value); updateBusinessCase();">
+                            </div>
+                            
+                            <!-- Volume Display -->
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
+                                    <span id="volumeDisplay">10,000</span>
+                                </div>
+                                <div style="font-size: 1rem; color: var(--gray);">
+                                    <span id="businessScaleDisplay">Growing Business</span>
+                                    • Tier: <span id="volumeTierDisplay">10K-100K</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <h3 style="margin-bottom: 1.5rem; color: var(--primary); text-align: center;">
                             Sustainability Business Case Analysis
                         </h3>
                         
                         <div class="business-metrics">
                             <div class="business-card">
-                                <i class="fas fa-euro-sign" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <i class="fas fa-rocket" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
                                 <div class="business-value" id="roiValue">0%</div>
                                 <div class="business-label">ROI (3-Year)</div>
                                 <div class="roi-badge" id="roiBadge">CALCULATING</div>
@@ -1694,6 +1732,30 @@
                                 <i class="fas fa-users" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
                                 <div class="business-value" id="marketValue">0%</div>
                                 <div class="business-label">Market Share Growth</div>
+                            </div>
+                        </div>
+
+                        <!-- COST BREAKDOWN -->
+                        <div class="mass-balance" style="margin-top: 2rem;">
+                            <div class="mass-balance-title">
+                                <i class="fas fa-euro-sign"></i>
+                                Investment & Return Breakdown
+                            </div>
+                            <div class="mass-balance-item">
+                                <span>Implementation Cost:</span>
+                                <span id="implementationCost">€0</span>
+                            </div>
+                            <div class="mass-balance-item">
+                                <span>Annual Carbon Reduction:</span>
+                                <span id="carbonReductionDisplay">0 kg CO₂e</span>
+                            </div>
+                            <div class="mass-balance-item">
+                                <span>Total Annual Benefit:</span>
+                                <span id="totalBenefitDisplay">€0</span>
+                            </div>
+                            <div class="mass-balance-item" style="font-weight: 600; color: var(--primary);">
+                                <span>3-Year Net Return:</span>
+                                <span id="netReturnDisplay">€0</span>
                             </div>
                         </div>
 
@@ -3777,6 +3839,162 @@
         let massBalanceData = {};
         let auditTrailData = {};
         let currentComparisonBaseline = null;
+        let currentAnnualVolume = 10000; // Default volume
+
+        // ================== SCALABLE BUSINESS CASE ENGINE ==================
+        function calculateScalableBusinessCase(results, annualVolume) {
+            const co2PerKg = results.co2PerKg;
+            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
+            const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
+            const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
+            
+            // DYNAMIC COST STRUCTURE BASED ON VOLUME
+            let implementationCost, carbonPrice, premiumPotential, marketGrowth;
+            
+            if (annualVolume <= 1000) {
+                // Small batch / prototype
+                implementationCost = 1000;
+                carbonPrice = 30; // Lower carbon price sensitivity
+                premiumPotential = reductionPercentage * 0.3; // 0.3% premium per 1% reduction
+                marketGrowth = Math.min(reductionPercentage * 1.5, 15);
+            } else if (annualVolume <= 10000) {
+                // Small business
+                implementationCost = 5000;
+                carbonPrice = 40;
+                premiumPotential = reductionPercentage * 0.4;
+                marketGrowth = Math.min(reductionPercentage * 1.8, 20);
+            } else if (annualVolume <= 100000) {
+                // Medium business
+                implementationCost = 20000;
+                carbonPrice = 50;
+                premiumPotential = reductionPercentage * 0.5;
+                marketGrowth = Math.min(reductionPercentage * 2.0, 25);
+            } else if (annualVolume <= 1000000) {
+                // Large business
+                implementationCost = 50000;
+                carbonPrice = 60;
+                premiumPotential = reductionPercentage * 0.6;
+                marketGrowth = Math.min(reductionPercentage * 2.2, 30);
+            } else if (annualVolume <= 10000000) {
+                // Enterprise
+                implementationCost = 200000;
+                carbonPrice = 70;
+                premiumPotential = reductionPercentage * 0.7;
+                marketGrowth = Math.min(reductionPercentage * 2.5, 35);
+            } else {
+                // Global corporation (millions+)
+                implementationCost = 1000000;
+                carbonPrice = 80;
+                premiumPotential = reductionPercentage * 0.8;
+                marketGrowth = Math.min(reductionPercentage * 3.0, 40);
+            }
+            
+            // CALCULATIONS THAT SCALE
+            const totalCarbonReduction = co2Reduction * annualVolume;
+            const carbonSavings = (totalCarbonReduction * carbonPrice) / 1000; // Convert kg to tons
+            
+            // Revenue premium scales with volume
+            const basePricePerKg = 10; // Assumed base price
+            const premiumRevenue = (premiumPotential / 100) * (annualVolume * basePricePerKg);
+            
+            // Market share growth value
+            const totalMarketSize = annualVolume * 10; // Assume 10x current volume as total market
+            const marketShareValue = (marketGrowth / 100) * totalMarketSize * basePricePerKg * 0.1; // 10% of new market value
+            
+            const totalAnnualBenefit = carbonSavings + premiumRevenue + marketShareValue;
+            
+            // ROI calculation (3-year horizon)
+            const roi = annualVolume > 0 ? ((totalAnnualBenefit * 3) - implementationCost) / implementationCost * 100 : 0;
+            
+            return {
+                roi: Math.max(roi, -100), // Cap losses at -100% for display
+                annualSavings: carbonSavings,
+                premiumRevenue: premiumRevenue,
+                marketShareValue: marketShareValue,
+                totalAnnualBenefit: totalAnnualBenefit,
+                carbonReduction: totalCarbonReduction,
+                implementationCost: implementationCost,
+                businessScale: getBusinessScale(annualVolume),
+                volumeTier: getVolumeTier(annualVolume)
+            };
+        }
+
+        function getBusinessScale(volume) {
+            if (volume <= 1000) return "Prototype / Small Batch";
+            if (volume <= 10000) return "Small Business";
+            if (volume <= 100000) return "Growing Business";
+            if (volume <= 1000000) return "Medium Enterprise";
+            if (volume <= 10000000) return "Large Enterprise";
+            if (volume <= 100000000) return "Major Corporation";
+            return "Global Corporation";
+        }
+
+        function getVolumeTier(volume) {
+            const tiers = [
+                { max: 1000, label: "1-1K" },
+                { max: 10000, label: "1K-10K" },
+                { max: 100000, label: "10K-100K" },
+                { max: 1000000, label: "100K-1M" },
+                { max: 10000000, label: "1M-10M" },
+                { max: 100000000, label: "10M-100M" },
+                { max: 1000000000, label: "100M-1B" },
+                { max: 10000000000, label: "1B+" }
+            ];
+            
+            return tiers.find(tier => volume <= tier.max)?.label || "1B+";
+        }
+
+        function setVolume(volume) {
+            document.getElementById('salesVolume').value = volume;
+            updateVolumeDisplay(volume);
+            updateBusinessCase();
+        }
+
+        function updateVolumeDisplay(volume) {
+            currentAnnualVolume = parseInt(volume);
+            const display = document.getElementById('volumeDisplay');
+            const scaleDisplay = document.getElementById('businessScaleDisplay');
+            const tierDisplay = document.getElementById('volumeTierDisplay');
+            
+            // Format number for display
+            if (volume >= 1000000) {
+                display.textContent = (volume / 1000000).toFixed(volume >= 10000000 ? 0 : 1) + 'M';
+            } else if (volume >= 1000) {
+                display.textContent = (volume / 1000).toFixed(volume >= 10000 ? 0 : 1) + 'K';
+            } else {
+                display.textContent = volume.toLocaleString();
+            }
+            
+            // Update business scale and tier
+            const businessCase = calculateScalableBusinessCase({}, volume); // Empty results for scale detection only
+            scaleDisplay.textContent = businessCase.businessScale;
+            tierDisplay.textContent = businessCase.volumeTier;
+        }
+
+        function formatLargeNumber(num) {
+            if (num >= 1000000000) {
+                return (num / 1000000000).toFixed(1) + 'B';
+            } else if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return Math.round(num).toLocaleString();
+            }
+        }
+
+        function getBusinessIcon(scale) {
+            const icons = {
+                "Prototype / Small Batch": "flask",
+                "Small Business": "store",
+                "Growing Business": "seedling",
+                "Medium Enterprise": "building",
+                "Large Enterprise": "city",
+                "Major Corporation": "globe-americas",
+                "Global Corporation": "globe"
+            };
+            return icons[scale] || "chart-line";
+        }
 
         // ================== AIOXY ALGORITHM IMPLEMENTATION ==================
         const foodCalculationEngine = {
@@ -4037,33 +4255,71 @@
         };
 
         // ================== BUSINESS CASE CALCULATOR ==================
-        function calculateBusinessCase(results) {
-            const co2PerKg = results.co2PerKg;
-            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
-            const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
-            const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
-            
-            // Business metrics
-            const annualProduction = 10000; // kg per year (example)
-            const carbonPrice = 50; // € per ton CO2
-            const premiumPotential = reductionPercentage * 0.5; // 0.5% price premium per 1% reduction
-            const marketGrowth = Math.min(reductionPercentage * 2, 25); // Market share growth
-            
-            // ROI calculation
-            const implementationCost = 5000; // € one-time cost
-            const annualSavings = (co2Reduction * annualProduction * carbonPrice) / 1000;
-            const annualRevenueIncrease = (premiumPotential / 100) * (annualProduction * 10); // Assuming €10/kg price
-            const totalAnnualBenefit = annualSavings + annualRevenueIncrease;
-            const roi = ((totalAnnualBenefit * 3) - implementationCost) / implementationCost * 100; // 3-year ROI
+        function updateBusinessCase() {
+            if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
+                document.getElementById('businessStory').innerHTML = `
+                    <div class="story-highlight">
+                        <i class="fas fa-calculator"></i>
+                        <strong>Calculate environmental impacts first</strong> to see the business case analysis
+                    </div>
+                `;
+                return;
+            }
 
-            return {
-                roi: Math.max(roi, 0),
-                annualSavings: annualSavings,
-                premiumPotential: premiumPotential,
-                marketGrowth: marketGrowth,
-                carbonReduction: co2Reduction * annualProduction,
-                totalAnnualBenefit: totalAnnualBenefit
+            const results = {
+                co2PerKg: finalPefResults["Climate Change"].total / massBalanceData.final_content_weight_kg,
+                finalContentWeight: massBalanceData.final_content_weight_kg
             };
+
+            const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
+
+            // Update all business metrics
+            document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
+            document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
+            document.getElementById('premiumValue').textContent = businessCase.premiumPotential.toFixed(1) + '%';
+            document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
+            
+            // Update cost breakdown
+            document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
+            document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(businessCase.carbonReduction) + ' kg CO₂e';
+            document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(businessCase.totalAnnualBenefit);
+            document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber((businessCase.totalAnnualBenefit * 3) - businessCase.implementationCost);
+
+            // Update ROI badge with dynamic coloring
+            const roiBadge = document.getElementById('roiBadge');
+            if (businessCase.roi >= 200) {
+                roiBadge.textContent = 'EXCEPTIONAL ROI';
+                roiBadge.style.background = 'var(--dqr-excellent)';
+            } else if (businessCase.roi >= 100) {
+                roiBadge.textContent = 'EXCELLENT ROI';
+                roiBadge.style.background = 'var(--dqr-very-good)';
+            } else if (businessCase.roi >= 50) {
+                roiBadge.textContent = 'STRONG ROI';
+                roiBadge.style.background = 'var(--dqr-good)';
+            } else if (businessCase.roi >= 20) {
+                roiBadge.textContent = 'GOOD ROI';
+                roiBadge.style.background = 'var(--dqr-fair)';
+            } else if (businessCase.roi >= 0) {
+                roiBadge.textContent = 'MODEST ROI';
+                roiBadge.style.background = 'var(--dqr-poor)';
+            } else {
+                roiBadge.textContent = 'NEGATIVE ROI';
+                roiBadge.style.background = 'var(--accent)';
+            }
+
+            // Update business story with volume context
+            document.getElementById('businessStory').innerHTML = `
+                <div class="story-highlight">
+                    <i class="fas fa-${getBusinessIcon(businessCase.businessScale)}"></i>
+                    <strong>${businessCase.businessScale} Opportunity</strong><br>
+                    At ${currentAnnualVolume.toLocaleString()} units annually, your sustainability story creates <strong>€${formatLargeNumber(businessCase.totalAnnualBenefit)}</strong> in annual business value.
+                </div>
+                <p>
+                    This includes <strong>€${formatLargeNumber(businessCase.annualSavings)}</strong> in carbon savings, 
+                    <strong>€${formatLargeNumber(businessCase.premiumRevenue)}</strong> from price premiums, and 
+                    <strong>€${formatLargeNumber(businessCase.marketShareValue)}</strong> from market share growth.
+                </p>
+            `;
         }
 
         // ================== ENHANCED STORYTELLING ==================
@@ -4096,7 +4352,7 @@
                 'Conventional Chocolate Product': `Ethical and environmental considerations make this a responsible choice.`,
                 'Conventional Shampoo': `Natural ingredients and sustainable formulation set a new standard.`,
                 'Conventional Soap': `Eco-friendly composition reduces environmental impact significantly.`,
-                'Conventional Cotton T-Shirt': `Sustainable textiles contribute to a cleaner fashion industry.`,
+                                'Conventional Cotton T-Shirt': `Sustainable textiles contribute to a cleaner fashion industry.`,
                 'Conventional Soda Drink': `Reduced environmental footprint in every serving.`
             };
             return messages[baselineName] || `This achievement reflects thoughtful ingredient selection and efficient supply chain management.`;
@@ -4397,7 +4653,7 @@
             `;
         }
 
-                function updateDataQualityDisplay(results) {
+        function updateDataQualityDisplay(results) {
             const dataQualitySection = document.getElementById('dataQualitySection');
             const dqrBreakdown = document.getElementById('dqrBreakdown');
             const overallDQRBadge = document.getElementById('overallDQRBadge');
@@ -4500,50 +4756,6 @@
             } else {
                 massBalanceSection.classList.add('hidden');
             }
-        }
-
-        // ================== BUSINESS CASE CALCULATOR ==================
-        function updateBusinessCase() {
-            if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
-                document.getElementById('businessStory').innerHTML = `
-                    <div class="story-highlight">
-                        <i class="fas fa-calculator"></i>
-                        <strong>Calculate environmental impacts first</strong> to see the business case analysis
-                    </div>
-                `;
-                return;
-            }
-
-            const results = {
-                co2PerKg: finalPefResults["Climate Change"].total / massBalanceData.final_content_weight_kg,
-                finalContentWeight: massBalanceData.final_content_weight_kg
-            };
-
-            const businessCase = calculateBusinessCase(results);
-
-            // Update business metrics
-            document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
-            document.getElementById('savingsValue').textContent = '€' + businessCase.annualSavings.toFixed(0);
-            document.getElementById('premiumValue').textContent = businessCase.premiumPotential.toFixed(1) + '%';
-            document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
-
-            // Update ROI badge
-            const roiBadge = document.getElementById('roiBadge');
-            if (businessCase.roi >= 100) {
-                roiBadge.textContent = 'EXCELLENT ROI';
-                roiBadge.style.background = 'var(--dqr-excellent)';
-            } else if (businessCase.roi >= 50) {
-                roiBadge.textContent = 'GOOD ROI';
-                roiBadge.style.background = 'var(--dqr-very-good)';
-            } else {
-                roiBadge.textContent = 'MODEST ROI';
-                roiBadge.style.background = 'var(--dqr-good)';
-            }
-
-            // Update business story
-            document.getElementById('businessStory').innerHTML = `
-                Based on sales of <strong>10,000 units</strong>, switching to science-based storytelling could generate <strong>€${businessCase.totalAnnualBenefit.toLocaleString()}</strong> in brand value annually.
-            `;
         }
 
         // ================== PEF SCORECARD ==================
