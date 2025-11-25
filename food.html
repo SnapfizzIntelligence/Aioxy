@@ -1797,6 +1797,45 @@
                     </div>
                 </div>
             </div>
+            <!-- IMPACT BREAKDOWN CHART -->
+<div class="chart-container" style="height: 200px; margin-top: 2rem;">
+    <canvas id="businessImpactChart"></canvas>
+</div>
+
+<script>
+function createBusinessImpactChart(businessCase) {
+    const ctx = document.getElementById('businessImpactChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Carbon Savings', 'Price Premium', 'Market Share'],
+            datasets: [{
+                label: 'Annual Value (€)',
+                data: [
+                    businessCase.annualSavings,
+                    businessCase.premiumRevenue, 
+                    businessCase.marketShareValue
+                ],
+                backgroundColor: [
+                    '#27AE60', // Green for carbon
+                    '#F39C12', // Orange for premium  
+                    '#2E86C1'  // Blue for market share
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Business Value Breakdown'
+                }
+            }
+        }
+    });
+}
+</script>
 
             <!-- PEF Scorecard Tab -->
             <div id="pef-scorecard-tab" class="tab-content hidden">
@@ -4256,71 +4295,78 @@
 
         // ================== BUSINESS CASE CALCULATOR ==================
         function updateBusinessCase() {
-            if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
-                document.getElementById('businessStory').innerHTML = `
-                    <div class="story-highlight">
-                        <i class="fas fa-calculator"></i>
-                        <strong>Calculate environmental impacts first</strong> to see the business case analysis
-                    </div>
-                `;
-                return;
-            }
+    if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
+        document.getElementById('businessStory').innerHTML = `
+            <div class="story-highlight">
+                <i class="fas fa-calculator"></i>
+                <strong>Calculate environmental impacts first</strong> to see the complete business case
+            </div>
+        `;
+        return;
+    }
 
-            const results = {
-                co2PerKg: finalPefResults["Climate Change"].total / massBalanceData.final_content_weight_kg,
-                finalContentWeight: massBalanceData.final_content_weight_kg
-            };
+    const results = {
+        co2PerKg: finalPefResults["Climate Change"].total / massBalanceData.final_content_weight_kg,
+        finalContentWeight: massBalanceData.final_content_weight_kg
+    };
 
-            const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
+    const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
 
-            // Update all business metrics
-            document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
-            document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
-            document.getElementById('premiumValue').textContent = businessCase.premiumPotential.toFixed(1) + '%';
-            document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
-            
-            // Update cost breakdown
-            document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
-            document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(businessCase.carbonReduction) + ' kg CO₂e';
-            document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(businessCase.totalAnnualBenefit);
-            document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber((businessCase.totalAnnualBenefit * 3) - businessCase.implementationCost);
+    // 🎯 UPDATE ALL 4 BUSINESS PILLARS
+    document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
+    document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
+    document.getElementById('premiumValue').textContent = '€' + formatLargeNumber(businessCase.premiumRevenue);
+    document.getElementById('marketValue').textContent = '€' + formatLargeNumber(businessCase.marketShareValue);
+    
+    // 📊 UPDATE COST BREAKDOWN
+    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
+    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(businessCase.carbonReduction) + ' kg CO₂e';
+    document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(businessCase.totalAnnualBenefit);
+    document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber((businessCase.totalAnnualBenefit * 3) - businessCase.implementationCost);
 
-            // Update ROI badge with dynamic coloring
-            const roiBadge = document.getElementById('roiBadge');
-            if (businessCase.roi >= 200) {
-                roiBadge.textContent = 'EXCEPTIONAL ROI';
-                roiBadge.style.background = 'var(--dqr-excellent)';
-            } else if (businessCase.roi >= 100) {
-                roiBadge.textContent = 'EXCELLENT ROI';
-                roiBadge.style.background = 'var(--dqr-very-good)';
-            } else if (businessCase.roi >= 50) {
-                roiBadge.textContent = 'STRONG ROI';
-                roiBadge.style.background = 'var(--dqr-good)';
-            } else if (businessCase.roi >= 20) {
-                roiBadge.textContent = 'GOOD ROI';
-                roiBadge.style.background = 'var(--dqr-fair)';
-            } else if (businessCase.roi >= 0) {
-                roiBadge.textContent = 'MODEST ROI';
-                roiBadge.style.background = 'var(--dqr-poor)';
-            } else {
-                roiBadge.textContent = 'NEGATIVE ROI';
-                roiBadge.style.background = 'var(--accent)';
-            }
+    // 🎨 UPDATE ROI BADGE WITH DYNAMIC COLORS
+    const roiBadge = document.getElementById('roiBadge');
+    if (businessCase.roi >= 200) {
+        roiBadge.textContent = 'EXCEPTIONAL ROI';
+        roiBadge.style.background = 'var(--dqr-excellent)';
+    } else if (businessCase.roi >= 100) {
+        roiBadge.textContent = 'EXCELLENT ROI';
+        roiBadge.style.background = 'var(--dqr-very-good)';
+    } else if (businessCase.roi >= 50) {
+        roiBadge.textContent = 'STRONG ROI';
+        roiBadge.style.background = 'var(--dqr-good)';
+    } else if (businessCase.roi >= 20) {
+        roiBadge.textContent = 'GOOD ROI';
+        roiBadge.style.background = 'var(--dqr-fair)';
+    } else if (businessCase.roi >= 0) {
+        roiBadge.textContent = 'MODEST ROI';
+        roiBadge.style.background = 'var(--dqr-poor)';
+    } else {
+        roiBadge.textContent = 'NEGATIVE ROI';
+        roiBadge.style.background = 'var(--accent)';
+    }
 
-            // Update business story with volume context
-            document.getElementById('businessStory').innerHTML = `
-                <div class="story-highlight">
-                    <i class="fas fa-${getBusinessIcon(businessCase.businessScale)}"></i>
-                    <strong>${businessCase.businessScale} Opportunity</strong><br>
-                    At ${currentAnnualVolume.toLocaleString()} units annually, your sustainability story creates <strong>€${formatLargeNumber(businessCase.totalAnnualBenefit)}</strong> in annual business value.
-                </div>
-                <p>
-                    This includes <strong>€${formatLargeNumber(businessCase.annualSavings)}</strong> in carbon savings, 
-                    <strong>€${formatLargeNumber(businessCase.premiumRevenue)}</strong> from price premiums, and 
-                    <strong>€${formatLargeNumber(businessCase.marketShareValue)}</strong> from market share growth.
-                </p>
-            `;
-        }
+    // 📈 UPDATE BUSINESS STORY WITH ALL 4 PILLARS
+    document.getElementById('businessStory').innerHTML = `
+        <div class="story-highlight">
+            <i class="fas fa-${getBusinessIcon(businessCase.businessScale)}"></i>
+            <strong>${businessCase.businessScale} Opportunity</strong><br>
+            At ${currentAnnualVolume.toLocaleString()} units annually, sustainability creates 
+            <strong>€${formatLargeNumber(businessCase.totalAnnualBenefit)}</strong> in annual business value.
+        </div>
+        <p>
+            <strong>💰 Carbon Savings:</strong> €${formatLargeNumber(businessCase.annualSavings)}<br>
+            <strong>📈 Price Premium Revenue:</strong> €${formatLargeNumber(businessCase.premiumRevenue)}<br>  
+            <strong>👥 Market Share Growth:</strong> €${formatLargeNumber(businessCase.marketShareValue)}<br>
+            <strong>🎯 Total Annual Benefit:</strong> €${formatLargeNumber(businessCase.totalAnnualBenefit)}
+        </p>
+        <div class="story-highlight">
+            <i class="fas fa-bullseye"></i>
+            <strong>Market Leadership Potential:</strong> 
+            Your environmental advantage positions you for significant market share capture in the growing sustainable products category.
+        </div>
+    `;
+}
 
         // ================== ENHANCED STORYTELLING ==================
         function getProductTypeDescription() {
