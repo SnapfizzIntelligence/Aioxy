@@ -1631,362 +1631,393 @@
             </div>
 
             <!-- Results Tab -->
-            <div id="results-tab" class="tab-content hidden">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <div class="card-icon">
-                                <i class="fas fa-chart-pie"></i>
-                            </div>
-                            Impact Analysis
-                        </div>
-                        <div class="badge">
-                            <i class="fas fa-clock"></i>
-                            PEF 3.1 Methodology • AWARE • Data Quality Rated
-                        </div>
-                    </div>
-                    
-                    <div class="loading hidden" id="loadingResults">
-                        <div class="spinner"></div>
-                        <h3>Calculating Environmental Footprint...</h3>
-                        <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
-                            Processing 16 impact categories with AGRIBALYSE 3.2 data and uncertainty calculations
-                        </p>
-                    </div>
+<div id="results-tab" class="tab-content hidden">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                Impact Analysis
+            </div>
+            <div class="badge">
+                <i class="fas fa-clock"></i>
+                PEF 3.1 Methodology • AWARE • Data Quality Rated
+            </div>
+        </div>
+        
+        <div class="loading hidden" id="loadingResults">
+            <div class="spinner"></div>
+            <h3>Calculating Environmental Footprint...</h3>
+            <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                Processing 16 impact categories with AGRIBALYSE 3.2 data and uncertainty calculations
+            </p>
+        </div>
 
-                    <div id="resultsContent">
-                        <!-- Data Quality Summary -->
-                        <div class="data-quality-section hidden" id="dataQualitySection">
-                            <h3 style="margin-bottom: 1rem; color: var(--primary);">
-                                <i class="fas fa-chart-line"></i>
-                                Data Quality Assessment
-                            </h3>
-                            <div class="dqr-breakdown" id="dqrBreakdown">
-                                <!-- DQR factors will be populated here -->
-                            </div>
-                            <div style="text-align: center; margin-top: 1rem;">
-                                <span class="dqr-badge dqr-excellent" id="overallDQRBadge">
-                                    <i class="fas fa-star"></i>
-                                    Overall Data Quality: Excellent
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Mass Balance Section -->
-                        <div class="mass-balance hidden" id="massBalanceSection">
-                            <div class="mass-balance-title">
-                                <i class="fas fa-balance-scale"></i>
-                                Mass Balance Verification
-                            </div>
-                            <div id="massBalanceContent">
-                                <!-- Mass balance items will be populated here -->
-                            </div>
-                        </div>
-
-                        <div class="results-grid">
-                            <div class="metric-card">
-                                <div class="metric-icon">
-                                    <i class="fas fa-smog"></i>
-                                </div>
-                                <div class="metric-value" id="co2Value">0.00 kg</div>
-                                <div class="metric-label">CO₂e per kg</div>
-                                <div class="savings-badge" id="co2Savings">0% saved</div>
-                            </div>
-                            
-                            <div class="metric-card">
-                                <div class="metric-icon">
-                                    <i class="fas fa-tint"></i>
-                                </div>
-                                <div class="metric-value" id="waterValue">0 m³</div>
-                                <div class="metric-label">Water Scarcity per kg</div>
-                                <div class="savings-badge" id="waterSavings">0% saved</div>
-                            </div>
-                            
-                            <div class="metric-card">
-                                <div class="metric-icon">
-                                    <i class="fas fa-mountain"></i>
-                                </div>
-                                <div class="metric-value" id="landValue">0 Pt</div>
-                                <div class="metric-label">Land Use per kg</div>
-                            </div>
-                            
-                            <div class="metric-card">
-                                <div class="metric-icon">
-                                    <i class="fas fa-fire"></i>
-                                </div>
-                                <div class="metric-value" id="fossilValue">0 MJ</div>
-                                <div class="metric-label">Fossil Resources</div>
-                            </div>
-                        </div>
-
-                        <!-- Multi-Comparison Section -->
-                        <div class="multi-comparison hidden" id="multiComparisonSection">
-                            <h3 style="margin-bottom: 1rem; color: var(--primary);">
-                                <i class="fas fa-chart-bar"></i>
-                                Multi-Product Comparison
-                            </h3>
-                            <div class="comparison-grid" id="multiComparisonGrid">
-                                <!-- Multi-comparison items will be populated here -->
-                            </div>
-                        </div>
-
-                        <!-- Enhanced Storytelling Section -->
-                        <div class="environmental-story hidden" id="environmentalStory">
-                            <div class="story-title">
-                                <i class="fas fa-globe-europe"></i>
-                                Environmental Impact Story
-                            </div>
-                            <div class="story-content" id="storyContent">
-                                <!-- Dynamic story content will be populated here -->
-                            </div>
-                            <div class="story-comparison" id="storyComparison">
-                                <!-- Story comparison items will be populated here -->
-                            </div>
-                        </div>
-
-                        <div class="chart-container">
-                            <canvas id="emissionChart"></canvas>
-                        </div>
-
-                        <div class="impact-comparison">
-                            <div class="comparison-card">
-                                <i class="fas fa-car" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="comparison-value" id="carKm">0 km</div>
-                                <div class="comparison-label">Equivalent car distance saved</div>
-                            </div>
-                            <div class="comparison-card">
-                                <i class="fas fa-home" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="comparison-value" id="householdEnergy">0 days</div>
-                                <div class="comparison-label">Household energy consumption</div>
-                            </div>
-                            <div class="comparison-card">
-                                <i class="fas fa-tree" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="comparison-value" id="treesPlanted">0 trees</div>
-                                <div class="comparison-label">Equivalent CO₂ absorption</div>
-                            </div>
-                            <div class="comparison-card">
-                                <i class="fas fa-wine-bottle" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="comparison-value" id="waterBottles">0 bottles</div>
-                                <div class="comparison-label">Drinking water equivalent</div>
-                            </div>
-                        </div>
-
-                        <div class="compliance-notice">
-                            <div class="compliance-icon">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div>
-                                <strong>Verification-Ready Assessment</strong><br>
-                                This assessment follows PEF 3.1 methodology using AGRIBALYSE 3.2, JRC EF 3.1, and AWARE 2.0 data. 
-                                All claims are substantiated and transparent through the Digital Transparency Card.
-                            </div>
-                        </div>
-
-                        <div class="action-buttons">
-                            <button class="btn" onclick="showTab('business-case')">
-                                <i class="fas fa-euro-sign"></i>
-                                View Business Case
-                            </button>
-                            <button class="btn" onclick="showTab('pef-scorecard')">
-                                <i class="fas fa-list-ol"></i>
-                                View Full PEF Scorecard
-                            </button>
-                            <button class="btn" onclick="showTab('dpp')">
-                                <i class="fas fa-qrcode"></i>
-                                Generate Transparency Card
-                            </button>
-                            <button class="btn" onclick="generatePDFReport('comprehensive')">
-                                <i class="fas fa-file-pdf"></i>
-                                Download PDF Report
-                            </button>
-                        </div>
-                    </div>
+        <div id="resultsContent">
+            <!-- Data Quality Summary -->
+            <div class="data-quality-section hidden" id="dataQualitySection">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">
+                    <i class="fas fa-chart-line"></i>
+                    Data Quality Assessment
+                </h3>
+                <div class="dqr-breakdown" id="dqrBreakdown">
+                    <!-- DQR factors will be populated here -->
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <span class="dqr-badge dqr-excellent" id="overallDQRBadge">
+                        <i class="fas fa-star"></i>
+                        Overall Data Quality: Excellent
+                    </span>
                 </div>
             </div>
 
+            <!-- Mass Balance Section -->
+            <div class="mass-balance hidden" id="massBalanceSection">
+                <div class="mass-balance-title">
+                    <i class="fas fa-balance-scale"></i>
+                    Mass Balance Verification
+                </div>
+                <div id="massBalanceContent">
+                    <!-- Mass balance items will be populated here -->
+                </div>
+            </div>
+
+            <div class="results-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-smog"></i>
+                    </div>
+                    <div class="metric-value" id="co2Value">0.00 kg</div>
+                    <div class="metric-label">CO₂e per kg</div>
+                    <div class="savings-badge" id="co2Savings">0% saved</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="metric-value" id="waterValue">0 m³</div>
+                    <div class="metric-label">Water Scarcity per kg</div>
+                    <div class="savings-badge" id="waterSavings">0% saved</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="metric-value" id="landValue">0 Pt</div>
+                    <div class="metric-label">Land Use per kg</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="metric-value" id="fossilValue">0 MJ</div>
+                    <div class="metric-label">Fossil Resources</div>
+                </div>
+            </div>
+
+            <!-- Multi-Comparison Section -->
+            <div class="multi-comparison hidden" id="multiComparisonSection">
+                <h3 style="margin-bottom: 1rem; color: var(--primary);">
+                    <i class="fas fa-chart-bar"></i>
+                    Multi-Product Comparison
+                </h3>
+                <div class="comparison-grid" id="multiComparisonGrid">
+                    <!-- Multi-comparison items will be populated here -->
+                </div>
+            </div>
+
+            <!-- Enhanced Storytelling Section -->
+            <div class="environmental-story hidden" id="environmentalStory">
+                <div class="story-title">
+                    <i class="fas fa-globe-europe"></i>
+                    Environmental Impact Story
+                </div>
+                <div class="story-content" id="storyContent">
+                    <!-- Dynamic story content will be populated here -->
+                </div>
+                <div class="story-comparison" id="storyComparison">
+                    <!-- Story comparison items will be populated here -->
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="emissionChart"></canvas>
+            </div>
+
+            <div class="impact-comparison">
+                <div class="comparison-card">
+                    <i class="fas fa-car" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="comparison-value" id="carKm">0 km</div>
+                    <div class="comparison-label">Equivalent car distance saved</div>
+                </div>
+                <div class="comparison-card">
+                    <i class="fas fa-home" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="comparison-value" id="householdEnergy">0 days</div>
+                    <div class="comparison-label">Household energy consumption</div>
+                </div>
+                <div class="comparison-card">
+                    <i class="fas fa-tree" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="comparison-value" id="treesPlanted">0 trees</div>
+                    <div class="comparison-label">Equivalent CO₂ absorption</div>
+                </div>
+                <div class="comparison-card">
+                    <i class="fas fa-wine-bottle" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="comparison-value" id="waterBottles">0 bottles</div>
+                    <div class="comparison-label">Drinking water equivalent</div>
+                </div>
+            </div>
+
+            <div class="compliance-notice">
+                <div class="compliance-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div>
+                    <strong>Verification-Ready Assessment</strong><br>
+                    This assessment follows PEF 3.1 methodology using AGRIBALYSE 3.2, JRC EF 3.1, and AWARE 2.0 data. 
+                    All claims are substantiated and transparent through the Digital Transparency Card.
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn" onclick="showTab('business-case')">
+                    <i class="fas fa-euro-sign"></i>
+                    View Business Case
+                </button>
+                <button class="btn" onclick="showTab('pef-scorecard')">
+                    <i class="fas fa-list-ol"></i>
+                    View Full PEF Scorecard
+                </button>
+                <button class="btn" onclick="showTab('dpp')">
+                    <i class="fas fa-qrcode"></i>
+                    Generate Transparency Card
+                </button>
+                <button class="btn" onclick="generatePDFReport('comprehensive')">
+                    <i class="fas fa-file-pdf"></i>
+                    Download PDF Report
+                </button>
+            </div>
+        </div>
+    </div>
+                                                                                 </div>
             <!-- Business Case Tab -->
-            <div id="business-case-tab" class="tab-content hidden">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <div class="card-icon">
-                                <i class="fas fa-euro-sign"></i>
-                            </div>
-                            Business Case & ROI Analysis
-                        </div>
-                        <div class="badge">
-                            <i class="fas fa-chart-line"></i>
-                            Financial Impact • ROI • Market Advantage • Scales from 1 to Billions
-                        </div>
+<div id="business-case-tab" class="tab-content hidden">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-icon">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                Business Case & ROI Analysis
+            </div>
+            <div class="badge">
+                <i class="fas fa-chart-line"></i>
+                Financial Impact • ROI • Market Advantage • Scales from 1 to Billions
+            </div>
+        </div>
+
+        <div class="business-case">
+            <!-- VOLUME SELECTOR SYSTEM -->
+            <div class="form-group" style="background: white; padding: 2rem; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 2rem;">
+                <label class="form-label" style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+                    <i class="fas fa-boxes"></i>
+                    Annual Production Volume
+                </label>
+                
+                <!-- Quick Select Buttons -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <button class="btn btn-outline" onclick="setVolume(100)">100 units</button>
+                    <button class="btn btn-outline" onclick="setVolume(1000)">1,000 units</button>
+                    <button class="btn btn-outline" onclick="setVolume(10000)">10,000 units</button>
+                    <button class="btn btn-outline" onclick="setVolume(100000)">100,000 units</button>
+                    <button class="btn btn-outline" onclick="setVolume(1000000)">1 Million</button>
+                    <button class="btn btn-outline" onclick="setVolume(10000000)">10 Million</button>
+                    <button class="btn btn-outline" onclick="setVolume(100000000)">100 Million</button>
+                    <button class="btn btn-outline" onclick="setVolume(1000000000)">1 Billion</button>
+                </div>
+                
+                <!-- Precision Slider -->
+                <div style="margin-bottom: 1rem;">
+                    <input type="range" id="salesVolume" min="1" max="1000000000" value="10000" 
+                           step="1" style="width: 100%; height: 8px; border-radius: 4px;"
+                           oninput="updateVolumeDisplay(this.value); updateBusinessCase();">
+                </div>
+                
+                <!-- Volume Display -->
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
+                        <span id="volumeDisplay">10,000</span>
                     </div>
-
-                    <div class="business-case">
-                        <!-- VOLUME SELECTOR SYSTEM -->
-                        <div class="form-group" style="background: white; padding: 2rem; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 2rem;">
-                            <label class="form-label" style="font-size: 1.1rem; margin-bottom: 1.5rem;">
-                                <i class="fas fa-boxes"></i>
-                                Annual Production Volume
-                            </label>
-                            
-                            <!-- Quick Select Buttons -->
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
-                                <button class="btn btn-outline" onclick="setVolume(100)">100 units</button>
-                                <button class="btn btn-outline" onclick="setVolume(1000)">1,000 units</button>
-                                <button class="btn btn-outline" onclick="setVolume(10000)">10,000 units</button>
-                                <button class="btn btn-outline" onclick="setVolume(100000)">100,000 units</button>
-                                <button class="btn btn-outline" onclick="setVolume(1000000)">1 Million</button>
-                                <button class="btn btn-outline" onclick="setVolume(10000000)">10 Million</button>
-                                <button class="btn btn-outline" onclick="setVolume(100000000)">100 Million</button>
-                                <button class="btn btn-outline" onclick="setVolume(1000000000)">1 Billion</button>
-                            </div>
-                            
-                            <!-- Precision Slider -->
-                            <div style="margin-bottom: 1rem;">
-                                <input type="range" id="salesVolume" min="1" max="1000000000" value="10000" 
-                                       step="1" style="width: 100%; height: 8px; border-radius: 4px;"
-                                       oninput="updateVolumeDisplay(this.value); updateBusinessCase();">
-                            </div>
-                            
-                            <!-- Volume Display -->
-                            <div style="text-align: center;">
-                                <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
-                                    <span id="volumeDisplay">10,000</span>
-                                </div>
-                                <div style="font-size: 1rem; color: var(--gray);">
-                                    <span id="businessScaleDisplay">Growing Business</span>
-                                    • Tier: <span id="volumeTierDisplay">10K-100K</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- What-If Simulator -->
-                        <div class="scenario-buttons">
-                            <div class="scenario-card" onclick="simulateScenario('renewable')">
-                                <div class="scenario-icon">
-                                    <i class="fas fa-solar-panel"></i>
-                                </div>
-                                <div class="scenario-title">+20% Renewables</div>
-                                <div class="scenario-desc">Test renewable energy impact on ROI and carbon footprint</div>
-                            </div>
-                            
-                            <div class="scenario-card" onclick="simulateScenario('local')">
-                                <div class="scenario-icon">
-                                    <i class="fas fa-truck"></i>
-                                </div>
-                                <div class="scenario-title">Local Sourcing</div>
-                                <div class="scenario-desc">Reduce transport distance by 50% to see supply chain benefits</div>
-                            </div>
-                            
-                            <div class="scenario-card" onclick="simulateScenario('recycled')">
-                                <div class="scenario-icon">
-                                    <i class="fas fa-recycle"></i>
-                                </div>
-                                <div class="scenario-title">100% Recycled</div>
-                                <div class="scenario-desc">Maximize recycled content in packaging for optimal footprint</div>
-                            </div>
-                            
-                            <div class="scenario-card" onclick="resetScenarios()">
-                                <div class="scenario-icon">
-                                    <i class="fas fa-undo"></i>
-                                </div>
-                                <div class="scenario-title">Reset All</div>
-                                <div class="scenario-desc">Return to original baseline scenario</div>
-                            </div>
-                        </div>
-
-                        <h3 style="margin-bottom: 1.5rem; color: var(--primary); text-align: center;">
-                            Sustainability Business Case Analysis
-                        </h3>
-                        
-                        <div class="business-metrics">
-                            <div class="business-card">
-                                <i class="fas fa-rocket" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="business-value" id="roiValue">0%</div>
-                                <div class="business-label">ROI (3-Year)</div>
-                                <div class="roi-badge" id="roiBadge">CALCULATING</div>
-                            </div>
-                            
-                            <div class="business-card">
-                                <i class="fas fa-piggy-bank" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="business-value" id="savingsValue">€0</div>
-                                <div class="business-label">Annual Cost Savings</div>
-                            </div>
-                            
-                            <div class="business-card">
-                                <i class="fas fa-chart-bar" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="business-value" id="premiumValue">0%</div>
-                                <div class="business-label">Price Premium Potential</div>
-                            </div>
-                            
-                            <div class="business-card">
-                                <i class="fas fa-users" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="business-value" id="marketValue">0%</div>
-                                <div class="business-label">Market Share Growth</div>
-                            </div>
-                        </div>
-
-                        <!-- COST BREAKDOWN -->
-                        <div class="mass-balance" style="margin-top: 2rem;">
-                            <div class="mass-balance-title">
-                                <i class="fas fa-euro-sign"></i>
-                                Investment & Return Breakdown
-                            </div>
-                            <div class="mass-balance-item">
-                                <span>Implementation Cost:</span>
-                                <span id="implementationCost">€0</span>
-                            </div>
-                            <div class="mass-balance-item">
-                                <span>Annual Carbon Reduction:</span>
-                                <span id="carbonReductionDisplay">0 kg CO₂e</span>
-                            </div>
-                            <div class="mass-balance-item">
-                                <span>Total Annual Benefit:</span>
-                                <span id="totalBenefitDisplay">€0</span>
-                            </div>
-                            <div class="mass-balance-item" style="font-weight: 600; color: var(--primary);">
-                                <span>3-Year Net Return:</span>
-                                <span id="netReturnDisplay">€0</span>
-                            </div>
-                        </div>
-
-                        <div class="environmental-story" style="margin-top: 2rem;">
-                            <div class="story-title">
-                                <i class="fas fa-bullseye"></i>
-                                Strategic Business Impact
-                            </div>
-                            <div class="story-content" id="businessStory">
-                                <!-- Business story will be populated here -->
-                            </div>
-                        </div>
-
-                        <div class="compliance-notice" style="margin-top: 2rem;">
-                            <div class="compliance-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div>
-                                <strong>Brand Value Enhancement</strong><br>
-                                Science-based sustainability data builds consumer trust and loyalty. 
-                                Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
-                            </div>
-                        </div>
-
-                        <div class="action-buttons">
-                            <button class="btn" onclick="showTab('results')">
-                                <i class="fas fa-arrow-left"></i>
-                                Back to Results
-                            </button>
-                            <button class="btn btn-success" onclick="generatePDFReport('executive')">
-                                <i class="fas fa-file-pdf"></i>
-                                Download Business Case
-                            </button>
-                            <button class="btn" onclick="showTab('export')">
-                                <i class="fas fa-file-export"></i>
-                                Export All Reports
-                            </button>
-                        </div>
+                    <div style="font-size: 1rem; color: var(--gray);">
+                        <span id="businessScaleDisplay">Growing Business</span>
+                        • Tier: <span id="volumeTierDisplay">10K-100K</span>
                     </div>
                 </div>
             </div>
+
+            <!-- What-If Simulator -->
+            <div class="scenario-buttons">
+                <div class="scenario-card" onclick="simulateScenario('renewable')">
+                    <div class="scenario-icon">
+                        <i class="fas fa-solar-panel"></i>
+                    </div>
+                    <div class="scenario-title">Renewable Energy</div>
+                    <div class="scenario-desc">Switch to 100% renewable energy for manufacturing</div>
+                </div>
+                
+                <div class="scenario-card" onclick="simulateScenario('local')">
+                    <div class="scenario-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="scenario-title">Local Sourcing</div>
+                    <div class="scenario-desc">Reduce transport distance by 50%</div>
+                </div>
+                
+                <div class="scenario-card" onclick="simulateScenario('recycled')">
+                    <div class="scenario-icon">
+                        <i class="fas fa-recycle"></i>
+                    </div>
+                    <div class="scenario-title">100% Recycled</div>
+                    <div class="scenario-desc">Maximize recycled content in packaging</div>
+                </div>
+
+                <div class="scenario-card" onclick="simulateScenario('premium')">
+                    <div class="scenario-icon">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <div class="scenario-title">Premium Packaging</div>
+                    <div class="scenario-desc">+20% packaging for better presentation</div>
+                </div>
+
+                <div class="scenario-card" onclick="simulateScenario('efficient')">
+                    <div class="scenario-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="scenario-title">Energy Efficient</div>
+                    <div class="scenario-desc">Renewable energy + optimized transport</div>
+                </div>
+
+                <div class="scenario-card" onclick="simulateScenario('organic')">
+                    <div class="scenario-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <div class="scenario-title">Organic Sourcing</div>
+                    <div class="scenario-desc">Higher energy but better market appeal</div>
+                </div>
+
+                <div class="scenario-card" onclick="simulateScenario('export')">
+                    <div class="scenario-icon">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <div class="scenario-title">Export Market</div>
+                    <div class="scenario-desc">Double transport + premium packaging</div>
+                </div>
+                
+                <div class="scenario-card" onclick="resetScenarios()">
+                    <div class="scenario-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <div class="scenario-title">Reset All</div>
+                    <div class="scenario-desc">Return to original baseline</div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 1.5rem; color: var(--primary); text-align: center;">
+                Sustainability Business Case Analysis
+            </h3>
+            
+            <div class="business-metrics">
+                <div class="business-card">
+                    <i class="fas fa-rocket" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="business-value" id="roiValue">0%</div>
+                    <div class="business-label">ROI (3-Year)</div>
+                    <div class="roi-badge" id="roiBadge">CALCULATING</div>
+                </div>
+                
+                <div class="business-card">
+                    <i class="fas fa-piggy-bank" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="business-value" id="savingsValue">€0</div>
+                    <div class="business-label">Annual Cost Savings</div>
+                </div>
+                
+                <div class="business-card">
+                    <i class="fas fa-chart-bar" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="business-value" id="premiumValue">0%</div>
+                    <div class="business-label">Price Premium Potential</div>
+                </div>
+                
+                <div class="business-card">
+                    <i class="fas fa-users" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                    <div class="business-value" id="marketValue">0%</div>
+                    <div class="business-label">Market Share Growth</div>
+                </div>
+            </div>
+
+            <!-- COST BREAKDOWN -->
+            <div class="mass-balance" style="margin-top: 2rem;">
+                <div class="mass-balance-title">
+                    <i class="fas fa-euro-sign"></i>
+                    Investment & Return Breakdown
+                </div>
+                <div class="mass-balance-item">
+                    <span>Implementation Cost:</span>
+                    <span id="implementationCost">€0</span>
+                </div>
+                <div class="mass-balance-item">
+                    <span>Annual Carbon Reduction:</span>
+                    <span id="carbonReductionDisplay">0 kg CO₂e</span>
+                </div>
+                <div class="mass-balance-item">
+                    <span>Total Annual Benefit:</span>
+                    <span id="totalBenefitDisplay">€0</span>
+                </div>
+                <div class="mass-balance-item" style="font-weight: 600; color: var(--primary);">
+                    <span>3-Year Net Return:</span>
+                    <span id="netReturnDisplay">€0</span>
+                </div>
+            </div>
+
+            <div class="environmental-story" style="margin-top: 2rem;">
+                <div class="story-title">
+                    <i class="fas fa-bullseye"></i>
+                    Strategic Business Impact
+                </div>
+                <div class="story-content" id="businessStory">
+                    <!-- Business story will be populated here -->
+                </div>
+            </div>
+
+            <div class="compliance-notice" style="margin-top: 2rem;">
+                <div class="compliance-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <strong>Brand Value Enhancement</strong><br>
+                    Science-based sustainability data builds consumer trust and loyalty. 
+                    Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn" onclick="showTab('results')">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Results
+                </button>
+                <button class="btn btn-success" onclick="generatePDFReport('executive')">
+                    <i class="fas fa-file-pdf"></i>
+                    Download Business Case
+                </button>
+                <button class="btn" onclick="showTab('export')">
+                    <i class="fas fa-file-export"></i>
+                    Export All Reports
+                </button>
+            </div>
+        </div>
+    </div>
+                        </div>
 
             <!-- PEF Scorecard Tab -->
             <div id="pef-scorecard-tab" class="tab-content hidden">
@@ -2999,6 +3030,39 @@ function showScenarioNotification(scenarioType) {
             }
         }, 300);
     }, 4000);
+        }
+        // ================== MULTI-COMPARISON DISPLAY ==================
+function updateMultiComparison(currentCO2, productCategory) {
+    const comparisons = getMultiComparisonBaselines(productCategory, currentCO2);
+    const grid = document.getElementById('multiComparisonGrid');
+    
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    comparisons.forEach(item => {
+        const comparisonItem = document.createElement('div');
+        comparisonItem.className = `comparison-item ${item.isCurrent ? 'best' : ''}`;
+        
+        const savingsPercent = !item.isCurrent ? 
+            Math.abs(((item.co2 - currentCO2) / item.co2 * 100)).toFixed(1) : 0;
+        const isBetter = item.co2 > currentCO2;
+        
+        comparisonItem.innerHTML = `
+            <div class="comparison-item-name">${item.name}</div>
+            <div class="comparison-item-value">${item.co2.toFixed(2)} kg</div>
+            ${!item.isCurrent ? `
+                <div class="comparison-item-savings ${isBetter ? 'savings-positive' : 'savings-negative'}">
+                    ${isBetter ? '↓' : '↑'} ${savingsPercent}%
+                </div>
+            ` : ''}
+        `;
+        
+        grid.appendChild(comparisonItem);
+    });
+    
+    // Show the multi-comparison section
+    document.getElementById('multiComparisonSection').classList.remove('hidden');
         }
 
         // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
