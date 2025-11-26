@@ -10403,7 +10403,7 @@
             }
         }
 
-        function updateMassBalanceDisplay() {
+                function updateMassBalanceDisplay() {
             const massBalanceSection = document.getElementById('massBalanceSection');
             const massBalanceContent = document.getElementById('massBalanceContent');
             
@@ -10424,4 +10424,435 @@
                     </div>
                     <div class="mass-balance-item">
                         <span>Processing Loss:</span>
-                        <span>- ${massBalanceData.processing_loss
+                        <span>- ${massBalanceData.processing_loss_kg.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Final Product Weight:</span>
+                        <span>${massBalanceData.final_content_weight_kg.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Mass Balance:</span>
+                        <span>${balanceStatus}</span>
+                    </div>
+                `;
+            } else {
+                massBalanceSection.classList.add('hidden');
+            }
+        }
+
+        // ================== PEF SCORECARD ==================
+        function displayFullPefScorecard() {
+            const tbody = document.getElementById('pefScorecardBody');
+            const ingredientDataQuality = document.getElementById('ingredientDataQuality');
+            tbody.innerHTML = '';
+            
+            const totalWeight = massBalanceData.final_content_weight_kg || 0.2;
+            
+            for (const category in finalPefResults) {
+                const row = document.createElement('tr');
+                const unit = aioxyData.pefCategories[category].unit;
+                const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
+                
+                let displayValue = formatPEFValue(finalPefResults[category].total);
+                let perKgDisplay = formatPEFValue(perKgValue);
+                
+                const categoryUncertainty = auditTrailData.uncertainty_analysis?.overall_uncertainty || 15;
+                const dqrQuality = foodCalculationEngine.getDQRQualityLevel(auditTrailData.dqr_summary?.overall_dqr || 1.5);
+                
+                row.innerHTML = `
+                    <td class="pef-category">${category}</td>
+                    <td class="pef-value">${displayValue}</td>
+                    <td class="pef-unit">${unit}</td>
+                    <td class="pef-value">${perKgDisplay}</td>
+                    <td>
+                        <span class="dqr-badge ${dqrQuality.class}">
+                            <i class="fas fa-star"></i>
+                            ${dqrQuality.level}
+                        </span>
+                    </td>
+                    <td class="pef-value">±${categoryUncertainty}%</td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            // Display ingredient data quality
+            if (auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs) {
+                let qualityHTML = '';
+                auditTrailData.dqr_summary.component_dqrs.forEach(score => {
+                    const dqrQuality = foodCalculationEngine.getDQRQualityLevel(score.dqr);
+                    qualityHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                            <div>
+                                <strong>${score.name}</strong>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${score.source}</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span class="dqr-badge ${dqrQuality.class}">DQR: ${score.dqr.toFixed(1)}</span>
+                                <span class="badge">±${score.uncertainty}% uncertainty</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                ingredientDataQuality.innerHTML = qualityHTML;
+            }
+        }
+
+        // ================== TRANSPARENCY LOG ==================
+        function displayAuditTrail() {
+            const auditContent = document.getElementById('auditTrailContent');
+            
+            if (!auditTrailData || !auditTrailData.pefCategories) {
+                auditContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calculator"></i>
+                        <h3>No calculation data available</h3>
+                        <p>Calculate environmental impacts first to generate the transparency log</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let auditHTML = '';
+            
+            // Display key categories with detailed breakdown
+            const keyCategories = ["Climate Change", "Water Use/Scarcity (AWARE)", "Land Use", "Resource Use, fossils"];
+            
+            keyCategories.forEach(category => {
+                if (auditTrailData.pefCategories[category]) {
+                    const cat = auditTrailData.pefCategories[category];
+                    auditHTML += `
+                        <div class="audit-category">
+                            <div class="audit-category-header">
+                                <span>${category}</span>
+                                <span class="pef-value">${formatPEFValue(cat.total)} ${cat.unit}</span>
+                            </div>
+                            
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Ingredients</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Ingredients.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Ingredients.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            ${cat.contribution_tree.Manufacturing.total > 0 ? `
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Manufacturing</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Manufacturing.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Manufacturing.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                            
+                            ${cat.contribution_tree.Transport.total > 0 ? `
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Transport</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Transport.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Transport.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                            
+                            ${cat.contribution_tree.Packaging.total > 0 ? `
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Packaging</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Packaging.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Packaging.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            auditContent.innerHTML = auditHTML;
+        }
+
+        // ================== DIGITAL TRANSPARENCY CARD ==================
+        function generateDPP() {
+            const productName = document.getElementById('productName').value || 'Unnamed Product';
+            const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            currentDPPId = dppId;
+            
+            document.getElementById('dppId').textContent = dppId;
+            
+            // Build transparency card data
+            const transparencyData = {
+                productId: dppId,
+                productName: productName,
+                timestamp: new Date().toISOString(),
+                methodology: {
+                    approach: "PEF 3.1",
+                    version: "1.0",
+                    dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
+                    standards: ["Science-Based Reporting", "Transparent Methodology"]
+                },
+                environmentalFootprint: finalPefResults,
+                data_quality: auditTrailData.dqr_summary,
+                mass_balance: massBalanceData,
+                comparison_baseline: currentComparisonBaseline
+            };
+            
+            const qrElement = document.getElementById('qrcode');
+            qrElement.innerHTML = '';
+            
+            QRCode.toCanvas(qrElement, JSON.stringify(transparencyData, null, 2), {
+                width: 200,
+                height: 200,
+                margin: 1,
+                color: {
+                    dark: '#0A2540',
+                    light: '#FFFFFF'
+                }
+            }, function(error) {
+                if (error) console.error(error);
+            });
+        }
+
+        // ================== EXPORT FUNCTIONALITY ==================
+        function generatePDFReport(reportType) {
+            const loadingOverlay = document.getElementById('pdf-loading-overlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+
+            setTimeout(() => {
+                alert(`Generating ${reportType} PDF report...\n\nIn a full implementation, this would generate a professional PDF with:\n- Complete PEF scorecard\n- Transparency log\n- Methodology statements\n- Business case analysis\n- Digital Transparency Card documentation`);
+                
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
+            }, 1500);
+        }
+
+        function downloadRawData() {
+            if (!auditTrailData) {
+                alert('No data available to download. Please run a calculation first.');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(auditTrailData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `aioxy-transparency-data-${currentDPPId || 'export'}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadDPPData() {
+            if (!currentDPPId) {
+                alert('No transparency card available. Please generate a Digital Transparency Card first.');
+                return;
+            }
+            
+            const productName = document.getElementById('productName').value || 'Unnamed Product';
+            const transparencyData = {
+                productId: currentDPPId,
+                productName: productName,
+                timestamp: new Date().toISOString(),
+                environmentalFootprint: finalPefResults,
+                data_quality: auditTrailData.dqr_summary,
+                mass_balance: massBalanceData
+            };
+            
+            const dataStr = JSON.stringify(transparencyData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `aioxy-transparency-card-${currentDPPId}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadAllData() {
+            if (!auditTrailData) {
+                alert('No data available to download. Please run a calculation first.');
+                return;
+            }
+            
+            const dataStr = JSON.stringify({
+                transparency_log: auditTrailData,
+                pef_results: finalPefResults,
+                mass_balance: massBalanceData,
+                ingredients: selectedIngredients,
+                metadata: {
+                    platform: "AIOXY Science-Based Sustainability",
+                    version: "2.1",
+                    export_timestamp: new Date().toISOString()
+                }
+            }, null, 2);
+            
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `aioxy-complete-dataset-${currentDPPId || 'export'}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAuditData() {
+            downloadRawData();
+        }
+
+        function downloadMethodology() {
+            alert("Downloading complete methodology documentation...\n\nThis would include:\n- PEF 3.1 methodology guide\n- AGRIBALYSE 3.2 data sources\n- CFF calculation methodology\n- Uncertainty analysis approach\n- Science-based reporting approach");
+        }
+
+        // ================== UTILITY FUNCTIONS ==================
+        function formatPEFValue(value) {
+            if (value === 0) return "0.00";
+            if (value < 0.0001) return value.toExponential(3);
+            if (value < 1) return value.toFixed(5);
+            if (value < 1000) return value.toFixed(2);
+            return value.toFixed(1);
+        }
+
+        function createEmissionChart(results) {
+            const ctx = document.getElementById('emissionChart').getContext('2d');
+            
+            if (currentChart) currentChart.destroy();
+            
+            // Get contribution data from audit trail
+            const ingredientsCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Ingredients?.total || 0;
+            const processingCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Manufacturing?.total || 0;
+            const transportCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Transport?.total || 0;
+            const packagingCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Packaging?.total || 0;
+            
+            currentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ingredients', 'Processing', 'Transportation', 'Packaging'],
+                    datasets: [{
+                        data: [
+                            Math.max(ingredientsCO2, 0),
+                            Math.max(processingCO2, 0),
+                            Math.max(transportCO2, 0),
+                            Math.max(packagingCO2, 0)
+                        ],
+                        backgroundColor: ['#2E86C1', '#27AE60', '#F39C12', '#E74C3C'],
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 37, 64, 0.9)',
+                            titleFont: {
+                                size: 13
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw.toFixed(2)} kg CO₂e`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // ================== MISSING FUNCTIONS THAT WERE CUT OFF ==================
+        function resetScenarios() {
+            currentScenario = 'baseline';
+            activeScenarioData = { costMultiplier: 1.0, premiumMultiplier: 1.0, marketMultiplier: 1.0 };
+            
+            // Reset to default values
+            document.getElementById('energySource').value = 'grid';
+            document.getElementById('transportDistance').value = 300;
+            document.getElementById('recycledContent').value = 30;
+            document.getElementById('packagingWeight').value = 0.050;
+            document.getElementById('transportMode').value = 'road';
+            document.getElementById('packagingMaterial').value = 'cardboard';
+            
+            calculateImpact();
+            showScenarioNotification('reset', "All scenarios reset to baseline values");
+        }
+
+        function createBusinessImpactChart(businessCase) {
+            // This would create a business impact visualization
+            // For now, we'll just update the business metrics
+            console.log("Business impact chart would be created here with:", businessCase);
+        }
+
+        function updateMultiComparison(currentCO2, productCategory) {
+            const comparisons = getMultiComparisonBaselines(productCategory, currentCO2);
+            const grid = document.getElementById('multiComparisonGrid');
+            
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            comparisons.forEach(item => {
+                const comparisonItem = document.createElement('div');
+                comparisonItem.className = `comparison-item ${item.isCurrent ? 'best' : ''}`;
+                
+                const savingsPercent = !item.isCurrent ? 
+                    Math.abs(((item.co2 - currentCO2) / item.co2 * 100)).toFixed(1) : 0;
+                const isBetter = item.co2 > currentCO2;
+                
+                comparisonItem.innerHTML = `
+                    <div class="comparison-item-name">${item.name}</div>
+                    <div class="comparison-item-value">${item.co2.toFixed(2)} kg</div>
+                    ${!item.isCurrent ? `
+                        <div class="comparison-item-savings ${isBetter ? 'savings-positive' : 'savings-negative'}">
+                            ${isBetter ? '↓' : '↑'} ${savingsPercent}%
+                        </div>
+                    ` : ''}
+                `;
+                
+                grid.appendChild(comparisonItem);
+            });
+            
+            // Show the multi-comparison section
+            document.getElementById('multiComparisonSection').classList.remove('hidden');
+        }
+
+        // ================== INITIALIZE APPLICATION ==================
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
