@@ -3012,12 +3012,20 @@
             }, 500);
         }
 
-        function calculateScalableBusinessCase(results, annualVolume) {
-            const co2PerKg = results.co2PerKg;
-            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
-            const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
-            const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
-            
+        function calculateScalableBusinessCase(annualVolume) {
+    // FIX: Use finalPefResults instead of results parameter
+    if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
+        console.warn("No PEF results available for business case calculation");
+        return {
+            roi: 0, annualSavings: 0, premiumRevenue: 0, marketShareValue: 0,
+            totalAnnualBenefit: 0, carbonReduction: 0, implementationCost: 0,
+            businessScale: getBusinessScale(annualVolume),
+            volumeTier: getVolumeTier(annualVolume)
+        };
+    }
+
+    const co2PerKg = finalPefResults["Climate Change"]?.total / (massBalanceData.final_content_weight_kg || 0.2);
+    const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
             // BASELINE COSTS (Dynamic based on Volume)
             let baseImplementationCost = 0;
             if (annualVolume <= 1000) baseImplementationCost = 1000;
@@ -4405,16 +4413,17 @@
         };
 
         // ================== GLOBAL VARIABLES ==================
-        let selectedIngredients = [];
-        let currentChart = null;
-        let currentBusinessChart = null;
-        let currentDPPId = null;
-        let finalPefResults = {};
-        let massBalanceData = {};
-        let auditTrailData = {};
-        let currentComparisonBaseline = null;
-        let currentAnnualVolume = 10000; // Default volume
-        let currentScenario = 'baseline';
+let selectedIngredients = [];
+let currentChart = null;
+let currentBusinessChart = null;
+let currentDPPId = null;
+let finalPefResults = {}; // THIS IS THE MAIN RESULTS STORAGE
+let massBalanceData = {};
+let auditTrailData = {};
+let currentComparisonBaseline = null;
+let currentAnnualVolume = 10000; // Default volume
+let currentScenario = 'baseline';
+let activeScenarioData = { costMultiplier: 1.0, premiumMultiplier: 1.0, marketMultiplier: 1.0 }; // ADD THIS LINE
 
      // ================== SCALABLE BUSINESS CASE ENGINE ==================
 function getBusinessScale(volume) {
@@ -4761,6 +4770,8 @@ const foodCalculationEngine = {
 
 // ================== BUSINESS CASE CALCULATOR ==================
 function updateBusinessCase() {
+function updateBusinessCase() {
+    // FIX: Remove state.result check - use finalPefResults directly
     if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
         document.getElementById('businessStory').innerHTML = `
             <div class="story-highlight">
@@ -4771,14 +4782,10 @@ function updateBusinessCase() {
         return;
     }
 
-    const results = {
-        co2PerKg: finalPefResults["Climate Change"].total / (massBalanceData.final_content_weight_kg || 0.2),
-        finalContentWeight: massBalanceData.final_content_weight_kg || 0.2
-    };
-
-    const base = currentComparisonBaseline || { co2PerKg: 30.8, waterPerKg: 8.1, packWeight: 0.05, kwh: 0.8 }; // Fallback beef
-    const volume = currentAnnualVolume; // From slider/state
-
+    const volume = currentAnnualVolume;
+    // FIX: Call without results parameter
+    const businessCase = calculateScalableBusinessCase(volume);
+        
     // 1. Carbon Liability (Shadow Price)
     const co2Delta = Math.max(0, base.co2PerKg - results.co2PerKg); // kg savings per kg
     const totalTonsCo2Saved = (co2Delta * volume * results.finalContentWeight) / 1000;
@@ -4923,11 +4930,10 @@ function simulateScenario(scenarioType) {
             break;
     }
     
-    // FORCE UPDATE SEQUENCE
-    setTimeout(() => {
-        calculateImpact();
-        updateBusinessCase();
-        
+// FORCE UPDATE SEQUENCE
+setTimeout(() => {
+    calculateImpact(); // 1. Recalculate CO2 - THIS POPULATES finalPefResults
+    updateBusinessCase(); // 2. FORCE Business Math Update - THIS USES finalPefResults
         if (loadingElement) loadingElement.classList.add('hidden');
         if (resultsContent) resultsContent.classList.remove('hidden');
         
@@ -5324,17 +5330,24 @@ function calculateImpact() {
     
     // Simulate calculation delay
     setTimeout(() => {
-        try {
-            const results = foodCalculationEngine.calculateFoodImpact();
-            
-            // Update UI with results
-            updateResultsUI(results);
-            
-            // Show results
-            loadingElement.classList.add('hidden');
-            resultsContent.classList.remove('hidden');
-            
-        } catch (error) {
+    try {
+        const results = foodCalculationEngine.calculateFoodImpact();
+        
+        // FIX: Ensure results are stored globally for business case
+        finalPefResults = results.finalPefResults;
+        massBalanceData = results.massBalance;
+        auditTrailData = results.auditTrail;
+        
+        // Update UI with results
+        updateResultsUI(results);
+        
+        // FIX: Update business case with the new results
+        updateBusinessCase();
+        
+        loadingElement.classList.add('hidden');
+        resultsContent.classList.remove('hidden');
+        
+    } catch (error) {
             console.error('Calculation error:', error);
             loadingElement.classList.add('hidden');
             alert('Error calculating impact. Please check your inputs.');
@@ -5452,6 +5465,7 @@ window.generatePDFReport = function(type) {
 window.downloadRawData = function() {
     alert('Raw data download would be implemented here');
 };
+    
     </script>
 </body>
 </html>
