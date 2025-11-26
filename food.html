@@ -2745,185 +2745,260 @@
             return 'cotton-tshirt'; // Default
         }
 
-        // ================== MULTI-COMPARISON ENGINE ==================
-        function getMultiComparisonBaselines(productCategory, currentCO2) {
-            const comparisons = [];
+        // ================== SMART MULTI-COMPARISON ENGINE ==================
+function getMultiComparisonBaselines(productCategory, currentCO2) {
+    const comparisons = [];
+    
+    // SMART COMPARISON LOGIC - Compare similar products only!
+    switch(productCategory) {
+        case 'milk-product':
+            // Plant-based milks compare to other milks
+            comparisons.push(
+                { id: 'milk-product', name: 'Cow Milk', co2: 1.3 },
+                { id: 'almond-milk', name: 'Almond Milk', co2: 0.75 },
+                { id: 'soy-milk', name: 'Soy Milk', co2: 0.55 },
+                { id: 'oat-base-liquid', name: 'Oat Milk', co2: 0.42 }
+            );
+            break;
             
-            switch(productCategory) {
-                case 'milk-product':
-                    comparisons.push(
-                        { id: 'milk-product', name: 'Cow Milk', co2: 1.3 },
-                        { id: 'almond-milk', name: 'Almond Milk', co2: 0.75 },
-                        { id: 'soy-milk', name: 'Soy Milk', co2: 0.55 }
-                    );
-                    break;
-                case 'beef-product':
-                    comparisons.push(
-                        { id: 'beef-product', name: 'Beef', co2: 30.8 },
-                        { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
-                        { id: 'pork-product', name: 'Pork', co2: 5.2 },
-                        { id: 'lamb-product', name: 'Lamb', co2: 25.2 }
-                    );
-                    break;
-                case 'chicken-product':
-                    comparisons.push(
-                        { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
-                        { id: 'turkey-product', name: 'Turkey', co2: 4.1 },
-                        { id: 'pork-product', name: 'Pork', co2: 5.2 },
-                        { id: 'beef-product', name: 'Beef', co2: 30.8 }
-                    );
-                    break;
-                case 'bread-product':
-                    comparisons.push(
-                        { id: 'bread-product', name: 'Wheat Bread', co2: 0.8 },
-                        { id: 'coffee-product', name: 'Coffee', co2: 19.5 },
-                        { id: 'chocolate-product', name: 'Chocolate', co2: 14.5 }
-                    );
-                    break;
-                default:
-                    comparisons.push(
-                        { id: 'beef-product', name: 'Beef', co2: 30.8 },
-                        { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
-                        { id: 'bread-product', name: 'Bread', co2: 0.8 }
-                    );
+        case 'beef-product':
+            // Meat alternatives compare to meats
+            comparisons.push(
+                { id: 'beef-product', name: 'Beef', co2: 30.8 },
+                { id: 'lamb-product', name: 'Lamb', co2: 25.2 },
+                { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
+                { id: 'pork-product', name: 'Pork', co2: 5.2 },
+                { id: 'salmon-farmed-norway', name: 'Salmon', co2: 6.2 }
+            );
+            break;
+            
+        case 'chicken-product':
+            // Poultry compares to poultry
+            comparisons.push(
+                { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
+                { id: 'turkey-product', name: 'Turkey', co2: 4.1 },
+                { id: 'eggs-chicken-barn', name: 'Eggs', co2: 2.4 }
+            );
+            break;
+            
+        case 'bread-product':
+            // Bakery compares to bakery
+            comparisons.push(
+                { id: 'bread-product', name: 'Wheat Bread', co2: 0.8 },
+                { id: 'oats-grain-eu', name: 'Oat Bread', co2: 0.38 },
+                { id: 'rice-paddy-global', name: 'Rice Cakes', co2: 2.85 }
+            );
+            break;
+            
+        case 'coffee-product':
+            // Coffee compares to beverages
+            comparisons.push(
+                { id: 'coffee-product', name: 'Coffee', co2: 19.5 },
+                { id: 'tea-black-dried', name: 'Black Tea', co2: 1.75 },
+                { id: 'milk-product', name: 'Milk', co2: 1.3 }
+            );
+            break;
+            
+        case 'chocolate-product':
+            // Chocolate compares to sweets
+            comparisons.push(
+                { id: 'chocolate-product', name: 'Chocolate', co2: 14.5 },
+                { id: 'honey-eu', name: 'Honey', co2: 1.07 },
+                { id: 'sugar-cane-raw', name: 'Sugar', co2: 0.58 }
+            );
+            break;
+            
+        case 'shampoo-conventional':
+            // Personal care compares to personal care
+            comparisons.push(
+                { id: 'shampoo-conventional', name: 'Shampoo', co2: 2.8 },
+                { id: 'soap-conventional', name: 'Soap', co2: 1.8 },
+                { id: 'lotion-conventional', name: 'Lotion', co2: 3.2 }
+            );
+            break;
+            
+        case 'cotton-tshirt':
+            // Textiles compare to textiles
+            comparisons.push(
+                { id: 'cotton-tshirt', name: 'Cotton T-Shirt', co2: 3.6 },
+                { id: 'polyester-tshirt', name: 'Polyester T-Shirt', co2: 4.1 }
+            );
+            break;
+            
+        case 'soda-drink':
+            // Beverages compare to beverages
+            comparisons.push(
+                { id: 'soda-drink', name: 'Soda', co2: 0.4 },
+                { id: 'juice-drink', name: 'Juice', co2: 1.2 },
+                { id: 'milk-product', name: 'Milk', co2: 1.3 }
+            );
+            break;
+            
+        default:
+            // Smart default based on CO2 range
+            if (currentCO2 < 1) {
+                // Low impact foods
+                comparisons.push(
+                    { id: 'bread-product', name: 'Bread', co2: 0.8 },
+                    { id: 'potatoes-fresh-eu', name: 'Potatoes', co2: 0.29 },
+                    { id: 'carrots-fresh-eu', name: 'Carrots', co2: 0.17 }
+                );
+            } else if (currentCO2 < 5) {
+                // Medium impact foods
+                comparisons.push(
+                    { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
+                    { id: 'pork-product', name: 'Pork', co2: 5.2 },
+                    { id: 'eggs-chicken-barn', name: 'Eggs', co2: 2.4 }
+                );
+            } else {
+                // High impact foods
+                comparisons.push(
+                    { id: 'beef-product', name: 'Beef', co2: 30.8 },
+                    { id: 'lamb-product', name: 'Lamb', co2: 25.2 },
+                    { id: 'cheese-product', name: 'Cheese', co2: 8.5 }
+                );
             }
-            
-            // Add current product to comparison
-            comparisons.unshift({
-                id: 'current',
-                name: 'Your Product',
-                co2: currentCO2,
-                isCurrent: true
-            });
-            
-            return comparisons;
+    }
+    
+    // Add current product to comparison
+    comparisons.unshift({
+        id: 'current',
+        name: 'Your Product',
+        co2: currentCO2,
+        isCurrent: true
+    });
+    
+    return comparisons;
         }
+        // ================== WORKING WHAT-IF SIMULATOR ==================
+let currentScenario = 'baseline';
+let scenarioResults = null;
 
-        function updateMultiComparison(currentCO2, productCategory) {
-            const multiComparisonSection = document.getElementById('multiComparisonSection');
-            const multiComparisonGrid = document.getElementById('multiComparisonGrid');
-            
-            if (!currentCO2 || currentCO2 === 0) {
-                multiComparisonSection.classList.add('hidden');
-                return;
-            }
-            
-            const comparisons = getMultiComparisonBaselines(productCategory, currentCO2);
-            
-            let comparisonHTML = '';
-            comparisons.forEach(item => {
-                const savings = item.isCurrent ? 0 : ((item.co2 - currentCO2) / item.co2 * 100);
-                const savingsClass = savings > 0 ? 'savings-positive' : 'savings-negative';
-                const savingsText = item.isCurrent ? 'Baseline' : (savings > 0 ? `${savings.toFixed(1)}% better` : `${Math.abs(savings).toFixed(1)}% worse`);
-                const itemClass = item.isCurrent ? 'best' : (savings > 10 ? 'best' : (savings < -10 ? 'worst' : ''));
-                
-                comparisonHTML += `
-                    <div class="comparison-item ${itemClass}">
-                        <div class="comparison-item-name">${item.name}</div>
-                        <div class="comparison-item-value">${item.co2.toFixed(2)} kg</div>
-                        <div class="comparison-item-savings ${savingsClass}">
-                            ${savingsText}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            multiComparisonGrid.innerHTML = comparisonHTML;
-            multiComparisonSection.classList.remove('hidden');
-        }
-
-        // ================== WHAT-IF SIMULATOR ==================
-        function simulateScenario(scenarioType) {
-            const originalValues = {
-                energySource: document.getElementById('energySource').value,
-                transportDistance: document.getElementById('transportDistance').value,
-                recycledContent: document.getElementById('recycledContent').value
-            };
-            
-            switch(scenarioType) {
-                case 'renewable':
-                    document.getElementById('energySource').value = 'renewable';
-                    break;
-                case 'local':
-                    document.getElementById('transportDistance').value = Math.round(originalValues.transportDistance * 0.5);
-                    break;
-                case 'recycled':
-                    document.getElementById('recycledContent').value = 100;
-                    break;
-            }
-            
-            // Recalculate impacts
-            calculateImpact();
-            
-            // Show scenario notification
-            showScenarioNotification(scenarioType);
-        }
-
-        function resetScenarios() {
+function simulateScenario(scenarioType) {
+    currentScenario = scenarioType;
+    
+    // Show loading state
+    const loadingElement = document.getElementById('loadingResults');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    if (loadingElement && resultsContent) {
+        loadingElement.classList.remove('hidden');
+        resultsContent.classList.add('hidden');
+    }
+    
+    // Store original values
+    const originalEnergy = document.getElementById('energySource').value;
+    const originalTransport = document.getElementById('transportDistance').value;
+    const originalRecycled = document.getElementById('recycledContent').value;
+    
+    // Apply scenario changes
+    switch(scenarioType) {
+        case 'renewable':
+            document.getElementById('energySource').value = 'renewable';
+            break;
+        case 'local':
+            document.getElementById('transportDistance').value = Math.round(originalTransport * 0.5);
+            break;
+        case 'recycled':
+            document.getElementById('recycledContent').value = 100;
+            break;
+        case 'premium':
+            document.getElementById('packagingWeight').value = parseFloat(document.getElementById('packagingWeight').value) * 1.2;
+            break;
+        case 'efficient':
+            document.getElementById('energySource').value = 'renewable';
+            document.getElementById('transportDistance').value = Math.round(originalTransport * 0.8);
+            break;
+        case 'organic':
+            // Organic typically has slightly higher energy but better marketing
             document.getElementById('energySource').value = 'grid';
-            document.getElementById('transportDistance').value = 300;
-            document.getElementById('recycledContent').value = 30;
-            
-            calculateImpact();
-            
-            // Show reset notification
-            showScenarioNotification('reset');
+            break;
+        case 'export':
+            document.getElementById('transportDistance').value = Math.round(originalTransport * 2.0);
+            document.getElementById('packagingWeight').value = parseFloat(document.getElementById('packagingWeight').value) * 1.1;
+            break;
+    }
+    
+    // Recalculate with REAL impact
+    setTimeout(() => {
+        calculateImpact();
+        
+        if (loadingElement && resultsContent) {
+            loadingElement.classList.add('hidden');
+            resultsContent.classList.remove('hidden');
         }
+        
+        // Update business case with scenario impact
+        updateBusinessCase();
+        
+        showScenarioNotification(scenarioType);
+        
+    }, 1000);
+}
 
-        function showScenarioNotification(scenarioType) {
-            const messages = {
-                'renewable': 'Scenario Applied: +20% Renewable Energy - Reduced manufacturing emissions',
-                'local': 'Scenario Applied: Local Sourcing - 50% transport reduction',
-                'recycled': 'Scenario Applied: 100% Recycled Packaging - Maximized circular economy benefits',
-                'reset': 'All scenarios reset to baseline values'
-            };
-            
-            // Create notification
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: var(--success);
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                box-shadow: var(--shadow-lg);
-                z-index: 10000;
-                max-width: 300px;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fas fa-check-circle"></i>
-                    <strong>${messages[scenarioType]}</strong>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
+function resetScenarios() {
+    currentScenario = 'baseline';
+    
+    // Reset to default values
+    document.getElementById('energySource').value = 'grid';
+    document.getElementById('transportDistance').value = 300;
+    document.getElementById('recycledContent').value = 30;
+    document.getElementById('packagingWeight').value = 0.050;
+    
+    calculateImpact();
+    showScenarioNotification('reset');
+}
+
+function showScenarioNotification(scenarioType) {
+    const messages = {
+        'renewable': '✅ Renewable Energy Applied: -20% manufacturing emissions',
+        'local': '✅ Local Sourcing Applied: -50% transport distance',
+        'recycled': '✅ 100% Recycled Packaging: -30% packaging impact', 
+        'premium': '✅ Premium Packaging: +20% packaging weight for better presentation',
+        'efficient': '✅ Energy Efficient: Renewable energy + optimized transport',
+        'organic': '✅ Organic Sourcing: Slightly higher energy, better market appeal',
+        'export': '✅ Export Market: Double transport + premium packaging for international',
+        'reset': '🔄 All scenarios reset to baseline values'
+    };
+    
+    // Create notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: var(--shadow-lg);
+        z-index: 10000;
+        max-width: 350px;
+        animation: slideIn 0.3s ease;
+        font-size: 0.9rem;
+    `;
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <strong>Scenario Applied</strong><br>
+                ${messages[scenarioType]}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
         }
-
-        // Add CSS for animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
 
         // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
         const aioxyData = {
