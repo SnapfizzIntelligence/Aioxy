@@ -10459,42 +10459,332 @@ document.getElementById('businessStory').innerHTML = `
         }
 
                 function updateMassBalanceDisplay() {
-            const massBalanceSection = document.getElementById('massBalanceSection');
-            const massBalanceContent = document.getElementById('massBalanceContent');
-            
-            if (massBalanceData.raw_input_total_kg > 0) {
-                massBalanceSection.classList.remove('hidden');
-                
-                const balanceDifference = Math.abs(massBalanceData.balance_check);
-                const balanceStatus = balanceDifference < 0.001 ? "✅ Balanced" : "⚠️ Check Required";
-                
-                massBalanceContent.innerHTML = `
-                    <div class="mass-balance-item">
-                        <span>Total Input Weight:</span>
-                        <span>${massBalanceData.raw_input_total_kg.toFixed(3)} kg</span>
-                    </div>
-                    <div class="mass-balance-item">
-                        <span>Agricultural Loss:</span>
-                        <span>- ${massBalanceData.agricultural_processing_loss_kg.toFixed(3)} kg</span>
-                    </div>
-                    <div class="mass-balance-item">
-                        <span>Processing Loss:</span>
-                        <span>- ${massBalanceData.processing_loss_kg.toFixed(3)} kg</span>
-                    </div>
-                    <div class="mass-balance-item">
-                        <span>Final Product Weight:</span>
-                        <span>${massBalanceData.final_content_weight_kg.toFixed(3)} kg</span>
-                    </div>
-                    <div class="mass-balance-item">
-                        <span>Mass Balance:</span>
-                        <span>${balanceStatus}</span>
-                    </div>
-                `;
-            } else {
-                massBalanceSection.classList.add('hidden');
-            }
+    const massBalanceSection = document.getElementById('massBalanceSection');
+    const massBalanceContent = document.getElementById('massBalanceContent');
+    
+    if (massBalanceData && massBalanceData.raw_input_total_kg > 0) {
+        massBalanceSection.classList.remove('hidden');
+        
+        const balanceDifference = Math.abs(massBalanceData.balance_check || 0);
+        const balanceStatus = balanceDifference < 0.001 ? "✅ Balanced" : "⚠️ Check Required";
+        
+        massBalanceContent.innerHTML = `
+            <div class="mass-balance-item">
+                <span>Total Input Weight:</span>
+                <span>${(massBalanceData.raw_input_total_kg || 0).toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Agricultural Loss:</span>
+                <span>- ${(massBalanceData.agricultural_processing_loss_kg || 0).toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Processing Loss:</span>
+                <span>- ${(massBalanceData.processing_loss_kg || 0).toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Final Product Weight:</span>
+                <span>${(massBalanceData.final_content_weight_kg || 0).toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Packaging Weight:</span>
+                <span>${(massBalanceData.packaging_weight_kg || 0).toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Total Product Weight:</span>
+                <span>${(massBalanceData.total_product_weight_kg || 0).toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item" style="font-weight: 600; color: var(--primary);">
+                <span>Mass Balance Status:</span>
+                <span>${balanceStatus}</span>
+            </div>
+        `;
+    } else {
+        massBalanceSection.classList.add('hidden');
+    }
         }
+// ================== COMPLETE THE BROKEN BUSINESS CASE ==================
 
+function updateBusinessCase() {
+    if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
+        document.getElementById('businessStory').innerHTML = `
+            <div class="story-highlight">
+                <i class="fas fa-calculator"></i>
+                <strong>Calculate environmental impacts first</strong> to see the complete business case
+            </div>
+        `;
+        return;
+    }
+
+    const results = {
+        co2PerKg: finalPefResults["Climate Change"].total / (massBalanceData.final_content_weight_kg || 0.2),
+        finalContentWeight: massBalanceData.final_content_weight_kg || 0.2
+    };
+
+    const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
+
+    // UPDATE ALL BUSINESS METRICS
+    document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
+    document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
+    document.getElementById('premiumValue').textContent = businessCase.premiumPotential + '%';
+    document.getElementById('marketValue').textContent = businessCase.marketGrowth + '%';
+    
+    // UPDATE COST BREAKDOWN
+    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
+    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(businessCase.carbonReduction) + ' kg CO₂e';
+    document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(businessCase.totalAnnualBenefit);
+    document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber((businessCase.totalAnnualBenefit * 3) - businessCase.implementationCost);
+
+    // ROI BADGE WITH DYNAMIC COLORS
+    const roiBadge = document.getElementById('roiBadge');
+    if (businessCase.roi >= 200) {
+        roiBadge.textContent = 'EXCEPTIONAL ROI';
+        roiBadge.style.background = 'var(--dqr-excellent)';
+    } else if (businessCase.roi >= 100) {
+        roiBadge.textContent = 'EXCELLENT ROI';
+        roiBadge.style.background = 'var(--dqr-very-good)';
+    } else if (businessCase.roi >= 50) {
+        roiBadge.textContent = 'STRONG ROI';
+        roiBadge.style.background = 'var(--dqr-good)';
+    } else if (businessCase.roi >= 20) {
+        roiBadge.textContent = 'GOOD ROI';
+        roiBadge.style.background = 'var(--dqr-fair)';
+    } else if (businessCase.roi >= 0) {
+        roiBadge.textContent = 'MODEST ROI';
+        roiBadge.style.background = 'var(--dqr-poor)';
+    } else {
+        roiBadge.textContent = 'NEGATIVE ROI';
+        roiBadge.style.background = 'var(--accent)';
+    }
+
+    // BUSINESS STORY WITH HARD PHYSICS
+    document.getElementById('businessStory').innerHTML = `
+        <div class="story-highlight">
+            <i class="fas fa-${getBusinessIcon(businessCase.businessScale)}"></i>
+            <strong>${businessCase.businessScale} Opportunity</strong><br>
+            At ${currentAnnualVolume.toLocaleString()} units annually, sustainability creates 
+            <strong>€${formatLargeNumber(businessCase.totalAnnualBenefit)}</strong> in annual business value.
+        </div>
+        <p>
+            <strong>💰 Carbon Savings:</strong> €${formatLargeNumber(businessCase.annualSavings)}<br>
+            <strong>📈 Price Premium Potential:</strong> ${businessCase.premiumPotential}%<br>  
+            <strong>👥 Market Share Growth:</strong> ${businessCase.marketGrowth}%<br>
+            <strong>🎯 Total Annual Benefit:</strong> €${formatLargeNumber(businessCase.totalAnnualBenefit)}
+        </p>
+        <div class="story-highlight">
+            <i class="fas fa-bullseye"></i>
+            <strong>Market Leadership Potential:</strong> 
+            Your environmental advantage positions you for significant market share capture in the growing sustainable products category.
+        </div>
+    `;
+}
+
+// ================== COMPLETE THE SCENARIO SYSTEM ==================
+
+function simulateScenario(scenarioType) {
+    currentScenario = scenarioType;
+    
+    // Reset multipliers
+    activeScenarioData = { costMultiplier: 1.0, premiumMultiplier: 1.0, marketMultiplier: 1.0 };
+    
+    // Show loading
+    const loadingElement = document.getElementById('loadingResults');
+    const resultsContent = document.getElementById('resultsContent');
+    if (loadingElement) loadingElement.classList.remove('hidden');
+    if (resultsContent) resultsContent.classList.add('hidden');
+    
+    let notificationText = "";
+
+    // APPLY SCENARIO LOGIC
+    switch(scenarioType) {
+        case 'renewable':
+            document.getElementById('energySource').value = 'renewable';
+            activeScenarioData.costMultiplier = 1.1;
+            activeScenarioData.premiumMultiplier = 1.05;
+            notificationText = "⚡ Renewable Energy: High CO₂ drop, slight cost increase.";
+            break;
+            
+        case 'local':
+            document.getElementById('transportDistance').value = 50;
+            activeScenarioData.costMultiplier = 0.9;
+            activeScenarioData.marketMultiplier = 1.2;
+            notificationText = "📍 Local Sourcing: Transport costs slashed, community appeal up.";
+            break;
+            
+        case 'electric_fleet':
+            document.getElementById('transportMode').value = 'electric_van';
+            activeScenarioData.costMultiplier = 1.15;
+            activeScenarioData.premiumMultiplier = 1.05;
+            notificationText = "🚛 Electric Fleet: Zero tailpipe emissions, modern logistics.";
+            break;
+
+        case 'recycled':
+            document.getElementById('recycledContent').value = 100;
+            activeScenarioData.costMultiplier = 1.05;
+            activeScenarioData.marketMultiplier = 1.15;
+            notificationText = "♻️ Circular Economy: 100% Recycled content applied.";
+            break;
+
+        case 'plastic_free':
+            document.getElementById('packagingMaterial').value = 'cardboard';
+            activeScenarioData.costMultiplier = 1.2;
+            activeScenarioData.premiumMultiplier = 1.2;
+            activeScenarioData.marketMultiplier = 1.3;
+            notificationText = "📦 Plastic Free: Major brand differentiator.";
+            break;
+    }
+    
+    // FORCE UPDATE SEQUENCE
+    setTimeout(() => {
+        calculateImpact();
+        updateBusinessCase();
+        
+        if (loadingElement) loadingElement.classList.add('hidden');
+        if (resultsContent) resultsContent.classList.remove('hidden');
+        
+        showScenarioNotification(scenarioType, notificationText);
+    }, 800);
+}
+
+function showScenarioNotification(scenarioType, message) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed; top: 20px; right: 20px;
+        background: var(--primary); color: white;
+        padding: 1rem 1.5rem; border-radius: 8px;
+        box-shadow: var(--shadow-lg); z-index: 10000;
+        animation: slideIn 0.3s ease; border-left: 5px solid var(--secondary);
+    `;
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <i class="fas fa-magic"></i>
+            <div><strong>Scenario Active</strong><br>${message}</div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => { notification.remove(); }, 3000);
+}
+
+function resetScenarios() {
+    currentScenario = 'baseline';
+    activeScenarioData = { costMultiplier: 1.0, premiumMultiplier: 1.0, marketMultiplier: 1.0 };
+    
+    // Reset to original values
+    document.getElementById('energySource').value = 'grid';
+    document.getElementById('transportDistance').value = 300;
+    document.getElementById('transportMode').value = 'road';
+    document.getElementById('recycledContent').value = 30;
+    document.getElementById('packagingMaterial').value = 'cardboard';
+    document.getElementById('packagingWeight').value = 0.050;
+    
+    calculateImpact();
+    showScenarioNotification('reset', "All scenarios reset to baseline values");
+}
+
+// ================== COMPLETE THE COMPARISON ENGINE ==================
+
+function updateMultiComparison(currentCO2, comparisonKey) {
+    const comparisons = getMultiComparisonBaselines(comparisonKey, currentCO2);
+    const container = document.getElementById('multiComparisonGrid');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    comparisons.forEach(item => {
+        const isCurrent = item.isCurrent;
+        const isBaseline = item.isBaseline;
+        
+        const div = document.createElement('div');
+        div.className = `comparison-item ${isCurrent ? 'best' : ''} ${isBaseline ? 'worst' : ''}`;
+        div.innerHTML = `
+            <div class="comparison-item-name">${item.name}</div>
+            <div class="comparison-item-value">${item.co2.toFixed(2)} kg CO₂e</div>
+            <div class="comparison-item-savings ${isCurrent ? 'savings-positive' : ''}">
+                ${isCurrent ? 'YOUR PRODUCT' : ''}
+            </div>
+        `;
+        container.appendChild(div);
+    });
+    
+    // Show the comparison section
+    document.getElementById('multiComparisonSection').classList.remove('hidden');
+}
+
+// ================== COMPLETE THE CHART SYSTEM ==================
+
+function createEmissionChart(results) {
+    const ctx = document.getElementById('emissionChart');
+    if (currentChart) {
+        currentChart.destroy();
+    }
+    
+    // Get contribution data
+    const ingredientsCO2 = results.finalPefResults?.["Climate Change"]?.contribution_tree?.Ingredients?.total || 0;
+    const processingCO2 = results.finalPefResults?.["Climate Change"]?.contribution_tree?.Manufacturing?.total || 0;
+    const transportCO2 = results.finalPefResults?.["Climate Change"]?.contribution_tree?.Transport?.total || 0;
+    const packagingCO2 = results.finalPefResults?.["Climate Change"]?.contribution_tree?.Packaging?.total || 0;
+    
+    // Create simple chart visualization
+    ctx.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem;">
+            <div style="background: #2E86C1; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.9rem;">Ingredients</div>
+                <div style="font-size: 1.2rem; font-weight: bold;">${ingredientsCO2.toFixed(2)} kg</div>
+            </div>
+            <div style="background: #27AE60; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.9rem;">Processing</div>
+                <div style="font-size: 1.2rem; font-weight: bold;">${processingCO2.toFixed(2)} kg</div>
+            </div>
+            <div style="background: #F39C12; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.9rem;">Transport</div>
+                <div style="font-size: 1.2rem; font-weight: bold;">${transportCO2.toFixed(2)} kg</div>
+            </div>
+            <div style="background: #E74C3C; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.9rem;">Packaging</div>
+                <div style="font-size: 1.2rem; font-weight: bold;">${packagingCO2.toFixed(2)} kg</div>
+            </div>
+        </div>
+    `;
+}
+
+// ================== COMPLETE THE DPP SYSTEM ==================
+
+function generateDPP() {
+    const productName = document.getElementById('productName').value || 'Unnamed Product';
+    const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    currentDPPId = dppId;
+    
+    document.getElementById('dppId').textContent = dppId;
+    
+    // Build QR code data
+    const transparencyData = {
+        productId: dppId,
+        productName: productName,
+        timestamp: new Date().toISOString(),
+        environmentalFootprint: finalPefResults,
+        data_quality: auditTrailData?.dqr_summary,
+        mass_balance: massBalanceData
+    };
+    
+    const qrElement = document.getElementById('qrcode');
+    qrElement.innerHTML = '';
+    
+    // Create QR code visualization
+    qrElement.innerHTML = `
+        <div style="width: 200px; height: 200px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+            <div style="text-align: center;">
+                <div style="font-size: 3rem;">📊</div>
+                <div style="font-size: 0.8rem; margin-top: 0.5rem;">Digital Product Passport</div>
+                <div style="font-size: 0.7rem; color: #666;">ID: ${dppId}</div>
+            </div>
+        </div>
+    `;
+}
+
+// ================== INITIALIZE APPLICATION ==================
+
+document.addEventListener('DOMContentLoaded', function() {
+    initApp();
+});
         // ================== PEF SCORECARD ==================
         function displayFullPefScorecard() {
             const tbody = document.getElementById('pefScorecardBody');
