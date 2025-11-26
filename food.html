@@ -8718,8 +8718,8 @@ function updateBusinessCase() {
     // UPDATE METRICS (Physics-Wired)
     document.getElementById('roiValue').textContent = roi.toFixed(0) + '%';
     document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(totalAnnualBenefit);
-    document.getElementById('premiumValue').textContent = 'Physics Only'; // No fuzz
-    document.getElementById('marketValue').textContent = 'Physics Only'; // No fuzz
+    document.getElementById('premiumValue').textContent = Math.round((totalAnnualBenefit / volume) * 100) + '%';
+document.getElementById('marketValue').textContent = Math.min(Math.round((co2Delta / base.co2PerKg) * 100), 50) + '%';
     
     // UPDATE BREAKDOWN
     document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(capex);
