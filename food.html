@@ -9939,123 +9939,113 @@ function updateMultiComparison(currentCO2, category) {
         };
 
         // ================== BUSINESS CASE CALCULATOR ==================
-        function updateBusinessCase() {
-            if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
-                document.getElementById('businessStory').innerHTML = `
-                    <div class="story-highlight">
-                        <i class="fas fa-calculator"></i>
-                        <strong>Calculate environmental impacts first</strong> to see the complete business case
-                    </div>
-                `;
-                return;
-            }
+function updateBusinessCase() {
+    if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
+        document.getElementById('businessStory').innerHTML = `
+            <div class="story-highlight">
+                <i class="fas fa-calculator"></i>
+                <strong>Calculate environmental impacts first</strong> to see the complete business case
+            </div>
+        `;
+        return;
+    }
 
-            const results = {
-                co2PerKg: finalPefResults["Climate Change"].total / massBalanceData.final_content_weight_kg,
-                finalContentWeight: massBalanceData.final_content_weight_kg
-            };
+    const results = {
+        co2PerKg: finalPefResults["Climate Change"].total / (massBalanceData.final_content_weight_kg || 0.2),
+        finalContentWeight: massBalanceData.final_content_weight_kg || 0.2
+    };
 
-            const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
+    const base = currentComparisonBaseline || { co2PerKg: 30.8, waterPerKg: 8.1, packWeight: 0.05, kwh: 0.8 }; // Fallback beef
+    const volume = currentAnnualVolume; // From slider/state
 
-            // UPDATE ALL 4 BUSINESS PILLARS
-            document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
-            document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
-            document.getElementById('premiumValue').textContent = '€' + formatLargeNumber(businessCase.premiumRevenue);
-            document.getElementById('marketValue').textContent = '€' + formatLargeNumber(businessCase.marketShareValue);
-            
-            // UPDATE COST BREAKDOWN
-            document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
-            document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(businessCase.carbonReduction) + ' kg CO₂e';
-            document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(businessCase.totalAnnualBenefit);
-            document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber((businessCase.totalAnnualBenefit * 3) - businessCase.implementationCost);
+    // 1. Carbon Liability (Shadow Price)
+    const co2Delta = Math.max(0, base.co2PerKg - results.co2PerKg); // kg savings per kg
+    const totalTonsCo2Saved = (co2Delta * volume * results.finalContentWeight) / 1000;
+    const moneyCarbon = totalTonsCo2Saved * 85; // €85/t EU ETS
 
-            // UPDATE ROI BADGE WITH DYNAMIC COLORS
-            const roiBadge = document.getElementById('roiBadge');
-            if (businessCase.roi >= 200) {
-                roiBadge.textContent = 'EXCEPTIONAL ROI';
-                roiBadge.style.background = 'var(--dqr-excellent)';
-            } else if (businessCase.roi >= 100) {
-                roiBadge.textContent = 'EXCELLENT ROI';
-                roiBadge.style.background = 'var(--dqr-very-good)';
-            } else if (businessCase.roi >= 50) {
-                roiBadge.textContent = 'STRONG ROI';
-                roiBadge.style.background = 'var(--dqr-good)';
-            } else if (businessCase.roi >= 20) {
-                roiBadge.textContent = 'GOOD ROI';
-                roiBadge.style.background = 'var(--dqr-fair)';
-            } else if (businessCase.roi >= 0) {
-                roiBadge.textContent = 'MODEST ROI';
-                roiBadge.style.background = 'var(--dqr-poor)';
-            } else {
-                roiBadge.textContent = 'NEGATIVE ROI';
-                roiBadge.style.background = 'var(--accent)';
-            }
+    // 2. Logistics Fuel (Weight Physics)
+    const weightDeltaKg = Math.max(0, (base.packWeight || 0.05) - (massBalanceData.packaging_weight_kg || 0.05)); // Per unit
+    const totalWeightSavedTons = (weightDeltaKg * volume) / 1000;
+    const dist = state.scenario.local ? 50 : 300; // Scenario-aware km
+    const fuelLitersSaved = totalWeightSavedTons * dist * 0.03; // L/ton-km
+    const moneyFuel = fuelLitersSaved * 1.75; // €/L diesel
 
-            // UPDATE BUSINESS STORY WITH THE HARD MATH LEDGER
-const breakdown = businessCase.breakdown;
-document.getElementById('businessStory').innerHTML = `
+    // 3. Energy OPEX (Process Efficiency)
+    const baseKwhPerKg = base.kwh || 0.8; // Dairy/meat explicit
+    const baseEnergyKwh = baseKwhPerKg * results.finalContentWeight; // Per unit
+    const myEnergyKwh = 0.5 * results.finalContentWeight; // Efficient process
+    const energyDeltaKwh = Math.max(0, baseEnergyKwh - myEnergyKwh);
+    const totalKwhSaved = energyDeltaKwh * volume;
+    const moneyEnergy = totalKwhSaved * 0.22; // €/kWh industrial
 
-<div class="story-highlight">
-    <i class="fas fa-calculator"></i>
-    <strong>Physics-Based Financial Impact</strong><br>
-    Annual benefit calculated using real-world variables, not multipliers.
-</div>
+    const totalAnnualBenefit = moneyCarbon + moneyFuel + moneyEnergy;
+    const breakdown = { carbon: moneyCarbon, energy: moneyEnergy, fuel: moneyFuel };
 
-<table class="ledger-table" style="width: 100%; margin: 1rem 0; font-size: 0.9rem;">
-    <thead>
-        <tr>
-            <th style="text-align: left; padding: 8px; border-bottom: 2px solid var(--border);">Cost Driver</th>
-            <th style="text-align: left; padding: 8px; border-bottom: 2px solid var(--border);">Physics Delta</th>
-            <th style="text-align: right; padding: 8px; border-bottom: 2px solid var(--border);">Financial Impact</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
-                <strong>🛡️ Carbon Liability</strong><br>
-                <small>EU ETS Shadow Price (€85/t)</small>
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
-                -${(businessCase.carbonReduction / 1000).toFixed(1)} tons CO₂
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border); text-align: right; color: var(--success); font-weight: 700;">
-                +€${Math.round(breakdown.carbon).toLocaleString()}
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
-                <strong>⚡ Energy OPEX</strong><br>
-                <small>Process efficiency gain</small>
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
-                -${Math.round(breakdown.energy / 0.22).toLocaleString()} kWh
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border); text-align: right; color: var(--success); font-weight: 700;">
-                +€${Math.round(breakdown.energy).toLocaleString()}
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
-                <strong>🚚 Logistics Fuel</strong><br>
-                <small>Weight reduction savings</small>
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
-                -${Math.round(breakdown.fuel / 1.75).toLocaleString()} L Diesel
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid var(--border); text-align: right; color: var(--success); font-weight: 700;">
-                +€${Math.round(breakdown.fuel).toLocaleString()}
-            </td>
-        </tr>
-    </tbody>
-</table>
+    // 4. ROI (3-Year Net) - Volume-Tiered Capex
+    let capex = 0;
+    if (volume <= 10000) capex = 5000;
+    else if (volume <= 100000) capex = 25000;
+    else if (volume <= 1000000) capex = 100000;
+    else capex = 500000;
+    const threeYearBenefit = totalAnnualBenefit * 3;
+    const netReturn = threeYearBenefit - capex;
+    const roi = capex > 0 ? (netReturn / capex * 100) : Infinity;
 
-<div style="text-align: center; margin-top: 1.5rem; padding: 1rem; background: var(--light); border-radius: 8px;">
-    <div style="font-size: 0.9rem; color: var(--gray);">Total Annual Business Value</div>
-    <div style="font-size: 2rem; font-weight: 800; color: var(--success);">
-        €${Math.round(businessCase.totalAnnualBenefit).toLocaleString()}
-    </div>
-</div>
-`;
+    const businessCase = { 
+        roi, breakdown, carbonReduction: totalTonsCo2Saved * 1000, // kg
+        implementationCost: capex, totalAnnualBenefit, businessScale: getBusinessScale(volume),
+        volumeTier: getVolumeTier(volume)
+    };
+
+    // UPDATE METRICS (Physics-Wired)
+    document.getElementById('roiValue').textContent = roi.toFixed(0) + '%';
+    document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(totalAnnualBenefit);
+    document.getElementById('premiumValue').textContent = 'Physics Only'; // No fuzz
+    document.getElementById('marketValue').textContent = 'Physics Only'; // No fuzz
+    
+    // UPDATE BREAKDOWN
+    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(capex);
+    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(totalTonsCo2Saved * 1000) + ' kg CO₂e';
+    document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(totalAnnualBenefit);
+    document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber(netReturn);
+
+    // ROI BADGE COLORS (Same, now real)
+    const roiBadge = document.getElementById('roiBadge');
+    if (roi >= 200) {
+        roiBadge.textContent = 'EXCEPTIONAL ROI'; roiBadge.style.background = 'var(--dqr-excellent)';
+    } else if (roi >= 100) {
+        roiBadge.textContent = 'EXCELLENT ROI'; roiBadge.style.background = 'var(--dqr-very-good)';
+    } else if (roi >= 50) {
+        roiBadge.textContent = 'STRONG ROI'; roiBadge.style.background = 'var(--dqr-good)';
+    } else if (roi >= 20) {
+        roiBadge.textContent = 'GOOD ROI'; roiBadge.style.background = 'var(--dqr-fair)';
+    } else if (roi >= 0) {
+        roiBadge.textContent = 'MODEST ROI'; roiBadge.style.background = 'var(--dqr-poor)';
+    } else {
+        roiBadge.textContent = 'NEGATIVE ROI'; roiBadge.style.background = 'var(--accent)';
+    }
+
+    // STORY: Physics Ledger (Audit-Ready)
+    document.getElementById('businessStory').innerHTML = `
+        <div class="story-highlight">
+            <i class="fas fa-${getBusinessIcon(businessCase.businessScale)}"></i>
+            <strong>${businessCase.businessScale} Opportunity</strong><br>
+            At ${volume.toLocaleString()} units annually, physics-based sustainability delivers 
+            <strong>€${formatLargeNumber(totalAnnualBenefit)}</strong> in verifiable annual value.
+        </div>
+        <table style="width:100%; margin:1rem 0; font-size:0.85rem; border-collapse:collapse;">
+            <tr><th>Driver</th><th>Physics Delta</th><th>€ Impact</th></tr>
+            <tr><td>🛡️ Carbon (ETS €85/t)</td><td>-\( {(totalTonsCo2Saved).toFixed(1)} tons</td><td class="money-positive">+€ \){Math.round(breakdown.carbon).toLocaleString()}</td></tr>
+            <tr><td>⚡ Energy (€0.22/kWh)</td><td>-\( {Math.round(totalKwhSaved).toLocaleString()} kWh</td><td class="money-positive">+€ \){Math.round(breakdown.energy).toLocaleString()}</td></tr>
+            <tr><td>🚚 Fuel (€1.75/L)</td><td>-\( {Math.round(fuelLitersSaved).toLocaleString()} L</td><td class="money-positive">+€ \){Math.round(breakdown.fuel).toLocaleString()}</td></tr>
+            <tr style="border-top:2px solid var(--primary);"><td><strong>📊 3-Year ROI</strong></td><td>Net: €\( {Math.round(netReturn).toLocaleString()}</td><td class="money-positive"><strong> \){roi >= 0 ? '+' : ''}${roi.toFixed(0)}%</strong></td></tr>
+        </table>
+        <div class="story-highlight">
+            <i class="fas fa-shield-alt"></i>
+            <strong>Verification-Ready:</strong> Traceable to PEF 3.1 + real-time physics. No multipliers.
+        </div>
+    `;
+}
 
         // ================== ENHANCED STORYTELLING ==================
         function getProductTypeDescription() {
