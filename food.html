@@ -2749,32 +2749,115 @@
 function getMultiComparisonBaselines(productCategory, currentCO2) {
     const comparisons = [];
     
-    // ================== MULTI-COMPARISON ENGINE ==================
-function getMultiComparisonBaselines(productCategory, currentCO2) {
-    const comparisons = [];
-    
     // SMART COMPARISON LOGIC - Compare similar products only!
     switch(productCategory) {
         case 'milk-product':
+            // Plant-based milks compare to other milks
             comparisons.push(
                 { id: 'milk-product', name: 'Cow Milk', co2: 1.3 },
                 { id: 'almond-milk', name: 'Almond Milk', co2: 0.75 },
-                { id: 'soy-milk', name: 'Soy Milk', co2: 0.55 }
+                { id: 'soy-milk', name: 'Soy Milk', co2: 0.55 },
+                { id: 'oat-base-liquid', name: 'Oat Milk', co2: 0.42 }
             );
             break;
+            
         case 'beef-product':
+            // Meat alternatives compare to meats
             comparisons.push(
                 { id: 'beef-product', name: 'Beef', co2: 30.8 },
+                { id: 'lamb-product', name: 'Lamb', co2: 25.2 },
                 { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
-                { id: 'pork-product', name: 'Pork', co2: 5.2 }
+                { id: 'pork-product', name: 'Pork', co2: 5.2 },
+                { id: 'salmon-farmed-norway', name: 'Salmon', co2: 6.2 }
             );
             break;
-        default:
+            
+        case 'chicken-product':
+            // Poultry compares to poultry
             comparisons.push(
-                { id: 'beef-product', name: 'Beef', co2: 30.8 },
                 { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
-                { id: 'bread-product', name: 'Bread', co2: 0.8 }
+                { id: 'turkey-product', name: 'Turkey', co2: 4.1 },
+                { id: 'eggs-chicken-barn', name: 'Eggs', co2: 2.4 }
             );
+            break;
+            
+        case 'bread-product':
+            // Bakery compares to bakery
+            comparisons.push(
+                { id: 'bread-product', name: 'Wheat Bread', co2: 0.8 },
+                { id: 'oats-grain-eu', name: 'Oat Bread', co2: 0.38 },
+                { id: 'rice-paddy-global', name: 'Rice Cakes', co2: 2.85 }
+            );
+            break;
+            
+        case 'coffee-product':
+            // Coffee compares to beverages
+            comparisons.push(
+                { id: 'coffee-product', name: 'Coffee', co2: 19.5 },
+                { id: 'tea-black-dried', name: 'Black Tea', co2: 1.75 },
+                { id: 'milk-product', name: 'Milk', co2: 1.3 }
+            );
+            break;
+            
+        case 'chocolate-product':
+            // Chocolate compares to sweets
+            comparisons.push(
+                { id: 'chocolate-product', name: 'Chocolate', co2: 14.5 },
+                { id: 'honey-eu', name: 'Honey', co2: 1.07 },
+                { id: 'sugar-cane-raw', name: 'Sugar', co2: 0.58 }
+            );
+            break;
+            
+        case 'shampoo-conventional':
+            // Personal care compares to personal care
+            comparisons.push(
+                { id: 'shampoo-conventional', name: 'Shampoo', co2: 2.8 },
+                { id: 'soap-conventional', name: 'Soap', co2: 1.8 },
+                { id: 'lotion-conventional', name: 'Lotion', co2: 3.2 }
+            );
+            break;
+            
+        case 'cotton-tshirt':
+            // Textiles compare to textiles
+            comparisons.push(
+                { id: 'cotton-tshirt', name: 'Cotton T-Shirt', co2: 3.6 },
+                { id: 'polyester-tshirt', name: 'Polyester T-Shirt', co2: 4.1 }
+            );
+            break;
+            
+        case 'soda-drink':
+            // Beverages compare to beverages
+            comparisons.push(
+                { id: 'soda-drink', name: 'Soda', co2: 0.4 },
+                { id: 'juice-drink', name: 'Juice', co2: 1.2 },
+                { id: 'milk-product', name: 'Milk', co2: 1.3 }
+            );
+            break;
+            
+        default:
+            // Smart default based on CO2 range
+            if (currentCO2 < 1) {
+                // Low impact foods
+                comparisons.push(
+                    { id: 'bread-product', name: 'Bread', co2: 0.8 },
+                    { id: 'potatoes-fresh-eu', name: 'Potatoes', co2: 0.29 },
+                    { id: 'carrots-fresh-eu', name: 'Carrots', co2: 0.17 }
+                );
+            } else if (currentCO2 < 5) {
+                // Medium impact foods
+                comparisons.push(
+                    { id: 'chicken-product', name: 'Chicken', co2: 3.3 },
+                    { id: 'pork-product', name: 'Pork', co2: 5.2 },
+                    { id: 'eggs-chicken-barn', name: 'Eggs', co2: 2.4 }
+                );
+            } else {
+                // High impact foods
+                comparisons.push(
+                    { id: 'beef-product', name: 'Beef', co2: 30.8 },
+                    { id: 'lamb-product', name: 'Lamb', co2: 25.2 },
+                    { id: 'cheese-product', name: 'Cheese', co2: 8.5 }
+                );
+            }
     }
     
     // Add current product to comparison
@@ -2786,7 +2869,7 @@ function getMultiComparisonBaselines(productCategory, currentCO2) {
     });
     
     return comparisons;
-        }
+    }
         // ================== WORKING WHAT-IF SIMULATOR ==================
 let currentScenario = 'baseline';
 let scenarioResults = null;
@@ -2807,6 +2890,7 @@ function simulateScenario(scenarioType) {
     const originalEnergy = document.getElementById('energySource').value;
     const originalTransport = document.getElementById('transportDistance').value;
     const originalRecycled = document.getElementById('recycledContent').value;
+    const originalPackaging = document.getElementById('packagingWeight').value;
     
     // Apply scenario changes
     switch(scenarioType) {
@@ -2820,7 +2904,7 @@ function simulateScenario(scenarioType) {
             document.getElementById('recycledContent').value = 100;
             break;
         case 'premium':
-            document.getElementById('packagingWeight').value = parseFloat(document.getElementById('packagingWeight').value) * 1.2;
+            document.getElementById('packagingWeight').value = (parseFloat(originalPackaging) * 1.2).toFixed(3);
             break;
         case 'efficient':
             document.getElementById('energySource').value = 'renewable';
@@ -2832,7 +2916,7 @@ function simulateScenario(scenarioType) {
             break;
         case 'export':
             document.getElementById('transportDistance').value = Math.round(originalTransport * 2.0);
-            document.getElementById('packagingWeight').value = parseFloat(document.getElementById('packagingWeight').value) * 1.1;
+            document.getElementById('packagingWeight').value = (parseFloat(originalPackaging) * 1.1).toFixed(3);
             break;
     }
     
