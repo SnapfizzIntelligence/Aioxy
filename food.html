@@ -5300,14 +5300,363 @@ calculateImpact = function() {
     }, 1000);
 };
 
-// ================== INITIALIZE APPLICATION ==================
+// ================== MISSING FUNCTION DEFINITIONS ==================
 
+// Tab Navigation System
+function showTab(tabName) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(tab => tab.classList.add('hidden'));
+    
+    // Remove active class from all tabs
+    const tabs = document.querySelectorAll('.nav-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Show selected tab
+    const selectedTab = document.getElementById(tabName + '-tab');
+    if (selectedTab) {
+        selectedTab.classList.remove('hidden');
+    }
+    
+    // Activate selected tab button
+    const activeTab = Array.from(tabs).find(tab => 
+        tab.textContent.includes(tabName.charAt(0).toUpperCase() + tabName.slice(1).replace('-', ' '))
+    );
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+}
+
+// Ingredient Management
+function addIngredient() {
+    const select = document.getElementById('ingredientSelect');
+    const quantityInput = document.getElementById('ingredientQuantity');
+    
+    if (!select.value) {
+        alert('Please select an ingredient first');
+        return;
+    }
+    
+    const ingredientId = select.value;
+    const quantity = parseFloat(quantityInput.value) || 0;
+    
+    if (quantity <= 0) {
+        alert('Please enter a valid quantity');
+        return;
+    }
+    
+    const ingredient = aioxyData.ingredients[ingredientId];
+    if (!ingredient) return;
+    
+    // Check if ingredient already exists
+    const existingIndex = selectedIngredients.findIndex(item => item.id === ingredientId);
+    if (existingIndex !== -1) {
+        selectedIngredients[existingIndex].quantity += quantity;
+    } else {
+        selectedIngredients.push({
+            id: ingredientId,
+            name: ingredient.name,
+            quantity: quantity
+        });
+    }
+    
+    updateIngredientList();
+    
+    // Reset form
+    quantityInput.value = '0.150';
+}
+
+function updateIngredientList() {
+    const list = document.getElementById('ingredientList');
+    
+    if (selectedIngredients.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-apple-alt"></i>
+                <h3>No ingredients added yet</h3>
+                <p>Add ingredients to calculate your environmental impact</p>
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = selectedIngredients.map(ingredient => {
+        const ingData = aioxyData.ingredients[ingredient.id];
+        return `
+            <div class="ingredient-item">
+                <div class="ingredient-info">
+                    <div class="ingredient-name">${ingredient.name}</div>
+                    <div class="ingredient-stats">
+                        ${ingredient.quantity} kg • 
+                        DQR: ${ingData.data.metadata.dqr_overall}
+                    </div>
+                </div>
+                <div class="ingredient-actions">
+                    <input type="number" class="quantity-input" value="${ingredient.quantity}" 
+                           onchange="updateIngredientQuantity('${ingredient.id}', this.value)">
+                    <button class="remove-btn" onclick="removeIngredient('${ingredient.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateIngredientQuantity(id, newQuantity) {
+    const quantity = parseFloat(newQuantity) || 0;
+    const ingredient = selectedIngredients.find(item => item.id === id);
+    if (ingredient) {
+        ingredient.quantity = quantity;
+    }
+}
+
+function removeIngredient(id) {
+    selectedIngredients = selectedIngredients.filter(item => item.id !== id);
+    updateIngredientList();
+}
+
+// Advanced Options Toggle
+function toggleAdvanced() {
+    const options = document.getElementById('advancedOptions');
+    options.classList.toggle('hidden');
+}
+
+// Comparison System
+function updateComparison() {
+    // This will be used when we implement smart detection
+    console.log('Comparison updated');
+}
+
+// Main Calculation Function
+function calculateImpact() {
+    const loadingElement = document.getElementById('loadingResults');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    if (loadingElement) loadingElement.classList.remove('hidden');
+    if (resultsContent) resultsContent.classList.add('hidden');
+    
+    // Simulate calculation delay
+    setTimeout(() => {
+        try {
+            const results = foodCalculationEngine.calculateFoodImpact();
+            
+            // Update UI with results
+            updateResultsUI(results);
+            
+            // Show results
+            if (loadingElement) loadingElement.classList.add('hidden');
+            if (resultsContent) resultsContent.classList.remove('hidden');
+            
+            // Switch to results tab
+            showTab('results');
+            
+        } catch (error) {
+            console.error('Calculation error:', error);
+            alert('Error calculating impact. Please check your inputs.');
+            
+            if (loadingElement) loadingElement.classList.add('hidden');
+            if (resultsContent) resultsContent.classList.remove('hidden');
+        }
+    }, 1500);
+}
+
+function updateResultsUI(results) {
+    // Update main metrics
+    document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
+    document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
+    document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
+    document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
+    
+    // Update savings badges
+    const co2SavingsPercent = results.comparison ? 
+        ((results.comparison.co2SavedPerKg / results.comparison.baseline.co2PerKg) * 100).toFixed(0) : 0;
+    const waterSavingsPercent = results.comparison ? 
+        ((results.comparison.waterSavedPerKg / results.comparison.baseline.waterPerKg) * 100).toFixed(0) : 0;
+    
+    document.getElementById('co2Savings').textContent = co2SavingsPercent + '% saved';
+    document.getElementById('waterSavings').textContent = waterSavingsPercent + '% saved';
+    
+    // Update comparison visuals
+    document.getElementById('carKm').textContent = Math.round(results.comparison.co2Saved * 4) + ' km';
+    document.getElementById('householdEnergy').textContent = Math.round(results.comparison.co2Saved * 2.5) + ' days';
+    document.getElementById('treesPlanted').textContent = Math.round(results.comparison.co2Saved * 0.02) + ' trees';
+    document.getElementById('waterBottles').textContent = Math.round(results.comparison.waterSaved * 500) + ' bottles';
+    
+    // Update data quality section
+    updateDataQualityUI(results.overallDQR);
+    
+    // Update mass balance
+    updateMassBalanceUI(results.massBalance);
+    
+    // Create charts
+    createEmissionChart(results);
+    
+    // Update environmental story
+    updateEnvironmentalStory(results);
+}
+
+function updateDataQualityUI(overallDQR) {
+    const dqrSection = document.getElementById('dataQualitySection');
+    const dqrBadge = document.getElementById('overallDQRBadge');
+    
+    if (dqrSection && dqrBadge) {
+        dqrSection.classList.remove('hidden');
+        
+        const quality = foodCalculationEngine.getDQRQualityLevel(overallDQR);
+        dqrBadge.className = `dqr-badge ${quality.class}`;
+        dqrBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${quality.level}`;
+    }
+}
+
+function updateMassBalanceUI(massBalance) {
+    const massSection = document.getElementById('massBalanceSection');
+    const massContent = document.getElementById('massBalanceContent');
+    
+    if (massSection && massContent) {
+        massSection.classList.remove('hidden');
+        
+        massContent.innerHTML = `
+            <div class="mass-balance-item">
+                <span>Raw Input Materials:</span>
+                <span>${massBalance.raw_input_total_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Agricultural Loss:</span>
+                <span>-${massBalance.agricultural_processing_loss_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Processing Loss:</span>
+                <span>-${massBalance.processing_loss_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Final Product Content:</span>
+                <span>${massBalance.final_content_weight_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span>Packaging:</span>
+                <span>+${massBalance.packaging_weight_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item" style="font-weight: 600; color: var(--primary);">
+                <span>Total Product Weight:</span>
+                <span>${massBalance.total_product_weight_kg.toFixed(3)} kg</span>
+            </div>
+        `;
+    }
+}
+
+function updateEnvironmentalStory(results) {
+    const storySection = document.getElementById('environmentalStory');
+    const storyContent = document.getElementById('storyContent');
+    
+    if (storySection && storyContent) {
+        storySection.classList.remove('hidden');
+        
+        const co2SavingsPercent = results.comparison ? 
+            ((results.comparison.co2SavedPerKg / results.comparison.baseline.co2PerKg) * 100).toFixed(0) : 0;
+        
+        storyContent.innerHTML = `
+            <p>Your <strong>${document.getElementById('productName').value || 'product'}</strong> has a significantly lower environmental footprint compared to conventional alternatives.</p>
+            <div class="story-highlight">
+                <i class="fas fa-leaf"></i>
+                <strong>${co2SavingsPercent}% Lower Carbon Footprint</strong><br>
+                You're saving ${results.comparison.co2Saved.toFixed(1)} kg CO₂e per product compared to ${results.comparison.baseline.name}.
+            </div>
+            <p>This reduction is equivalent to ${Math.round(results.comparison.co2Saved * 4)} km of car travel avoided.</p>
+        `;
+    }
+}
+
+// PDF Generation Placeholders
+function generatePDFReport(type) {
+    const overlay = document.getElementById('pdf-loading-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    
+    setTimeout(() => {
+        if (overlay) overlay.style.display = 'none';
+        alert(`PDF report (${type}) would be generated here in a full implementation.`);
+    }, 2000);
+}
+
+function generateDPP() {
+    alert('Digital Product Passport would be generated here.');
+}
+
+function downloadJSON() {
+    alert('JSON download would be implemented here.');
+}
+
+// Business Case Functions
+function updateBusinessCase() {
+    // This will integrate with the business case calculations
+    console.log('Business case updated');
+}
+
+// Initialize ingredient dropdown
+function initIngredientDropdown() {
+    const select = document.getElementById('ingredientSelect');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Choose from science-based ingredients...</option>';
+    
+    Object.entries(aioxyData.ingredients).forEach(([id, ingredient]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = ingredient.name;
+        select.appendChild(option);
+    });
+}
+
+// Initialize country dropdown
+function initCountryDropdown() {
+    const select = document.getElementById('manufacturingCountry');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Select country...</option>';
+    
+    Object.entries(aioxyData.countries).forEach(([code, country]) => {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = country.name;
+        if (code === 'FR') option.selected = true; // Default to France
+        select.appendChild(option);
+    });
+}
+
+// Main initialization function
+function initApp() {
+    console.log('🚀 AIOXY Platform Initializing...');
+    
+    // Initialize dropdowns
+    initIngredientDropdown();
+    initCountryDropdown();
+    
+    // Set default values
+    document.getElementById('productName').value = 'Plant-Based Protein Burger';
+    document.getElementById('productWeight').value = '0.200';
+    document.getElementById('ingredientQuantity').value = '0.150';
+    document.getElementById('transportDistance').value = '300';
+    document.getElementById('packagingWeight').value = '0.050';
+    document.getElementById('recycledContent').value = '30';
+    
+    // Add some default ingredients for demo
+    selectedIngredients = [
+        { id: 'oat-base-liquid', name: 'Oat Base Liquid (EU)', quantity: 0.150 },
+        { id: 'peas-eu-dried', name: 'Peas, dried (EU)', quantity: 0.030 },
+        { id: 'sunflower-oil-eu', name: 'Sunflower Oil (EU)', quantity: 0.015 }
+    ];
+    updateIngredientList();
+    
+    // Show calculator tab by default
+    showTab('calculator');
+    
+    console.log('✅ AIOXY Platform Ready');
+}
+
+// ================== INITIALIZE APPLICATION ==================
 document.addEventListener('DOMContentLoaded', function() {
     initApp();
-</script>
-</body>
-    </html>
-
+});
 
 
 
