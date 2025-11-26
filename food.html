@@ -2952,85 +2952,65 @@
             }, 500);
         }
 
-        function calculateScalableBusinessCase(results, annualVolume) {
-            const co2PerKg = results.co2PerKg;
-            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
-            const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
-            const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
-            
-            // BASELINE COSTS (Dynamic based on Volume)
-            let baseImplementationCost = 0;
-            if (annualVolume <= 1000) baseImplementationCost = 1000;
-            else if (annualVolume <= 100000) baseImplementationCost = 15000;
-            else if (annualVolume <= 1000000) baseImplementationCost = 50000;
-            else baseImplementationCost = 250000;
+       function calculateScalableBusinessCase(results, annualVolume) {
+    // GET THE PHYSICS VARIABLES FROM OUR MAIN CALCULATION
+    const co2PerKg = results.co2PerKg;
+    const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
 
-            // APPLY SCENARIO MULTIPLIERS
-            // If we selected "Premium" (Cost * 1.3), implementation/COGS goes up
-            const finalImplementationCost = baseImplementationCost * activeScenarioData.costMultiplier;
-            
-            // CALCULATE SAVINGS & REVENUE
-            const carbonPrice = 60; // Euro per ton
-            const totalCarbonReduction = (co2Reduction * annualVolume) / 1000; // tons
-            const carbonSavings = totalCarbonReduction * carbonPrice; // Euro
-            
-            // Revenue Premium Logic
-            const basePricePerKg = 15; // Avg product price
-            const totalRevenue = annualVolume * basePricePerKg;
-            
-            // How much extra can we charge based on reduction AND scenario (e.g., Plastic Free allows higher price)
-            const premiumFactor = (reductionPercentage * 0.005) * activeScenarioData.premiumMultiplier; 
-            const premiumRevenue = totalRevenue * premiumFactor;
-            
-            // Market Share Logic
-            const marketGrowthFactor = (reductionPercentage * 0.008) * activeScenarioData.marketMultiplier;
-            const marketShareValue = totalRevenue * marketGrowthFactor;
-            
-            // Operational Savings (e.g. Local Sourcing = less gas money)
-            // If costMultiplier < 1.0, that diff is savings.
-            let operationalSavings = 0;
-            if (activeScenarioData.costMultiplier < 1.0) {
-                operationalSavings = (totalRevenue * 0.4) * (1.0 - activeScenarioData.costMultiplier); // Assume COGS is 40%
-            }
-            
-            const totalAnnualBenefit = carbonSavings + premiumRevenue + marketShareValue + operationalSavings;
-            
-            // ROI Calculation
-            const roi = finalImplementationCost > 0 
-                ? ((totalAnnualBenefit * 3) - finalImplementationCost) / finalImplementationCost * 100 
-                : 0;
-            
-            return {
-                roi: Math.min(Math.max(roi, -50), 5000), // Clamp ROI display
-                annualSavings: carbonSavings + operationalSavings,
-                premiumRevenue: premiumRevenue,
-                marketShareValue: marketShareValue,
-                totalAnnualBenefit: totalAnnualBenefit,
-                carbonReduction: totalCarbonReduction * 1000, // back to kg
-                implementationCost: finalImplementationCost,
-                businessScale: getBusinessScale(annualVolume),
-                volumeTier: getVolumeTier(annualVolume)
-            };
+    // 1. CARBON LIABILITY (Shadow Price) - HARD MATH
+    const co2Delta = Math.max(0, baselineCO2PerKg - co2PerKg); // kg savings per kg product
+    const totalTonsCo2Saved = (co2Delta * annualVolume) / 1000;
+    const moneyCarbon = totalTonsCo2Saved * 85; // €85/ton EU ETS Price
+
+    // 2. ENERGY OPEX (Physics-Based) - HARD MATH
+    // Assume baseline uses more energy. We calculate the delta.
+    // Using simplified physics: 0.5 kWh per kg product processing
+    const baselineEnergyKwh = 0.8 * annualVolume; // Baseline energy use
+    const ourEnergyKwh = 0.5 * annualVolume; // Our more efficient process
+    const energyDeltaKwh = Math.max(0, baselineEnergyKwh - ourEnergyKwh);
+    const moneyEnergy = energyDeltaKwh * 0.22; // €0.22/kWh Industrial Rate
+
+    // 3. LOGISTICS FUEL (Weight Physics) - HARD MATH
+    // Our packaging is lighter vs baseline
+    const baselinePackWeight = 0.05; // kg
+    const ourPackWeight = parseFloat(document.getElementById('packagingWeight').value || 0.05);
+    const weightDeltaKg = Math.max(0, baselinePackWeight - ourPackWeight);
+    const totalWeightSavedTons = (weightDeltaKg * annualVolume) / 1000;
+    
+    const transportDist = parseFloat(document.getElementById('transportDistance').value || 300);
+    const fuelLitersSaved = totalWeightSavedTons * transportDist * 0.03; // 0.03 L diesel per ton-km
+    const moneyFuel = fuelLitersSaved * 1.75; // €1.75/L Diesel price
+
+    // TOTAL ANNUAL BENEFIT
+    const totalAnnualBenefit = moneyCarbon + moneyEnergy + moneyFuel;
+
+    // ROI Calculation (based on implementation cost)
+    let baseImplementationCost = 0;
+    if (annualVolume <= 1000) baseImplementationCost = 5000;
+    else if (annualVolume <= 10000) baseImplementationCost = 15000;
+    else if (annualVolume <= 100000) baseImplementationCost = 40000;
+    else baseImplementationCost = 100000;
+
+    const roi = baseImplementationCost > 0 ? 
+                ((totalAnnualBenefit * 3) - baseImplementationCost) / baseImplementationCost * 100 : 0;
+
+    return {
+        roi: Math.min(Math.max(roi, -100), 1000), // Reasonable bounds
+        annualSavings: moneyCarbon + moneyFuel, // Direct cost savings
+        premiumRevenue: 0, // No more fuzzy premiums
+        marketShareValue: 0, // No more fuzzy market growth
+        totalAnnualBenefit: totalAnnualBenefit,
+        carbonReduction: totalTonsCo2Saved * 1000, // kg
+        implementationCost: baseImplementationCost,
+        businessScale: getBusinessScale(annualVolume),
+        volumeTier: getVolumeTier(annualVolume),
+        // NEW: Breakdown for the ledger
+        breakdown: {
+            carbon: moneyCarbon,
+            energy: moneyEnergy, 
+            fuel: moneyFuel
         }
-
-        // Update the notification function to accept custom text
-        function showScenarioNotification(scenarioType, customText) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed; top: 20px; right: 20px;
-                background: var(--primary); color: white;
-                padding: 1rem 1.5rem; border-radius: 8px;
-                box-shadow: var(--shadow-lg); z-index: 10000;
-                animation: slideIn 0.3s ease; border-left: 5px solid var(--secondary);
-            `;
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <i class="fas fa-magic"></i>
-                    <div><strong>Scenario Active</strong><br>${customText || scenarioType}</div>
-                </div>
-            `;
-            document.body.appendChild(notification);
-            setTimeout(() => { notification.remove(); }, 3000);
+    };
         }
 
         // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
@@ -4241,7 +4221,7 @@
                         }
                     }
                 },
-                "kidney-beans-dried-global": { 
+                 "kidney-beans-dried-global": { 
                     name: "Kidney Beans, dried (Global)",
                     loss: 0.03,
                     data: {
@@ -8109,18 +8089,13 @@
             switch(scenarioType) {
                 case 'renewable':
                     document.getElementById('energySource').value = 'renewable';
-                    activeScenarioData.costMultiplier = 1.1; // Energy costs more
-                    activeScenarioData.premiumMultiplier = 1.05; // Brand value up
-                    notificationText = "⚡ Renewable Energy: High CO₂ drop, slight cost increase.";
-                    break;
+    showScenarioNotification('renewable', "⚡ Switched to 100% renewable energy. Recalculating manufacturing emissions...");
+    break;
                     
                 case 'local':
-                    let dist = document.getElementById('transportDistance');
-                    dist.value = Math.max(50, dist.value * 0.5);
-                    activeScenarioData.costMultiplier = 0.9; // Save money on gas!
-                    activeScenarioData.marketMultiplier = 1.2; // People love "Local"
-                    notificationText = "📍 Local Sourcing: Transport costs slashed, community appeal up.";
-                    break;
+                    let dist = document.getElementById('transportDistance').value = 50; // Change from 300km to 50km
+    showScenarioNotification('local', "📍 Transport distance reduced to 50km. Recalculating fuel costs...");
+    break;
                     
                 case 'electric_fleet':
                     document.getElementById('transportMode').value = 'electric_van';
@@ -9987,27 +9962,71 @@
                 roiBadge.style.background = 'var(--accent)';
             }
 
-            // UPDATE BUSINESS STORY WITH ALL 4 PILLARS
-            document.getElementById('businessStory').innerHTML = `
-                <div class="story-highlight">
-                    <i class="fas fa-${getBusinessIcon(businessCase.businessScale)}"></i>
-                    <strong>${businessCase.businessScale} Opportunity</strong><br>
-                    At ${currentAnnualVolume.toLocaleString()} units annually, sustainability creates 
-                    <strong>€${formatLargeNumber(businessCase.totalAnnualBenefit)}</strong> in annual business value.
-                </div>
-                <p>
-                    <strong>💰 Carbon Savings:</strong> €${formatLargeNumber(businessCase.annualSavings)}<br>
-                    <strong>📈 Price Premium Revenue:</strong> €${formatLargeNumber(businessCase.premiumRevenue)}<br>  
-                    <strong>👥 Market Share Growth:</strong> €${formatLargeNumber(businessCase.marketShareValue)}<br>
-                    <strong>🎯 Total Annual Benefit:</strong> €${formatLargeNumber(businessCase.totalAnnualBenefit)}
-                </p>
-                <div class="story-highlight">
-                    <i class="fas fa-bullseye"></i>
-                    <strong>Market Leadership Potential:</strong> 
-                    Your environmental advantage positions you for significant market share capture in the growing sustainable products category.
-                </div>
-            `;
-        }
+            // UPDATE BUSINESS STORY WITH THE HARD MATH LEDGER
+const breakdown = businessCase.breakdown;
+document.getElementById('businessStory').innerHTML = `
+
+<div class="story-highlight">
+    <i class="fas fa-calculator"></i>
+    <strong>Physics-Based Financial Impact</strong><br>
+    Annual benefit calculated using real-world variables, not multipliers.
+</div>
+
+<table class="ledger-table" style="width: 100%; margin: 1rem 0; font-size: 0.9rem;">
+    <thead>
+        <tr>
+            <th style="text-align: left; padding: 8px; border-bottom: 2px solid var(--border);">Cost Driver</th>
+            <th style="text-align: left; padding: 8px; border-bottom: 2px solid var(--border);">Physics Delta</th>
+            <th style="text-align: right; padding: 8px; border-bottom: 2px solid var(--border);">Financial Impact</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
+                <strong>🛡️ Carbon Liability</strong><br>
+                <small>EU ETS Shadow Price (€85/t)</small>
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
+                -${(businessCase.carbonReduction / 1000).toFixed(1)} tons CO₂
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border); text-align: right; color: var(--success); font-weight: 700;">
+                +€${Math.round(breakdown.carbon).toLocaleString()}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
+                <strong>⚡ Energy OPEX</strong><br>
+                <small>Process efficiency gain</small>
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
+                -${Math.round(breakdown.energy / 0.22).toLocaleString()} kWh
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border); text-align: right; color: var(--success); font-weight: 700;">
+                +€${Math.round(breakdown.energy).toLocaleString()}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
+                <strong>🚚 Logistics Fuel</strong><br>
+                <small>Weight reduction savings</small>
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border);">
+                -${Math.round(breakdown.fuel / 1.75).toLocaleString()} L Diesel
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid var(--border); text-align: right; color: var(--success); font-weight: 700;">
+                +€${Math.round(breakdown.fuel).toLocaleString()}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div style="text-align: center; margin-top: 1.5rem; padding: 1rem; background: var(--light); border-radius: 8px;">
+    <div style="font-size: 0.9rem; color: var(--gray);">Total Annual Business Value</div>
+    <div style="font-size: 2rem; font-weight: 800; color: var(--success);">
+        €${Math.round(businessCase.totalAnnualBenefit).toLocaleString()}
+    </div>
+</div>
+`;
 
         // ================== ENHANCED STORYTELLING ==================
         function getProductTypeDescription() {
