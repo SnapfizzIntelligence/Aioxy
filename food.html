@@ -2845,6 +2845,35 @@
             
             return comparisons;
         }
+        // ================== MULTI-COMPARISON DISPLAY ENGINE ==================
+function updateMultiComparison(currentCO2, category) {
+    const comparisonKey = category || 'generic';
+    const comparisons = getMultiComparisonBaselines(comparisonKey, currentCO2);
+    
+    const container = document.getElementById('multiComparisonGrid');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    comparisons.forEach(item => {
+        const isCurrent = item.isCurrent;
+        const isBaseline = item.isBaseline;
+        
+        const div = document.createElement('div');
+        div.className = `comparison-item ${isCurrent ? 'best' : ''} ${isBaseline ? 'worst' : ''}`;
+        div.innerHTML = `
+            <div class="comparison-item-name">${item.name}</div>
+            <div class="comparison-item-value">${item.co2.toFixed(2)} kg CO₂e</div>
+            <div class="comparison-item-savings ${isCurrent ? 'savings-positive' : ''}">
+                ${isCurrent ? 'YOUR PRODUCT' : ''}
+            </div>
+        `;
+        container.appendChild(div);
+    });
+    
+    // Show the comparison section
+    document.getElementById('multiComparisonSection').classList.remove('hidden');
+        }
 
         // ================== REACTIVE BUSINESS LOGIC ==================
         let activeScenarioData = {
@@ -5028,7 +5057,7 @@
             updateMassBalanceDisplay();
             updateDataQualityDisplay(results);
             updateEnvironmentalStory(results);
-            updateMultiComparison(results.co2PerKg, currentComparisonBaseline.category);
+            updateMultiComparison(results.co2PerKg, currentComparisonBaseline?.category);
 
             document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
             document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
