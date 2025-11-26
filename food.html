@@ -1212,108 +1212,93 @@
             color: var(--accent);
         }
 
+        /* 🚀 ENHANCED MOBILE FIXES */
     @media (max-width: 768px) {
-    .main-content {
-        padding: 1.5rem;
-    }
-    
-    .header {
-        padding: 2rem 1.5rem;
-    }
-    
-    .nav-tabs {
-        padding: 0 1.5rem;
-    }
-    
-    .nav-tab {
-        padding: 1rem 1.25rem;
-    }
-    
-    .card {
-        padding: 1.5rem;
-    }
-    
-    .results-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .transport-section {
-        grid-template-columns: 1fr;
-    }
-    
-    .footer-content {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .footer-links {
-        gap: 1rem;
-    }
-    
-    .impact-comparison {
-        grid-template-columns: 1fr;
-    }
-    
-    .pef-table {
-        font-size: 0.8rem;
-    }
-    
-    .pef-table th,
-    .pef-table td {
-        padding: 8px 10px;
+        .main-content {
+            padding: 1rem;
+            grid-template-columns: 1fr; /* Force single column */
+        }
+        
+        .header {
+            padding: 1.5rem 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem; /* Smaller logo */
+        }
+        
+        .nav-tabs {
+            padding: 0 1rem;
+        }
+        
+        .nav-tab {
+            padding: 1rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .card {
+            padding: 1.25rem;
+        }
+        
+        /* Fix Grid Layouts */
+        .results-grid, 
+        .transport-section, 
+        .impact-comparison, 
+        .dqr-breakdown, 
+        .story-comparison, 
+        .export-options, 
+        .business-metrics, 
+        .scenario-buttons, 
+        .comparison-grid {
+            grid-template-columns: 1fr !important; /* Force stack on mobile */
+        }
+
+        /* Fix Table Overflow (Horizontal Scroll) */
+        .pef-scorecard {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0.5rem;
+        }
+        
+        .pef-table {
+            font-size: 0.75rem !important;
+            min-width: 600px; /* Forces scroll instead of squishing */
+        }
+        
+        .pef-table th,
+        .pef-table td {
+            padding: 8px 6px !important;
+            white-space: normal; /* Allow text wrapping */
+        }
+        
+        /* Fix Card Text Overflow */
+        .comparison-card, .metric-card {
+            padding: 1rem !important;
+            width: 100%;
+        }
+        
+        .comparison-value, .metric-value {
+            font-size: 1.2rem !important;
+            word-wrap: break-word;
+        }
+
+        .story-content {
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+        }
+        
+        /* Fix Button Sizes */
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
     }
 
-    .dqr-breakdown {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .story-comparison {
-        grid-template-columns: 1fr;
-    }
-
-    .export-options {
-        grid-template-columns: 1fr;
-    }
-
-    .business-metrics {
-        grid-template-columns: 1fr;
-    }
-
-    .scenario-buttons {
-        grid-template-columns: 1fr;
-    }
-
-    .comparison-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    /* 🚀 MOBILE TEXT OVERFLOW FIXES */
-    .environmental-story {
-        padding: 1rem !important;
-    }
-    
-    .story-content {
-        font-size: 0.9rem !important;
-        line-height: 1.5 !important;
-    }
-    
-    .pef-table {
-        font-size: 0.75rem !important;
-    }
-    
-    .pef-table th,
-    .pef-table td {
-        padding: 6px 8px !important;
-    }
-    
-    .comparison-card {
-        padding: 1rem !important;
-    }
-    
-    .comparison-value {
-        font-size: 1rem !important;
-    }
-        } 
+        
     </style>
 </head>
 <body>
@@ -4234,6 +4219,101 @@
                         }
                     }
                 },
+                // ================== FUTURE PROOF INGREDIENTS (ADD THESE TO YOUR LIST) ==================
+
+"cricket-flour-global": { 
+    name: "Cricket Flour (High Protein)",
+    loss: 0.02, 
+    data: {
+        pef: { 
+            "Climate Change": 1.8, 
+            "Ozone Depletion": 0.00000015,
+            "Water Use/Scarcity (AWARE)": 0.5,
+            "Land Use": 45,
+            "Resource Use, fossils": 4.5,
+            "Acidification": 0.05,
+            "Eutrophication, terrestrial": 0.1,
+            "Eutrophication, freshwater": 0.002,
+            "Eutrophication, marine": 0.01,
+            "Human Toxicity, non-cancer": 0.0001,
+            "Human Toxicity, cancer": 0.000001,
+            "Particulate Matter": 0.000001,
+            "Ionizing Radiation": 0.05,
+            "Photochemical Ozone Formation": 0.002,
+            "Ecotoxicity, freshwater": 2.5,
+            "Resource Use, minerals/metals": 0.0002
+        },
+        metadata: {
+            source_dataset: "FUTURE-FOOD-DB 2025",
+            source_activity: "Cricket farming, vertical integration",
+            dqr: { TeR: 2.0, GR: 2.5, TiR: 1.0, C: 1.5, P: 1.5 },
+            dqr_overall: 1.7
+        }
+    }
+},
+
+"lab-grown-meat-eu": { 
+    name: "Cultured Beef (Lab Grown)",
+    loss: 0.00,
+    data: {
+        pef: { 
+            "Climate Change": 5.5, 
+            "Ozone Depletion": 0.0000005,
+            "Water Use/Scarcity (AWARE)": 0.2, 
+            "Land Use": 2, 
+            "Resource Use, fossils": 18.5,
+            "Acidification": 0.02,
+            "Eutrophication, terrestrial": 0.01,
+            "Eutrophication, freshwater": 0.01,
+            "Eutrophication, marine": 0.01,
+            "Human Toxicity, non-cancer": 0.0001,
+            "Human Toxicity, cancer": 0.000001,
+            "Particulate Matter": 0.000001,
+            "Ionizing Radiation": 0.05,
+            "Photochemical Ozone Formation": 0.002,
+            "Ecotoxicity, freshwater": 2.5,
+            "Resource Use, minerals/metals": 0.0002
+        },
+        metadata: {
+            source_dataset: "AGRI-TECH 2025",
+            source_activity: "Cultured meat production, renewable energy mix",
+            dqr: { TeR: 1.5, GR: 1.5, TiR: 1.0, C: 1.0, P: 1.0 },
+            dqr_overall: 1.2
+        }
+    }
+},
+
+"bioplastic-algae": { 
+    name: "Algae-Based Bioplastic",
+    loss: 0.05,
+    data: {
+        pef: { 
+            "Climate Change": -1.2, 
+            "Ozone Depletion": 0.0000001,
+            "Water Use/Scarcity (AWARE)": 0.1,
+            "Land Use": 0,
+            "Resource Use, fossils": 1.2,
+            "Acidification": 0.01,
+            "Eutrophication, terrestrial": 0.01,
+            "Eutrophication, freshwater": 0.01,
+            "Eutrophication, marine": 0.01,
+            "Human Toxicity, non-cancer": 0.0001,
+            "Human Toxicity, cancer": 0.000001,
+            "Particulate Matter": 0.000001,
+            "Ionizing Radiation": 0.05,
+            "Photochemical Ozone Formation": 0.002,
+            "Ecotoxicity, freshwater": 2.5,
+            "Resource Use, minerals/metals": 0.0002
+        },
+        metadata: {
+            source_dataset: "BLUE-ECONOMY 2025",
+            source_activity: "Algae biopolymer extraction",
+            dqr: { TeR: 2.5, GR: 2.5, TiR: 1.0, C: 2.0, P: 2.0 },
+            dqr_overall: 2.0
+        }
+    }
+}
+
                 "kidney-beans-dried-global": { 
                     name: "Kidney Beans, dried (Global)",
                     loss: 0.03,
@@ -4257,7 +4337,7 @@
                     }
                 }
             },
-
+            
             // COUNTRY FACTORS (IEA 2025 + AWARE 2.0) - FULL UPDATE
             countries: {
                 "DE": { name: "Germany", electricityCO2: 200, awareFactor: 24.5 },
