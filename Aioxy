@@ -60,69 +60,6 @@
                 "Resource Use, fossils": 0.063
             },
 
-
-        // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
-        const aioxyData = {
-            // PEF 3.1 Impact Categories with units
-            pefCategories: {
-                "Climate Change": { unit: "kg CO₂e", icon: "smog" },
-                "Ozone Depletion": { unit: "kg CFC11e", icon: "sun" },
-                "Human Toxicity, non-cancer": { unit: "CTUh", icon: "user-slash" },
-                "Human Toxicity, cancer": { unit: "CTUh", icon: "user-injured" },
-                "Particulate Matter": { unit: "disease inc.", icon: "lungs" },
-                "Ionizing Radiation": { unit: "kBq U235e", icon: "radiation" },
-                "Photochemical Ozone Formation": { unit: "kg NMVOCe", icon: "cloud-sun" },
-                "Acidification": { unit: "mol H+e", icon: "tint" },
-                "Eutrophication, terrestrial": { unit: "mol N e", icon: "leaf" },
-                "Eutrophication, freshwater": { unit: "kg P e", icon: "water" },
-                "Eutrophication, marine": { unit: "kg N e", icon: "fish" },
-                "Ecotoxicity, freshwater": { unit: "CTUe", icon: "bug" },
-                "Land Use": { unit: "Pt", icon: "mountain" },
-                "Water Use/Scarcity (AWARE)": { unit: "m³ world eq.", icon: "tint" },
-                "Resource Use, minerals/metals": { unit: "kg Sb e", icon: "gem" },
-                "Resource Use, fossils": { unit: "MJ", icon: "oil-can" }
-            },
-
-            // PEF Normalization Factors (PEF 3.1)
-            pefNormalizationFactors: {
-                "Climate Change": 1.23e-14,
-                "Ozone Depletion": 8.51e-12,
-                "Human Toxicity, non-cancer": 2.11e-11,
-                "Human Toxicity, cancer": 2.87e-12,
-                "Particulate Matter": 9.65e-14,
-                "Ionizing Radiation": 6.84e-13,
-                "Photochemical Ozone Formation": 6.62e-12,
-                "Acidification": 9.00e-12,
-                "Eutrophication, terrestrial": 2.86e-11,
-                "Eutrophication, freshwater": 2.61e-13,
-                "Eutrophication, marine": 3.16e-12,
-                "Ecotoxicity, freshwater": 9.19e-09,
-                "Land Use": 1.33e-10,
-                "Water Use/Scarcity (AWARE)": 1.87e-12,
-                "Resource Use, minerals/metals": 1.03e-11,
-                "Resource Use, fossils": 1.05e-11
-            },
-
-            // PEF Weighting Factors (PEF 3.1)
-            pefWeightingFactors: {
-                "Climate Change": 0.216,
-                "Ozone Depletion": 0.047,
-                "Human Toxicity, non-cancer": 0.061,
-                "Human Toxicity, cancer": 0.061,
-                "Particulate Matter": 0.061,
-                "Ionizing Radiation": 0.034,
-                "Photochemical Ozone Formation": 0.034,
-                "Acidification": 0.034,
-                "Eutrophication, terrestrial": 0.034,
-                "Eutrophication, freshwater": 0.034,
-                "Eutrophication, marine": 0.034,
-                "Ecotoxicity, freshwater": 0.034,
-                "Land Use": 0.151,
-                "Water Use/Scarcity (AWARE)": 0.142,
-                "Resource Use, minerals/metals": 0.034,
-                "Resource Use, fossils": 0.063
-            },
-
             // COMPLETE 50 INGREDIENTS DATABASE
             ingredients: {
                 "beef-eu-conv": { 
