@@ -5342,6 +5342,37 @@ function calculateImpact() {
     }
     
     // Show loading
+    if (loadingElement) loadingElement.classList.remove('hidden');
+    if (resultsContent) resultsContent.classList.add('hidden');
+    
+    // Use the food calculation engine that already exists in your code
+    try {
+        const results = foodCalculationEngine.calculateFoodImpact();
+        
+        // Update UI with results
+        updateResultsUI(results);
+        
+        // Update business case
+        updateBusinessCase();
+        
+        // Generate audit trail
+        generateSimpleAudit();
+        
+        // Show results
+        if (loadingElement) loadingElement.classList.add('hidden');
+        if (resultsContent) resultsContent.classList.remove('hidden');
+        
+        // Auto-switch to results tab
+        showTab('results');
+        
+    } catch (error) {
+        console.error('Calculation error:', error);
+        if (loadingElement) loadingElement.classList.add('hidden');
+        alert('Error calculating impact. Please check your inputs.');
+    }
+        }
+    
+    // Show loading
     loadingElement.classList.remove('hidden');
     resultsContent.classList.add('hidden');
     
@@ -5362,8 +5393,8 @@ function calculateImpact() {
             loadingElement.classList.add('hidden');
             alert('Error calculating impact. Please check your inputs.');
         }
-    }, 1500);
-}
+    }, 
+
 
 function updateResultsUI(results) {
     // Update main metrics
@@ -5447,7 +5478,7 @@ function initApp() {
         { id: 'sunflower-oil-eu', name: 'Sunflower Oil (EU)', quantity: 0.015 }
     ];
     updateIngredientList();
-    
+    updateVolumeDisplay(10000);
     console.log('AIOXY Platform Initialized');
 }
 
