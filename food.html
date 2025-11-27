@@ -3548,7 +3548,7 @@
             document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
             document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
             document.getElementById('premiumValue').textContent = '€' + formatLargeNumber(businessCase.premiumRevenue);
-            document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
+            document.getElementById('marketValue').textContent = '€' + formatLargeNumber(businessCase.marketShareValue);
             
             // UPDATE COST BREAKDOWN
             document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
