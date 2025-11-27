@@ -1163,8 +1163,7 @@ const aioxyData = {
             }
         }
     },
-      
-
+    
     // COUNTRY FACTORS (IEA 2025 + AWARE 2.0) - FULL UPDATE
     countries: {
         "DE": { name: "Germany", electricityCO2: 200, awareFactor: 24.5 },
