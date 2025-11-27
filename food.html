@@ -3545,11 +3545,11 @@
             const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
 
             // UPDATE ALL 4 BUSINESS PILLARS
-document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
-document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
-document.getElementById('premiumValue').textContent = businessCase.premiumPotential.toFixed(1) + '%';
-document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
-
+            document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
+            document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
+            document.getElementById('premiumValue').textContent = '€' + formatLargeNumber(businessCase.premiumRevenue);
+            document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
+            
             // UPDATE COST BREAKDOWN
             document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
             document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(businessCase.carbonReduction) + ' kg CO₂e';
@@ -4397,4 +4397,4 @@ document.getElementById('marketValue').textContent = businessCase.marketGrowth.t
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
-</html>
+    </html>
