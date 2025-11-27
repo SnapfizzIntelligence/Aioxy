@@ -3212,63 +3212,77 @@
                    (category.contribution_tree.Transport.total || 0) + 
                    (category.contribution_tree.Packaging.total || 0);
         }
+      function calculateHardFinancialMath(results, volume, scenarios) {
+    console.log('💰 Hard Financial Math Input:', { results, volume, scenarios });
+    
+    if (!results || !results.finalPefResults) {
+        console.log('❌ No PEF results available');
+        return { moneyCarbon: 0, moneyEnergy: 0, moneyFuel: 0, total: 0, metrics: {} };
+    }
 
-        function calculateHardFinancialMath(results, volume, scenarios) {
-            if (!results || !results.finalPefResults) {
-                return { moneyCarbon: 0, moneyEnergy: 0, moneyFuel: 0, total: 0, metrics: {} };
-            }
+    const base = currentComparisonBaseline || UNIVERSAL_BASELINES['beef-product'];
+    const productWeight = massBalanceData?.final_content_weight_kg || 0.2;
+    
+    console.log('📊 Financial Inputs:', { base, productWeight });
+    
+    // GET ACTUAL PEF DATA FOR FINANCIAL CALCULATIONS
+    const baselineCO2 = base.co2PerKg * productWeight;
+    const currentCO2 = results.finalPefResults["Climate Change"]?.total || 0;
+    
+    const baselineEnergy = base.fossilPerKg * productWeight;
+    const currentEnergy = results.finalPefResults["Resource Use, fossils"]?.total || 0;
+    
+    console.log('📈 CO2 Comparison:', { baselineCO2, currentCO2 });
+    console.log('📈 Energy Comparison:', { baselineEnergy, currentEnergy });
+    
+    // 1. CARBON LIABILITY (Real Physics from PEF)
+    const co2DeltaPerUnit = Math.max(0, baselineCO2 - currentCO2);
+    const totalTonsCo2Saved = (co2DeltaPerUnit * volume) / 1000;
+    const moneyCarbon = totalTonsCo2Saved * 85; // €85/ton EU ETS
 
-            const base = currentComparisonBaseline || UNIVERSAL_BASELINES['beef-product'];
-            const productWeight = massBalanceData?.final_content_weight_kg || 0.2;
-            
-            // GET ACTUAL PEF DATA FOR FINANCIAL CALCULATIONS
-            const baselineCO2 = base.co2PerKg * productWeight;
-            const currentCO2 = results.finalPefResults["Climate Change"]?.total || 0;
-            
-            const baselineEnergy = base.fossilPerKg * productWeight;
-            const currentEnergy = results.finalPefResults["Resource Use, fossils"]?.total || 0;
-            
-            // 1. CARBON LIABILITY (Real Physics from PEF)
-            const co2DeltaPerUnit = Math.max(0, baselineCO2 - currentCO2);
-            const totalTonsCo2Saved = (co2DeltaPerUnit * volume) / 1000;
-            const moneyCarbon = totalTonsCo2Saved * 85; // €85/ton EU ETS
+    // 2. ENERGY OPEX (Real Physics from PEF)
+    const energyDeltaMJ = Math.max(0, baselineEnergy - currentEnergy);
+    const totalMJSaved = energyDeltaMJ * volume;
+    const moneyEnergy = totalMJSaved * 0.02; // €0.02 per MJ energy cost
 
-            // 2. ENERGY OPEX (Real Physics from PEF)
-            const energyDeltaMJ = Math.max(0, baselineEnergy - currentEnergy);
-            const totalMJSaved = energyDeltaMJ * volume;
-            const moneyEnergy = totalMJSaved * 0.02; // €0.02 per MJ energy cost
+    // 3. LOGISTICS FUEL (Real Physics from Transport Data)
+    let transportDistance = 500; // Default
+    if (scenarios.local) transportDistance = 50;
+    
+    const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0.05;
+    const finalPackagingWeight = scenarios.lightweight ? packagingWeight * 0.8 : packagingWeight;
+    
+    // Calculate actual transport emissions reduction
+    const transportMode = document.getElementById('transportMode')?.value || 'road';
+    const transportData = aioxyData.transportation[transportMode] || aioxyData.transportation.road;
+    const baseTransportEmissions = (productWeight + packagingWeight) * 500 * transportData.co2 / 1000;
+    const optimizedTransportEmissions = (productWeight + finalPackagingWeight) * transportDistance * transportData.co2 / 1000;
+    
+    const transportCO2Reduction = Math.max(0, baseTransportEmissions - optimizedTransportEmissions);
+    const fuelLitersSaved = (transportCO2Reduction * volume) / 2.68;
+    const moneyFuel = fuelLitersSaved * 1.75;
 
-            // 3. LOGISTICS FUEL (Real Physics from Transport Data)
-            let transportDistance = 500; // Default
-            if (scenarios.local) transportDistance = 50;
-            
-            const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0.05;
-            const finalPackagingWeight = scenarios.lightweight ? packagingWeight * 0.8 : packagingWeight;
-            
-            // Calculate actual transport emissions reduction
-            const transportMode = document.getElementById('transportMode')?.value || 'road';
-            const transportData = aioxyData.transportation[transportMode] || aioxyData.transportation.road;
-            const baseTransportEmissions = (productWeight + packagingWeight) * 500 * transportData.co2 / 1000;
-            const optimizedTransportEmissions = (productWeight + finalPackagingWeight) * transportDistance * transportData.co2 / 1000;
-            
-            const transportCO2Reduction = Math.max(0, baseTransportEmissions - optimizedTransportEmissions);
-            const fuelLitersSaved = (transportCO2Reduction * volume) / 2.68;
-            const moneyFuel = fuelLitersSaved * 1.75;
+    const total = moneyCarbon + moneyEnergy + moneyFuel;
 
-            const total = moneyCarbon + moneyEnergy + moneyFuel;
+    console.log('💰 Financial Results:', {
+        moneyCarbon, moneyEnergy, moneyFuel, total,
+        co2DeltaPerUnit, totalTonsCo2Saved,
+        energyDeltaMJ, totalMJSaved,
+        transportCO2Reduction, fuelLitersSaved
+    });
 
-            return {
-                moneyCarbon,
-                moneyEnergy, 
-                moneyFuel,
-                total,
-                metrics: {
-                    totalTonsCo2Saved,
-                    fuelLitersSaved,
-                    totalMJSaved,
-                    transportCO2Reduction: transportCO2Reduction * volume
-                }
-            };
+    return {
+        moneyCarbon,
+        moneyEnergy, 
+        moneyFuel,
+        total,
+        metrics: {
+            totalTonsCo2Saved,
+            fuelLitersSaved,
+            totalMJSaved,
+            transportCO2Reduction: transportCO2Reduction * volume
+        }
+    };
         }
 
         function updateHardFinancialLedger(financialResults, volume) {
