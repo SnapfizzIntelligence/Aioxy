@@ -3415,14 +3415,29 @@
         }
 
         function calculateCO2ReductionPercent() {
-    if (!currentComparisonBaseline || !finalPefResults || !finalPefResults["Climate Change"]) return 0;
+    console.log('🔍 Calculating CO2 Reduction...');
+    console.log('Baseline:', currentComparisonBaseline);
+    console.log('PEF Results:', finalPefResults);
+    console.log('Mass Balance:', massBalanceData);
+    
+    if (!currentComparisonBaseline || !finalPefResults || !finalPefResults["Climate Change"]) {
+        console.log('❌ Missing data for CO2 calculation');
+        return 0;
+    }
     
     const baselineCO2 = currentComparisonBaseline.co2PerKg;
     const currentCO2 = finalPefResults["Climate Change"].total / (massBalanceData?.final_content_weight_kg || 0.2);
     
-    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) return 0;
+    console.log('Baseline CO2:', baselineCO2, 'Current CO2:', currentCO2);
+    
+    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) {
+        console.log('❌ Invalid CO2 values');
+        return 0;
+    }
     
     const reductionPercent = ((baselineCO2 - currentCO2) / baselineCO2 * 100);
+    console.log('✅ CO2 Reduction:', reductionPercent + '%');
+    
     return Math.max(0, reductionPercent);
         }
 
