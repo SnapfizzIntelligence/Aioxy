@@ -2023,9 +2023,11 @@
                             </div>
                             
                             <div class="business-card">
-                                <i class="fas fa-users" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="business-value" id="marketValue">0%</div>
-                                <div class="business-label">Market Share Growth</div>
+    <i class="fas fa-users" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+    <div class="business-value" id="marketValue">0%</div>
+    <!-- ADD THIS NEW LINE -->
+    <div class="business-value" style="font-size: 1.2rem; color: var(--success);" id="marketValueEuro">€0</div>
+    <div class="business-label">Market Share Growth</div>
                             </div>
                         </div>
 
@@ -3545,10 +3547,12 @@
             const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
 
             // UPDATE ALL 4 BUSINESS PILLARS
-            document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
-            document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
-            document.getElementById('premiumValue').textContent = '€' + formatLargeNumber(businessCase.premiumRevenue);
-            document.getElementById('marketValue').textContent = '€' + formatLargeNumber(businessCase.marketShareValue);
+document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
+document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
+document.getElementById('premiumValue').textContent = businessCase.premiumPotential.toFixed(1) + '%';
+document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
+// ADD THIS NEW LINE:
+document.getElementById('marketValueEuro').textContent = '€' + formatLargeNumber(businessCase.marketShareValue);
             
             // UPDATE COST BREAKDOWN
             document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
