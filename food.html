@@ -9,6 +9,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- INGREDIENTS DATA -->
+    <script src="ingredients.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -1212,7 +1216,6 @@
             color: var(--accent);
         }
 
-        /* NEW: Universal Comparison Grid Styles */
         .universal-comparison-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -1254,7 +1257,6 @@
             background: var(--success);
         }
 
-        /* NEW: Scenario Grid Styles */
         .scenario-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -1285,7 +1287,6 @@
             display: block;
         }
 
-        /* NEW: Financial Ledger Styles */
         .ledger-table {
             width: 100%;
             border-collapse: collapse;
@@ -1415,35 +1416,35 @@
 
         <div class="nav-tabs">
             <div class="tab-indicator" id="tabIndicator"></div>
-            <button class="nav-tab active" onclick="showTab('calculator')">
+            <button class="nav-tab active" onclick="showTab('calculator', event)">
                 <i class="fas fa-calculator"></i>
                 Calculator
             </button>
-            <button class="nav-tab" onclick="showTab('results')">
+            <button class="nav-tab" onclick="showTab('results', event)">
                 <i class="fas fa-chart-line"></i>
                 Results
             </button>
-            <button class="nav-tab" onclick="showTab('business-case')">
+            <button class="nav-tab" onclick="showTab('business-case', event)">
                 <i class="fas fa-euro-sign"></i>
                 Business Case
             </button>
-            <button class="nav-tab" onclick="showTab('pef-scorecard')">
+            <button class="nav-tab" onclick="showTab('pef-scorecard', event)">
                 <i class="fas fa-list-ol"></i>
                 PEF Scorecard
             </button>
-            <button class="nav-tab" onclick="showTab('dpp')">
+            <button class="nav-tab" onclick="showTab('dpp', event)">
                 <i class="fas fa-qrcode"></i>
                 Transparency Card
             </button>
-            <button class="nav-tab" onclick="showTab('export')">
+            <button class="nav-tab" onclick="showTab('export', event)">
                 <i class="fas fa-file-export"></i>
                 Export Reports
             </button>
-            <button class="nav-tab" onclick="showTab('transparency')">
+            <button class="nav-tab" onclick="showTab('transparency', event)">
                 <i class="fas fa-search"></i>
                 Transparency Log
             </button>
-            <button class="nav-tab" onclick="showTab('methodology')">
+            <button class="nav-tab" onclick="showTab('methodology', event)">
                 <i class="fas fa-file-contract"></i>
                 Methodology
             </button>
@@ -1803,7 +1804,7 @@
                             </div>
                         </div>
 
-                        <!-- NEW: Universal Comparison Engine -->
+                        <!-- Universal Comparison Engine -->
                         <div class="multi-comparison" id="universalComparisonSection">
                             <h3 style="margin-bottom: 1rem; color: var(--primary);">
                                 <i class="fas fa-chart-bar"></i>
@@ -1871,15 +1872,15 @@
                         </div>
 
                         <div class="action-buttons">
-                            <button class="btn" onclick="showTab('business-case')">
+                            <button class="btn" onclick="showTab('business-case', event)">
                                 <i class="fas fa-euro-sign"></i>
                                 View Business Case
                             </button>
-                            <button class="btn" onclick="showTab('pef-scorecard')">
+                            <button class="btn" onclick="showTab('pef-scorecard', event)">
                                 <i class="fas fa-list-ol"></i>
                                 View Full PEF Scorecard
                             </button>
-                            <button class="btn" onclick="showTab('dpp')">
+                            <button class="btn" onclick="showTab('dpp', event)">
                                 <i class="fas fa-qrcode"></i>
                                 Generate Transparency Card
                             </button>
@@ -1947,7 +1948,7 @@
                             </div>
                         </div>
 
-                        <!-- NEW: Physics-Based What-If Simulator -->
+                        <!-- Physics-Based What-If Simulator -->
                         <h3 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">What-If Scenarios (Physics-Based)</h3>
                         <div class="scenario-grid">
                             <div class="scenario-btn" id="scenario-renewables" onclick="toggleScenario('renewables')">
@@ -1975,7 +1976,7 @@
                             </div>
                         </div>
 
-                        <!-- NEW: Hard Financial Math Ledger -->
+                        <!-- Hard Financial Math Ledger -->
                         <div style="margin-top: 2rem;">
                             <h3 style="margin-bottom: 1rem; color: var(--primary);">
                                 <i class="fas fa-calculator"></i>
@@ -2073,7 +2074,7 @@
                         </div>
 
                         <div class="action-buttons">
-                            <button class="btn" onclick="showTab('results')">
+                            <button class="btn" onclick="showTab('results', event)">
                                 <i class="fas fa-arrow-left"></i>
                                 Back to Results
                             </button>
@@ -2081,7 +2082,7 @@
                                 <i class="fas fa-file-pdf"></i>
                                 Download Business Case
                             </button>
-                            <button class="btn" onclick="showTab('export')">
+                            <button class="btn" onclick="showTab('export', event)">
                                 <i class="fas fa-file-export"></i>
                                 Export All Reports
                             </button>
@@ -2146,7 +2147,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn" onclick="showTab('dpp')">
+                        <button class="btn" onclick="showTab('dpp', event)">
                             <i class="fas fa-qrcode"></i>
                             Generate Transparency Card with Full Data
                         </button>
@@ -2342,7 +2343,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn" onclick="calculateImpact(); showTab('transparency')">
+                        <button class="btn" onclick="calculateImpact(); showTab('transparency', event)">
                             <i class="fas fa-sync-alt"></i>
                             Regenerate Log
                         </button>
@@ -2350,7 +2351,7 @@
                             <i class="fas fa-download"></i>
                             Export Log Data
                         </button>
-                        <button class="btn btn-outline" onclick="showTab('methodology')">
+                        <button class="btn btn-outline" onclick="showTab('methodology', event)">
                             <i class="fas fa-file-contract"></i>
                             View Methodology
                         </button>
@@ -2577,7 +2578,7 @@
                             <i class="fas fa-file-download"></i>
                             Download Methodology
                         </button>
-                        <button class="btn btn-outline" onclick="showTab('export')">
+                        <button class="btn btn-outline" onclick="showTab('export', event)">
                             <i class="fas fa-user-check"></i>
                             Request Verification
                         </button>
@@ -2607,9 +2608,13 @@
     </div>
 
     <script>
+        // ================== COFOUNDER-GRADE FIXES ==================
+        console.log('🚀 AIOXY Loading...');
+        console.log('📦 aioxyData available:', !!aioxyData);
+        console.log('🍎 Ingredients count:', aioxyData ? Object.keys(aioxyData.ingredients).length : 0);
+
         // ================== UNIVERSAL COMPARISON SYSTEM ==================
         const UNIVERSAL_BASELINES = {
-            // FOOD & BEVERAGE
             'beef-product': {
                 name: 'Conventional Beef Product',
                 category: 'food',
@@ -2674,8 +2679,6 @@
                 landUsePerKg: 250,
                 fossilPerKg: 3.2
             },
-            
-            // PERSONAL CARE
             'shampoo-conventional': {
                 name: 'Conventional Shampoo',
                 category: 'personal-care',
@@ -2700,8 +2703,6 @@
                 landUsePerKg: 180,
                 fossilPerKg: 12.3
             },
-            
-            // TEXTILES
             'cotton-tshirt': {
                 name: 'Conventional Cotton T-Shirt',
                 category: 'textiles',
@@ -2718,8 +2719,6 @@
                 landUsePerKg: 14,
                 fossilPerKg: 44.5
             },
-            
-            // BEVERAGES
             'soda-drink': {
                 name: 'Conventional Soda Drink',
                 category: 'beverage',
@@ -2736,8 +2735,6 @@
                 landUsePerKg: 320,
                 fossilPerKg: 4.8
             },
-            
-            // PLANT-BASED ALTERNATIVES FOR MULTI-COMPARISON
             'almond-milk': {
                 name: 'Almond Milk',
                 category: 'beverage',
@@ -2772,19 +2769,20 @@
             }
         };
 
-        // ================== HARD FINANCIAL MATH ENGINE ==================
-        const FINANCIALS = {
-            carbon_price: 0.085, // €85/ton (Shadow Price)
-            elec_price: 0.22, // €0.22/kWh (Industrial)
-            diesel_price: 1.75, // €1.75/L
-            logistics_factor: 0.03 // L diesel per ton-km
-        };
-
-        const PHYSICS = {
-            transport_dist_std: 500, // km
-            transport_dist_local: 50, // km
-            pack_co2: { "cardboard": 0.8, "pet": 2.5, "glass": 0.9, "aluminum": 9.0 },
-            energy_co2: { "grid": 0.4, "green": 0.02 } // kg CO2 per kWh
+        // ================== GLOBAL VARIABLES ==================
+        let selectedIngredients = [];
+        let currentChart = null;
+        let currentBusinessChart = null;
+        let currentDPPId = null;
+        let finalPefResults = {};
+        let massBalanceData = {};
+        let auditTrailData = {};
+        let currentComparisonBaseline = null;
+        let currentAnnualVolume = 10000;
+        let activeScenarios = {
+            renewables: false,
+            local: false,
+            lightweight: false
         };
 
         // ================== SMART CATEGORY DETECTION ==================
@@ -2800,7 +2798,7 @@
             
             // 2. SMART DETECTION LOGIC
             if ((name.includes('milk') || name.includes('drink') || name.includes('latte') || hasOats || hasAlmond || hasSoy) && !name.includes('burger')) {
-                return 'milk-product'; // Oat milk vs cow milk, not beef
+                return 'milk-product';
             }
             
             // Check product name for clues
@@ -2859,12 +2857,14 @@
             if (hasCotton) return 'cotton-tshirt';
             if (hasPolyester) return 'polyester-tshirt';
             
-            return 'cotton-tshirt'; // Default
+            return 'cotton-tshirt';
         }
 
         // ================== UNIVERSAL COMPARISON ENGINE ==================
         function renderUniversalComparisons(myCo2, baseline) {
             const grid = document.getElementById('universalComparisonGrid');
+            if (!grid) return;
+            
             grid.innerHTML = "";
             
             // Context-aware list
@@ -2904,70 +2904,389 @@
             });
 
             // Update baseline name display
-            document.getElementById('baselineName').innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name}</strong>`;
+            const baselineName = document.getElementById('baselineName');
+            if (baselineName) {
+                baselineName.innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name}</strong>`;
+            }
         }
 
-        // ================== HARD FINANCIAL MATH ENGINE ==================
-        function calculateHardFinancialMath(results, volume, scenarios) {
-            const base = currentComparisonBaseline;
-            const res = results;
-            
-            // 1. Carbon Liability (Shadow Price)
-            const co2Delta = Math.max(0, base.co2PerKg - res.co2PerKg); // kg savings per unit
-            const totalTonsCo2Saved = (co2Delta * volume) / 1000;
-            const moneyCarbon = totalTonsCo2Saved * (FINANCIALS.carbon_price * 1000); // Price per ton
+        // ================== AIOXY ALGORITHM IMPLEMENTATION ==================
+        const foodCalculationEngine = {
+            getDQRQualityLevel(dqrScore) {
+                if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
+                if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
+                if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
+                if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
+                return { level: 'Poor', class: 'dqr-poor' };
+            },
 
-            // 2. Logistics Fuel (Weight Physics)
-            // Baseline pack weight vs Current pack weight
-            const weightDeltaKg = Math.max(0, 0.05 - res.packWeight); // Assume 50g baseline packaging
-            const totalWeightSavedTons = (weightDeltaKg * volume) / 1000;
-            
-            // Determine distance based on scenario
-            let distance = scenarios.local ? PHYSICS.transport_dist_local : PHYSICS.transport_dist_std;
-            
-            // Liters = Tons * km * L/t-km
-            const fuelLitersSaved = totalWeightSavedTons * distance * FINANCIALS.logistics_factor;
-            const moneyFuel = fuelLitersSaved * FINANCIALS.diesel_price;
+            calculateUncertainty(dqrScore) {
+                if (dqrScore <= 1) return 10;
+                if (dqrScore <= 2) return 10 + 15 * (dqrScore - 1);
+                let base = 25 + 25 * (dqrScore - 2);
+                return Math.min(Math.max(base, 10), 100);
+            },
 
-            // 3. Energy OPEX (Process Efficiency)
-            // Assume baseline uses 0.8 kWh/kg, we calculate our usage
-            const baseEnergy = 0.8 * res.finalContentWeight; // per unit
-            const myEnergy = res.energyUsed || (res.finalContentWeight * 0.5); // Estimate if not available
-            const energyDeltaKwh = Math.max(0, baseEnergy - myEnergy);
-            const totalKwhSaved = energyDeltaKwh * volume;
-            const moneyEnergy = totalKwhSaved * FINANCIALS.elec_price;
+            calculateCFFImpact(packaging, weightKg, recycledContentPercent) {
+                const A = 0.5;
+                const R1 = recycledContentPercent / 100;
 
-            const total = moneyCarbon + moneyFuel + moneyEnergy;
+                const Ev = packaging.co2_virgin;
+                const Er = packaging.co2_recycled;
+                const Ed = packaging.co2_disposal;
+                const E_avoided = packaging.co2_avoided_credit;
+                const R2 = packaging.r2;
 
-            return {
-                moneyCarbon,
-                moneyFuel, 
-                moneyEnergy,
-                total,
-                metrics: {
-                    totalTonsCo2Saved,
-                    fuelLitersSaved,
-                    totalKwhSaved,
-                    weightDeltaKg
+                const materialBurden = (1 - R1) * Ev + R1 * Er;
+                const disposalBurden = (1 - R2) * Ed;
+                const recyclingCredit = R2 * E_avoided * A;
+
+                const endOfLife = disposalBurden - recyclingCredit;
+                const totalPerKg = materialBurden + endOfLife;
+
+                return {
+                    totalImpact: totalPerKg * weightKg,
+                    materialBurden: materialBurden * weightKg,
+                    endOfLifeBurden: endOfLife * weightKg,
+                    cff_parameters: { A, R1, R2, Ev, Er, Ed, E_avoided }
+                };
+            },
+
+            calculateFoodImpact() {
+                // Get inputs from DOM
+                const productName = document.getElementById('productName').value || 'Unnamed Product';
+                const manufacturingCountryCode = document.getElementById('manufacturingCountry').value || 'FR';
+                const processingMethod = document.getElementById('processingMethod').value;
+                const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
+                const transportMode = document.getElementById('transportMode').value;
+                const refrigeratedTransport = document.getElementById('refrigeratedTransport').value === 'yes';
+                const packagingMaterial = document.getElementById('packagingMaterial').value;
+                const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
+                const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
+
+                // SMART CATEGORY DETECTION
+                const productCategory = document.getElementById('productCategory').value;
+                const comparisonKey = detectProductCategory(productName, selectedIngredients, productCategory);
+                const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
+                currentComparisonBaseline = comparisonBaseline;
+
+                // Auto-apply oat processing for oat milk products
+                let finalProcessingMethod = processingMethod;
+                if (productName.toLowerCase().includes('oat milk') && processingMethod === 'none') {
+                    finalProcessingMethod = 'oat-processing';
+                    document.getElementById('processingMethod').value = 'oat-processing';
                 }
+
+                // Data fallbacks
+                const country = aioxyData.countries[manufacturingCountryCode] || aioxyData.countries.FR;
+                const processing = aioxyData.processing[finalProcessingMethod] || aioxyData.processing.none;
+                const transport = aioxyData.transportation[transportMode] || aioxyData.transportation.road;
+                const packaging = aioxyData.packaging[packagingMaterial] || aioxyData.packaging.cardboard;
+                const awareFactor = country.awareFactor;
+
+                // Initialize audit trail
+                const auditTrail = {
+                    productName,
+                    dppId: 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                    calculationTimestamp: new Date().toISOString(),
+                    pefCategories: {},
+                    mass_balance: {},
+                    dqr_summary: {},
+                    uncertainty_analysis: {},
+                    comparison_baseline: comparisonBaseline
+                };
+
+                // Initialize all 16 categories
+                Object.keys(aioxyData.pefCategories).forEach(cat => {
+                    auditTrail.pefCategories[cat] = {
+                        total: 0,
+                        unit: aioxyData.pefCategories[cat].unit,
+                        contribution_tree: {
+                            Ingredients: { total: 0, components: [] },
+                            Manufacturing: { total: 0, components: [] },
+                            Transport: { total: 0, components: [] },
+                            Packaging: { total: 0, components: [] }
+                        }
+                    };
+                });
+
+                // 1. INGREDIENTS + MASS BALANCE
+                let totalIngredientQuantity = 0;
+                let totalInputQuantity = 0;
+                let agriculturalLoss = 0;
+                let dqrComponents = [];
+
+                selectedIngredients.forEach(item => {
+                    const ingredient = aioxyData.ingredients[item.id];
+                    if (!ingredient) return;
+
+                    const adjustedQuantity = item.quantity / (1 - (ingredient.loss || 0));
+                    agriculturalLoss += adjustedQuantity * (ingredient.loss || 0);
+
+                    totalIngredientQuantity += item.quantity;
+                    totalInputQuantity += adjustedQuantity;
+
+                    const dqr = ingredient.data.metadata.dqr_overall;
+                    const uncertainty = this.calculateUncertainty(ingredient.data.metadata.dqr.P);
+
+                    dqrComponents.push({
+                        name: ingredient.name,
+                        dqr,
+                        uncertainty,
+                        weight: item.quantity,
+                        source: ingredient.data.metadata.source_dataset
+                    });
+
+                    Object.keys(aioxyData.pefCategories).forEach(cat => {
+                        const impact = ingredient.data.pef[cat] || 0;
+                        const subtotal = adjustedQuantity * impact;
+
+                        auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+                            name: ingredient.name,
+                            id: item.id,
+                            quantity_kg: adjustedQuantity,
+                            subtotal: subtotal,
+                            source: ingredient.data.metadata.source_dataset,
+                            dqr,
+                            uncertainty
+                        });
+
+                        auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += subtotal;
+                        auditTrail.pefCategories[cat].total += subtotal;
+                    });
+                });
+
+                // DQR & uncertainty
+                const overallDQR = dqrComponents.length > 0 ? 
+                    dqrComponents.reduce((sum, c) => sum + c.dqr * c.weight, 0) / totalIngredientQuantity : 0;
+
+                auditTrail.dqr_summary = {
+                    overall_dqr: overallDQR,
+                    dqr_level: this.getDQRQualityLevel(overallDQR).level,
+                    component_dqrs: dqrComponents
+                };
+
+                auditTrail.uncertainty_analysis = {
+                    overall_uncertainty: this.calculateUncertainty(overallDQR),
+                    component_uncertainties: dqrComponents.map(c => ({ name: c.name, uncertainty: c.uncertainty }))
+                };
+
+                // Mass balance
+                const finalContentWeight = totalIngredientQuantity * processing.yield;
+                const processingLoss = totalIngredientQuantity - finalContentWeight;
+
+                auditTrail.mass_balance = {
+                    raw_input_total_kg: totalInputQuantity,
+                    agricultural_processing_loss_kg: agriculturalLoss,
+                    after_agricultural_loss_kg: totalIngredientQuantity,
+                    processing_loss_kg: processingLoss,
+                    final_content_weight_kg: finalContentWeight,
+                    packaging_weight_kg: packagingWeight,
+                    total_product_weight_kg: finalContentWeight + packagingWeight,
+                    balance_check: totalInputQuantity - agriculturalLoss - processingLoss - finalContentWeight
+                };
+
+                // 2. MANUFACTURING / PROCESSING
+                const processingCO2 = processing.co2_impact * totalIngredientQuantity;
+                const processingWaterRaw = processing.water_impact * totalIngredientQuantity;
+                const processingWaterScarcity = processingWaterRaw * awareFactor;
+
+                // Climate Change
+                auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += processingCO2;
+                auditTrail.pefCategories["Climate Change"].total += processingCO2;
+                auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
+                    name: `Processing - ${finalProcessingMethod}`,
+                    subtotal: processingCO2
+                });
+
+                // Water Scarcity (AWARE)
+                auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree.Manufacturing.total += processingWaterScarcity;
+                auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total += processingWaterScarcity;
+                auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree.Manufacturing.components.push({
+                    name: `Processing - ${finalProcessingMethod}`,
+                    raw_water_m3: processingWaterRaw,
+                    aware_factor: awareFactor,
+                    subtotal: processingWaterScarcity
+                });
+
+                // 3. TRANSPORT
+                let transportCO2 = transportDistance * transport.co2 * (finalContentWeight / 1000);
+
+                if (refrigeratedTransport) {
+                    transportCO2 *= (1 + transport.refrigerated_factor);
+                }
+
+                auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total += transportCO2;
+                auditTrail.pefCategories["Climate Change"].total += transportCO2;
+                auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components.push({
+                    name: `Transport - ${transportMode}`,
+                    distance_km: transportDistance,
+                    refrigerated: refrigeratedTransport,
+                    subtotal: transportCO2
+                });
+
+                // 4. PACKAGING (CFF)
+                const cffResult = this.calculateCFFImpact(packaging, packagingWeight, recycledContentPercent);
+
+                auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.total += cffResult.totalImpact;
+                auditTrail.pefCategories["Climate Change"].total += cffResult.totalImpact;
+                auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.components.push({
+                    name: `${packagingMaterial} packaging`,
+                    weight_kg: packagingWeight,
+                    recycled_content: recycledContentPercent,
+                    subtotal: cffResult.totalImpact
+                });
+
+                // Save results
+                auditTrailData = auditTrail;
+                finalPefResults = auditTrail.pefCategories;
+                massBalanceData = auditTrail.mass_balance;
+                currentDPPId = auditTrail.dppId;
+
+                // Calculate comparison
+                const baselineCO2 = comparisonBaseline.co2PerKg * finalContentWeight;
+                const baselineWater = comparisonBaseline.waterPerKg * finalContentWeight;
+                const currentCO2 = auditTrail.pefCategories["Climate Change"].total;
+                const currentWater = auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total;
+
+                const co2Saved = Math.max(baselineCO2 - currentCO2, 0);
+                const waterSaved = Math.max(baselineWater - currentWater, 0);
+
+                return {
+                    finalPefResults: auditTrail.pefCategories,
+                    auditTrail: auditTrail,
+                    massBalance: auditTrail.mass_balance,
+                    overallDQR,
+                    overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
+                    finalContentWeight,
+                    totalProductWeight: finalContentWeight + packagingWeight,
+                    co2PerKg: auditTrail.pefCategories["Climate Change"].total / finalContentWeight,
+                    waterScarcityPerKg: auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total / finalContentWeight,
+                    landUsePerKg: auditTrail.pefCategories["Land Use"].total / finalContentWeight,
+                    fossilPerKg: auditTrail.pefCategories["Resource Use, fossils"].total / finalContentWeight,
+                    comparison: {
+                        baseline: comparisonBaseline,
+                        co2Saved,
+                        waterSaved,
+                        co2SavedPerKg: co2Saved / finalContentWeight,
+                        waterSavedPerKg: waterSaved / finalContentWeight
+                    }
+                };
+            }
+        };
+
+        // ================== BUSINESS CASE ENGINE ==================
+        function calculateScalableBusinessCase(results, annualVolume) {
+            const co2PerKg = results.co2PerKg;
+            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
+            const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
+            const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
+            
+            // DYNAMIC COST STRUCTURE BASED ON VOLUME
+            let implementationCost, carbonPrice, premiumPotential, marketGrowth;
+            
+            if (annualVolume <= 1000) {
+                implementationCost = 1000;
+                carbonPrice = 30;
+                premiumPotential = reductionPercentage * 0.3;
+                marketGrowth = Math.min(reductionPercentage * 1.5, 15);
+            } else if (annualVolume <= 10000) {
+                implementationCost = 5000;
+                carbonPrice = 40;
+                premiumPotential = reductionPercentage * 0.4;
+                marketGrowth = Math.min(reductionPercentage * 1.8, 20);
+            } else if (annualVolume <= 100000) {
+                implementationCost = 20000;
+                carbonPrice = 50;
+                premiumPotential = reductionPercentage * 0.5;
+                marketGrowth = Math.min(reductionPercentage * 2.0, 25);
+            } else if (annualVolume <= 1000000) {
+                implementationCost = 50000;
+                carbonPrice = 60;
+                premiumPotential = reductionPercentage * 0.6;
+                marketGrowth = Math.min(reductionPercentage * 2.2, 30);
+            } else if (annualVolume <= 10000000) {
+                implementationCost = 200000;
+                carbonPrice = 70;
+                premiumPotential = reductionPercentage * 0.7;
+                marketGrowth = Math.min(reductionPercentage * 2.5, 35);
+            } else {
+                implementationCost = 1000000;
+                carbonPrice = 80;
+                premiumPotential = reductionPercentage * 0.8;
+                marketGrowth = Math.min(reductionPercentage * 3.0, 40);
+            }
+            
+            const totalCarbonReduction = co2Reduction * annualVolume;
+            const carbonSavings = (totalCarbonReduction * carbonPrice) / 1000;
+
+            const basePricePerKg = 10;
+            const premiumRevenue = (premiumPotential / 100) * (annualVolume * basePricePerKg);
+            
+            const totalMarketSize = annualVolume * 10;
+            const marketShareValue = (marketGrowth / 100) * totalMarketSize * basePricePerKg * 0.1;
+
+            const totalAnnualBenefit = carbonSavings + premiumRevenue + marketShareValue;
+            
+            const roi = annualVolume > 0 ? ((totalAnnualBenefit * 3) - implementationCost) / implementationCost * 100 : 0;
+            
+            return {
+                roi: Math.max(roi, -100),
+                annualSavings: carbonSavings,
+                premiumRevenue: premiumRevenue,
+                marketShareValue: marketShareValue,
+                totalAnnualBenefit: totalAnnualBenefit,
+                carbonReduction: totalCarbonReduction,
+                implementationCost: implementationCost,
+                businessScale: getBusinessScale(annualVolume),
+                volumeTier: getVolumeTier(annualVolume)
             };
         }
 
-        // ================== SCENARIO MANAGEMENT ==================
-        let activeScenarios = {
-            renewables: false,
-            local: false,
-            lightweight: false
-        };
+        function getBusinessScale(volume) {
+            if (volume <= 1000) return "Prototype / Small Batch";
+            if (volume <= 10000) return "Small Business";
+            if (volume <= 100000) return "Growing Business";
+            if (volume <= 1000000) return "Medium Enterprise";
+            if (volume <= 10000000) return "Large Enterprise";
+            if (volume <= 100000000) return "Major Corporation";
+            return "Global Corporation";
+        }
 
+        function getVolumeTier(volume) {
+            const tiers = [
+                { max: 1000, label: "1-1K" },
+                { max: 10000, label: "1K-10K" },
+                { max: 100000, label: "10K-100K" },
+                { max: 1000000, label: "100K-1M" },
+                { max: 10000000, label: "1M-10M" },
+                { max: 100000000, label: "10M-100M" },
+                { max: 1000000000, label: "100M-1B" },
+                { max: 10000000000, label: "1B+" }
+            ];
+            
+            return tiers.find(tier => volume <= tier.max)?.label || "1B+";
+        }
+
+        function formatLargeNumber(num) {
+            if (num >= 1000000000) {
+                return (num / 1000000000).toFixed(1) + 'B';
+            } else if (num >= 1000000) {
+                return (num / 1000000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return Math.round(num).toLocaleString();
+            }
+        }
+
+        // ================== SCENARIO MANAGEMENT ==================
         function toggleScenario(key) {
             activeScenarios[key] = !activeScenarios[key];
             
-            // Visual toggle
             const btn = document.getElementById(`scenario-${key}`);
-            btn.classList.toggle('active');
+            if (btn) btn.classList.toggle('active');
             
-            // Recalculate everything with new physics
             calculateImpact();
             updateBusinessCase();
         }
@@ -2979,181 +3298,1246 @@
                 lightweight: false
             };
             
-            // Reset all scenario buttons
             document.querySelectorAll('.scenario-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             
-            // Recalculate with baseline physics
             calculateImpact();
             updateBusinessCase();
+        }
+
+        // ================== INITIALIZATION ==================
+        function populateIngredientSelect() {
+            const select = document.getElementById('ingredientSelect');
+            if (!select) {
+                console.error('❌ ingredientSelect element not found!');
+                return;
+            }
+            
+            select.innerHTML = '<option value="">Choose from science-based ingredients...</option>';
+            
+            console.log('📦 Loading ingredients from aioxyData:', Object.keys(aioxyData.ingredients).length);
+            
+            for (const [key, ingredient] of Object.entries(aioxyData.ingredients)) {
+                const option = document.createElement('option');
+                option.value = key;
+                const dqrQuality = foodCalculationEngine.getDQRQualityLevel(ingredient.data.metadata.dqr_overall);
+                option.textContent = `${ingredient.name} (${dqrQuality.level} DQR)`;
+                select.appendChild(option);
+            }
+            
+            console.log('✅ Ingredients loaded successfully');
+        }
+
+        function populateCountrySelect() {
+            const select = document.getElementById('manufacturingCountry');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Select country...</option>';
+            
+            for (const [code, country] of Object.entries(aioxyData.countries)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = country.name;
+                if (code === 'FR') option.selected = true;
+                select.appendChild(option);
+            }
+        }
+
+        function setupDemoData() {
+            console.log('🎯 Setting up demo ingredients...');
+            
+            // VERIFY ingredients exist before using them
+            if (!aioxyData.ingredients['peas-eu-dried']) {
+                console.error('❌ CRITICAL: Ingredients not loaded!');
+                return;
+            }
+            
+            selectedIngredients = [
+                { 
+                    id: 'peas-eu-dried', 
+                    name: aioxyData.ingredients['peas-eu-dried'].name, 
+                    quantity: 0.15 
+                },
+                { 
+                    id: 'wheat-eu-conv', 
+                    name: aioxyData.ingredients['wheat-eu-conv'].name, 
+                    quantity: 0.10 
+                },
+                { 
+                    id: 'tomatoes-es-field', 
+                    name: aioxyData.ingredients['tomatoes-es-field'].name, 
+                    quantity: 0.05 
+                }
+            ];
+            
+            console.log('✅ Demo ingredients set:', selectedIngredients);
+            updateIngredientList();
+            
+            // CALCULATE IMMEDIATELY - No bullshit delays
+            setTimeout(() => {
+                console.log('🔢 FORCING CALCULATION NOW');
+                calculateImpact();
+            }, 100);
+        }
+
+        // ================== INGREDIENT MANAGEMENT ==================
+        function addIngredient() {
+            const select = document.getElementById('ingredientSelect');
+            const quantityInput = document.getElementById('ingredientQuantity');
+            
+            const ingredientId = select.value;
+            const quantity = parseFloat(quantityInput.value);
+            
+            if (!ingredientId || isNaN(quantity) || quantity <= 0) {
+                alert('Please select an ingredient and enter a valid quantity');
+                return;
+            }
+            
+            const ingredient = aioxyData.ingredients[ingredientId];
+            selectedIngredients.push({
+                id: ingredientId,
+                name: ingredient.name,
+                quantity: quantity
+            });
+            
+            updateIngredientList();
+            calculateImpact();
+            
+            select.value = '';
+            quantityInput.value = '0.150';
+        }
+
+        function removeIngredient(index) {
+            selectedIngredients.splice(index, 1);
+            updateIngredientList();
+            calculateImpact();
+        }
+
+        function updateIngredientList() {
+            const list = document.getElementById('ingredientList');
+            if (!list) return;
+            
+            list.innerHTML = '';
+            
+            if (selectedIngredients.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-apple-alt"></i>
+                        <h3>No ingredients added yet</h3>
+                        <p>Add ingredients to calculate your environmental impact</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            selectedIngredients.forEach((ingredient, index) => {
+                const ingredientData = aioxyData.ingredients[ingredient.id];
+                const dqrQuality = foodCalculationEngine.getDQRQualityLevel(ingredientData.data.metadata.dqr_overall);
+                const uncertainty = foodCalculationEngine.calculateUncertainty(ingredientData.data.metadata.dqr.P);
+                
+                const item = document.createElement('div');
+                item.className = 'ingredient-item';
+                item.innerHTML = `
+                    <div class="ingredient-info">
+                        <div class="ingredient-name">${ingredient.name}</div>
+                        <div class="ingredient-stats">
+                            ${ingredientData.data.pef["Climate Change"]} kg CO₂e/kg • 
+                            ${ingredientData.data.pef["Water Use/Scarcity (AWARE)"]} m³ water/kg •
+                            <span class="dqr-badge ${dqrQuality.class}">DQR: ${dqrQuality.level}</span>
+                            <span class="badge" style="margin-left: 0.5rem;">±${uncertainty}% uncertainty</span>
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
+                        </div>
+                    </div>
+                    <div class="ingredient-actions">
+                        <input type="number" class="quantity-input" value="${ingredient.quantity}" step="0.001" min="0" 
+                               onchange="updateIngredientQuantity(${index}, this.value)">
+                        <button class="remove-btn" onclick="removeIngredient(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function updateIngredientQuantity(index, newQuantity) {
+            selectedIngredients[index].quantity = parseFloat(newQuantity);
+            calculateImpact();
+        }
+
+        function toggleAdvanced() {
+            const advanced = document.getElementById('advancedOptions');
+            if (advanced) advanced.classList.toggle('hidden');
+        }
+
+        function updateComparison() {
+            calculateImpact();
+        }
+
+        // ================== CORE CALCULATION ENGINE ==================
+        function calculateImpact() {
+            console.log('🧮 CALCULATE IMPACT CALLED');
+            console.log('📊 Current ingredients:', selectedIngredients.length);
+            
+            if (selectedIngredients.length === 0) {
+                console.log('⚠️ No ingredients - this is normal on first load');
+                clearResults();
+                return;
+            }
+            
+            console.log('🎯 PROCEEDING WITH PEF CALCULATION');
+            
+            const loadingElement = document.getElementById('loadingResults');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            if (loadingElement) loadingElement.classList.remove('hidden');
+            if (resultsContent) resultsContent.classList.add('hidden');
+
+            // Use setTimeout to ensure UI updates before heavy calculation
+            setTimeout(() => {
+                try {
+                    const results = foodCalculationEngine.calculateFoodImpact();
+                    console.log('📈 Calculation results:', results);
+                    updateResultsUI(results);
+                    updateBusinessCase();
+                } catch (error) {
+                    console.error('💥 Calculation error:', error);
+                    alert('Calculation error: ' + error.message);
+                } finally {
+                    if (loadingElement) loadingElement.classList.add('hidden');
+                    if (resultsContent) resultsContent.classList.remove('hidden');
+                }
+            }, 100);
+        }
+
+        function clearResults() {
+            const elements = [
+                'co2Value', 'waterValue', 'landValue', 'fossilValue',
+                'co2Savings', 'waterSavings', 'carKm', 'householdEnergy',
+                'treesPlanted', 'waterBottles'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (id.includes('Value') || id.includes('Km') || id.includes('Energy') || id.includes('trees') || id.includes('bottles')) {
+                        element.textContent = '0' + (id.includes('Value') ? '.00' : '') + 
+                            (id.includes('co2Value') ? ' kg' : '') +
+                            (id.includes('waterValue') ? ' m³' : '') +
+                            (id.includes('landValue') ? ' Pt' : '') +
+                            (id.includes('fossilValue') ? ' MJ' : '') +
+                            (id.includes('carKm') ? ' km' : '') +
+                            (id.includes('householdEnergy') ? ' days' : '') +
+                            (id.includes('treesPlanted') ? ' trees' : '') +
+                            (id.includes('waterBottles') ? ' bottles' : '');
+                    } else if (id.includes('Savings')) {
+                        element.textContent = '0% saved';
+                    }
+                }
+            });
+
+            const sections = ['environmentalStory', 'massBalanceSection', 'dataQualitySection'];
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.classList.add('hidden');
+            });
+
+            if (currentChart) {
+                currentChart.destroy();
+                currentChart = null;
+            }
+        }
+
+        function updateResultsUI(results) {
+            updateMassBalanceDisplay();
+            updateDataQualityDisplay(results);
+            updateEnvironmentalStory(results);
+            renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline);
+
+            // Update main metrics
+            document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
+            document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
+            document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
+            document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
+            
+            // Calculate savings compared to baseline
+            const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
+            const baselineWater = currentComparisonBaseline ? currentComparisonBaseline.waterPerKg : 8.1;
+            
+            const co2SavingsPercent = ((baselineCO2 - results.co2PerKg) / baselineCO2 * 100).toFixed(1);
+            const waterSavingsPercent = ((baselineWater - results.waterScarcityPerKg) / baselineWater * 100).toFixed(1);
+            
+            document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
+            document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
+
+            // Storytelling comparisons
+            const co2Saved = results.comparison.co2Saved;
+            const waterSaved = results.comparison.waterSaved;
+            
+            document.getElementById('carKm').textContent = Math.round(co2Saved * 1000 / 120) + ' km';
+            document.getElementById('householdEnergy').textContent = (co2Saved * 1000 / 12000).toFixed(1) + ' days';
+            document.getElementById('treesPlanted').textContent = Math.round(co2Saved / 0.025) + ' trees';
+            document.getElementById('waterBottles').textContent = Math.round(waterSaved * 1000 / 1.5) + ' bottles';
+
+            createEmissionChart(results);
+        }
+
+        function updateEnvironmentalStory(results) {
+            const environmentalStory = document.getElementById('environmentalStory');
+            const storyContent = document.getElementById('storyContent');
+            const storyComparison = document.getElementById('storyComparison');
+
+            if (!environmentalStory || !storyContent || !storyComparison) return;
+
+            const co2Saved = results.comparison.co2Saved;
+            const waterSaved = results.comparison.waterSaved;
+            const carKm = Math.round(co2Saved * 1000 / 120);
+            const trees = Math.round(co2Saved / 0.025);
+
+            environmentalStory.classList.remove('hidden');
+            
+            storyContent.innerHTML = `
+                <div class="story-highlight">
+                    <i class="fas fa-seedling"></i>
+                    <strong>${co2Saved.toFixed(1)} kg CO₂e saved vs ${results.comparison.baseline.name}</strong> - equivalent to not driving ${carKm} km in a standard car
+                </div>
+                <div class="story-highlight">
+                    <i class="fas fa-tree"></i>
+                    <strong>Carbon absorption equivalent to ${trees} trees</strong> - making a real contribution to natural carbon capture
+                </div>
+                <p>
+                    Your product demonstrates <strong>strong environmental performance</strong> with a carbon footprint 
+                    ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(1)}% lower than ${results.comparison.baseline.name}. 
+                    This represents a major step forward in sustainable production.
+                </p>
+            `;
+
+            storyComparison.innerHTML = `
+                <div class="story-item">
+                    <div class="story-icon">🚗</div>
+                    <div class="story-value">${carKm} km</div>
+                    <div class="story-label">Car driving equivalent saved</div>
+                </div>
+                <div class="story-item">
+                    <div class="story-icon">🏠</div>
+                    <div class="story-value">${(co2Saved * 1000 / 12000).toFixed(1)} days</div>
+                    <div class="story-label">Home energy equivalent</div>
+                </div>
+                <div class="story-item">
+                    <div class="story-icon">🌳</div>
+                    <div class="story-value">${trees}</div>
+                    <div class="story-label">Trees for saved CO₂</div>
+                </div>
+                <div class="story-item">
+                    <div class="story-icon">💧</div>
+                    <div class="story-value">${Math.round(waterSaved * 1000 / 1.5)}</div>
+                    <div class="story-label">Water bottles saved</div>
+                </div>
+            `;
+        }
+
+        function updateDataQualityDisplay(results) {
+            const dataQualitySection = document.getElementById('dataQualitySection');
+            const dqrBreakdown = document.getElementById('dqrBreakdown');
+            const overallDQRBadge = document.getElementById('overallDQRBadge');
+            
+            if (!dataQualitySection || !dqrBreakdown || !overallDQRBadge) return;
+
+            if (auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs.length > 0) {
+                dataQualitySection.classList.remove('hidden');
+                
+                // Calculate average DQR factors
+                let terSum = 0, grSum = 0, tirSum = 0, cSum = 0, pSum = 0;
+                let count = 0;
+                
+                auditTrailData.dqr_summary.component_dqrs.forEach(score => {
+                    const ingredient = aioxyData.ingredients[selectedIngredients.find(i => i.name === score.name)?.id];
+                    if (ingredient) {
+                        terSum += ingredient.data.metadata.dqr.TeR;
+                        grSum += ingredient.data.metadata.dqr.GR;
+                        tirSum += ingredient.data.metadata.dqr.TiR;
+                        cSum += ingredient.data.metadata.dqr.C;
+                        pSum += ingredient.data.metadata.dqr.P;
+                        count++;
+                    }
+                });
+                
+                const avgFactors = {
+                    TeR: (terSum / count).toFixed(1),
+                    GR: (grSum / count).toFixed(1),
+                    TiR: (tirSum / count).toFixed(1),
+                    C: (cSum / count).toFixed(1),
+                    P: (pSum / count).toFixed(1)
+                };
+                
+                dqrBreakdown.innerHTML = `
+                    <div class="dqr-factor">
+                        <div class="dqr-factor-value">${avgFactors.TeR}</div>
+                        <div class="dqr-factor-label">TeR</div>
+                        <div style="font-size: 0.7rem; margin-top: 0.5rem;">Technological Representativeness</div>
+                    </div>
+                    <div class="dqr-factor">
+                        <div class="dqr-factor-value">${avgFactors.GR}</div>
+                        <div class="dqr-factor-label">GR</div>
+                        <div style="font-size: 0.7rem; margin-top: 0.5rem;">Geographical Representativeness</div>
+                    </div>
+                    <div class="dqr-factor">
+                        <div class="dqr-factor-value">${avgFactors.TiR}</div>
+                        <div class="dqr-factor-label">TiR</div>
+                        <div style="font-size: 0.7rem; margin-top: 0.5rem;">Time Representativeness</div>
+                    </div>
+                    <div class="dqr-factor">
+                        <div class="dqr-factor-value">${avgFactors.C}</div>
+                        <div class="dqr-factor-label">C</div>
+                        <div style="font-size: 0.7rem; margin-top: 0.5rem;">Completeness</div>
+                    </div>
+                    <div class="dqr-factor">
+                        <div class="dqr-factor-value">${avgFactors.P}</div>
+                        <div class="dqr-factor-label">P</div>
+                        <div style="font-size: 0.7rem; margin-top: 0.5rem;">Parameter Uncertainty</div>
+                    </div>
+                `;
+                
+                const dqrQuality = foodCalculationEngine.getDQRQualityLevel(results.overallDQR);
+                overallDQRBadge.className = `dqr-badge ${dqrQuality.class}`;
+                overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${dqrQuality.level} (DQR: ${results.overallDQR.toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
+            } else {
+                dataQualitySection.classList.add('hidden');
+            }
+        }
+
+        function updateMassBalanceDisplay() {
+            const massBalanceSection = document.getElementById('massBalanceSection');
+            const massBalanceContent = document.getElementById('massBalanceContent');
+            
+            if (!massBalanceSection || !massBalanceContent) return;
+
+            if (massBalanceData.raw_input_total_kg > 0) {
+                massBalanceSection.classList.remove('hidden');
+                
+                const balanceDifference = Math.abs(massBalanceData.balance_check);
+                const balanceStatus = balanceDifference < 0.001 ? "✅ Balanced" : "⚠️ Check Required";
+                
+                massBalanceContent.innerHTML = `
+                    <div class="mass-balance-item">
+                        <span>Total Input Weight:</span>
+                        <span>${massBalanceData.raw_input_total_kg.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Agricultural Loss:</span>
+                        <span>- ${massBalanceData.agricultural_processing_loss_kg.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Processing Loss:</span>
+                        <span>- ${massBalanceData.processing_loss_kg.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Final Product Weight:</span>
+                        <span>${massBalanceData.final_content_weight_kg.toFixed(3)} kg</span>
+                    </div>
+                    <div class="mass-balance-item">
+                        <span>Mass Balance:</span>
+                        <span>${balanceStatus}</span>
+                    </div>
+                `;
+            } else {
+                massBalanceSection.classList.add('hidden');
+            }
         }
 
         // ================== BUSINESS CASE INTEGRATION ==================
-        function updateHardFinancialLedger(financialResults, volume) {
-            const tbody = document.getElementById('ledgerBody');
-            const { moneyCarbon, moneyFuel, moneyEnergy, total, metrics } = financialResults;
-
-            tbody.innerHTML = `
-                <tr>
-                    <td><strong>🛡️ Carbon Liability</strong><br><small>EU ETS Shadow Price (€85/t)</small></td>
-                    <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons CO₂</td>
-                    <td class="money-positive">+€${Math.round(moneyCarbon).toLocaleString()}</td>
-                </tr>
-                <tr>
-                    <td><strong>⚡ Energy OPEX</strong><br><small>Efficiency Gain</small></td>
-                    <td>-${Math.round(metrics.totalKwhSaved).toLocaleString()} kWh</td>
-                    <td class="money-positive">+€${Math.round(moneyEnergy).toLocaleString()}</td>
-                </tr>
-                <tr>
-                    <td><strong>🚚 Logistics Fuel</strong><br><small>Weight reduction savings</small></td>
-                    <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
-                    <td class="money-positive">+€${Math.round(moneyFuel).toLocaleString()}</td>
-                </tr>
-            `;
-
-            document.getElementById('totalBenefit').innerText = "€" + Math.round(total).toLocaleString();
-            
-            // Update other business metrics
-            document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(total);
-            document.getElementById('roiValue').textContent = Math.round((total * 3) / 10000) + '%'; // Simplified ROI
+        function setVolume(volume) {
+            document.getElementById('salesVolume').value = volume;
+            updateVolumeDisplay(volume);
+            updateBusinessCase();
         }
 
-        // ================== EXISTING CODE INTEGRATION ==================
-        // Note: The existing PEF calculation engine, ingredient database, and all other 
-        // functionality from part 1 remains intact. We're only enhancing the comparison
-        // and business case systems.
-
-        // Initialize the enhanced system
-        function initEnhancedSystem() {
-            // Existing initialization code plus new enhancements
-            populateIngredientSelect();
-            populateCountrySelect();
-            setupDemoData();
-            calculateImpact();
-            updateTabIndicator();
+        function updateVolumeDisplay(volume) {
+            currentAnnualVolume = parseInt(volume);
+            const display = document.getElementById('volumeDisplay');
+            const scaleDisplay = document.getElementById('businessScaleDisplay');
+            const tierDisplay = document.getElementById('volumeTierDisplay');
             
-            // Initialize scenario system
-            resetScenarios();
+            if (!display || !scaleDisplay || !tierDisplay) return;
+
+            // Format number for display
+            if (volume >= 1000000) {
+                display.textContent = (volume / 1000000).toFixed(volume >= 10000000 ? 0 : 1) + 'M';
+            } else if (volume >= 1000) {
+                display.textContent = (volume / 1000).toFixed(volume >= 10000 ? 0 : 1) + 'K';
+            } else {
+                display.textContent = volume.toLocaleString();
+            }
+            
+            // Update business scale and tier
+            const businessCase = calculateScalableBusinessCase({}, volume);
+            scaleDisplay.textContent = businessCase.businessScale;
+            tierDisplay.textContent = businessCase.volumeTier;
         }
 
-        // Enhanced calculateImpact to include universal comparison
-        function calculateImpactEnhanced() {
-            if(selectedIngredients.length === 0) return;
+// ================== HARD PHYSICS INTEGRATION ==================
+function applyScenarioPhysics(baseResults) {
+    let modifiedResults = JSON.parse(JSON.stringify(baseResults.finalPefResults));
+    
+    // RENEWABLE ENERGY - Reduce manufacturing emissions by 80%
+    if (activeScenarios.renewables) {
+        modifiedResults["Climate Change"].contribution_tree.Manufacturing.total *= 0.2;
+        modifiedResults["Climate Change"].total = recalculateCategoryTotal(modifiedResults["Climate Change"]);
+    }
+    
+    // LOCAL SOURCING - Reduce transport distance to 50km  
+    if (activeScenarios.local) {
+        modifiedResults["Climate Change"].contribution_tree.Transport.total *= 0.1; // 50km vs 500km = 90% reduction
+        modifiedResults["Climate Change"].total = recalculateCategoryTotal(modifiedResults["Climate Change"]);
+    }
+    
+    // LIGHTWEIGHT PACKAGING - Reduce packaging weight by 20%
+    if (activeScenarios.lightweight) {
+        modifiedResults["Climate Change"].contribution_tree.Packaging.total *= 0.8;
+        modifiedResults["Climate Change"].total = recalculateCategoryTotal(modifiedResults["Climate Change"]);
+    }
+    
+    return modifiedResults;
+}
 
-            // Run existing PEF calculation
-            const results = foodCalculationEngine.calculateFoodImpact();
+function recalculateCategoryTotal(category) {
+    return category.contribution_tree.Ingredients.total + 
+           category.contribution_tree.Manufacturing.total + 
+           category.contribution_tree.Transport.total + 
+           category.contribution_tree.Packaging.total;
+}
+
+function calculateHardFinancialMath(results, volume, scenarios) {
+    const base = currentComparisonBaseline;
+    const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0.05;
+    
+    // 1. Carbon Liability (Shadow Price)
+    const co2Delta = Math.max(0, (base.co2PerKg * results.finalContentWeight) - results.finalPefResults["Climate Change"].total);
+    const totalTonsCo2Saved = co2Delta / 1000;
+    const moneyCarbon = totalTonsCo2Saved * 85; // €85/ton
+
+    // 2. Logistics Fuel (Weight Physics)
+    const weightDeltaKg = scenarios.lightweight ? (packagingWeight * 0.2) : 0;
+    const totalWeightSavedTons = (weightDeltaKg * volume) / 1000;
+    let distance = scenarios.local ? 50 : 500;
+    const fuelLitersSaved = totalWeightSavedTons * distance * 0.03;
+    const moneyFuel = fuelLitersSaved * 1.75;
+
+    // 3. Energy OPEX
+    const baseEnergy = 0.8 * results.finalContentWeight;
+    const myEnergy = scenarios.renewables ? (baseEnergy * 0.3) : baseEnergy;
+    const energyDeltaKwh = Math.max(0, baseEnergy - myEnergy);
+    const totalKwhSaved = energyDeltaKwh * volume;
+    const moneyEnergy = totalKwhSaved * 0.22;
+
+    const total = moneyCarbon + moneyFuel + moneyEnergy;
+
+    return {
+        moneyCarbon,
+        moneyFuel, 
+        moneyEnergy,
+        total,
+        metrics: {
+            totalTonsCo2Saved,
+            fuelLitersSaved,
+            totalKwhSaved,
+            weightDeltaKg
+        }
+    };
+}
+
+function updateHardFinancialLedger(financialResults) {
+    const tbody = document.getElementById('ledgerBody');
+    if (!tbody) return;
+    
+    const { moneyCarbon, moneyFuel, moneyEnergy, total, metrics } = financialResults;
+
+    tbody.innerHTML = `
+        <tr>
+            <td><strong>🛡️ Carbon Liability</strong><br><small>EU ETS Shadow Price (€85/t)</small></td>
+            <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons CO₂</td>
+            <td class="money-positive">+€${Math.round(moneyCarbon).toLocaleString()}</td>
+        </tr>
+        <tr>
+            <td><strong>⚡ Energy OPEX</strong><br><small>Efficiency Gain</small></td>
+            <td>-${Math.round(metrics.totalKwhSaved).toLocaleString()} kWh</td>
+            <td class="money-positive">+€${Math.round(moneyEnergy).toLocaleString()}</td>
+        </tr>
+        <tr>
+            <td><strong>🚚 Logistics Fuel</strong><br><small>Weight reduction savings</small></td>
+            <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
+            <td class="money-positive">+€${Math.round(moneyFuel).toLocaleString()}</td>
+        </tr>
+    `;
+
+    const totalBenefit = document.getElementById('totalBenefit');
+    if (totalBenefit) {
+        totalBenefit.innerText = "€" + Math.round(total).toLocaleString();
+    }
+}
+
+// ================== ENHANCED CALCULATION ENGINE ==================
+function calculateImpactEnhanced() {
+    console.log('🧮 CALCULATE IMPACT ENHANCED CALLED');
+    
+    if (selectedIngredients.length === 0) {
+        clearResults();
+        return;
+    }
+    
+    const loadingElement = document.getElementById('loadingResults');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    if (loadingElement) loadingElement.classList.remove('hidden');
+    if (resultsContent) resultsContent.classList.add('hidden');
+
+    setTimeout(() => {
+        try {
+            const baseResults = foodCalculationEngine.calculateFoodImpact();
             
-            // Add universal comparison
-            renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline);
+            // APPLY SCENARIO PHYSICS IF ACTIVE
+            let finalResults = baseResults;
+            if (Object.values(activeScenarios).some(v => v)) {
+                const scenarioPefResults = applyScenarioPhysics(baseResults);
+                finalResults = {
+                    ...baseResults,
+                    finalPefResults: scenarioPefResults,
+                    co2PerKg: scenarioPefResults["Climate Change"].total / baseResults.finalContentWeight
+                };
+                
+                // UPDATE HARD FINANCIAL MATH
+                const financialResults = calculateHardFinancialMath(
+                    finalResults,
+                    currentAnnualVolume,
+                    activeScenarios
+                );
+                updateHardFinancialLedger(financialResults);
+            }
             
-            // Update business case with hard financial math
+            updateResultsUI(finalResults);
             updateBusinessCase();
             
-            return results;
+        } catch (error) {
+            console.error('💥 Calculation error:', error);
+        } finally {
+            if (loadingElement) loadingElement.classList.add('hidden');
+            if (resultsContent) resultsContent.classList.remove('hidden');
         }
+    }, 100);
+}
 
-        // Enhanced business case with hard financial math
-        function updateBusinessCaseEnhanced() {
-            if (!finalPefResults || Object.keys(finalPefResults).length === 0) return;
+// REPLACE THE ORIGINAL calculateImpact WITH THE ENHANCED VERSION
+function calculateImpact() {
+    calculateImpactEnhanced();
+}
 
-            const volume = currentAnnualVolume;
+// ENHANCE SCENARIO TOGGLE TO TRIGGER CALCULATION
+function toggleScenario(key) {
+    activeScenarios[key] = !activeScenarios[key];
+    
+    const btn = document.getElementById(`scenario-${key}`);
+    if (btn) btn.classList.toggle('active');
+    
+    // TRIGGER CALCULATION WITH PHYSICS
+    calculateImpact();
+    updateBusinessCase();
+}
+
+function resetScenarios() {
+    activeScenarios = {
+        renewables: false,
+        local: false,
+        lightweight: false
+    };
+    
+    document.querySelectorAll('.scenario-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // TRIGGER CALCULATION WITH BASELINE PHYSICS
+    calculateImpact();
+    updateBusinessCase();
+}
+        function updateBusinessCase() {
+            if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
+                const businessStory = document.getElementById('businessStory');
+                if (businessStory) {
+                    businessStory.innerHTML = `
+                        <div class="story-highlight">
+                            <i class="fas fa-calculator"></i>
+                            <strong>Calculate environmental impacts first</strong> to see the complete business case
+                        </div>
+                    `;
+                }
+                return;
+            }
+
             const results = {
                 co2PerKg: finalPefResults["Climate Change"].total / massBalanceData.final_content_weight_kg,
-                finalContentWeight: massBalanceData.final_content_weight_kg,
-                packWeight: parseFloat(document.getElementById('packagingWeight').value)
+                finalContentWeight: massBalanceData.final_content_weight_kg
             };
 
-            // Apply scenario modifications
-            if (activeScenarios.lightweight) {
-                results.packWeight *= 0.8; // 20% reduction
-            }
+            const businessCase = calculateScalableBusinessCase(results, currentAnnualVolume);
 
-            const financialResults = calculateHardFinancialMath(results, volume, activeScenarios);
-            updateHardFinancialLedger(financialResults, volume);
-        }
+            // UPDATE ALL 4 BUSINESS PILLARS
+            document.getElementById('roiValue').textContent = businessCase.roi.toFixed(0) + '%';
+            document.getElementById('savingsValue').textContent = '€' + formatLargeNumber(businessCase.annualSavings);
+            document.getElementById('premiumValue').textContent = businessCase.premiumPotential.toFixed(1) + '%';
+            document.getElementById('marketValue').textContent = businessCase.marketGrowth.toFixed(1) + '%';
+            
+            // UPDATE COST BREAKDOWN
+            document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(businessCase.implementationCost);
+            document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(businessCase.carbonReduction) + ' kg CO₂e';
+            document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(businessCase.totalAnnualBenefit);
+            document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber((businessCase.totalAnnualBenefit * 3) - businessCase.implementationCost);
 
-        // Override existing functions with enhanced versions
-        const originalCalculateImpact = calculateImpact;
-        const originalUpdateBusinessCase = updateBusinessCase;
-
-        calculateImpact = function() {
-            const results = originalCalculateImpact();
-            if (results) {
-                renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline);
-            }
-            return results;
-        };
-
-        updateBusinessCase = function() {
-            originalUpdateBusinessCase();
-            updateBusinessCaseEnhanced();
-        };
-
-        // Initialize the enhanced system
-        document.addEventListener('DOMContentLoaded', initEnhancedSystem);
-
-        // ================== UTILITY FUNCTIONS ==================
-        function formatLargeNumber(num) {
-            if (num >= 1000000000) {
-                return (num / 1000000000).toFixed(1) + 'B';
-            } else if (num >= 1000000) {
-                return (num / 1000000).toFixed(1) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(1) + 'K';
+            // UPDATE ROI BADGE WITH DYNAMIC COLORS
+            const roiBadge = document.getElementById('roiBadge');
+            if (businessCase.roi >= 200) {
+                roiBadge.textContent = 'EXCEPTIONAL ROI';
+                roiBadge.style.background = 'var(--dqr-excellent)';
+            } else if (businessCase.roi >= 100) {
+                roiBadge.textContent = 'EXCELLENT ROI';
+                roiBadge.style.background = 'var(--dqr-very-good)';
+            } else if (businessCase.roi >= 50) {
+                roiBadge.textContent = 'STRONG ROI';
+                roiBadge.style.background = 'var(--dqr-good)';
+            } else if (businessCase.roi >= 20) {
+                roiBadge.textContent = 'GOOD ROI';
+                roiBadge.style.background = 'var(--dqr-fair)';
+            } else if (businessCase.roi >= 0) {
+                roiBadge.textContent = 'MODEST ROI';
+                roiBadge.style.background = 'var(--dqr-poor)';
             } else {
-                return Math.round(num).toLocaleString();
+                roiBadge.textContent = 'NEGATIVE ROI';
+                roiBadge.style.background = 'var(--accent)';
             }
+
+            // UPDATE BUSINESS STORY WITH ALL 4 PILLARS
+            document.getElementById('businessStory').innerHTML = `
+                <div class="story-highlight">
+                    <i class="fas fa-${getBusinessIcon(businessCase.businessScale)}"></i>
+                    <strong>${businessCase.businessScale} Opportunity</strong><br>
+                    At ${currentAnnualVolume.toLocaleString()} units annually, sustainability creates 
+                    <strong>€${formatLargeNumber(businessCase.totalAnnualBenefit)}</strong> in annual business value.
+                </div>
+                <p>
+                    <strong>💰 Carbon Savings:</strong> €${formatLargeNumber(businessCase.annualSavings)}<br>
+                    <strong>📈 Price Premium Potential:</strong> ${businessCase.premiumPotential.toFixed(1)}%<br>  
+                    <strong>👥 Market Share Growth:</strong> ${businessCase.marketGrowth.toFixed(1)}%<br>
+                    <strong>🎯 Total Annual Benefit:</strong> €${formatLargeNumber(businessCase.totalAnnualBenefit)}
+                </p>
+                <div class="story-highlight">
+                    <i class="fas fa-bullseye"></i>
+                    <strong>Market Leadership Potential:</strong> 
+                    Your environmental advantage positions you for significant market share capture in the growing sustainable products category.
+                </div>
+            `;
+
+            createBusinessImpactChart(businessCase);
         }
 
-        // ================== EXISTING CODE (from part 1) ==================
-        // All the existing code from part 1 remains below this point
-        // including: aioxyData, foodCalculationEngine, selectedIngredients, 
-        // currentChart, currentBusinessChart, currentDPPId, finalPefResults, 
-        // massBalanceData, auditTrailData, currentComparisonBaseline, currentAnnualVolume,
-        // and all the existing functions...
+        function getBusinessIcon(scale) {
+            const icons = {
+                "Prototype / Small Batch": "flask",
+                "Small Business": "store",
+                "Growing Business": "seedling",
+                "Medium Enterprise": "building",
+                "Large Enterprise": "city",
+                "Major Corporation": "globe-americas",
+                "Global Corporation": "globe"
+            };
+            return icons[scale] || "chart-line";
+        }
 
-        // [The complete existing JavaScript code from part 1 continues here...]
-        // This includes all the PEF calculation engine, ingredient database,
-        // tab management, chart rendering, export functionality, etc.
+        function createBusinessImpactChart(businessCase) {
+            const ctx = document.getElementById('businessImpactChart');
+            if (!ctx) return;
+            
+            if (currentBusinessChart) {
+                currentBusinessChart.destroy();
+            }
 
-        // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
-        const aioxyData = {
-            // [Existing aioxyData object from part 1...]
-            // This contains all the ingredients, PEF categories, processing methods, etc.
-        };
+            currentBusinessChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Carbon Savings', 'Premium Revenue', 'Market Growth'],
+                    datasets: [{
+                        label: 'Annual Value (€)',
+                        data: [
+                            businessCase.annualSavings,
+                            businessCase.premiumRevenue, 
+                            businessCase.marketShareValue
+                        ],
+                        backgroundColor: [
+                            '#2E86C1',
+                            '#27AE60', 
+                            '#F39C12'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Business Value Breakdown'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Annual Value (€)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-        // ================== AIOXY ALGORITHM IMPLEMENTATION ==================
-        const foodCalculationEngine = {
-            // [Existing foodCalculationEngine object from part 1...]
-            // This contains all the PEF calculation logic
-        };
-
-        // ================== GLOBAL VARIABLES ==================
-        let selectedIngredients = [];
-        let currentChart = null;
-        let currentBusinessChart = null;
-        let currentDPPId = null;
-        let finalPefResults = {};
-        let massBalanceData = {};
-        let auditTrailData = {};
-        let currentComparisonBaseline = null;
-        let currentAnnualVolume = 10000; // Default volume
-
-        // ================== SCALABLE BUSINESS CASE ENGINE ==================
-        // [Existing business case functions from part 1...]
-
-        // ================== INITIALIZATION ==================
-        function initApp() {
-            populateIngredientSelect();
-            populateCountrySelect();
-            setupDemoData();
-            calculateImpact();
+        // ================== TAB MANAGEMENT ==================
+        function showTab(tabName, event) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab and set active
+            const targetTab = document.getElementById(`${tabName}-tab`);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+            
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+            
+            // Trigger tab-specific actions
+            if (tabName === 'results') {
+                calculateImpact();
+            }
+            if (tabName === 'business-case') {
+                updateBusinessCase();
+            }
+            if (tabName === 'dpp') {
+                generateDPP();
+            }
+            if (tabName === 'pef-scorecard') {
+                displayFullPefScorecard();
+            }
+            if (tabName === 'transparency') {
+                displayAuditTrail();
+            }
+            
             updateTabIndicator();
         }
 
-        // [All remaining existing functions from part 1...]
+        function updateTabIndicator() {
+            const activeTab = document.querySelector('.nav-tab.active');
+            const indicator = document.getElementById('tabIndicator');
+            
+            if (activeTab && indicator) {
+                indicator.style.left = activeTab.offsetLeft + 'px';
+                indicator.style.width = activeTab.offsetWidth + 'px';
+            }
+        }
 
+        // ================== CHART FUNCTIONS ==================
+        function createEmissionChart(results) {
+            const ctx = document.getElementById('emissionChart');
+            if (!ctx) return;
+            
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            // Get contribution data from audit trail
+            const ingredientsCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Ingredients?.total || 0;
+            const processingCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Manufacturing?.total || 0;
+            const transportCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Transport?.total || 0;
+            const packagingCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Packaging?.total || 0;
+            
+            currentChart = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ingredients', 'Processing', 'Transportation', 'Packaging'],
+                    datasets: [{
+                        data: [
+                            Math.max(ingredientsCO2, 0),
+                            Math.max(processingCO2, 0),
+                            Math.max(transportCO2, 0),
+                            Math.max(packagingCO2, 0)
+                        ],
+                        backgroundColor: ['#2E86C1', '#27AE60', '#F39C12', '#E74C3C'],
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 37, 64, 0.9)',
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw.toFixed(2)} kg CO₂e`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // ================== PEF SCORECARD ==================
+        function displayFullPefScorecard() {
+            const tbody = document.getElementById('pefScorecardBody');
+            const ingredientDataQuality = document.getElementById('ingredientDataQuality');
+            
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            const totalWeight = massBalanceData.final_content_weight_kg || 0.2;
+            
+            for (const category in finalPefResults) {
+                const row = document.createElement('tr');
+                const unit = aioxyData.pefCategories[category].unit;
+                const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
+                
+                let displayValue = formatPEFValue(finalPefResults[category].total);
+                let perKgDisplay = formatPEFValue(perKgValue);
+                
+                const categoryUncertainty = auditTrailData.uncertainty_analysis?.overall_uncertainty || 15;
+                const dqrQuality = foodCalculationEngine.getDQRQualityLevel(auditTrailData.dqr_summary?.overall_dqr || 1.5);
+                
+                row.innerHTML = `
+                    <td class="pef-category">${category}</td>
+                    <td class="pef-value">${displayValue}</td>
+                    <td class="pef-unit">${unit}</td>
+                    <td class="pef-value">${perKgDisplay}</td>
+                    <td>
+                        <span class="dqr-badge ${dqrQuality.class}">
+                            <i class="fas fa-star"></i>
+                            ${dqrQuality.level}
+                        </span>
+                    </td>
+                    <td class="pef-value">±${categoryUncertainty}%</td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            // Display ingredient data quality
+            if (ingredientDataQuality && auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs) {
+                let qualityHTML = '';
+                auditTrailData.dqr_summary.component_dqrs.forEach(score => {
+                    const dqrQuality = foodCalculationEngine.getDQRQualityLevel(score.dqr);
+                    qualityHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                            <div>
+                                <strong>${score.name}</strong>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${score.source}</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span class="dqr-badge ${dqrQuality.class}">DQR: ${score.dqr.toFixed(1)}</span>
+                                <span class="badge">±${score.uncertainty}% uncertainty</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                ingredientDataQuality.innerHTML = qualityHTML;
+            }
+        }
+
+        // ================== TRANSPARENCY LOG ==================
+        function displayAuditTrail() {
+            const auditContent = document.getElementById('auditTrailContent');
+            
+            if (!auditContent) return;
+
+            if (!auditTrailData || !auditTrailData.pefCategories) {
+                auditContent.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calculator"></i>
+                        <h3>No calculation data available</h3>
+                        <p>Calculate environmental impacts first to generate the transparency log</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let auditHTML = '';
+            
+            // Display key categories with detailed breakdown
+            const keyCategories = ["Climate Change", "Water Use/Scarcity (AWARE)", "Land Use", "Resource Use, fossils"];
+            
+            keyCategories.forEach(category => {
+                if (auditTrailData.pefCategories[category]) {
+                    const cat = auditTrailData.pefCategories[category];
+                    auditHTML += `
+                        <div class="audit-category">
+                            <div class="audit-category-header">
+                                <span>${category}</span>
+                                <span class="pef-value">${formatPEFValue(cat.total)} ${cat.unit}</span>
+                            </div>
+                            
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Ingredients</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Ingredients.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Ingredients.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            ${cat.contribution_tree.Manufacturing.total > 0 ? `
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Manufacturing</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Manufacturing.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Manufacturing.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                            
+                            ${cat.contribution_tree.Transport.total > 0 ? `
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Transport</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Transport.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Transport.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                            
+                            ${cat.contribution_tree.Packaging.total > 0 ? `
+                            <div class="audit-component">
+                                <div class="audit-component-header">
+                                    <span>Packaging</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Packaging.total)} ${cat.unit}</span>
+                                </div>
+                                ${cat.contribution_tree.Packaging.components.map(comp => `
+                                    <div class="audit-item">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            auditContent.innerHTML = auditHTML;
+        }
+
+        // ================== DIGITAL TRANSPARENCY CARD ==================
+        function generateDPP() {
+            const productName = document.getElementById('productName').value || 'Unnamed Product';
+            const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            currentDPPId = dppId;
+            
+            document.getElementById('dppId').textContent = dppId;
+            
+            // Build transparency card data
+            const transparencyData = {
+                productId: dppId,
+                productName: productName,
+                timestamp: new Date().toISOString(),
+                methodology: {
+                    approach: "PEF 3.1",
+                    version: "1.0",
+                    dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
+                    standards: ["Science-Based Reporting", "Transparent Methodology"]
+                },
+                environmentalFootprint: finalPefResults,
+                data_quality: auditTrailData.dqr_summary,
+                mass_balance: massBalanceData,
+                comparison_baseline: currentComparisonBaseline
+            };
+            
+            const qrElement = document.getElementById('qrcode');
+            if (!qrElement) return;
+            
+            qrElement.innerHTML = '';
+            
+            QRCode.toCanvas(qrElement, JSON.stringify(transparencyData, null, 2), {
+                width: 200,
+                height: 200,
+                margin: 1,
+                color: {
+                    dark: '#0A2540',
+                    light: '#FFFFFF'
+                }
+            }, function(error) {
+                if (error) console.error(error);
+            });
+        }
+
+        // ================== EXPORT FUNCTIONALITY ==================
+        function generatePDFReport(reportType) {
+            const loadingOverlay = document.getElementById('pdf-loading-overlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'flex';
+
+            setTimeout(() => {
+                alert(`Generating ${reportType} PDF report...\n\nIn a full implementation, this would generate a professional PDF with:\n- Complete PEF scorecard\n- Transparency log\n- Methodology statements\n- Business case analysis\n- Digital Transparency Card documentation`);
+                
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
+            }, 1500);
+        }
+
+        function downloadRawData() {
+            if (!auditTrailData) {
+                alert('No data available to download. Please run a calculation first.');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(auditTrailData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `aioxy-transparency-data-${currentDPPId || 'export'}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadDPPData() {
+            if (!currentDPPId) {
+                alert('No transparency card available. Please generate a Digital Transparency Card first.');
+                return;
+            }
+            
+            const productName = document.getElementById('productName').value || 'Unnamed Product';
+            const transparencyData = {
+                productId: currentDPPId,
+                productName: productName,
+                timestamp: new Date().toISOString(),
+                environmentalFootprint: finalPefResults,
+                data_quality: auditTrailData.dqr_summary,
+                mass_balance: massBalanceData
+            };
+            
+            const dataStr = JSON.stringify(transparencyData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `aioxy-transparency-card-${currentDPPId}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadAllData() {
+            if (!auditTrailData) {
+                alert('No data available to download. Please run a calculation first.');
+                return;
+            }
+            
+            const dataStr = JSON.stringify({
+                transparency_log: auditTrailData,
+                pef_results: finalPefResults,
+                mass_balance: massBalanceData,
+                ingredients: selectedIngredients,
+                metadata: {
+                    platform: "AIOXY Science-Based Sustainability",
+                    version: "2.1",
+                    export_timestamp: new Date().toISOString()
+                }
+            }, null, 2);
+            
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `aioxy-complete-dataset-${currentDPPId || 'export'}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportAuditData() {
+            downloadRawData();
+        }
+
+        function downloadMethodology() {
+            alert("Downloading complete methodology documentation...\n\nThis would include:\n- PEF 3.1 methodology guide\n- AGRIBALYSE 3.2 data sources\n- CFF calculation methodology\n- Uncertainty analysis approach\n- Science-based reporting approach");
+        }
+
+        // ================== UTILITY FUNCTIONS ==================
+        function formatPEFValue(value) {
+            if (value === 0) return "0.00";
+            if (value < 0.0001) return value.toExponential(3);
+            if (value < 1) return value.toFixed(5);
+            if (value < 1000) return value.toFixed(2);
+            return value.toFixed(1);
+        }
+
+        // ================== INITIALIZE APPLICATION ==================
+        function initApp() {
+            console.log('🚀 INITIALIZING AIOXY...');
+            
+            // Populate dropdowns
+            populateIngredientSelect();
+            populateCountrySelect();
+            
+            // Setup demo data and trigger initial calculation
+            setupDemoData();
+            
+            // Initialize UI state
+            updateTabIndicator();
+            
+            console.log('✅ AIOXY INITIALIZED SUCCESSFULLY');
+        }
+
+        // Start the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
