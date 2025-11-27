@@ -5370,31 +5370,7 @@ function calculateImpact() {
         if (loadingElement) loadingElement.classList.add('hidden');
         alert('Error calculating impact. Please check your inputs.');
     }
-        }
-    
-    // Show loading
-    loadingElement.classList.remove('hidden');
-    resultsContent.classList.add('hidden');
-    
-    // Simulate calculation delay
-    setTimeout(() => {
-        try {
-            const results = foodCalculationEngine.calculateFoodImpact();
-            
-            // Update UI with results
-            updateResultsUI(results);
-            
-            // Show results
-            loadingElement.classList.add('hidden');
-            resultsContent.classList.remove('hidden');
-            
-        } catch (error) {
-            console.error('Calculation error:', error);
-            loadingElement.classList.add('hidden');
-            alert('Error calculating impact. Please check your inputs.');
-        }
-    }, 
-
+}
 
 function updateResultsUI(results) {
     // Update main metrics
@@ -5416,8 +5392,14 @@ function updateResultsUI(results) {
     // Update charts
     createEmissionChart(results);
     
+    // Update universal comparison
+    renderUniversalComparisons(results.co2PerKg, Object.keys(UNIVERSAL_BASELINES)[0]);
+    
     // Update business case
     updateBusinessCase();
+    
+    // Generate DPP
+    generateDPP();
 }
 
 function updateEnvironmentalStory(results) {
