@@ -216,6 +216,28 @@ const aioxyData = {
                 }
             }
         },
+        "kidney-beans-dried-global": { 
+    name: "Kidney Beans, dried (Global)",
+    loss: 0.03,
+    data: {
+      pef: { 
+        "Climate Change": 0.9, "Ozone Depletion": 0.00000022, "Human Toxicity, non-cancer": 0.00018, 
+        "Human Toxicity, cancer": 0.0000022, "Particulate Matter": 0.0000011, "Ionizing Radiation": 0.08, 
+        "Photochemical Ozone Formation": 0.0035, "Acidification": 0.018, "Eutrophication, terrestrial": 0.07, 
+        "Eutrophication, freshwater": 0.0022, "Eutrophication, marine": 0.009, "Ecotoxicity, freshwater": 3.8, 
+        "Land Use": 220, "Water Use/Scarcity (AWARE)": 0.6, "Resource Use, minerals/metals": 0.00055, 
+        "Resource Use, fossils": 2.8
+      },
+      metadata: {
+        source_dataset: "AGRIBALYSE 3.2",
+        source_activity: "Kidney beans, dried, at farm",
+        source_uuid: "agb-3.2-8a9d3bc-kidneybeans-055",
+        allocation_method: "Economic Allocation",
+        dqr: { TeR: 1.5, GR: 2.0, TiR: 1.5, C: 1.5, P: 1.0 },
+        dqr_overall: 1.5
+      }
+    }
+  },
         "oat-base-liquid": { 
             name: "Oat Base Liquid (EU)",
             loss: 0.05,
