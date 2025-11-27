@@ -3415,40 +3415,50 @@
         }
 
         function calculateCO2ReductionPercent() {
-            if (!currentComparisonBaseline || !finalPefResults) return 0;
-            
-            const baselineCO2 = currentComparisonBaseline.co2PerKg;
-            const currentCO2 = finalPefResults["Climate Change"]?.total / (massBalanceData?.final_content_weight_kg || 0.2);
-            
-            if (baselineCO2 <= 0) return 0;
-            return Math.max(0, (baselineCO2 - currentCO2) / baselineCO2 * 100);
+    if (!currentComparisonBaseline || !finalPefResults || !finalPefResults["Climate Change"]) return 0;
+    
+    const baselineCO2 = currentComparisonBaseline.co2PerKg;
+    const currentCO2 = finalPefResults["Climate Change"].total / (massBalanceData?.final_content_weight_kg || 0.2);
+    
+    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) return 0;
+    
+    const reductionPercent = ((baselineCO2 - currentCO2) / baselineCO2 * 100);
+    return Math.max(0, reductionPercent);
         }
 
-        function updateBusinessStory(financialResults, roi, volume) {
-            const businessStory = document.getElementById('businessStory');
-            if (!businessStory) return;
+        function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent) {
+    const businessStory = document.getElementById('businessStory');
+    if (!businessStory) return;
 
-            const scale = getBusinessScale(volume);
-            
-            businessStory.innerHTML = `
-                <div class="story-highlight">
-                    <i class="fas fa-${getBusinessIcon(scale)}"></i>
-                    <strong>${scale} Physics-Based Business Case</strong><br>
-                    Hard environmental data shows <strong>€${formatLargeNumber(financialResults.total)}</strong> annual financial benefit.
-                </div>
-                <p>
-                    <strong>💰 Carbon Liability Savings:</strong> €${formatLargeNumber(financialResults.moneyCarbon)} (EU ETS €85/t)<br>
-                    <strong>⚡ Energy OPEX Reduction:</strong> €${formatLargeNumber(financialResults.moneyEnergy)}<br>  
-                    <strong>🚚 Logistics Fuel Savings:</strong> €${formatLargeNumber(financialResults.moneyFuel)}<br>
-                    <strong>🎯 Total Annual Benefit:</strong> €${formatLargeNumber(financialResults.total)}
-                </p>
-                <div class="story-highlight">
-                    <i class="fas fa-atom"></i>
-                    <strong>Real Physics Engine Active</strong><br>
-                    Calculations based on actual carbon reduction, energy efficiency gains, and logistics optimization from your PEF 3.1 data.
-                </div>
-            `;
+    const scale = getBusinessScale(volume);
+    
+    let performanceLevel = "Good";
+    if (co2ReductionPercent >= 50) performanceLevel = "Excellent";
+    else if (co2ReductionPercent >= 30) performanceLevel = "Strong";
+    else if (co2ReductionPercent >= 15) performanceLevel = "Good";
+    else performanceLevel = "Moderate";
+    
+    businessStory.innerHTML = `
+        <div class="story-highlight">
+            <i class="fas fa-${getBusinessIcon(scale)}"></i>
+            <strong>${scale} Opportunity - ${performanceLevel} Environmental Performance</strong><br>
+            ${co2ReductionPercent.toFixed(1)}% carbon reduction drives <strong>€${formatLargeNumber(financialResults.total)}</strong> annual financial benefit.
+        </div>
+        <p>
+            <strong>💰 Carbon Liability Savings:</strong> €${formatLargeNumber(financialResults.moneyCarbon)} (EU ETS €85/t)<br>
+            <strong>⚡ Energy OPEX Reduction:</strong> €${formatLargeNumber(financialResults.moneyEnergy)}<br>  
+            <strong>🚚 Logistics Fuel Savings:</strong> €${formatLargeNumber(financialResults.moneyFuel)}<br>
+            <strong>📈 Market Premium Potential:</strong> ${((financialResults.moneyEnergy + financialResults.moneyFuel) / financialResults.total * 100).toFixed(1)}% of total benefit<br>
+            <strong>🎯 Total Annual Benefit:</strong> €${formatLargeNumber(financialResults.total)}
+        </p>
+        <div class="story-highlight">
+            <i class="fas fa-chart-line"></i>
+            <strong>Market Advantage</strong><br>
+            ${co2ReductionPercent.toFixed(1)}% lower carbon footprint than ${currentComparisonBaseline?.name || 'industry average'} creates competitive pricing power and attracts eco-conscious consumers.
+        </div>
+    `;
         }
+                                                                           }
 
         // ENHANCE SCENARIO TOGGLE TO TRIGGER PHYSICS CALCULATION
         function toggleScenario(key) {
