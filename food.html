@@ -3614,35 +3614,54 @@ function updateBusinessCase() {
 
         function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent) {
     const businessStory = document.getElementById('businessStory');
-    if (!businessStory) return;
+    if (!businessStory) {
+        console.log('❌ businessStory element not found!');
+        return;
+    }
+
+    console.log('📖 Populating Business Story with:', { 
+        financialTotal: financialResults.total,
+        co2Reduction: co2ReductionPercent 
+    });
 
     const scale = getBusinessScale(volume);
     
-    let performanceLevel = "Good";
-    if (co2ReductionPercent >= 50) performanceLevel = "Excellent";
-    else if (co2ReductionPercent >= 30) performanceLevel = "Strong";
-    else if (co2ReductionPercent >= 15) performanceLevel = "Good";
-    else performanceLevel = "Moderate";
-    
+    let performanceLevel = "Outstanding";
+    if (co2ReductionPercent >= 50) performanceLevel = "World-Class";
+    else if (co2ReductionPercent >= 30) performanceLevel = "Excellent";
+    else if (co2ReductionPercent >= 15) performanceLevel = "Strong";
+    else performanceLevel = "Good";
+
+    // FIX: Add the missing Brand Value Enhancement section
     businessStory.innerHTML = `
         <div class="story-highlight">
             <i class="fas fa-${getBusinessIcon(scale)}"></i>
             <strong>${scale} Opportunity - ${performanceLevel} Environmental Performance</strong><br>
             ${co2ReductionPercent.toFixed(1)}% carbon reduction drives <strong>€${formatLargeNumber(financialResults.total)}</strong> annual financial benefit.
         </div>
+        
         <p>
             <strong>💰 Carbon Liability Savings:</strong> €${formatLargeNumber(financialResults.moneyCarbon)} (EU ETS €85/t)<br>
             <strong>⚡ Energy OPEX Reduction:</strong> €${formatLargeNumber(financialResults.moneyEnergy)}<br>  
             <strong>🚚 Logistics Fuel Savings:</strong> €${formatLargeNumber(financialResults.moneyFuel)}<br>
-            <strong>📈 Market Premium Potential:</strong> ${((financialResults.moneyEnergy + financialResults.moneyFuel) / financialResults.total * 100).toFixed(1)}% of total benefit<br>
+            <strong>📈 Market Premium Potential:</strong> ${Math.min(co2ReductionPercent * 1.5, 25).toFixed(1)}% achievable<br>
             <strong>🎯 Total Annual Benefit:</strong> €${formatLargeNumber(financialResults.total)}
         </p>
+        
         <div class="story-highlight">
             <i class="fas fa-chart-line"></i>
             <strong>Market Advantage</strong><br>
             ${co2ReductionPercent.toFixed(1)}% lower carbon footprint than ${currentComparisonBaseline?.name || 'industry average'} creates competitive pricing power and attracts eco-conscious consumers.
         </div>
+        
+        <div class="story-highlight">
+            <i class="fas fa-shield-alt"></i>
+            <strong>Brand Value Enhancement</strong><br>
+            Science-based sustainability data builds consumer trust and loyalty. Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
+        </div>
     `;
+
+    console.log('✅ Business Story populated successfully');
         }
         // ENHANCE SCENARIO TOGGLE TO TRIGGER PHYSICS CALCULATION
         function toggleScenario(key) {
