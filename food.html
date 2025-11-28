@@ -2727,14 +2727,6 @@
                 landUsePerKg: 85,
                 fossilPerKg: 2.1
             },
-            'plant-burger-alt': {
-    name: 'Plant-Based Burger Alternative',
-    category: 'food',
-    co2PerKg: 3.2,  // Real plant burger average from ingredients.js
-    waterPerKg: 1.8,
-    landUsePerKg: 450,
-    fossilPerKg: 8.5
-},
             'juice-drink': {
                 name: 'Conventional Juice Drink',
                 category: 'beverage',
@@ -2809,16 +2801,9 @@
                 return 'milk-product';
             }
             
-            // Check product name for clues (ENHANCED: Meat vs. Plant Flip)
-if (name.includes('burger') || name.includes('patty') || name.includes('sausage')) {
-    if (name.includes('beef') || name.includes('meat') || name.includes('chicken') || name.includes('pork') || name.includes('lamb')) {
-        return 'plant-burger-alt'; // Meat product: Compare against plant-based alternative
-    } else if (name.includes('plant') || name.includes('vegan') || name.includes('pea') || name.includes('soy')) {
-        return 'beef-product'; // Plant product: Compare against meat (as before)
-    } else {
-        return 'beef-product'; // Default burger to meat comparison
-    }
-        }
+            // Check product name for clues
+            if (name.includes('burger') || name.includes('patty') || name.includes('sausage')) {
+                return 'beef-product';
             }
             if (name.includes('pizza')) return 'cheese-product';
             if (name.includes('coffee') || name.includes('espresso') || name.includes('latte')) return 'coffee-product';
@@ -2892,35 +2877,18 @@ if (name.includes('burger') || name.includes('patty') || name.includes('sausage'
                     {name: "Soy Milk", val: 0.9}
                 ];
             } else if (baseline === UNIVERSAL_BASELINES['beef-product']) {
-    list = [
-        {name: "Your Product", val: myCo2, highlight: true},
-        {name: "Beef Burger (Baseline)", val: 32.0},
-        {name: "Chicken Burger", val: 6.0},
-        {name: "Pork Burger", val: 7.5}
-    ];
-} 
-// ADD THIS FLIP FOR MEAT PRODUCTS
-else if (baseline === UNIVERSAL_BASELINES['plant-burger-alt']) {
-    const productName = document.getElementById('productName').value.toLowerCase();
-    if (productName.includes('beef') || productName.includes('meat')) {
-        list = [
-            {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Plant-Based Alt (Baseline)", val: 3.2},
-            {name: "Soy Burger", val: 2.5},
-            {name: "Pea Burger", val: 2.8}
-        ];
-    } else {
-        list = [
-            {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Industry Average", val: 5.0}
-        ];
-    }
-} else {
-    list = [
-        {name: "Your Product", val: myCo2, highlight: true},
-        {name: "Industry Average", val: 5.0}
-    ];
-        }
+                list = [
+                    {name: "Your Product", val: myCo2, highlight: true},
+                    {name: "Beef Burger (Baseline)", val: 32.0},
+                    {name: "Chicken Burger", val: 6.0},
+                    {name: "Pork Burger", val: 7.5}
+                ];
+            } else {
+                list = [
+                    {name: "Your Product", val: myCo2, highlight: true},
+                    {name: "Industry Average", val: 5.0}
+                ];
+            }
 
             const max = Math.max(...list.map(i=>i.val));
 
@@ -3249,18 +3217,8 @@ else if (baseline === UNIVERSAL_BASELINES['plant-burger-alt']) {
         function calculateHardFinancialMath(results, volume, scenarios) {
             console.log("💰 [Financial Engine] Starting calculation for volume:", volume);
 
-            // FALLBACK FOR MISSING BASELINE (SURGICAL FIX FOR DATA FLOW)
-            if (!currentComparisonBaseline) {
-                currentComparisonBaseline = {
-                    co2PerKg: 30.8,
-                    fossilPerKg: 20.8,
-                    name: 'Conventional Beef Product (Fallback)'
-                };
-                console.log('🔧 [Financial Engine] Applied fallback baseline to ensure non-zero financial conversion');
-            }
-
             // 1. DATA INTEGRITY CHECK
-            if (!results || !results.finalPefResults) {
+            if (!results || !results.finalPefResults || !currentComparisonBaseline) {
                 console.error("❌ [Financial Engine] Missing core physics data. Aborting.");
                 return { moneyCarbon: 0, moneyEnergy: 0, moneyFuel: 0, total: 0, metrics: { totalTonsCo2Saved: 0, fuelLitersSaved: 0, totalMJSaved: 0 } };
             }
@@ -3555,7 +3513,7 @@ function updateBusinessCase() {
             ${co2ReductionPercent.toFixed(1)}% lower carbon footprint than ${currentComparisonBaseline?.name || 'industry average'} creates competitive pricing power and attracts eco-conscious consumers.
         </div>
     `;
-    }
+        }
         // ENHANCE SCENARIO TOGGLE TO TRIGGER PHYSICS CALCULATION
         function toggleScenario(key) {
             activeScenarios[key] = !activeScenarios[key];
@@ -3600,7 +3558,7 @@ function updateBusinessCase() {
                 const option = document.createElement('option');
                 option.value = key;
                 const dqrQuality = foodCalculationEngine.getDQRQualityLevel(ingredient.data.metadata.dqr_overall);
-                option.textContent = `\( {ingredient.name} ( \){dqrQuality.level} DQR)`;
+                option.textContent = `${ingredient.name} (${dqrQuality.level} DQR)`;
                 select.appendChild(option);
             }
             
@@ -3722,7 +3680,7 @@ function updateBusinessCase() {
                         <div class="ingredient-stats">
                             ${ingredientData.data.pef["Climate Change"]} kg CO₂e/kg • 
                             ${ingredientData.data.pef["Water Use/Scarcity (AWARE)"]} m³ water/kg •
-                            <span class="dqr-badge \( {dqrQuality.class}">DQR: \){dqrQuality.level}</span>
+                            <span class="dqr-badge ${dqrQuality.class}">DQR: ${dqrQuality.level}</span>
                             <span class="badge" style="margin-left: 0.5rem;">±${uncertainty}% uncertainty</span>
                         </div>
                         <div style="margin-top: 0.5rem;">
@@ -3890,7 +3848,7 @@ function updateBusinessCase() {
             storyContent.innerHTML = `
                 <div class="story-highlight">
                     <i class="fas fa-seedling"></i>
-                    <strong>\( {co2Saved.toFixed(1)} kg CO₂e saved vs \){results.comparison.baseline.name}</strong> - equivalent to not driving ${carKm} km in a standard car
+                    <strong>${co2Saved.toFixed(1)} kg CO₂e saved vs ${results.comparison.baseline.name}</strong> - equivalent to not driving ${carKm} km in a standard car
                 </div>
                 <div class="story-highlight">
                     <i class="fas fa-tree"></i>
@@ -3898,7 +3856,7 @@ function updateBusinessCase() {
                 </div>
                 <p>
                     Your product demonstrates <strong>strong environmental performance</strong> with a carbon footprint 
-                    \( {((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(1)}% lower than \){results.comparison.baseline.name}. 
+                    ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(1)}% lower than ${results.comparison.baseline.name}. 
                     This represents a major step forward in sustainable production.
                 </p>
             `;
@@ -3991,7 +3949,7 @@ function updateBusinessCase() {
                 
                 const dqrQuality = foodCalculationEngine.getDQRQualityLevel(results.overallDQR);
                 overallDQRBadge.className = `dqr-badge ${dqrQuality.class}`;
-                overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: \( {dqrQuality.level} (DQR: \){results.overallDQR.toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
+                overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${dqrQuality.level} (DQR: ${results.overallDQR.toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
             } else {
                 dataQualitySection.classList.add('hidden');
             }
@@ -4289,7 +4247,7 @@ function updateBusinessCase() {
                             cornerRadius: 6,
                             callbacks: {
                                 label: function(context) {
-                                    return `\( {context.label}: \){context.raw.toFixed(2)} kg CO₂e`;
+                                    return `${context.label}: ${context.raw.toFixed(2)} kg CO₂e`;
                                 }
                             }
                         }
@@ -4349,7 +4307,7 @@ function updateBusinessCase() {
                                 <div style="font-size: 0.8rem; color: var(--gray);">${score.source}</div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <span class="dqr-badge \( {dqrQuality.class}">DQR: \){score.dqr.toFixed(1)}</span>
+                                <span class="dqr-badge ${dqrQuality.class}">DQR: ${score.dqr.toFixed(1)}</span>
                                 <span class="badge">±${score.uncertainty}% uncertainty</span>
                             </div>
                         </div>
@@ -4388,18 +4346,18 @@ function updateBusinessCase() {
                         <div class="audit-category">
                             <div class="audit-category-header">
                                 <span>${category}</span>
-                                <span class="pef-value">\( {formatPEFValue(cat.total)} \){cat.unit}</span>
+                                <span class="pef-value">${formatPEFValue(cat.total)} ${cat.unit}</span>
                             </div>
                             
                             <div class="audit-component">
                                 <div class="audit-component-header">
                                     <span>Ingredients</span>
-                                    <span>\( {formatPEFValue(cat.contribution_tree.Ingredients.total)} \){cat.unit}</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Ingredients.total)} ${cat.unit}</span>
                                 </div>
                                 ${cat.contribution_tree.Ingredients.components.map(comp => `
                                     <div class="audit-item">
                                         <span class="audit-item-name">${comp.name}</span>
-                                        <span class="audit-item-value">\( {formatPEFValue(comp.subtotal)} \){cat.unit}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
                                     </div>
                                 `).join('')}
                             </div>
@@ -4408,12 +4366,12 @@ function updateBusinessCase() {
                             <div class="audit-component">
                                 <div class="audit-component-header">
                                     <span>Manufacturing</span>
-                                    <span>\( {formatPEFValue(cat.contribution_tree.Manufacturing.total)} \){cat.unit}</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Manufacturing.total)} ${cat.unit}</span>
                                 </div>
                                 ${cat.contribution_tree.Manufacturing.components.map(comp => `
                                     <div class="audit-item">
                                         <span class="audit-item-name">${comp.name}</span>
-                                        <span class="audit-item-value">\( {formatPEFValue(comp.subtotal)} \){cat.unit}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
                                     </div>
                                 `).join('')}
                             </div>
@@ -4423,12 +4381,12 @@ function updateBusinessCase() {
                             <div class="audit-component">
                                 <div class="audit-component-header">
                                     <span>Transport</span>
-                                    <span>\( {formatPEFValue(cat.contribution_tree.Transport.total)} \){cat.unit}</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Transport.total)} ${cat.unit}</span>
                                 </div>
                                 ${cat.contribution_tree.Transport.components.map(comp => `
                                     <div class="audit-item">
                                         <span class="audit-item-name">${comp.name}</span>
-                                        <span class="audit-item-value">\( {formatPEFValue(comp.subtotal)} \){cat.unit}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
                                     </div>
                                 `).join('')}
                             </div>
@@ -4438,12 +4396,12 @@ function updateBusinessCase() {
                             <div class="audit-component">
                                 <div class="audit-component-header">
                                     <span>Packaging</span>
-                                    <span>\( {formatPEFValue(cat.contribution_tree.Packaging.total)} \){cat.unit}</span>
+                                    <span>${formatPEFValue(cat.contribution_tree.Packaging.total)} ${cat.unit}</span>
                                 </div>
                                 ${cat.contribution_tree.Packaging.components.map(comp => `
                                     <div class="audit-item">
                                         <span class="audit-item-name">${comp.name}</span>
-                                        <span class="audit-item-value">\( {formatPEFValue(comp.subtotal)} \){cat.unit}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
                                     </div>
                                 `).join('')}
                             </div>
