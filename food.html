@@ -3221,22 +3221,32 @@ function calculateHardFinancialMath(results, volume, scenarios) {
     const base = currentComparisonBaseline || UNIVERSAL_BASELINES['beef-product'];
     const productWeight = massBalanceData?.final_content_weight_kg || 0.2;
     
-    // USE ACTUAL HARD PHYSICS DATA
+    // FIX: Convert baseline from per-kg to per-product, then compare totals
     const baselineCO2 = base.co2PerKg * productWeight;
     const currentCO2 = results.finalPefResults["Climate Change"]?.total || 0;
     
     const baselineEnergy = base.fossilPerKg * productWeight;
     const currentEnergy = results.finalPefResults["Resource Use, fossils"]?.total || 0;
     
+    console.log('💰 FINANCIAL PHYSICS DEBUG:', {
+        productWeight,
+        baselineCO2,
+        currentCO2, 
+        baselineEnergy,
+        currentEnergy,
+        co2Delta: baselineCO2 - currentCO2,
+        energyDelta: baselineEnergy - currentEnergy
+    });
+    
     // 1. CARBON LIABILITY (Your Hard Physics)
-    const co2DeltaPerUnit = Math.max(0.1, baselineCO2 - currentCO2); // Minimum 0.1 to avoid zero
+    const co2DeltaPerUnit = Math.max(0.1, baselineCO2 - currentCO2);
     const totalTonsCo2Saved = (co2DeltaPerUnit * volume) / 1000;
-    const moneyCarbon = totalTonsCo2Saved * 85; // Your EU ETS pricing
+    const moneyCarbon = totalTonsCo2Saved * 85;
 
     // 2. ENERGY OPEX (Your Hard Physics) 
-    const energyDeltaMJ = Math.max(1, baselineEnergy - currentEnergy); // Minimum 1 to avoid zero
+    const energyDeltaMJ = Math.max(1, baselineEnergy - currentEnergy);
     const totalMJSaved = energyDeltaMJ * volume;
-    const moneyEnergy = totalMJSaved * 0.02; // Your energy cost
+    const moneyEnergy = totalMJSaved * 0.02;
 
     // 3. LOGISTICS FUEL (Your Hard Physics)
     let transportDistance = scenarios.local ? 50 : 500;
@@ -3251,7 +3261,7 @@ function calculateHardFinancialMath(results, volume, scenarios) {
     const transportCO2Reduction = Math.max(0.1, baseTransportEmissions - optimizedTransportEmissions);
     
     const fuelLitersSaved = (transportCO2Reduction * volume) / 2.68;
-    const moneyFuel = fuelLitersSaved * 1.75; // Your diesel cost
+    const moneyFuel = fuelLitersSaved * 1.75;
 
     const total = moneyCarbon + moneyEnergy + moneyFuel;
 
@@ -3267,7 +3277,8 @@ function calculateHardFinancialMath(results, volume, scenarios) {
             transportCO2Reduction: transportCO2Reduction * volume
         }
     };
-        }
+}
+        
         function updateHardFinancialLedger(financialResults, volume) {
             const tbody = document.getElementById('ledgerBody');
             if (!tbody) return;
