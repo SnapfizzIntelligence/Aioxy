@@ -3213,72 +3213,95 @@
                    (category.contribution_tree.Packaging.total || 0);
         }
       
-function calculateHardFinancialMath(results, volume, scenarios) {
-    if (!results || !results.finalPefResults) {
-        return { moneyCarbon: 0, moneyEnergy: 0, moneyFuel: 0, total: 0, metrics: {} };
-    }
+              // ================== FIXED FINANCIAL ENGINE (SURGICAL REPLACEMENT) ==================
+        function calculateHardFinancialMath(results, volume, scenarios) {
+            console.log("💰 [Financial Engine] Starting calculation for volume:", volume);
 
-    const base = currentComparisonBaseline || UNIVERSAL_BASELINES['beef-product'];
-    const productWeight = massBalanceData?.final_content_weight_kg || 0.2;
-    
-    // FIX: Convert baseline from per-kg to per-product, then compare totals
-    const baselineCO2 = base.co2PerKg * productWeight;
-    const currentCO2 = results.finalPefResults["Climate Change"]?.total || 0;
-    
-    const baselineEnergy = base.fossilPerKg * productWeight;
-    const currentEnergy = results.finalPefResults["Resource Use, fossils"]?.total || 0;
-    
-    console.log('💰 FINANCIAL PHYSICS DEBUG:', {
-        productWeight,
-        baselineCO2,
-        currentCO2, 
-        baselineEnergy,
-        currentEnergy,
-        co2Delta: baselineCO2 - currentCO2,
-        energyDelta: baselineEnergy - currentEnergy
-    });
-    
-    // 1. CARBON LIABILITY (Your Hard Physics)
-    const co2DeltaPerUnit = Math.max(0.1, baselineCO2 - currentCO2);
-    const totalTonsCo2Saved = (co2DeltaPerUnit * volume) / 1000;
-    const moneyCarbon = totalTonsCo2Saved * 85;
+            // 1. DATA INTEGRITY CHECK
+            if (!results || !results.finalPefResults || !currentComparisonBaseline) {
+                console.error("❌ [Financial Engine] Missing core physics data. Aborting.");
+                return { moneyCarbon: 0, moneyEnergy: 0, moneyFuel: 0, total: 0, metrics: { totalTonsCo2Saved: 0, fuelLitersSaved: 0, totalMJSaved: 0 } };
+            }
 
-    // 2. ENERGY OPEX (Your Hard Physics) 
-    const energyDeltaMJ = Math.max(1, baselineEnergy - currentEnergy);
-    const totalMJSaved = energyDeltaMJ * volume;
-    const moneyEnergy = totalMJSaved * 0.02;
+            // 2. NORMALIZE PHYSICS UNITS (Crucial Fix)
+            // We must convert everything to "Per Unit" before scaling to Volume
+            const productWeightKg = results.finalContentWeight || 
+                                   (massBalanceData ? massBalanceData.final_content_weight_kg : 0.2) || 
+                                   parseFloat(document.getElementById('productWeight').value);
 
-    // 3. LOGISTICS FUEL (Your Hard Physics)
-    let transportDistance = scenarios.local ? 50 : 500;
-    const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0.05;
-    const finalPackagingWeight = scenarios.lightweight ? packagingWeight * 0.8 : packagingWeight;
-    
-    const transportMode = document.getElementById('transportMode')?.value || 'road';
-    const transportData = aioxyData.transportation[transportMode] || aioxyData.transportation.road;
-    
-    const baseTransportEmissions = (productWeight + packagingWeight) * 500 * transportData.co2 / 1000;
-    const optimizedTransportEmissions = (productWeight + finalPackagingWeight) * transportDistance * transportData.co2 / 1000;
-    const transportCO2Reduction = Math.max(0.1, baseTransportEmissions - optimizedTransportEmissions);
-    
-    const fuelLitersSaved = (transportCO2Reduction * volume) / 2.68;
-    const moneyFuel = fuelLitersSaved * 1.75;
+            // Get Current Physics (Absolute values for this specific product weight)
+            const currentCo2Absolute = results.finalPefResults["Climate Change"]?.total || 0;
+            const currentFossilAbsolute = results.finalPefResults["Resource Use, fossils"]?.total || 0;
 
-    const total = moneyCarbon + moneyEnergy + moneyFuel;
+            // Get Baseline Physics (Database is Per Kg, so we must multiply by weight)
+            const baselineCo2Absolute = currentComparisonBaseline.co2PerKg * productWeightKg;
+            const baselineFossilAbsolute = currentComparisonBaseline.fossilPerKg * productWeightKg;
 
-    return {
-        moneyCarbon: moneyCarbon,
-        moneyEnergy: moneyEnergy,
-        moneyFuel: moneyFuel,
-        total: total,
-        metrics: {
-            totalTonsCo2Saved: totalTonsCo2Saved,
-            fuelLitersSaved: fuelLitersSaved,
-            totalMJSaved: totalMJSaved,
-            transportCO2Reduction: transportCO2Reduction * volume
+            console.log(`📊 [Financial Engine] Physics Delta (Per Unit):
+                Baseline CO2: ${baselineCo2Absolute.toFixed(4)} kg
+                Current CO2:  ${currentCo2Absolute.toFixed(4)} kg
+                Weight:       ${productWeightKg} kg`);
+
+            // 3. CALCULATE PHYSICAL SAVINGS (Per Unit)
+            // Using Math.max to prevent negative financial values on edge cases
+            const co2SavedPerUnitKg = Math.max(0, baselineCo2Absolute - currentCo2Absolute);
+            const fossilSavedPerUnitMJ = Math.max(0, baselineFossilAbsolute - currentFossilAbsolute);
+
+            // 4. SCALE TO ENTERPRISE VOLUME
+            const totalCo2SavedKg = co2SavedPerUnitKg * volume;
+            const totalFossilSavedMJ = fossilSavedPerUnitMJ * volume;
+
+            // 5. FINANCIAL CONVERSION (Hard Numbers)
+            
+            // A. Carbon Liability (Scope 3 Reduction Value)
+            // Based on EU ETS 2024/2025 avg (~€85/tonne) + Internal Carbon Pricing
+            const moneyCarbon = (totalCo2SavedKg / 1000) * 85;
+
+            // B. Energy OPEX (Fossil Resource Efficiency)
+            // Industrial energy mix average cost (~€0.04 per MJ)
+            const moneyEnergy = totalFossilSavedMJ * 0.04;
+
+            // C. Logistics Fuel (Transport Physics)
+            const transportMode = document.getElementById('transportMode')?.value || 'road';
+            const isLocal = scenarios.local;
+            const isLightweight = scenarios.lightweight;
+
+            // Distance Delta
+            const distanceBaseline = 500; // Industry standard baseline
+            const distanceOptimized = isLocal ? 50 : (parseFloat(document.getElementById('transportDistance')?.value) || 300);
+
+            // Weight Delta (Packaging)
+            const packagingWeight = parseFloat(document.getElementById('packagingWeight')?.value) || 0.05;
+            const pkgWeightOptimized = isLightweight ? packagingWeight * 0.8 : packagingWeight;
+
+            // Ton-Km Calculation (The standard logistics metric)
+            const massBaselineTon = (productWeightKg + packagingWeight) / 1000;
+            const massOptimizedTon = (productWeightKg + pkgWeightOptimized) / 1000;
+
+            const tonKmBaseline = massBaselineTon * distanceBaseline * volume;
+            const tonKmOptimized = massOptimizedTon * distanceOptimized * volume;
+
+            // Diesel conversion: ~0.03L per ton-km (Heavy truck average)
+            // Price: ~€1.75/L (EU Avg Diesel)
+            const dieselLitersSaved = Math.max(0, (tonKmBaseline - tonKmOptimized) * 0.03);
+            const moneyFuel = dieselLitersSaved * 1.75;
+
+            const totalMoney = moneyCarbon + moneyEnergy + moneyFuel;
+
+            console.log(`✅ [Financial Engine] Complete. Total Benefit: €${totalMoney.toFixed(2)}`);
+
+            return {
+                moneyCarbon: moneyCarbon,
+                moneyEnergy: moneyEnergy,
+                moneyFuel: moneyFuel,
+                total: totalMoney,
+                metrics: {
+                    totalTonsCo2Saved: totalCo2SavedKg / 1000,
+                    totalMJSaved: totalFossilSavedMJ,
+                    fuelLitersSaved: dieselLitersSaved
+                }
+            };
         }
-    };
-}
-        
         function updateHardFinancialLedger(financialResults, volume) {
             const tbody = document.getElementById('ledgerBody');
             if (!tbody) return;
