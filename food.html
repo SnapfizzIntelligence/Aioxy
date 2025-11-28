@@ -3347,61 +3347,71 @@ function calculateHardFinancialMath(results, volume, scenarios) {
         }
 
         // ================== UPDATED BUSINESS CASE FUNCTION ==================
-        function updateBusinessCase() {
-            if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
-                return;
-            }
+function updateBusinessCase() {
+    // === ADD THESE DEBUG LINES AT THE TOP ===
+    console.log('🔄 updateBusinessCase CALLED');
+    console.log('📊 finalPefResults:', finalPefResults);
+    console.log('🎯 currentComparisonBaseline:', currentComparisonBaseline);
+    
+    if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
+        console.log('❌ finalPefResults is empty!');
+        return;
+    }
 
-            const volume = currentAnnualVolume;
-            
-            // APPLY SCENARIO PHYSICS TO GET MODIFIED RESULTS
-            let businessResults = {
-                finalPefResults: finalPefResults,
-                finalContentWeight: massBalanceData?.final_content_weight_kg || 0.2
-            };
+    const volume = currentAnnualVolume;
+    
+    // === ADD DEBUG HERE TOO ===
+    const co2ReductionPercent = calculateCO2ReductionPercent();
+    console.log('🔢 co2ReductionPercent:', co2ReductionPercent);
+    
+    // APPLY SCENARIO PHYSICS TO GET MODIFIED RESULTS
+    let businessResults = {
+        finalPefResults: finalPefResults,
+        finalContentWeight: massBalanceData?.final_content_weight_kg || 0.2
+    };
 
-            if (Object.values(activeScenarios).some(v => v)) {
-                businessResults.finalPefResults = applyScenarioPhysics({
-                    finalPefResults: finalPefResults,
-                    finalContentWeight: massBalanceData?.final_content_weight_kg || 0.2
-                });
-            }
-            
-            // RUN HARD PHYSICS FINANCIAL CALCULATIONS
-            const financialResults = calculateHardFinancialMath(businessResults, volume, activeScenarios);
-            
-            // UPDATE THE LEDGER WITH REAL PHYSICS DATA
-            updateHardFinancialLedger(financialResults, volume);
+    if (Object.values(activeScenarios).some(v => v)) {
+        businessResults.finalPefResults = applyScenarioPhysics({
+            finalPefResults: finalPefResults,
+            finalContentWeight: massBalanceData?.final_content_weight_kg || 0.2
+        });
+    }
+    
+    // RUN HARD PHYSICS FINANCIAL CALCULATIONS
+    const financialResults = calculateHardFinancialMath(businessResults, volume, activeScenarios);
+    console.log('💰 financialResults:', financialResults);
+    
+    // UPDATE THE LEDGER WITH REAL PHYSICS DATA
+    updateHardFinancialLedger(financialResults, volume);
 
-            // CALCULATE ROI BASED ON REAL PHYSICS RESULTS
-            const totalBenefit = financialResults.total;
-            const implementationCost = calculateImplementationCost(volume);
-            const roi = totalBenefit > 0 ? ((totalBenefit * 3 - implementationCost) / implementationCost * 100) : 0;
+    // CALCULATE ROI BASED ON REAL PHYSICS RESULTS
+    const totalBenefit = financialResults.total;
+    const implementationCost = calculateImplementationCost(volume);
+    const roi = totalBenefit > 0 ? ((totalBenefit * 3 - implementationCost) / implementationCost * 100) : 0;
 
-            // CALCULATE MARKET GROWTH FROM ACTUAL ENVIRONMENTAL PERFORMANCE
-            const co2ReductionPercent = calculateCO2ReductionPercent();
-            const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);
-            const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);
+    // CALCULATE MARKET GROWTH FROM ACTUAL ENVIRONMENTAL PERFORMANCE
+    const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);
+    const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);
 
-            // UPDATE UI WITH REAL DATA
-            document.getElementById('roiValue').innerText = Math.max(0, roi).toFixed(0) + "%";
-            document.getElementById('savingsValue').innerText = "€" + formatLargeNumber(financialResults.moneyCarbon);
-            document.getElementById('premiumValue').innerText = premiumPct.toFixed(1) + "%";
-            document.getElementById('marketValue').innerText = marketGrowthPct.toFixed(1) + "%";
+    // UPDATE UI WITH REAL DATA
+    document.getElementById('roiValue').innerText = Math.max(0, roi).toFixed(0) + "%";
+    document.getElementById('savingsValue').innerText = "€" + formatLargeNumber(financialResults.moneyCarbon);
+    document.getElementById('premiumValue').innerText = premiumPct.toFixed(1) + "%";
+    document.getElementById('marketValue').innerText = marketGrowthPct.toFixed(1) + "%";
 
-            // UPDATE ROI DISPLAY
-            document.getElementById('roiDisplay').innerText = Math.max(0, roi).toFixed(0) + "%";
+    // UPDATE ROI DISPLAY
+    document.getElementById('roiDisplay').innerText = Math.max(0, roi).toFixed(0) + "%";
 
-            // UPDATE COST BREAKDOWN
-            document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
-            document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
-            document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(totalBenefit);
-            document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber(Math.max(0, (totalBenefit * 3) - implementationCost));
+    // UPDATE COST BREAKDOWN
+    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
+    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
+    document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(totalBenefit);
+    document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber(Math.max(0, (totalBenefit * 3) - implementationCost));
 
-            // UPDATE BUSINESS STORY WITH REAL PHYSICS
-            updateBusinessStory(financialResults, roi, volume);
-        }
-
+    // UPDATE BUSINESS STORY WITH REAL PHYSICS
+    console.log('📖 Calling updateBusinessStory with:', { co2ReductionPercent, financialResults });
+    updateBusinessStory(financialResults, roi, volume, co2ReductionPercent);
+                                                                               }
         // ================== SUPPORTING FUNCTIONS ==================
         function calculateImplementationCost(volume) {
             if (volume <= 1000) return 5000;
