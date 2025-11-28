@@ -1997,7 +1997,7 @@
                             
                             <div style="margin-top: 1.5rem; text-align: right;">
                                 <div style="font-size: 0.9rem; color: gray;">Total Annual Benefit</div>
-                                <div style="font-size: 2rem; font-weight: 800; color: var(--success);" id="totalBenefit">€0</div>
+                                <div style="font-size: 2rem; font-weight: 800; color: var(--success);" id="totalBenefitSummary">€0</div>
                             </div>
                         </div>
 
@@ -3559,7 +3559,7 @@ function updateBusinessCase() {
 
     // UPDATE UI WITH REAL DATA
     document.getElementById('roiValue').innerText = Math.max(0, roi).toFixed(0) + "%";
-    document.getElementById('savingsValue').innerText = "€" + formatLargeNumber(financialResults.moneyCarbon);
+    document.getElementById('savingsValue').innerText = "€" + formatLargeNumber(financialResults.total);
     document.getElementById('premiumValue').innerText = premiumPct.toFixed(1) + "%";
     document.getElementById('marketValue').innerText = marketGrowthPct.toFixed(1) + "%";
 
@@ -3569,7 +3569,7 @@ function updateBusinessCase() {
     // UPDATE COST BREAKDOWN
     document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
     document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
-    document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(totalBenefit);
+    document.getElementById('totalBenefitSummary').innerText = "€" + Math.round(totalBenefit).toLocaleString();
     document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber(Math.max(0, (totalBenefit * 3) - implementationCost));
 
     // UPDATE BUSINESS STORY WITH REAL PHYSICS
