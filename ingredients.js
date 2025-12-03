@@ -239,71 +239,28 @@ const aioxyData = {
     }
   },
         "vitamin-b12": { 
-  "name": "Vitamin B12 (Cobalamin, Synthetic Production)",
-  "loss": 0.001,
-  "data": {
-    "pef": { 
-      "Climate Change": 45.2, "Ozone Depletion": 0.0000015, "Human Toxicity, non-cancer": 0.0032, 
-      "Human Toxicity, cancer": 0.000045, "Particulate Matter": 0.000009, "Ionizing Radiation": 0.32, 
-      "Photochemical Ozone Formation": 0.068, "Acidification": 0.34, "Eutrophication, terrestrial": 1.2, 
-      "Eutrophication, freshwater": 0.032, "Eutrophication, marine": 0.12, "Ecotoxicity, freshwater": 156.0, 
-      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.0045, 
-      "Resource Use, fossils": 189.0
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for supplements)",
-      "source_activity": "Vitamin B12, synthetic, at plant",
-      "source_uuid": "eco-3.8-vitamin-b12-001",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 2.0, "GR": 2.5, "TiR": 2.0, "C": 1.8, "P": 1.5 },
-      "dqr_overall": 1.9
+  "olive-oil-evoo-es": { 
+    name: "Olive Oil (EVOO, Spain)",
+    loss: 0.02,
+    data: {
+      pef: { 
+        "Climate Change": 2.75, "Ozone Depletion": 0.00000048, "Human Toxicity, non-cancer": 0.00087, 
+        "Human Toxicity, cancer": 0.0000087, "Particulate Matter": 0.00000145, "Ionizing Radiation": 0.115, 
+        "Photochemical Ozone Formation": 0.0068, "Acidification": 0.0195, "Eutrophication, terrestrial": 0.078, 
+        "Eutrophication, freshwater": 0.00195, "Eutrophication, marine": 0.0078, "Ecotoxicity, freshwater": 3.9, 
+        "Land Use": 1220, "Water Use/Scarcity (AWARE)": 4.35, "Resource Use, minerals/metals": 0.00058, 
+        "Resource Use, fossils": 7.8
+      },
+      metadata: {
+        source_dataset: "AGRIBALYSE 3.2",
+        source_activity: "Olive oil, EVOO, at farm",
+        source_uuid: "agb-3.2-8a9d3bc-olive-023",
+        allocation_method: "Economic Allocation",
+        dqr: { TeR: 1.5, GR: 2.0, TiR: 1.0, C: 1.5, P: 1.0 },
+        dqr_overall: 1.4
+      }
     }
-  }
-},
-"iron-supplement": { 
-  "name": "Iron (Ferrous Sulfate, Supplement)",
-  "loss": 0.001,
-  "data": {
-    "pef": { 
-      "Climate Change": 12.5, "Ozone Depletion": 0.00000042, "Human Toxicity, non-cancer": 0.00089, 
-      "Human Toxicity, cancer": 0.000011, "Particulate Matter": 0.0000022, "Ionizing Radiation": 0.056, 
-      "Photochemical Ozone Formation": 0.011, "Acidification": 0.056, "Eutrophication, terrestrial": 0.23, 
-      "Eutrophication, freshwater": 0.0061, "Eutrophication, marine": 0.023, "Ecotoxicity, freshwater": 9.8, 
-      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.00078, 
-      "Resource Use, fossils": 52.0
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for minerals)",
-      "source_activity": "Iron supplement, ferrous sulfate, at plant",
-      "source_uuid": "eco-3.8-iron-supplement-002",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 1.8, "GR": 2.2, "TiR": 1.5, "C": 1.6, "P": 1.2 },
-      "dqr_overall": 1.7
-    }
-  }
-},
-"alcohol-ethanol-wheat": { 
-  "name": "Alcohol, Ethanol from Wheat (EU)",
-  "loss": 0.01,
-  "data": {
-    "pef": { 
-      "Climate Change": 1.95, "Ozone Depletion": 0.00000054, "Human Toxicity, non-cancer": 0.00046, 
-      "Human Toxicity, cancer": 0.0000062, "Particulate Matter": 0.0000028, "Ionizing Radiation": 0.078, 
-      "Photochemical Ozone Formation": 0.0062, "Acidification": 0.031, "Eutrophication, terrestrial": 0.13, 
-      "Eutrophication, freshwater": 0.0031, "Eutrophication, marine": 0.013, "Ecotoxicity, freshwater": 5.0, 
-      "Land Use": 120, "Water Use/Scarcity (AWARE)": 0.92, "Resource Use, minerals/metals": 0.00039, 
-      "Resource Use, fossils": 8.1
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2",
-      "source_activity": "Ethanol from wheat, at plant",
-      "source_uuid": "agb-3.2-ethanol-wheat-003",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
-      "dqr_overall": 1.5
-    }
-  }
-},
+  },
 "vinegar-apple": { 
   "name": "Vinegar, from Apple (EU)",
   "loss": 0.01,
@@ -323,28 +280,6 @@ const aioxyData = {
       "allocation_method": "Economic Allocation",
       "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
       "dqr_overall": 1.4
-    }
-  }
-},
-"ascorbic-acid-vitamin-c": { 
-  "name": "Ascorbic Acid (Vitamin C, Synthetic)",
-  "loss": 0.001,
-  "data": {
-    "pef": { 
-      "Climate Change": 6.8, "Ozone Depletion": 0.0000019, "Human Toxicity, non-cancer": 0.0013, 
-      "Human Toxicity, cancer": 0.000017, "Particulate Matter": 0.0000043, "Ionizing Radiation": 0.19, 
-      "Photochemical Ozone Formation": 0.019, "Acidification": 0.095, "Eutrophication, terrestrial": 0.39, 
-      "Eutrophication, freshwater": 0.0095, "Eutrophication, marine": 0.038, "Ecotoxicity, freshwater": 28.0, 
-      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.0019, 
-      "Resource Use, fossils": 28.0
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for additives)",
-      "source_activity": "Ascorbic acid, synthetic, at plant",
-      "source_uuid": "eco-3.8-ascorbic-acid-005",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 1.8, "GR": 2.2, "TiR": 1.5, "C": 1.6, "P": 1.2 },
-      "dqr_overall": 1.7
     }
   }
 },
