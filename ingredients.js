@@ -414,6 +414,50 @@ const aioxyData = {
                 }
             }
         },
+        "water-municipal-eu": { 
+  "name": "Water, municipal supply (EU)",
+  "loss": 0.001,
+  "data": {
+    "pef": { 
+      "Climate Change": 0.00039, "Ozone Depletion": 0.0000000001, "Human Toxicity, non-cancer": 0.00000005, 
+      "Human Toxicity, cancer": 0.0000000006, "Particulate Matter": 0.0000000003, "Ionizing Radiation": 0.000002, 
+      "Photochemical Ozone Formation": 0.00000039, "Acidification": 0.00000195, "Eutrophication, terrestrial": 0.00000078, 
+      "Eutrophication, freshwater": 0.0000000195, "Eutrophication, marine": 0.000000078, "Ecotoxicity, freshwater": 0.0000195, 
+      "Land Use": 0.00039, "Water Use/Scarcity (AWARE)": 0.00039, "Resource Use, minerals/metals": 0.0000001, 
+      "Resource Use, fossils": 0.00039
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Water, municipal supply, at plant",
+      "source_uuid": "agb-3.2-water-municipal-123",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.1, "GR": 1.5, "TiR": 1.0, "C": 1.1, "P": 1.0 },
+      "dqr_overall": 1.1
+    }
+  }
+},
+"soya-protein-concentrate": { 
+  "name": "Soya Protein Concentrate (EU)",
+  "loss": 0.02,
+  "data": {
+    "pef": { 
+      "Climate Change": 3.95, "Ozone Depletion": 0.0000012, "Human Toxicity, non-cancer": 0.00057, 
+      "Human Toxicity, cancer": 0.0000076, "Particulate Matter": 0.0000034, "Ionizing Radiation": 0.16, 
+      "Photochemical Ozone Formation": 0.011, "Acidification": 0.058, "Eutrophication, terrestrial": 0.21, 
+      "Eutrophication, freshwater": 0.0057, "Eutrophication, marine": 0.021, "Ecotoxicity, freshwater": 8.5, 
+      "Land Use": 140, "Water Use/Scarcity (AWARE)": 2.4, "Resource Use, minerals/metals": 0.0012, 
+      "Resource Use, fossils": 17.5
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Soya protein concentrate, at plant",
+      "source_uuid": "agb-3.2-soya-protein-124",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.4, "GR": 1.9, "TiR": 1.0, "C": 1.4, "P": 1.0 },
+      "dqr_overall": 1.4
+    }
+  }
+},
         "potatoes-fresh-eu": { 
             name: "Potatoes, fresh (EU)",
             loss: 0.15,
