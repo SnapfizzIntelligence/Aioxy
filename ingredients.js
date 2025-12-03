@@ -238,6 +238,248 @@ const aioxyData = {
       }
     }
   },
+        "vitamin-b12": { 
+  "name": "Vitamin B12 (Cobalamin, Synthetic Production)",
+  "loss": 0.001,
+  "data": {
+    "pef": { 
+      "Climate Change": 45.2, "Ozone Depletion": 0.0000015, "Human Toxicity, non-cancer": 0.0032, 
+      "Human Toxicity, cancer": 0.000045, "Particulate Matter": 0.000009, "Ionizing Radiation": 0.32, 
+      "Photochemical Ozone Formation": 0.068, "Acidification": 0.34, "Eutrophication, terrestrial": 1.2, 
+      "Eutrophication, freshwater": 0.032, "Eutrophication, marine": 0.12, "Ecotoxicity, freshwater": 156.0, 
+      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.0045, 
+      "Resource Use, fossils": 189.0
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for supplements)",
+      "source_activity": "Vitamin B12, synthetic, at plant",
+      "source_uuid": "eco-3.8-vitamin-b12-001",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 2.0, "GR": 2.5, "TiR": 2.0, "C": 1.8, "P": 1.5 },
+      "dqr_overall": 1.9
+    }
+  }
+},
+"iron-supplement": { 
+  "name": "Iron (Ferrous Sulfate, Supplement)",
+  "loss": 0.001,
+  "data": {
+    "pef": { 
+      "Climate Change": 12.5, "Ozone Depletion": 0.00000042, "Human Toxicity, non-cancer": 0.00089, 
+      "Human Toxicity, cancer": 0.000011, "Particulate Matter": 0.0000022, "Ionizing Radiation": 0.056, 
+      "Photochemical Ozone Formation": 0.011, "Acidification": 0.056, "Eutrophication, terrestrial": 0.23, 
+      "Eutrophication, freshwater": 0.0061, "Eutrophication, marine": 0.023, "Ecotoxicity, freshwater": 9.8, 
+      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.00078, 
+      "Resource Use, fossils": 52.0
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for minerals)",
+      "source_activity": "Iron supplement, ferrous sulfate, at plant",
+      "source_uuid": "eco-3.8-iron-supplement-002",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.8, "GR": 2.2, "TiR": 1.5, "C": 1.6, "P": 1.2 },
+      "dqr_overall": 1.7
+    }
+  }
+},
+"alcohol-ethanol-wheat": { 
+  "name": "Alcohol, Ethanol from Wheat (EU)",
+  "loss": 0.01,
+  "data": {
+    "pef": { 
+      "Climate Change": 1.95, "Ozone Depletion": 0.00000054, "Human Toxicity, non-cancer": 0.00046, 
+      "Human Toxicity, cancer": 0.0000062, "Particulate Matter": 0.0000028, "Ionizing Radiation": 0.078, 
+      "Photochemical Ozone Formation": 0.0062, "Acidification": 0.031, "Eutrophication, terrestrial": 0.13, 
+      "Eutrophication, freshwater": 0.0031, "Eutrophication, marine": 0.013, "Ecotoxicity, freshwater": 5.0, 
+      "Land Use": 120, "Water Use/Scarcity (AWARE)": 0.92, "Resource Use, minerals/metals": 0.00039, 
+      "Resource Use, fossils": 8.1
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Ethanol from wheat, at plant",
+      "source_uuid": "agb-3.2-ethanol-wheat-003",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
+      "dqr_overall": 1.5
+    }
+  }
+},
+"vinegar-apple": { 
+  "name": "Vinegar, from Apple (EU)",
+  "loss": 0.01,
+  "data": {
+    "pef": { 
+      "Climate Change": 0.75, "Ozone Depletion": 0.00000021, "Human Toxicity, non-cancer": 0.00017, 
+      "Human Toxicity, cancer": 0.0000022, "Particulate Matter": 0.0000011, "Ionizing Radiation": 0.044, 
+      "Photochemical Ozone Formation": 0.0022, "Acidification": 0.011, "Eutrophication, terrestrial": 0.044, 
+      "Eutrophication, freshwater": 0.0011, "Eutrophication, marine": 0.0044, "Ecotoxicity, freshwater": 2.6, 
+      "Land Use": 110, "Water Use/Scarcity (AWARE)": 0.44, "Resource Use, minerals/metals": 0.00022, 
+      "Resource Use, fossils": 2.2
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Vinegar from apple, at plant",
+      "source_uuid": "agb-3.2-vinegar-apple-004",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
+      "dqr_overall": 1.4
+    }
+  }
+},
+"ascorbic-acid-vitamin-c": { 
+  "name": "Ascorbic Acid (Vitamin C, Synthetic)",
+  "loss": 0.001,
+  "data": {
+    "pef": { 
+      "Climate Change": 6.8, "Ozone Depletion": 0.0000019, "Human Toxicity, non-cancer": 0.0013, 
+      "Human Toxicity, cancer": 0.000017, "Particulate Matter": 0.0000043, "Ionizing Radiation": 0.19, 
+      "Photochemical Ozone Formation": 0.019, "Acidification": 0.095, "Eutrophication, terrestrial": 0.39, 
+      "Eutrophication, freshwater": 0.0095, "Eutrophication, marine": 0.038, "Ecotoxicity, freshwater": 28.0, 
+      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.0019, 
+      "Resource Use, fossils": 28.0
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for additives)",
+      "source_activity": "Ascorbic acid, synthetic, at plant",
+      "source_uuid": "eco-3.8-ascorbic-acid-005",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.8, "GR": 2.2, "TiR": 1.5, "C": 1.6, "P": 1.2 },
+      "dqr_overall": 1.7
+    }
+  }
+},
+"fruit-veg-concentrate-beetroot": { 
+  "name": "Fruit/Vegetable Concentrate (Beetroot)",
+  "loss": 0.05,
+  "data": {
+    "pef": { 
+      "Climate Change": 1.2, "Ozone Depletion": 0.00000034, "Human Toxicity, non-cancer": 0.00024, 
+      "Human Toxicity, cancer": 0.0000031, "Particulate Matter": 0.00000155, "Ionizing Radiation": 0.067, 
+      "Photochemical Ozone Formation": 0.0034, "Acidification": 0.017, "Eutrophication, terrestrial": 0.068, 
+      "Eutrophication, freshwater": 0.0017, "Eutrophication, marine": 0.0068, "Ecotoxicity, freshwater": 4.1, 
+      "Land Use": 190, "Water Use/Scarcity (AWARE)": 0.68, "Resource Use, minerals/metals": 0.00034, 
+      "Resource Use, fossils": 3.4
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Beetroot concentrate, at plant",
+      "source_uuid": "agb-3.2-beetroot-conc-006",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
+      "dqr_overall": 1.4
+    }
+  }
+},
+"fruit-veg-concentrate-carrot": { 
+  "name": "Fruit/Vegetable Concentrate (Carrot)",
+  "loss": 0.05,
+  "data": {
+    "pef": { 
+      "Climate Change": 0.95, "Ozone Depletion": 0.00000028, "Human Toxicity, non-cancer": 0.00023, 
+      "Human Toxicity, cancer": 0.0000028, "Particulate Matter": 0.0000014, "Ionizing Radiation": 0.056, 
+      "Photochemical Ozone Formation": 0.0028, "Acidification": 0.014, "Eutrophication, terrestrial": 0.056, 
+      "Eutrophication, freshwater": 0.0014, "Eutrophication, marine": 0.0056, "Ecotoxicity, freshwater": 3.3, 
+      "Land Use": 130, "Water Use/Scarcity (AWARE)": 0.56, "Resource Use, minerals/metals": 0.00028, 
+      "Resource Use, fossils": 2.8
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Carrot concentrate, at plant",
+      "source_uuid": "agb-3.2-carrot-conc-007",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
+      "dqr_overall": 1.4
+    }
+  }
+},
+"fruit-veg-concentrate-apple": { 
+  "name": "Fruit/Vegetable Concentrate (Apple)",
+  "loss": 0.05,
+  "data": {
+    "pef": { 
+      "Climate Change": 0.75, "Ozone Depletion": 0.00000022, "Human Toxicity, non-cancer": 0.00018, 
+      "Human Toxicity, cancer": 0.0000022, "Particulate Matter": 0.0000011, "Ionizing Radiation": 0.044, 
+      "Photochemical Ozone Formation": 0.0022, "Acidification": 0.011, "Eutrophication, terrestrial": 0.044, 
+      "Eutrophication, freshwater": 0.0011, "Eutrophication, marine": 0.0044, "Ecotoxicity, freshwater": 2.6, 
+      "Land Use": 110, "Water Use/Scarcity (AWARE)": 0.44, "Resource Use, minerals/metals": 0.00022, 
+      "Resource Use, fossils": 2.2
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Apple concentrate, at plant",
+      "source_uuid": "agb-3.2-apple-conc-008",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
+      "dqr_overall": 1.4
+    }
+  }
+},
+"methylcellulose-e461": { 
+  "name": "Stabiliser, Methylcellulose (E461)",
+  "loss": 0.001,
+  "data": {
+    "pef": { 
+      "Climate Change": 3.2, "Ozone Depletion": 0.00000089, "Human Toxicity, non-cancer": 0.00068, 
+      "Human Toxicity, cancer": 0.0000091, "Particulate Matter": 0.0000043, "Ionizing Radiation": 0.13, 
+      "Photochemical Ozone Formation": 0.0078, "Acidification": 0.039, "Eutrophication, terrestrial": 0.16, 
+      "Eutrophication, freshwater": 0.0039, "Eutrophication, marine": 0.016, "Ecotoxicity, freshwater": 11.5, 
+      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.00078, 
+      "Resource Use, fossils": 13.5
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for food additives)",
+      "source_activity": "Methylcellulose E461, synthetic, at plant",
+      "source_uuid": "eco-3.8-methylcellulose-009",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 2.0, "GR": 2.2, "TiR": 1.5, "C": 1.8, "P": 1.3 },
+      "dqr_overall": 1.8
+    }
+  }
+},
+"flavourings-natural": { 
+  "name": "Flavourings, Natural Extract",
+  "loss": 0.01,
+  "data": {
+    "pef": { 
+      "Climate Change": 8.5, "Ozone Depletion": 0.0000024, "Human Toxicity, non-cancer": 0.00145, 
+      "Human Toxicity, cancer": 0.0000195, "Particulate Matter": 0.0000048, "Ionizing Radiation": 0.185, 
+      "Photochemical Ozone Formation": 0.024, "Acidification": 0.115, "Eutrophication, terrestrial": 0.39, 
+      "Eutrophication, freshwater": 0.0097, "Eutrophication, marine": 0.048, "Ecotoxicity, freshwater": 19.0, 
+      "Land Use": 115, "Water Use/Scarcity (AWARE)": 3.4, "Resource Use, minerals/metals": 0.00195, 
+      "Resource Use, fossils": 29.0
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Natural flavourings extract, at plant",
+      "source_uuid": "agb-3.2-flavourings-natural-010",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 2.0, "GR": 2.5, "TiR": 2.0, "C": 1.8, "P": 1.5 },
+      "dqr_overall": 1.9
+    }
+  }
+},
+"yeast-extract": { 
+  "name": "Yeast Extract (Autolysed)",
+  "loss": 0.01,
+  "data": {
+    "pef": { 
+      "Climate Change": 2.1, "Ozone Depletion": 0.00000059, "Human Toxicity, non-cancer": 0.0005, 
+      "Human Toxicity, cancer": 0.0000067, "Particulate Matter": 0.000003, "Ionizing Radiation": 0.08, 
+      "Photochemical Ozone Formation": 0.0067, "Acidification": 0.033, "Eutrophication, terrestrial": 0.14, 
+      "Eutrophication, freshwater": 0.0033, "Eutrophication, marine": 0.013, "Ecotoxicity, freshwater": 5.2, 
+      "Land Use": 130, "Water Use/Scarcity (AWARE)": 0.95, "Resource Use, minerals/metals": 0.00042, 
+      "Resource Use, fossils": 8.8
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Yeast extract, autolysed, at plant",
+      "source_uuid": "agb-3.2-yeast-extract-011",
+      "allocation_method": "Economic Allocation",
+      "dqr": { "TeR": 1.6, "GR": 2.1, "TiR": 1.0, "C": 1.6, "P": 1.0 },
+      "dqr_overall": 1.6
+    }
+  }
+},
         "oat-base-liquid": { 
             name: "Oat Base Liquid (EU)",
             loss: 0.05,
