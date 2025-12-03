@@ -238,73 +238,7 @@ const aioxyData = {
       }
     }
   },
-        "vitamin-b12": { 
-  "olive-oil-evoo-es": { 
-    name: "Olive Oil (EVOO, Spain)",
-    loss: 0.02,
-    data: {
-      pef: { 
-        "Climate Change": 2.75, "Ozone Depletion": 0.00000048, "Human Toxicity, non-cancer": 0.00087, 
-        "Human Toxicity, cancer": 0.0000087, "Particulate Matter": 0.00000145, "Ionizing Radiation": 0.115, 
-        "Photochemical Ozone Formation": 0.0068, "Acidification": 0.0195, "Eutrophication, terrestrial": 0.078, 
-        "Eutrophication, freshwater": 0.00195, "Eutrophication, marine": 0.0078, "Ecotoxicity, freshwater": 3.9, 
-        "Land Use": 1220, "Water Use/Scarcity (AWARE)": 4.35, "Resource Use, minerals/metals": 0.00058, 
-        "Resource Use, fossils": 7.8
-      },
-      metadata: {
-        source_dataset: "AGRIBALYSE 3.2",
-        source_activity: "Olive oil, EVOO, at farm",
-        source_uuid: "agb-3.2-8a9d3bc-olive-023",
-        allocation_method: "Economic Allocation",
-        dqr: { TeR: 1.5, GR: 2.0, TiR: 1.0, C: 1.5, P: 1.0 },
-        dqr_overall: 1.4
-      }
-    }
-  },
-"vinegar-apple": { 
-  "name": "Vinegar, from Apple (EU)",
-  "loss": 0.01,
-  "data": {
-    "pef": { 
-      "Climate Change": 0.75, "Ozone Depletion": 0.00000021, "Human Toxicity, non-cancer": 0.00017, 
-      "Human Toxicity, cancer": 0.0000022, "Particulate Matter": 0.0000011, "Ionizing Radiation": 0.044, 
-      "Photochemical Ozone Formation": 0.0022, "Acidification": 0.011, "Eutrophication, terrestrial": 0.044, 
-      "Eutrophication, freshwater": 0.0011, "Eutrophication, marine": 0.0044, "Ecotoxicity, freshwater": 2.6, 
-      "Land Use": 110, "Water Use/Scarcity (AWARE)": 0.44, "Resource Use, minerals/metals": 0.00022, 
-      "Resource Use, fossils": 2.2
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2",
-      "source_activity": "Vinegar from apple, at plant",
-      "source_uuid": "agb-3.2-vinegar-apple-004",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
-      "dqr_overall": 1.4
-    }
-  }
-},
-"fruit-veg-concentrate-beetroot": { 
-  "name": "Fruit/Vegetable Concentrate (Beetroot)",
-  "loss": 0.05,
-  "data": {
-    "pef": { 
-      "Climate Change": 1.2, "Ozone Depletion": 0.00000034, "Human Toxicity, non-cancer": 0.00024, 
-      "Human Toxicity, cancer": 0.0000031, "Particulate Matter": 0.00000155, "Ionizing Radiation": 0.067, 
-      "Photochemical Ozone Formation": 0.0034, "Acidification": 0.017, "Eutrophication, terrestrial": 0.068, 
-      "Eutrophication, freshwater": 0.0017, "Eutrophication, marine": 0.0068, "Ecotoxicity, freshwater": 4.1, 
-      "Land Use": 190, "Water Use/Scarcity (AWARE)": 0.68, "Resource Use, minerals/metals": 0.00034, 
-      "Resource Use, fossils": 3.4
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2",
-      "source_activity": "Beetroot concentrate, at plant",
-      "source_uuid": "agb-3.2-beetroot-conc-006",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 1.5, "GR": 2.0, "TiR": 1.0, "C": 1.5, "P": 1.0 },
-      "dqr_overall": 1.4
-    }
-  }
-},
+
 "fruit-veg-concentrate-carrot": { 
   "name": "Fruit/Vegetable Concentrate (Carrot)",
   "loss": 0.05,
@@ -349,50 +283,28 @@ const aioxyData = {
     }
   }
 },
-"methylcellulose-e461": { 
-  "name": "Stabiliser, Methylcellulose (E461)",
-  "loss": 0.001,
-  "data": {
-    "pef": { 
-      "Climate Change": 3.2, "Ozone Depletion": 0.00000089, "Human Toxicity, non-cancer": 0.00068, 
-      "Human Toxicity, cancer": 0.0000091, "Particulate Matter": 0.0000043, "Ionizing Radiation": 0.13, 
-      "Photochemical Ozone Formation": 0.0078, "Acidification": 0.039, "Eutrophication, terrestrial": 0.16, 
-      "Eutrophication, freshwater": 0.0039, "Eutrophication, marine": 0.016, "Ecotoxicity, freshwater": 11.5, 
-      "Land Use": 0.0, "Water Use/Scarcity (AWARE)": 0.0, "Resource Use, minerals/metals": 0.00078, 
-      "Resource Use, fossils": 13.5
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2 (proxied via Ecoinvent 3.8 for food additives)",
-      "source_activity": "Methylcellulose E461, synthetic, at plant",
-      "source_uuid": "eco-3.8-methylcellulose-009",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 2.0, "GR": 2.2, "TiR": 1.5, "C": 1.8, "P": 1.3 },
-      "dqr_overall": 1.8
+  "olive-oil-evoo-es": { 
+    name: "Olive Oil (EVOO, Spain)",
+    loss: 0.02,
+    data: {
+      pef: { 
+        "Climate Change": 2.75, "Ozone Depletion": 0.00000048, "Human Toxicity, non-cancer": 0.00087, 
+        "Human Toxicity, cancer": 0.0000087, "Particulate Matter": 0.00000145, "Ionizing Radiation": 0.115, 
+        "Photochemical Ozone Formation": 0.0068, "Acidification": 0.0195, "Eutrophication, terrestrial": 0.078, 
+        "Eutrophication, freshwater": 0.00195, "Eutrophication, marine": 0.0078, "Ecotoxicity, freshwater": 3.9, 
+        "Land Use": 1220, "Water Use/Scarcity (AWARE)": 4.35, "Resource Use, minerals/metals": 0.00058, 
+        "Resource Use, fossils": 7.8
+      },
+      metadata: {
+        source_dataset: "AGRIBALYSE 3.2",
+        source_activity: "Olive oil, EVOO, at farm",
+        source_uuid: "agb-3.2-8a9d3bc-olive-023",
+        allocation_method: "Economic Allocation",
+        dqr: { TeR: 1.5, GR: 2.0, TiR: 1.0, C: 1.5, P: 1.0 },
+        dqr_overall: 1.4
+      }
     }
-  }
-},
-"flavourings-natural": { 
-  "name": "Flavourings, Natural Extract",
-  "loss": 0.01,
-  "data": {
-    "pef": { 
-      "Climate Change": 8.5, "Ozone Depletion": 0.0000024, "Human Toxicity, non-cancer": 0.00145, 
-      "Human Toxicity, cancer": 0.0000195, "Particulate Matter": 0.0000048, "Ionizing Radiation": 0.185, 
-      "Photochemical Ozone Formation": 0.024, "Acidification": 0.115, "Eutrophication, terrestrial": 0.39, 
-      "Eutrophication, freshwater": 0.0097, "Eutrophication, marine": 0.048, "Ecotoxicity, freshwater": 19.0, 
-      "Land Use": 115, "Water Use/Scarcity (AWARE)": 3.4, "Resource Use, minerals/metals": 0.00195, 
-      "Resource Use, fossils": 29.0
-    },
-    "metadata": {
-      "source_dataset": "AGRIBALYSE 3.2",
-      "source_activity": "Natural flavourings extract, at plant",
-      "source_uuid": "agb-3.2-flavourings-natural-010",
-      "allocation_method": "Economic Allocation",
-      "dqr": { "TeR": 2.0, "GR": 2.5, "TiR": 2.0, "C": 1.8, "P": 1.5 },
-      "dqr_overall": 1.9
-    }
-  }
-},
+  },
 "yeast-extract": { 
   "name": "Yeast Extract (Autolysed)",
   "loss": 0.01,
