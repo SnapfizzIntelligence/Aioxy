@@ -2690,113 +2690,119 @@ const ingredients = {
   }
 };
 
+// Country factors, processing methods, transportation, and packaging should be in separate objects, not inside ingredients
+const countryFactors = {
+  "DE": { name: "Germany", electricityCO2: 200, awareFactor: 24.5 },
+  "FR": { name: "France", electricityCO2: 50, awareFactor: 17.1 },
+  "IT": { name: "Italy", electricityCO2: 250, awareFactor: 49.8 },
+  "ES": { name: "Spain", electricityCO2: 200, awareFactor: 64.7 },
+  "NL": { name: "Netherlands", electricityCO2: 150, awareFactor: 33.6 },
+  "PL": { name: "Poland", electricityCO2: 400, awareFactor: 19.8 },
+  "SE": { name: "Sweden", electricityCO2: 50, awareFactor: 1.3 },
+  "DK": { name: "Denmark", electricityCO2: 50, awareFactor: 14.5 },
+  "BE": { name: "Belgium", electricityCO2: 150, awareFactor: 42.1 },
+  "UK": { name: "United Kingdom", electricityCO2: 250, awareFactor: 22.9 },
+  "IE": { name: "Ireland", electricityCO2: 150, awareFactor: 1.8 },
+  "AT": { name: "Austria", electricityCO2: 150, awareFactor: 2.5 },
+  "FI": { name: "Finland", electricityCO2: 50, awareFactor: 0.5 },
+  "PT": { name: "Portugal", electricityCO2: 200, awareFactor: 43.1 },
+  "GR": { name: "Greece", electricityCO2: 300, awareFactor: 61.2 },
+  "US": { name: "United States", electricityCO2: 290, awareFactor: 32.9 },
+  "CA": { name: "Canada", electricityCO2: 50, awareFactor: 2.2 },
+  "AU": { name: "Australia", electricityCO2: 400, awareFactor: 60.1 },
+  "JP": { name: "Japan", electricityCO2: 350, awareFactor: 36.5 },
+  "CN": { name: "China", electricityCO2: 480, awareFactor: 41.0 },
+  "IN": { name: "India", electricityCO2: 660, awareFactor: 70.4 },
+  "BR": { name: "Brazil", electricityCO2: 150, awareFactor: 3.1 }
+};
 
-// // COUNTRY FACTORS (IEA 2025 + AWARE 2.0) - FULL UPDATE
-    countries: {
-        "DE": { name: "Germany", electricityCO2: 200, awareFactor: 24.5 },
-        "FR": { name: "France", electricityCO2: 50, awareFactor: 17.1 },
-        "IT": { name: "Italy", electricityCO2: 250, awareFactor: 49.8 },
-        "ES": { name: "Spain", electricityCO2: 200, awareFactor: 64.7 },
-        "NL": { name: "Netherlands", electricityCO2: 150, awareFactor: 33.6 },
-        "PL": { name: "Poland", electricityCO2: 400, awareFactor: 19.8 },
-        "SE": { name: "Sweden", electricityCO2: 50, awareFactor: 1.3 },
-        "DK": { name: "Denmark", electricityCO2: 50, awareFactor: 14.5 },
-        "BE": { name: "Belgium", electricityCO2: 150, awareFactor: 42.1 },
-        "UK": { name: "United Kingdom", electricityCO2: 250, awareFactor: 22.9 },
-        "IE": { name: "Ireland", electricityCO2: 150, awareFactor: 1.8 },
-        "AT": { name: "Austria", electricityCO2: 150, awareFactor: 2.5 },
-        "FI": { name: "Finland", electricityCO2: 50, awareFactor: 0.5 },
-        "PT": { name: "Portugal", electricityCO2: 200, awareFactor: 43.1 },
-        "GR": { name: "Greece", electricityCO2: 300, awareFactor: 61.2 },
-        "US": { name: "United States", electricityCO2: 290, awareFactor: 32.9 },
-        "CA": { name: "Canada", electricityCO2: 50, awareFactor: 2.2 },
-        "AU": { name: "Australia", electricityCO2: 400, awareFactor: 60.1 },
-        "JP": { name: "Japan", electricityCO2: 350, awareFactor: 36.5 },
-        "CN": { name: "China", electricityCO2: 480, awareFactor: 41.0 },
-        "IN": { name: "India", electricityCO2: 660, awareFactor: 70.4 },
-        "BR": { name: "Brazil", electricityCO2: 150, awareFactor: 3.1 }
-    },
+const processingMethods = {
+  "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000 },
+  "pasteurization": { co2_impact: 0.075, water_impact: 0.2, yield: 0.995, loss: 0.005 },
+  "sterilization": { co2_impact: 0.15, water_impact: 0.35, yield: 0.985, loss: 0.015 },
+  "baking": { co2_impact: 0.6, water_impact: 0.15, yield: 0.88, loss: 0.120 },
+  "frying": { co2_impact: 0.8, water_impact: 0.25, yield: 0.75, loss: 0.250 },
+  "freezing": { co2_impact: 0.3, water_impact: 0.1, yield: 0.975, loss: 0.025 },
+  "drying": { co2_impact: 2.0, water_impact: 0.2, yield: 0.97, loss: 0.030 },
+  "milling": { co2_impact: 0.045, water_impact: 0.05, yield: 0.78, loss: 0.220 },
+  "mixing": { co2_impact: 0.02, water_impact: 0.05, yield: 0.995, loss: 0.005 },
+  "fermentation": { co2_impact: 0.4, water_impact: 1.1, yield: 0.95, loss: 0.050 },
+  "extrusion": { co2_impact: 0.5, water_impact: 0.3, yield: 0.95, loss: 0.050 },
+  "oat-processing": { co2_impact: 0.12, water_impact: 0.4, yield: 0.98, loss: 0.02 }
+};
 
-    // PROCESSING METHODS
-    processing: {
-        "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000 },
-        "pasteurization": { co2_impact: 0.075, water_impact: 0.2, yield: 0.995, loss: 0.005 },
-        "sterilization": { co2_impact: 0.15, water_impact: 0.35, yield: 0.985, loss: 0.015 },
-        "baking": { co2_impact: 0.6, water_impact: 0.15, yield: 0.88, loss: 0.120 },
-        "frying": { co2_impact: 0.8, water_impact: 0.25, yield: 0.75, loss: 0.250 },
-        "freezing": { co2_impact: 0.3, water_impact: 0.1, yield: 0.975, loss: 0.025 },
-        "drying": { co2_impact: 2.0, water_impact: 0.2, yield: 0.97, loss: 0.030 },
-        "milling": { co2_impact: 0.045, water_impact: 0.05, yield: 0.78, loss: 0.220 },
-        "mixing": { co2_impact: 0.02, water_impact: 0.05, yield: 0.995, loss: 0.005 },
-        "fermentation": { co2_impact: 0.4, water_impact: 1.1, yield: 0.95, loss: 0.050 },
-        "extrusion": { co2_impact: 0.5, water_impact: 0.3, yield: 0.95, loss: 0.050 },
-        "oat-processing": { co2_impact: 0.12, water_impact: 0.4, yield: 0.98, loss: 0.02 }
-    },
+const transportation = {
+  "road": { co2: 0.08, refrigerated_factor: 0.30 },
+  "rail": { co2: 0.02, refrigerated_factor: 0.00 },
+  "sea": { co2: 0.01, refrigerated_factor: 0.75 },
+  "air": { co2: 0.525, refrigerated_factor: 0.00 },
+  "lastmile": { co2: 0.20, refrigerated_factor: 0.00 },
+  "electric_van": { co2: 0.05, refrigerated_factor: 0.10 }
+};
 
-    // TRANSPORTATION (GLEC v3.0)
-    transportation: {
-        "road": { co2: 0.08, refrigerated_factor: 0.30 },
-        "rail": { co2: 0.02, refrigerated_factor: 0.00 },
-        "sea": { co2: 0.01, refrigerated_factor: 0.75 },
-        "air": { co2: 0.525, refrigerated_factor: 0.00 },
-        "lastmile": { co2: 0.20, refrigerated_factor: 0.00 },
-        "electric_van": { co2: 0.05, refrigerated_factor: 0.10 }
-    },
+const packaging = {
+  "cardboard": { 
+    co2_virgin: 1.4, co2_recycled: 0.3, co2_disposal: 0.05, co2_avoided_credit: 1.2,
+    r1_max: 0.85, r2: 0.85, q: 0.90 
+  },
+  "PET": { 
+    co2_virgin: 2.5, co2_recycled: 1.1, co2_disposal: 0.04, co2_avoided_credit: 2.1,
+    r1_max: 0.50, r2: 0.45, q: 0.95 
+  },
+  "rPET": { 
+    co2_virgin: 2.5, co2_recycled: 0.6, co2_disposal: 0.04, co2_avoided_credit: 2.1,
+    r1_max: 1.0, r2: 0.60, q: 0.95 
+  },
+  "HDPE": { 
+    co2_virgin: 2.0, co2_recycled: 0.9, co2_disposal: 0.04, co2_avoided_credit: 1.7,
+    r1_max: 0.50, r2: 0.40, q: 0.90 
+  },
+  "LDPE": { 
+    co2_virgin: 2.2, co2_recycled: 1.0, co2_disposal: 0.04, co2_avoided_credit: 1.8,
+    r1_max: 0.40, r2: 0.40, q: 0.90 
+  },
+  "PP": { 
+    co2_virgin: 2.1, co2_recycled: 0.95, co2_disposal: 0.04, co2_avoided_credit: 1.75,
+    r1_max: 0.50, r2: 0.40, q: 0.90 
+  },
+  "glass": { 
+    co2_virgin: 1.05, co2_recycled: 0.8, co2_disposal: 0.01, co2_avoided_credit: 0.95,
+    r1_max: 0.90, r2: 0.85, q: 1.00 
+  },
+  "aluminum": { 
+    co2_virgin: 9.0, co2_recycled: 0.5, co2_disposal: 0.0, co2_avoided_credit: 8.5,
+    r1_max: 0.90, r2: 0.75, q: 1.00 
+  },
+  "steel": { 
+    co2_virgin: 2.0, co2_recycled: 0.6, co2_disposal: 0.0, co2_avoided_credit: 1.8,
+    r1_max: 0.90, r2: 0.80, q: 1.00 
+  },
+  "PLA": {
+    co2_virgin: 2.0, co2_recycled: 1.5, co2_disposal: 0.4, co2_avoided_credit: 0.1,
+    r1_max: 0.10, r2: 0.01, q: 0.80 
+  },
+  "mycelium": {
+    co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
+    r1_max: 0.0, r2: 1.0, q: 1.00
+  }
+};
 
-    // PACKAGING (CFF COMPLIANT)
-    packaging: {
-        "cardboard": { 
-            co2_virgin: 1.4, co2_recycled: 0.3, co2_disposal: 0.05, co2_avoided_credit: 1.2,
-            r1_max: 0.85, r2: 0.85, q: 0.90 
-        },
-        "PET": { 
-            co2_virgin: 2.5, co2_recycled: 1.1, co2_disposal: 0.04, co2_avoided_credit: 2.1,
-            r1_max: 0.50, r2: 0.45, q: 0.95 
-        },
-        "rPET": { 
-            co2_virgin: 2.5, co2_recycled: 0.6, co2_disposal: 0.04, co2_avoided_credit: 2.1,
-            r1_max: 1.0, r2: 0.60, q: 0.95 
-        },
-        "HDPE": { 
-            co2_virgin: 2.0, co2_recycled: 0.9, co2_disposal: 0.04, co2_avoided_credit: 1.7,
-            r1_max: 0.50, r2: 0.40, q: 0.90 
-        },
-        "LDPE": { 
-            co2_virgin: 2.2, co2_recycled: 1.0, co2_disposal: 0.04, co2_avoided_credit: 1.8,
-            r1_max: 0.40, r2: 0.40, q: 0.90 
-        },
-        "PP": { 
-            co2_virgin: 2.1, co2_recycled: 0.95, co2_disposal: 0.04, co2_avoided_credit: 1.75,
-            r1_max: 0.50, r2: 0.40, q: 0.90 
-        },
-        "glass": { 
-            co2_virgin: 1.05, co2_recycled: 0.8, co2_disposal: 0.01, co2_avoided_credit: 0.95,
-            r1_max: 0.90, r2: 0.85, q: 1.00 
-        },
-        "aluminum": { 
-            co2_virgin: 9.0, co2_recycled: 0.5, co2_disposal: 0.0, co2_avoided_credit: 8.5,
-            r1_max: 0.90, r2: 0.75, q: 1.00 
-        },
-        "steel": { 
-            co2_virgin: 2.0, co2_recycled: 0.6, co2_disposal: 0.0, co2_avoided_credit: 1.8,
-            r1_max: 0.90, r2: 0.80, q: 1.00 
-        },
-        "PLA": {
-            co2_virgin: 2.0, co2_recycled: 1.5, co2_disposal: 0.4, co2_avoided_credit: 0.1,
-            r1_max: 0.10, r2: 0.01, q: 0.80 
-        },
-        "mycelium": {
-            co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
-            r1_max: 0.0, r2: 1.0, q: 1.00
-        }
-    }
-}; 
-for use in other modules
+// For use in other modules
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = ingredients;
+  module.exports = { 
+    ingredients, 
+    countryFactors, 
+    processingMethods, 
+    transportation, 
+    packaging 
+  };
 }
 
 // For browser usage
 if (typeof window !== 'undefined') {
   window.ingredients = ingredients;
-}
+  window.countryFactors = countryFactors;
+  window.processingMethods = processingMethods;
+  window.transportation = transportation;
+  window.packaging = packaging;
+        }
