@@ -3983,59 +3983,60 @@ function updateBusinessCase() {
 
             createEmissionChart(results);
         }
-
         function updateEnvironmentalStory(results) {
-            const environmentalStory = document.getElementById('environmentalStory');
-            const storyContent = document.getElementById('storyContent');
-            const storyComparison = document.getElementById('storyComparison');
+    const environmentalStory = document.getElementById('environmentalStory');
+    const storyContent = document.getElementById('storyContent');
+    const storyComparison = document.getElementById('storyComparison');
 
-            if (!environmentalStory || !storyContent || !storyComparison) return;
+    if (!environmentalStory || !storyContent || !storyComparison) return;
 
-            const co2Saved = results.comparison.co2Saved;
-            const waterSaved = results.comparison.waterSaved;
-            const carKm = Math.round(co2Saved * 1000 / 120);
-            const trees = Math.round(co2Saved / 0.025);
+    // EMPOWERING ENTERPRISE GREETING WITH "HEY"
+    const personalizedGreeting = "Hey Sustainability Champion,";
+    
+    // UNIVERSAL PER KG SAVINGS - WORKS FOR ALL PRODUCTS
+    const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
+    const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
+    
+    // ACCURATE CALCULATIONS (NOW BASED ON PER KG SAVINGS)
+    const carKm = Math.round(co2SavedPerKg * 1000 / 120);
+    const trees = Math.round(co2SavedPerKg / 0.025);
+    
+    storyContent.innerHTML = `
+        <div class="story-highlight">
+            <i class="fas fa-seedling"></i>
+            <strong>${personalizedGreeting} you saved ${co2SavedPerKg.toFixed(1)} kg CO₂ per kilogram!</strong><br>
+            That's ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(0)}% cleaner than ${results.comparison.baseline.name}.
+        </div>
+        <p>
+            Your sustainable product design demonstrates real environmental leadership. 
+            These savings scale with production volume, creating meaningful impact.
+        </p>
+    `;
 
-            environmentalStory.classList.remove('hidden');
-            
-            storyContent.innerHTML = `
-                <div class="story-highlight">
-                    <i class="fas fa-seedling"></i>
-                    <strong>${co2Saved.toFixed(1)} kg CO₂e saved vs ${results.comparison.baseline.name}</strong> - equivalent to not driving ${carKm} km in a standard car
-                </div>
-                <div class="story-highlight">
-                    <i class="fas fa-tree"></i>
-                    <strong>Carbon absorption equivalent to ${trees} trees</strong> - making a real contribution to natural carbon capture
-                </div>
-                <p>
-                    Your product demonstrates <strong>strong environmental performance</strong> with a carbon footprint 
-                    ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(1)}% lower than ${results.comparison.baseline.name}. 
-                    This represents a major step forward in sustainable production.
-                </p>
-            `;
-
-            storyComparison.innerHTML = `
-                <div class="story-item">
-                    <div class="story-icon">🚗</div>
-                    <div class="story-value">${carKm} km</div>
-                    <div class="story-label">Car driving equivalent saved</div>
-                </div>
-                <div class="story-item">
-                    <div class="story-icon">🏠</div>
-                    <div class="story-value">${(co2Saved * 1000 / 12000).toFixed(1)} days</div>
-                    <div class="story-label">Home energy equivalent</div>
-                </div>
-                <div class="story-item">
-                    <div class="story-icon">🌳</div>
-                    <div class="story-value">${trees}</div>
-                    <div class="story-label">Trees for saved CO₂</div>
-                </div>
-                <div class="story-item">
-                    <div class="story-icon">💧</div>
-                    <div class="story-value">${Math.round(waterSaved * 1000 / 1.5)}</div>
-                    <div class="story-label">Water bottles saved</div>
-                </div>
-            `;
+    storyComparison.innerHTML = `
+        <div class="story-item">
+            <div class="story-icon">🚗</div>
+            <div class="story-value">${carKm} km</div>
+            <div class="story-label">Car driving equivalent</div>
+        </div>
+        <div class="story-item">
+            <div class="story-icon">🏠</div>
+            <div class="story-value">${(co2SavedPerKg * 1000 / 12000).toFixed(1)} days</div>
+            <div class="story-label">Home energy equivalent</div>
+        </div>
+        <div class="story-item">
+            <div class="story-icon">🌳</div>
+            <div class="story-value">${trees}</div>
+            <div class="story-label">Trees equivalent</div>
+        </div>
+        <div class="story-item">
+            <div class="story-icon">💧</div>
+            <div class="story-value">${Math.round(waterSavedPerKg * 1000 / 1.5)}</div>
+            <div class="story-label">Water bottles saved</div>
+        </div>
+    `;
+    
+    environmentalStory.classList.remove('hidden');
         }
 
         function updateDataQualityDisplay(results) {
