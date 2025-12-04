@@ -3348,11 +3348,13 @@
     // FALLBACK FOR MISSING BASELINE (SURGICAL FIX FOR DATA FLOW)
     if (!currentComparisonBaseline) {
         currentComparisonBaseline = {
-            co2PerKg: 30.8,
-            fossilPerKg: 20.8,
-            name: 'Conventional Beef Product (Fallback)'
+            co2PerKg: 14.474184,  // ← REAL AGRIBALYSE VALUE
+            fossilPerKg: 24.202021,  // ← Real beef fossil value from AGRIBALYSE
+            waterPerKg: 1.1559368,    // ← Real beef water value
+            landUsePerKg: 965.59624,  // ← Real beef land use
+            name: 'Beef cattle, conventional, national average, at farm gate (AGRIBALYSE 3.2)'
         };
-        console.log('🔧 [Financial Engine] Applied fallback baseline to ensure non-zero financial conversion');
+        console.log('🔧 [Financial Engine] Applied real AGRIBALYSE fallback baseline');
     }
 
     // 1. DATA INTEGRITY CHECK
@@ -3440,6 +3442,8 @@
         }
     };
         }
+        
+        // ================== FIXED: Update Hard Financial Ledger (Remove Math.round) ==================
         function updateHardFinancialLedger(financialResults, volume) {
             const tbody = document.getElementById('ledgerBody');
             if (!tbody) return;
@@ -3450,23 +3454,23 @@
                 <tr>
                     <td><strong>🛡️ Carbon Liability</strong><br><small>EU ETS Avoidance (€85/t CO₂e)</small></td>
                     <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-                    <td class="money-positive">+€${Math.round(moneyCarbon).toLocaleString()}</td>
+                    <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td><strong>⚡ Energy OPEX</strong><br><small>Fossil fuel reduction (PEF Data)</small></td>
                     <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
-                    <td class="money-positive">+€${Math.round(moneyEnergy).toLocaleString()}</td>
+                    <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
                 </tr>
                 <tr>
                     <td><strong>🚚 Logistics Fuel</strong><br><small>Transport optimization</small></td>
                     <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
-                    <td class="money-positive">+€${Math.round(moneyFuel).toLocaleString()}</td>
+                    <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
                 </tr>
             `;
 
             const totalBenefit = document.getElementById('totalBenefit');
             if (totalBenefit) {
-                totalBenefit.innerText = "€" + Math.round(total).toLocaleString();
+                totalBenefit.innerText = "€" + total.toFixed(2);
             }
         }
 
@@ -3501,8 +3505,11 @@
                     // UPDATE RESULTS WITH SCENARIO PHYSICS
                     updateResultsUI(finalResults);
                     
-                    // UPDATE BUSINESS CASE WITH REAL PHYSICS DATA
-                    updateBusinessCase();
+                    // ONLY UPDATE BUSINESS CASE IF WE'RE ON BUSINESS CASE TAB
+                    const businessTab = document.getElementById('business-case-tab');
+                    if (businessTab && !businessTab.classList.contains('hidden')) {
+                        updateBusinessCase();
+                    }
                     
                 } catch (error) {
                     console.error('💥 Calculation error:', error);
@@ -3584,42 +3591,8 @@ function updateBusinessCase() {
     console.log('📖 Calling updateBusinessStory with:', { co2ReductionPercent, financialResults });
     updateBusinessStory(financialResults, roi, volume, co2ReductionPercent);  // <-- Now gets non-zero €/tons → populates highlights/breakdowns
         }
-        // ================== SUPPORTING FUNCTIONS ==================
-        function calculateImplementationCost(volume) {
-            if (volume <= 1000) return 5000;
-            if (volume <= 10000) return 20000;
-            if (volume <= 100000) return 50000;
-            if (volume <= 1000000) return 150000;
-            return 500000;
-        }
-
-        function calculateCO2ReductionPercent() {
-    console.log('🔍 Calculating CO2 Reduction...');
-    console.log('Baseline:', currentComparisonBaseline);
-    console.log('PEF Results:', finalPefResults);
-    console.log('Mass Balance:', massBalanceData);
-    
-    if (!currentComparisonBaseline || !finalPefResults || !finalPefResults["Climate Change"]) {
-        console.log('❌ Missing data for CO2 calculation');
-        return 0;
-    }
-    
-    const baselineCO2 = currentComparisonBaseline.co2PerKg;
-    const currentCO2 = finalPefResults["Climate Change"].total / (massBalanceData?.final_content_weight_kg || 0.2);
-    
-    console.log('Baseline CO2:', baselineCO2, 'Current CO2:', currentCO2);
-    
-    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) {
-        console.log('❌ Invalid CO2 values');
-        return 0;
-    }
-    
-    const reductionPercent = ((baselineCO2 - currentCO2) / baselineCO2 * 100);
-    console.log('✅ CO2 Reduction:', reductionPercent + '%');
-    
-    return Math.max(0, reductionPercent);
-        }
-
+        
+        // ================== FIXED: Update Business Story with Real Numbers ==================
         function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent) {
     const businessStory = document.getElementById('businessStory');
     if (!businessStory) {
@@ -3652,10 +3625,10 @@ function updateBusinessCase() {
         
         <p style="margin: 1rem 0; line-height: 1.6;">
             <strong>💰 Breakdown:</strong><br>
-            • <strong>Carbon Liability Savings:</strong> €${formatLargeNumber(financialResults.moneyCarbon)} (EU ETS avoidance @ €85/t CO₂e)<br>
-            • <strong>⚡ Energy OPEX Reduction:</strong> €${formatLargeNumber(financialResults.moneyEnergy)} from ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ fossil savings (PEF data)<br>
-            • <strong>🚚 Logistics Fuel Savings:</strong> €${formatLargeNumber(financialResults.moneyFuel)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel optimization<br>
-            • <strong>📈 Total Annual Benefit:</strong> €${formatLargeNumber(safeTotal)} (scales linearly with volume)<br>
+            • <strong>Carbon Liability Savings:</strong> €${financialResults.moneyCarbon.toFixed(2)} (EU ETS avoidance @ €85/t CO₂e)<br>
+            • <strong>⚡ Energy OPEX Reduction:</strong> €${financialResults.moneyEnergy.toFixed(2)} from ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ fossil savings (PEF data)<br>
+            • <strong>🚚 Logistics Fuel Savings:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel optimization<br>
+            • <strong>📈 Total Annual Benefit:</strong> €${safeTotal.toFixed(2)} (scales linearly with volume)<br>
             <br>
             <strong>🎯 ROI Projection:</strong> ${roi.toFixed(0)}% over 3 years—implementation recouped in &lt;18 months at current performance.
         </p>
@@ -3675,6 +3648,105 @@ function updateBusinessCase() {
 
     console.log('✅ [Fix] Business Story populated: €' + safeTotal.toFixed(0) + ' benefit, ' + safeReduction + '% reduction');
         }
+
+        // ================== FIXED: Update Results UI - Use Per Kg for Bottom Metrics ==================
+        function updateResultsUI(results) {
+            updateMassBalanceDisplay();
+            updateDataQualityDisplay(results);
+            updateEnvironmentalStory(results);
+            renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline);
+
+            // Update main metrics
+            document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
+            document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
+            document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
+            document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
+            
+            // Calculate savings compared to baseline
+            const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.474184;
+            const baselineWater = currentComparisonBaseline ? currentComparisonBaseline.waterPerKg : 1.1559368;
+            
+            const co2SavingsPercent = ((baselineCO2 - results.co2PerKg) / baselineCO2 * 100).toFixed(1);
+            const waterSavingsPercent = ((baselineWater - results.waterScarcityPerKg) / baselineWater * 100).toFixed(1);
+            
+            document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
+            document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
+
+            // FIXED: Storytelling comparisons - USE PER KG VALUES FOR CONSISTENCY
+            const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
+            const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
+            
+            // THESE SHOULD MATCH THE STORY ABOVE!
+            document.getElementById('carKm').textContent = Math.round(co2SavedPerKg * 1000 / 120) + ' km';
+            document.getElementById('householdEnergy').textContent = (co2SavedPerKg * 1000 / 12000).toFixed(1) + ' days';
+            document.getElementById('treesPlanted').textContent = Math.round(co2SavedPerKg / 0.025) + ' trees';
+            document.getElementById('waterBottles').textContent = Math.round(waterSavedPerKg * 1000 / 1.5) + ' bottles';
+
+            createEmissionChart(results);
+        }
+
+        // ================== FIXED: Update Environmental Story ==================
+        function updateEnvironmentalStory(results) {
+    const environmentalStory = document.getElementById('environmentalStory');
+    const storyContent = document.getElementById('storyContent');
+    const storyComparison = document.getElementById('storyComparison');
+
+    if (!environmentalStory || !storyContent || !storyComparison) return;
+
+    // GET CUSTOMER NAME FROM INPUT FIELD
+    const customerName = document.getElementById('customerName').value || 'Sustainability Champion';
+    
+    // UNIVERSAL PER KG SAVINGS - WORKS FOR ALL PRODUCTS
+    const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
+    const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
+    
+    // DYNAMIC CALCULATIONS BASED ON ACTUAL SAVINGS
+    const carKm = Math.round(co2SavedPerKg * 1000 / 120);
+    const trees = Math.round(co2SavedPerKg / 0.025);
+    const householdEnergy = (co2SavedPerKg * 1000 / 12000).toFixed(1);
+    const waterBottles = Math.round(waterSavedPerKg * 1000 / 1.5);
+    
+    // GET PRODUCT NAME FOR PERSONALIZATION
+    const productName = document.getElementById('productName').value || 'your product';
+    
+    storyContent.innerHTML = `
+        <div class="story-highlight">
+            <i class="fas fa-seedling"></i>
+            <strong>Hey ${customerName}, you saved ${co2SavedPerKg.toFixed(1)} kg CO₂ per kilogram with ${productName}!</strong><br>
+            That's ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(0)}% cleaner than ${results.comparison.baseline.name}.
+        </div>
+        <p>
+            Your sustainable product design demonstrates real environmental leadership. 
+            These savings scale with production volume, creating meaningful impact.
+        </p>
+    `;
+
+    storyComparison.innerHTML = `
+        <div class="story-item">
+            <div class="story-icon">🚗</div>
+            <div class="story-value">${carKm} km</div>
+            <div class="story-label">Car driving equivalent saved</div>
+        </div>
+        <div class="story-item">
+            <div class="story-icon">🏠</div>
+            <div class="story-value">${householdEnergy} days</div>
+            <div class="story-label">Home energy equivalent saved</div>
+        </div>
+        <div class="story-item">
+            <div class="story-icon">🌳</div>
+            <div class="story-value">${trees}</div>
+            <div class="story-label">Trees equivalent planted</div>
+        </div>
+        <div class="story-item">
+            <div class="story-icon">💧</div>
+            <div class="story-value">${waterBottles}</div>
+            <div class="story-label">Water bottles saved</div>
+        </div>
+    `;
+    
+    environmentalStory.classList.remove('hidden');
+        }
+
         // ENHANCE SCENARIO TOGGLE TO TRIGGER PHYSICS CALCULATION
         function toggleScenario(key) {
             activeScenarios[key] = !activeScenarios[key];
@@ -3874,52 +3946,6 @@ function updateBusinessCase() {
             calculateImpact();
         }
 
-        // ================== CORE CALCULATION ENGINE ==================
-        function calculateImpactEnhanced() {
-    if (selectedIngredients.length === 0) {
-        clearResults();
-        return;
-    }
-    
-    const loadingElement = document.getElementById('loadingResults');
-    const resultsContent = document.getElementById('resultsContent');
-    
-    if (loadingElement) loadingElement.classList.remove('hidden');
-    if (resultsContent) resultsContent.classList.add('hidden');
-
-    setTimeout(() => {
-        try {
-            const baseResults = foodCalculationEngine.calculateFoodImpact();
-            
-            // APPLY SCENARIO PHYSICS IF ACTIVE
-            let finalResults = baseResults;
-            if (Object.values(activeScenarios).some(v => v)) {
-                const scenarioPefResults = applyScenarioPhysics(baseResults);
-                finalResults = {
-                    ...baseResults,
-                    finalPefResults: scenarioPefResults,
-                    co2PerKg: scenarioPefResults["Climate Change"]?.total / baseResults.finalContentWeight || 0
-                };
-            }
-            
-            // UPDATE RESULTS WITH SCENARIO PHYSICS
-            updateResultsUI(finalResults);
-            
-            // ONLY UPDATE BUSINESS CASE IF WE'RE ON BUSINESS CASE TAB
-            const businessTab = document.getElementById('business-case-tab');
-            if (businessTab && !businessTab.classList.contains('hidden')) {
-                updateBusinessCase();
-            }
-            
-        } catch (error) {
-            console.error('💥 Calculation error:', error);
-        } finally {
-            if (loadingElement) loadingElement.classList.add('hidden');
-            if (resultsContent) resultsContent.classList.remove('hidden');
-        }
-    }, 100);
-        }
-
         function clearResults() {
             const elements = [
                 'co2Value', 'waterValue', 'landValue', 'fossilValue',
@@ -3956,100 +3982,6 @@ function updateBusinessCase() {
                 currentChart.destroy();
                 currentChart = null;
             }
-        }
-
-        function updateResultsUI(results) {
-            updateMassBalanceDisplay();
-            updateDataQualityDisplay(results);
-            updateEnvironmentalStory(results);
-            renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline);
-
-            // Update main metrics
-            document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
-            document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
-            document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
-            document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
-            
-            // Calculate savings compared to baseline
-            const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
-            const baselineWater = currentComparisonBaseline ? currentComparisonBaseline.waterPerKg : 8.1;
-            
-            const co2SavingsPercent = ((baselineCO2 - results.co2PerKg) / baselineCO2 * 100).toFixed(1);
-            const waterSavingsPercent = ((baselineWater - results.waterScarcityPerKg) / baselineWater * 100).toFixed(1);
-            
-            document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
-            document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
-
-            // Storytelling comparisons
-            const co2Saved = results.comparison.co2Saved;
-            const waterSaved = results.comparison.waterSaved;
-            
-            document.getElementById('carKm').textContent = Math.round(co2Saved * 1000 / 120) + ' km';
-            document.getElementById('householdEnergy').textContent = (co2Saved * 1000 / 12000).toFixed(1) + ' days';
-            document.getElementById('treesPlanted').textContent = Math.round(co2Saved / 0.025) + ' trees';
-            document.getElementById('waterBottles').textContent = Math.round(waterSaved * 1000 / 1.5) + ' bottles';
-
-            createEmissionChart(results);
-        }
-        function updateEnvironmentalStory(results) {
-    const environmentalStory = document.getElementById('environmentalStory');
-    const storyContent = document.getElementById('storyContent');
-    const storyComparison = document.getElementById('storyComparison');
-
-    if (!environmentalStory || !storyContent || !storyComparison) return;
-
-    // GET CUSTOMER NAME FROM INPUT FIELD
-    const customerName = document.getElementById('customerName').value || 'Sustainability Champion';
-    
-    // UNIVERSAL PER KG SAVINGS - WORKS FOR ALL PRODUCTS
-    const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
-    const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
-    
-    // DYNAMIC CALCULATIONS BASED ON ACTUAL SAVINGS
-    const carKm = Math.round(co2SavedPerKg * 1000 / 120);
-    const trees = Math.round(co2SavedPerKg / 0.025);
-    const householdEnergy = (co2SavedPerKg * 1000 / 12000).toFixed(1);
-    const waterBottles = Math.round(waterSavedPerKg * 1000 / 1.5);
-    
-    // GET PRODUCT NAME FOR PERSONALIZATION
-    const productName = document.getElementById('productName').value || 'your product';
-    
-    storyContent.innerHTML = `
-        <div class="story-highlight">
-            <i class="fas fa-seedling"></i>
-            <strong>Hey ${customerName}, you saved ${co2SavedPerKg.toFixed(1)} kg CO₂ per kilogram with ${productName}!</strong><br>
-            That's ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(0)}% cleaner than ${results.comparison.baseline.name}.
-        </div>
-        <p>
-            Your sustainable product design demonstrates real environmental leadership. 
-            These savings scale with production volume, creating meaningful impact.
-        </p>
-    `;
-
-    storyComparison.innerHTML = `
-        <div class="story-item">
-            <div class="story-icon">🚗</div>
-            <div class="story-value">${carKm} km</div>
-            <div class="story-label">Car driving equivalent saved</div>
-        </div>
-        <div class="story-item">
-            <div class="story-icon">🏠</div>
-            <div class="story-value">${householdEnergy} days</div>
-            <div class="story-label">Home energy equivalent saved</div>
-        </div>
-        <div class="story-item">
-            <div class="story-icon">🌳</div>
-            <div class="story-value">${trees}</div>
-            <div class="story-label">Trees equivalent planted</div>
-        </div>
-        <div class="story-item">
-            <div class="story-icon">💧</div>
-            <div class="story-value">${waterBottles}</div>
-            <div class="story-label">Water bottles saved</div>
-        </div>
-    `;
-    
-    environmentalStory.classList.remove('hidden');
         }
 
         function updateDataQualityDisplay(results) {
@@ -4193,7 +4125,7 @@ function updateBusinessCase() {
 
         function calculateScalableBusinessCase(results, annualVolume) {
             const co2PerKg = results.co2PerKg || 0;
-            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 30.8;
+            const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.474184;
             const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
             const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
             
@@ -4306,6 +4238,41 @@ function updateBusinessCase() {
             } else {
                 return Math.round(num).toLocaleString();
             }
+        }
+
+        function calculateImplementationCost(volume) {
+            if (volume <= 1000) return 5000;
+            if (volume <= 10000) return 20000;
+            if (volume <= 100000) return 50000;
+            if (volume <= 1000000) return 150000;
+            return 500000;
+        }
+
+        function calculateCO2ReductionPercent() {
+    console.log('🔍 Calculating CO2 Reduction...');
+    console.log('Baseline:', currentComparisonBaseline);
+    console.log('PEF Results:', finalPefResults);
+    console.log('Mass Balance:', massBalanceData);
+    
+    if (!currentComparisonBaseline || !finalPefResults || !finalPefResults["Climate Change"]) {
+        console.log('❌ Missing data for CO2 calculation');
+        return 0;
+    }
+    
+    const baselineCO2 = currentComparisonBaseline.co2PerKg;
+    const currentCO2 = finalPefResults["Climate Change"].total / (massBalanceData?.final_content_weight_kg || 0.2);
+    
+    console.log('Baseline CO2:', baselineCO2, 'Current CO2:', currentCO2);
+    
+    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) {
+        console.log('❌ Invalid CO2 values');
+        return 0;
+    }
+    
+    const reductionPercent = ((baselineCO2 - currentCO2) / baselineCO2 * 100);
+    console.log('✅ CO2 Reduction:', reductionPercent + '%');
+    
+    return Math.max(0, reductionPercent);
         }
 
         // ================== TAB MANAGEMENT ==================
@@ -4775,4 +4742,4 @@ function updateBusinessCase() {
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
-</html>
+    </html>
