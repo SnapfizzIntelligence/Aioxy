@@ -1427,6 +1427,116 @@ const aioxyData = {
                 }
             }
         },
+        "duck-for-roasting-conventional-at-farm-gate-fr": { 
+            name: "Duck for roasting, conventional, at farm gate",
+            loss: 0.03,
+            data: {
+                pef: { 
+                    "Climate Change": 3.0044383, "Ozone Depletion": 4.4649952e-08, "Human Toxicity, non-cancer": 4.3836749e-08,
+                    "Human Toxicity, cancer": 3.1289941e-09, "Particulate Matter": 4.8740367e-07, "Ionizing Radiation": 0.17855559,
+                    "Photochemical Ozone Formation": 0.0095020865, "Acidification": 0.069222214, "Eutrophication, terrestrial": 0.30084871,
+                    "Eutrophication, freshwater": 0.00052420113, "Eutrophication, marine": 0.018035001, "Ecotoxicity, freshwater": 133.15131,
+                    "Land Use": 209.13257, "Water Use/Scarcity (AWARE)": 1.1464256, "Resource Use, minerals/metals": 9.2065179e-06,
+                    "Resource Use, fossils": 16.982273
+                },
+                metadata: {
+                    source_dataset: "AGRIBALYSE 3.2",
+                    source_activity: "Duck for roasting, conventional, at farm gate {FR} U",
+                    source_uuid: "agb-3.2-duck-for-roasting-conventional-at-farm-gate-fr",
+                    allocation_method: "Economic Allocation",
+                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
+                    dqr_overall: 1.3
+                }
+            }
+        },
+        "kid-goat-conventional-intensive-forage-area-at-farm-gate-fr": { 
+            name: "Kid goat, conventional, intensive forage area, at farm gate",
+            loss: 0.03,
+            data: {
+                pef: { 
+                    "Climate Change": 2.6894057, "Ozone Depletion": 2.0106187e-08, "Human Toxicity, non-cancer": 4.1249992e-08,
+                    "Human Toxicity, cancer": 1.5602221e-09, "Particulate Matter": 4.6412281e-07, "Ionizing Radiation": 0.21283421,
+                    "Photochemical Ozone Formation": 0.0052242778, "Acidification": 0.065234105, "Eutrophication, terrestrial": 0.28515772,
+                    "Eutrophication, freshwater": 0.00025859361, "Eutrophication, marine": 0.011413141, "Ecotoxicity, freshwater": 22.951819699999998,
+                    "Land Use": 234.5027, "Water Use/Scarcity (AWARE)": 1.1570116, "Resource Use, minerals/metals": 6.7767016e-06,
+                    "Resource Use, fossils": 11.959211
+                },
+                metadata: {
+                    source_dataset: "AGRIBALYSE 3.2",
+                    source_activity: "Kid goat, conventional, intensive forage area, at farm gate {FR} U",
+                    source_uuid: "agb-3.2-kid-goat-conventional-intensive-forage-area-at-farm-gate-fr",
+                    allocation_method: "Economic Allocation",
+                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
+                    dqr_overall: 1.3
+                }
+            }
+        },
+        "broiler-label-rouge-at-farm-gate-fr": { 
+            name: "Broiler, Label Rouge, at farm gate",
+            loss: 0.03,
+            data: {
+                pef: { 
+                    "Climate Change": 2.3350336, "Ozone Depletion": 5.8336069e-08, "Human Toxicity, non-cancer": 3.3363876e-08,
+                    "Human Toxicity, cancer": 3.0076038e-09, "Particulate Matter": 5.3323517e-07, "Ionizing Radiation": 0.17892269,
+                    "Photochemical Ozone Formation": 0.010598814, "Acidification": 0.078398069, "Eutrophication, terrestrial": 0.34759016,
+                    "Eutrophication, freshwater": 0.00049842235, "Eutrophication, marine": 0.019614144, "Ecotoxicity, freshwater": 98.81492399999999,
+                    "Land Use": 210.1377, "Water Use/Scarcity (AWARE)": 1.305581, "Resource Use, minerals/metals": 7.8070685e-06,
+                    "Resource Use, fossils": 18.50234
+                },
+                metadata: {
+                    source_dataset: "AGRIBALYSE 3.2",
+                    source_activity: "Broiler, Label Rouge, at farm gate {FR} U",
+                    source_uuid: "agb-3.2-broiler-label-rouge-at-farm-gate-fr",
+                    allocation_method: "Economic Allocation",
+                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
+                    dqr_overall: 1.3
+                }
+            }
+        },
+        "pig-label-rouge-outdoor-system-at-farm-gate-fr": { 
+            name: "Pig, Label Rouge, outdoor system, at farm gate",
+            loss: 0.03,
+            data: {
+                pef: { 
+                    "Climate Change": 2.3416799, "Ozone Depletion": 3.7141992e-08, "Human Toxicity, non-cancer": 3.105955e-08,
+                    "Human Toxicity, cancer": 2.1399699e-09, "Particulate Matter": 4.7627609e-07, "Ionizing Radiation": 0.38289214,
+                    "Photochemical Ozone Formation": 0.006248348, "Acidification": 0.067051398, "Eutrophication, terrestrial": 0.29265799,
+                    "Eutrophication, freshwater": 0.00039257314, "Eutrophication, marine": 0.017624639, "Ecotoxicity, freshwater": 93.863929,
+                    "Land Use": 168.86996, "Water Use/Scarcity (AWARE)": 0.9952757, "Resource Use, minerals/metals": 1.0430507e-05,
+                    "Resource Use, fossils": 18.231365
+                },
+                metadata: {
+                    source_dataset: "AGRIBALYSE 3.2",
+                    source_activity: "Pig, Label Rouge, outdoor system, at farm gate {FR} U",
+                    source_uuid: "agb-3.2-pig-label-rouge-outdoor-system-at-farm-gate-fr",
+                    allocation_method: "Economic Allocation",
+                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
+                    dqr_overall: 1.3
+                }
+            }
+        },
+        "turkey-label-rouge-at-farm-gate-fr": { 
+            name: "Turkey, Label Rouge, at farm gate",
+            loss: 0.03,
+            data: {
+                pef: { 
+                    "Climate Change": 3.9193547, "Ozone Depletion": 6.264528e-08, "Human Toxicity, non-cancer": 7.5093115e-08,
+                    "Human Toxicity, cancer": 3.8245095e-09, "Particulate Matter": 8.7114366e-07, "Ionizing Radiation": 0.22973641,
+                    "Photochemical Ozone Formation": 0.014452161, "Acidification": 0.1253908, "Eutrophication, terrestrial": 0.54467932,
+                    "Eutrophication, freshwater": 0.00050642081, "Eutrophication, marine": 0.031069598, "Ecotoxicity, freshwater": 175.18093900000002,
+                    "Land Use": 212.84391, "Water Use/Scarcity (AWARE)": 1.0825783, "Resource Use, minerals/metals": 1.1913924e-05,
+                    "Resource Use, fossils": 23.34343
+                },
+                metadata: {
+                    source_dataset: "AGRIBALYSE 3.2",
+                    source_activity: "Turkey, Label Rouge, at farm gate {FR} U",
+                    source_uuid: "agb-3.2-turkey-label-rouge-at-farm-gate-fr",
+                    allocation_method: "Economic Allocation",
+                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
+                    dqr_overall: 1.3
+                }
+            }
+                    }, 
         "cauliflower-fresh-eu": { 
             name: "Cauliflower, fresh (EU)",
             loss: 0.20,
