@@ -4145,115 +4145,186 @@ function updateHardFinancialLedger(financialResults, volume) {
     }
 }
 
-// ================== UPDATE BUSINESS CASE ==================
-function updateBusinessCase() {
-    console.log('🔄 updateBusinessCase CALLED');
+// ================== PURE BUSINESS PHYSICS ENGINE ==================
+function calculateBusinessPhysics(volume, scenarios, pefResults, massBalance) {
+    console.log('🧮 [Pure Physics] Calculating business case...');
     
-    if (!finalPefResults || Object.keys(finalPefResults).length === 0) {
-        console.log('❌ finalPefResults is empty!');
-        return;
+    // VALIDATE INPUTS
+    if (!pefResults || Object.keys(pefResults).length === 0) {
+        console.log('❌ [Physics] No PEF results available');
+        return null;
     }
-
-    const volume = currentAnnualVolume;
     
-    const co2ReductionPercent = calculateCO2ReductionPercent();
-    console.log('🔢 co2ReductionPercent:', co2ReductionPercent);
+    // APPLY SCENARIOS IF ACTIVE
+    let finalPefResults = pefResults;
+    if (Object.values(scenarios).some(v => v)) {
+        finalPefResults = applyScenarioPhysics({
+            finalPefResults: pefResults,
+            finalContentWeight: massBalance?.final_content_weight_kg || 0.2
+        }, scenarios);
+    }
     
-    let businessResults = {
-        finalPefResults: finalPefResults,
-        finalContentWeight: massBalanceData?.final_content_weight_kg || 0.2
+    // CORE PHYSICS CALCULATION
+    const physics = {
+        timestamp: new Date().toISOString(),
+        volume: volume,
+        scenarios: {...scenarios},
+        financial: null,
+        roi: null,
+        market: null,
+        implementationCost: null
     };
-
-    if (Object.values(activeScenarios).some(v => v)) {
-        businessResults.finalPefResults = applyScenarioPhysics({
-            finalPefResults: finalPefResults,
-            finalContentWeight: massBalanceData?.final_content_width_kg || 0.2
-        }, activeScenarios);
-    }
     
-    const financialResults = calculateHardFinancialMath(businessResults, volume, activeScenarios);
-    console.log('💰 financialResults:', financialResults);
+    // 1. FINANCIAL PHYSICS
+    const businessResults = {
+        finalPefResults: finalPefResults,
+        finalContentWeight: massBalance?.final_content_weight_kg || 0.2
+    };
     
-    updateHardFinancialLedger(financialResults, volume);
-
-    const totalBenefit = financialResults.total;
-    const implementationCost = calculateImplementationCost(volume);
-    const roi = totalBenefit > 0 ? ((totalBenefit * 3 - implementationCost) / implementationCost * 100) : 0;
-
-    const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);
-    const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);
-
-    document.getElementById('roiValue').innerText = Math.max(0, roi).toFixed(0) + "%";
-    document.getElementById('savingsValue').innerText = "€" + formatLargeNumber(financialResults.moneyCarbon);
-    document.getElementById('premiumValue').innerText = premiumPct.toFixed(1) + "%";
-    document.getElementById('marketValue').innerText = marketGrowthPct.toFixed(1) + "%";
-
-    document.getElementById('roiDisplay').innerText = Math.max(0, roi).toFixed(0) + "%";
-
-    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
-    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
-    document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(totalBenefit);
-    document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber(Math.max(0, (totalBenefit * 3) - implementationCost));
-
-    updateBusinessStory(financialResults, roi, volume, co2ReductionPercent);
+    physics.financial = calculateHardFinancialMath(businessResults, volume, scenarios);
+    console.log('💰 [Physics] Financial results:', physics.financial);
+    
+    // 2. ROI CALCULATION
+    physics.implementationCost = calculateImplementationCost(volume);
+    physics.roi = physics.financial.total > 0 ? 
+        ((physics.financial.total * 3 - physics.implementationCost) / physics.implementationCost * 100) : 0;
+    physics.roi = Math.max(0, physics.roi);
+    
+    // 3. MARKET PHYSICS
+    const co2Reduction = calculateCO2ReductionPercentPure(finalPefResults, massBalance);
+    physics.market = {
+        growth: Math.min(co2Reduction * 2, 40),
+        premium: Math.min(co2Reduction * 1.5, 25),
+        reductionPercent: co2Reduction,
+        baseline: currentComparisonBaseline?.name || 'industry average'
+    };
+    
+    // 4. VALIDATION CHECKS
+    physics.validation = {
+        massBalanceValid: massBalance?.final_content_weight_kg > 0,
+        financialValid: physics.financial.total >= 0,
+        roiValid: !isNaN(physics.roi),
+        timestamp: Date.now()
+    };
+    
+    console.log('✅ [Physics] Complete:', physics);
+    return physics;
 }
 
-// ================== UPDATE BUSINESS STORY ==================
-function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent) {
-    const businessStory = document.getElementById('businessStory');
-    if (!businessStory) {
-        console.log('❌ businessStory element not found!');
+// PURE CO2 REDUCTION (NO DOM)
+function calculateCO2ReductionPercentPure(pefResults, massBalance) {
+    if (!currentComparisonBaseline || !pefResults["Climate Change"]) {
+        console.log('⚠️ [Physics] Missing baseline or climate data');
+        return 0;
+    }
+    
+    const baselineCO2 = currentComparisonBaseline.co2PerKg;
+    const productWeight = massBalance?.final_content_weight_kg || 0.2;
+    const currentCO2 = pefResults["Climate Change"].total / productWeight;
+    
+    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) return 0;
+    
+    const reduction = ((baselineCO2 - currentCO2) / baselineCO2 * 100);
+    console.log(`📊 [Physics] CO2 Reduction: ${reduction.toFixed(1)}% (${baselineCO2.toFixed(2)} → ${currentCO2.toFixed(2)} kg CO₂e/kg)`);
+    
+    return Math.max(0, reduction);
+}
+
+// ================== BUSINESS CASE RENDERER ==================
+function renderBusinessCase(physics) {
+    console.log('🎨 [Renderer] Starting UI render...');
+    
+    // CHECK IF BUSINESS TAB IS VISIBLE
+    const businessTab = document.getElementById('business-case-tab');
+    if (!businessTab || businessTab.classList.contains('hidden')) {
+        console.log('⏸️ [Renderer] Business tab hidden - caching physics');
+        window.cachedBusinessPhysics = physics;
         return;
     }
     
-    console.log('📖 [Fix] Populating Business Story with:', { 
-        financialTotal: financialResults.total,
-        co2Reduction: co2ReductionPercent 
+    // BATCH UPDATE ALL UI ELEMENTS
+    const updates = {
+        // ROI & FINANCIAL METRICS
+        'roiValue': Math.max(0, physics.roi).toFixed(0) + "%",
+        'savingsValue': "€" + formatLargeNumber(physics.financial.moneyCarbon),
+        'premiumValue': physics.market.premium.toFixed(1) + "%",
+        'marketValue': physics.market.growth.toFixed(1) + "%",
+        'roiDisplay': Math.max(0, physics.roi).toFixed(0) + "%",
+        
+        // COST BREAKDOWN
+        'implementationCost': '€' + formatLargeNumber(physics.implementationCost),
+        'carbonReductionDisplay': formatLargeNumber(physics.financial.metrics.totalTonsCo2Saved) + ' tons CO₂e',
+        'totalBenefitDisplay': '€' + formatLargeNumber(physics.financial.total),
+        'netReturnDisplay': '€' + formatLargeNumber(Math.max(0, (physics.financial.total * 3) - physics.implementationCost)),
+        
+        // TOTAL BENEFIT (in ledger section)
+        'totalBenefit': '€' + physics.financial.total.toFixed(2)
+    };
+    
+    // EXECUTE ALL UPDATES
+    let successfulUpdates = 0;
+    Object.entries(updates).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+            successfulUpdates++;
+        } else {
+            console.log(`⚠️ [Renderer] Element ${id} not found`);
+        }
     });
+    
+    // UPDATE LEDGER TABLE
+    if (document.getElementById('ledgerBody')) {
+        updateHardFinancialLedger(physics.financial, physics.volume);
+    }
+    
+    // UPDATE BUSINESS STORY
+    renderBusinessStory(physics);
+    
+    console.log(`✅ [Renderer] Updated ${successfulUpdates} elements`);
+}
 
-    const safeReduction = Math.max(co2ReductionPercent, 15);
-    const safeTotal = Math.max(financialResults.total, 2000);
-    const scale = getBusinessScale(volume);
+// ================== BUSINESS STORY RENDERER ==================
+function renderBusinessStory(physics) {
+    const businessStory = document.getElementById('businessStory');
+    if (!businessStory) {
+        console.log('⚠️ [Renderer] Business story element not found');
+        return;
+    }
+    
+    const scale = getBusinessScale(physics.volume);
+    const safeReduction = Math.max(physics.market.reductionPercent, 15);
+    const safeTotal = Math.max(physics.financial.total, 2000);
     
     let performanceLevel = "World-Class";
     if (safeReduction >= 50) performanceLevel = "Industry-Leading";
     else if (safeReduction >= 30) performanceLevel = "Excellent";
     else if (safeReduction >= 15) performanceLevel = "Strong";
-    else performanceLevel = "Good";
-
+    
     businessStory.innerHTML = `
         <div class="story-highlight">
             <i class="fas fa-${getBusinessIcon(scale)}" style="color: var(--secondary);"></i>
             <strong>${scale} Opportunity - ${performanceLevel} Environmental Performance</strong><br>
-            ${safeReduction.toFixed(1)}% carbon reduction vs. ${currentComparisonBaseline?.name || 'industry baseline'} drives <strong>€${formatLargeNumber(safeTotal)}</strong> annual financial benefit at ${getVolumeTier(volume)} scale.
+            ${safeReduction.toFixed(1)}% carbon reduction vs. ${physics.market.baseline} drives <strong>€${formatLargeNumber(safeTotal)}</strong> annual financial benefit at ${getVolumeTier(physics.volume)} scale.
         </div>
         
         <p style="margin: 1rem 0; line-height: 1.6;">
-            <strong>💰 Breakdown:</strong><br>
-            • <strong>Carbon Liability Savings:</strong> €${financialResults.moneyCarbon.toFixed(2)} (EU ETS avoidance @ €85/t CO₂e)<br>
-            • <strong>⚡ Energy OPEX Reduction:</strong> €${financialResults.moneyEnergy.toFixed(2)} from ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ fossil savings (PEF data)<br>
-            • <strong>🚚 Logistics Fuel Savings:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel optimization<br>
+            <strong>💰 Physics-Based Breakdown:</strong><br>
+            • <strong>Carbon Liability Savings:</strong> €${physics.financial.moneyCarbon.toFixed(2)} (EU ETS avoidance @ €85/t CO₂e)<br>
+            • <strong>⚡ Energy OPEX Reduction:</strong> €${physics.financial.moneyEnergy.toFixed(2)} from ${formatLargeNumber(physics.financial.metrics.totalMJSaved)} MJ fossil savings<br>
+            • <strong>🚚 Logistics Fuel Savings:</strong> €${physics.financial.moneyFuel.toFixed(2)} via ${formatLargeNumber(physics.financial.metrics.fuelLitersSaved)} L diesel optimization<br>
             • <strong>📈 Total Annual Benefit:</strong> €${safeTotal.toFixed(2)} (scales linearly with volume)<br>
             <br>
-            <strong>🎯 ROI Projection:</strong> ${roi.toFixed(0)}% over 3 years—implementation recouped in &lt;18 months at current performance.
+            <strong>🎯 ROI Projection:</strong> ${physics.roi.toFixed(0)}% over 3 years—implementation recouped in &lt;18 months at current performance.
         </p>
         
         <div class="story-highlight" style="background: rgba(0, 212, 170, 0.1); border-left-color: var(--secondary);">
             <i class="fas fa-chart-line" style="color: var(--secondary);"></i>
             <strong>Market Edge:</strong><br>
-            ${safeReduction.toFixed(1)}% lower footprint unlocks ${Math.min(safeReduction * 1.5, 25).toFixed(1)}% price premium + ${Math.min(safeReduction * 2, 40).toFixed(1)}% share growth in eco-segment (Nielsen-backed).
-        </div>
-        
-        <div class="story-highlight" style="background: rgba(10, 37, 64, 0.1); border-left-color: var(--primary);">
-            <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
-            <strong>Brand Value Enhancement:</strong><br>
-            Science-based sustainability data builds consumer trust and loyalty. Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
+            ${safeReduction.toFixed(1)}% lower footprint unlocks ${Math.min(safeReduction * 1.5, 25).toFixed(1)}% price premium + ${Math.min(safeReduction * 2, 40).toFixed(1)}% share growth in eco-segment.
         </div>
     `;
-
-    console.log('✅ [Fix] Business Story populated: €' + safeTotal.toFixed(0) + ' benefit, ' + safeReduction + '% reduction');
-}
-
+    }
 // ================== UPDATE RESULTS UI ==================
 function updateResultsUI(results) {
     updateMassBalanceDisplay();
@@ -4359,13 +4430,24 @@ function toggleScenario(key) {
     const btn = document.getElementById(`scenario-${key}`);
     if (btn) btn.classList.toggle('active');
     
-    calculateImpact();
-    updateBusinessCase();
-}
+    // PURE PHYSICS → RENDER
+    const physics = calculateBusinessPhysics(
+        currentAnnualVolume,
+        activeScenarios,
+        finalPefResults,
+        massBalanceData
+    );
+    
+    if (physics) {
+        renderBusinessCase(physics);
+    }
+    }
 
 function resetScenarios() {
+    // Reset all scenarios
     activeScenarios = {
         renewables: false,
+        local: false,
         local: false,
         lightweight: false,
         regen_ag: false,
@@ -4374,12 +4456,27 @@ function resetScenarios() {
         circular_pkg: false
     };
     
+    // Reset UI buttons
     document.querySelectorAll('.scenario-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    calculateImpact();
-    updateBusinessCase();
+    // RECALCULATE ENTIRE PHYSICS CHAIN
+    calculateImpact(); // This updates finalPefResults
+    
+    // NEW: Calculate business physics with reset scenarios
+    if (finalPefResults && Object.keys(finalPefResults).length > 0) {
+        const physics = calculateBusinessPhysics(
+            currentAnnualVolume,
+            activeScenarios,
+            finalPefResults,
+            massBalanceData
+        );
+        
+        if (physics) {
+            renderBusinessCase(physics);
+        }
+    }
 }
 
 // ================== UTILITY FUNCTIONS ==================
@@ -4580,18 +4677,45 @@ function calculateCO2ReductionPercent() {
             calculateImpact();
         }
         if (tabName === 'business-case') {
-            if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
-                console.log('🔧 [Fix] Priming missing physics data for business case...');
-                if (selectedIngredients.length === 0) {
-                    setupDemoData();
-                } else {
-                    calculateImpact();
-                }
-                setTimeout(updateBusinessCase, 200);
-            } else {
-                updateBusinessCase();
-            }
+    // CHECK FOR CACHED PHYSICS FIRST
+    if (window.cachedBusinessPhysics) {
+        renderBusinessCase(window.cachedBusinessPhysics);
+        delete window.cachedBusinessPhysics;
+    } 
+    // CALCULATE FRESH IF NEEDED
+    else if (finalPefResults && Object.keys(finalPefResults).length > 0) {
+        const physics = calculateBusinessPhysics(
+            currentAnnualVolume,
+            activeScenarios,
+            finalPefResults,
+            massBalanceData
+        );
+        
+        if (physics) {
+            renderBusinessCase(physics);
         }
+    }
+    // FORCE CALCULATION IF NO DATA
+    else {
+        console.log('🔧 [Physics] No data - triggering calculation...');
+        if (selectedIngredients.length === 0) {
+            setupDemoData();
+        }
+        
+        // Wait for calculateImpact to finish
+        setTimeout(() => {
+            if (finalPefResults && Object.keys(finalPefResults).length > 0) {
+                const physics = calculateBusinessPhysics(
+                    currentAnnualVolume,
+                    activeScenarios,
+                    finalPefResults,
+                    massBalanceData
+                );
+                if (physics) renderBusinessCase(physics);
+            }
+        }, 500);
+    }
+    }
         if (tabName === 'dpp') {
             generateDPP();
         }
