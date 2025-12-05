@@ -4362,11 +4362,11 @@ function updateBusinessCase() {
                           parseFloat(document.getElementById('productWeight').value) || 0.2;
     
     const businessResults = {
-        finalPefResults: finalPefResults,
-        finalContentWeight: productWeightKg,
-        co2PerKg: finalPefResults["Climate Change"].total / productWeightKg,
-        fossilPerKg: finalPefResults["Resource Use, fossils"].total / productWeightKg
-    };
+    finalPefResults: finalPefResults,
+    finalContentWeight: productWeightKg,
+    co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
+    fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
+};
     
     // Apply scenarios if active
 let scenarioAdjustedResults = businessResults;
