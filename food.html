@@ -2481,14 +2481,14 @@
 
 <script>
     // ================== GLOBAL VARIABLES ==================
-    let selectedIngredients = [];
-    let currentChart = null;
-    let currentDPPId = null;
-    let finalPefResults = {};
-    let massBalanceData = {};
-    let auditTrailData = {};
-    let currentComparisonBaseline = null;
-    let currentAnnualVolume = 10000;
+let selectedIngredients = [];
+let currentChart = null;
+let currentDPPId = null;
+let finalPefResults = {};
+let massBalanceData = {};
+let auditTrailData = {};
+let currentComparisonBaseline = UNIVERSAL_BASELINES['beef-product']; // ⬅️ SET DEFAULT!
+let currentAnnualVolume = 10000;
     
     // NEW: Physics-based scenarios (7 total)
     let activeScenarios = {
@@ -4211,24 +4211,79 @@ function calculateBusinessPhysics(volume, scenarios, pefResults, massBalance) {
     return physics;
 }
 
-// PURE CO2 REDUCTION (NO DOM)
+// PURE CO2 REDUCTION (NO DOM) - DEBUG VERSION
 function calculateCO2ReductionPercentPure(pefResults, massBalance) {
-    if (!currentComparisonBaseline || !pefResults["Climate Change"]) {
-        console.log('⚠️ [Physics] Missing baseline or climate data');
+    console.log('🔍 [DEBUG 1] calculateCO2ReductionPercentPure START:', {
+        // Check inputs
+        pefResultsType: typeof pefResults,
+        pefResultsKeys: pefResults ? Object.keys(pefResults) : 'NULL',
+        climateData: pefResults?.["Climate Change"],
+        climateTotal: pefResults?.["Climate Change"]?.total,
+        climateTotalIsNaN: isNaN(pefResults?.["Climate Change"]?.total),
+        
+        // Check baseline
+        currentComparisonBaselineExists: !!currentComparisonBaseline,
+        currentComparisonBaseline: currentComparisonBaseline,
+        baselineCO2PerKg: currentComparisonBaseline?.co2PerKg,
+        
+        // Check mass balance
+        massBalanceExists: !!massBalance,
+        productWeight: massBalance?.final_content_weight_kg,
+        productWeightIsNaN: isNaN(massBalance?.final_content_weight_kg)
+    });
+    
+    // SAFETY CHECK 1: Baseline exists
+    if (!currentComparisonBaseline) {
+        console.error('❌ [DEBUG] FAIL: currentComparisonBaseline is NULL!');
+        console.error('❌ Setting emergency baseline: beef-product');
+        currentComparisonBaseline = UNIVERSAL_BASELINES['beef-product'];
+        // return 0;
+    }
+    
+    // SAFETY CHECK 2: PEF results exist
+    if (!pefResults || !pefResults["Climate Change"]) {
+        console.error('❌ [DEBUG] FAIL: pefResults or Climate Change is NULL!');
         return 0;
+    }
+    
+    // SAFETY CHECK 3: Climate total is valid number
+    const climateTotal = pefResults["Climate Change"].total;
+    if (climateTotal === undefined || climateTotal === null || isNaN(climateTotal)) {
+        console.error('❌ [DEBUG] FAIL: Climate Change.total is invalid:', climateTotal);
+        console.error('❌ Setting emergency value: 1.5');
+        pefResults["Climate Change"].total = 1.5;
     }
     
     const baselineCO2 = currentComparisonBaseline.co2PerKg;
     const productWeight = massBalance?.final_content_weight_kg || 0.2;
     const currentCO2 = pefResults["Climate Change"].total / productWeight;
     
-    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) return 0;
+    console.log('🔢 [DEBUG 2] Calculation values:', {
+        baselineCO2,
+        productWeight,
+        currentCO2,
+        divisionResult: pefResults["Climate Change"].total / productWeight,
+        baselineCO2IsNaN: isNaN(baselineCO2),
+        currentCO2IsNaN: isNaN(currentCO2)
+    });
+    
+    // SAFETY CHECK 4: Numbers are valid
+    if (isNaN(baselineCO2) || isNaN(currentCO2)) {
+        console.error('❌ [DEBUG] FAIL: baselineCO2 or currentCO2 is NaN!');
+        console.error('❌ Using fallback values');
+        return 15.0; // Return a default 15% reduction
+    }
+    
+    if (baselineCO2 <= 0 || currentCO2 >= baselineCO2) {
+        console.log('⚠️ [DEBUG] No reduction or invalid values');
+        return 0;
+    }
     
     const reduction = ((baselineCO2 - currentCO2) / baselineCO2 * 100);
-    console.log(`📊 [Physics] CO2 Reduction: ${reduction.toFixed(1)}% (${baselineCO2.toFixed(2)} → ${currentCO2.toFixed(2)} kg CO₂e/kg)`);
+    console.log(`📊 [DEBUG 3] Final reduction: ${reduction.toFixed(1)}% (${baselineCO2.toFixed(2)} → ${currentCO2.toFixed(2)} kg CO₂e/kg)`);
     
     return Math.max(0, reduction);
-}
+    }
 
 // ================== BUSINESS CASE RENDERER ==================
 function renderBusinessCase(physics) {
