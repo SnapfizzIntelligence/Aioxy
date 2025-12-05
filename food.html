@@ -3195,27 +3195,35 @@
                 });
 
                 // PROCESS ALL 16 PEF CATEGORIES
-                Object.keys(pefCategories).forEach(cat => {
-                    const impact = ingredient.data.pef[cat] || 0;
-                    const subtotal = allocatedQuantity * impact;
+Object.keys(pefCategories).forEach(cat => {
+    // FIX: Force the value to be a Number. If it fails, default to 0.
+    // This prevents "undefined" from turning the whole sum into NaN.
+    let impact = Number(ingredient.data.pef[cat]);
+    
+    if (isNaN(impact)) {
+        console.warn(`⚠️ Missing data for ${ingredient.name} category: ${cat}. Defaulting to 0.`);
+        impact = 0;
+    }
 
-                    auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-                        name: ingredient.name,
-                        id: item.id,
-                        quantity_kg: adjustedQuantity,
-                        allocated_quantity_kg: allocatedQuantity,
-                        allocation_factor: allocationFactor,
-                        subtotal: subtotal,
-                        source: ingredient.data.metadata.source_dataset,
-                        dqr,
-                        uncertainty,
-                        allocation_note: ingredient.allocation_note || "Default economic allocation"
-                    });
+    const subtotal = allocatedQuantity * impact;
 
-                    auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += subtotal;
-                    auditTrail.pefCategories[cat].total += subtotal;
-                });
-            });
+    auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+        name: ingredient.name,
+        id: item.id,
+        quantity_kg: adjustedQuantity,
+        allocated_quantity_kg: allocatedQuantity,
+        allocation_factor: allocationFactor,
+        subtotal: subtotal,
+        source: ingredient.data.metadata.source_dataset,
+        dqr,
+        uncertainty,
+        allocation_note: ingredient.allocation_note || "Default economic allocation"
+    });
+
+    auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += subtotal;
+    auditTrail.pefCategories[cat].total += subtotal;
+});
+
 
             // =========== INTEGRATION POINT 2: UPSTREAM LCI ===========
             const upstreamLCI = calculateUpstreamLCI(selectedIngredients, manufacturingCountryCode);
