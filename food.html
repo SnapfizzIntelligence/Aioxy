@@ -5327,53 +5327,66 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         }
     }
 
-    // ================== ENHANCED CALCULATION ENGINE ==================
-    function calculateImpactEnhanced() {
-        if (selectedIngredients.length === 0) {
-            clearResults();
-            return;
-        }
-        
-        const loadingElement = document.getElementById('loadingResults');
-        const resultsContent = document.getElementById('resultsContent');
-        
-        if (loadingElement) loadingElement.classList.remove('hidden');
-        if (resultsContent) resultsContent.classList.add('hidden');
+   // ================== ENHANCED CALCULATION ENGINE ==================
+function calculateImpactEnhanced() {
+    if (selectedIngredients.length === 0) {
+        clearResults();
+        return;
+    }
+    
+    const loadingElement = document.getElementById('loadingResults');
+    const resultsContent = document.getElementById('resultsContent');
+    
+    if (loadingElement) loadingElement.classList.remove('hidden');
+    if (resultsContent) resultsContent.classList.add('hidden');
 
-        setTimeout(() => {
-            try {
-                const baseResults = foodCalculationEngine.calculateFoodImpact();
-                
-                let finalResults = baseResults;
-                if (Object.values(activeScenarios).some(v => v)) {
-                    const scenarioPefResults = applyScenarioPhysics(baseResults, activeScenarios);
-                    finalResults = {
-                        ...baseResults,
-                        finalPefResults: scenarioPefResults,
-                        co2PerKg: scenarioPefResults["Climate Change"]?.total / baseResults.finalContentWeight || 0
-                    };
-                }
-                
-                updateResultsUI(finalResults);
-                
-                const businessTab = document.getElementById('business-case-tab');
-                if (businessTab && !businessTab.classList.contains('hidden')) {
-                    updateBusinessCase();
-                }
-                
-            } catch (error) {
-                console.error('💥 Calculation error:', error);
-                alert('Calculation error: ' + error.message);
-            } finally {
-                if (loadingElement) loadingElement.classList.add('hidden');
-                if (resultsContent) resultsContent.classList.remove('hidden');
+    setTimeout(() => {
+        try {
+            const baseResults = foodCalculationEngine.calculateFoodImpact();
+            
+            // ✅ CRITICAL: Update global variables
+            finalPefResults = baseResults.finalPefResults;
+            massBalanceData = baseResults.massBalance;
+            auditTrailData = baseResults.auditTrail;
+            currentComparisonBaseline = baseResults.comparison?.baseline || currentComparisonBaseline;
+            
+            let finalResults = baseResults;
+            if (Object.values(activeScenarios).some(v => v)) {
+                const scenarioPefResults = applyScenarioPhysics(baseResults, activeScenarios);
+                finalResults = {
+                    ...baseResults,
+                    finalPefResults: scenarioPefResults,
+                    co2PerKg: scenarioPefResults["Climate Change"]?.total / baseResults.finalContentWeight || 0
+                };
+                // ✅ Update global with scenarios applied
+                finalPefResults = scenarioPefResults;
             }
-        }, 100);
-    }
-
-    function calculateImpact() {
-        calculateImpactEnhanced();
-    }
+            
+            updateResultsUI(finalResults);
+            
+            // ✅ NEW BUSINESS CASE ARCHITECTURE
+            const businessTab = document.getElementById('business-case-tab');
+            if (businessTab && !businessTab.classList.contains('hidden')) {
+                if (finalPefResults && Object.keys(finalPefResults).length > 0) {
+                    const physics = calculateBusinessPhysics(
+                        currentAnnualVolume,
+                        activeScenarios,
+                        finalPefResults,
+                        massBalanceData
+                    );
+                    if (physics) renderBusinessCase(physics);
+                }
+            }
+            
+        } catch (error) {
+            console.error('💥 Calculation error:', error);
+            alert('Calculation error: ' + error.message);
+        } finally {
+            if (loadingElement) loadingElement.classList.add('hidden');
+            if (resultsContent) resultsContent.classList.remove('hidden');
+        }
+    }, 100);
+                }
 
     // ================== INITIALIZATION ==================
     function populateIngredientSelect() {
