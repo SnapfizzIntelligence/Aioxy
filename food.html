@@ -4188,7 +4188,11 @@ function updateBusinessCase() {
     document.getElementById('premiumValue').innerText = premiumPct.toFixed(1) + "%";
     document.getElementById('marketValue').innerText = marketGrowthPct.toFixed(1) + "%";
 
-    document.getElementById('roiDisplay').innerText = Math.max(0, roi).toFixed(0) + "%";
+    // FIX: Target the correct element ID (roiBadge)
+const roiBadge = document.getElementById('roiBadge');
+if (roiBadge) {
+    roiBadge.innerText = Math.max(0, roi).toFixed(0) + "% RETURN";
+}
 
     document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
     document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
