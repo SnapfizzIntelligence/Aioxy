@@ -3177,12 +3177,15 @@ function validateAndApplyScenarios(baseResults, scenarios) {
     return applyScenarioPhysics(baseResults, scenarios);
 }
 
-// ================== YOUR EXISTING PHYSICS ENGINE (DO NOT CHANGE) ==================
+// ================== FIX: BULLETPROOF PHYSICS ENGINE ==================
 function applyScenarioPhysics(baseResults, scenarios) {
+    // Safety check
+    if (!baseResults || !baseResults.finalPefResults) return {};
+    
     // Deep clone to avoid mutating original data
     let modifiedResults = JSON.parse(JSON.stringify(baseResults.finalPefResults));
     let scenarioLog = [];
-
+    
     // 1. RENEWABLE ENERGY (Scope 2 Reduction)
     if (scenarios.renewables) {
         if (modifiedResults["Climate Change"]?.contribution_tree?.Manufacturing) {
@@ -3190,73 +3193,77 @@ function applyScenarioPhysics(baseResults, scenarios) {
             scenarioLog.push("Renewables: -95% Manufacturing Impact");
         }
     }
-        // 2. LOCAL SOURCING (Logistics Optimization)
-        if (scenarios.local) {
-            if (modifiedResults["Climate Change"]?.contribution_tree?.Transport) {
-                const currentTransport = modifiedResults["Climate Change"].contribution_tree.Transport.total;
-                const originalDist = parseFloat(document.getElementById('transportDistance').value) || 300;
-                if (originalDist > 50) {
-                    const reductionFactor = 50 / originalDist;
-                    modifiedResults["Climate Change"].contribution_tree.Transport.total = currentTransport * reductionFactor;
-                    scenarioLog.push(`Local: Transport capped at 50km`);
-                }
+    
+    // 2. LOCAL SOURCING (Logistics Optimization)
+    if (scenarios.local) {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Transport) {
+            const originalDist = parseFloat(document.getElementById('transportDistance').value) || 300;
+            const currentTransport = modifiedResults["Climate Change"].contribution_tree.Transport.total;
+            if (originalDist > 50) {
+                const reductionFactor = 50 / originalDist;
+                modifiedResults["Climate Change"].contribution_tree.Transport.total = currentTransport * reductionFactor;
+                scenarioLog.push(`Local: Transport capped at 50km`);
             }
         }
-
-        // 3. LIGHTWEIGHT PACKAGING (Material Science)
-        if (scenarios.lightweight) {
-            if (modifiedResults["Climate Change"]?.contribution_tree?.Packaging) {
-                modifiedResults["Climate Change"].contribution_tree.Packaging.total *= 0.80;
-                scenarioLog.push("Lightweight: -20% Packaging Mass");
-            }
-        }
-
-        // 4. REGENERATIVE AGRICULTURE (Soil Carbon Sequestration)
-        if (scenarios.regen_ag) {
-            if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
-                modifiedResults["Climate Change"].contribution_tree.Ingredients.total *= 0.80;
-                scenarioLog.push("Regen Ag: 20% Soil Carbon Credit applied");
-            }
-        }
-
-        // 5. ZERO WASTE MANUFACTURING (Yield Efficiency)
-        if (scenarios.no_waste) {
-            if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
-                modifiedResults["Climate Change"].contribution_tree.Ingredients.total *= 0.90;
-                scenarioLog.push("Zero Waste: +10% Yield Efficiency");
-            }
-        }
-
-        // 6. BULK SHIPPING (Modal Shift)
-        if (scenarios.bulk) {
-            if (modifiedResults["Climate Change"]?.contribution_tree?.Transport) {
-                modifiedResults["Climate Change"].contribution_tree.Transport.total /= 8;
-                scenarioLog.push("Bulk Shipping: Modal shift to Sea/Rail");
-            }
-        }
-
-        // 7. CIRCULAR PACKAGING (Closed Loop CFF)
-        if (scenarios.circular_pkg) {
-            if (modifiedResults["Climate Change"]?.contribution_tree?.Packaging) {
-                modifiedResults["Climate Change"].contribution_tree.Packaging.total *= 0.40;
-                scenarioLog.push("Circular Pkg: Closed Loop Cycle");
-            }
-        }
-
-        // Recalculate Totals
-        Object.keys(modifiedResults).forEach(cat => {
-            const tree = modifiedResults[cat].contribution_tree;
-            modifiedResults[cat].total = 
-                (tree.Ingredients?.total || 0) + 
-                (tree.Manufacturing?.total || 0) + 
-                (tree.Transport?.total || 0) + 
-                (tree.Packaging?.total || 0);
-        });
-
-        console.log("Physics Engine Applied:", scenarioLog);
-        return modifiedResults;
     }
-
+    
+    // 3. LIGHTWEIGHT PACKAGING (Material Science)
+    if (scenarios.lightweight) {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Packaging) {
+            modifiedResults["Climate Change"].contribution_tree.Packaging.total *= 0.80;
+            scenarioLog.push("Lightweight: -20% Packaging Mass");
+        }
+    }
+    
+    // 4. REGENERATIVE AGRICULTURE (Soil Carbon Sequestration)
+    if (scenarios.regen_ag) {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
+            modifiedResults["Climate Change"].contribution_tree.Ingredients.total *= 0.80;
+            scenarioLog.push("Regen Ag: 20% Soil Carbon Credit applied");
+        }
+    }
+    
+    // 5. ZERO WASTE MANUFACTURING (Yield Efficiency)
+    if (scenarios.no_waste) {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
+            modifiedResults["Climate Change"].contribution_tree.Ingredients.total *= 0.90;
+            scenarioLog.push("Zero Waste: +10% Yield Efficiency");
+        }
+    }
+    
+    // 6. BULK SHIPPING (Modal Shift)
+    if (scenarios.bulk) {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Transport) {
+            modifiedResults["Climate Change"].contribution_tree.Transport.total /= 8;
+            scenarioLog.push("Bulk Shipping: Modal shift to Sea/Rail");
+        }
+    }
+    
+    // 7. CIRCULAR PACKAGING (Closed Loop CFF)
+    if (scenarios.circular_pkg) {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Packaging) {
+            modifiedResults["Climate Change"].contribution_tree.Packaging.total *= 0.40;
+            scenarioLog.push("Circular Pkg: Closed Loop Cycle");
+        }
+    }
+    
+    // Recalculate Totals (The Fix: Added Upstream and Safety Checks)
+    Object.keys(modifiedResults).forEach(cat => {
+        const tree = modifiedResults[cat].contribution_tree;
+        if (tree) {
+            const ing = tree.Ingredients?.total || 0;
+            const mfg = tree.Manufacturing?.total || 0;
+            const trans = tree.Transport?.total || 0;
+            const pkg = tree.Packaging?.total || 0;
+            const upst = tree.Upstream?.total || 0; // Added missing Upstream component
+            
+            modifiedResults[cat].total = ing + mfg + trans + pkg + upst;
+        }
+    });
+    
+    console.log("Physics Engine Applied:", scenarioLog);
+    return modifiedResults;
+    }
     // ================== MAIN CALCULATION ENGINE ==================
     const foodCalculationEngine = {
         getDQRQualityLevel(dqrScore) {
@@ -4751,34 +4758,39 @@ function calculateImplementationCost(volume) {
     return 500000;
 }
 
+// ================== FIX: ROBUST PERCENTAGE CALCULATOR ==================
 function calculateCO2ReductionPercent() {
     console.log('🔍 Calculating CO2 Reduction...');
     
-    if (!currentComparisonBaseline || !finalPefResults || !finalPefResults["Climate Change"]) {
-        console.log('❌ Missing data for CO2 calculation');
-        return 15; // Return a default reasonable value for UI
-    }
-    
+    // Safety Checks
+    if (!currentComparisonBaseline) return 0;
+    if (!finalPefResults || !finalPefResults["Climate Change"]) return 0;
+
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
-    const baselineCO2 = currentComparisonBaseline.co2PerKg || 14.474184;
-    const currentCO2 = finalPefResults["Climate Change"].total / productWeightKg;
+    if (productWeightKg <= 0) return 0;
+
+    const baselineCO2 = currentComparisonBaseline.co2PerKg || 14.47;
+    
+    // Calculate current CO2 per kg
+    let currentTotal = finalPefResults["Climate Change"].total;
+    
+    // Double check for NaN
+    if (isNaN(currentTotal)) currentTotal = 0;
+    
+    const currentCO2 = currentTotal / productWeightKg;
     
     console.log('CO2 Values:', {
         baselineCO2,
         currentCO2,
-        productWeightKg,
-        totalCO2: finalPefResults["Climate Change"].total
+        productWeightKg
     });
     
-    if (baselineCO2 <= 0 || currentCO2 <= 0) {
-        console.log('❌ Invalid CO2 values');
-        return 15; // Default fallback
-    }
+    if (baselineCO2 <= 0) return 0;
     
     const reductionPercent = ((baselineCO2 - currentCO2) / baselineCO2 * 100);
-    const safePercent = Math.max(0, Math.min(reductionPercent, 80)); // Cap at 80%
     
-    console.log('✅ CO2 Reduction:', safePercent.toFixed(1) + '%');
+    // Cap results to reasonable limits (0% to 100%) to avoid confusing users
+    const safePercent = Math.max(0, Math.min(reductionPercent, 99.9));
     
     return safePercent;
     }
