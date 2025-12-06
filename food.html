@@ -3557,32 +3557,32 @@ if (processingData) {
             const waterSaved = Math.max(baselineWater - currentWater, 0);
 
             console.log('✅ Calculation complete:', {
-                co2PerKg: currentCO2 / finalContentWeight,
-                baselineCO2: baselineCO2 / finalContentWeight,
-                savings: co2Saved
-            });
+    co2PerKg: finalContentWeight > 0 ? currentCO2 / finalContentWeight : 0,
+    baselineCO2: finalContentWeight > 0 ? baselineCO2 / finalContentWeight : 0,
+    savings: co2Saved
+});
 
             return {
-                finalPefResults: finalPefResultsToUse,
-                auditTrail: auditTrail,
-                massBalance: auditTrail.mass_balance,
-                overallDQR: foregroundBackground.overall_dqr,
-                overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
-                finalContentWeight,
-                totalProductWeight: finalContentWeight + packagingWeight,
-                co2PerKg: currentCO2 / finalContentWeight,
-                waterScarcityPerKg: currentWater / finalContentWeight,
-                landUsePerKg: finalPefResultsToUse["Land Use"].total / finalContentWeight,
-                fossilPerKg: finalPefResultsToUse["Resource Use, fossils"].total / finalContentWeight,
-                comparison: {
-                    baseline: comparisonBaseline,
-                    co2Saved,
-                    waterSaved,
-                    co2SavedPerKg: co2Saved / finalContentWeight,
-                    waterSavedPerKg: waterSaved / finalContentWeight
-                },
-                pefSingleScore: pefSingleScore
-            };
+    finalPefResults: finalPefResultsToUse,
+    auditTrail: auditTrail,
+    massBalance: auditTrail.mass_balance,
+    overallDQR: foregroundBackground.overall_dqr,
+    overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
+    finalContentWeight,
+    totalProductWeight: finalContentWeight + packagingWeight,
+    co2PerKg: finalContentWeight > 0 ? currentCO2 / finalContentWeight : 0,
+    waterScarcityPerKg: finalContentWeight > 0 ? currentWater / finalContentWeight : 0,
+    landUsePerKg: finalContentWeight > 0 ? finalPefResultsToUse["Land Use"].total / finalContentWeight : 0,
+    fossilPerKg: finalContentWeight > 0 ? finalPefResultsToUse["Resource Use, fossils"].total / finalContentWeight : 0,
+    comparison: {
+        baseline: comparisonBaseline,
+        co2Saved,
+        waterSaved,
+        co2SavedPerKg: finalContentWeight > 0 ? co2Saved / finalContentWeight : 0,
+        waterSavedPerKg: finalContentWeight > 0 ? waterSaved / finalContentWeight : 0
+    },
+    pefSingleScore: pefSingleScore
+};
         },
 
         detectProductCategory(productName, ingredients, selectedCategory) {
@@ -5447,10 +5447,10 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
             if (Object.values(activeScenarios).some(v => v)) {
                 const scenarioPefResults = validateAndApplyScenarios(baseResults, activeScenarios); // <-- CHANGE HERE
                 finalResults = {
-                    ...baseResults,
-                    finalPefResults: scenarioPefResults,
-                    co2PerKg: scenarioPefResults["Climate Change"]?.total / baseResults.finalContentWeight || 0
-                };
+    ...baseResults,
+    finalPefResults: scenarioPefResults,
+    co2PerKg: baseResults.finalContentWeight > 0 ? (scenarioPefResults["Climate Change"]?.total || 0) / baseResults.finalContentWeight : 0
+};
             }
             
             updateResultsUI(finalResults);
