@@ -4222,39 +4222,58 @@ function displayCompleteAuditTrail() {
 function calculateHardFinancialMath(results, volume, scenarios) {
     console.log("💰 [Financial Engine] Starting calculation for volume:", volume);
 
+    // 1. Safety Check: Ensure baseline exists
     if (!currentComparisonBaseline) {
         currentComparisonBaseline = UNIVERSAL_BASELINES['beef-product'];
     }
 
-    // Get product weight from various sources with fallbacks
-    const productWeightKg = results?.finalContentWeight || 
-                           (massBalanceData ? massBalanceData.final_content_weight_kg : 0.2) || 
-                           parseFloat(document.getElementById('productWeight').value) || 0.2;
+    // 2. Safety Check: Get weight with fallback to prevent NaN
+    // We prioritize massBalanceData, then results, then input value, then default 0.2
+    let productWeightKg = 0.2; 
+    if (massBalanceData && massBalanceData.final_content_weight_kg > 0) {
+        productWeightKg = massBalanceData.final_content_weight_kg;
+    } else if (results && results.finalContentWeight > 0) {
+        productWeightKg = results.finalContentWeight;
+    } else {
+        productWeightKg = parseFloat(document.getElementById('productWeight').value) || 0.2;
+    }
 
-    // Get current impacts with fallbacks
-    const currentCo2PerKg = results?.co2PerKg || 
-                           (finalPefResults?.["Climate Change"]?.total / productWeightKg) || 0;
-    const currentFossilPerKg = results?.fossilPerKg || 
-                              (finalPefResults?.["Resource Use, fossils"]?.total / productWeightKg) || 0;
+    // 3. Safety Check: Get CO2 values
+    let currentCo2Total = 0;
+    let currentFossilTotal = 0;
 
-    const baselineCo2PerKg = currentComparisonBaseline.co2PerKg || 14.474184;
-    const baselineFossilPerKg = currentComparisonBaseline.fossilPerKg || 24.202021;
+    if (results && results.finalPefResults) {
+        currentCo2Total = results.finalPefResults["Climate Change"]?.total || 0;
+        currentFossilTotal = results.finalPefResults["Resource Use, fossils"]?.total || 0;
+    } else if (finalPefResults) {
+        // Fallback to global variable if results object is incomplete
+        currentCo2Total = finalPefResults["Climate Change"]?.total || 0;
+        currentFossilTotal = finalPefResults["Resource Use, fossils"]?.total || 0;
+    }
 
-    // Calculate savings
+    // 4. Calculate Per Kg (Prevent Divide by Zero)
+    const currentCo2PerKg = productWeightKg > 0 ? (currentCo2Total / productWeightKg) : 0;
+    const currentFossilPerKg = productWeightKg > 0 ? (currentFossilTotal / productWeightKg) : 0;
+
+    const baselineCo2PerKg = currentComparisonBaseline.co2PerKg || 14.47;
+    const baselineFossilPerKg = currentComparisonBaseline.fossilPerKg || 24.20;
+
+    // 5. Calculate Deltas (Savings)
     const co2SavedPerKg = Math.max(0, baselineCo2PerKg - currentCo2PerKg);
     const fossilSavedPerKg = Math.max(0, baselineFossilPerKg - currentFossilPerKg);
 
+    // 6. Scale to Volume
     const totalCo2SavedKg = co2SavedPerKg * volume * productWeightKg;
     const totalFossilSavedMJ = fossilSavedPerKg * volume * productWeightKg;
 
-    // Financial calculations
+    // 7. Financial Multipliers
     const moneyCarbon = (totalCo2SavedKg / 1000) * 85; // €85 per ton CO₂e
     const moneyEnergy = totalFossilSavedMJ * 0.04; // €0.04 per MJ
 
-    // Transport optimization calculations
+    // 8. Logistics Logic
     const transportMode = document.getElementById('transportMode')?.value || 'road';
-    const isLocal = scenarios.local;
-    const isLightweight = scenarios.lightweight;
+    const isLocal = scenarios && scenarios.local;
+    const isLightweight = scenarios && scenarios.lightweight;
 
     const distanceBaseline = 500;
     const distanceOptimized = isLocal ? 50 : (parseFloat(document.getElementById('transportDistance')?.value) || 300);
@@ -4273,13 +4292,11 @@ function calculateHardFinancialMath(results, volume, scenarios) {
 
     const totalMoney = moneyCarbon + moneyEnergy + moneyFuel;
 
-    console.log('✅ [Financial Engine] Complete calculation:', {
-        co2SavedPerKg,
-        fossilSavedPerKg,
-        moneyCarbon,
-        moneyEnergy,
-        moneyFuel,
-        totalMoney
+    console.log('✅ [Financial Engine] Success:', {
+        weight: productWeightKg,
+        currentCo2: currentCo2PerKg,
+        savedCo2: co2SavedPerKg,
+        totalMoney: totalMoney
     });
 
     return {
@@ -4295,7 +4312,8 @@ function calculateHardFinancialMath(results, volume, scenarios) {
             fossilSavedPerKg
         }
     };
-    }
+}
+
 // ================== UPDATE FINANCIAL LEDGER ==================
 function updateHardFinancialLedger(financialResults, volume) {
     const tbody = document.getElementById('ledgerBody');
