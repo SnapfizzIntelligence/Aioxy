@@ -1,4 +1,5 @@
 // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
+const aioxyData = {
     // COMPLETE 50 INGREDIENTS DATABASE
     ingredients: {
              "beef-cattle-conventional-national-average-at-farm-gate-fr": { 
@@ -1598,5 +1599,5 @@
         co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
         r1_max: 0.0, r2: 1.0, q: 1.00  // Experimental; compostable baseline
     }
-}
-            
+}          
+            };
