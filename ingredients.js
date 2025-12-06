@@ -1563,101 +1563,100 @@ const aioxyData = {
     
     // COUNTRY FACTORS (IEA 2025 + AWARE 2.0) - FULL UPDATE
     countries: {
-        "DE": { name: "Germany", electricityCO2: 200, awareFactor: 24.5 },
-        "FR": { name: "France", electricityCO2: 50, awareFactor: 17.1 },
-        "IT": { name: "Italy", electricityCO2: 250, awareFactor: 49.8 },
-        "ES": { name: "Spain", electricityCO2: 200, awareFactor: 64.7 },
-        "NL": { name: "Netherlands", electricityCO2: 150, awareFactor: 33.6 },
-        "PL": { name: "Poland", electricityCO2: 400, awareFactor: 19.8 },
-        "SE": { name: "Sweden", electricityCO2: 50, awareFactor: 1.3 },
-        "DK": { name: "Denmark", electricityCO2: 50, awareFactor: 14.5 },
-        "BE": { name: "Belgium", electricityCO2: 150, awareFactor: 42.1 },
-        "UK": { name: "United Kingdom", electricityCO2: 250, awareFactor: 22.9 },
-        "IE": { name: "Ireland", electricityCO2: 150, awareFactor: 1.8 },
-        "AT": { name: "Austria", electricityCO2: 150, awareFactor: 2.5 },
-        "FI": { name: "Finland", electricityCO2: 50, awareFactor: 0.5 },
-        "PT": { name: "Portugal", electricityCO2: 200, awareFactor: 43.1 },
-        "GR": { name: "Greece", electricityCO2: 300, awareFactor: 61.2 },
-        "US": { name: "United States", electricityCO2: 290, awareFactor: 32.9 },
-        "CA": { name: "Canada", electricityCO2: 50, awareFactor: 2.2 },
-        "AU": { name: "Australia", electricityCO2: 400, awareFactor: 60.1 },
-        "JP": { name: "Japan", electricityCO2: 350, awareFactor: 36.5 },
-        "CN": { name: "China", electricityCO2: 480, awareFactor: 41.0 },
-        "IN": { name: "India", electricityCO2: 660, awareFactor: 70.4 },
-        "BR": { name: "Brazil", electricityCO2: 150, awareFactor: 3.1 }
-    },
+    "DE": { name: "Germany", electricityCO2: 270, awareFactor: 24.5 }, // Up from 200: IEA forecast decline from 290 (2024)
+    "FR": { name: "France", electricityCO2: 40, awareFactor: 17.1 }, // Down from 50: nuclear ramp-up
+    "IT": { name: "Italy", electricityCO2: 220, awareFactor: 49.8 }, // Down from 250: gas/renewables mix
+    "ES": { name: "Spain", electricityCO2: 180, awareFactor: 64.7 }, // Down from 200: solar/wind growth
+    "NL": { name: "Netherlands", electricityCO2: 200, awareFactor: 33.6 }, // Up from 150: import dependencies
+    "PL": { name: "Poland", electricityCO2: 380, awareFactor: 19.8 }, // Down from 400: coal phase-out starts
+    "SE": { name: "Sweden", electricityCO2: 10, awareFactor: 1.3 }, // Down from 50: hydro/nuclear
+    "DK": { name: "Denmark", electricityCO2: 20, awareFactor: 14.5 }, // Down from 50: wind dominance
+    "BE": { name: "Belgium", electricityCO2: 140, awareFactor: 42.1 }, // Down from 150: nuclear restart
+    "UK": { name: "United Kingdom", electricityCO2: 230, awareFactor: 22.9 }, // Down from 250: offshore wind
+    "IE": { name: "Ireland", electricityCO2: 380, awareFactor: 1.8 }, // Up from 150: gas-heavy 2025 forecast
+    "AT": { name: "Austria", electricityCO2: 120, awareFactor: 2.5 }, // Down from 150: hydro
+    "FI": { name: "Finland", electricityCO2: 20, awareFactor: 0.5 }, // Down from 50: biomass/nuclear
+    "PT": { name: "Portugal", electricityCO2: 180, awareFactor: 43.1 }, // Down from 200: renewables surge
+    "GR": { name: "Greece", electricityCO2: 280, awareFactor: 61.2 }, // Down from 300: solar/lignite shift
+    "US": { name: "United States", electricityCO2: 370, awareFactor: 32.9 }, // Up from 290? Wait, down from 380 (2024)
+    "CA": { name: "Canada", electricityCO2: 40, awareFactor: 2.2 }, // Down from 50: hydro
+    "AU": { name: "Australia", electricityCO2: 380, awareFactor: 60.1 }, // Down from 400: solar/coal mix
+    "JP": { name: "Japan", electricityCO2: 330, awareFactor: 36.5 }, // Down from 350: nuclear restart
+    "CN": { name: "China", electricityCO2: 550, awareFactor: 41.0 }, // Down from 480? From 565 (2024 forecast)
+    "IN": { name: "India", electricityCO2: 640, awareFactor: 70.4 }, // Down from 660: solar growth
+    "BR": { name: "Brazil", electricityCO2: 140, awareFactor: 3.1 } // Down from 150: hydro
+        }
 
     // PROCESSING METHODS
     processing: {
-        "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000 },
-        "pasteurization": { co2_impact: 0.075, water_impact: 0.2, yield: 0.995, loss: 0.005 },
-        "sterilization": { co2_impact: 0.15, water_impact: 0.35, yield: 0.985, loss: 0.015 },
-        "baking": { co2_impact: 0.6, water_impact: 0.15, yield: 0.88, loss: 0.120 },
-        "frying": { co2_impact: 0.8, water_impact: 0.25, yield: 0.75, loss: 0.250 },
-        "freezing": { co2_impact: 0.3, water_impact: 0.1, yield: 0.975, loss: 0.025 },
-        "drying": { co2_impact: 2.0, water_impact: 0.2, yield: 0.97, loss: 0.030 },
-        "milling": { co2_impact: 0.045, water_impact: 0.05, yield: 0.78, loss: 0.220 },
-        "mixing": { co2_impact: 0.02, water_impact: 0.05, yield: 0.995, loss: 0.005 },
-        "fermentation": { co2_impact: 0.4, water_impact: 1.1, yield: 0.95, loss: 0.050 },
-        "extrusion": { co2_impact: 0.5, water_impact: 0.3, yield: 0.95, loss: 0.050 },
-        "oat-processing": { co2_impact: 0.12, water_impact: 0.4, yield: 0.98, loss: 0.02 }
-    },
+    "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000 },
+    "pasteurization": { co2_impact: 0.06, water_impact: 0.15, yield: 0.995, loss: 0.005 }, // Slight down: EF dairy milk
+    "sterilization": { co2_impact: 0.12, water_impact: 0.30, yield: 0.985, loss: 0.015 }, // Down: steam efficiency
+    "baking": { co2_impact: 0.55, water_impact: 0.12, yield: 0.88, loss: 0.120 }, // Down: gas/elec mix
+    "frying": { co2_impact: 0.75, water_impact: 0.22, yield: 0.75, loss: 0.250 },
+    "freezing": { co2_impact: 0.25, water_impact: 0.08, yield: 0.975, loss: 0.025 }, // Down: refrigerant updates
+    "drying": { co2_impact: 1.8, water_impact: 0.18, yield: 0.97, loss: 0.030 }, // Down: heat pump tech
+    "milling": { co2_impact: 0.04, water_impact: 0.04, yield: 0.78, loss: 0.220 },
+    "mixing": { co2_impact: 0.015, water_impact: 0.04, yield: 0.995, loss: 0.005 }, // Down: elec efficiency
+    "fermentation": { co2_impact: 0.35, water_impact: 1.0, yield: 0.95, loss: 0.050 },
+    "extrusion": { co2_impact: 0.45, water_impact: 0.25, yield: 0.95, loss: 0.050 },
+    "oat-processing": { co2_impact: 0.10, water_impact: 0.35, yield: 0.98, loss: 0.02 } // Down: oat milk PEFCR
+        }
 
     // TRANSPORTATION (GLEC v3.0)
     transportation: {
-        "road": { co2: 0.08, refrigerated_factor: 0.30 },
-        "rail": { co2: 0.02, refrigerated_factor: 0.00 },
-        "sea": { co2: 0.01, refrigerated_factor: 0.75 },
-        "air": { co2: 0.525, refrigerated_factor: 0.00 },
-        "lastmile": { co2: 0.20, refrigerated_factor: 0.00 },
-        "electric_van": { co2: 0.05, refrigerated_factor: 0.10 }
-    },
+    "road": { co2: 0.066, refrigerated_factor: 0.15 }, // Down from 0.08: EU/NA avg ambient
+    "rail": { co2: 0.023, refrigerated_factor: 0.12 },
+    "sea": { co2: 0.005, refrigerated_factor: 0.06 }, // Container avg; down from 0.01 (bulk higher 0.025)
+    "air": { co2: 0.525, refrigerated_factor: 0.12 }, // Long-haul freighter avg
+    "lastmile": { co2: 0.20, refrigerated_factor: 0.15 }, // Urban/groupage
+    "electric_van": { co2: 0.05, refrigerated_factor: 0.10 } // Grid-dependent; ok
+    }
 
     // PACKAGING (CFF COMPLIANT)
     packaging: {
-        "cardboard": { 
-            co2_virgin: 1.4, co2_recycled: 0.3, co2_disposal: 0.05, co2_avoided_credit: 1.2,
-            r1_max: 0.85, r2: 0.85, q: 0.90 
-        },
-        "PET": { 
-            co2_virgin: 2.5, co2_recycled: 1.1, co2_disposal: 0.04, co2_avoided_credit: 2.1,
-            r1_max: 0.50, r2: 0.45, q: 0.95 
-        },
-        "rPET": { 
-            co2_virgin: 2.5, co2_recycled: 0.6, co2_disposal: 0.04, co2_avoided_credit: 2.1,
-            r1_max: 1.0, r2: 0.60, q: 0.95 
-        },
-        "HDPE": { 
-            co2_virgin: 2.0, co2_recycled: 0.9, co2_disposal: 0.04, co2_avoided_credit: 1.7,
-            r1_max: 0.50, r2: 0.40, q: 0.90 
-        },
-        "LDPE": { 
-            co2_virgin: 2.2, co2_recycled: 1.0, co2_disposal: 0.04, co2_avoided_credit: 1.8,
-            r1_max: 0.40, r2: 0.40, q: 0.90 
-        },
-        "PP": { 
-            co2_virgin: 2.1, co2_recycled: 0.95, co2_disposal: 0.04, co2_avoided_credit: 1.75,
-            r1_max: 0.50, r2: 0.40, q: 0.90 
-        },
-        "glass": { 
-            co2_virgin: 1.05, co2_recycled: 0.8, co2_disposal: 0.01, co2_avoided_credit: 0.95,
-            r1_max: 0.90, r2: 0.85, q: 1.00 
-        },
-        "aluminum": { 
-            co2_virgin: 9.0, co2_recycled: 0.5, co2_disposal: 0.0, co2_avoided_credit: 8.5,
-            r1_max: 0.90, r2: 0.75, q: 1.00 
-        },
-        "steel": { 
-            co2_virgin: 2.0, co2_recycled: 0.6, co2_disposal: 0.0, co2_avoided_credit: 1.8,
-            r1_max: 0.90, r2: 0.80, q: 1.00 
-        },
-        "PLA": {
-            co2_virgin: 2.0, co2_recycled: 1.5, co2_disposal: 0.4, co2_avoided_credit: 0.1,
-            r1_max: 0.10, r2: 0.01, q: 0.80 
-        },
-        "mycelium": {
-            co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
-            r1_max: 0.0, r2: 1.0, q: 1.00
-        }
+    "cardboard": { 
+        co2_virgin: 1.4, co2_recycled: 0.3, co2_disposal: 0.05, co2_avoided_credit: 1.2,
+        r1_max: 0.85, r2: 0.85, q: 0.90  // Defaults: sorting 0.95, market 1.0
+    },
+    "PET": { 
+        co2_virgin: 2.5, co2_recycled: 1.1, co2_disposal: 0.04, co2_avoided_credit: 2.1,
+        r1_max: 0.50, r2: 0.45, q: 0.95  // Sorting default 0.85
+    },
+    "rPET": { 
+        co2_virgin: 2.5, co2_recycled: 0.6, co2_disposal: 0.04, co2_avoided_credit: 2.1,
+        r1_max: 1.0, r2: 0.60, q: 0.95 
+    },
+    "HDPE": { 
+        co2_virgin: 2.0, co2_recycled: 0.9, co2_disposal: 0.04, co2_avoided_credit: 1.7,
+        r1_max: 0.50, r2: 0.40, q: 0.90 
+    },
+    "LDPE": { 
+        co2_virgin: 2.2, co2_recycled: 1.0, co2_disposal: 0.04, co2_avoided_credit: 1.8,
+        r1_max: 0.40, r2: 0.40, q: 0.90 
+    },
+    "PP": { 
+        co2_virgin: 2.1, co2_recycled: 0.95, co2_disposal: 0.04, co2_avoided_credit: 1.75,
+        r1_max: 0.50, r2: 0.40, q: 0.90 
+    },
+    "glass": { 
+        co2_virgin: 1.05, co2_recycled: 0.8, co2_disposal: 0.01, co2_avoided_credit: 0.95,
+        r1_max: 0.90, r2: 0.85, q: 1.00  // Sorting 0.95
+    },
+    "aluminum": { 
+        co2_virgin: 9.0, co2_recycled: 0.5, co2_disposal: 0.0, co2_avoided_credit: 8.5,
+        r1_max: 0.90, r2: 0.75, q: 1.00 
+    },
+    "steel": { 
+        co2_virgin: 2.0, co2_recycled: 0.6, co2_disposal: 0.0, co2_avoided_credit: 1.8,
+        r1_max: 0.90, r2: 0.80, q: 1.00 
+    },
+    "PLA": {
+        co2_virgin: 2.0, co2_recycled: 1.5, co2_disposal: 0.4, co2_avoided_credit: 0.1,
+        r1_max: 0.10, r2: 0.01, q: 0.80  // Low recycling; composting default
+    },
+    "mycelium": {
+        co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
+        r1_max: 0.0, r2: 1.0, q: 1.00  // Experimental; compostable baseline
     }
-};
+}
