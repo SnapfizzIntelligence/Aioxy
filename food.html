@@ -4320,7 +4320,7 @@ function updateHardFinancialLedger(financialResults, volume) {
     }
 }
 
-// ================== UPDATE BUSINESS CASE ==================
+// ================== UPDATE BUSINESS CASE ==================active
 function updateBusinessCase() {
     console.log('🔄 updateBusinessCase CALLED with state:', {
         hasFinalPefResults: !!finalPefResults,
@@ -4362,23 +4362,23 @@ function updateBusinessCase() {
                           parseFloat(document.getElementById('productWeight').value) || 0.2;
     
     const businessResults = {
-    finalPefResults: finalPefResults,
-    finalContentWeight: productWeightKg,
-    co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
-    fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
-};
+        finalPefResults: finalPefResults,
+        finalContentWeight: productWeightKg,
+        co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
+        fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
+    };
     
     // Apply scenarios if active
-let scenarioAdjustedResults = businessResults;
-if (Object.values(activeScenarios).some(v => v)) {
-    console.log('🔧 Applying physics scenarios:', activeScenarios);
-    scenarioAdjustedResults = {
-        ...businessResults,
-        finalPefResults: validateAndApplyScenarios({  // <-- CHANGE HERE
-            finalPefResults: finalPefResults,
-            finalContentWeight: productWeightKg
-        }, activeScenarios)
-    };
+    let scenarioAdjustedResults = businessResults;
+    if (Object.values(activeScenarios).some(v => v)) {
+        console.log('🔧 Applying physics scenarios:', activeScenarios);
+        scenarioAdjustedResults = {
+            ...businessResults,
+            finalPefResults: validateAndApplyScenarios({
+                finalPefResults: finalPefResults,
+                finalContentWeight: productWeightKg
+            }, activeScenarios)
+        };
     }
     
     // Calculate financials
@@ -4403,7 +4403,9 @@ if (Object.values(activeScenarios).some(v => v)) {
     document.getElementById('premiumValue').innerText = premiumPct.toFixed(1) + "%";
     document.getElementById('marketValue').innerText = marketGrowthPct.toFixed(1) + "%";
     
-    document.getElementById('roiDisplay').innerText = Math.max(0, roi).toFixed(0) + "%";
+    // ========== DELETED THE CRASHING LINE HERE ==========
+    // document.getElementById('roiDisplay').innerText = Math.max(0, roi).toFixed(0) + "%";
+    
     document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
     document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
     document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(totalBenefit);
@@ -4412,7 +4414,7 @@ if (Object.values(activeScenarios).some(v => v)) {
     updateBusinessStory(financialResults, roi, volume, co2ReductionPercent);
     
     console.log('✅ Business case updated successfully');
-    }
+                    }
 // ================== UPDATE BUSINESS STORY ==================
 function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent) {
     const businessStory = document.getElementById('businessStory');
