@@ -3565,28 +3565,45 @@ if (processingData) {
     });
 }
             // =========== INTEGRATION POINT 4: TRANSPORTATION ===========
-            const transportFactors = {
-                road: 0.1,
-                rail: 0.03,
-                sea: 0.02,
-                air: 0.8,
-                lastmile: 0.15,
-                electric_van: 0.05
-            };
-            
-            const transportFactor = transportFactors[transportMode] || 0.1;
-            const transportCO2 = totalIngredientQuantity * transportDistance * transportFactor / 1000; // Convert to kg CO₂e
-            
-            if (auditTrail.pefCategories["Climate Change"]) {
-                auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total = transportCO2;
-                auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components.push({
-                    name: transportMode,
-                    distance_km: transportDistance,
-                    subtotal: transportCO2,
-                    notes: "Freight transportation"
-                });
-                auditTrail.pefCategories["Climate Change"].total += transportCO2;
-            }
+// ✅ TWEAK 4: UPDATED WITH GLEC v4.0 PHYSICS (MINIMAL FIX)
+const transportFactors = {
+    road: 0.071,      // GLEC v4.0 Table 4.1: Euro 6 HGV, 85% load
+    rail: 0.023,      // GLEC v4.0 Table 5.1: Electric rail, EU avg  
+    sea: 0.015,       // GLEC v4.0 Table 6.1: Container ship 8000+ TEU
+    air: 0.950,       // ICAO 2023: Long-haul air cargo (more accurate)
+    lastmile: 0.150,  // GLEC v4.0 Table 4.3: Urban diesel van
+    electric_van: 0.025  // GLEC v4.0 Annex B: EU grid mix
+};
+
+const transportFactor = transportFactors[transportMode] || 0.071;
+let transportCO2 = totalIngredientQuantity * transportDistance * transportFactor / 1000;
+
+// ✅ ONE LINE LOGGING FOR PHYSICS TRANSPARENCY
+console.log(`🚚 TWEAK 4 Physics: ${transportMode} = ${transportFactor} kg/ton-km (GLEC v4.0)`);
+
+// ✅ REFRIGERATION PHYSICS (BEFORE AUDIT!)
+const isRefrigerated = document.getElementById('refrigeratedTransport')?.value === 'yes';
+let refrigerationNote = '';
+if (isRefrigerated) {
+    const refrigerationFactor = 1.4; // GLEC: 20-60% extra
+    const baseCO2 = transportCO2;
+    transportCO2 *= refrigerationFactor;
+    refrigerationNote = ` + refrigerated (×${refrigerationFactor}: ${baseCO2.toFixed(3)} → ${transportCO2.toFixed(3)} kg)`;
+    console.log(`🧊 Refrigeration physics: ×${refrigerationFactor} (GLEC range 1.2-1.6)`);
+}
+
+// ✅ AUDIT TRAIL WITH PHYSICS
+if (auditTrail.pefCategories["Climate Change"]) {
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total = transportCO2;
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components.push({
+        name: transportMode + (isRefrigerated ? ' (refrigerated)' : ''),
+        distance_km: transportDistance,
+        subtotal: transportCO2,
+        notes: `Freight transportation (GLEC v4.0 factor: ${transportFactor} kg/ton-km)${refrigerationNote}`,
+        physics_source: "GLEC v4.0" + (isRefrigerated ? " + refrigeration adjustment" : "")
+    });
+    auditTrail.pefCategories["Climate Change"].total += transportCO2;
+    }
 
             // =========== INTEGRATION POINT 5: PACKAGING WITH CFF ===========
             const packagingData = aioxyData.packaging[packagingMaterial];
