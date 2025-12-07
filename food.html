@@ -3439,10 +3439,11 @@ function applyScenarioPhysics(baseResults, scenarios) {
         },
 
         calculateUncertainty(dqrScore) {
-    if (dqrScore <= 1) return 10;
-    if (dqrScore <= 2) return 10 + 15 * (dqrScore - 1);
-    return 25 + 25 * (dqrScore - 2); // Hits exactly 50% at DQR 3.0
-    }
+            if (dqrScore <= 1) return 10;
+            if (dqrScore <= 2) return 10 + 15 * (dqrScore - 1);
+            let base = 25 + 25 * (dqrScore - 2);
+            return Math.min(Math.max(base, 10), 100);
+        },
 
         calculateFoodImpact() {
             console.log('🔧 Starting calculation with ingredients:', selectedIngredients);
