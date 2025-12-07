@@ -2694,75 +2694,79 @@ window.debugAIOXY = debugCurrentState;
         }
     };
 
-    // ================== FIX 1: CFF CALCULATION FUNCTION ==================
-    function calculateCFF(packaging, weightKg, recycledContentPercent) {
-        // Default packaging data if not provided
-        const packagingData = packaging || {
-            collection_rate: 0.45,
-            sorting_efficiency: 0.85,
-            recycling_yield: 0.75,
-            market_availability: 0.9,
-            quality_downgrade: 0.5,
-            eol_allocation: 'cut-off',
-            co2_virgin: 2.5,    // kg CO₂e per kg material
-            co2_recycled: 1.2,  // kg CO₂e per kg material
-            co2_disposal: 0.3,  // kg CO₂e per kg material
-            co2_avoided_credit: -1.8  // Negative = credit
-        };
+    // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
+function calculateCFF(packagingData, weightKg, recycledContentPercent) {
+    console.log("📦 CFF Calculation with:", { 
+        packaging: packagingData, 
+        weight: weightKg, 
+        recycled: recycledContentPercent 
+    });
+    
+    // SAFETY: Use provided data or defaults
+    const p = packagingData || {};
+    
+    // Map YOUR data structure to CFF variables
+    const CFF = {
+        // Material impacts from your data
+        M_virgin: p.co2_virgin || 2.5,
+        M_recycled: p.co2_recycled || 1.2,
+        M_disposal: p.co2_disposal || 0.3,
+        M_avoided: p.co2_avoided_credit || -1.8,
+        
+        // Recycling rates from YOUR data (r1_max = collection, r2 = sorting+recycling)
+        R_collection: p.r1_max || 0.45,
+        R_sorting: p.r2 || 0.85,
+        R_recycling: p.r2 || 0.75,  // Using same as sorting
+        R_market: 0.9,  // Default market availability
+        
+        // Quality from YOUR data
+        Q_virgin: 1.0,
+        Q_recycled: p.q || 0.95,
+        Q_downgrade: 0.5,
+        
+        // Allocation factors (PEF standard)
+        A_virgin: 0.5,
+        A_recycled: 0.5,
+        A_energy: 0.3
+    };
 
-        const CFF = {
-            // Allocation factors
-            A_virgin: 0.5,
-            A_recycled: 0.5,
-            A_energy: 0.3,
-            
-            // Recycling rates
-            R_collection: packagingData.collection_rate,
-            R_sorting: packagingData.sorting_efficiency,
-            R_recycling: packagingData.recycling_yield,
-            R_market: packagingData.market_availability,
-            
-            // Quality factors
-            Q_virgin: 1.0,
-            Q_recycled: 0.95,
-            Q_downgrade: packagingData.quality_downgrade,
-            
-            // Material parameters
-            M_virgin: packagingData.co2_virgin,
-            M_recycled: packagingData.co2_recycled,
-            M_disposal: packagingData.co2_disposal,
-            M_avoided: packagingData.co2_avoided_credit
-        };
+    const recycledFraction = recycledContentPercent / 100;
+    const collectionEfficiency = CFF.R_collection * CFF.R_sorting;
+    const effectiveRecyclingRate = collectionEfficiency * CFF.R_recycling * CFF.R_market;
 
-        const recycledFraction = recycledContentPercent / 100;
-        const collectionEfficiency = CFF.R_collection * CFF.R_sorting;
-        const effectiveRecyclingRate = collectionEfficiency * CFF.R_recycling * CFF.R_market;
+    // Virgin material burden
+    const virginBurden = (1 - recycledFraction) * CFF.M_virgin * CFF.A_virgin;
 
-        // Virgin material burden
-        const virginBurden = (1 - recycledFraction) * CFF.M_virgin * CFF.A_virgin;
+    // Recycled material burden  
+    const recycledBurden = recycledFraction * CFF.M_recycled * CFF.A_recycled * CFF.Q_recycled;
 
-        // Recycled material burden
-        const recycledBurden = recycledFraction * CFF.M_recycled * CFF.A_recycled * CFF.Q_recycled;
+    // End-of-life
+    const disposedFraction = 1 - effectiveRecyclingRate;
+    const disposalBurden = disposedFraction * CFF.M_disposal;
+    const recyclingCredit = effectiveRecyclingRate * CFF.M_avoided * CFF.A_recycled;
 
-        // End-of-life
-        const disposedFraction = 1 - effectiveRecyclingRate;
-        const disposalBurden = disposedFraction * CFF.M_disposal;
-        const recyclingCredit = effectiveRecyclingRate * CFF.M_avoided * CFF.A_recycled;
+    // TOTAL CFF IMPACT
+    const cffImpact = (virginBurden + recycledBurden) + (disposalBurden - recyclingCredit);
+    const totalImpact = cffImpact * weightKg;
 
-        // TOTAL CFF IMPACT
-        const cffImpact = (virginBurden + recycledBurden) + (disposalBurden - recyclingCredit);
+    console.log("✅ CFF Result:", {
+        totalImpact: totalImpact,
+        virginBurden: virginBurden * weightKg,
+        recycledBurden: recycledBurden * weightKg,
+        disposalBurden: disposalBurden * weightKg,
+        recyclingCredit: recyclingCredit * weightKg
+    });
 
-        return {
-            totalImpact: cffImpact * weightKg,
-            virginBurden: virginBurden * weightKg,
-            recycledBurden: recycledBurden * weightKg,
-            disposalBurden: disposalBurden * weightKg,
-            recyclingCredit: recyclingCredit * weightKg,
-            effectiveRecyclingRate: effectiveRecyclingRate,
-            cff_parameters: CFF
-        };
+    return {
+        totalImpact: isNaN(totalImpact) ? 0 : totalImpact,
+        virginBurden: virginBurden * weightKg,
+        recycledBurden: recycledBurden * weightKg,
+        disposalBurden: disposalBurden * weightKg,
+        recyclingCredit: recyclingCredit * weightKg,
+        effectiveRecyclingRate: effectiveRecyclingRate,
+        cff_parameters: CFF
+    };
     }
-
     // ================== FIX 2: AWARE 2.0 WATER CALCULATION ==================
     function calculateAWARE(waterUse, countryCode, watershed = 'default', processingMethod = 'none') {
         // WATERSHED-SPECIFIC AWARE 2.0 FACTORS
