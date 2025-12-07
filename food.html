@@ -2480,6 +2480,42 @@
 </div>
 
 <script>
+    // ================== DATA INTEGRITY CHECK ==================
+console.log("🔍 [AIOXY Startup] Checking data integrity...");
+
+// Wait for page to fully load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if aioxyData exists
+    if (typeof window.aioxyData === 'undefined') {
+        console.error("❌ CRITICAL: ingredients.js failed to load!");
+        console.error("Check: 1) ingredients.js file exists 2) Uses window.aioxyData");
+        
+        // Show user error
+        alert("⚠️ Data loading error! Please ensure ingredients.js is in same folder and uses 'window.aioxyData'");
+        return;
+    }
+    
+    // Verify all required data sections exist
+    const requiredSections = ['ingredients', 'countries', 'processing', 'packaging'];
+    const missingSections = requiredSections.filter(section => !window.aioxyData[section]);
+    
+    if (missingSections.length > 0) {
+        console.error("❌ Missing data sections:", missingSections);
+        alert("⚠️ Incomplete data in ingredients.js. Missing: " + missingSections.join(', '));
+        return;
+    }
+    
+    console.log("✅ Data integrity check PASSED:");
+    console.log("   - Ingredients:", Object.keys(window.aioxyData.ingredients).length);
+    console.log("   - Countries:", Object.keys(window.aioxyData.countries).length);
+    console.log("   - Processing methods:", Object.keys(window.aioxyData.processing).length);
+    console.log("   - Packaging materials:", Object.keys(window.aioxyData.packaging).length);
+    
+    // Store reference globally (for compatibility)
+    if (typeof aioxyData === 'undefined') {
+        window.aioxyData = window.aioxyData;
+    }
+});
     // ================== GLOBAL VARIABLES ==================
 let selectedIngredients = [];
 let currentChart = null;
@@ -6049,47 +6085,58 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
 
     // ================== INITIALIZE APPLICATION ==================
     function initApp() {
-    console.log('🚀 INITIALIZING AIOXY...');
+    console.log('🚀 [AIOXY] Initializing application...');
     
-    // Check if aioxyData is loaded
-    if (typeof aioxyData === 'undefined') {
-        console.error('❌ CRITICAL: aioxyData not found!');
-        console.log('Please ensure ingredients.js is loaded and contains the aioxyData object.');
-        document.getElementById('ingredientSelect').innerHTML = '<option value="">ERROR: Data not loaded</option>';
-        alert('ERROR: Could not load ingredient data. Please check the console for details.');
-        return;
-    }
-    
-    populateIngredientSelect();
-    populateCountrySelect();
-    
-    validateDataIntegrity(); // <-- ADD THIS LINE
-    
-    setupDemoData();
-    
-    updateTabIndicator();
-    
-    console.log('✅ AIOXY INITIALIZED SUCCESSFULLY');
-    
-    setTimeout(() => {
-        console.log('🔧 [Fix] Post-init prime: Ensuring business data ready...');
-        
-        if ((!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"]) && selectedIngredients.length > 0) {
-            console.log('🔧 [Fix] Calculating physics data for business case readiness...');
-            calculateImpact();
-        } else if (selectedIngredients.length === 0) {
-            console.log('🔧 [Fix] No ingredients found, ensuring demo data is loaded...');
-            setupDemoData();
+    // WAIT for data to be ready
+    const checkData = setInterval(() => {
+        if (window.aioxyData && window.aioxyData.ingredients) {
+            clearInterval(checkData);
+            console.log('✅ [AIOXY] Data confirmed loaded. Proceeding...');
+            proceedWithInitialization();
+        } else {
+            console.log('⏳ [AIOXY] Waiting for data...');
         }
+    }, 100); // Check every 100ms
+    
+    // Timeout after 5 seconds
+    setTimeout(() => {
+        if (!window.aioxyData || !window.aioxyData.ingredients) {
+            clearInterval(checkData);
+            console.error('❌ [AIOXY] Data load timeout! Using fallback demo mode.');
+            alert('Data loading timed out. Running in demo mode with limited data.');
+            proceedWithInitialization(); // Continue anyway
+        }
+    }, 5000);
+    
+    function proceedWithInitialization() {
+        console.log('📊 [AIOXY] Starting full initialization...');
         
-        console.log('📊 [Fix] Post-init state:', {
-            hasPefData: !!finalPefResults && Object.keys(finalPefResults).length > 0,
-            hasClimateData: !!finalPefResults && !!finalPefResults["Climate Change"],
-            ingredientCount: selectedIngredients.length,
-            baseline: currentComparisonBaseline?.name,
-            physicsEnginesLoaded: true
-        });
-    }, 1000);
+        // Now we can safely access the data
+        console.log('   Available ingredients:', Object.keys(window.aioxyData.ingredients).length);
+        
+        // Populate dropdowns
+        populateIngredientSelect();
+        populateCountrySelect();
+        
+        // Set up demo data
+        setupDemoData();
+        
+        // Initialize UI
+        updateTabIndicator();
+        
+        // Validate data
+        validateDataIntegrity();
+        
+        console.log('✅ [AIOXY] Initialization complete!');
+        
+        // Force a calculation to test
+        setTimeout(() => {
+            console.log('🧪 [AIOXY] Running test calculation...');
+            if (selectedIngredients.length > 0) {
+                calculateImpact();
+            }
+        }, 500);
+    }
     }
 
     // Start the application when DOM is loaded
