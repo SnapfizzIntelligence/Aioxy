@@ -4630,6 +4630,199 @@ function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent)
 
     console.log('✅ [Fix] Business Story populated: €' + safeTotal.toFixed(0) + ' benefit, ' + safeReduction + '% reduction');
 }
+    
+// =========== TWEAK 5: BUSINESS DISCOUNTS (TEMPORAL ROI + CREDITS) ===========
+function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
+    console.log("💰 [Tweak5] Calculating discounted ROI with physics...");
+    
+    // Safety check
+    if (!financialResults || !financialResults.total) {
+        console.warn("⚠️ [Tweak5] Missing financial results, using defaults");
+        return {
+            npvBenefit: "0",
+            npvROI: "0",
+            carbonCredits: "0",
+            premiumScaled: "0",
+            totalDiscounted: "0",
+            discountRate: "3% (AR5 social rate)"
+        };
+    }
+    
+    const { total: annualBenefit } = financialResults;
+    const implementationCost = calculateImplementationCost(volume);
+    
+    // 1. TEMPORAL DISCOUNTING (Physics: NPV w/ 3% social rate, AR5 WGIII)
+    const discountRate = 0.03; // EU social discount for env projects
+    let npvBenefit = 0;
+    for (let year = 1; year <= timeHorizon; year++) {
+        npvBenefit += annualBenefit * Math.pow(1 + discountRate, -year);
+    }
+    
+    const npvROI = implementationCost > 0 ? (npvBenefit - implementationCost) / implementationCost * 100 : 0;
+    
+    // 2. CARBON CREDITS (Physics: Verified offsets @ €85/t CO₂e, EU ETS 2025)
+    const tonsSaved = financialResults.metrics?.totalTonsCo2Saved || 0;
+    const creditRevenue = tonsSaved * 85; // €85 per ton CO₂e (EU ETS 2025 forecast)
+    
+    // 3. PREMIUM SCALING (Nielsen: 15% CO₂ cut → +12% price; linear to 25%)
+    const co2ReductionPct = calculateCO2ReductionPercent();
+    const premiumMultiplier = 1 + Math.min(co2ReductionPct / 100 * 1.67, 0.25); // Max +25%
+    const discountedPremium = annualBenefit * premiumMultiplier;
+    
+    console.log("✅ [Tweak5] Discounted ROI calculated:", {
+        annualBenefit,
+        npvBenefit,
+        creditRevenue,
+        premiumMultiplier,
+        npvROI
+    });
+    
+    return {
+        npvBenefit: npvBenefit.toFixed(0),
+        npvROI: Math.max(npvROI, 0).toFixed(1),
+        carbonCredits: creditRevenue.toFixed(0),
+        premiumScaled: discountedPremium.toFixed(0),
+        totalDiscounted: (npvBenefit + creditRevenue).toFixed(0),
+        discountRate: `${(discountRate * 100).toFixed(1)}% (AR5 social rate)`
+    };
+}
+
+// =========== UPDATE BUSINESS CASE WITH TWEAK 5 ===========
+function updateBusinessCaseWithTweak5() {
+    console.log("🔄 updateBusinessCaseWithTweak5 CALLED");
+    
+    // Ensure we have physics data
+    if (!finalPefResults || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
+        console.log("⚠️ No physics data, deferring to original updateBusinessCase");
+        updateBusinessCase();
+        return;
+    }
+    
+    const volume = currentAnnualVolume;
+    const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+    
+    // Get financial results from your existing engine
+    const businessResults = {
+        finalPefResults: finalPefResults,
+        finalContentWeight: productWeightKg,
+        co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
+        fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
+    };
+    
+    // Apply scenarios if active
+    let scenarioAdjustedResults = businessResults;
+    if (Object.values(activeScenarios).some(v => v)) {
+        scenarioAdjustedResults = {
+            ...businessResults,
+            finalPefResults: validateAndApplyScenarios({
+                finalPefResults: finalPefResults,
+                finalContentWeight: productWeightKg
+            }, activeScenarios)
+        };
+    }
+    
+    // Calculate financials using your existing function
+    const financialResults = calculateHardFinancialMath(scenarioAdjustedResults, volume, activeScenarios);
+    
+    // Apply Tweak 5 discounted ROI
+    const discountedROI = calculateDiscountedROI(financialResults, volume);
+    
+    // Update UI with discounted values
+    updateHardFinancialLedgerWithCredits(financialResults, volume);
+    
+    // Update ROI display with discounted values
+    const roiValueElement = document.getElementById('roiValue');
+    const roiBadgeElement = document.getElementById('roiBadge');
+    const netReturnElement = document.getElementById('netReturnDisplay');
+    
+    if (roiValueElement) roiValueElement.textContent = discountedROI.npvROI + '% (NPV)';
+    if (roiBadgeElement) roiBadgeElement.textContent = `+€${discountedROI.carbonCredits} credits`;
+    if (netReturnElement) netReturnElement.textContent = '€' + discountedROI.totalDiscounted + ' (discounted)';
+    
+    // Update other business metrics
+    document.getElementById('savingsValue').textContent = "€" + formatLargeNumber(financialResults.total);
+    
+    // Calculate market metrics
+    const co2ReductionPercent = calculateCO2ReductionPercent();
+    const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);
+    const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);
+    
+    document.getElementById('premiumValue').textContent = premiumPct.toFixed(1) + "%";
+    document.getElementById('marketValue').textContent = marketGrowthPct.toFixed(1) + "%";
+    
+    // Add carbon credit card to business metrics if not already there
+    addCarbonCreditCard(discountedROI);
+    
+    // Update implementation costs
+    const implementationCost = calculateImplementationCost(volume);
+    const totalBenefit = parseFloat(discountedROI.totalDiscounted);
+    
+    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
+    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
+    document.getElementById('totalBenefitDisplay').textContent = '€' + discountedROI.totalDiscounted;
+    
+    // Update business story
+    updateBusinessStory(financialResults, parseFloat(discountedROI.npvROI), volume, co2ReductionPercent);
+    
+    console.log("✅ [Tweak5] Business case updated with discounted ROI");
+}
+
+// =========== ADD CARBON CREDIT CARD ===========
+function addCarbonCreditCard(discountedROI) {
+    // Check if carbon credit card already exists
+    if (document.getElementById('carbonCreditCard')) return;
+    
+    const businessMetrics = document.querySelector('.business-metrics');
+    if (!businessMetrics) return;
+    
+    const creditCard = document.createElement('div');
+    creditCard.className = 'business-card';
+    creditCard.id = 'carbonCreditCard';
+    creditCard.innerHTML = `
+        <i class="fas fa-coins" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+        <div class="business-value">€${discountedROI.carbonCredits}</div>
+        <div class="business-label">Carbon Credit Revenue</div>
+        <div class="roi-badge" style="margin-top: 0.5rem;">EU ETS @ €85/t</div>
+    `;
+    
+    businessMetrics.appendChild(creditCard);
+}
+
+// =========== UPDATE HARD FINANCIAL LEDGER WITH CREDITS ===========
+function updateHardFinancialLedgerWithCredits(financialResults, volume) {
+    const tbody = document.getElementById('ledgerBody');
+    if (!tbody) return;
+    
+    const { moneyCarbon, moneyFuel, moneyEnergy, total, metrics } = financialResults;
+    
+    tbody.innerHTML = `
+        <tr>
+            <td><strong>🛡️ Carbon Liability</strong><br><small>EU ETS Avoidance (€85/t CO₂e)</small></td>
+            <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
+            <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
+        </tr>
+        <tr>
+            <td><strong>🌱 Carbon Credits</strong><br><small>Verified offsets (EU ETS 2025)</small></td>
+            <td>+${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
+            <td class="money-positive">+€${(metrics.totalTonsCo2Saved * 85).toFixed(2)}</td>
+        </tr>
+        <tr>
+            <td><strong>⚡ Energy OPEX</strong><br><small>Fossil fuel reduction (PEF Data)</small></td>
+            <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
+            <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
+        </tr>
+        <tr>
+            <td><strong>🚚 Logistics Fuel</strong><br><small>Transport optimization</small></td>
+            <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
+            <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
+        </tr>
+    `;
+
+    const totalBenefit = document.getElementById('totalBenefit');
+    if (totalBenefit) {
+        totalBenefit.innerText = "€" + total.toFixed(2);
+    }
+}
 
 // ================== UPDATE RESULTS UI ==================
 function updateResultsUI(results) {
@@ -4979,7 +5172,7 @@ function calculateCO2ReductionPercent() {
                 }
                 setTimeout(updateBusinessCase, 200);
             } else {
-                updateBusinessCase();
+                updateBusinessCaseWithTweak5(); // <--- CHANGED TO NEW FUNCTION
             }
         }
         if (tabName === 'dpp') {
