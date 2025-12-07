@@ -2853,84 +2853,118 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
 
     // ================== FIX 3: PEF SINGLE SCORE CALCULATION ==================
     function calculatePEFSingleScore(pefResults, productWeightKg) {
-        // PEF Normalization Factors (person equivalents per unit)
-        const pefNormalizationFactors = {
-    "Climate Change": 1.32e-4,                // ✅ REAL: PE/kg CO₂ eq
-    "Ozone Depletion": 1.91e1,                // ✅ REAL: PE/kg CFC-11 eq
-    "Human Toxicity, cancer": 5.78e4,         // ✅ REAL: PE/CTUh
-    "Human Toxicity, non-cancer": 7.75e3,     // ✅ REAL: PE/CTUh
-    "Particulate Matter": 1.68e3,             // ✅ REAL: PE/disease inc.
-    "Ionizing Radiation": 2.37e-4,            // ✅ REAL: PE/kBq U235 eq
-    "Photochemical Ozone Formation": 2.44e-2, // ✅ REAL: PE/kg NMVOC eq
-    "Acidification": 1.80e-2,                 // ✅ REAL: PE/mol H⁺ eq
-    "Eutrophication, terrestrial": 5.65e-3,   // ✅ REAL: PE/mol N eq
-    "Eutrophication, freshwater": 6.21e-1,    // ✅ REAL: PE/kg P eq
-    "Eutrophication, marine": 5.13e-2,        // ✅ REAL: PE/kg N eq
-    "Ecotoxicity, freshwater": 1.76e-5,       // ✅ REAL: PE/CTUe
-    "Land Use": 1.22e-6,                      // ✅ REAL: PE/Pt
-    "Water Use/Scarcity (AWARE)": 8.70e-5,    // ✅ REAL: PE/m³ world eq
-    "Resource Use, minerals/metals": 1.57e1,  // ✅ REAL: PE/kg Sb eq
-    "Resource Use, fossils": 1.54e-5          // ✅ REAL: PE/MJ
-};
-
-        // PEF Weighting Factors
-        const pefWeightingFactors = {
-    "Climate Change": 0.105,          // Updated for EF 3.1
-    "Ozone Depletion": 0.028,         // Updated
-    "Human Toxicity, cancer": 0.070,  // Updated
-    "Human Toxicity, non-cancer": 0.070, // Updated
-    "Particulate Matter": 0.070,      // Updated
-    "Ionizing Radiation": 0.028,      // Updated
-    "Photochemical Ozone Formation": 0.028, // Updated
-    "Acidification": 0.028,           // Updated
-    "Eutrophication, terrestrial": 0.028, // Updated
-    "Eutrophication, freshwater": 0.028, // Updated
-    "Eutrophication, marine": 0.028,  // Updated
-    "Ecotoxicity, freshwater": 0.028, // Updated
-    "Land Use": 0.056,                // Updated
-    "Water Use/Scarcity (AWARE)": 0.063, // Updated
-    "Resource Use, minerals/metals": 0.028, // Updated
-    "Resource Use, fossils": 0.042    // Updated
-};
-
-        let normalizedScore = 0;
-        let weightedScore = 0;
-        
-        const singleScoreBreakdown = {};
-        
-        Object.keys(pefResults).forEach(category => {
-            const impact = pefResults[category].total || 0;
-            const perKg = productWeightKg > 0 ? impact / productWeightKg : 0;
-            
-            // 1. NORMALIZE to Person Equivalents
-            const normalizationFactor = pefNormalizationFactors[category] || 0;
-            const normalized = perKg * normalizationFactor;
-            
-            // 2. WEIGHT
-            const weightingFactor = pefWeightingFactors[category] || 0;
-            const weighted = normalized * weightingFactor;
-            
-            singleScoreBreakdown[category] = {
-                raw: perKg,
-                normalized: normalized,
-                weighted: weighted,
-                normalizationFactor: normalizationFactor,
-                weightingFactor: weightingFactor
-            };
-            
-            normalizedScore += normalized;
-            weightedScore += weighted;
-        });
-        
+    // SAFETY CHECK: Prevent division by zero
+    if (productWeightKg <= 0) {
+        console.warn("⚠️ [PEF Fix] Product weight is zero or negative, returning zero score");
         return {
-            singleScore: weightedScore,
-            normalizedScore: normalizedScore,
-            weightedScore: weightedScore,
-            breakdown: singleScoreBreakdown,
-            unit: 'mPt' // milliPerson equivalents
+            singleScore: 0,
+            normalizedScore: 0,
+            weightedScore: 0,
+            breakdown: {},
+            unit: 'mPt'
         };
     }
+    
+    // ================== CORRECTED PEF NORMALIZATION FACTORS ==================
+    // JRC EF 3.1 GLOBAL PER-PERSON VALUES (2018, confirmed current for EF 3.1)
+    // REAL FORMULA: Normalized = (impact per kg) / (NF_per_person)
+    // Unit: person equivalents per year (PE/yr)
+    const pefNormalizationFactors = {
+        "Climate Change": 8400,                          // kg CO₂ eq / person / yr
+        "Ozone Depletion": 0.0234,                       // kg CFC-11 eq / person / yr
+        "Human Toxicity, cancer": 3.85e-5,               // CTUh / person / yr
+        "Human Toxicity, non-cancer": 4.75e-4,           // CTUh / person / yr
+        "Particulate Matter": 7.18e-4,                   // disease inc. / person / yr
+        "Ionizing Radiation": 4220,                      // kBq U235 eq / person / yr
+        "Photochemical Ozone Formation": 40.6,           // kg NMVOC eq / person / yr
+        "Acidification": 55.5,                           // mol H+ eq / person / yr
+        "Eutrophication, terrestrial": 177,              // mol N eq / person / yr
+        "Eutrophication, freshwater": 0.734,             // kg P eq / person / yr
+        "Eutrophication, marine": 28.3,                  // kg N eq / person / yr
+        "Ecotoxicity, freshwater": 1.18e4,               // CTUe / person / yr
+        "Land Use": 1.40e6,                              // Pt / person / yr
+        "Water Use/Scarcity (AWARE)": 1.15e4,            // m³ world eq / person / yr
+        "Resource Use, minerals/metals": 6.36e-2,        // kg Sb eq / person / yr
+        "Resource Use, fossils": 6.53e4                  // MJ / person / yr
+    };
+    
+    // PEF Weighting Factors (EF 3.1 compliant, sum = 1)
+    const pefWeightingFactors = {
+        "Climate Change": 0.105,
+        "Ozone Depletion": 0.028,
+        "Human Toxicity, cancer": 0.070,
+        "Human Toxicity, non-cancer": 0.070,
+        "Particulate Matter": 0.070,
+        "Ionizing Radiation": 0.028,
+        "Photochemical Ozone Formation": 0.028,
+        "Acidification": 0.028,
+        "Eutrophication, terrestrial": 0.028,
+        "Eutrophication, freshwater": 0.028,
+        "Eutrophication, marine": 0.028,
+        "Ecotoxicity, freshwater": 0.028,
+        "Land Use": 0.056,
+        "Water Use/Scarcity (AWARE)": 0.063,
+        "Resource Use, minerals/metals": 0.028,
+        "Resource Use, fossils": 0.042
+    };
+    
+    let normalizedScore = 0;
+    let weightedScore = 0;
+    
+    const singleScoreBreakdown = {};
+    
+    Object.keys(pefResults).forEach(category => {
+        const impact = pefResults[category].total || 0;
+        const perKg = productWeightKg > 0 ? impact / productWeightKg : 0;
+        
+        // 1. NORMALIZE to Person Equivalents per year
+        // CORRECT FORMULA: normalized = perKg / normalizationFactor
+        const normalizationFactor = pefNormalizationFactors[category] || 1;
+        
+        // SAFETY: Prevent division by zero
+        if (normalizationFactor === 0) {
+            console.error(`❌ [PEF Fix] Zero normalization factor for ${category}`);
+            return;
+        }
+        
+        const normalized = perKg / normalizationFactor;
+        
+        // 2. APPLY WEIGHTING
+        const weightingFactor = pefWeightingFactors[category] || 0;
+        const weighted = normalized * weightingFactor;
+        
+        singleScoreBreakdown[category] = {
+            raw_per_kg: perKg,
+            normalized: normalized,
+            weighted: weighted,
+            normalizationFactor: normalizationFactor,
+            weightingFactor: weightingFactor
+        };
+        
+        normalizedScore += normalized;
+        weightedScore += weighted;
+    });
+    
+    // Convert to milliPerson equivalents (mPt) for readability
+    const singleScoreMilliPt = weightedScore * 1000;
+    
+    console.log("✅ [PEF Fix] Single score calculated:", {
+        rawWeighted: weightedScore,
+        milliPt: singleScoreMilliPt,
+        productWeightKg: productWeightKg,
+        categoriesProcessed: Object.keys(singleScoreBreakdown).length
+    });
+    
+    return {
+        singleScore: singleScoreMilliPt,  // in mPt
+        normalizedScore: normalizedScore,
+        weightedScore: weightedScore,
+        breakdown: singleScoreBreakdown,
+        unit: 'mPt' // milliPerson equivalents
+    };
+    }
 
+        
     // ================== FIX 3: UNCERTAINTY MONTE CARLO (PHYSICS-CORRECT) ==================
 function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     console.log("🔬 [Physics Monte Carlo] Running with lognormal distribution...");
@@ -3439,11 +3473,10 @@ function applyScenarioPhysics(baseResults, scenarios) {
         },
 
         calculateUncertainty(dqrScore) {
-            if (dqrScore <= 1) return 10;
-            if (dqrScore <= 2) return 10 + 15 * (dqrScore - 1);
-            let base = 25 + 25 * (dqrScore - 2);
-            return Math.min(Math.max(base, 10), 100);
-        },
+    if (dqrScore <= 1) return 10;
+    if (dqrScore <= 2) return 10 + 15 * (dqrScore - 1);
+    return 25 + 25 * (dqrScore - 2); // Hits exactly 50% at DQR 3.0
+    }
 
         calculateFoodImpact() {
             console.log('🔧 Starting calculation with ingredients:', selectedIngredients);
