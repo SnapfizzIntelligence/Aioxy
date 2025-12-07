@@ -5882,106 +5882,137 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
 
     // ================== INITIALIZATION ==================
     function populateIngredientSelect() {
-        const select = document.getElementById('ingredientSelect');
-        if (!select) {
-            console.error('❌ ingredientSelect element not found!');
-            return;
-        }
-        
-        select.innerHTML = '<option value="">Choose from science-based ingredients...</option>';
-        
-        console.log('📦 Loading ingredients from aioxyData:', Object.keys(aioxyData?.ingredients || {}).length);
-        
-        if (aioxyData && aioxyData.ingredients) {
-            for (const [key, ingredient] of Object.entries(aioxyData.ingredients)) {
-                const option = document.createElement('option');
-                option.value = key;
-                const dqrQuality = foodCalculationEngine.getDQRQualityLevel(ingredient.data.metadata.dqr_overall);
-                option.textContent = `${ingredient.name} (${dqrQuality.level} DQR)`;
-                select.appendChild(option);
-            }
-            
-            console.log('✅ Ingredients loaded successfully');
-        } else {
-            console.error('❌ aioxyData not loaded! Check ingredients.js');
-            select.innerHTML = '<option value="">ERROR: ingredients.js not loaded</option>';
-        }
+    const select = document.getElementById('ingredientSelect');
+    if (!select) {
+        console.error('❌ ingredientSelect element not found!');
+        return;
+    }
+    
+    // Clear any existing options
+    select.innerHTML = '<option value="">Choose from science-based ingredients...</option>';
+    
+    // Check if data is available
+    if (!window.aioxyData || !window.aioxyData.ingredients) {
+        console.error('❌ [populateIngredientSelect] No ingredient data available!');
+        select.innerHTML += '<option value="">⚠️ Data loading... Please refresh</option>';
+        return;
+    }
+    
+    // Get all ingredients
+    const ingredients = window.aioxyData.ingredients;
+    const ingredientCount = Object.keys(ingredients).length;
+    
+    console.log(`📦 [populateIngredientSelect] Populating ${ingredientCount} ingredients...`);
+    
+    if (ingredientCount === 0) {
+        select.innerHTML = '<option value="">❌ No ingredients found in database</option>';
+        return;
+    }
+    
+    // Sort by name for better UX
+    const sortedKeys = Object.keys(ingredients).sort((a, b) => {
+        return ingredients[a].name.localeCompare(ingredients[b].name);
+    });
+    
+    // Add each ingredient to dropdown
+    sortedKeys.forEach(key => {
+        const ingredient = ingredients[key];
+        const option = document.createElement('option');
+        option.value = key; // Use the ID as value
+        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(ingredient.data.metadata.dqr_overall);
+        option.textContent = `${ingredient.name} (${dqrQuality.level} DQR)`;
+        option.title = `${ingredient.data.pef["Climate Change"].toFixed(2)} kg CO₂e/kg`;
+        select.appendChild(option);
+    });
+    
+    console.log(`✅ [populateIngredientSelect] Added ${sortedKeys.length} ingredients to dropdown`);
     }
 
     function populateCountrySelect() {
-        const select = document.getElementById('manufacturingCountry');
-        if (!select) return;
+    const select = document.getElementById('manufacturingCountry');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Select country...</option>';
+    
+    if (window.aioxyData && window.aioxyData.countries) {
+        const countries = window.aioxyData.countries;
+        const sortedKeys = Object.keys(countries).sort((a, b) => {
+            return countries[a].name.localeCompare(countries[b].name);
+        });
         
-        select.innerHTML = '<option value="">Select country...</option>';
+        sortedKeys.forEach(code => {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = `${countries[code].name} (${countries[code].electricityCO2}g CO₂/kWh)`;
+            if (code === 'FR') option.selected = true;
+            select.appendChild(option);
+        });
         
-        if (aioxyData && aioxyData.countries) {
-            for (const [code, country] of Object.entries(aioxyData.countries)) {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = country.name;
-                if (code === 'FR') option.selected = true;
-                select.appendChild(option);
-            }
-        } else {
-            // Fallback countries if data not loaded
-            const fallbackCountries = {
-                'FR': 'France',
-                'DE': 'Germany',
-                'ES': 'Spain',
-                'IT': 'Italy',
-                'NL': 'Netherlands'
-            };
-            
-            for (const [code, name] of Object.entries(fallbackCountries)) {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = name;
-                if (code === 'FR') option.selected = true;
-                select.appendChild(option);
-            }
+        console.log(`✅ [populateCountrySelect] Added ${sortedKeys.length} countries to dropdown`);
+    } else {
+        console.warn('⚠️ [populateCountrySelect] No country data available, using fallback');
+        // Fallback countries if data not loaded
+        const fallbackCountries = {
+            'FR': 'France (40g CO₂/kWh)',
+            'DE': 'Germany (270g CO₂/kWh)',
+            'ES': 'Spain (180g CO₂/kWh)',
+            'IT': 'Italy (220g CO₂/kWh)',
+            'NL': 'Netherlands (200g CO₂/kWh)'
+        };
+        
+        for (const [code, name] of Object.entries(fallbackCountries)) {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = name;
+            if (code === 'FR') option.selected = true;
+            select.appendChild(option);
         }
     }
+            }
 
     function setupDemoData() {
-        console.log('🎯 Setting up demo ingredients...');
-        
-        if (!aioxyData || !aioxyData.ingredients) {
-            console.error('❌ CRITICAL: ingredients.js not loaded!');
-            alert('ERROR: ingredients.js not loaded. Please ensure the file exists and is accessible.');
-            return;
-        }
-        
-        // Try to find valid ingredients
-        const availableIngredients = Object.keys(aioxyData.ingredients);
-        if (availableIngredients.length === 0) {
-            console.error('❌ No ingredients found in aioxyData!');
-            return;
-        }
-        
-        selectedIngredients = [
-            { 
-                id: availableIngredients[0], 
-                name: aioxyData.ingredients[availableIngredients[0]].name, 
-                quantity: 0.15 
-            }
-        ];
-        
-        // Add second ingredient if available
-        if (availableIngredients.length > 1) {
-            selectedIngredients.push({
-                id: availableIngredients[1], 
-                name: aioxyData.ingredients[availableIngredients[1]].name, 
-                quantity: 0.10 
-            });
-        }
-        
-        console.log('✅ Demo ingredients set:', selectedIngredients);
-        updateIngredientList();
-        
-        setTimeout(() => {
-            console.log('🔢 FORCING CALCULATION NOW');
-            calculateImpact();
-        }, 100);
+    console.log('🎯 [AIOXY] Setting up demo data...');
+    
+    if (!window.aioxyData || !window.aioxyData.ingredients) {
+        console.error('❌ [setupDemoData] Cannot setup demo: No ingredient data available');
+        return;
+    }
+    
+    // Use REAL ingredients from our database
+    const availableIngredients = Object.keys(window.aioxyData.ingredients);
+    
+    if (availableIngredients.length === 0) {
+        console.error('❌ [setupDemoData] No ingredients found in database!');
+        return;
+    }
+    
+    // Pick plant-based ingredients for demo (more sustainable)
+    const plantBasedIds = availableIngredients.filter(id => 
+        id.includes('soybean') || 
+        id.includes('spring-pea') || 
+        id.includes('oat') ||
+        id.includes('wheat')
+    );
+    
+    // Use plant-based if available, otherwise first ingredient
+    const demoIngredientId = plantBasedIds.length > 0 ? plantBasedIds[0] : availableIngredients[0];
+    
+    selectedIngredients = [{
+        id: demoIngredientId,
+        name: window.aioxyData.ingredients[demoIngredientId].name,
+        quantity: 0.15
+    }];
+    
+    console.log(`✅ [setupDemoData] Demo data set: ${selectedIngredients[0].name} (${demoIngredientId})`);
+    
+    // Update the UI
+    updateIngredientList();
+    
+    // Auto-calculate
+    setTimeout(() => {
+        console.log('🔢 [setupDemoData] Auto-calculating with demo data...');
+        calculateImpact();
+    }, 300);
     }
 
     // ================== INGREDIENT MANAGEMENT ==================
