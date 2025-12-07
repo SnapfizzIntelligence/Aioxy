@@ -1503,7 +1503,7 @@ const aioxyData = {
     // COUNTRY FACTORS (IEA 2025 + AWARE 2.0) - FULL UPDATE
     countries: {
         "DE": { name: "Germany", electricityCO2: 270, awareFactor: 24.5 },
-        "FR": { name: "France", electricityCO2: 40, awareFactor: 17.1 },
+        "FR": { name: "France", electricityCO2: 40, awareFactor: 17.1, renewable_mix: 0.33 },
         "IT": { name: "Italy", electricityCO2: 220, awareFactor: 49.8 },
         "ES": { name: "Spain", electricityCO2: 180, awareFactor: 64.7 },
         "NL": { name: "Netherlands", electricityCO2: 200, awareFactor: 33.6 },
@@ -1531,7 +1531,7 @@ const aioxyData = {
         "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000 },
         "pasteurization": { co2_impact: 0.06, water_impact: 0.15, yield: 0.995, loss: 0.005 },
         "sterilization": { co2_impact: 0.12, water_impact: 0.30, yield: 0.985, loss: 0.015 },
-        "baking": { co2_impact: 0.55, water_impact: 0.12, yield: 0.88, loss: 0.120 },
+        "baking": { co2_impact: 0.55, water_impact: 0.12, yield: 0.88, loss: 0.120, source: "AGRI 3.2 oven avg (2MJ/kg @ EU grid)" },
         "frying": { co2_impact: 0.75, water_impact: 0.22, yield: 0.75, loss: 0.250 },
         "freezing": { co2_impact: 0.25, water_impact: 0.08, yield: 0.975, loss: 0.025 },
         "drying": { co2_impact: 1.8, water_impact: 0.18, yield: 0.97, loss: 0.030 },
@@ -1544,7 +1544,7 @@ const aioxyData = {
 
     // TRANSPORTATION (GLEC v3.0)
     transportation: {
-        "road": { co2: 0.066, refrigerated_factor: 0.15 },
+        "road": { co2: 0.071, refrigerated_factor: 0.15, load_factor: 0.85 },
         "rail": { co2: 0.023, refrigerated_factor: 0.12 },
         "sea": { co2: 0.005, refrigerated_factor: 0.06 },
         "air": { co2: 0.525, refrigerated_factor: 0.12 },
