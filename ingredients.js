@@ -1,5 +1,5 @@
 // ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR, PROVENANCE & UPSTREAM ==================
-const aioxyData = {
+window.aioxyData = {
     // COMPLETE 50 INGREDIENTS DATABASE WITH UPSTREAM
     ingredients: {
         "beef-cattle-conventional-national-average-at-farm-gate-fr": { 
