@@ -1,6 +1,6 @@
-// ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR & PROVENANCE ==================
+// ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR, PROVENANCE & UPSTREAM ==================
 const aioxyData = {
-    // COMPLETE 50 INGREDIENTS DATABASE
+    // COMPLETE 50 INGREDIENTS DATABASE WITH UPSTREAM
     ingredients: {
         "beef-cattle-conventional-national-average-at-farm-gate-fr": { 
             name: "Beef cattle, conventional, national average, at farm gate",
@@ -21,6 +21,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.12,
+                    electricity_kwh_per_kg: 0.18,
+                    land_ha_per_kg: 8.5,
+                    fertilizer_kg_per_kg: 0.12
                 }
             }
         },
@@ -43,6 +49,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.10,
+                    electricity_kwh_per_kg: 0.16,
+                    land_ha_per_kg: 1.8,
+                    fertilizer_kg_per_kg: 0.10
                 }
             }
         },
@@ -65,6 +77,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.11,
+                    electricity_kwh_per_kg: 0.17,
+                    land_ha_per_kg: 2.1,
+                    fertilizer_kg_per_kg: 0.11
                 }
             }
         },
@@ -87,6 +105,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.08,
+                    electricity_kwh_per_kg: 0.12,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.08
                 }
             }
         },
@@ -109,6 +133,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.09,
+                    electricity_kwh_per_kg: 0.15,
+                    land_ha_per_kg: 0.8,
+                    fertilizer_kg_per_kg: 0.09
                 }
             }
         },
@@ -131,6 +161,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.13,
+                    electricity_kwh_per_kg: 0.19,
+                    land_ha_per_kg: 12.5,
+                    fertilizer_kg_per_kg: 0.13
                 }
             }
         },
@@ -153,6 +189,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.11,
+                    electricity_kwh_per_kg: 0.17,
+                    land_ha_per_kg: 2.0,
+                    fertilizer_kg_per_kg: 0.11
                 }
             }
         },
@@ -175,6 +217,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.04,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.14,
+                    fertilizer_kg_per_kg: 0.04
                 }
             }
         },
@@ -197,6 +245,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.12,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -219,6 +273,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.15,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -241,6 +301,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.13,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -263,6 +329,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.10,
+                    land_ha_per_kg: 0.40,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -285,6 +357,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.05,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.35,
+                    fertilizer_kg_per_kg: 0.05
                 }
             }
         },
@@ -307,6 +385,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.06,
+                    electricity_kwh_per_kg: 0.12,
+                    land_ha_per_kg: 0.45,
+                    fertilizer_kg_per_kg: 0.06
                 }
             }
         },
@@ -329,6 +413,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.07,
+                    land_ha_per_kg: 0.03,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -351,6 +441,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.25,
+                    land_ha_per_kg: 0.05,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -373,6 +469,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.02,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -395,6 +497,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.07,
+                    land_ha_per_kg: 0.01,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -417,6 +525,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.10,
+                    land_ha_per_kg: 0.02,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -439,6 +553,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.12,
+                    land_ha_per_kg: 0.03,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -461,6 +581,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.20,
+                    land_ha_per_kg: 0.03,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -483,6 +609,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.04,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -505,6 +637,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.06,
+                    land_ha_per_kg: 0.01,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -527,6 +665,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.04,
+                    electricity_kwh_per_kg: 0.11,
+                    land_ha_per_kg: 0.25,
+                    fertilizer_kg_per_kg: 0.04
                 }
             }
         },
@@ -549,6 +693,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.04,
+                    electricity_kwh_per_kg: 0.10,
+                    land_ha_per_kg: 0.42,
+                    fertilizer_kg_per_kg: 0.04
                 }
             }
         },
@@ -571,6 +721,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.01,
+                    electricity_kwh_per_kg: 0.05,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.01
                 }
             }
         },
@@ -593,6 +749,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.09,
+                    electricity_kwh_per_kg: 0.18,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.09
                 }
             }
         },
@@ -615,6 +777,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.07,
+                    electricity_kwh_per_kg: 0.15,
+                    land_ha_per_kg: 0.39,
+                    fertilizer_kg_per_kg: 0.07
                 }
             }
         },
@@ -637,6 +805,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.06,
+                    electricity_kwh_per_kg: 0.14,
+                    land_ha_per_kg: 0.41,
+                    fertilizer_kg_per_kg: 0.06
                 }
             }
         },
@@ -659,6 +833,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.10,
+                    land_ha_per_kg: 0.02,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -681,6 +861,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.12,
+                    land_ha_per_kg: 0.26,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -703,6 +889,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.13,
+                    land_ha_per_kg: 0.61,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -725,6 +917,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.15,
+                    land_ha_per_kg: 1.27,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -747,6 +945,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.11,
+                    land_ha_per_kg: 0.08,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -769,6 +973,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.05,
+                    electricity_kwh_per_kg: 0.12,
+                    land_ha_per_kg: 0.56,
+                    fertilizer_kg_per_kg: 0.05
                 }
             }
         },
@@ -791,6 +1001,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.07,
+                    electricity_kwh_per_kg: 0.14,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.07
                 }
             }
         },
@@ -813,6 +1029,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.01,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.01
                 }
             }
         },
@@ -835,6 +1057,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.08,
+                    electricity_kwh_per_kg: 0.16,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.08
                 }
             }
         },
@@ -857,6 +1085,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.01,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -879,6 +1113,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 2.5, GR: 2.5, TiR: 2.0, C: 2.0, P: 2.0 },
                     dqr_overall: 2.2
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.08,
+                    electricity_kwh_per_kg: 0.14,
+                    land_ha_per_kg: 0.75,
+                    fertilizer_kg_per_kg: 0.08
                 }
             }
         },
@@ -901,6 +1141,12 @@ const aioxyData = {
                     allocation_method: "Mass Allocation",
                     dqr: { TeR: 2.5, GR: 1.0, TiR: 3.0, C: 2.0, P: 2.0 },
                     dqr_overall: 2.1
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.15,
+                    electricity_kwh_per_kg: 0.18,
+                    land_ha_per_kg: 3.6,
+                    fertilizer_kg_per_kg: 0.15
                 }
             }
         },
@@ -924,6 +1170,7 @@ const aioxyData = {
                     dqr: { TeR: 2.0, GR: 2.0, TiR: 2.0, C: 1.5, P: 1.5 },
                     dqr_overall: 1.8
                 }
+                // No upstream for synthetic materials
             }
         },
         "zucchini-conventional-national-average-at-farm-gate-fr": { 
@@ -945,6 +1192,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.02,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -967,6 +1220,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.01,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -989,6 +1248,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.04,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -1011,6 +1276,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.06,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.12,
+                    fertilizer_kg_per_kg: 0.06
                 }
             }
         },
@@ -1033,6 +1304,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.15,
+                    land_ha_per_kg: 0.06,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -1055,6 +1332,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.04,
+                    electricity_kwh_per_kg: 0.10,
+                    land_ha_per_kg: 0.42,
+                    fertilizer_kg_per_kg: 0.04
                 }
             }
         },
@@ -1077,6 +1360,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.04,
+                    electricity_kwh_per_kg: 0.11,
+                    land_ha_per_kg: 0.49,
+                    fertilizer_kg_per_kg: 0.04
                 }
             }
         },
@@ -1099,6 +1388,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.10,
+                    land_ha_per_kg: 0.19,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -1121,6 +1416,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.11,
+                    land_ha_per_kg: 0.48,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -1143,6 +1444,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.18,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -1165,6 +1472,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.03,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.19,
+                    fertilizer_kg_per_kg: 0.03
                 }
             }
         },
@@ -1187,6 +1500,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.02,
+                    electricity_kwh_per_kg: 0.07,
+                    land_ha_per_kg: 0.12,
+                    fertilizer_kg_per_kg: 0.02
                 }
             }
         },
@@ -1209,6 +1528,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.01,
+                    electricity_kwh_per_kg: 0.06,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.01
                 }
             }
         },
@@ -1231,6 +1556,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.01,
+                    electricity_kwh_per_kg: 0.07,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.01
                 }
             }
         },
@@ -1253,6 +1584,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.01,
+                    electricity_kwh_per_kg: 0.07,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.01
                 }
             }
         },
@@ -1275,6 +1612,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.01,
+                    electricity_kwh_per_kg: 0.08,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.01
                 }
             }
         },
@@ -1297,6 +1640,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.01,
+                    electricity_kwh_per_kg: 0.09,
+                    land_ha_per_kg: 0.0,
+                    fertilizer_kg_per_kg: 0.01
                 }
             }
         },
@@ -1319,6 +1668,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.10,
+                    electricity_kwh_per_kg: 0.16,
+                    land_ha_per_kg: 3.7,
+                    fertilizer_kg_per_kg: 0.10
                 }
             }
         },
@@ -1341,6 +1696,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.09,
+                    electricity_kwh_per_kg: 0.15,
+                    land_ha_per_kg: 1.6,
+                    fertilizer_kg_per_kg: 0.09
                 }
             }
         },
@@ -1363,6 +1724,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.10,
+                    electricity_kwh_per_kg: 0.16,
+                    land_ha_per_kg: 2.5,
+                    fertilizer_kg_per_kg: 0.10
                 }
             }
         },
@@ -1385,6 +1752,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.11,
+                    electricity_kwh_per_kg: 0.17,
+                    land_ha_per_kg: 3.7,
+                    fertilizer_kg_per_kg: 0.11
                 }
             }
         },
@@ -1407,6 +1780,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.12,
+                    electricity_kwh_per_kg: 0.18,
+                    land_ha_per_kg: 4.1,
+                    fertilizer_kg_per_kg: 0.12
                 }
             }
         },
@@ -1429,6 +1808,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.10,
+                    electricity_kwh_per_kg: 0.16,
+                    land_ha_per_kg: 3.7,
+                    fertilizer_kg_per_kg: 0.10
                 }
             }
         },
@@ -1451,6 +1836,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.11,
+                    electricity_kwh_per_kg: 0.17,
+                    land_ha_per_kg: 3.0,
+                    fertilizer_kg_per_kg: 0.11
                 }
             }
         },
@@ -1473,6 +1864,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.12,
+                    electricity_kwh_per_kg: 0.18,
+                    land_ha_per_kg: 3.7,
+                    fertilizer_kg_per_kg: 0.12
                 }
             }
         }, 
@@ -1495,6 +1892,12 @@ const aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 1.5, GR: 2.0, TiR: 1.0, C: 1.5, P: 1.0 },
                     dqr_overall: 1.4
+                },
+                upstream: {
+                    n_demand_kg_per_kg: 0.04,
+                    electricity_kwh_per_kg: 0.10,
+                    land_ha_per_kg: 0.27,
+                    fertilizer_kg_per_kg: 0.04
                 }
             }
         }
