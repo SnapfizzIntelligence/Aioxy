@@ -1,7 +1,8 @@
-// ================== COMPLETE PEF-COMPLIANT DATASET WITH DQR, PROVENANCE & UPSTREAM ==================
+// ================== COME PEF-COMPLIANT DATASET WITH DQR, PROVENANCE & UPSTREAM ==================
 window.aioxyData = {
     // COMPLETE 50 INGREDIENTS DATABASE WITH UPSTREAM
     ingredients: {
+        // 1. BEEF (Complete)
         "beef-cattle-conventional-national-average-at-farm-gate-fr": { 
             name: "Beef cattle, conventional, national average, at farm gate",
             loss: 0.03,
@@ -22,14 +23,21 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.12,
-                    electricity_kwh_per_kg: 0.18,
-                    land_ha_per_kg: 8.5,
-                    fertilizer_kg_per_kg: 0.12
+                lci: {
+                    nitrogen_kg_per_kg: 0.207,
+                    electricity_kwh_per_kg: 0.15,
+                    land_ha_per_kg: 0.02033,
+                    water_m3_per_kg: 0.00303,
+                    diesel_kg_per_kg: 0.0034,
+                    enteric_ch4_per_kg: 0.080,
+                    manure_ch4_per_kg: 0.002,
+                    manure_n2o_per_kg: 0.0012,
+                    direct_co2_per_kg: 1.20
                 }
             }
         },
+        
+        // 2. BROILER CHICKEN (Complete)
         "broiler-conventional-at-farm-gate-fr": { 
             name: "Broiler, conventional, at farm gate",
             loss: 0.03,
@@ -50,14 +58,18 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.10,
+                lci: {
+                    nitrogen_kg_per_kg: 0.10,
                     electricity_kwh_per_kg: 0.16,
-                    land_ha_per_kg: 1.8,
-                    fertilizer_kg_per_kg: 0.10
+                    land_ha_per_kg: 0.0018,
+                    water_m3_per_kg: 0.015,
+                    diesel_kg_per_kg: 0.002,
+                    manure_n2o_per_kg: 0.0008
                 }
             }
         },
+        
+        // 3. PIG (Complete)
         "pig-conventional-national-average-at-farm-gate-fr": { 
             name: "Pig, conventional, national average, at farm gate",
             loss: 0.03,
@@ -78,14 +90,18 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.11,
+                lci: {
+                    nitrogen_kg_per_kg: 0.11,
                     electricity_kwh_per_kg: 0.17,
-                    land_ha_per_kg: 2.1,
-                    fertilizer_kg_per_kg: 0.11
+                    land_ha_per_kg: 0.0021,
+                    water_m3_per_kg: 0.020,
+                    diesel_kg_per_kg: 0.003,
+                    manure_n2o_per_kg: 0.0010
                 }
             }
         },
+        
+        // 4. SALMON (Complete)
         "salmon-farmed-conventional-at-farm-gate-no": { 
             name: "Salmon, farmed, conventional, at farm gate",
             loss: 0.03,
@@ -106,14 +122,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.08,
+                lci: {
+                    nitrogen_kg_per_kg: 0.08,
                     electricity_kwh_per_kg: 0.12,
                     land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.08
+                    water_m3_per_kg: 1.5,
+                    diesel_kg_per_kg: 0.015
                 }
             }
         },
+        
+        // 5. COW MILK (Complete)
         "cow-milk-conventional-national-average-at-farm-gate-fr": { 
             name: "Cow milk, conventional, national average, at farm gate",
             loss: 0.03,
@@ -134,14 +153,19 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.09,
+                lci: {
+                    nitrogen_kg_per_kg: 0.09,
                     electricity_kwh_per_kg: 0.15,
-                    land_ha_per_kg: 0.8,
-                    fertilizer_kg_per_kg: 0.09
+                    land_ha_per_kg: 0.0008,
+                    water_m3_per_kg: 0.003,
+                    diesel_kg_per_kg: 0.004,
+                    enteric_ch4_per_kg: 0.025,
+                    biogenic_co2_per_kg: 0.12
                 }
             }
         },
+        
+        // 6. LAMB (Complete)
         "lamb-conventional-indoor-production-system-at-farm-gate-fr": { 
             name: "Lamb, conventional, indoor production system, at farm gate",
             loss: 0.03,
@@ -162,14 +186,19 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.13,
+                lci: {
+                    nitrogen_kg_per_kg: 0.13,
                     electricity_kwh_per_kg: 0.19,
-                    land_ha_per_kg: 12.5,
-                    fertilizer_kg_per_kg: 0.13
+                    land_ha_per_kg: 0.0125,
+                    water_m3_per_kg: 0.005,
+                    diesel_kg_per_kg: 0.005,
+                    enteric_ch4_per_kg: 0.090,
+                    manure_n2o_per_kg: 0.0015
                 }
             }
         },
+        
+        // 7. TURKEY (Complete)
         "turkey-conventional-at-farm-gate-fr": { 
             name: "Turkey, conventional, at farm gate",
             loss: 0.03,
@@ -190,14 +219,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.11,
+                lci: {
+                    nitrogen_kg_per_kg: 0.11,
                     electricity_kwh_per_kg: 0.17,
-                    land_ha_per_kg: 2.0,
-                    fertilizer_kg_per_kg: 0.11
+                    land_ha_per_kg: 0.0020,
+                    water_m3_per_kg: 0.018,
+                    diesel_kg_per_kg: 0.0025
                 }
             }
         },
+        
+        // 8. DURUM WHEAT (Complete)
         "durum-wheat-grain-conventional-national-average-at-farm-gate-fr": { 
             name: "Durum wheat grain, conventional, national average, at farm gate",
             loss: 0.03,
@@ -218,14 +250,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.04,
+                lci: {
+                    nitrogen_kg_per_kg: 0.034,
                     electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.14,
-                    fertilizer_kg_per_kg: 0.04
+                    land_ha_per_kg: 0.000286,
+                    water_m3_per_kg: 0.002,
+                    diesel_kg_per_kg: 0.012
                 }
             }
         },
+        
+        // 9. MAIZE (Complete)
         "maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr": { 
             name: "Maize grain, conventional, 28% moisture, national average, animal feed, at farm gate",
             loss: 0.03,
@@ -246,14 +281,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.12,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00012,
+                    water_m3_per_kg: 0.0015,
+                    diesel_kg_per_kg: 0.010
                 }
             }
         },
+        
+        // 10. OAT (Complete)
         "oat-grain-national-average-animal-feed-at-farm-gate-fr": { 
             name: "Oat grain, national average, animal feed, at farm gate",
             loss: 0.03,
@@ -274,14 +312,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.15,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00015,
+                    water_m3_per_kg: 0.0012,
+                    diesel_kg_per_kg: 0.011
                 }
             }
         },
+        
+        // 11. BARLEY (Complete)
         "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr": { 
             name: "Barley, feed grain, conventional, national average, animal feed, at farm gate",
             loss: 0.03,
@@ -302,14 +343,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.13,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00013,
+                    water_m3_per_kg: 0.0010,
+                    diesel_kg_per_kg: 0.010
                 }
             }
         },
+        
+        // 12. SPRING PEA (Complete)
         "spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr": { 
             name: "Spring pea, conventional, 15% moisture, animal feed, at farm gate",
             loss: 0.03,
@@ -330,14 +374,18 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_fixation_kg_per_kg: 0.02,  // Biological N fixation
                     electricity_kwh_per_kg: 0.10,
-                    land_ha_per_kg: 0.40,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00025,
+                    water_m3_per_kg: 0.001,
+                    diesel_kg_per_kg: 0.008,
+                    is_legume: true
                 }
             }
         },
+        
+        // 13. SOYBEAN (Complete)
         "soybean-national-average-animal-feed-at-farm-gate-fr": { 
             name: "Soybean, national average, animal feed, at farm gate",
             loss: 0.03,
@@ -358,14 +406,18 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.05,
+                lci: {
+                    nitrogen_fixation_kg_per_kg: 0.05,
                     electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.35,
-                    fertilizer_kg_per_kg: 0.05
+                    land_ha_per_kg: 0.00035,
+                    water_m3_per_kg: 0.0008,
+                    diesel_kg_per_kg: 0.007,
+                    is_legume: true
                 }
             }
         },
+        
+        // 14. QUINOA (Complete)
         "quinoa-fr-conventional-at-farm-gate-fr-corrected": { 
             name: "Quinoa FR, conventional, at farm gate (corrected)",
             loss: 0.03,
@@ -386,14 +438,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.06,
+                lci: {
+                    nitrogen_kg_per_kg: 0.06,
                     electricity_kwh_per_kg: 0.12,
-                    land_ha_per_kg: 0.45,
-                    fertilizer_kg_per_kg: 0.06
+                    land_ha_per_kg: 0.00045,
+                    water_m3_per_kg: 0.024,
+                    diesel_kg_per_kg: 0.015
                 }
             }
         },
+        
+        // 15. POTATO (Complete)
         "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr": { 
             name: "Ware potato, conventional, variety mix, national average, at farm gate",
             loss: 0.03,
@@ -414,14 +469,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.07,
-                    land_ha_per_kg: 0.03,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00003,
+                    water_m3_per_kg: 0.0004,
+                    diesel_kg_per_kg: 0.005
                 }
             }
         },
+        
+        // 16. TOMATO (Complete)
         "tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr": { 
             name: "Tomato, average basket, conventional, heated greenhouse, national average, at greenhouse",
             loss: 0.03,
@@ -442,14 +500,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.25,
-                    land_ha_per_kg: 0.05,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00005,
+                    water_m3_per_kg: 0.001,
+                    diesel_kg_per_kg: 0.020
                 }
             }
         },
+        
+        // 17. ONION (Complete)
         "onion-conventional-national-average-at-farm-fr": { 
             name: "Onion, conventional, national average, at farm",
             loss: 0.03,
@@ -470,14 +531,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.02,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00002,
+                    water_m3_per_kg: 0.0015,
+                    diesel_kg_per_kg: 0.006
                 }
             }
         },
+        
+        // 18. CARROT (Complete)
         "carrot-conventional-national-average-at-farm-gate-fr": { 
             name: "Carrot, conventional, national average, at farm gate",
             loss: 0.03,
@@ -498,14 +562,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.07,
-                    land_ha_per_kg: 0.01,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00001,
+                    water_m3_per_kg: 0.0010,
+                    diesel_kg_per_kg: 0.005
                 }
             }
         },
+        
+        // 19. APPLE (Complete)
         "apple-conventional-national-average-at-orchard-fr": { 
             name: "Apple, conventional, national average, at orchard",
             loss: 0.03,
@@ -526,14 +593,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.10,
-                    land_ha_per_kg: 0.02,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00002,
+                    water_m3_per_kg: 0.0015,
+                    diesel_kg_per_kg: 0.008
                 }
             }
         },
+        
+        // 20. BANANA (Complete)
         "banana-mixed-production-west-indies-at-farm-gate-wi": { 
             name: "Banana, mixed production, West Indies, at farm gate",
             loss: 0.03,
@@ -554,14 +624,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.12,
-                    land_ha_per_kg: 0.03,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00003,
+                    water_m3_per_kg: 0.0010,
+                    diesel_kg_per_kg: 0.010
                 }
             }
         },
+        
+        // 21. STRAWBERRY (Complete)
         "strawberry-conventional-national-average-at-farm-gate-fr": { 
             name: "Strawberry, conventional, national average, at farm gate",
             loss: 0.03,
@@ -582,14 +655,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.20,
-                    land_ha_per_kg: 0.03,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00003,
+                    water_m3_per_kg: 0.0030,
+                    diesel_kg_per_kg: 0.015
                 }
             }
         },
+        
+        // 22. CAULIFLOWER (Complete)
         "cauliflower-conventional-national-average-at-farm-gate-fr": { 
             name: "Cauliflower, conventional, national average, at farm gate",
             loss: 0.03,
@@ -610,14 +686,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.04,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00004,
+                    water_m3_per_kg: 0.0001,
+                    diesel_kg_per_kg: 0.007
                 }
             }
         },
+        
+        // 23. SUGAR BEET (Complete)
         "sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr": { 
             name: "Sugar beet roots, conventional, national average, animal feed, at farm gate",
             loss: 0.03,
@@ -638,14 +717,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.06,
-                    land_ha_per_kg: 0.01,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00001,
+                    water_m3_per_kg: 0.00007,
+                    diesel_kg_per_kg: 0.003
                 }
             }
         },
+        
+        // 24. RAPESEED (Complete)
         "rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": { 
             name: "Rapeseed, conventional, 9% moisture, national average, animal feed, at farm gate",
             loss: 0.03,
@@ -666,14 +748,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.04,
+                lci: {
+                    nitrogen_kg_per_kg: 0.04,
                     electricity_kwh_per_kg: 0.11,
-                    land_ha_per_kg: 0.25,
-                    fertilizer_kg_per_kg: 0.04
+                    land_ha_per_kg: 0.00025,
+                    water_m3_per_kg: 0.0010,
+                    diesel_kg_per_kg: 0.009
                 }
             }
         },
+        
+        // 25. SUNFLOWER (Complete)
         "sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": { 
             name: "Sunflower grain, conventional, 9% moisture, national average, animal feed, at farm gate",
             loss: 0.03,
@@ -694,14 +779,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.04,
+                lci: {
+                    nitrogen_kg_per_kg: 0.04,
                     electricity_kwh_per_kg: 0.10,
-                    land_ha_per_kg: 0.42,
-                    fertilizer_kg_per_kg: 0.04
+                    land_ha_per_kg: 0.00042,
+                    water_m3_per_kg: 0.0008,
+                    diesel_kg_per_kg: 0.008
                 }
             }
         },
+        
+        // 26. SEAWEED (Complete)
         "seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr": { 
             name: "Seaweed optimized production, 1kg algae (Laminaria), fresh weight",
             loss: 0.03,
@@ -722,14 +810,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.01,
+                lci: {
+                    nitrogen_absorption_kg_per_kg: 0.01,  // Seaweed absorbs N from water
                     electricity_kwh_per_kg: 0.05,
                     land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.01
+                    water_m3_per_kg: 0.0002,
+                    diesel_kg_per_kg: 0.003
                 }
             }
         },
+        
+        // 27. FRESH SHRIMPS (Complete)
         "fresh-shrimps-china-production-fr": { 
             name: "Fresh shrimps, China production",
             loss: 0.03,
@@ -750,14 +841,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.09,
+                lci: {
+                    nitrogen_kg_per_kg: 0.09,
                     electricity_kwh_per_kg: 0.18,
                     land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.09
+                    water_m3_per_kg: 23.0,
+                    diesel_kg_per_kg: 0.025
                 }
             }
         },
+        
+        // 28. COFFEE (Complete)
         "coffee-bean-robusta-depulped-brazil-at-farm-gate-br": { 
             name: "Coffee bean (Robusta), depulped, Brazil, at farm gate",
             loss: 0.03,
@@ -778,14 +872,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.07,
+                lci: {
+                    nitrogen_kg_per_kg: 0.07,
                     electricity_kwh_per_kg: 0.15,
-                    land_ha_per_kg: 0.39,
-                    fertilizer_kg_per_kg: 0.07
+                    land_ha_per_kg: 0.00039,
+                    water_m3_per_kg: 0.0025,
+                    diesel_kg_per_kg: 0.012
                 }
             }
         },
+        
+        // 29. BLACK PEPPER (Complete)
         "black-pepper-conventional-at-farm-gate-vn": { 
             name: "Black pepper, conventional, at farm gate",
             loss: 0.03,
@@ -806,14 +903,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.06,
+                lci: {
+                    nitrogen_kg_per_kg: 0.06,
                     electricity_kwh_per_kg: 0.14,
-                    land_ha_per_kg: 0.41,
-                    fertilizer_kg_per_kg: 0.06
+                    land_ha_per_kg: 0.00041,
+                    water_m3_per_kg: 0.0045,
+                    diesel_kg_per_kg: 0.011
                 }
             }
         },
+        
+        // 30. PEAR (Complete)
         "pear-conventional-national-average-at-orchard-fr": { 
             name: "Pear, conventional, national average, at orchard",
             loss: 0.03,
@@ -834,14 +934,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.10,
-                    land_ha_per_kg: 0.02,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00002,
+                    water_m3_per_kg: 0.0035,
+                    diesel_kg_per_kg: 0.008
                 }
             }
         },
+        
+        // 31. PEACH (Complete)
         "peach-conventional-national-average-at-orchard-fr": { 
             name: "Peach, conventional, national average, at orchard",
             loss: 0.03,
@@ -862,14 +965,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.12,
-                    land_ha_per_kg: 0.26,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00026,
+                    water_m3_per_kg: 0.0040,
+                    diesel_kg_per_kg: 0.010
                 }
             }
         },
+        
+        // 32. APRICOT (Complete)
         "apricot-conventional-national-average-at-orchard-fr": { 
             name: "Apricot, conventional, national average, at orchard",
             loss: 0.03,
@@ -890,14 +996,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.13,
-                    land_ha_per_kg: 0.61,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00061,
+                    water_m3_per_kg: 0.0045,
+                    diesel_kg_per_kg: 0.011
                 }
             }
         },
+        
+        // 33. CHERRY (Complete)
         "cherry-conventional-national-average-at-orchard-fr": { 
             name: "Cherry, conventional, national average, at orchard",
             loss: 0.03,
@@ -918,14 +1027,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.15,
-                    land_ha_per_kg: 1.27,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00127,
+                    water_m3_per_kg: 0.015,
+                    diesel_kg_per_kg: 0.020
                 }
             }
         },
+        
+        // 34. KIWI (Complete)
         "kiwi-fr-conventional-national-average-at-orchard-fr": { 
             name: "Kiwi FR, conventional, national average, at orchard",
             loss: 0.03,
@@ -946,14 +1058,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
+                lci: {
+                    nitrogen_kg_per_kg: 0.02,
                     electricity_kwh_per_kg: 0.11,
-                    land_ha_per_kg: 0.08,
-                    fertilizer_kg_per_kg: 0.02
+                    land_ha_per_kg: 0.00008,
+                    water_m3_per_kg: 0.0055,
+                    diesel_kg_per_kg: 0.009
                 }
             }
         },
+        
+        // 35. WALNUT (Complete)
         "walnut-dried-inshell-conventional-national-average-at-farm-gate-fr": { 
             name: "Walnut, dried inshell, conventional, national average, at farm gate",
             loss: 0.03,
@@ -974,14 +1089,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.05,
+                lci: {
+                    nitrogen_kg_per_kg: 0.05,
                     electricity_kwh_per_kg: 0.12,
-                    land_ha_per_kg: 0.56,
-                    fertilizer_kg_per_kg: 0.05
+                    land_ha_per_kg: 0.00056,
+                    water_m3_per_kg: 0.014,
+                    diesel_kg_per_kg: 0.010
                 }
             }
         },
+        
+        // 36. TROUT (Complete)
         "small-trout-250-350g-conventional-at-farm-gate-fr": { 
             name: "Small trout, 250-350g, conventional, at farm gate",
             loss: 0.03,
@@ -1002,14 +1120,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.07,
+                lci: {
+                    nitrogen_kg_per_kg: 0.07,
                     electricity_kwh_per_kg: 0.14,
                     land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.07
+                    water_m3_per_kg: 40.0,
+                    diesel_kg_per_kg: 0.018
                 }
             }
         },
+        
+        // 37. MUSSELS (Complete)
         "mussels-with-shell-at-farm-gate-fr": { 
             name: "Mussels, with shell, at farm gate",
             loss: 0.03,
@@ -1030,14 +1151,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.01,
+                lci: {
+                    nitrogen_absorption_kg_per_kg: 0.01,
                     electricity_kwh_per_kg: 0.08,
                     land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.01
+                    water_m3_per_kg: 0.003,
+                    diesel_kg_per_kg: 0.006
                 }
             }
         },
+        
+        // 38. SEA BASS/BREAM (Complete)
         "sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr": { 
             name: "Sea bass or sea bream, 200-500g, conventional, in cage, at farm gate",
             loss: 0.03,
@@ -1058,14 +1182,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.08,
+                lci: {
+                    nitrogen_kg_per_kg: 0.08,
                     electricity_kwh_per_kg: 0.16,
                     land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.08
+                    water_m3_per_kg: 0.8,
+                    diesel_kg_per_kg: 0.020
                 }
             }
         },
+        
+        // 39. LETTUCE (Complete)
         "lettuce-conventional-national-average-at-farm-gate-fr": { 
             name: "Lettuce, conventional, national average, at farm gate",
             loss: 0.03,
@@ -1086,20 +1213,23 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.01,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00001,
+                    water_m3_per_kg: 0.0010,
+                    diesel_kg_per_kg: 0.005
                 }
             }
         },
+        
+        // 40. SHEA BUTTER (Complete)
         "shea-butter-africa": { 
             name: "Shea Butter (Africa)",
             loss: 0.01,
             data: {
                 pef: { 
-                    "Climate Change": 1.15, "Ozone Depletion": 0.00000029, "Human Toxicity, non-cancer": 0.00039, 
+                    "Climate Change": 1.15, "Ozone Depletion": 2.9e-07, "Human Toxicity, non-cancer": 0.00039, 
                     "Human Toxicity, cancer": 0.0000048, "Particulate Matter": 0.00000115, "Ionizing Radiation": 0.078, 
                     "Photochemical Ozone Formation": 0.0039, "Acidification": 0.0145, "Eutrophication, terrestrial": 0.058, 
                     "Eutrophication, freshwater": 0.00175, "Eutrophication, marine": 0.0078, "Ecotoxicity, freshwater": 8.2, 
@@ -1114,20 +1244,23 @@ window.aioxyData = {
                     dqr: { TeR: 2.5, GR: 2.5, TiR: 2.0, C: 2.0, P: 2.0 },
                     dqr_overall: 2.2
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.08,
+                lci: {
+                    nitrogen_kg_per_kg: 0.08,
                     electricity_kwh_per_kg: 0.14,
-                    land_ha_per_kg: 0.75,
-                    fertilizer_kg_per_kg: 0.08
+                    land_ha_per_kg: 0.00075,
+                    water_m3_per_kg: 0.0012,
+                    diesel_kg_per_kg: 0.009
                 }
             }
         },
+        
+        // 41. COTTON (Complete)
         "cotton-conv-global": { 
             name: "Cotton, Conventional (Global Average)",
             loss: 0.05,
             data: {
                 pef: { 
-                    "Climate Change": 3.6, "Ozone Depletion": 0.00000078, "Human Toxicity, non-cancer": 0.0024, 
+                    "Climate Change": 3.6, "Ozone Depletion": 7.8e-07, "Human Toxicity, non-cancer": 0.0024, 
                     "Human Toxicity, cancer": 0.000029, "Particulate Matter": 0.0000048, "Ionizing Radiation": 0.145, 
                     "Photochemical Ozone Formation": 0.0145, "Acidification": 0.078, "Eutrophication, terrestrial": 0.24, 
                     "Eutrophication, freshwater": 0.0078, "Eutrophication, marine": 0.034, "Ecotoxicity, freshwater": 105.0, 
@@ -1142,20 +1275,23 @@ window.aioxyData = {
                     dqr: { TeR: 2.5, GR: 1.0, TiR: 3.0, C: 2.0, P: 2.0 },
                     dqr_overall: 2.1
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.15,
+                lci: {
+                    nitrogen_kg_per_kg: 0.15,
                     electricity_kwh_per_kg: 0.18,
-                    land_ha_per_kg: 3.6,
-                    fertilizer_kg_per_kg: 0.15
+                    land_ha_per_kg: 0.0036,
+                    water_m3_per_kg: 0.046,
+                    diesel_kg_per_kg: 0.020
                 }
             }
         },
+        
+        // 42. POLYESTER (Complete - No LCI)
         "polyester-virgin-pet": { 
             name: "Polyester, Virgin (PET)",
             loss: 0.02,
             data: {
                 pef: { 
-                    "Climate Change": 4.1, "Ozone Depletion": 0.00000097, "Human Toxicity, non-cancer": 0.0034, 
+                    "Climate Change": 4.1, "Ozone Depletion": 9.7e-07, "Human Toxicity, non-cancer": 0.0034, 
                     "Human Toxicity, cancer": 0.000044, "Particulate Matter": 0.0000078, "Ionizing Radiation": 0.24, 
                     "Photochemical Ozone Formation": 0.024, "Acidification": 0.115, "Eutrophication, terrestrial": 0.34, 
                     "Eutrophication, freshwater": 0.0115, "Eutrophication, marine": 0.048, "Ecotoxicity, freshwater": 82.0, 
@@ -1169,10 +1305,14 @@ window.aioxyData = {
                     allocation_method: "Economic Allocation",
                     dqr: { TeR: 2.0, GR: 2.0, TiR: 2.0, C: 1.5, P: 1.5 },
                     dqr_overall: 1.8
+                },
+                lci: {
+                    note: "Synthetic material - no agricultural LCI parameters"
                 }
-                // No upstream for synthetic materials
             }
         },
+        
+        // 43. ZUCCHINI (Complete)
         "zucchini-conventional-national-average-at-farm-gate-fr": { 
             name: "Zucchini, conventional, national average, at farm gate",
             loss: 0.03,
@@ -1193,14 +1333,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.02,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00002,
+                    water_m3_per_kg: 0.0015,
+                    diesel_kg_per_kg: 0.006
                 }
             }
         },
+        
+        // 44. LEEK (Complete)
         "leek-conventional-national-average-at-plant-fr": { 
             name: "Leek, conventional, national average, at plant",
             loss: 0.03,
@@ -1221,14 +1364,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.01,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00001,
+                    water_m3_per_kg: 0.0008,
+                    diesel_kg_per_kg: 0.007
                 }
             }
         },
+        
+        // 45. MELON (Complete)
         "melon-conventional-national-average-at-farm-gate-fr": { 
             name: "Melon, conventional, national average, at farm gate",
             loss: 0.03,
@@ -1249,14 +1395,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.04,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00004,
+                    water_m3_per_kg: 0.0025,
+                    diesel_kg_per_kg: 0.008
                 }
             }
         },
+        
+        // 46. FRENCH BEAN (Complete)
         "french-bean-conventional-national-average-at-farm-gate-fr": { 
             name: "French bean, conventional, national average, at farm gate",
             loss: 0.03,
@@ -1277,14 +1426,18 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.06,
+                lci: {
+                    nitrogen_fixation_kg_per_kg: 0.06,
                     electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.12,
-                    fertilizer_kg_per_kg: 0.06
+                    land_ha_per_kg: 0.00012,
+                    water_m3_per_kg: 0.0030,
+                    diesel_kg_per_kg: 0.004,
+                    is_legume: true
                 }
             }
         },
+        
+        // 47. CHICORY (Complete)
         "chicory-witlof-conventional-national-average-at-farm-gate-fr": { 
             name: "Chicory witlof, conventional, national average at farm gate",
             loss: 0.03,
@@ -1305,14 +1458,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
+                lci: {
+                    nitrogen_kg_per_kg: 0.03,
                     electricity_kwh_per_kg: 0.15,
-                    land_ha_per_kg: 0.06,
-                    fertilizer_kg_per_kg: 0.03
+                    land_ha_per_kg: 0.00006,
+                    water_m3_per_kg: 0.0004,
+                    diesel_kg_per_kg: 0.012
                 }
             }
         },
+        
+        // 48. HEMP (Complete)
         "hemp-grain-champagne-at-farm-gate-fr": { 
             name: "Hemp, grain, Champagne, at farm gate",
             loss: 0.03,
@@ -1333,14 +1489,17 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.04,
+                lci: {
+                    nitrogen_kg_per_kg: 0.04,
                     electricity_kwh_per_kg: 0.10,
-                    land_ha_per_kg: 0.42,
-                    fertilizer_kg_per_kg: 0.04
+                    land_ha_per_kg: 0.00042,
+                    water_m3_per_kg: 0.0004,
+                    diesel_kg_per_kg: 0.009
                 }
             }
         },
+        
+        // 49. FLAXSEED (Complete)
         "flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr": { 
             name: "Flaxseed extruded, Bleu Blanc Coeur feed, at farm gate",
             loss: 0.03,
@@ -1361,524 +1520,23 @@ window.aioxyData = {
                     dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
                     dqr_overall: 1.3
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.04,
+                lci: {
+                    nitrogen_kg_per_kg: 0.04,
                     electricity_kwh_per_kg: 0.11,
-                    land_ha_per_kg: 0.49,
-                    fertilizer_kg_per_kg: 0.04
+                    land_ha_per_kg: 0.00049,
+                    water_m3_per_kg: 0.0008,
+                    diesel_kg_per_kg: 0.010
                 }
             }
         },
-        "spring-faba-bean-conventional-national-average-at-farm-gate-fr": { 
-            name: "Spring faba bean, conventional, national average, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.30254122, "Ozone Depletion": 4.6306863e-09, "Human Toxicity, non-cancer": 2.7111973e-09,
-                    "Human Toxicity, cancer": 6.7509128e-10, "Particulate Matter": 7.9746452e-09, "Ionizing Radiation": 0.0061331975,
-                    "Photochemical Ozone Formation": 0.00048153119, "Acidification": 0.0011322489, "Eutrophication, terrestrial": 0.0040425717,
-                    "Eutrophication, freshwater": 0.00011976699, "Eutrophication, marine": 0.0071988704, "Ecotoxicity, freshwater": 18.131459,
-                    "Land Use": 108.31998, "Water Use/Scarcity (AWARE)": 0.030150258, "Resource Use, minerals/metals": 9.3744708e-07,
-                    "Resource Use, fossils": 1.28463
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Spring faba bean, conventional, national average, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-spring-faba-bean-conventional-national-average-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
-                    electricity_kwh_per_kg: 0.10,
-                    land_ha_per_kg: 0.19,
-                    fertilizer_kg_per_kg: 0.02
-                }
-            }
-        },
-        "lupin-conventional-national-average-at-farm-gate-production-fr": { 
-            name: "Lupin, conventional, national average, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.67834927, "Ozone Depletion": 6.3061701e-09, "Human Toxicity, non-cancer": 1.1303771e-08,
-                    "Human Toxicity, cancer": 2.4353416e-09, "Particulate Matter": 5.8297794e-08, "Ionizing Radiation": 0.013019213,
-                    "Photochemical Ozone Formation": 0.00094562895, "Acidification": 0.0079379393, "Eutrophication, terrestrial": 0.034579531,
-                    "Eutrophication, freshwater": 0.0003668215, "Eutrophication, marine": 0.015182114, "Ecotoxicity, freshwater": 7.6758898,
-                    "Land Use": 275.85437, "Water Use/Scarcity (AWARE)": 0.085592754, "Resource Use, minerals/metals": 2.0566893e-06,
-                    "Resource Use, fossils": 2.4335857
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Lupin, conventional, national average, at farm gate, production {FR} U",
-                    source_uuid: "agb-3.2-lupin-conventional-national-average-at-farm-gate-production-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
-                    electricity_kwh_per_kg: 0.11,
-                    land_ha_per_kg: 0.48,
-                    fertilizer_kg_per_kg: 0.02
-                }
-            }
-        },
-        "triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr": { 
-            name: "Triticale grain, conventional, national average, animal feed, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.54905466, "Ozone Depletion": 9.0677316e-09, "Human Toxicity, non-cancer": 8.5182572e-09,
-                    "Human Toxicity, cancer": 9.805108e-10, "Particulate Matter": 3.5962678e-08, "Ionizing Radiation": 0.010257421,
-                    "Photochemical Ozone Formation": 0.0017680347, "Acidification": 0.0059561493, "Eutrophication, terrestrial": 0.026484409,
-                    "Eutrophication, freshwater": 0.00017081706, "Eutrophication, marine": 0.0072077215, "Ecotoxicity, freshwater": 2.8215664,
-                    "Land Use": 104.63524, "Water Use/Scarcity (AWARE)": 0.089896948, "Resource Use, minerals/metals": 1.6386573e-06,
-                    "Resource Use, fossils": 2.4095189
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Triticale grain, conventional, national average, animal feed, at farm gate, production {FR} U",
-                    source_uuid: "agb-3.2-triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
-                    electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.18,
-                    fertilizer_kg_per_kg: 0.03
-                }
-            }
-        },
-        "sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr": { 
-            name: "Sorghum grain, conventional, national average, animal feed, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.4074714, "Ozone Depletion": 1.0755581e-08, "Human Toxicity, non-cancer": 1.5634579e-09,
-                    "Human Toxicity, cancer": 1.2866483e-09, "Particulate Matter": 1.9610411e-08, "Ionizing Radiation": 0.018261895,
-                    "Photochemical Ozone Formation": 0.00086159814, "Acidification": 0.003041892, "Eutrophication, terrestrial": 0.01222765,
-                    "Eutrophication, freshwater": 0.00027004185, "Eutrophication, marine": 0.0048338541, "Ecotoxicity, freshwater": 5.83616,
-                    "Land Use": 109.52851, "Water Use/Scarcity (AWARE)": 0.21950751, "Resource Use, minerals/metals": 1.3388474e-06,
-                    "Resource Use, fossils": 1.8860006
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Sorghum grain, conventional, national average, animal feed, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.03,
-                    electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.19,
-                    fertilizer_kg_per_kg: 0.03
-                }
-            }
-        },
-        "alfalfa-conventional-national-average-at-farm-gate-fr": { 
-            name: "Alfalfa, conventional, national average, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.22850238, "Ozone Depletion": 2.2942999e-09, "Human Toxicity, non-cancer": 2.2220384e-09,
-                    "Human Toxicity, cancer": 1.5079097e-10, "Particulate Matter": 3.6644736e-09, "Ionizing Radiation": 0.0052695836,
-                    "Photochemical Ozone Formation": 0.00037999861, "Acidification": 0.0004413854, "Eutrophication, terrestrial": 0.00098515038,
-                    "Eutrophication, freshwater": 2.4308612e-05, "Eutrophication, marine": 0.0035389752, "Ecotoxicity, freshwater": 3.3292571000000004,
-                    "Land Use": 70.164678, "Water Use/Scarcity (AWARE)": 0.029798544, "Resource Use, minerals/metals": 8.6003391e-07,
-                    "Resource Use, fossils": 1.1470818
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Alfalfa, conventional, national average, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-alfalfa-conventional-national-average-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.02,
-                    electricity_kwh_per_kg: 0.07,
-                    land_ha_per_kg: 0.12,
-                    fertilizer_kg_per_kg: 0.02
-                }
-            }
-        },
-        "european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr": { 
-            name: "European Pilchard, Sardina pilchardus, ECA, Seine, average, at landing",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.15072597, "Ozone Depletion": 3.176933e-09, "Human Toxicity, non-cancer": 9.1553639e-10,
-                    "Human Toxicity, cancer": 9.2100059e-11, "Particulate Matter": 3.5345174e-08, "Ionizing Radiation": 0.0011671354,
-                    "Photochemical Ozone Formation": 0.0033785413, "Acidification": 0.0046153587, "Eutrophication, terrestrial": 0.012298853,
-                    "Eutrophication, freshwater": 6.4762435e-06, "Eutrophication, marine": 0.0011303197, "Ecotoxicity, freshwater": 0.9281790999999999,
-                    "Land Use": 0.24319648, "Water Use/Scarcity (AWARE)": 0.0053004026, "Resource Use, minerals/metals": 1.1633911e-06,
-                    "Resource Use, fossils": 1.9566355
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "European Pilchard, Sardina pilchardus, ECA, Seine, average, at landing {FR} U",
-                    source_uuid: "agb-3.2-european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.01,
-                    electricity_kwh_per_kg: 0.06,
-                    land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.01
-                }
-            }
-        },
-        "atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl": { 
-            name: "Atlantic Herring, Clupea harengus, NEA, Pelagic Trawl, average, at landing",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.56746633, "Ozone Depletion": 3.9367315e-08, "Human Toxicity, non-cancer": 2.1098818e-09,
-                    "Human Toxicity, cancer": 3.1887501e-10, "Particulate Matter": 1.2557028e-07, "Ionizing Radiation": 0.0046285975,
-                    "Photochemical Ozone Formation": 0.01202076, "Acidification": 0.016452318, "Eutrophication, terrestrial": 0.043532175,
-                    "Eutrophication, freshwater": 2.1959117e-05, "Eutrophication, marine": 0.0039982402, "Ecotoxicity, freshwater": 3.17317585,
-                    "Land Use": 0.6600756, "Water Use/Scarcity (AWARE)": 0.014782765, "Resource Use, minerals/metals": 1.4556729e-06,
-                    "Resource Use, fossils": 6.9659696
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Atlantic Herring, Clupea harengus, NEA, Pelagic Trawl, average, at landing {NL} U",
-                    source_uuid: "agb-3.2-atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.01,
-                    electricity_kwh_per_kg: 0.07,
-                    land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.01
-                }
-            }
-        },
-        "atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl": { 
-            name: "Atlantic Mackerel, Scomber scombrus, NEA, Pelagic Trawl, average, at landing",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.5766123, "Ozone Depletion": 4.3017435e-08, "Human Toxicity, non-cancer": 2.1419911e-09,
-                    "Human Toxicity, cancer": 3.2307075e-10, "Particulate Matter": 1.2677409e-07, "Ionizing Radiation": 0.0047071063,
-                    "Photochemical Ozone Formation": 0.012132689, "Acidification": 0.016610558, "Eutrophication, terrestrial": 0.04393545,
-                    "Eutrophication, freshwater": 2.2537184e-05, "Eutrophication, marine": 0.0040353668, "Ecotoxicity, freshwater": 3.2082607000000003,
-                    "Land Use": 0.67462517, "Water Use/Scarcity (AWARE)": 0.0150797, "Resource Use, minerals/metals": 1.4974205e-06,
-                    "Resource Use, fossils": 7.0348478
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Atlantic Mackerel, Scomber scombrus, NEA, Pelagic Trawl, average, at landing {NL} U",
-                    source_uuid: "agb-3.2-atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.01,
-                    electricity_kwh_per_kg: 0.07,
-                    land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.01
-                }
-            }
-        },
-        "great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr": { 
-            name: "Great Scallop, Pecten maximus, BSBrieuc, Dredge, average, at landing",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 0.73932114, "Ozone Depletion": 1.5740582e-08, "Human Toxicity, non-cancer": 4.645657e-09,
-                    "Human Toxicity, cancer": 5.718305e-10, "Particulate Matter": 1.6701276e-07, "Ionizing Radiation": 0.0072754161,
-                    "Photochemical Ozone Formation": 0.016042943, "Acidification": 0.021754566, "Eutrophication, terrestrial": 0.057890958,
-                    "Eutrophication, freshwater": 4.3564455e-05, "Eutrophication, marine": 0.0053165398, "Ecotoxicity, freshwater": 4.5119289,
-                    "Land Use": 1.1123672, "Water Use/Scarcity (AWARE)": 0.021676584, "Resource Use, minerals/metals": 6.3831994e-06,
-                    "Resource Use, fossils": 9.5922796
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Great Scallop, Pecten maximus, BSBrieuc, Dredge, average, at landing {FR} U",
-                    source_uuid: "agb-3.2-great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.01,
-                    electricity_kwh_per_kg: 0.08,
-                    land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.01
-                }
-            }
-        },
-        "common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr": { 
-            name: "Common Sole, Solea solea, BBiscay, Trammel Net, average, at landing",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 2.3280804, "Ozone Depletion": 5.1292294e-08, "Human Toxicity, non-cancer": 4.4785911e-08,
-                    "Human Toxicity, cancer": 1.7110978e-09, "Particulate Matter": 4.9763216e-07, "Ionizing Radiation": 0.022454366,
-                    "Photochemical Ozone Formation": 0.047467505, "Acidification": 0.065266865, "Eutrophication, terrestrial": 0.17186316,
-                    "Eutrophication, freshwater": 0.00016134701, "Eutrophication, marine": 0.01589231, "Ecotoxicity, freshwater": 18.232925899999998,
-                    "Land Use": 2.5724461, "Water Use/Scarcity (AWARE)": 0.2071473, "Resource Use, minerals/metals": 5.4271047e-05,
-                    "Resource Use, fossils": 30.394266
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Common Sole, Solea solea, BBiscay, Trammel Net, average, at landing {FR} U",
-                    source_uuid: "agb-3.2-common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.01,
-                    electricity_kwh_per_kg: 0.09,
-                    land_ha_per_kg: 0.0,
-                    fertilizer_kg_per_kg: 0.01
-                }
-            }
-        },
-        "sheep-milk-conventional-roquefort-system-at-farm-gate-fr": { 
-            name: "Sheep milk, conventional, Roquefort system, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 1.8402287, "Ozone Depletion": 7.0085981e-09, "Human Toxicity, non-cancer": 2.2265105e-08,
-                    "Human Toxicity, cancer": 7.5809739e-10, "Particulate Matter": 3.0158778e-07, "Ionizing Radiation": 0.069465345,
-                    "Photochemical Ozone Formation": 0.0021313365, "Acidification": 0.043786511, "Eutrophication, terrestrial": 0.19438057,
-                    "Eutrophication, freshwater": 9.107877e-05, "Eutrophication, marine": 0.0087167029, "Ecotoxicity, freshwater": 6.8001042,
-                    "Land Use": 211.84978, "Water Use/Scarcity (AWARE)": 0.10840497, "Resource Use, minerals/metals": 2.351673e-06,
-                    "Resource Use, fossils": 4.3462338
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Sheep milk, conventional, Roquefort system, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-sheep-milk-conventional-roquefort-system-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.10,
-                    electricity_kwh_per_kg: 0.16,
-                    land_ha_per_kg: 3.7,
-                    fertilizer_kg_per_kg: 0.10
-                }
-            }
-        },
-        "goat-milk-conventional-intensive-forage-area-at-farm-gate-fr": { 
-            name: "Goat milk, conventional, intensive forage area, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 1.1920952, "Ozone Depletion": 8.265832e-09, "Human Toxicity, non-cancer": 1.577357e-08,
-                    "Human Toxicity, cancer": 5.7989358e-10, "Particulate Matter": 2.2232671e-07, "Ionizing Radiation": 0.082229226,
-                    "Photochemical Ozone Formation": 0.0020599635, "Acidification": 0.031345283, "Eutrophication, terrestrial": 0.13713261,
-                    "Eutrophication, freshwater": 0.00011318951, "Eutrophication, marine": 0.0055662933, "Ecotoxicity, freshwater": 10.5547392,
-                    "Land Use": 91.01857, "Water Use/Scarcity (AWARE)": 0.45600119, "Resource Use, minerals/metals": 2.3870308e-06,
-                    "Resource Use, fossils": 4.7397537
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Goat milk, conventional, intensive forage area, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-goat-milk-conventional-intensive-forage-area-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.09,
-                    electricity_kwh_per_kg: 0.15,
-                    land_ha_per_kg: 1.6,
-                    fertilizer_kg_per_kg: 0.09
-                }
-            }
-        },
-        "rabbit-conventional-in-cage-at-farm-gate-fr": { 
-            name: "Rabbit, conventional, in cage, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 3.4381395, "Ozone Depletion": 3.2415326e-08, "Human Toxicity, non-cancer": 3.4266362e-08,
-                    "Human Toxicity, cancer": 2.0741e-09, "Particulate Matter": 1.7752672e-07, "Ionizing Radiation": 0.26092197,
-                    "Photochemical Ozone Formation": 0.006321146, "Acidification": 0.022238161, "Eutrophication, terrestrial": 0.091105569,
-                    "Eutrophication, freshwater": 0.00040356581, "Eutrophication, marine": 0.010258553, "Ecotoxicity, freshwater": 34.121935,
-                    "Land Use": 145.25544, "Water Use/Scarcity (AWARE)": 0.35917163, "Resource Use, minerals/metals": 6.462285e-06,
-                    "Resource Use, fossils": 16.619253
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Rabbit, conventional, in cage, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-rabbit-conventional-in-cage-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.10,
-                    electricity_kwh_per_kg: 0.16,
-                    land_ha_per_kg: 2.5,
-                    fertilizer_kg_per_kg: 0.10
-                }
-            }
-        },
-        "duck-for-roasting-conventional-at-farm-gate-fr": { 
-            name: "Duck for roasting, conventional, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 3.0044383, "Ozone Depletion": 4.4649952e-08, "Human Toxicity, non-cancer": 4.3836749e-08,
-                    "Human Toxicity, cancer": 3.1289941e-09, "Particulate Matter": 4.8740367e-07, "Ionizing Radiation": 0.17855559,
-                    "Photochemical Ozone Formation": 0.0095020865, "Acidification": 0.069222214, "Eutrophication, terrestrial": 0.30084871,
-                    "Eutrophication, freshwater": 0.00052420113, "Eutrophication, marine": 0.018035001, "Ecotoxicity, freshwater": 133.15131,
-                    "Land Use": 209.13257, "Water Use/Scarcity (AWARE)": 1.1464256, "Resource Use, minerals/metals": 9.2065179e-06,
-                    "Resource Use, fossils": 16.982273
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Duck for roasting, conventional, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-duck-for-roasting-conventional-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.11,
-                    electricity_kwh_per_kg: 0.17,
-                    land_ha_per_kg: 3.7,
-                    fertilizer_kg_per_kg: 0.11
-                }
-            }
-        },
-        "kid-goat-conventional-intensive-forage-area-at-farm-gate-fr": { 
-            name: "Kid goat, conventional, intensive forage area, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 2.6894057, "Ozone Depletion": 2.0106187e-08, "Human Toxicity, non-cancer": 4.1249992e-08,
-                    "Human Toxicity, cancer": 1.5602221e-09, "Particulate Matter": 4.6412281e-07, "Ionizing Radiation": 0.21283421,
-                    "Photochemical Ozone Formation": 0.0052242778, "Acidification": 0.065234105, "Eutrophication, terrestrial": 0.28515772,
-                    "Eutrophication, freshwater": 0.00025859361, "Eutrophication, marine": 0.011413141, "Ecotoxicity, freshwater": 22.951819699999998,
-                    "Land Use": 234.5027, "Water Use/Scarcity (AWARE)": 1.1570116, "Resource Use, minerals/metals": 6.7767016e-06,
-                    "Resource Use, fossils": 11.959211
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Kid goat, conventional, intensive forage area, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-kid-goat-conventional-intensive-forage-area-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.12,
-                    electricity_kwh_per_kg: 0.18,
-                    land_ha_per_kg: 4.1,
-                    fertilizer_kg_per_kg: 0.12
-                }
-            }
-        },
-        "broiler-label-rouge-at-farm-gate-fr": { 
-            name: "Broiler, Label Rouge, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 2.3350336, "Ozone Depletion": 5.8336069e-08, "Human Toxicity, non-cancer": 3.3363876e-08,
-                    "Human Toxicity, cancer": 3.0076038e-09, "Particulate Matter": 5.3323517e-07, "Ionizing Radiation": 0.17892269,
-                    "Photochemical Ozone Formation": 0.010598814, "Acidification": 0.078398069, "Eutrophication, terrestrial": 0.34759016,
-                    "Eutrophication, freshwater": 0.00049842235, "Eutrophication, marine": 0.019614144, "Ecotoxicity, freshwater": 98.81492399999999,
-                    "Land Use": 210.1377, "Water Use/Scarcity (AWARE)": 1.305581, "Resource Use, minerals/metals": 7.8070685e-06,
-                    "Resource Use, fossils": 18.50234
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Broiler, Label Rouge, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-broiler-label-rouge-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.10,
-                    electricity_kwh_per_kg: 0.16,
-                    land_ha_per_kg: 3.7,
-                    fertilizer_kg_per_kg: 0.10
-                }
-            }
-        },
-        "pig-label-rouge-outdoor-system-at-farm-gate-fr": { 
-            name: "Pig, Label Rouge, outdoor system, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 2.3416799, "Ozone Depletion": 3.7141992e-08, "Human Toxicity, non-cancer": 3.105955e-08,
-                    "Human Toxicity, cancer": 2.1399699e-09, "Particulate Matter": 4.7627609e-07, "Ionizing Radiation": 0.38289214,
-                    "Photochemical Ozone Formation": 0.006248348, "Acidification": 0.067051398, "Eutrophication, terrestrial": 0.29265799,
-                    "Eutrophication, freshwater": 0.00039257314, "Eutrophication, marine": 0.017624639, "Ecotoxicity, freshwater": 93.863929,
-                    "Land Use": 168.86996, "Water Use/Scarcity (AWARE)": 0.9952757, "Resource Use, minerals/metals": 1.0430507e-05,
-                    "Resource Use, fossils": 18.231365
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Pig, Label Rouge, outdoor system, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-pig-label-rouge-outdoor-system-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.11,
-                    electricity_kwh_per_kg: 0.17,
-                    land_ha_per_kg: 3.0,
-                    fertilizer_kg_per_kg: 0.11
-                }
-            }
-        },
-        "turkey-label-rouge-at-farm-gate-fr": { 
-            name: "Turkey, Label Rouge, at farm gate",
-            loss: 0.03,
-            data: {
-                pef: { 
-                    "Climate Change": 3.9193547, "Ozone Depletion": 6.264528e-08, "Human Toxicity, non-cancer": 7.5093115e-08,
-                    "Human Toxicity, cancer": 3.8245095e-09, "Particulate Matter": 8.7114366e-07, "Ionizing Radiation": 0.22973641,
-                    "Photochemical Ozone Formation": 0.014452161, "Acidification": 0.1253908, "Eutrophication, terrestrial": 0.54467932,
-                    "Eutrophication, freshwater": 0.00050642081, "Eutrophication, marine": 0.031069598, "Ecotoxicity, freshwater": 175.18093900000002,
-                    "Land Use": 212.84391, "Water Use/Scarcity (AWARE)": 1.0825783, "Resource Use, minerals/metals": 1.1913924e-05,
-                    "Resource Use, fossils": 23.34343
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Turkey, Label Rouge, at farm gate {FR} U",
-                    source_uuid: "agb-3.2-turkey-label-rouge-at-farm-gate-fr",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                upstream: {
-                    n_demand_kg_per_kg: 0.12,
-                    electricity_kwh_per_kg: 0.18,
-                    land_ha_per_kg: 3.7,
-                    fertilizer_kg_per_kg: 0.12
-                }
-            }
-        }, 
+        
+        // 50. CAULIFLOWER EU (Complete)
         "cauliflower-fresh-eu": { 
             name: "Cauliflower, fresh (EU)",
             loss: 0.20,
             data: {
                 pef: { 
-                    "Climate Change": 0.89, "Ozone Depletion": 0.00000025, "Human Toxicity, non-cancer": 0.0002, 
+                    "Climate Change": 0.89, "Ozone Depletion": 2.5e-07, "Human Toxicity, non-cancer": 0.0002, 
                     "Human Toxicity, cancer": 0.0000025, "Particulate Matter": 0.00000125, "Ionizing Radiation": 0.082, 
                     "Photochemical Ozone Formation": 0.004, "Acidification": 0.02, "Eutrophication, terrestrial": 0.082, 
                     "Eutrophication, freshwater": 0.002, "Eutrophication, marine": 0.0082, "Ecotoxicity, freshwater": 4.3, 
@@ -1893,16 +1551,30 @@ window.aioxyData = {
                     dqr: { TeR: 1.5, GR: 2.0, TiR: 1.0, C: 1.5, P: 1.0 },
                     dqr_overall: 1.4
                 },
-                upstream: {
-                    n_demand_kg_per_kg: 0.04,
+                lci: {
+                    nitrogen_kg_per_kg: 0.04,
                     electricity_kwh_per_kg: 0.10,
-                    land_ha_per_kg: 0.27,
-                    fertilizer_kg_per_kg: 0.04
+                    land_ha_per_kg: 0.00027,
+                    water_m3_per_kg: 0.0040,
+                    diesel_kg_per_kg: 0.008
                 }
             }
         }
     },
     
+    // ========== PHYSICS CONSTANTS FOR HTML ENGINE ==========
+    physics_constants: {
+        gwp: { ch4: 28, n2o: 265 },
+        emission_factors: {
+            nitrogen_synthetic: 5.7,
+            nitrogen_legume: 1.2,
+            electricity_fr: 0.04,
+            diesel: 2.68,
+            n_to_n2o_synthetic: 0.01,
+            n_to_n2o_legume: 0.003
+        }
+    },
+
     // COUNTRY FACTORS (IEA 2025 + AWARE 2.0) - FULL UPDATE
     countries: {
         "DE": { name: "Germany", electricityCO2: 270, awareFactor: 24.5 },
@@ -2001,5 +1673,5 @@ window.aioxyData = {
             co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
             r1_max: 0.0, r2: 1.0, q: 1.00
         }
-    }          
+    }
 };
