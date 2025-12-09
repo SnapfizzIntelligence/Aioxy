@@ -4631,31 +4631,41 @@ function updateHardFinancialLedger(financialResults, volume) {
     const tbody = document.getElementById('ledgerBody');
     if (!tbody) return;
     
-    const { moneyCarbon, moneyFuel, moneyEnergy, total, metrics } = financialResults;
-
+    const { moneyFuel, moneyEnergy, total, metrics } = financialResults;
+    
+    // CALCULATE BOTH VALUES
+    const etsAvoidance = (metrics.totalTonsCo2Saved || 0) * 85;
+    const vcmRevenue = (metrics.totalTonsCo2Saved || 0) * 15;
+    
     tbody.innerHTML = `
         <tr>
-            <td><strong>🛡️ Carbon Liability</strong><br><small>EU ETS Avoidance (€85/t CO₂e)</small></td>
-            <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-            <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
+            <td><strong>🛡️ Future Liability Buffer</strong><br><small>Avoiding EU ETS fines (€85/t CO₂e)</small></td>
+            <td>-${(metrics.totalTonsCo2Saved || 0).toFixed(1)} tons</td>
+            <td class="money-positive">+€${etsAvoidance.toFixed(2)}</td>
         </tr>
         <tr>
-            <td><strong>⚡ Energy OPEX</strong><br><small>Fossil fuel reduction (PEF Data)</small></td>
-            <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
+            <td><strong>🌱 Voluntary Carbon Market</strong><br><small>Current VCM rates (€15/t CO₂e)</small></td>
+            <td>+${(metrics.totalTonsCo2Saved || 0).toFixed(1)} tons</td>
+            <td class="money-positive">+€${vcmRevenue.toFixed(2)}</td>
+        </tr>
+        <tr>
+            <td><strong>⚡ Energy OPEX Reduction</strong><br><small>Fossil fuel savings (PEF Data)</small></td>
+            <td>-${Math.round(metrics.totalMJSaved || 0).toLocaleString()} MJ</td>
             <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
         </tr>
         <tr>
-            <td><strong>🚚 Logistics Fuel</strong><br><small>Transport optimization</small></td>
-            <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
+            <td><strong>🚚 Logistics Fuel Savings</strong><br><small>Transport optimization</small></td>
+            <td>-${Math.round(metrics.fuelLitersSaved || 0).toLocaleString()} L Diesel</td>
             <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
         </tr>
     `;
 
     const totalBenefit = document.getElementById('totalBenefit');
     if (totalBenefit) {
-        totalBenefit.innerText = "€" + total.toFixed(2);
+        const realTotal = etsAvoidance + vcmRevenue + moneyEnergy + moneyFuel;
+        totalBenefit.innerText = "€" + realTotal.toFixed(2);
     }
-}
+    }
 
 // ================== UPDATE BUSINESS CASE ==================active
 function updateBusinessCase() {
