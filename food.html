@@ -4954,7 +4954,7 @@ function updateBusinessCaseWithTweak5() {
     console.log("✅ [Tweak5] Business case updated with discounted ROI");
 }
 
-// =========== ADD CARBON CREDIT CARD ===========
+// =========== ADD FUTURE LIABILITY BUFFER CARD ===========
 function addCarbonCreditCard(discountedROI) {
     // Check if carbon credit card already exists
     if (document.getElementById('carbonCreditCard')) return;
@@ -4966,10 +4966,10 @@ function addCarbonCreditCard(discountedROI) {
     creditCard.className = 'business-card';
     creditCard.id = 'carbonCreditCard';
     creditCard.innerHTML = `
-        <i class="fas fa-coins" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+        <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
         <div class="business-value">€${discountedROI.carbonCredits}</div>
-        <div class="business-label">Carbon Credit Revenue</div>
-        <div class="roi-badge" style="margin-top: 0.5rem;">EU ETS @ €85/t</div>
+        <div class="business-label">Future Liability Buffer</div>
+        <div class="roi-badge" style="margin-top: 0.5rem;">EU ETS risk @ €85/t</div>
     `;
     
     businessMetrics.appendChild(creditCard);
