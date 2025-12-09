@@ -4973,17 +4973,16 @@ function updateHardFinancialLedgerWithCredits(financialResults, volume) {
     const { moneyCarbon, moneyFuel, moneyEnergy, total, metrics } = financialResults;
     
     tbody.innerHTML = `
-        <tr>
-            <td><strong>🛡️ Carbon Liability</strong><br><small>EU ETS Avoidance (€85/t CO₂e)</small></td>
-            <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-            <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
-        </tr>
-        <tr>
-            <td><strong>🌱 Carbon Credits</strong><br><small>Verified offsets (EU ETS 2025)</small></td>
-            <td>+${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-            <td class="money-positive">+€${(metrics.totalTonsCo2Saved * 85).toFixed(2)}</td>
-        </tr>
-        <tr>
+    <tr>
+        <td><strong>🛡️ Future Liability Buffer</strong><br><small>Avoiding EU ETS fines (€85/t CO₂e)</small></td>
+        <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
+        <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
+    </tr>
+    <tr>
+        <td><strong>🌱 Voluntary Carbon Market</strong><br><small>Current VCM rates (€15/t CO₂e)</small></td>
+        <td>+${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
+        <td class="money-positive">+€${(metrics.totalTonsCo2Saved * 15).toFixed(2)}</td>
+    </tr>
             <td><strong>⚡ Energy OPEX</strong><br><small>Fossil fuel reduction (PEF Data)</small></td>
             <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
             <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
