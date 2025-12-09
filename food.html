@@ -4923,7 +4923,7 @@ function updateBusinessCaseWithTweak5() {
     const netReturnElement = document.getElementById('netReturnDisplay');
     
     if (roiValueElement) roiValueElement.textContent = discountedROI.npvROI + '% (NPV)';
-    if (roiBadgeElement) roiBadgeElement.textContent = `+€${discountedROI.carbonCredits} credits`;
+    if (roiBadgeElement) roiBadgeElement.textContent = `+€${discountedROI.carbonCredits} buffer`;
     if (netReturnElement) netReturnElement.textContent = '€' + discountedROI.totalDiscounted + ' (discounted)';
     
     // Update other business metrics
