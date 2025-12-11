@@ -3807,7 +3807,7 @@ function applyScenarioPhysics(baseResults, scenarios) {
     const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
 
     // =========== CRITICAL FIX 1: CALCULATE MASS BALANCE FIRST ===========
-    const massBalanceData = calculateMassBalance(
+    let massBalanceData = calculateMassBalance( // ✅ PERMANENT FIX: let instead of const
         selectedIngredients, 
         processingMethod, 
         packagingWeight
@@ -3826,7 +3826,7 @@ function applyScenarioPhysics(baseResults, scenarios) {
         dppId: 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
         calculationTimestamp: new Date().toISOString(),
         pefCategories: {},
-        mass_balance: massBalanceData, // ✅ Use the calculated mass balance here
+        mass_balance: massBalanceData, // ✅ Use the calculated mass balance
         dqr_summary: {},
         uncertainty_analysis: {},
         comparison_baseline: comparisonBaseline,
