@@ -2525,6 +2525,24 @@ let massBalanceData = {};
 let auditTrailData = {};
 let currentComparisonBaseline = null;
 let currentAnnualVolume = 10000;
+// ================== PHYSICS CONSTANTS (GLEC v4.0 & ISO 14046) ==================
+const PHYSICS_DATA = {
+    transport: {
+        road: { ambient: 0.062, refrigerated: 0.085, electric: 0.018 },
+        rail: { diesel: 0.022, electric: 0.011 },
+        sea: { container: 0.008, bulk: 0.005 },
+        air: { cargo: 0.602, short_haul: 1.120 }
+    },
+    yields: {
+        "none": 1.0, "mixing": 0.99, "baking": 0.85, "drying": 0.15,
+        "pasteurization": 0.99, "freezing": 1.0
+    }
+};
+const INGREDIENT_ORIGINS = {
+    "coffee-bean-robusta-depulped-brazil-at-farm-gate-br": "BR",
+    "soybean-national-average-animal-feed-at-farm-gate-fr": "FR",
+    "fresh-shrimps-china-production-fr": "CN",
+};
 
 // NEW: Physics-based scenarios (7 total)
 let activeScenarios = {
@@ -2849,6 +2867,73 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
         const awareWaterScarcity = waterUse * watershedFactor * monthlyAdjustment * returnFlowFactor;
         
         return awareWaterScarcity;
+    }
+    // ================== NEW PHYSICS FUNCTIONS (GEMINI'S PATCH) ==================
+
+// Fix A: Mass Balance Engine
+function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
+    const totalInputMass = ingredients.reduce((sum, item) => sum + item.quantity, 0);
+    const yieldFactor = PHYSICS_DATA.yields[processingMethod] || 1.0;
+    const finalProductMass = totalInputMass * yieldFactor;
+    const evaporationMass = totalInputMass - finalProductMass;
+    const grossWeight = finalProductMass + packagingWeight;
+
+    console.log(`⚖️ Mass Balance: Input ${totalInputMass.toFixed(3)}kg -> Yield ${yieldFactor} -> Output ${finalProductMass.toFixed(3)}kg (Gross Logistical: ${grossWeight.toFixed(3)}kg)`);
+
+    return {
+        inputMass: totalInputMass,
+        productMass: finalProductMass,
+        evaporation: evaporationMass,
+        grossWeight: grossWeight
+    };
+}
+
+// Fix B: GLEC v4.0 Transport Physics
+function calculateTransportPhysics(grossWeightKg, distanceKm, mode, isRefrigerated) {
+    const massTons = grossWeightKg / 1000;
+    
+    let factor = 0;
+    if (mode === 'road') {
+        factor = isRefrigerated ? PHYSICS_DATA.transport.road.refrigerated 
+                                : PHYSICS_DATA.transport.road.ambient;
+    } else if (PHYSICS_DATA.transport[mode]) {
+        factor = typeof PHYSICS_DATA.transport[mode] === 'object' 
+                 ? PHYSICS_DATA.transport[mode].container || PHYSICS_DATA.transport[mode].diesel 
+                 : 0;
+    }
+
+    const transportCO2 = massTons * distanceKm * factor;
+
+    return {
+        co2: transportCO2,
+        tonKm: massTons * distanceKm,
+        factorUsed: factor,
+        details: `${mode.toUpperCase()} (${isRefrigerated ? 'Refrigerated' : 'Ambient'}) @ ${factor} kgCO2e/tkm`
+    };
+}
+
+// Fix C: Regionalized Upstream LCI
+function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
+    let upstreamCO2 = 0;
+
+    ingredients.forEach(item => {
+        const ingData = aioxyData.ingredients[item.id];
+        if (!ingData) return;
+
+        const originCountry = INGREDIENT_ORIGINS[item.id] || manufacturingCountryCode;
+        
+        let inboundTransportCO2 = 0;
+        if (originCountry !== manufacturingCountryCode) {
+            const inboundDist = 10000;
+            inboundTransportCO2 = (item.quantity / 1000) * inboundDist * PHYSICS_DATA.transport.sea.container;
+        }
+        upstreamCO2 += inboundTransportCO2;
+    });
+
+    return {
+        co2_adder: upstreamCO2,
+        notes: "Includes inbound logistics from origin countries"
+    };
     }
 
     // ================== FIX 3: PEF SINGLE SCORE CALCULATION ==================
@@ -3742,45 +3827,50 @@ if (processingData) {
     });
 }
             // =========== INTEGRATION POINT 4: TRANSPORTATION ===========
-// ✅ TWEAK 4: UPDATED WITH GLEC v4.0 PHYSICS (MINIMAL FIX)
-const transportFactors = {
-    road: 0.071,      // GLEC v4.0 Table 4.1: Euro 6 HGV, 85% load
-    rail: 0.023,      // GLEC v4.0 Table 5.1: Electric rail, EU avg  
-    sea: 0.015,       // GLEC v4.0 Table 6.1: Container ship 8000+ TEU
-    air: 0.950,       // ICAO 2023: Long-haul air cargo (more accurate)
-    lastmile: 0.150,  // GLEC v4.0 Table 4.3: Urban diesel van
-    electric_van: 0.025  // GLEC v4.0 Annex B: EU grid mix
-};
+// ✅ PHYSICS PATCH: Mass Balance -> Inbound Logistics -> Distribution Transport
 
-const transportFactor = transportFactors[transportMode] || 0.071;
-let transportCO2 = totalIngredientQuantity * transportDistance * transportFactor / 1000;
+// 1. CALCULATE MASS BALANCE (Physics First)
+const massPhysics = calculateMassBalance(
+    selectedIngredients,
+    processingMethod,
+    packagingWeight
+);
 
-// ✅ ONE LINE LOGGING FOR PHYSICS TRANSPARENCY
-console.log(`🚚 TWEAK 4 Physics: ${transportMode} = ${transportFactor} kg/ton-km (GLEC v4.0)`);
+// 2. CALCULATE INBOUND LOGISTICS (Regionalization)
+const inboundPhysics = calculateRegionalizedLCI(
+    selectedIngredients,
+    manufacturingCountryCode
+);
 
-// ✅ REFRIGERATION PHYSICS (BEFORE AUDIT!)
+// 3. CALCULATE DISTRIBUTION TRANSPORT (GLEC v4.0)
 const isRefrigerated = document.getElementById('refrigeratedTransport')?.value === 'yes';
-let refrigerationNote = '';
-if (isRefrigerated) {
-    const refrigerationFactor = 1.4; // GLEC: 20-60% extra
-    const baseCO2 = transportCO2;
-    transportCO2 *= refrigerationFactor;
-    refrigerationNote = ` + refrigerated (×${refrigerationFactor}: ${baseCO2.toFixed(3)} → ${transportCO2.toFixed(3)} kg)`;
-    console.log(`🧊 Refrigeration physics: ×${refrigerationFactor} (GLEC range 1.2-1.6)`);
-}
+const transportPhysics = calculateTransportPhysics(
+    massPhysics.grossWeight,
+    transportDistance,
+    transportMode,
+    isRefrigerated
+);
 
-// ✅ AUDIT TRAIL WITH PHYSICS
-if (auditTrail.pefCategories["Climate Change"]) {
-    auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total = transportCO2;
-    auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components.push({
-        name: transportMode + (isRefrigerated ? ' (refrigerated)' : ''),
-        distance_km: transportDistance,
-        subtotal: transportCO2,
-        notes: `Freight transportation (GLEC v4.0 factor: ${transportFactor} kg/ton-km)${refrigerationNote}`,
-        physics_source: "GLEC v4.0" + (isRefrigerated ? " + refrigeration adjustment" : "")
+// 4. UPDATE AUDIT TRAIL WITH NEW PHYSICS
+auditTrail.mass_balance = massPhysics; // Store for audit
+
+// Overwrite the simple transport calculation with the Physics one
+auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total = transportPhysics.co2;
+auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components = [{
+    name: "Distribution (" + transportPhysics.details + ")",
+    subtotal: transportPhysics.co2
+}];
+
+// Add Inbound Transport to Upstream
+if (inboundPhysics.co2_adder > 0) {
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += inboundPhysics.co2_adder;
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+        name: "Inbound Logistics (Farm to Factory)",
+        subtotal: inboundPhysics.co2_adder
     });
-    auditTrail.pefCategories["Climate Change"].total += transportCO2;
-    }
+    auditTrail.pefCategories["Climate Change"].total += inboundPhysics.co2_adder;
+}
+// =========== END OF PHYSICS PATCH ===========
 
             // =========== INTEGRATION POINT 5: PACKAGING WITH CFF ===========
             const packagingData = aioxyData.packaging[packagingMaterial];
