@@ -3997,7 +3997,8 @@ if (processingData) {
 }
             // =========== INTEGRATION POINT 4: TRANSPORTATION ===========
 // --- 100% PHYSICS INJECTION START ---
-
+// FIRST: Calculate Mass Balance
+const massBalanceData = calculateMassBalance(selectedIngredients, processingMethod, packagingWeight);
 // A. Identify Origin & Apply Inbound Logistics
 let inboundTransportCO2 = 0;
 let totalWaterImpact = 0;
@@ -4055,7 +4056,7 @@ if (isFrozen) refType = 'frozen';
 else if (isChilled) refType = 'chilled';
 
 const distributionCO2 = calculateGLECTransport(
-    massPhysics.grossWeight,
+    massBalanceData.grossWeight,  // ← CHANGED HERE
     distributionDist,
     distributionMode,
     refType
@@ -4071,7 +4072,7 @@ auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.component
 auditTrail.pefCategories["Climate Change"].total += distributionCO2;
 
 // Store mass physics for business case
-auditTrail.mass_balance = massPhysics;
+auditTrail.mass_balance = massBalanceData;  // ← CHANGED
 
 // --- 100% PHYSICS INJECTION END ---
             // =========== INTEGRATION POINT 5: PACKAGING WITH CFF ===========
