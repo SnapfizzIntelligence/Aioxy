@@ -3794,36 +3794,44 @@ function applyScenarioPhysics(baseResults, scenarios) {
 },
 
         calculateFoodImpact() {
-            console.log('🔧 Starting calculation with ingredients:', selectedIngredients);
-            
-            // Get inputs from DOM
-            const productName = document.getElementById('productName').value || 'Unnamed Product';
-            const manufacturingCountryCode = document.getElementById('manufacturingCountry').value || 'FR';
-            const processingMethod = document.getElementById('processingMethod').value;
-            const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
-            const transportMode = document.getElementById('transportMode').value;
-            const packagingMaterial = document.getElementById('packagingMaterial').value;
-            const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
-            const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
+    console.log('🔧 Starting calculation with ingredients:', selectedIngredients);
+    
+    // Get inputs from DOM
+    const productName = document.getElementById('productName').value || 'Unnamed Product';
+    const manufacturingCountryCode = document.getElementById('manufacturingCountry').value || 'FR';
+    const processingMethod = document.getElementById('processingMethod').value;
+    const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 0;
+    const transportMode = document.getElementById('transportMode').value;
+    const packagingMaterial = document.getElementById('packagingMaterial').value;
+    const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
+    const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
 
-            // SMART CATEGORY DETECTION
-            const productCategory = document.getElementById('productCategory').value;
-            const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
-            const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
-            currentComparisonBaseline = comparisonBaseline;
+    // =========== CRITICAL FIX 1: CALCULATE MASS BALANCE FIRST ===========
+    const massBalanceData = calculateMassBalance(
+        selectedIngredients, 
+        processingMethod, 
+        packagingWeight
+    );
+    console.log("✅ Mass balance calculated:", massBalanceData);
+    
+    // SMART CATEGORY DETECTION
+    const productCategory = document.getElementById('productCategory').value;
+    const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
+    const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
+    currentComparisonBaseline = comparisonBaseline;
 
-            // Initialize audit trail
-            const auditTrail = {
-                productName,
-                dppId: 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-                calculationTimestamp: new Date().toISOString(),
-                pefCategories: {},
-                mass_balance: {},
-                dqr_summary: {},
-                uncertainty_analysis: {},
-                comparison_baseline: comparisonBaseline,
-                scenarios_applied: activeScenarios
-            };
+    // Initialize audit trail
+    const auditTrail = {
+        productName,
+        dppId: 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        calculationTimestamp: new Date().toISOString(),
+        pefCategories: {},
+        mass_balance: massBalanceData, // ✅ Use the calculated mass balance here
+        dqr_summary: {},
+        uncertainty_analysis: {},
+        comparison_baseline: comparisonBaseline,
+        scenarios_applied: activeScenarios
+    };
 
             // Initialize all 16 categories
             Object.keys(pefCategories).forEach(cat => {
@@ -4022,8 +4030,6 @@ if (processingData) {
 }
             // =========== INTEGRATION POINT 4: TRANSPORTATION ===========
 // --- 100% PHYSICS INJECTION START ---
-// FIRST: Calculate Mass Balance
-const massBalanceData = calculateMassBalance(selectedIngredients, processingMethod, packagingWeight);
 // A. Identify Origin & Apply Inbound Logistics
 let inboundTransportCO2 = 0;
 let totalWaterImpact = 0;
