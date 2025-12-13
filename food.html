@@ -4000,32 +4000,7 @@ function applyScenarioPhysics(baseResults, scenarios) {
             });
 
             // =========== INTEGRATION POINT 2: UPSTREAM LCI ===========
-let upstreamLCI = calculateUpstreamLCI(selectedIngredients, manufacturingCountryCode);
-
-// 🌿 PLANT-BASED ADJUSTMENT
-const productName = document.getElementById('productName').value || '';
-if (productName.toLowerCase().includes('milk') || 
-    productName.toLowerCase().includes('drink') ||
-    productName.toLowerCase().includes('beverage') ||
-    productName.toLowerCase().includes('plant') ||
-    productName.toLowerCase().includes('oat') ||
-    productName.toLowerCase().includes('soy') ||
-    productName.toLowerCase().includes('almond')) {
-    
-    console.log("🌱 Applying plant-based upstream LCI reduction (40% reduction)");
-    Object.keys(upstreamLCI).forEach(key => {
-        upstreamLCI[key] *= 0.6; // Reduce by 40%
-    });
-    
-    // Store for transparency
-    if (!auditTrail.adjustments) auditTrail.adjustments = [];
-    auditTrail.adjustments.push({
-        type: "plant_based_upstream_reduction",
-        reduction_percent: 40,
-        reason: "Plant-based ingredients have lower fertilizer, machinery, and infrastructure impacts vs animal products"
-    });
-}
-
+const upstreamLCI = calculateUpstreamLCI(selectedIngredients, manufacturingCountryCode);
 Object.keys(upstreamLCI).forEach(cat => {
     if (auditTrail.pefCategories[cat]) {
         auditTrail.pefCategories[cat].contribution_tree.Upstream = {
@@ -4035,14 +4010,14 @@ Object.keys(upstreamLCI).forEach(cat => {
                     name: "Upstream LCI",
                     category: "infrastructure",
                     subtotal: upstreamLCI[cat],
-                    notes: "Fertilizer, electricity, machinery, infrastructure" + 
-                           (productName.toLowerCase().includes('milk') ? " (plant-based adjusted)" : "")
+                    notes: "Fertilizer, electricity, machinery, infrastructure"
                 }
             ]
         };
         auditTrail.pefCategories[cat].total += upstreamLCI[cat];
     }
 });
+
 // =========== INTEGRATION POINT 2.1: LCI DERIVATION (Grok's Physics Fix) ===========
 const lciDerivation = {};
 Object.keys(pefCategories).forEach(cat => {
