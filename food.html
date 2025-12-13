@@ -4002,8 +4002,28 @@ function applyScenarioPhysics(baseResults, scenarios) {
 
                 console.log(`✅ Processing: ${ingredient.name}`, ingredient.data.pef["Climate Change"]);
 
-                // Allocation factor
-                const allocationFactor = ingredient.allocation_factor || 1.0;
+                // FIX: PLANT MILKS GET 10% ALLOCATION (90% IS WATER)
+let allocationFactor = ingredient.allocation_factor || 1.0;
+
+// AUTO-DETECT PLANT MILK
+const productName = document.getElementById('productName').value.toLowerCase();
+const isPlantMilk = productName.includes('milk') || productName.includes('drink') || 
+                    productName.includes('latte') || productName.includes('beverage');
+
+if (isPlantMilk && (ingredient.name.toLowerCase().includes('oat') || 
+                    ingredient.name.toLowerCase().includes('soy') ||
+                    ingredient.name.toLowerCase().includes('almond') ||
+                    ingredient.name.toLowerCase().includes('rice'))) {
+    // Plant base in milk: Only 10% of weight is actual plant material
+    allocationFactor = 0.1;
+    console.log(`🥛 Physics fix: ${ingredient.name} allocation = 10% (plant milk formulation)`);
+}
+
+if (isPlantMilk && (ingredient.name.toLowerCase().includes('water'))) {
+    // Water in plant milk: Minimal environmental impact
+    allocationFactor = 0.001; // Almost zero impact
+    console.log(`💧 Physics fix: Water impact reduced for plant milk`);
+    }
                 
                 const adjustedQuantity = item.quantity / (1 - (ingredient.loss || 0));
                 const allocatedQuantity = adjustedQuantity * allocationFactor;
