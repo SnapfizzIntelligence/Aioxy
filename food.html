@@ -3520,7 +3520,49 @@ function calculateUpstreamLCI(ingredients, countryCode) {
         const awareCf = (countryData && countryData.awareFactor) || 17.1;
         upstreamImpacts["Water Use/Scarcity (AWARE)"] += qty * (lci.water_m3_per_kg || 0) * awareCf;
     });
+// ================== PLANT-BASED UPSTREAM REDUCTION ==================
+// Check if ALL ingredients are plant-based (no animal products)
+let allPlantBased = true;
+let plantBasedIngredients = [];
+let animalIngredients = [];
+
+ingredients.forEach(item => {
+    const ing = aioxyData.ingredients[item.id];
+    if (ing) {
+        const name = ing.name.toLowerCase();
+        // Check for animal product keywords
+        if (name.includes('beef') || name.includes('cow') || 
+            name.includes('milk') || name.includes('pig') || 
+            name.includes('chicken') || name.includes('cheese') ||
+            name.includes('butter') || name.includes('lamb') ||
+            name.includes('turkey') || name.includes('fish') ||
+            name.includes('egg') || name.includes('yogurt')) {
+            allPlantBased = false;
+            animalIngredients.push(ing.name);
+        } else {
+            plantBasedIngredients.push(ing.name);
+        }
+    }
+});
+
+// Apply reduction ONLY if ALL ingredients are plant-based
+if (allPlantBased && ingredients.length > 0) {
+    console.log(`🌿 ALL ingredients are plant-based: ${plantBasedIngredients.join(', ')}`);
+    console.log(`   Applying 40% upstream reduction (plants need less fertilizer/machinery)`);
     
+    // 40% reduction for plant-based products
+    Object.keys(upstreamImpacts).forEach(key => {
+        upstreamImpacts[key] *= 0.6; // 40% reduction = ×0.6
+    });
+    
+    // Log the adjustment
+    console.log(`📉 Upstream impacts reduced by 40%:`);
+    console.log(`   Climate Change: ${(upstreamImpacts["Climate Change"] / 0.6).toFixed(3)} → ${upstreamImpacts["Climate Change"].toFixed(3)}`);
+} else if (animalIngredients.length > 0) {
+    console.log(`🐄 Contains animal products: ${animalIngredients.join(', ')}`);
+    console.log(`   NO upstream reduction applied`);
+}
+
     console.log("✅ [100% Physics] Upstream LCI complete:", upstreamImpacts);
     return upstreamImpacts;
     }
