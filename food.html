@@ -5456,8 +5456,7 @@ function updateResultsUI(results) {
     updateDataQualityDisplay(results);
     updateEnvironmentalStory(results);
     
-    renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline);
-
+    renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline, results.comparison?.uplift_applied);
     document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
     document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
     document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
