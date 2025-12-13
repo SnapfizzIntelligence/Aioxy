@@ -4260,8 +4260,8 @@ const baselineWater = baselineWaterPerKg * finalContentWeight;
 const currentCO2 = finalPefResultsToUse["Climate Change"].total;
 const currentWater = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total;
 
-const co2Saved = Math.max(baselineTotalCO2 - currentTotalCO2, 0);
-const waterSaved = Math.max(baselineTotalWater - currentTotalWater, 0);
+const co2Saved = Math.max(baselineCO2 - currentTotalCO2, 0);
+const waterSaved = Math.max(baselineWater - currentTotalWater, 0);
 
 // Log the Physics Fix
 console.log(`⚖️ Baseline Physics: ${comparisonBaseline.name}`);
