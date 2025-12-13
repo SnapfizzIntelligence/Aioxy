@@ -4295,18 +4295,18 @@ const baselineWaterPerKg = baseWaterFarm + uplift.water;
 const baselineTotalCO2 = baselineCO2PerKg * finalContentWeight;
 const baselineTotalWater = baselineWaterPerKg * finalContentWeight;
 
-const currentTotalCO2 = finalPefResultsToUse["Climate Change"].total;
-const currentTotalWater = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total;
+const currentCO2 = finalPefResultsToUse["Climate Change"].total;
+const currentWater = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total;
 
-const co2Saved = Math.max(baselineTotalCO2 - currentTotalCO2, 0);
-const waterSaved = Math.max(baselineTotalWater - currentTotalWater, 0);
+const co2Saved = Math.max(baselineTotalCO2 - currentCO2, 0);
+const waterSaved = Math.max(baselineTotalWater - currentWater, 0);
 
 // Log the Physics Fix
 console.log(`⚖️ Baseline Physics: ${comparisonBaseline.name}`);
 console.log(`   Farm Gate: ${baseCo2Farm.toFixed(2)} + Uplift: ${uplift.co2.toFixed(2)} = ${baselineCO2PerKg.toFixed(2)} kg CO2e`);
 console.log(`   Uplift Breakdown:`, uplift.breakdown);
 console.log('✅ Calculation complete:', {
-    co2PerKg: finalContentWeight > 0 ? currentTotalCO2 / finalContentWeight : 0,
+    co2PerKg: finalContentWeight > 0 ? currentCO2 / finalContentWeight : 0,
     baselineCO2: finalContentWeight > 0 ? baselineCO2PerKg : 0,
     savings: co2Saved
 });
