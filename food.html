@@ -4364,33 +4364,36 @@ console.log('✅ Calculation complete:', {
         }
     };
 // ================== UNIVERSAL COMPARISON ENGINE ==================
-function renderUniversalComparisons(myCo2, baseline) {
+function renderUniversalComparisons(myCo2, baseline, uplift) {
     const grid = document.getElementById('universalComparisonGrid');
     if (!grid) return;
     
     grid.innerHTML = "";
     
+    // Get uplifted baseline if available
+    const upliftedBaseline = baseline.co2PerKg + (uplift?.co2 || 0);
+    
     let list = [];
     if(baseline === UNIVERSAL_BASELINES['milk-product']) {
         list = [
             {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Cow Milk (Baseline)", val: 1.1061238},
+            {name: "Cow Milk (Cradle-to-Retail)", val: upliftedBaseline},
             {name: "Almond Milk", val: 0.7},
             {name: "Soy Milk", val: 0.45892391}
         ];
     } else if (baseline === UNIVERSAL_BASELINES['beef-product']) {
         list = [
             {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Beef (Baseline)", val: 14.474184},
-            {name: "Chicken", val: 1.8638007},
-            {name: "Pork", val: 2.7941587}
+            {name: "Beef (Cradle-to-Retail)", val: upliftedBaseline},
+            {name: "Chicken", val: 2.81},
+            {name: "Pork", val: 4.04}
         ];
     } else if (baseline === UNIVERSAL_BASELINES['chicken-product']) {
         list = [
             {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Chicken (Baseline)", val: 1.8638007},
-            {name: "Pork", val: 2.7941587},
-            {name: "Beef", val: 14.474184}
+            {name: "Chicken (Cradle-to-Retail)", val: upliftedBaseline},
+            {name: "Pork", val: 4.04},
+            {name: "Beef", val: 16.52}
         ];
     } else {
         list = [
@@ -4414,9 +4417,9 @@ function renderUniversalComparisons(myCo2, baseline) {
 
     const baselineName = document.getElementById('baselineName');
     if (baselineName) {
-        baselineName.innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name}</strong>`;
+        baselineName.innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name} (Cradle-to-Retail)</strong>`;
     }
-}
+    }
 
 // ================== UI INTEGRATION: PEF SINGLE SCORE DISPLAY ==================
 function displayPEFSingleScore() {
