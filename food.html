@@ -4251,7 +4251,7 @@ const uplift = calculateBaselineUplift(comparisonKey);
 
 // 3. Final Baseline Totals (Cradle-to-Retail)
 const baselineCO2PerKg = baseCo2Farm + uplift.co2;
-const baselinePerKg = baseWaterFarm + uplift.water;
+const baselineWaterPerKg = baseWaterFarm + uplift.water;
 
 // 4. Calculate Totals based on Volume
 const baselineCO2 = baselineCO2PerKg * finalContentWeight;
