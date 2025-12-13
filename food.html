@@ -3425,6 +3425,7 @@ function randomNormal() {
     while (v === 0) v = Math.random();
     return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+    
     // ================== FIX 5: UPSTREAM LCI CALCULATION (100% PHYSICS) ==================
 function calculateUpstreamLCI(ingredients, countryCode) {
     console.log("🌱 [100% Physics] Calculating Upstream LCI with AR6 & Biogenic...");
@@ -3459,7 +3460,7 @@ function calculateUpstreamLCI(ingredients, countryCode) {
         let ch4GWP = gwp.ch4;
         let n2oGWP = gwp.n2o;
         if (gwp.ar6_dynamic && metadata && metadata.ef_version === '3.0') {
-            ch4GWP *= 1.05;
+            ch4GWP *= 1.05;  // +5% short-cycle uplift (EF 3.0)
         }
         
         // ===== METHANE & NITROUS OXIDE (AR6) =====
@@ -3469,31 +3470,34 @@ function calculateUpstreamLCI(ingredients, countryCode) {
         upstreamImpacts["Climate Change"] += qty * (
             totalCh4 * ch4GWP + 
             totalN2O * n2oGWP +
-            (lci.direct_co2_per_kg || 0)
+            (lci.direct_co2_per_kg || 0)  // Fossil CO2 only
         );
         
         // ===== BIOGENIC CARBON SPLIT =====
         if (metadata && metadata.biogenic_net) {
             const biogenicCredit = qty * metadata.biogenic_net * gwp.biogenic_discount;
-            upstreamImpacts["Climate Change"] -= biogenicCredit;
+            upstreamImpacts["Climate Change"] -= biogenicCredit;  // CREDIT!
             
+            // Store for transparency report
             window.biogenicReport.push({
                 ingredient: ing.name,
                 net_biogenic: metadata.biogenic_net,
                 credit: biogenicCredit,
                 category: "biogenic_credit"
             });
+            
+            console.log(`🌿 ${ing.name}: Biogenic credit = -${biogenicCredit.toFixed(4)} kg CO₂e`);
         }
         
-        // ===== ELECTRICITY =====
+        // ===== ELECTRICITY (DYNAMIC GRID) =====
         const kwh = lci.electricity_kwh_per_kg || 0;
         upstreamImpacts["Climate Change"] += qty * kwh * gridCo2;
-        upstreamImpacts["Resource Use, fossils"] += qty * kwh * 3.6;
+        upstreamImpacts["Resource Use, fossils"] += qty * kwh * 3.6;  // kWh → MJ
         
         // ===== DIESEL =====
         upstreamImpacts["Climate Change"] += qty * (lci.diesel_kg_per_kg || 0) * ef.diesel;
         
-        // ===== FERTILIZER =====
+        // ===== FERTILIZER (LEGUME CHECK) =====
         const isLegume = ing.data.lci && ing.data.lci.is_legume;
         const nEf = isLegume ? ef.nitrogen_legume : ef.nitrogen_synthetic;
         upstreamImpacts["Climate Change"] += qty * (lci.nitrogen_kg_per_kg || 0) * nEf;
@@ -3502,45 +3506,25 @@ function calculateUpstreamLCI(ingredients, countryCode) {
         if (lci.nitrogen_fixation_kg_per_kg && isLegume) {
             const nFixCredit = qty * lci.nitrogen_fixation_kg_per_kg * ef.nitrogen_legume;
             upstreamImpacts["Climate Change"] -= nFixCredit;
+            console.log(`🌱 ${ing.name}: N-fixation credit = -${nFixCredit.toFixed(4)} kg CO₂e`);
         }
         
-        // ===== LAND USE =====
+        // ===== LAND USE + dLUC =====
         let landPt = qty * (lci.land_ha_per_kg || 0) * 1000;
+        // dLUC: +5% for non-EU imports
         if (countryCode && !['FR', 'DE', 'ES', 'IT', 'NL'].includes(countryCode)) {
             landPt *= 1.05;
         }
         upstreamImpacts["Land Use"] += landPt;
         
-        // ===== WATER =====
+        // ===== WATER (AWARE COUNTRY-SPECIFIC) =====
         const awareCf = (countryData && countryData.awareFactor) || 17.1;
         upstreamImpacts["Water Use/Scarcity (AWARE)"] += qty * (lci.water_m3_per_kg || 0) * awareCf;
     });
     
-    // ================== SIMPLE PLANT-BASED CHECK ==================
-    // Quick check: if no animal ingredients, reduce by 30%
-    let hasAnimal = false;
-    ingredients.forEach(item => {
-        const ing = aioxyData.ingredients[item.id];
-        if (ing) {
-            const name = ing.name.toLowerCase();
-            if (name.includes('beef') || name.includes('cow') || name.includes('milk') || 
-                name.includes('pig') || name.includes('chicken') || name.includes('cheese')) {
-                hasAnimal = true;
-            }
-        }
-    });
-    
-    if (!hasAnimal && ingredients.length > 0) {
-        console.log("🌿 Plant-based detected: Applying 30% upstream reduction");
-        Object.keys(upstreamImpacts).forEach(key => {
-            upstreamImpacts[key] *= 0.7;
-        });
-    }
-    
     console.log("✅ [100% Physics] Upstream LCI complete:", upstreamImpacts);
     return upstreamImpacts;
     }
-        
     // ================== FIX 6: FOREGROUND/BACKGROUND ANALYSIS ==================
     function analyzeForegroundBackground(ingredients, totalImpact) {
         const foregroundComponents = [];
