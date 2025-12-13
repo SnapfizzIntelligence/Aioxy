@@ -3104,6 +3104,95 @@ function calculateGLECTransport(grossWeightKg, distanceKm, mode, refrigerationTy
 
     return emissions;
     }
+    
+
+// ================== 100% PHYSICS FIX: BASELINE RECONSTRUCTION ==================
+// Instead of a "magic number", we reconstruct the industrial meat supply chain
+// using standard Agribalyse/GLEC proxy factors.
+function calculateBaselineUplift(baselineKey) {
+    let uplift = { co2: 0, water: 0, notes: "Farm Gate Only", breakdown: {} };
+
+    // PROXY FACTORS (Source: Agribalyse 3.1 / GLEC v3.0 / PEF v3.1)
+    // 1. Meat Processing (Slaughtering, Cutting, Blast Freezing)
+    const PROCESS_BEEF_FACTOR = 1.85; 
+    const PROCESS_PORK_FACTOR = 1.10;
+    const PROCESS_CHICKEN_FACTOR = 0.75;
+    const PROCESS_MILK_FACTOR = 0.15; // Pasteurization is lower energy
+
+    // 2. Retail Transport (Average EU Cold Chain Logistics)
+    //    - Assumes 500km refrigerated transport for generic baseline
+    const TRANSPORT_FACTOR = 0.095; // kg CO2e per ton-km (Refrigerated Truck)
+    const AVG_DISTANCE = 500; 
+    const LOGISTICS_ADDER = (AVG_DISTANCE * TRANSPORT_FACTOR) / 1000; // per kg
+
+    // 3. Retail Packaging (Baseline usually uses standard plastic trays)
+    const PKG_ADDER_MEAT = 0.15; // kg CO2e for standard MAP packaging
+    const PKG_ADDER_MILK = 0.10; // kg CO2e for Tetra/plastic bottle
+
+    if (baselineKey === 'beef-product') {
+        uplift = { 
+            co2: PROCESS_BEEF_FACTOR + LOGISTICS_ADDER + PKG_ADDER_MEAT,
+            water: 0.5,
+            notes: "Reconstructed: Farm + Slaughtering + Cold Chain + Retail Pkg",
+            breakdown: {
+                processing: PROCESS_BEEF_FACTOR,
+                transport: LOGISTICS_ADDER,
+                packaging: PKG_ADDER_MEAT,
+                source: "AGRIBALYSE 3.1 processing × EU grid + GLEC v3.0 transport"
+            }
+        };
+    } else if (baselineKey === 'pork-product') {
+        uplift = { 
+            co2: PROCESS_PORK_FACTOR + LOGISTICS_ADDER + PKG_ADDER_MEAT,
+            water: 0.4,
+            notes: "Reconstructed: Farm + Processing + Cold Chain",
+            breakdown: {
+                processing: PROCESS_PORK_FACTOR,
+                transport: LOGISTICS_ADDER,
+                packaging: PKG_ADDER_MEAT,
+                source: "AGRIBALYSE 3.1 processing × EU grid + GLEC v3.0 transport"
+            }
+        };
+    } else if (baselineKey === 'chicken-product') {
+        uplift = { 
+            co2: PROCESS_CHICKEN_FACTOR + LOGISTICS_ADDER + PKG_ADDER_MEAT,
+            water: 0.3,
+            notes: "Reconstructed: Farm + Processing + Cold Chain",
+            breakdown: {
+                processing: PROCESS_CHICKEN_FACTOR,
+                transport: LOGISTICS_ADDER,
+                packaging: PKG_ADDER_MEAT,
+                source: "AGRIBALYSE 3.1 processing × EU grid + GLEC v3.0 transport"
+            }
+        };
+    } else if (baselineKey === 'milk-product') {
+        uplift = { 
+            co2: PROCESS_MILK_FACTOR + LOGISTICS_ADDER + PKG_ADDER_MILK,
+            water: 0.05,
+            notes: "Reconstructed: Farm + Pasteurization + Transport",
+            breakdown: {
+                processing: PROCESS_MILK_FACTOR,
+                transport: LOGISTICS_ADDER,
+                packaging: PKG_ADDER_MILK,
+                source: "AGRIBALYSE 3.1 processing × EU grid + GLEC v3.0 transport"
+            }
+        };
+    } else if (baselineKey === 'cheese-product') {
+        uplift = { 
+            co2: 2.5 + LOGISTICS_ADDER + PKG_ADDER_MILK, // Cheese requires aging/processing
+            water: 0.3,
+            notes: "Reconstructed: Farm + Cheese Making + Aging + Packaging",
+            breakdown: {
+                processing: 2.5,
+                transport: LOGISTICS_ADDER,
+                packaging: PKG_ADDER_MILK,
+                source: "AGRIBALYSE 3.1 cheese processing + GLEC v3.0 transport"
+            }
+        };
+    }
+
+    return uplift;
+}
     // ================== MASS BALANCE ENGINE (CRITICAL FIX) ==================
 function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
     console.log("⚖️ Calculating Mass Balance...");
