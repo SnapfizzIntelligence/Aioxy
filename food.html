@@ -2849,7 +2849,58 @@ window.debugAIOXY = debugCurrentState;
             fossilPerKg: 2.2493909
         }
     };
+// ================== 100% PHYSICS FIX: BASELINE RECONSTRUCTION ==================
+// Instead of a "magic number", we reconstruct the industrial meat supply chain
+// using standard Agribalyse/GLEC proxy factors.
+function calculateBaselineUplift(baselineKey) {
+    let uplift = { co2: 0, water: 0, notes: "Farm Gate Only" };
 
+    // PROXY FACTORS (Source: Agribalyse 3.1 / GLEC v3.0)
+    // 1. Meat Processing (Slaughtering, Cutting, Blast Freezing)
+    //    - Energy intensity is high for meat (~1.8 kg CO2e/kg for beef processing)
+    const PROCESS_BEEF_FACTOR = 1.85; 
+    const PROCESS_PORK_FACTOR = 1.10;
+    const PROCESS_CHICKEN_FACTOR = 0.75;
+    const PROCESS_MILK_FACTOR = 0.15; // Pasteurization is lower energy
+
+    // 2. Retail Transport (Average EU Cold Chain Logistics)
+    //    - Assumes 500km refrigerated transport for generic baseline
+    const TRANSPORT_FACTOR = 0.095; // kg CO2e per ton-km (Refrigerated Truck)
+    const AVG_DISTANCE = 500; 
+    const LOGISTICS_ADDER = (AVG_DISTANCE * TRANSPORT_FACTOR) / 1000; // per kg
+
+    // 3. Retail Packaging (Baseline usually uses standard plastic trays)
+    //    - Generic tray + film ~0.025kg plastic
+    const PKG_ADDER = 0.15; // kg CO2e for standard MAP packaging
+
+    if (baselineKey === 'beef-product') {
+        uplift = { 
+            co2: PROCESS_BEEF_FACTOR + LOGISTICS_ADDER + PKG_ADDER, 
+            water: 0.5, // Water for cleaning slaughterhouse
+            notes: "Reconstructed: Farm + Slaughtering + Cold Chain + Retail Pkg" 
+        };
+    } else if (baselineKey === 'pork-product') {
+        uplift = { 
+            co2: PROCESS_PORK_FACTOR + LOGISTICS_ADDER + PKG_ADDER, 
+            water: 0.4, 
+            notes: "Reconstructed: Farm + Processing + Cold Chain" 
+        };
+    } else if (baselineKey === 'chicken-product') {
+        uplift = { 
+            co2: PROCESS_CHICKEN_FACTOR + LOGISTICS_ADDER + PKG_ADDER, 
+            water: 0.3, 
+            notes: "Reconstructed: Farm + Processing + Cold Chain" 
+        };
+    } else if (baselineKey === 'milk-product') {
+        uplift = { 
+            co2: PROCESS_MILK_FACTOR + LOGISTICS_ADDER + 0.1, // Tetra/Plastic bottle
+            water: 0.05, 
+            notes: "Reconstructed: Farm + Pasteurization + Transport" 
+        };
+    }
+
+    return uplift;
+    }
     // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     console.log("📦 CFF Calculation with:", { 
