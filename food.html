@@ -4241,15 +4241,31 @@ auditTrail.mass_balance = massBalanceData;  // ← CHANGED
             currentDPPId = auditTrail.dppId;
             auditTrailData = auditTrail;
 
-            // Calculate comparison
-            const baselineCO2 = comparisonBaseline.co2PerKg * finalContentWeight;
-            const baselineWater = comparisonBaseline.waterPerKg * finalContentWeight;
-            const currentCO2 = finalPefResultsToUse["Climate Change"].total;
-            const currentWater = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total;
+            // ================== FIXED COMPARISON LOGIC ==================
+// 1. Get Baseline Farm-Gate Data
+const baseCo2Farm = comparisonBaseline.co2PerKg;
+const baseWaterFarm = comparisonBaseline.waterPerKg;
 
-            const co2Saved = Math.max(baselineCO2 - currentCO2, 0);
-            const waterSaved = Math.max(baselineWater - currentWater, 0);
+// 2. Calculate Uplift (Processing/Transport/Pkg for Baseline)
+const uplift = calculateBaselineUplift(comparisonKey);
 
+// 3. Final Baseline Totals (Cradle-to-Retail)
+const baselineCO2PerKg = baseCo2Farm + uplift.co2;
+const baselineWaterPerKg = baseWaterFarm + uplift.water;
+
+// 4. Calculate Totals based on Volume
+const baselineTotalCO2 = baselineCO2PerKg * finalContentWeight;
+const baselineTotalWater = baselineWaterPerKg * finalContentWeight;
+
+const currentTotalCO2 = finalPefResultsToUse["Climate Change"].total;
+const currentTotalWater = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total;
+
+const co2Saved = Math.max(baselineTotalCO2 - currentTotalCO2, 0);
+const waterSaved = Math.max(baselineTotalWater - currentTotalWater, 0);
+
+// Log the Physics Fix
+console.log(`⚖️ Baseline Physics: ${comparisonBaseline.name}`);
+console.log(`   Farm Gate: ${baseCo2Farm.toFixed(2)} + Uplift: ${uplift.co2.toFixed(2)} = ${baselineCO2PerKg.toFixed(2)} kg CO2e`);
             console.log('✅ Calculation complete:', {
     co2PerKg: finalContentWeight > 0 ? currentCO2 / finalContentWeight : 0,
     baselineCO2: finalContentWeight > 0 ? baselineCO2 / finalContentWeight : 0,
