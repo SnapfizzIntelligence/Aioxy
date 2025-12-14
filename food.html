@@ -2673,48 +2673,49 @@ const FORMULATION_STANDARDS = {
     }
 };
 
-    // ================== PHYSICS FUNCTIONS (GEMINI) ==================
-// These were missing - adding them now to fix transport/water calculations
-
+    // ================== GLEC v3.0 STRICT TRANSPORT ENGINE ==================
 function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
-    console.log(`🚚 [Physics] GLEC Transport: ${massKg}kg, ${distanceKm}km, ${mode}, ${refType}`);
-    
+    // 1. GET PURE GLEC FACTORS (Well-to-Wheel CO2e)
+    // kg CO2e per ton-km
+    const factors = {
+        road: { ambient: 0.062, chilled: 0.088, frozen: 0.095 },
+        sea: { ambient: 0.008, chilled: 0.012, frozen: 0.012 }, // Reefer container
+        air: { ambient: 0.602, chilled: 0.680, frozen: 0.680 },
+        rail: { ambient: 0.022, chilled: 0.028, frozen: 0.028 }
+    };
+
+    // 2. RESOLVE FACTOR
+    let baseFactor = 0.062; // Default road
+    if (factors[mode]) {
+        baseFactor = factors[mode][refType] || factors[mode].ambient || baseFactor;
+    }
+
+    // 3. APPLY LOAD FACTOR (The Regulator Requirement)
+    // "Empty Running" penalty: Trucks return empty ~20% of the time.
+    // GLEC Default Load Factor for General Cargo = 85% (0.85)
+    // We strictly apply this math: Emissions = (Mass * Dist * Factor) / LoadFactor
+    const standardLoadFactors = {
+        road: 0.85, 
+        sea: 0.70, // Container utilization often lower
+        air: 0.95, // High utilization
+        rail: 0.90
+    };
+    const loadFactor = standardLoadFactors[mode] || 0.85;
+
+    // 4. CALCULATION
     const massTons = massKg / 1000;
-    const glec = PHYSICS_DB.glec_factors;
     
-    // Default factor (road ambient)
-    let factor = 0.062;
-    
-    // Extract factor based on mode and refrigeration
-    if (glec[mode]) {
-        if (typeof glec[mode] === 'object') {
-            // Handle nested objects (like road: {ambient: {hgv: 0.062}})
-            if (glec[mode][refType]) {
-                if (typeof glec[mode][refType] === 'object') {
-                    // Get HGV value for trucks
-                    factor = glec[mode][refType].hgv || glec[mode][refType];
-                } else {
-                    factor = glec[mode][refType];
-                }
-            }
-        } else {
-            // Simple value (e.g., sea: 0.008)
-            factor = glec[mode];
-        }
-    }
-    
-    // Distance efficiency adjustments
-    let efficiency = 1.0;
-    if (mode === 'road') {
-        if (distanceKm < 50) efficiency = 1.8;    // Short trips less efficient
-        else if (distanceKm > 500) efficiency = 0.9; // Long trips more efficient
-    }
-    
-    const emissions = massTons * distanceKm * factor * efficiency;
-    
-    console.log(`✅ GLEC Result: ${emissions.toFixed(4)} kg CO2e (factor: ${factor}, efficiency: ${efficiency})`);
+    // STRICT PHYSICS: No arbitrary distance multipliers. 
+    // Impact scales linearly with distance and inversely with load efficiency.
+    const emissions = (massTons * distanceKm * baseFactor) / loadFactor;
+
+    console.log(`🚚 GLEC Strict: ${massKg}kg x ${distanceKm}km via ${mode} (${refType})`);
+    console.log(`   Factor: ${baseFactor} | Load Efficiency: ${(loadFactor*100).toFixed(0)}%`);
+    console.log(`   Result: ${emissions.toFixed(4)} kg CO2e`);
+
     return emissions;
 }
+
 
 function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'NationalAvg', month = null) {
     console.log(`💧 [Physics] Watershed AWARE: ${waterVolumeM3}m³, ${countryCode}, ${watershed}, month:${month}`);
