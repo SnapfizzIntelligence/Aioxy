@@ -3450,7 +3450,50 @@ function calculateGLECTransport(grossWeightKg, distanceKm, mode, refrigerationTy
 
     return emissions;
     }
+  // ================== AIOXY THERMODYNAMIC PROCESSING ENGINE ==================
+function calculateThermodynamicImpact(massInputKg, massOutputKg, processingMethod, countryCode) {
+    console.log("🔥 [Physics] Calculating thermodynamic impact...");
     
+    // 1. PHYSICS CONSTANTS
+    const SPECIFIC_HEAT_WATER = 4.18; // kJ/kg·°C
+    const LATENT_HEAT_VAPORIZATION = 2260; // kJ/kg
+    const AMBIENT_TEMP = 20; // °C
+    
+    // 2. DETERMINE PROCESS TEMPERATURE & EVAPORATION
+    const process = aioxyData.processing[processingMethod] || { yield: 1.0, temp: 20 };
+    const targetTemp = process.temp || 100; // Default to boiling if heating involved
+    const evaporationMass = Math.max(0, massInputKg - massOutputKg);
+    
+    // 3. THERMODYNAMICS CALCULATION
+    const energyHeatingMJ = (massInputKg * SPECIFIC_HEAT_WATER * (targetTemp - AMBIENT_TEMP)) / 1000;
+    const energyEvaporationMJ = (evaporationMass * LATENT_HEAT_VAPORIZATION) / 1000;
+    const totalThermalEnergyMJ = energyHeatingMJ + energyEvaporationMJ;
+    
+    // 4. CONVERT TO ELECTRICITY (assuming electric heating efficiency ~90%)
+    const efficiency = 0.90;
+    const electricityKWh = (totalThermalEnergyMJ / 3.6) / efficiency;
+    
+    // 5. CARBON INTENSITY
+    const country = aioxyData.countries[countryCode] || aioxyData.countries['FR'];
+    const gridCarbonFactor = country.electricityCO2 / 1000; // kg CO2e/kWh
+    const manufacturingCO2 = electricityKWh * gridCarbonFactor;
+
+    console.log(`🔥 Thermodynamics: ${massInputKg.toFixed(2)}kg → ${massOutputKg.toFixed(2)}kg`);
+    console.log(`   Evaporated: ${evaporationMass.toFixed(2)}kg | Energy: ${totalThermalEnergyMJ.toFixed(2)} MJ`);
+    console.log(`   Grid: ${country.name} (${country.electricityCO2}g/kWh) → ${manufacturingCO2.toFixed(3)} kg CO2e`);
+
+    return {
+        co2: manufacturingCO2,
+        kwh: electricityKWh,
+        water_evaporated_kg: evaporationMass,
+        physics_data: {
+            energy_heating_mj: energyHeatingMJ,
+            energy_evaporation_mj: energyEvaporationMJ,
+            target_temperature_c: targetTemp,
+            efficiency_factor: efficiency
+        }
+    };
+    }  
 
 // ================== UNIVERSAL PHYSICS FIX: ALL FOOD PRODUCTS ==================
 function calculateBaselineUplift(baselineKey) {
