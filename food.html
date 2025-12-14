@@ -4587,42 +4587,29 @@ Object.keys(pefCategories).forEach(cat => {
 });
             // =========== INTEGRATION POINT 3: MANUFACTURING PROCESSING ===========
 const processingData = aioxyData.processing[processingMethod];
-if (processingData && massBalanceData.productMass > 0) {
-    // USE THERMODYNAMICS instead of fixed co2_impact
-    const countryCode = manufacturingCountryCode || 'FR';
-    const country = aioxyData.countries[countryCode] || aioxyData.countries['FR'];
+// Check if we have valid mass balance data to process
+if (processingData && massBalanceData && massBalanceData.productMass > 0) {
     
-    // Thermodynamic calculation (Q = mcΔT + mL)
-    const evaporationMass = massBalanceData.evaporation || 0;
-    const targetTemp = processingData.temp || 100;
-    const SPECIFIC_HEAT_WATER = 4.18; // kJ/kg·°C
-    const LATENT_HEAT_VAPORIZATION = 2260; // kJ/kg
-    const AMBIENT_TEMP = 20;
+    // ✅ USE THE SINGLE, REGULATOR-PROOF THERMODYNAMIC ENGINE
+    // This function already has all physics constants and correct logic
+    const thermodynamicResult = calculateThermodynamicImpact(
+        massBalanceData.inputMass,          // massInputKg: total mass entering the process
+        massBalanceData.productMass,        // massOutputKg: final product mass
+        processingMethod,                   // e.g., 'pasteurization'
+        manufacturingCountryCode || 'FR'    // country for grid carbon factor
+    );
     
-    // Energy to heat (MJ)
-    const energyHeatingMJ = (totalInputMass * SPECIFIC_HEAT_WATER * (targetTemp - AMBIENT_TEMP)) / 1000;
+    console.log(`⚙️ Manufacturing Processing (via Physics Engine):`);
+    console.log(`   Energy: ${thermodynamicResult.kwh.toFixed(2)} kWh`);
+    console.log(`   CO₂e: ${thermodynamicResult.co2.toFixed(3)} kg`);
+    console.log(`   Water Evaporated: ${thermodynamicResult.water_evaporated_kg.toFixed(3)} kg`);
     
-    // Energy to evaporate (MJ)
-    const energyEvaporationMJ = (evaporationMass * LATENT_HEAT_VAPORIZATION) / 1000;
+    // Update Climate Change impact in the audit trail
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total = thermodynamicResult.co2;
+    auditTrail.pefCategories["Climate Change"].total += thermodynamicResult.co2;
     
-    const totalEnergyMJ = energyHeatingMJ + energyEvaporationMJ;
-    
-    // Convert to electricity (90% efficiency)
-    const efficiency = 0.90;
-    const electricityKWh = (totalEnergyMJ / 3.6) / efficiency;
-    
-    // Carbon intensity
-    const gridCarbonFactor = country.electricityCO2 / 1000; // kg CO2e/kWh
-    const processingCO2 = electricityKWh * gridCarbonFactor;
-    
-    console.log(`🔥 Manufacturing Thermodynamics: ${electricityKWh.toFixed(2)} kWh → ${processingCO2.toFixed(3)} kg CO2e`);
-    
-    // Update Climate Change impact
-    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total = processingCO2;
-    auditTrail.pefCategories["Climate Change"].total += processingCO2;
-    
-    // Update Fossil Resources
-    const fossilMJ = electricityKWh * 3.6; // Convert kWh to MJ
+    // Update Fossil Resource use (1 kWh = 3.6 MJ)
+    const fossilMJ = thermodynamicResult.kwh * 3.6;
     auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
     auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
     }
