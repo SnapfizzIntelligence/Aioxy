@@ -4302,74 +4302,81 @@ function applyScenarioPhysics(baseResults, scenarios) {
             let dqrComponents = [];
 
             // =========== INTEGRATION POINT 1: INGREDIENTS WITH ECONOMIC ALLOCATION ===========
-            // =========== REGULATOR-PROOF MASS BALANCE ENGINE ===========
-let totalProductWeight = massBalanceData.final_content_weight_kg || massBalanceData.productMass || 0.2;
-let auditLog = []; // TRANSPARENCY ARRAY
-let productType = detectProductTypeForPhysics(productName, selectedIngredients);
+             // =========== AIOXY REGULATOR-PROOF ENGINE (Primary Mode) ===========
+let totalProductWeight = massBalanceData.final_content_weight_kg || 0.2;
+let physicsAuditLog = []; // Our internal log
+let productTypeKey = this.detectProductCategory(productName, selectedIngredients, productCategory); // USE OUR EXISTING DETECTOR
 
-// 1. DETECT & LOG
-auditLog.push(`🚀 AIOXY Standard Calculation v2.1`);
-auditLog.push(`Product: ${productName} | Type: ${productType || 'Generic Food'}`);
-auditLog.push(`Output Weight: ${totalProductWeight.toFixed(3)} kg`);
+// 1. LOG THE START
+physicsAuditLog.push(`🚀 AIOXY Physics Engine v2.1 | Product: ${productName}`);
+physicsAuditLog.push(`Detected as: ${productTypeKey || 'Generic Food'} | Output Mass: ${totalProductWeight.toFixed(3)} kg`);
 
-// 2. PRIMARY MODE: User provided specific ingredients (GOLD STANDARD)
+// 2. PRIMARY MODE: User provided ingredients (GOLD STANDARD)
 if (selectedIngredients.length > 0) {
-    auditLog.push(`🟢 PRIMARY DATA MODE: Using user-provided inputs (PEF-compliant).`);
+    physicsAuditLog.push(`🟢 PRIMARY DATA MODE: Using user-provided inputs.`);
 
     selectedIngredients.forEach(item => {
         const ing = aioxyData.ingredients[item.id];
         if (!ing) return;
 
-        // 🔬 PHYSICS CORE: Account for Farm Loss
-        const farmLoss = ing.data?.metadata?.farm_loss || ing.farm_loss || 0.0;
-        const rawMaterialInput = item.quantity / (1 - farmLoss); // If loss=0.03, grows 1.03kg to get 1kg
-        const effectiveInputQty = rawMaterialInput; // Impact FULL raw mass
+        // 🔬 CORE FIX: ACCOUNT FOR FARM LOSS (use existing 'loss' field)
+        const farmLoss = ing.loss || 0.0; // Use the 'loss' field already in ingredients.js
+        const grownMass = item.quantity / (1 - farmLoss); // Mass that was actually grown
+        
+        // LOG THE PHYSICS
+        physicsAuditLog.push(`   ${ing.name}: Input ${item.quantity}kg → Grown ${grownMass.toFixed(3)}kg (${(farmLoss*100).toFixed(0)}% loss).`);
 
-        auditLog.push(`   ${ing.name}: Factory Input ${item.quantity}kg → Raw Impact ${rawMaterialInput.toFixed(3)}kg (${(farmLoss*100).toFixed(0)}% farm loss).`);
-
-        // Calculate impact for the FULL RAW INPUT MASS
+        // CALCULATE IMPACT ON THE **FULL GROWN MASS** (THIS IS THE CRITICAL FIX)
         Object.keys(pefCategories).forEach(cat => {
-            const impact = ing.data.pef[cat] || 0;
-            const subtotal = effectiveInputQty * impact;
-            auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += subtotal;
-            auditTrail.pefCategories[cat].total += subtotal;
+            const impactPerKg = ing.data.pef[cat] || 0;
+            const impactTotal = grownMass * impactPerKg;
+            
+            // Add to our existing audit trail structure
+            auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+                name: ing.name,
+                id: item.id,
+                quantity_kg: grownMass, // Store the grown mass for traceability
+                subtotal: impactTotal
+            });
+            auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
+            auditTrail.pefCategories[cat].total += impactTotal;
         });
 
-        // Track for mass balance
+        // Update mass balance trackers (use existing variables)
         totalIngredientQuantity += item.quantity;
-        totalInputQuantity += rawMaterialInput;
-        agriculturalLoss += rawMaterialInput - item.quantity;
+        totalInputQuantity += grownMass;
+        agriculturalLoss += (grownMass - item.quantity);
     });
 
-    // ⚡ AUTO-INJECT PROCESSING ENERGY (The Killer Feature)
-    if (productType && FORMULATION_STANDARDS[productType]) {
-        const std = FORMULATION_STANDARDS[productType];
-        const electricity_kwh = std.manufacturing_impact.electricity_kwh_per_kg * totalProductWeight;
-        // Get country electricity factor from our data
-        const countryData = aioxyData.countries[manufacturingCountryCode];
-        const gridFactor = countryData ? (countryData.electricityCO2 || 300) / 1000 : 0.3; // kg CO2e/kWh
-        const electricity_CO2 = electricity_kwh * gridFactor;
-
-        // Add to Climate Change and Fossil Resources
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += electricity_CO2;
-        auditTrail.pefCategories["Climate Change"].total += electricity_CO2;
+    // ⚡ AUTO-INJECT PROCESSING ENERGY (USING FORMULATION_STANDARDS)
+    if (productTypeKey && FORMULATION_STANDARDS[productTypeKey]) {
+        const std = FORMULATION_STANDARDS[productTypeKey];
+        const energy_kwh_total = std.manufacturing_impact.electricity_kwh_per_kg * totalProductWeight;
         
-        auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += (electricity_kwh * 3.6); // kWh to MJ
-        auditTrail.pefCategories["Resource Use, fossils"].total += (electricity_kwh * 3.6);
+        // Get country electricity factor (use existing aioxyData.countries)
+        const countryData = aioxyData.countries[manufacturingCountryCode];
+        const grid_co2_factor = countryData ? (countryData.electricityCO2 || 300) / 1000 : 0.3; // kg CO2e/kWh
+        const energy_co2 = energy_kwh_total * grid_co2_factor;
+        
+        // Add to Climate Change and Fossil Resources (using existing auditTrail structure)
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += energy_co2;
+        auditTrail.pefCategories["Climate Change"].total += energy_co2;
+        
+        auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += (energy_kwh_total * 3.6); // Convert kWh to MJ
+        auditTrail.pefCategories["Resource Use, fossils"].total += (energy_kwh_total * 3.6);
 
-        auditLog.push(`⚡ Processing Energy INJECTED: ${electricity_kwh.toFixed(2)} kWh (${std.manufacturing_impact.electricity_kwh_per_kg} kWh/kg)`);
-        auditLog.push(`   Source: ${std.manufacturing_impact.note}`);
+        // LOG THE INJECTION
+        physicsAuditLog.push(`⚡ Processing Energy INJECTED: ${energy_kwh_total.toFixed(2)} kWh`);
+        physicsAuditLog.push(`   Standard: ${std.manufacturing_impact.electricity_kwh_per_kg} kWh/kg (${std.manufacturing_impact.note})`);
     }
 
 } else {
-    // 3. SECONDARY MODE: Gap-fill using 2025 industry standards
-    auditLog.push(`🔵 SECONDARY MODE: No user ingredients, using 2025 AIOXY Standard.`);
-    // (We'll flesh this out after Primary Mode works)
-    auditLog.push(`   [Secondary mode logic placeholder for ${productType}]`);
+    // 3. SECONDARY MODE PLACEHOLDER (We'll build this after Primary works)
+    physicsAuditLog.push(`🔵 SECONDARY MODE: [Logic placeholder for gap-filling]`);
 }
 
-// 4. STORE AUDIT LOG FOR UI
-window.aioxyAuditLog = auditLog;
+// 4. STORE LOG FOR UI (use a global variable that our UI can find)
+window.aioxyPhysicsLog = physicsAuditLog;
 
             // =========== INTEGRATION POINT 2: UPSTREAM LCI ===========
 const upstreamLCI = calculateUpstreamLCI(selectedIngredients, manufacturingCountryCode);
