@@ -3282,23 +3282,58 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     }
     // ================== NEW PHYSICS FUNCTIONS (GEMINI'S PATCH) ==================
 
-// Fix A: Mass Balance Engine
 function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
+    console.log("⚖️ [THERMODYNAMIC] Calculating Mass & Energy Balance...");
+    
+    // 1. MASS CALCULATION (Keep as is)
     const totalInputMass = ingredients.reduce((sum, item) => sum + item.quantity, 0);
-    const yieldFactor = PHYSICS_DATA.yields[processingMethod] || 1.0;
+    const processingData = aioxyData.processing[processingMethod];
+    const yieldFactor = processingData?.yield || 1.0;
     const finalProductMass = totalInputMass * yieldFactor;
     const evaporationMass = totalInputMass - finalProductMass;
     const grossWeight = finalProductMass + packagingWeight;
 
-    console.log(`⚖️ Mass Balance: Input ${totalInputMass.toFixed(3)}kg -> Yield ${yieldFactor} -> Output ${finalProductMass.toFixed(3)}kg (Gross Logistical: ${grossWeight.toFixed(3)}kg)`);
+    console.log(`✅ Mass Balance: ${totalInputMass.toFixed(3)}kg in → ${finalProductMass.toFixed(3)}kg out (Gross: ${grossWeight.toFixed(3)}kg)`);
 
+    // 2. NEW: THERMODYNAMIC ENERGY CALCULATION (Gemini's Physics)
+    if (finalProductMass > 0 && processingData) {
+        const SPECIFIC_HEAT_WATER = 4.18; // kJ/kg·°C
+        const LATENT_HEAT_VAPORIZATION = 2260; // kJ/kg
+        const AMBIENT_TEMP = 20; // °C
+        
+        // Get temperature from processing data (we'll add this next)
+        const targetTemp = processingData.temp || 100; // Default to boiling
+        
+        // Energy to heat input mass (MJ)
+        const energyHeatingMJ = (totalInputMass * SPECIFIC_HEAT_WATER * (targetTemp - AMBIENT_TEMP)) / 1000;
+        
+        // Energy to evaporate water (MJ)
+        const energyEvaporationMJ = (evaporationMass * LATENT_HEAT_VAPORIZATION) / 1000;
+        
+        const totalThermalEnergyMJ = energyHeatingMJ + energyEvaporationMJ;
+        
+        console.log(`🔥 Thermodynamics: Evaporated ${evaporationMass.toFixed(2)}kg | Energy: ${totalThermalEnergyMJ.toFixed(2)} MJ`);
+    }
+
+    // 3. Return SAME STRUCTURE but with NEW physics data
     return {
+        // KEEP ALL EXISTING FIELDS (no breaking changes)
         inputMass: totalInputMass,
         productMass: finalProductMass,
         evaporation: evaporationMass,
-        grossWeight: grossWeight
+        grossWeight: grossWeight,
+        final_content_weight_kg: finalProductMass,
+        packaging_weight_kg: packagingWeight,
+        
+        // NEW: Add thermodynamic data for manufacturing calculations
+        thermodynamic_data: {
+            evaporation_kg: evaporationMass,
+            yield_factor: yieldFactor,
+            total_input_kg: totalInputMass,
+            final_output_kg: finalProductMass
+        }
     };
-}
+    }
 
 // Fix B: GLEC v4.0 Transport Physics
 function calculateTransportPhysics(grossWeightKg, distanceKm, mode, isRefrigerated) {
