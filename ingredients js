@@ -1942,7 +1942,7 @@ window.aioxyData = {
         "mixing": { co2_impact: 0.015, water_impact: 0.04, yield: 0.995, loss: 0.005 },
         "fermentation": { co2_impact: 0.35, water_impact: 1.0, yield: 0.95, loss: 0.050 },
         "extrusion": { co2_impact: 0.45, water_impact: 0.25, yield: 0.95, loss: 0.050 },
-        "oat-processing": { co2_impact: 0.10, water_impact: 0.35, yield: 0.98, loss: 0.02 }
+        "oat-processing": { co2_impact: 0.35, water_impact: 0.35, yield: 0.98, loss: 0.02 }
     },
 
     // TRANSPORTATION (GLEC v3.0)
