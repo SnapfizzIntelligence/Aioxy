@@ -4106,32 +4106,23 @@ function applyScenarioPhysics(baseResults, scenarios) {
 
                 console.log(`✅ Processing: ${ingredient.name}`, ingredient.data.pef["Climate Change"]);
 
-                // FIX: PLANT MILKS GET 10% ALLOCATION (90% IS WATER)
-let allocationFactor = ingredient.allocation_factor || 1.0;
-
-// AUTO-DETECT PLANT MILK
+                // ====== UNIVERSAL FOOD PHYSICS ALLOCATION ======
 const productName = document.getElementById('productName').value.toLowerCase();
-const isPlantMilk = productName.includes('milk') || productName.includes('drink') || 
-                    productName.includes('latte') || productName.includes('beverage');
+const physicsProfile = getFoodPhysicsProfile(productName, selectedIngredients);
 
-if (isPlantMilk && (ingredient.name.toLowerCase().includes('oat') || 
-                    ingredient.name.toLowerCase().includes('soy') ||
-                    ingredient.name.toLowerCase().includes('almond') ||
-                    ingredient.name.toLowerCase().includes('rice'))) {
-    // Plant base in milk: Only 10% of weight is actual plant material
-    allocationFactor = 0.1;
-    console.log(`🥛 Physics fix: ${ingredient.name} allocation = 10% (plant milk formulation)`);
-}
+// Calculate allocation using universal physics
+const allocation = calculateFoodAllocation(
+    ingredient.name.toLowerCase(),
+    item.quantity,
+    physicsProfile
+);
 
-if (isPlantMilk && (ingredient.name.toLowerCase().includes('water'))) {
-    // Water in plant milk: Minimal environmental impact
-    allocationFactor = 0.001; // Almost zero impact
-    console.log(`💧 Physics fix: Water impact reduced for plant milk`);
-    }
-                
-                const adjustedQuantity = item.quantity / (1 - (ingredient.loss || 0));
-                const allocatedQuantity = adjustedQuantity * allocationFactor;
-                
+const adjustedQuantity = item.quantity / (1 - (ingredient.loss || 0));
+const allocatedQuantity = allocation.effectiveQuantity;
+const allocationFactor = allocation.factor;
+
+console.log(`📊 ${ingredient.name}: ${item.quantity}kg → ${allocatedQuantity.toFixed(4)}kg effective (${allocation.method})`);
+
                 agriculturalLoss += adjustedQuantity * (ingredient.loss || 0);
                 totalIngredientQuantity += item.quantity;
                 totalInputQuantity += adjustedQuantity;
@@ -4140,14 +4131,15 @@ if (isPlantMilk && (ingredient.name.toLowerCase().includes('water'))) {
                 const uncertainty = this.calculateUncertainty(ingredient.data.metadata.dqr.P);
 
                 dqrComponents.push({
-                    name: ingredient.name,
-                    dqr,
-                    uncertainty,
-                    weight: item.quantity,
-                    source: ingredient.data.metadata.source_dataset,
-                    allocation_factor: allocationFactor,
-                    allocation_method: ingredient.allocation_method || "economic"
-                });
+    name: ingredient.name,
+    dqr,
+    uncertainty,
+    weight: item.quantity,
+    source: ingredient.data.metadata.source_dataset,
+    allocation_factor: allocation.factor,
+    allocation_method: allocation.method,
+    physics_profile: physicsProfile.type
+});
 
                 // PROCESS ALL 16 PEF CATEGORIES
                 Object.keys(pefCategories).forEach(cat => {
