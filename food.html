@@ -5810,7 +5810,7 @@ function updateResultsUI(results) {
     
     renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline, results.comparison?.uplift_applied);
     document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
-    document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(2) + ' m³';
+    document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(4) + ' m³';
     document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
     document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
     
@@ -5856,7 +5856,8 @@ function updateEnvironmentalStory(results) {
     
     const carKm = Math.round(co2SavedPerKg * 1000 / 120);
     const trees = Math.round(co2SavedPerKg / 0.025);
-    const householdEnergy = (co2SavedPerKg * 1000 / 12000).toFixed(1);
+    const householdEnergy = Math.round(co2SavedPerKg * 1000 / 1.5) + ' days';
+// 1.5 kg CO₂e per day for average EU household energy
     const waterBottles = Math.round(waterSavedPerKg * 1000 / 1.5);
     
     const productName = document.getElementById('productName').value || 'your product';
