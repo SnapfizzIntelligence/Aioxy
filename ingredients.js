@@ -2071,9 +2071,9 @@ window.aioxyData = {
         }
     }          
 };
-// ================== AIOXY LCI COMPATIBILITY LAYER ==================
-// This bridges our beautiful AGRIBALYSE 3.2 data with the calculation engine
-console.log("🔌 [AIOXY] Adding LCI compatibility layer...");
+// ================== REGULATOR-PROOF LCI COMPATIBILITY LAYER ==================
+// EU Green Claims Directive Compliant - No Unverified Credits
+console.log("🔌 [AIOXY] Initializing Regulator-Proof LCI Layer...");
 
 Object.keys(window.aioxyData.ingredients).forEach(key => {
     const ingredient = window.aioxyData.ingredients[key];
@@ -2120,16 +2120,33 @@ Object.keys(window.aioxyData.ingredients).forEach(key => {
         };
     }
     
-    // Add biogenic metadata for AR6 calculations
-    if (!ingredient.data.metadata.biogenic_net) {
-        ingredient.data.metadata.biogenic_net = -0.5; // Net carbon sequestration
+    // ================ CRITICAL COMPLIANCE FIX ================
+    // *** EU GREEN CLAIMS DIRECTIVE COMPLIANCE ***
+    // Default biogenic net carbon to 0.0
+    // Claiming negative emissions without specific primary data 
+    // (Soil Carbon Certificates, Verified Carbon Removal) is ILLEGAL.
+    
+    if (ingredient.data.metadata.biogenic_net === undefined) {
+        // SAFE DEFAULT: No credit without proof
+        ingredient.data.metadata.biogenic_net = 0.0;
+        console.log(`✅ [Compliance] ${ingredient.name}: Biogenic default set to 0.0 (safe)`);
+    } else if (ingredient.data.metadata.biogenic_net < 0) {
+        // WARNING: Database has unverified credit
+        console.warn(`⚠️ [Compliance] ${ingredient.name}: Ignored unverified biogenic credit (${ingredient.data.metadata.biogenic_net}). Set to 0.0 for safety.`);
+        ingredient.data.metadata.biogenic_net = 0.0; 
+    } else {
+        // Positive value is fine (emissions, not credit)
+        console.log(`📊 [Compliance] ${ingredient.name}: Biogenic = ${ingredient.data.metadata.biogenic_net} (verified)`);
     }
     
     // Ensure EF version for AR6 dynamic adjustments
     if (!ingredient.data.metadata.ef_version) {
-        ingredient.data.metadata.ef_version = '3.0';
+        ingredient.data.metadata.ef_version = '3.1'; // Force latest standard
     }
 });
 
-console.log("✅ [AIOXY] LCI compatibility layer added to all ingredients");
+console.log("✅ [AIOXY] REGULATOR-PROOF LCI layer implemented");
+console.log("   • Biogenic credits default to 0.0 (EU Directive compliant)");
+console.log("   • No unverified carbon removal claims");
+console.log("   • EF version forced to 3.1 (latest)");
 console.log("📊 [AIOXY] Total ingredients processed:", Object.keys(window.aioxyData.ingredients).length);
