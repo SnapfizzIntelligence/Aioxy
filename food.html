@@ -4284,12 +4284,18 @@ console.log('✅ Calculation complete:', {
     landUsePerKg: finalContentWeight > 0 ? finalPefResultsToUse["Land Use"].total / finalContentWeight : 0,
     fossilPerKg: finalContentWeight > 0 ? finalPefResultsToUse["Resource Use, fossils"].total / finalContentWeight : 0,
     comparison: {
-        baseline: comparisonBaseline,
-        co2Saved,
-        waterSaved,
-        co2SavedPerKg: finalContentWeight > 0 ? co2Saved / finalContentWeight : 0,
-        waterSavedPerKg: finalContentWeight > 0 ? waterSaved / finalContentWeight : 0
+    baseline: {
+        ...comparisonBaseline,
+        name: comparisonBaseline.name + " (Cradle-to-Retail)",
+        co2PerKg: baselineCO2PerKg, // UPDATED with uplift
+        waterPerKg: baselineWaterPerKg // UPDATED with uplift
     },
+    uplift_applied: uplift,
+    co2Saved,
+    waterSaved,
+    co2SavedPerKg: finalContentWeight > 0 ? co2Saved / finalContentWeight : 0,
+    waterSavedPerKg: finalContentWeight > 0 ? waterSaved / finalContentWeight : 0
+},
     pefSingleScore: pefSingleScore
 };
         },
