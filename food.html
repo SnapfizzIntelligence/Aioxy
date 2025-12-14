@@ -2898,7 +2898,24 @@ function calculateBaselineUplift(baselineKey) {
             notes: "Reconstructed: Farm + Pasteurization + Transport" 
         };
     }
+    // ADD THESE LINES RIGHT HERE (before return uplift):
+    else if (baselineKey === 'almond-milk') {
+        uplift = { 
+            co2: 0.25 + LOGISTICS_ADDER + 0.15,
+            water: 2.5,
+            notes: "Reconstructed: Farm + Processing + Transport" 
+        };
+    }
+    else if (baselineKey === 'soy-milk') {
+        uplift = { 
+            co2: 0.18 + LOGISTICS_ADDER + 0.12,
+            water: 0.3,
+            notes: "Reconstructed: Farm + Processing + Transport" 
+        };
+    }
 
+    return uplift;
+    }
     return uplift;
     }
     // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
