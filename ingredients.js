@@ -1999,19 +1999,19 @@ window.aioxyData = {
 
     // PROCESSING METHODS
     processing: {
-        "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000 },
-        "pasteurization": { co2_impact: 0.06, water_impact: 0.15, yield: 0.995, loss: 0.005 },
-        "sterilization": { co2_impact: 0.12, water_impact: 0.30, yield: 0.985, loss: 0.015 },
-        "baking": { co2_impact: 0.55, water_impact: 0.12, yield: 0.88, loss: 0.120, source: "AGRI 3.2 oven avg (2MJ/kg @ EU grid)" },
-        "frying": { co2_impact: 0.75, water_impact: 0.22, yield: 0.75, loss: 0.250 },
-        "freezing": { co2_impact: 0.25, water_impact: 0.08, yield: 0.975, loss: 0.025 },
-        "drying": { co2_impact: 1.8, water_impact: 0.18, yield: 0.97, loss: 0.030 },
-        "milling": { co2_impact: 0.04, water_impact: 0.04, yield: 0.78, loss: 0.220 },
-        "mixing": { co2_impact: 0.015, water_impact: 0.04, yield: 0.995, loss: 0.005 },
-        "fermentation": { co2_impact: 0.35, water_impact: 1.0, yield: 0.95, loss: 0.050 },
-        "extrusion": { co2_impact: 0.45, water_impact: 0.25, yield: 0.95, loss: 0.050 },
-        "oat-processing": { co2_impact: 0.35, water_impact: 0.35, yield: 0.98, loss: 0.02 }
-    },
+    "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000, temp: 20 },
+    "pasteurization": { co2_impact: 0.06, water_impact: 0.15, yield: 0.995, loss: 0.005, temp: 72 },
+    "sterilization": { co2_impact: 0.12, water_impact: 0.30, yield: 0.985, loss: 0.015, temp: 121 },
+    "baking": { co2_impact: 0.55, water_impact: 0.12, yield: 0.88, loss: 0.120, temp: 180 },
+    "frying": { co2_impact: 0.75, water_impact: 0.22, yield: 0.75, loss: 0.250, temp: 180 },
+    "freezing": { co2_impact: 0.25, water_impact: 0.08, yield: 0.975, loss: 0.025, temp: -18 },
+    "drying": { co2_impact: 1.8, water_impact: 0.18, yield: 0.97, loss: 0.030, temp: 60 },
+    "milling": { co2_impact: 0.04, water_impact: 0.04, yield: 0.78, loss: 0.220, temp: 30 },
+    "mixing": { co2_impact: 0.015, water_impact: 0.04, yield: 0.995, loss: 0.005, temp: 25 },
+    "fermentation": { co2_impact: 0.35, water_impact: 1.0, yield: 0.95, loss: 0.050, temp: 35 },
+    "extrusion": { co2_impact: 0.45, water_impact: 0.25, yield: 0.95, loss: 0.050, temp: 150 },
+    "oat-processing": { co2_impact: 0.35, water_impact: 0.35, yield: 0.98, loss: 0.02, temp: 85 }
+},
 
     // TRANSPORTATION (GLEC v3.0)
     transportation: {
