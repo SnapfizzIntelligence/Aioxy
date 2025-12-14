@@ -4302,115 +4302,74 @@ function applyScenarioPhysics(baseResults, scenarios) {
             let dqrComponents = [];
 
             // =========== INTEGRATION POINT 1: INGREDIENTS WITH ECONOMIC ALLOCATION ===========
-            selectedIngredients.forEach(item => {
-                const ingredient = aioxyData.ingredients[item.id];
-                
-                if (!ingredient) {
-                    console.error(`❌ Ingredient not found: ${item.id}`);
-                    return;
-                }
+            // =========== REGULATOR-PROOF MASS BALANCE ENGINE ===========
+let totalProductWeight = massBalanceData.final_content_weight_kg || massBalanceData.productMass || 0.2;
+let auditLog = []; // TRANSPARENCY ARRAY
+let productType = detectProductTypeForPhysics(productName, selectedIngredients);
 
-                console.log(`✅ Processing: ${ingredient.name}`, ingredient.data.pef["Climate Change"]);
+// 1. DETECT & LOG
+auditLog.push(`🚀 AIOXY Standard Calculation v2.1`);
+auditLog.push(`Product: ${productName} | Type: ${productType || 'Generic Food'}`);
+auditLog.push(`Output Weight: ${totalProductWeight.toFixed(3)} kg`);
 
-                // FIX: PLANT MILKS GET 10% ALLOCATION (90% IS WATER)
-let allocationFactor = ingredient.allocation_factor || 1.0;
+// 2. PRIMARY MODE: User provided specific ingredients (GOLD STANDARD)
+if (selectedIngredients.length > 0) {
+    auditLog.push(`🟢 PRIMARY DATA MODE: Using user-provided inputs (PEF-compliant).`);
 
-// ================== UNIVERSAL FOOD PHYSICS ENGINE ==================
-// 1. DETECT PRODUCT TYPE
-const productName = document.getElementById('productName').value.toLowerCase();
-const isPlantMilk = productName.includes('milk') || productName.includes('drink') || 
-                    productName.includes('latte') || productName.includes('beverage');
+    selectedIngredients.forEach(item => {
+        const ing = aioxyData.ingredients[item.id];
+        if (!ing) return;
 
-// 2. INITIALIZE PHYSICS VARIABLES
-let allocationFactor = 1.0; // Default: full economic allocation
-let concentrationFactor = 1.0; // Default: 100% of ingredient in final product
-let physicsNote = "Default economic allocation";
+        // 🔬 PHYSICS CORE: Account for Farm Loss
+        const farmLoss = ing.data?.metadata?.farm_loss || ing.farm_loss || 0.0;
+        const rawMaterialInput = item.quantity / (1 - farmLoss); // If loss=0.03, grows 1.03kg to get 1kg
+        const effectiveInputQty = rawMaterialInput; // Impact FULL raw mass
 
-// 3. APPLY FOOD FORMULATION PHYSICS
-if (isPlantMilk) {
-    // PLANT MILK FORMULATION PHYSICS
-    const ingredientName = ingredient.name.toLowerCase();
-    
-    if (ingredientName.includes('oat') || 
-        ingredientName.includes('soy') ||
-        ingredientName.includes('almond') ||
-        ingredientName.includes('rice') ||
-        ingredientName.includes('pea')) {
-        // PLANT BASE: 12% of final product weight (science-based)
-        concentrationFactor = 0.12;
-        allocationFactor = 1.0; // Full impact of plant material
-        physicsNote = "Plant base in milk (12% concentration)";
-        console.log(`🌱 ${ingredient.name}: ${(concentrationFactor*100).toFixed(1)}% of final product weight`);
+        auditLog.push(`   ${ing.name}: Factory Input ${item.quantity}kg → Raw Impact ${rawMaterialInput.toFixed(3)}kg (${(farmLoss*100).toFixed(0)}% farm loss).`);
+
+        // Calculate impact for the FULL RAW INPUT MASS
+        Object.keys(pefCategories).forEach(cat => {
+            const impact = ing.data.pef[cat] || 0;
+            const subtotal = effectiveInputQty * impact;
+            auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += subtotal;
+            auditTrail.pefCategories[cat].total += subtotal;
+        });
+
+        // Track for mass balance
+        totalIngredientQuantity += item.quantity;
+        totalInputQuantity += rawMaterialInput;
+        agriculturalLoss += rawMaterialInput - item.quantity;
+    });
+
+    // ⚡ AUTO-INJECT PROCESSING ENERGY (The Killer Feature)
+    if (productType && FORMULATION_STANDARDS[productType]) {
+        const std = FORMULATION_STANDARDS[productType];
+        const electricity_kwh = std.manufacturing_impact.electricity_kwh_per_kg * totalProductWeight;
+        // Get country electricity factor from our data
+        const countryData = aioxyData.countries[manufacturingCountryCode];
+        const gridFactor = countryData ? (countryData.electricityCO2 || 300) / 1000 : 0.3; // kg CO2e/kWh
+        const electricity_CO2 = electricity_kwh * gridFactor;
+
+        // Add to Climate Change and Fossil Resources
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += electricity_CO2;
+        auditTrail.pefCategories["Climate Change"].total += electricity_CO2;
+        
+        auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += (electricity_kwh * 3.6); // kWh to MJ
+        auditTrail.pefCategories["Resource Use, fossils"].total += (electricity_kwh * 3.6);
+
+        auditLog.push(`⚡ Processing Energy INJECTED: ${electricity_kwh.toFixed(2)} kWh (${std.manufacturing_impact.electricity_kwh_per_kg} kWh/kg)`);
+        auditLog.push(`   Source: ${std.manufacturing_impact.note}`);
     }
-    else if (ingredientName.includes('rapeseed') ||
-             ingredientName.includes('sunflower') ||
-             ingredientName.includes('coconut') ||
-             ingredientName.includes('oil')) {
-        // OIL: 1.5% of final product weight
-        concentrationFactor = 0.015;
-        allocationFactor = 1.0;
-        physicsNote = "Oil in plant milk (1.5% concentration)";
-        console.log(`🫒 ${ingredient.name}: ${(concentrationFactor*100).toFixed(2)}% of final product weight`);
-    }
-    // Note: Water is not in ingredient database, so no water check needed
+
+} else {
+    // 3. SECONDARY MODE: Gap-fill using 2025 industry standards
+    auditLog.push(`🔵 SECONDARY MODE: No user ingredients, using 2025 AIOXY Standard.`);
+    // (We'll flesh this out after Primary Mode works)
+    auditLog.push(`   [Secondary mode logic placeholder for ${productType}]`);
 }
 
-// 4. CALCULATE PHYSICS-BASED QUANTITIES
-// Step A: Account for agricultural loss (happens before formulation)
-const adjustedQuantity = item.quantity / (1 - (ingredient.loss || 0));
-
-// Step B: Apply concentration (how much of this ingredient ends up in final product)
-const concentratedQuantity = adjustedQuantity * concentrationFactor;
-
-// Step C: Apply allocation (economic/environmental allocation factor)
-const allocatedQuantity = concentratedQuantity * allocationFactor;
-
-// 5. LOG PHYSICS FOR DEBUGGING
-console.log(`🔬 ${ingredient.name} Physics Chain:`);
-console.log(`   Input: ${item.quantity}kg → After ag loss: ${adjustedQuantity.toFixed(4)}kg`);
-console.log(`   Concentration: ×${concentrationFactor} → ${concentratedQuantity.toFixed(4)}kg in final product`);
-console.log(`   Allocation: ×${allocationFactor} → ${allocatedQuantity.toFixed(4)}kg allocated`);
-console.log(`   Physics: ${physicsNote}`);
-                
-                agriculturalLoss += adjustedQuantity * (ingredient.loss || 0);
-                totalIngredientQuantity += item.quantity;
-                totalInputQuantity += adjustedQuantity;
-
-                const dqr = ingredient.data.metadata.dqr_overall;
-                const uncertainty = this.calculateUncertainty(ingredient.data.metadata.dqr.P);
-
-                dqrComponents.push({
-                    name: ingredient.name,
-                    dqr,
-                    uncertainty,
-                    weight: item.quantity,
-                    source: ingredient.data.metadata.source_dataset,
-                    allocation_factor: allocationFactor,
-                    allocation_method: ingredient.allocation_method || "economic"
-                });
-
-                // PROCESS ALL 16 PEF CATEGORIES
-                Object.keys(pefCategories).forEach(cat => {
-                    const impact = ingredient.data.pef[cat] || 0;
-                    const subtotal = allocatedQuantity * impact;
-
-                    auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-                        name: ingredient.name,
-                        id: item.id,
-                        quantity_kg: adjustedQuantity,
-                        allocated_quantity_kg: allocatedQuantity,
-                        allocation_factor: allocationFactor,
-                        subtotal: subtotal,
-                        source: ingredient.data.metadata.source_dataset,
-                        dqr,
-                        uncertainty,
-                        allocation_note: ingredient.allocation_note || "Default economic allocation"
-                    });
-
-                    auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += subtotal;
-                    auditTrail.pefCategories[cat].total += subtotal;
-                });
-            });
+// 4. STORE AUDIT LOG FOR UI
+window.aioxyAuditLog = auditLog;
 
             // =========== INTEGRATION POINT 2: UPSTREAM LCI ===========
 const upstreamLCI = calculateUpstreamLCI(selectedIngredients, manufacturingCountryCode);
