@@ -2645,6 +2645,94 @@ const PHYSICS_DB = {
         }
     }
 };
+    // ================== PHYSICS FUNCTIONS (GEMINI) ==================
+// These were missing - adding them now to fix transport/water calculations
+
+function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
+    console.log(`🚚 [Physics] GLEC Transport: ${massKg}kg, ${distanceKm}km, ${mode}, ${refType}`);
+    
+    const massTons = massKg / 1000;
+    const glec = PHYSICS_DB.glec_factors;
+    
+    // Default factor (road ambient)
+    let factor = 0.062;
+    
+    // Extract factor based on mode and refrigeration
+    if (glec[mode]) {
+        if (typeof glec[mode] === 'object') {
+            // Handle nested objects (like road: {ambient: {hgv: 0.062}})
+            if (glec[mode][refType]) {
+                if (typeof glec[mode][refType] === 'object') {
+                    // Get HGV value for trucks
+                    factor = glec[mode][refType].hgv || glec[mode][refType];
+                } else {
+                    factor = glec[mode][refType];
+                }
+            }
+        } else {
+            // Simple value (e.g., sea: 0.008)
+            factor = glec[mode];
+        }
+    }
+    
+    // Distance efficiency adjustments
+    let efficiency = 1.0;
+    if (mode === 'road') {
+        if (distanceKm < 50) efficiency = 1.8;    // Short trips less efficient
+        else if (distanceKm > 500) efficiency = 0.9; // Long trips more efficient
+    }
+    
+    const emissions = massTons * distanceKm * factor * efficiency;
+    
+    console.log(`✅ GLEC Result: ${emissions.toFixed(4)} kg CO2e (factor: ${factor}, efficiency: ${efficiency})`);
+    return emissions;
+}
+
+function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'NationalAvg', month = null) {
+    console.log(`💧 [Physics] Watershed AWARE: ${waterVolumeM3}m³, ${countryCode}, ${watershed}, month:${month}`);
+    
+    // Get country data or default to France
+    const countryData = PHYSICS_DB.watersheds[countryCode] || PHYSICS_DB.watersheds['FR'];
+    
+    // Get specific watershed or national average
+    const basinData = countryData[watershed] || countryData['NationalAvg'];
+    
+    // Start with default factor
+    let cf = basinData.default;
+    
+    // Apply seasonal adjustment if month provided
+    if (month !== null) {
+        const isSummer = (month >= 5 && month <= 8);   // May-August
+        const isWinter = (month === 11 || month === 0 || month === 1); // Nov, Dec, Jan
+        
+        if (isSummer && basinData.summer) {
+            cf = basinData.summer; // Summer scarcity
+        } else if (isWinter && basinData.winter) {
+            cf = basinData.winter; // Winter abundance
+        }
+    }
+    
+    const awareImpact = waterVolumeM3 * cf;
+    
+    console.log(`✅ AWARE Result: ${awareImpact.toFixed(4)} m³ eq (CF: ${cf})`);
+    
+    return {
+        impact: awareImpact,
+        cf_used: cf,
+        watershed: watershed
+    };
+}
+
+// Helper: Get ingredient's country of origin
+function getIngredientOrigin(ingredientId) {
+    return PHYSICS_DB.origins[ingredientId] || 'FR'; // Default to France
+}
+
+// Helper: Get current month (0-11)
+function getCurrentMonth() {
+    return new Date().getMonth(); // 0 = January, 11 = December
+}
+
 // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
 const FOOD_PHYSICS = {
     // CONCENTRATION FACTORS (wt% of key ingredient in final product)
