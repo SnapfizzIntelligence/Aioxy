@@ -4542,42 +4542,45 @@ Object.keys(pefCategories).forEach(cat => {
 });
             // =========== INTEGRATION POINT 3: MANUFACTURING PROCESSING ===========
 const processingData = aioxyData.processing[processingMethod];
-if (processingData) {
-    const processingWater = processingData.water_impact || 0;
-    const processingCO2 = processingData.co2_impact || 0;
+if (processingData && finalProductWeight > 0) {
+    // USE THERMODYNAMICS instead of fixed co2_impact
+    const countryCode = manufacturingCountryCode || 'FR';
+    const country = aioxyData.countries[countryCode] || aioxyData.countries['FR'];
     
-    // ✅ CORRECTED: Processing impacts happen on FINAL product weight after losses
-    const finalProductWeight = massBalanceData.final_content_weight_kg || totalIngredientQuantity;
+    // Thermodynamic calculation (Q = mcΔT + mL)
+    const evaporationMass = massBalanceData.evaporation || 0;
+    const targetTemp = processingData.temp || 100;
+    const SPECIFIC_HEAT_WATER = 4.18; // kJ/kg·°C
+    const LATENT_HEAT_VAPORIZATION = 2260; // kJ/kg
+    const AMBIENT_TEMP = 20;
     
-    const processingImpactCO2 = finalProductWeight * processingCO2;
-    const processingImpactWater = calculateAWARE(
-        finalProductWeight * processingWater,
-        manufacturingCountryCode,
-        'default',
-        processingMethod
-    );
+    // Energy to heat (MJ)
+    const energyHeatingMJ = (totalInputMass * SPECIFIC_HEAT_WATER * (targetTemp - AMBIENT_TEMP)) / 1000;
     
-    Object.keys(auditTrail.pefCategories).forEach(cat => {
-        if (cat === "Climate Change") {
-            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total = processingImpactCO2;
-            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.components.push({
-                name: processingMethod,
-                subtotal: processingImpactCO2,
-                notes: "Processing energy and emissions"
-            });
-            auditTrail.pefCategories[cat].total += processingImpactCO2;
-        }
-        if (cat === "Water Use/Scarcity (AWARE)") {
-            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total = processingImpactWater;
-            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.components.push({
-                name: processingMethod,
-                subtotal: processingImpactWater,
-                notes: "Processing water use"
-            });
-            auditTrail.pefCategories[cat].total += processingImpactWater;
-        }
-    });
-}
+    // Energy to evaporate (MJ)
+    const energyEvaporationMJ = (evaporationMass * LATENT_HEAT_VAPORIZATION) / 1000;
+    
+    const totalEnergyMJ = energyHeatingMJ + energyEvaporationMJ;
+    
+    // Convert to electricity (90% efficiency)
+    const efficiency = 0.90;
+    const electricityKWh = (totalEnergyMJ / 3.6) / efficiency;
+    
+    // Carbon intensity
+    const gridCarbonFactor = country.electricityCO2 / 1000; // kg CO2e/kWh
+    const processingCO2 = electricityKWh * gridCarbonFactor;
+    
+    console.log(`🔥 Manufacturing Thermodynamics: ${electricityKWh.toFixed(2)} kWh → ${processingCO2.toFixed(3)} kg CO2e`);
+    
+    // Update Climate Change impact
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total = processingCO2;
+    auditTrail.pefCategories["Climate Change"].total += processingCO2;
+    
+    // Update Fossil Resources
+    const fossilMJ = electricityKWh * 3.6; // Convert kWh to MJ
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
+    auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
+    }
             // =========== INTEGRATION POINT 4: TRANSPORTATION ===========
 // --- 100% PHYSICS INJECTION START ---
 // A. Identify Origin & Apply Inbound Logistics
