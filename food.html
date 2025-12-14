@@ -4587,7 +4587,7 @@ Object.keys(pefCategories).forEach(cat => {
 });
             // =========== INTEGRATION POINT 3: MANUFACTURING PROCESSING ===========
 const processingData = aioxyData.processing[processingMethod];
-if (processingData && finalProductWeight > 0) {
+if (processingData && massBalanceData.productMass > 0) {
     // USE THERMODYNAMICS instead of fixed co2_impact
     const countryCode = manufacturingCountryCode || 'FR';
     const country = aioxyData.countries[countryCode] || aioxyData.countries['FR'];
