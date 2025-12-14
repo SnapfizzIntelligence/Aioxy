@@ -4370,10 +4370,56 @@ if (selectedIngredients.length > 0) {
         physicsAuditLog.push(`   Standard: ${std.manufacturing_impact.electricity_kwh_per_kg} kWh/kg (${std.manufacturing_impact.note})`);
     }
 
+} else if (productTypeKey && FORMULATION_STANDARDS[productTypeKey]) {
+    // 3. SECONDARY MODE: Gap-fill using 2025 AIOXY Standard
+    physicsAuditLog.push(`🔵 SECONDARY MODE: No user ingredients. Using 2025 AIOXY Standard formulation.`);
+    const std = FORMULATION_STANDARDS[productTypeKey];
+
+    // Model the ingredients (oats, oil, water) for oat-milk
+    if (productTypeKey === 'oat-milk') {
+        // Calculate needed inputs based on standard %
+        const oatsNeeded = (0.10 * totalProductWeight) / 0.85; // 10% final, 85% yield
+        const oilNeeded = (0.02 * totalProductWeight) / 0.99;
+        const waterNeeded = (0.88 * totalProductWeight) / 0.98;
+        
+        physicsAuditLog.push(`   Oats: ${oatsNeeded.toFixed(3)}kg raw input`);
+        physicsAuditLog.push(`   Oil: ${oilNeeded.toFixed(3)}kg`);
+        physicsAuditLog.push(`   Water: ${waterNeeded.toFixed(3)}kg`);
+
+        // (For now, we only calculate impact for oats as an example)
+        // Find oats ingredient in our database
+        const oatsIngredient = aioxyData.ingredients['oat-grain-national-average-animal-feed-at-farm-gate-fr'];
+        if (oatsIngredient) {
+            const farmLoss = oatsIngredient.loss || 0.03;
+            const grownMass = oatsNeeded / (1 - farmLoss);
+            
+            // Add its impact to all categories
+            Object.keys(pefCategories).forEach(cat => {
+                const impactPerKg = oatsIngredient.data.pef[cat] || 0;
+                const impactTotal = grownMass * impactPerKg;
+                auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
+                auditTrail.pefCategories[cat].total += impactTotal;
+            });
+        }
+    }
+    // (We'll add plant-burger and others later)
+
+    // AUTO-INJECT PROCESSING ENERGY (SAME AS PRIMARY)
+    const energy_kwh_total = std.manufacturing_impact.electricity_kwh_per_kg * totalProductWeight;
+    const countryData = aioxyData.countries[manufacturingCountryCode];
+    const grid_co2_factor = countryData ? (countryData.electricityCO2 || 300) / 1000 : 0.3;
+    const energy_co2 = energy_kwh_total * grid_co2_factor;
+    
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += energy_co2;
+    auditTrail.pefCategories["Climate Change"].total += energy_co2;
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += (energy_kwh_total * 3.6);
+    auditTrail.pefCategories["Resource Use, fossils"].total += (energy_kwh_total * 3.6);
+
+    physicsAuditLog.push(`⚡ Processing Energy INJECTED: ${energy_kwh_total.toFixed(2)} kWh`);
+
 } else {
-    // 3. SECONDARY MODE PLACEHOLDER (We'll build this after Primary works)
-    physicsAuditLog.push(`🔵 SECONDARY MODE: [Logic placeholder for gap-filling]`);
-}
+    physicsAuditLog.push(`⚠️ No formulation standard available for this product.`);
+    }
 
 // 4. STORE LOG FOR UI (use a global variable that our UI can find)
 window.aioxyPhysicsLog = physicsAuditLog;
