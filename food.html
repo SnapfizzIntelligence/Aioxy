@@ -4287,28 +4287,62 @@ function applyScenarioPhysics(baseResults, scenarios) {
                 // FIX: PLANT MILKS GET 10% ALLOCATION (90% IS WATER)
 let allocationFactor = ingredient.allocation_factor || 1.0;
 
-// AUTO-DETECT PLANT MILK
+// ================== UNIVERSAL FOOD PHYSICS ENGINE ==================
+// 1. DETECT PRODUCT TYPE
 const productName = document.getElementById('productName').value.toLowerCase();
 const isPlantMilk = productName.includes('milk') || productName.includes('drink') || 
                     productName.includes('latte') || productName.includes('beverage');
 
-if (isPlantMilk && (ingredient.name.toLowerCase().includes('oat') || 
-                    ingredient.name.toLowerCase().includes('soy') ||
-                    ingredient.name.toLowerCase().includes('almond') ||
-                    ingredient.name.toLowerCase().includes('rice'))) {
-    // Plant base in milk: Only 10% of weight is actual plant material
-    allocationFactor = 0.1;
-    console.log(`🥛 Physics fix: ${ingredient.name} allocation = 10% (plant milk formulation)`);
+// 2. INITIALIZE PHYSICS VARIABLES
+let allocationFactor = 1.0; // Default: full economic allocation
+let concentrationFactor = 1.0; // Default: 100% of ingredient in final product
+let physicsNote = "Default economic allocation";
+
+// 3. APPLY FOOD FORMULATION PHYSICS
+if (isPlantMilk) {
+    // PLANT MILK FORMULATION PHYSICS
+    const ingredientName = ingredient.name.toLowerCase();
+    
+    if (ingredientName.includes('oat') || 
+        ingredientName.includes('soy') ||
+        ingredientName.includes('almond') ||
+        ingredientName.includes('rice') ||
+        ingredientName.includes('pea')) {
+        // PLANT BASE: 12% of final product weight (science-based)
+        concentrationFactor = 0.12;
+        allocationFactor = 1.0; // Full impact of plant material
+        physicsNote = "Plant base in milk (12% concentration)";
+        console.log(`🌱 ${ingredient.name}: ${(concentrationFactor*100).toFixed(1)}% of final product weight`);
+    }
+    else if (ingredientName.includes('rapeseed') ||
+             ingredientName.includes('sunflower') ||
+             ingredientName.includes('coconut') ||
+             ingredientName.includes('oil')) {
+        // OIL: 1.5% of final product weight
+        concentrationFactor = 0.015;
+        allocationFactor = 1.0;
+        physicsNote = "Oil in plant milk (1.5% concentration)";
+        console.log(`🫒 ${ingredient.name}: ${(concentrationFactor*100).toFixed(2)}% of final product weight`);
+    }
+    // Note: Water is not in ingredient database, so no water check needed
 }
 
-if (isPlantMilk && (ingredient.name.toLowerCase().includes('water'))) {
-    // Water in plant milk: Minimal environmental impact
-    allocationFactor = 0.001; // Almost zero impact
-    console.log(`💧 Physics fix: Water impact reduced for plant milk`);
-    }
-                
-                const adjustedQuantity = item.quantity / (1 - (ingredient.loss || 0));
-                const allocatedQuantity = adjustedQuantity * allocationFactor;
+// 4. CALCULATE PHYSICS-BASED QUANTITIES
+// Step A: Account for agricultural loss (happens before formulation)
+const adjustedQuantity = item.quantity / (1 - (ingredient.loss || 0));
+
+// Step B: Apply concentration (how much of this ingredient ends up in final product)
+const concentratedQuantity = adjustedQuantity * concentrationFactor;
+
+// Step C: Apply allocation (economic/environmental allocation factor)
+const allocatedQuantity = concentratedQuantity * allocationFactor;
+
+// 5. LOG PHYSICS FOR DEBUGGING
+console.log(`🔬 ${ingredient.name} Physics Chain:`);
+console.log(`   Input: ${item.quantity}kg → After ag loss: ${adjustedQuantity.toFixed(4)}kg`);
+console.log(`   Concentration: ×${concentrationFactor} → ${concentratedQuantity.toFixed(4)}kg in final product`);
+console.log(`   Allocation: ×${allocationFactor} → ${allocatedQuantity.toFixed(4)}kg allocated`);
+console.log(`   Physics: ${physicsNote}`);
                 
                 agriculturalLoss += adjustedQuantity * (ingredient.loss || 0);
                 totalIngredientQuantity += item.quantity;
