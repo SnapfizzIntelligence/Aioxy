@@ -2645,6 +2645,110 @@ const PHYSICS_DB = {
         }
     }
 };
+// ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
+const FOOD_PHYSICS = {
+    // CONCENTRATION FACTORS (wt% of key ingredient in final product)
+    concentrations: {
+        // PLANT MILKS
+        'oat-milk': { 
+            'oats': 0.12,       // 12% oats in oat milk
+            'water': 0.88,      // 88% water
+            'sugar': 0.03,      // Optional: 3% sugar
+            'oil': 0.015,       // Optional: 1.5% oil
+            'salt': 0.002       // Optional: 0.2% salt
+        },
+        'soy-milk': { 
+            'soy': 0.08, 
+            'water': 0.92 
+        },
+        'almond-milk': { 
+            'almond': 0.04, 
+            'water': 0.96 
+        },
+        'rice-milk': { 
+            'rice': 0.14, 
+            'water': 0.86 
+        },
+        
+        // MEAT ALTERNATIVES
+        'plant-burger': { 
+            'plant-base': 0.85,  // Pea/soy/wheat protein
+            'water': 0.10,
+            'oil': 0.04,
+            'seasoning': 0.01
+        },
+        
+        // DAIRY (CONVERSION RATIOS)
+        'cheese': { 
+            'milk': 10.0  // 10kg milk → 1kg cheese
+        },
+        'yogurt': { 
+            'milk': 1.05  // 5% yield loss
+        },
+        
+        // BEVERAGES
+        'juice': { 
+            'fruit': 1.0,  // 1kg fruit → ~0.65kg juice
+            'water': 0.0 
+        },
+        'soda': { 
+            'sugar': 0.10, 
+            'water': 0.90 
+        }
+    },
+    
+    // ALLOCATION RULES (ISO 14044 compliant)
+    allocation: {
+        'plant-milk': {
+            'water': 0.001,      // 0.1% impact (purification only)
+            'plant-base': 1.0,   // 100% impact of oats/soy/almonds
+            'sugar': 1.0,
+            'oil': 1.0,
+            'salt': 0.5,
+            'vitamins': 0.3,
+            '*': 1.0  // Default for others
+        },
+        'dairy': {
+            'milk': 1.0,
+            'cream': 1.0,
+            'enzymes': 0.3,
+            'salt': 0.5,
+            'culture': 0.2
+        },
+        'meat': {
+            'meat': 1.0,
+            'fat': 1.0,
+            'bone': 0.1,
+            'skin': 0.3,
+            'blood': 0.05
+        },
+        'default': {
+            '*': 1.0  // Economic allocation
+        }
+    },
+    
+    // PROCESSING YIELDS (input → output efficiency)
+    yields: {
+        'cheese-making': 0.10,   // 10kg milk → 1kg cheese
+        'yogurt-making': 0.95,
+        'plant-milk-processing': 0.98,
+        'juice-extraction': 0.65,
+        'meat-slaughter': 0.55,
+        'baking': 0.92,
+        'frying': 0.88,
+        'freezing': 0.99,
+        'fermentation': 0.97
+    },
+    
+    // PRODUCT TYPE DETECTION KEYWORDS
+    detection: {
+        'oat-milk': ['oat milk', 'oat drink', 'oat beverage', 'oat latte'],
+        'soy-milk': ['soy milk', 'soy drink'],
+        'plant-burger': ['plant burger', 'veggie burger', 'meatless burger'],
+        'cheese': ['cheese', 'cheddar', 'gouda', 'brie'],
+        'yogurt': ['yogurt', 'yoghurt', 'probiotic']
+    }
+};    
 
 // NEW: Physics-based scenarios (7 total)
 let activeScenarios = {
