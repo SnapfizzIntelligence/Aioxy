@@ -7532,13 +7532,12 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
     }
     // ================== HYDRATION SUGGESTION FUNCTIONS ==================
 let currentHydrationSuggestion = null;
-
 function showHydrationSuggestion(suggestion, currentHydration) {
     currentHydrationSuggestion = suggestion;
     const card = document.getElementById('hydrationSuggestionCard');
     const message = document.getElementById('hydrationMessage');
     
-    // FIX: Use window.currentPhysicsProfile because 'physicsProfile' is not available here
+    // FIX: Scope safety - use global window variable
     const targetHydration = window.currentPhysicsProfile ? window.currentPhysicsProfile.target_hydration : 0;
 
     if (card && message) {
@@ -7557,23 +7556,6 @@ function showHydrationSuggestion(suggestion, currentHydration) {
         card.classList.remove('hidden');
     }
 }
-function applyHydrationSuggestion() {
-    if (currentHydrationSuggestion) {
-        window.userConfirmedHydration = true;
-        window.confirmedHydrationKey = currentHydrationSuggestion.key;
-        
-        const card = document.getElementById('hydrationSuggestionCard');
-        if (card) card.classList.add('hidden');
-        
-        calculateImpact(); // Recalculate with water
-    }
-}
-
-function dismissHydrationSuggestion() {
-    window.userConfirmedHydration = false;
-    const card = document.getElementById('hydrationSuggestionCard');
-    if (card) card.classList.add('hidden');
-    }
         // Start the application when DOM is loaded
     document.addEventListener('DOMContentLoaded', initApp);
 </script>
