@@ -4364,7 +4364,8 @@ function applyScenarioPhysics(baseResults, scenarios) {
     return 25 + 25 * (score - 2);
 },
 
-        calculateFoodImpact() {
+
+    calculateFoodImpact() {
     console.log('🔧 Starting calculation with ingredients:', selectedIngredients);
     
     // Get inputs from DOM
@@ -4376,6 +4377,7 @@ function applyScenarioPhysics(baseResults, scenarios) {
     const packagingMaterial = document.getElementById('packagingMaterial').value;
     const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
     const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
+    const productCategory = document.getElementById('productCategory').value || 'auto'; // ← ADDED!
 
     // =========== CRITICAL FIX 1: HYDRATION PHYSICS ===========
 // Detect category for physics
