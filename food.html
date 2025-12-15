@@ -2938,10 +2938,15 @@ function getProcessingType(productType) {
 }
 
 function calculateFoodAllocation(ingredientName, quantity, physicsProfile) {
+    // ⭐⭐⭐ ADD THESE 3 LINES ⭐⭐⭐
+    // SAFETY CHECK: If physicsProfile is undefined, use global one
+    if (!physicsProfile && window.currentPhysicsProfile) {
+        physicsProfile = window.currentPhysicsProfile;
+    }
+    
     let factor = 1.0;
     let method = "economic";
     let effectiveQuantity = quantity;
-    
     // 1. APPLY CONCENTRATION
     if (physicsProfile.concentration) {
         for (const [component, concentration] of Object.entries(physicsProfile.concentration)) {
@@ -4385,6 +4390,7 @@ let physicsKey = this.detectProductCategory(productName, selectedIngredients, pr
 if (productCategory.includes('milk') || productCategory.includes('dairy')) physicsKey = 'milk-product';
 if (productCategory.includes('burger') || productCategory.includes('meat')) physicsKey = 'burger-product';
 const physicsProfile = FOOD_PHYSICS_DB[physicsKey] || FOOD_PHYSICS_DB['default'];
+window.currentPhysicsProfile = physicsProfile; // Make it globally available
 // Calculate current hydration
 let totalMass = 0;
 let waterMass = 0;
