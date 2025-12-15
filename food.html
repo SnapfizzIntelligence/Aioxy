@@ -4371,7 +4371,7 @@ function applyScenarioPhysics(baseResults, scenarios) {
 
 calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
-    
+    let suggestedWater = 0;
     // 1. GET USER INPUTS
     const productName = document.getElementById('productName').value || 'Unnamed Product';
     const manufacturingCountryCode = document.getElementById('manufacturingCountry').value || 'FR';
@@ -4414,7 +4414,7 @@ calculateFoodImpact() {
     // Trigger Hydration Suggestion (UI Only - does not affect math directly unless accepted)
     if (physicsProfile.target_hydration > 0.1 && currentHydration < physicsProfile.target_hydration - 0.1) {
         const targetTotal = dryMassEstimate / (1 - physicsProfile.target_hydration);
-        const suggestedWater = Math.max(0, targetTotal - totalMass);
+        suggestedWater = Math.max(0, targetTotal - totalMass);
         
         if (suggestedWater > 0.05) {
             // Call global helper safely
