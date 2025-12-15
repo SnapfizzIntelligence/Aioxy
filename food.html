@@ -4384,9 +4384,7 @@ function applyScenarioPhysics(baseResults, scenarios) {
 let physicsKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
 if (productCategory.includes('milk') || productCategory.includes('dairy')) physicsKey = 'milk-product';
 if (productCategory.includes('burger') || productCategory.includes('meat')) physicsKey = 'burger-product';
-
-const physicsProfile = FOOD_PHYSICS_DB[physicsKey] || FOOD_PHYSICS_DB.default;
-
+const physicsProfile = FOOD_PHYSICS_DB[physicsKey] || FOOD_PHYSICS_DB['default'];
 // Calculate current hydration
 let totalMass = 0;
 let waterMass = 0;
