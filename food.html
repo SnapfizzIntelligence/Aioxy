@@ -7720,6 +7720,9 @@ function showHydrationSuggestion(suggestion, currentHydration) {
     const card = document.getElementById('hydrationSuggestionCard');
     const message = document.getElementById('hydrationMessage');
     
+    // FIX: Use window.currentPhysicsProfile because 'physicsProfile' is not available here
+    const targetHydration = window.currentPhysicsProfile ? window.currentPhysicsProfile.target_hydration : 0;
+
     if (card && message) {
         message.innerHTML = `
             <div style="background: #E3F2FD; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
@@ -7730,13 +7733,12 @@ function showHydrationSuggestion(suggestion, currentHydration) {
             </div>
             <div style="font-size: 0.9rem; color: var(--gray);">
                 <i class="fas fa-info-circle"></i>
-                Current: ${(currentHydration*100).toFixed(0)}% water • Target: ${(physicsProfile.target_hydration*100).toFixed(0)}% water
+                Current: ${(currentHydration*100).toFixed(0)}% water • Target: ${(targetHydration*100).toFixed(0)}% water
             </div>
         `;
         card.classList.remove('hidden');
     }
 }
-
 function applyHydrationSuggestion() {
     if (currentHydrationSuggestion) {
         window.userConfirmedHydration = true;
