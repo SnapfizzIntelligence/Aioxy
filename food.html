@@ -5810,27 +5810,28 @@ function updateBusinessCaseWithTweak5() {
     console.log("✅ [Tweak5] Business case updated with discounted ROI");
 }
 
-// =========== ADD FUTURE LIABILITY BUFFER CARD ===========
+// =========== FIX: LIABILITY CARD AUTO-UPDATE ===========
 function addCarbonCreditCard(discountedROI) {
-    // Check if carbon credit card already exists
-    if (document.getElementById('carbonCreditCard')) return;
-    
     const businessMetrics = document.querySelector('.business-metrics');
     if (!businessMetrics) return;
     
-    const creditCard = document.createElement('div');
-    creditCard.className = 'business-card';
-    creditCard.id = 'carbonCreditCard';
+    let creditCard = document.getElementById('carbonCreditCard');
+    
+    if (!creditCard) {
+        creditCard = document.createElement('div');
+        creditCard.className = 'business-card';
+        creditCard.id = 'carbonCreditCard';
+        businessMetrics.appendChild(creditCard);
+    }
+    
+    // Force update every time (This was the missing piece!)
     creditCard.innerHTML = `
         <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
         <div class="business-value">€${discountedROI.carbonCredits}</div>
         <div class="business-label">Future Liability Buffer</div>
         <div class="roi-badge" style="margin-top: 0.5rem;">EU ETS risk @ €85/t</div>
     `;
-    
-    businessMetrics.appendChild(creditCard);
-}
-
+    }
 // =========== UPDATE HARD FINANCIAL LEDGER WITH CREDITS ===========
 function updateHardFinancialLedgerWithCredits(financialResults, volume) {
     const tbody = document.getElementById('ledgerBody');
