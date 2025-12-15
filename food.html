@@ -5650,12 +5650,16 @@ function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent)
     console.log('✅ [Fix] Business Story populated: €' + safeTotal.toFixed(0) + ' benefit, ' + safeReduction + '% reduction');
 }
     
-// =========== TWEAK 5: BUSINESS DISCOUNTS (TEMPORAL ROI + CREDITS) ===========
+// =========== FIX: DISCOUNTED ROI WITH VOLUME SCALING ===========
 function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
-    console.log("💰 [Tweak5] Calculating discounted ROI with physics...");
+    console.log("💰 [Tweak5] Calculating discounted ROI with physics...", {
+        volume: volume,
+        hasMetrics: !!financialResults.metrics,
+        tonsSaved: financialResults.metrics?.totalTonsCo2Saved
+    });
     
     // Safety check
-    if (!financialResults || !financialResults.total) {
+    if (!financialResults || !financialResults.total || !financialResults.metrics) {
         console.warn("⚠️ [Tweak5] Missing financial results, using defaults");
         return {
             npvBenefit: "0",
@@ -5667,7 +5671,7 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
         };
     }
     
-    const { total: annualBenefit } = financialResults;
+    const { total: annualBenefit, metrics } = financialResults;
     const implementationCost = calculateImplementationCost(volume);
     
     // 1. TEMPORAL DISCOUNTING (Physics: NPV w/ 3% social rate, AR5 WGIII)
@@ -5679,33 +5683,34 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
     
     const npvROI = implementationCost > 0 ? (npvBenefit - implementationCost) / implementationCost * 100 : 0;
     
-    // 2. CARBON CREDITS (Physics: Verified offsets @ €85/t CO₂e, EU ETS 2025)
-    const tonsSaved = financialResults.metrics?.totalTonsCo2Saved || 0;
-    const creditRevenue = tonsSaved * 85; // €85 per ton CO₂e (EU ETS 2025 forecast)
+    // 2. CARBON CREDITS - FIXED: Scale with volume!
+    // metrics.totalTonsCo2Saved is already TOTAL for the selected volume
+    // We use it directly (no need to multiply by volume again)
+    const creditRevenue = (metrics.totalTonsCo2Saved || 0) * 85; // €85 per ton CO₂e
     
     // 3. PREMIUM SCALING (Nielsen: 15% CO₂ cut → +12% price; linear to 25%)
     const co2ReductionPct = calculateCO2ReductionPercent();
     const premiumMultiplier = 1 + Math.min(co2ReductionPct / 100 * 1.67, 0.25); // Max +25%
     const discountedPremium = annualBenefit * premiumMultiplier;
     
-    console.log("✅ [Tweak5] Discounted ROI calculated:", {
-        annualBenefit,
-        npvBenefit,
-        creditRevenue,
-        premiumMultiplier,
-        npvROI
+    console.log("✅ [Tweak5] FIXED Discounted ROI:", {
+        volume: volume,
+        annualBenefit: annualBenefit,
+        tonsSavedTotal: metrics.totalTonsCo2Saved,
+        creditRevenue: creditRevenue,
+        npvBenefit: npvBenefit,
+        creditRevenuePerTon: creditRevenue / (metrics.totalTonsCo2Saved || 1)
     });
     
     return {
         npvBenefit: npvBenefit.toFixed(0),
         npvROI: Math.max(npvROI, 0).toFixed(1),
-        carbonCredits: creditRevenue.toFixed(0),
+        carbonCredits: Math.round(creditRevenue).toFixed(0),  // Round to whole euros
         premiumScaled: discountedPremium.toFixed(0),
         totalDiscounted: (npvBenefit + creditRevenue).toFixed(0),
         discountRate: `${(discountRate * 100).toFixed(1)}% (AR5 social rate)`
     };
-}
-
+        }
 // =========== UPDATE BUSINESS CASE WITH TWEAK 5 ===========
 function updateBusinessCaseWithTweak5() {
     console.log("🔄 updateBusinessCaseWithTweak5 CALLED");
