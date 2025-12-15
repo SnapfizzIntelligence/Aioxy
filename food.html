@@ -5710,25 +5710,22 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
 function updateBusinessCaseWithTweak5() {
     console.log("🔄 updateBusinessCaseWithTweak5 CALLED");
     
-    // Ensure we have physics data
     if (!finalPefResults || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
-        console.log("⚠️ No physics data, deferring to original updateBusinessCase");
-        updateBusinessCase();
+        calculateImpact();
+        setTimeout(updateBusinessCaseWithTweak5, 200);
         return;
     }
     
     const volume = currentAnnualVolume;
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     
-    // Get financial results from your existing engine
     const businessResults = {
         finalPefResults: finalPefResults,
         finalContentWeight: productWeightKg,
         co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
         fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
     };
-    
-    // Apply scenarios if active
+
     let scenarioAdjustedResults = businessResults;
     if (Object.values(activeScenarios).some(v => v)) {
         scenarioAdjustedResults = {
@@ -5740,51 +5737,46 @@ function updateBusinessCaseWithTweak5() {
         };
     }
     
-    // Calculate financials using your existing function
     const financialResults = calculateHardFinancialMath(scenarioAdjustedResults, volume, activeScenarios);
     
-    // Apply Tweak 5 discounted ROI
     const discountedROI = calculateDiscountedROI(financialResults, volume);
     
-    // Update UI with discounted values
     updateHardFinancialLedgerWithCredits(financialResults, volume);
     
-    // Update ROI display with discounted values
     const roiValueElement = document.getElementById('roiValue');
     const roiBadgeElement = document.getElementById('roiBadge');
     const netReturnElement = document.getElementById('netReturnDisplay');
     
     if (roiValueElement) roiValueElement.textContent = discountedROI.npvROI + '% (NPV)';
     if (roiBadgeElement) roiBadgeElement.textContent = `+€${discountedROI.carbonCredits} buffer`;
-    if (netReturnElement) netReturnElement.textContent = '€' + discountedROI.totalDiscounted + ' (discounted)';
+    if (netReturnElement) netReturnElement.textContent = '€' + formatLargeNumber(discountedROI.totalDiscounted);
     
-    // Update other business metrics
     document.getElementById('savingsValue').textContent = "€" + formatLargeNumber(financialResults.total);
     
-    // Calculate market metrics
-    const co2ReductionPercent = calculateCO2ReductionPercent();
+    // Force percentage recalc
+    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.47;
+    const currentCO2 = scenarioAdjustedResults.co2PerKg;
+    const reductionRaw = ((baselineCO2 - currentCO2) / baselineCO2) * 100;
+    const co2ReductionPercent = Math.max(0, reductionRaw);
+
     const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);
     const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);
     
     document.getElementById('premiumValue').textContent = premiumPct.toFixed(1) + "%";
     document.getElementById('marketValue').textContent = marketGrowthPct.toFixed(1) + "%";
-    
-    // Add carbon credit card to business metrics if not already there
+
     addCarbonCreditCard(discountedROI);
     
-    // Update implementation costs
     const implementationCost = calculateImplementationCost(volume);
-    const totalBenefit = parseFloat(discountedROI.totalDiscounted);
     
     document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
     document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
     document.getElementById('totalBenefitDisplay').textContent = '€' + discountedROI.totalDiscounted;
     
-    // Update business story
     updateBusinessStory(financialResults, parseFloat(discountedROI.npvROI), volume, co2ReductionPercent);
     
     console.log("✅ [Tweak5] Business case updated with discounted ROI");
-}
+    }
 
 // =========== FIX: LIABILITY CARD AUTO-UPDATE ===========
 function addCarbonCreditCard(discountedROI) {
