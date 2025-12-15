@@ -5800,7 +5800,7 @@ function addCarbonCreditCard(discountedROI) {
     // Force update every time (This was the missing piece!)
     creditCard.innerHTML = `
         <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-        <div class="business-value">€${discountedROI.carbonCredits}</div>
+        <div class="business-value">€${formatLargeNumber(discountedROI.carbonCredits)}</div>
         <div class="business-label">Future Liability Buffer</div>
         <div class="roi-badge" style="margin-top: 0.5rem;">EU ETS risk @ €85/t</div>
     `;
