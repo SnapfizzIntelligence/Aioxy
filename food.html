@@ -1421,6 +1421,34 @@
                         </div>
                     </div>
                 </div>
+                <!-- HYDRATION SUGGESTION CARD -->
+<div class="card hidden" id="hydrationSuggestionCard" style="margin-top: 1rem; border-left: 4px solid #00D4AA;">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="card-icon" style="background: var(--gradient-secondary);">
+                <i class="fas fa-tint"></i>
+            </div>
+            Physics-Based Recipe Suggestion
+        </div>
+    </div>
+    <div class="form-group">
+        <div id="hydrationMessage" style="margin-bottom: 1rem;"></div>
+        <div class="action-buttons">
+            <button class="btn btn-success" onclick="applyHydrationSuggestion()">
+                <i class="fas fa-check"></i>
+                Apply Suggestion
+            </button>
+            <button class="btn btn-outline" onclick="dismissHydrationSuggestion()">
+                <i class="fas fa-times"></i>
+                Use My Recipe As-Is
+            </button>
+        </div>
+        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--gray);">
+            <i class="fas fa-info-circle"></i>
+            Based on standard industry formulations for accurate comparisons
+        </div>
+    </div>
+</div>
 
                 <div class="card">
                     <div class="card-header">
@@ -3161,6 +3189,20 @@ window.debugAIOXY = debugCurrentState;
             fossilPerKg: 2.2493909
         }
     };
+    // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
+const FOOD_PHYSICS_DB = {
+    'milk-product':      { target_hydration: 0.88, default_density: 1.03, note: "Oat/cow/soy milk" },
+    'juice-drink':       { target_hydration: 0.90, default_density: 1.04 },
+    'beverage':          { target_hydration: 0.92, default_density: 1.00 },
+    'yogurt-product':    { target_hydration: 0.85, default_density: 1.05 },
+    'cheese-product':    { target_hydration: 0.45, default_density: 1.10 },
+    'bread-product':     { target_hydration: 0.38, default_density: 0.85 },
+    'burger-product':    { target_hydration: 0.62, default_density: 1.00, note: "Plant/animal patties" },
+    'meat-alt':          { target_hydration: 0.65, default_density: 1.00 },
+    'soup-product':      { target_hydration: 0.92, default_density: 1.02 },
+    'sauce-product':     { target_hydration: 0.75, default_density: 1.10 },
+    'default':           { target_hydration: 0.00, default_density: 1.00 }
+};
 
     // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
