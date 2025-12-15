@@ -4377,20 +4377,74 @@ function applyScenarioPhysics(baseResults, scenarios) {
     const packagingWeight = parseFloat(document.getElementById('packagingWeight').value) || 0;
     const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
 
-    // =========== CRITICAL FIX 1: CALCULATE MASS BALANCE FIRST ===========
-    let massBalanceData = calculateMassBalance( // ✅ PERMANENT FIX: let instead of const
-        selectedIngredients, 
-        processingMethod, 
-        packagingWeight
-    );
-    console.log("✅ Mass balance calculated:", massBalanceData);
-    
-    // SMART CATEGORY DETECTION
-    const productCategory = document.getElementById('productCategory').value;
-    const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
-    const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
-    currentComparisonBaseline = comparisonBaseline;
+    // =========== CRITICAL FIX 1: HYDRATION PHYSICS ===========
+// Detect category for physics
+let physicsKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
+if (productCategory.includes('milk') || productCategory.includes('dairy')) physicsKey = 'milk-product';
+if (productCategory.includes('burger') || productCategory.includes('meat')) physicsKey = 'burger-product';
 
+const physicsProfile = FOOD_PHYSICS_DB[physicsKey] || FOOD_PHYSICS_DB.default;
+
+// Calculate current hydration
+let totalMass = 0;
+let waterMass = 0;
+let dryMassEstimate = 0;
+
+selectedIngredients.forEach(item => {
+    totalMass += item.quantity;
+    const nameLower = item.name.toLowerCase();
+    if (nameLower.includes('water') || nameLower.includes('aqua')) {
+        waterMass += item.quantity;
+    }
+    
+    // Estimate dry mass
+    const isDryIngredient = nameLower.includes('grain') || nameLower.includes('flour') || 
+                            nameLower.includes('protein') || nameLower.includes('powder') || 
+                            nameLower.includes('sugar') || nameLower.includes('dried');
+    dryMassEstimate += isDryIngredient ? item.quantity : item.quantity * 0.4;
+});
+
+const currentHydration = totalMass > 0 ? waterMass / totalMass : 0;
+
+// Suggest hydration if needed
+let suggestedWater = 0;
+if (physicsProfile.target_hydration > 0.1 && currentHydration < physicsProfile.target_hydration - 0.1) {
+    const targetTotal = dryMassEstimate / (1 - physicsProfile.target_hydration);
+    suggestedWater = Math.max(0, targetTotal - totalMass);
+    
+    if (suggestedWater > 0.05) {
+        showHydrationSuggestion({
+            message: `For ${physicsKey.replace('-product', '')}, standard is ~${(physicsProfile.target_hydration*100).toFixed(0)}% water`,
+            suggestion: `Add ${suggestedWater.toFixed(3)}kg water?`,
+            key: physicsKey,
+            amount: suggestedWater
+        }, currentHydration);
+    }
+}
+
+// Use confirmed hydration or original
+let finalIngredients = [...selectedIngredients];
+if (window.userConfirmedHydration && window.confirmedHydrationKey === physicsKey) {
+    finalIngredients.push({
+        id: 'tap-water-municipal',
+        name: `Water (${physicsKey.replace('-product', '')} standard)`,
+        quantity: suggestedWater,
+        isVirtual: true
+    });
+}
+
+// Now calculate mass balance with corrected ingredients
+let massBalanceData = calculateMassBalance(
+    finalIngredients, 
+    processingMethod, 
+    packagingWeight
+);
+console.log("✅ Mass balance calculated with hydration physics:", massBalanceData);
+
+// SMART CATEGORY DETECTION
+const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
+const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
+currentComparisonBaseline = comparisonBaseline;
     // Initialize audit trail
     const auditTrail = {
         productName,
@@ -7652,8 +7706,49 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         }, 500);
     }
     }
+    // ================== HYDRATION SUGGESTION FUNCTIONS ==================
+let currentHydrationSuggestion = null;
 
-    // Start the application when DOM is loaded
+function showHydrationSuggestion(suggestion, currentHydration) {
+    currentHydrationSuggestion = suggestion;
+    const card = document.getElementById('hydrationSuggestionCard');
+    const message = document.getElementById('hydrationMessage');
+    
+    if (card && message) {
+        message.innerHTML = `
+            <div style="background: #E3F2FD; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <i class="fas fa-flask"></i>
+                <strong>Physics Engine Suggestion</strong><br>
+                ${suggestion.message}<br>
+                <strong>${suggestion.suggestion}</strong>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--gray);">
+                <i class="fas fa-info-circle"></i>
+                Current: ${(currentHydration*100).toFixed(0)}% water • Target: ${(physicsProfile.target_hydration*100).toFixed(0)}% water
+            </div>
+        `;
+        card.classList.remove('hidden');
+    }
+}
+
+function applyHydrationSuggestion() {
+    if (currentHydrationSuggestion) {
+        window.userConfirmedHydration = true;
+        window.confirmedHydrationKey = currentHydrationSuggestion.key;
+        
+        const card = document.getElementById('hydrationSuggestionCard');
+        if (card) card.classList.add('hidden');
+        
+        calculateImpact(); // Recalculate with water
+    }
+}
+
+function dismissHydrationSuggestion() {
+    window.userConfirmedHydration = false;
+    const card = document.getElementById('hydrationSuggestionCard');
+    if (card) card.classList.add('hidden');
+    }
+        // Start the application when DOM is loaded
     document.addEventListener('DOMContentLoaded', initApp);
 </script>
 </body>
