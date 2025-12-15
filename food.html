@@ -7530,33 +7530,53 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         }, 500);
     }
     }
-    // ================== HYDRATION SUGGESTION FUNCTIONS ==================
-let currentHydrationSuggestion = null;
-function showHydrationSuggestion(suggestion, currentHydration) {
-    currentHydrationSuggestion = suggestion;
-    const card = document.getElementById('hydrationSuggestionCard');
-    const message = document.getElementById('hydrationMessage');
-    
-    // FIX: Scope safety - use global window variable
-    const targetHydration = window.currentPhysicsProfile ? window.currentPhysicsProfile.target_hydration : 0;
+        // ================== HYDRATION SUGGESTION FUNCTIONS ==================
+    let currentHydrationSuggestion = null;
 
-    if (card && message) {
-        message.innerHTML = `
-            <div style="background: #E3F2FD; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                <i class="fas fa-flask"></i>
-                <strong>Physics Engine Suggestion</strong><br>
-                ${suggestion.message}<br>
-                <strong>${suggestion.suggestion}</strong>
-            </div>
-            <div style="font-size: 0.9rem; color: var(--gray);">
-                <i class="fas fa-info-circle"></i>
-                Current: ${(currentHydration*100).toFixed(0)}% water • Target: ${(targetHydration*100).toFixed(0)}% water
-            </div>
-        `;
-        card.classList.remove('hidden');
+    function showHydrationSuggestion(suggestion, currentHydration) {
+        currentHydrationSuggestion = suggestion;
+        const card = document.getElementById('hydrationSuggestionCard');
+        const message = document.getElementById('hydrationMessage');
+        
+        // FIX: Scope safety - use global window variable
+        const targetHydration = window.currentPhysicsProfile ? window.currentPhysicsProfile.target_hydration : 0;
+
+        if (card && message) {
+            message.innerHTML = `
+                <div style="background: #E3F2FD; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <i class="fas fa-flask"></i>
+                    <strong>Physics Engine Suggestion</strong><br>
+                    ${suggestion.message}<br>
+                    <strong>${suggestion.suggestion}</strong>
+                </div>
+                <div style="font-size: 0.9rem; color: var(--gray);">
+                    <i class="fas fa-info-circle"></i>
+                    Current: ${(currentHydration*100).toFixed(0)}% water • Target: ${(targetHydration*100).toFixed(0)}% water
+                </div>
+            `;
+            card.classList.remove('hidden');
+        }
+    } 
+
+    function applyHydrationSuggestion() {
+        if (currentHydrationSuggestion) {
+            window.userConfirmedHydration = true;
+            window.confirmedHydrationKey = currentHydrationSuggestion.key;
+            
+            const card = document.getElementById('hydrationSuggestionCard');
+            if (card) card.classList.add('hidden');
+            
+            calculateImpact(); // Recalculate with water
+        }
     }
-}
-        // Start the application when DOM is loaded
+
+    function dismissHydrationSuggestion() {
+        window.userConfirmedHydration = false;
+        const card = document.getElementById('hydrationSuggestionCard');
+        if (card) card.classList.add('hidden');
+    }
+
+    // Start the application when DOM is loaded
     document.addEventListener('DOMContentLoaded', initApp);
 </script>
 </body>
