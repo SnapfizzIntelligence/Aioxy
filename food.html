@@ -4369,10 +4369,12 @@ function applyScenarioPhysics(baseResults, scenarios) {
     return 25 + 25 * (score - 2);
 },
 
-calculateFoodImpact() {
+
+    calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
     let suggestedWater = 0;
-    // 1. GET USER INPUTS
+    
+    // 1. GET USER INPUTS (KEEPING OUR EXISTING INPUTS)
     const productName = document.getElementById('productName').value || 'Unnamed Product';
     const manufacturingCountryCode = document.getElementById('manufacturingCountry').value || 'FR';
     const processingMethod = document.getElementById('processingMethod').value;
@@ -4383,17 +4385,15 @@ calculateFoodImpact() {
     const recycledContentPercent = parseFloat(document.getElementById('recycledContent').value) || 0;
     const productCategory = document.getElementById('productCategory').value || 'auto';
 
-    // =========== CRITICAL FIX 1: HYDRATION PHYSICS ===========
-    // Detect category for physics constants
+    // =========== HYDRATION PHYSICS (KEEPING OUR LOGIC BUT WITH GEMINI'S FIX) ===========
     let physicsKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
     if (productCategory.includes('milk') || productCategory.includes('dairy')) physicsKey = 'milk-product';
     if (productCategory.includes('burger') || productCategory.includes('meat')) physicsKey = 'burger-product';
     
-    // Set global profile for the suggestion engine
     const physicsProfile = FOOD_PHYSICS_DB[physicsKey] || FOOD_PHYSICS_DB['default'];
     window.currentPhysicsProfile = physicsProfile;
 
-    // Check Hydration
+    // Check Hydration (OUR EXISTING LOGIC)
     let totalMass = 0;
     let waterMass = 0;
     let dryMassEstimate = 0;
@@ -4404,20 +4404,18 @@ calculateFoodImpact() {
         if (nameLower.includes('water') || nameLower.includes('aqua')) {
             waterMass += item.quantity;
         } else {
-            // Assume anything not "water" is dry/solid for hydration logic
             dryMassEstimate += item.quantity; 
         }
     });
     
     const currentHydration = totalMass > 0 ? waterMass / totalMass : 0;
 
-    // Trigger Hydration Suggestion (UI Only - does not affect math directly unless accepted)
+    // Trigger Hydration Suggestion (OUR EXISTING LOGIC)
     if (physicsProfile.target_hydration > 0.1 && currentHydration < physicsProfile.target_hydration - 0.1) {
         const targetTotal = dryMassEstimate / (1 - physicsProfile.target_hydration);
         suggestedWater = Math.max(0, targetTotal - totalMass);
         
         if (suggestedWater > 0.05) {
-            // Call global helper safely
             if (typeof showHydrationSuggestion === 'function') {
                 showHydrationSuggestion({
                     message: `For ${physicsKey.replace('-product', '')}, standard is ~${(physicsProfile.target_hydration*100).toFixed(0)}% water`,
@@ -4429,6 +4427,7 @@ calculateFoodImpact() {
         }
     }
 
+    // =========== GEMINI'S CRITICAL FIX STARTS HERE ===========
     // Use confirmed hydration or original
     let finalIngredients = [...selectedIngredients];
     if (window.userConfirmedHydration && window.confirmedHydrationKey === physicsKey) {
@@ -4436,22 +4435,18 @@ calculateFoodImpact() {
             id: 'tap-water-municipal',
             name: `Water (${physicsKey.replace('-product', '')} standard)`,
             quantity: suggestedWater,
-            isVirtual: true
+            isVirtual: true // GEMINI'S ADDITION: Mark as virtual
         });
+        console.log(`💧 [Physics Engine] Added ${suggestedWater.toFixed(3)}kg water to calculation.`);
     }
 
-    // Calculate Mass Balance (The Foundation)
-    let massBalanceData = calculateMassBalance(
-        finalIngredients, 
-        processingMethod, 
-        packagingWeight
-    );
+    // Calculate Mass Balance (USING finalIngredients - GEMINI'S FIX)
+    let massBalanceData = calculateMassBalance(finalIngredients, processingMethod, packagingWeight);
 
-    // 3. INITIALIZE AUDIT TRAIL
-    // Smart Comparison Baseline Detection
+    // 3. INITIALIZE AUDIT TRAIL (OUR EXISTING LOGIC)
     const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
     const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
-    currentComparisonBaseline = comparisonBaseline; // Update global
+    currentComparisonBaseline = comparisonBaseline;
 
     const auditTrail = {
         productName,
@@ -4465,7 +4460,7 @@ calculateFoodImpact() {
         scenarios_applied: activeScenarios
     };
 
-    // Initialize PEF Containers
+    // Initialize PEF Containers (OUR EXISTING LOGIC)
     Object.keys(pefCategories).forEach(cat => {
         auditTrail.pefCategories[cat] = {
             total: 0,
@@ -4475,24 +4470,38 @@ calculateFoodImpact() {
                 Manufacturing: { total: 0, components: [] },
                 Transport: { total: 0, components: [] },
                 Packaging: { total: 0, components: [] },
-                Upstream: { total: 0, components: [] } // Explicitly initialized
+                Upstream: { total: 0, components: [] }
             }
         };
     });
 
-    // 4. CORE ENGINE: INGREDIENT IMPACTS (SINGLE SOURCE OF TRUTH)
-    // We calculate this ONCE. We do NOT add "Upstream LCI" separately if PEF data exists.
-    
+    // =========== GEMINI'S FIX: USE finalIngredients IN INGREDIENT IMPACTS ===========
     let totalIngredientQuantity = 0;
     let totalInputQuantity = 0;
     let agriculturalLoss = 0;
     let dqrComponents = [];
 
- finalIngredients.forEach(item => {
-        const ing = aioxyData.ingredients[item.id];
+    finalIngredients.forEach(item => { // CHANGED FROM selectedIngredients TO finalIngredients
+        // GEMINI'S WATER FALLBACK LOGIC
+        let ing = aioxyData.ingredients[item.id];
+        
+        if (!ing && item.id === 'tap-water-municipal') {
+            ing = {
+                name: 'Tap Water (Municipal)',
+                loss: 0.0,
+                data: {
+                    pef: { 
+                        "Climate Change": 0.0003,
+                        "Water Use/Scarcity (AWARE)": 0.0
+                    }, 
+                    metadata: { dqr_overall: 2.0, source_dataset: 'Estimated Fallback' }
+                }
+            };
+        }
+
         if (!ing) return;
 
-        // Farm Loss Logic
+        // Farm Loss Logic (OUR EXISTING LOGIC)
         const farmLoss = ing.loss || 0.0;
         const grownMass = item.quantity / (1 - farmLoss);
         
@@ -4500,7 +4509,7 @@ calculateFoodImpact() {
         totalInputQuantity += grownMass;
         agriculturalLoss += (grownMass - item.quantity);
 
-        // DQR Tracking
+        // DQR Tracking (OUR EXISTING LOGIC)
         if (ing.data.metadata && ing.data.metadata.dqr_overall) {
             dqrComponents.push({
                 name: ing.name,
@@ -4510,11 +4519,7 @@ calculateFoodImpact() {
             });
         }
 
-        // *** THE FIX: USE PEF DATA DIRECTLY ***
-        // Agribalyse PEF data is ALREADY cradle-to-farm-gate.
-        // It includes fertilizer, land use, and tractor diesel.
-        // We do NOT need to calculate these separately and add them.
-        
+        // PEF Calculations (OUR EXISTING LOGIC)
         Object.keys(pefCategories).forEach(cat => {
             const impactPerKg = ing.data.pef[cat] || 0;
             const impactTotal = grownMass * impactPerKg;
@@ -4532,7 +4537,7 @@ calculateFoodImpact() {
         });
     });
 
-    // 5. MANUFACTURING IMPACTS (Thermodynamic Engine)
+    // 5. MANUFACTURING IMPACTS (OUR EXISTING LOGIC - UNCHANGED)
     const processingData = aioxyData.processing[processingMethod];
     if (processingData && massBalanceData.productMass > 0) {
         const thermodynamicResult = calculateThermodynamicImpact(
@@ -4542,7 +4547,6 @@ calculateFoodImpact() {
             manufacturingCountryCode || 'FR'
         );
 
-        // Add Manufacturing Energy CO2
         auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += thermodynamicResult.co2;
         auditTrail.pefCategories["Climate Change"].total += thermodynamicResult.co2;
         
@@ -4552,46 +4556,42 @@ calculateFoodImpact() {
             details: `${thermodynamicResult.kwh.toFixed(2)} kWh (${manufacturingCountryCode} grid)`
         }];
 
-        // Add Fossil Resource Use
-        const fossilMJ = thermodynamicResult.kwh * 3.6; // 1 kWh = 3.6 MJ
+        const fossilMJ = thermodynamicResult.kwh * 3.6;
         auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
         auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
     }
 
-    // 6. TRANSPORT IMPACTS (GLEC v4.0)
-    // A. Inbound Logistics (Origin -> Factory)
+    // =========== GEMINI'S FIX: USE finalIngredients IN TRANSPORT, SKIP VIRTUAL WATER ===========
     let inboundTransportCO2 = 0;
     let totalWaterImpact = 0;
 
-    // Helper function for ingredient origin (simplified version)
     const getIngredientOrigin = (ingredientId) => {
-        return PHYSICS_DB.origins[ingredientId] || "FR"; // Default to France
+        return PHYSICS_DB.origins[ingredientId] || "FR";
     };
 
-    // Helper function for current month
     const getCurrentMonth = () => new Date().getMonth();
 
-    finalIngredients.forEach(ing => {
-        // Water Physics (AWARE 2.0) - Replaces static PEF water if available
+    finalIngredients.forEach(ing => { // CHANGED FROM selectedIngredients TO finalIngredients
+        // GEMINI'S ADDITION: Skip virtual water for transport
+        if (ing.isVirtual) return;
+        
+        // Water Physics (OUR EXISTING LOGIC)
         const originCountry = getIngredientOrigin(ing.id);
         const ingredientData = aioxyData.ingredients[ing.id];
         
-        // Note: We use LCI water data if available to refine AWARE, otherwise rely on PEF
-        // Here we strictly calculate water SCARCITY based on volume * AWARE factor
         if (ingredientData && ingredientData.data && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
             const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
             const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
             totalWaterImpact += waterPhysics.impact;
         } else {
-            // Fallback: Use the PEF static value if we don't have LCI water volume
             const pefWater = ingredientData.data.pef ? ingredientData.data.pef["Water Use/Scarcity (AWARE)"] : 0;
             totalWaterImpact += pefWater * ing.quantity;
         }
 
-        // Inbound Transport
+        // Inbound Transport (OUR EXISTING LOGIC)
         if (originCountry !== manufacturingCountryCode) {
-            const inboundDistSea = 8000; // approx trans-oceanic
-            const inboundDistRoad = 300; // port to factory
+            const inboundDistSea = 8000;
+            const inboundDistRoad = 300;
             
             const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
             const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', 'ambient');
@@ -4600,12 +4600,12 @@ calculateFoodImpact() {
         }
     });
 
-    // Apply Advanced Water Physics (Overwrite raw PEF sum if we calculated physics)
+    // Apply Advanced Water Physics (OUR EXISTING LOGIC)
     if (totalWaterImpact > 0) {
          auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total = totalWaterImpact;
     }
 
-    // Apply Inbound Transport
+    // Apply Inbound Transport (OUR EXISTING LOGIC)
     if (inboundTransportCO2 > 0) {
         auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += inboundTransportCO2;
         auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
@@ -4616,7 +4616,7 @@ calculateFoodImpact() {
         auditTrail.pefCategories["Climate Change"].total += inboundTransportCO2;
     }
 
-    // B. Distribution Transport (Factory -> Retail)
+    // B. Distribution Transport (OUR EXISTING LOGIC - UNCHANGED)
     const isFrozen = processingMethod === 'freezing';
     const isChilled = document.getElementById('refrigeratedTransport')?.value === 'yes';
     let refType = 'ambient';
@@ -4638,7 +4638,7 @@ calculateFoodImpact() {
     }];
     auditTrail.pefCategories["Climate Change"].total += distributionCO2;
 
-    // 7. PACKAGING IMPACTS (CFF)
+    // 7. PACKAGING IMPACTS (OUR EXISTING LOGIC - UNCHANGED)
     if (packagingWeight > 0) {
         const packagingData = aioxyData.packaging[packagingMaterial];
         if (packagingData) {
@@ -4655,7 +4655,7 @@ calculateFoodImpact() {
         }
     }
 
-    // 8. FINAL MASS BALANCE
+    // 8. FINAL MASS BALANCE (OUR EXISTING LOGIC - UNCHANGED)
     const finalContentWeight = totalIngredientQuantity * (aioxyData.processing[processingMethod]?.yield || 1);
     const processingLoss = totalIngredientQuantity - finalContentWeight;
 
@@ -4670,7 +4670,7 @@ calculateFoodImpact() {
         balance_check: totalInputQuantity - agriculturalLoss - processingLoss - finalContentWeight
     };
 
-    // 9. FINALIZING METRICS
+    // 9. FINALIZING METRICS (OUR EXISTING LOGIC - UNCHANGED)
     const totalClimateImpact = auditTrail.pefCategories["Climate Change"].total;
     const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimateImpact);
     const uncertaintyResults = calculateMonteCarloUncertainty(selectedIngredients, 500);
@@ -4687,24 +4687,22 @@ calculateFoodImpact() {
     };
     auditTrail.ISO_compliance = getISOCompliance();
 
-    // 10. SCENARIO APPLICATION (If Active)
+    // 10. SCENARIO APPLICATION (OUR EXISTING LOGIC - UNCHANGED)
     let finalPefResultsToUse = auditTrail.pefCategories;
     if (Object.values(activeScenarios).some(v => v)) {
         finalPefResultsToUse = applyScenarioPhysics({
             finalPefResults: auditTrail.pefCategories,
             finalContentWeight: finalContentWeight
         }, activeScenarios);
-        auditTrail.pefCategories = finalPefResultsToUse; // Update audit trail with scenario results
+        auditTrail.pefCategories = finalPefResultsToUse;
         auditTrail.scenarios_applied_details = "Physics-based scenarios applied to results";
     }
 
-    // 11. PEF SINGLE SCORE
+    // 11. PEF SINGLE SCORE (OUR EXISTING LOGIC - UNCHANGED)
     const pefSingleScore = calculatePEFSingleScore(finalPefResultsToUse, finalContentWeight);
     auditTrail.pef_single_score = pefSingleScore;
 
-    // 12. BASELINE COMPARISON (The "Story" Engine)
-    // Calculate Baseline Total (Baseline PerKg * My Volume)
-    // Note: Baseline Uplift is strictly calculated for the comparison, not added to *our* product
+    // 12. BASELINE COMPARISON (OUR EXISTING LOGIC - UNCHANGED)
     const uplift = calculateBaselineUplift(comparisonKey);
     const baselineCO2PerKg = comparisonBaseline.co2PerKg + uplift.co2;
     const baselineWaterPerKg = comparisonBaseline.waterPerKg + uplift.water;
@@ -4712,7 +4710,6 @@ calculateFoodImpact() {
     const currentCO2Total = finalPefResultsToUse["Climate Change"].total;
     const currentWaterTotal = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total;
     
-    // Calculate Per Kg results for display
     const myCO2PerKg = finalContentWeight > 0 ? currentCO2Total / finalContentWeight : 0;
     const myWaterPerKg = finalContentWeight > 0 ? currentWaterTotal / finalContentWeight : 0;
 
@@ -4755,7 +4752,6 @@ calculateFoodImpact() {
         pefSingleScore: pefSingleScore
     };
 },
-
 detectProductCategory(productName, ingredients, selectedCategory) {
     const name = productName.toLowerCase();
     const category = selectedCategory.toLowerCase();
