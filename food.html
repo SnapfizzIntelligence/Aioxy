@@ -4488,7 +4488,7 @@ calculateFoodImpact() {
     let agriculturalLoss = 0;
     let dqrComponents = [];
 
-    selectedIngredients.forEach(item => {
+ finalIngredients.forEach(item => {
         const ing = aioxyData.ingredients[item.id];
         if (!ing) return;
 
@@ -4571,7 +4571,7 @@ calculateFoodImpact() {
     // Helper function for current month
     const getCurrentMonth = () => new Date().getMonth();
 
-    selectedIngredients.forEach(ing => {
+    finalIngredients.forEach(ing => {
         // Water Physics (AWARE 2.0) - Replaces static PEF water if available
         const originCountry = getIngredientOrigin(ing.id);
         const ingredientData = aioxyData.ingredients[ing.id];
