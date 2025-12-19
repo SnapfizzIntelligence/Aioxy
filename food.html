@@ -3682,32 +3682,6 @@ function calculateBaselineUplift(baselineKey) {
         }
     };
     }
-    // ================== MASS BALANCE ENGINE (CRITICAL FIX) ==================
-function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
-    console.log("⚖️ Calculating Mass Balance...");
-    
-    const totalInputMass = ingredients.reduce((sum, item) => sum + item.quantity, 0);
-    
-    // Get yield factor from your processing data
-    const processingData = aioxyData.processing[processingMethod];
-    const yieldFactor = processingData?.yield || 1.0;
-    
-    const finalProductMass = totalInputMass * yieldFactor;
-    const evaporationMass = totalInputMass - finalProductMass;
-    const grossWeight = finalProductMass + packagingWeight;
-
-    console.log(`✅ Mass Balance: ${totalInputMass.toFixed(3)}kg in → ${finalProductMass.toFixed(3)}kg out (Gross: ${grossWeight.toFixed(3)}kg)`);
-
-    return {
-        inputMass: totalInputMass,
-        productMass: finalProductMass,
-        evaporation: evaporationMass,
-        grossWeight: grossWeight,
-        final_content_weight_kg: finalProductMass, // For compatibility
-        packaging_weight_kg: packagingWeight
-    };
-    }
-
     // ================== FIX 3: PEF SINGLE SCORE CALCULATION ==================
     function calculatePEFSingleScore(pefResults, productWeightKg) {
     // ================== CORRECTED PEF NORMALIZATION FACTORS ==================
