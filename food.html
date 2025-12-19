@@ -5758,7 +5758,7 @@ function updateBusinessCaseWithTweak5() {
     const netReturnElement = document.getElementById('netReturnDisplay');
     
     if (roiValueElement) roiValueElement.textContent = discountedROI.npvROI + '% (NPV)';
-    if (roiBadgeElement) roiBadgeElement.textContent = `+€${discountedROI.carbonCredits} buffer`;
+    if (roiBadgeElement) roiBadgeElement.textContent = `Shadow Pricing @ €85/t`;
     if (netReturnElement) netReturnElement.textContent = '€' + formatLargeNumber(discountedROI.totalDiscounted);
     
     document.getElementById('savingsValue').textContent = "€" + formatLargeNumber(financialResults.total);
