@@ -5926,17 +5926,30 @@ function updateEnvironmentalStory(results) {
     
     const productName = document.getElementById('productName').value || 'your product';
     
-    storyContent.innerHTML = `
-        <div class="story-highlight">
-            <i class="fas fa-seedling"></i>
-            <strong>Hey ${customerName}, you saved ${co2SavedPerKg.toFixed(1)} kg CO₂ per kilogram with ${productName}!</strong><br>
-            That's ${((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100).toFixed(0)}% cleaner than ${results.comparison.baseline.name}.
+    // Calculate savings percentage
+const savingsPercent = ((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100);
+const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
+
+storyContent.innerHTML = `
+    <div class="story-highlight">
+        <i class="fas fa-seedling"></i>
+        <strong>Hey ${customerName}, your product design saves ${co2SavedPerKg.toFixed(2)} kg CO₂e per kg.</strong><br>
+        That's ${savingsPercent.toFixed(0)}% better than ${baselineName}.
+    </div>
+    
+    <div style="margin-top: 1rem; padding: 1rem; background: rgba(10, 37, 64, 0.05); border-radius: 8px; border-left: 3px solid var(--primary);">
+        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 0.25rem;">
+            <i class="fas fa-balance-scale"></i> COMPARISON METHODOLOGY
         </div>
-        <p>
-            Your sustainable product design demonstrates real environmental leadership. 
-            These savings scale with production volume, creating meaningful impact.
-        </p>
-    `;
+        <div style="font-size: 0.7rem; color: var(--gray); line-height: 1.4;">
+            <strong>Comparative assertion based on:</strong> PEF 3.1 methodology using AGRIBALYSE 3.2 secondary data.<br>
+            <strong>System boundary:</strong> Cradle-to-Retail (includes farming, processing, packaging, distribution).<br>
+            <strong>Functional unit:</strong> 1 kg consumable product at retail point.<br>
+            <strong>Use case:</strong> Suitable for B2B communication and strategic planning under EU Green Claims Directive.<br>
+            <strong>Disclaimer:</strong> Does not constitute an Environmental Product Declaration (EPD). For verified claims, conduct ISO 14044 critical review.
+        </div>
+    </div>
+`;
 
     storyComparison.innerHTML = `
         <div class="story-item">
