@@ -4664,67 +4664,62 @@ calculateFoodImpact() {
         }
     }
 
-    // 8. FINAL MASS BALANCE (YOUR EXISTING LOGIC - UNCHANGED)
-    const finalContentWeight = totalIngredientQuantity * (aioxyData.processing[processingMethod]?.yield || 1);
-    const processingLoss = totalIngredientQuantity - finalContentWeight;
+    // 8. USE THE CORRECT MASS BALANCE (FIXED)
+// Use the already-calculated massBalanceData which includes evaporation physics
+const functionalUnitWeight = massBalanceData.final_content_weight_kg || 0.2;
 
-    auditTrail.mass_balance = {
-        raw_input_total_kg: totalInputQuantity,
-        agricultural_processing_loss_kg: agriculturalLoss,
-        after_agricultural_loss_kg: totalIngredientQuantity,
-        processing_loss_kg: processingLoss,
-        final_content_weight_kg: finalContentWeight,
-        packaging_weight_kg: packagingWeight,
-        total_product_weight_kg: finalContentWeight + packagingWeight,
-        balance_check: totalInputQuantity - agriculturalLoss - processingLoss - finalContentWeight
-    };
+auditTrail.mass_balance = massBalanceData; // Use the physics-calculated mass balance
 
-    // 9. FINALIZING METRICS (YOUR EXISTING LOGIC - UNCHANGED)
-    const totalClimateImpact = auditTrail.pefCategories["Climate Change"].total;
-    const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimateImpact);
-    const uncertaintyResults = calculateMonteCarloUncertainty(selectedIngredients, 500);
-    
-    auditTrail.foreground_background = foregroundBackground;
-    auditTrail.dqr_summary = {
-        overall_dqr: foregroundBackground.overall_dqr,
-        dqr_level: this.getDQRQualityLevel(foregroundBackground.overall_dqr).level,
-        component_dqrs: dqrComponents
-    };
-    auditTrail.uncertainty_analysis = {
-        monte_carlo: uncertaintyResults,
-        overall_uncertainty: this.calculateUncertainty(foregroundBackground.overall_dqr)
-    };
-    auditTrail.ISO_compliance = getISOCompliance();
+// 9. FINALIZING METRICS (FIXED TO USE CONSISTENT WEIGHT)
+const totalClimateImpact = auditTrail.pefCategories["Climate Change"].total;
+const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimateImpact);
+const uncertaintyResults = calculateMonteCarloUncertainty(selectedIngredients, 500);
 
-    // 10. SCENARIO APPLICATION (YOUR EXISTING LOGIC - UNCHANGED)
-    let finalPefResultsToUse = auditTrail.pefCategories;
-    if (Object.values(activeScenarios).some(v => v)) {
-        finalPefResultsToUse = applyScenarioPhysics({
-            finalPefResults: auditTrail.pefCategories,
-            finalContentWeight: finalContentWeight
-        }, activeScenarios);
-        auditTrail.pefCategories = finalPefResultsToUse;
-        auditTrail.scenarios_applied_details = "Physics-based scenarios applied to results";
-    }
+auditTrail.foreground_background = foregroundBackground;
+auditTrail.dqr_summary = {
+    overall_dqr: foregroundBackground.overall_dqr,
+    dqr_level: this.getDQRQualityLevel(foregroundBackground.overall_dqr).level,
+    component_dqrs: dqrComponents
+};
+auditTrail.uncertainty_analysis = {
+    monte_carlo: uncertaintyResults,
+    overall_uncertainty: this.calculateUncertainty(foregroundBackground.overall_dqr)
+};
+auditTrail.ISO_compliance = getISOCompliance();
 
-    // 11. PEF SINGLE SCORE (YOUR EXISTING LOGIC - UNCHANGED)
-    const pefSingleScore = calculatePEFSingleScore(finalPefResultsToUse, finalContentWeight);
-    auditTrail.pef_single_score = pefSingleScore;
+// 10. SCENARIO APPLICATION (FIXED TO USE FUNCTIONAL UNIT WEIGHT)
+let finalPefResultsToUse = auditTrail.pefCategories;
+if (Object.values(activeScenarios).some(v => v)) {
+    finalPefResultsToUse = applyScenarioPhysics({
+        finalPefResults: auditTrail.pefCategories,
+        finalContentWeight: functionalUnitWeight
+    }, activeScenarios);
+    auditTrail.pefCategories = finalPefResultsToUse;
+    auditTrail.scenarios_applied_details = "Physics-based scenarios applied to results";
+}
 
-    // 12. BASELINE COMPARISON (YOUR EXISTING LOGIC - UNCHANGED)
-    const uplift = calculateBaselineUplift(comparisonKey);
-    const baselineCO2PerKg = comparisonBaseline.co2PerKg + uplift.co2;
-    const baselineWaterPerKg = comparisonBaseline.waterPerKg + uplift.water;
+// 11. PEF SINGLE SCORE (FIXED TO USE FUNCTIONAL UNIT WEIGHT)
+const pefSingleScore = calculatePEFSingleScore(finalPefResultsToUse, functionalUnitWeight);
+auditTrail.pef_single_score = pefSingleScore;
 
-    const currentCO2Total = finalPefResultsToUse["Climate Change"].total;
-    const currentWaterTotal = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total;
-    
-    const myCO2PerKg = finalContentWeight > 0 ? currentCO2Total / finalContentWeight : 0;
-    const myWaterPerKg = finalContentWeight > 0 ? currentWaterTotal / finalContentWeight : 0;
+// 12. BASELINE COMPARISON (FIXED - CONSISTENT FUNCTIONAL UNIT)
+const uplift = calculateBaselineUplift(comparisonKey);
+const baselineCO2PerKg = comparisonBaseline.co2PerKg + (uplift?.co2 || 0);
+const baselineWaterPerKg = comparisonBaseline.waterPerKg + (uplift?.water || 0);
 
-    const co2SavedTotal = Math.max((baselineCO2PerKg * finalContentWeight) - currentCO2Total, 0);
-    const waterSavedTotal = Math.max((baselineWaterPerKg * finalContentWeight) - currentWaterTotal, 0);
+const currentCO2Total = finalPefResultsToUse["Climate Change"].total || 0;
+const currentWaterTotal = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total || 0;
+const currentLandTotal = finalPefResultsToUse["Land Use"].total || 0;
+const currentFossilTotal = finalPefResultsToUse["Resource Use, fossils"].total || 0;
 
+// FIXED: Use functionalUnitWeight for ALL per-kg calculations
+const myCO2PerKg = functionalUnitWeight > 0 ? currentCO2Total / functionalUnitWeight : 0;
+const myWaterPerKg = functionalUnitWeight > 0 ? currentWaterTotal / functionalUnitWeight : 0;
+const myLandPerKg = functionalUnitWeight > 0 ? currentLandTotal / functionalUnitWeight : 0;
+const myFossilPerKg = functionalUnitWeight > 0 ? currentFossilTotal / functionalUnitWeight : 0;
+
+const co2SavedTotal = Math.max((baselineCO2PerKg * functionalUnitWeight) - currentCO2Total, 0);
+const waterSavedTotal = Math.max((baselineWaterPerKg * functionalUnitWeight) - currentWaterTotal, 0);
     // Save Global State
     finalPefResults = finalPefResultsToUse;
     massBalanceData = auditTrail.mass_balance;
@@ -4734,33 +4729,32 @@ calculateFoodImpact() {
     console.log(`✅ [AIOXY FIXED] ${productName}: ${myCO2PerKg.toFixed(2)} kg CO2e/kg`);
 
     return {
-        finalPefResults: finalPefResultsToUse,
-        auditTrail: auditTrail,
-        massBalance: massBalanceData,
-        overallDQR: foregroundBackground.overall_dqr,
-        overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
-        finalContentWeight: finalContentWeight,
-        totalProductWeight: finalContentWeight + packagingWeight,
-        co2PerKg: myCO2PerKg,
-        waterScarcityPerKg: myWaterPerKg,
-        landUsePerKg: finalContentWeight > 0 ? finalPefResultsToUse["Land Use"].total / finalContentWeight : 0,
-        fossilPerKg: finalContentWeight > 0 ? finalPefResultsToUse["Resource Use, fossils"].total / finalContentWeight : 0,
-        comparison: {
-            baseline: {
-                ...comparisonBaseline,
-                name: comparisonBaseline.name + " (Cradle-to-Retail)",
-                co2PerKg: baselineCO2PerKg,
-                waterPerKg: baselineWaterPerKg
-            },
-            uplift_applied: uplift,
-            co2Saved: co2SavedTotal,
-            waterSaved: waterSavedTotal,
-            co2SavedPerKg: finalContentWeight > 0 ? co2SavedTotal / finalContentWeight : 0,
-            waterSavedPerKg: finalContentWeight > 0 ? waterSavedTotal / finalContentWeight : 0
+    finalPefResults: finalPefResultsToUse,
+    auditTrail: auditTrail,
+    massBalance: massBalanceData,
+    overallDQR: foregroundBackground.overall_dqr,
+    overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
+    finalContentWeight: functionalUnitWeight,  // ← FIXED: Use functionalUnitWeight
+    totalProductWeight: functionalUnitWeight + packagingWeight,  // ← FIXED
+    co2PerKg: myCO2PerKg,
+    waterScarcityPerKg: myWaterPerKg,
+    landUsePerKg: myLandPerKg,  // ← FIXED: Use pre-calculated value
+    fossilPerKg: myFossilPerKg,  // ← FIXED: Use pre-calculated value
+    comparison: {
+        baseline: {
+            ...comparisonBaseline,
+            name: comparisonBaseline.name + " (Cradle-to-Retail)",
+            co2PerKg: baselineCO2PerKg,
+            waterPerKg: baselineWaterPerKg
         },
-        pefSingleScore: pefSingleScore
-    };
-},
+        uplift_applied: uplift,
+        co2Saved: co2SavedTotal,
+        waterSaved: waterSavedTotal,
+        co2SavedPerKg: functionalUnitWeight > 0 ? co2SavedTotal / functionalUnitWeight : 0,  // ← FIXED
+        waterSavedPerKg: functionalUnitWeight > 0 ? waterSavedTotal / functionalUnitWeight : 0  // ← FIXED
+    },
+    pefSingleScore: pefSingleScore
+};
 detectProductCategory(productName, ingredients, selectedCategory) {
     const name = productName.toLowerCase();
     const category = selectedCategory.toLowerCase();
