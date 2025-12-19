@@ -5722,20 +5722,26 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
 function updateBusinessCaseWithTweak5() {
     console.log("🔄 updateBusinessCaseWithTweak5 CALLED");
     
-    if (!finalPefResults || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
+    // Safety check
+    if (!finalPefResults || !finalPefResults["Climate Change"]) {
+        // If no results, try to calculate, then retry
+        console.log("⚠️ No PEF results found, triggering calculation...");
         calculateImpact();
-        setTimeout(updateBusinessCaseWithTweak5, 200);
+        setTimeout(updateBusinessCaseWithTweak5, 500); // Wait for calculation
         return;
     }
     
+    // 1. USE HELPER for absolute consistency with Results Tab
+    // This ensures Business Case doesn't invent its own numbers
+    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
     const volume = currentAnnualVolume;
-    const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     
+    // Create business results using the UNIFIED numbers
     const businessResults = {
         finalPefResults: finalPefResults,
-        finalContentWeight: productWeightKg,
-        co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
-        fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
+        finalContentWeight: unified.weightUsed,
+        co2PerKg: unified.co2PerKg,      // <--- USES THE MATCHED NUMBER
+        fossilPerKg: unified.fossilPerKg // <--- USES THE MATCHED NUMBER
     };
 
     let scenarioAdjustedResults = businessResults;
