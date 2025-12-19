@@ -5461,41 +5461,47 @@ function updateHardFinancialLedger(financialResults, volume) {
     const tbody = document.getElementById('ledgerBody');
     if (!tbody) return;
     
-    const { moneyFuel, moneyEnergy, total, metrics } = financialResults;
+    const { moneyFuel, moneyEnergy, metrics } = financialResults;
     
-    // CALCULATE BOTH VALUES
-    const etsAvoidance = (metrics.totalTonsCo2Saved || 0) * 85;
-    const vcmRevenue = (metrics.totalTonsCo2Saved || 0) * 15;
+    // Shadow Carbon Pricing (EU ETS proxy - for strategic planning only)
+    const shadowCarbonValue = (metrics.totalTonsCo2Saved || 0) * 85;
     
+    // REAL direct savings (energy + fuel only)
+    const realCashSavings = moneyEnergy + moneyFuel;
+
     tbody.innerHTML = `
         <tr>
-            <td><strong>🛡️ Future Liability Buffer</strong><br><small>Avoiding EU ETS fines (€85/t CO₂e)</small></td>
-            <td>-${(metrics.totalTonsCo2Saved || 0).toFixed(1)} tons</td>
-            <td class="money-positive">+€${etsAvoidance.toFixed(2)}</td>
-        </tr>
-        <tr>
-            <td><strong>🌱 Voluntary Carbon Market</strong><br><small>Current VCM rates (€15/t CO₂e)</small></td>
-            <td>+${(metrics.totalTonsCo2Saved || 0).toFixed(1)} tons</td>
-            <td class="money-positive">+€${vcmRevenue.toFixed(2)}</td>
-        </tr>
-        <tr>
-            <td><strong>⚡ Energy OPEX Reduction</strong><br><small>Fossil fuel savings (PEF Data)</small></td>
+            <td><strong>⚡ Energy OPEX Reduction</strong><br><small>Direct savings from fossil fuel reduction</small></td>
             <td>-${Math.round(metrics.totalMJSaved || 0).toLocaleString()} MJ</td>
             <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
         </tr>
         <tr>
-            <td><strong>🚚 Logistics Fuel Savings</strong><br><small>Transport optimization</small></td>
+            <td><strong>🚚 Logistics Fuel Savings</strong><br><small>Direct savings from transport optimization</small></td>
             <td>-${Math.round(metrics.fuelLitersSaved || 0).toLocaleString()} L Diesel</td>
             <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
+        </tr>
+        <tr style="border-top: 2px solid var(--primary);">
+            <td><strong>💰 Direct Cash Savings (Annual)</strong></td>
+            <td><em>Real money in pocket</em></td>
+            <td class="money-positive" style="font-size: 1.1rem; font-weight: 800;">+€${realCashSavings.toFixed(2)}</td>
+        </tr>
+        <tr style="background: rgba(149, 165, 166, 0.1);">
+            <td><em>🛡️ Shadow Carbon Value (Strategic)</em><br><small>EU ETS proxy @ €85/t for internal planning</small></td>
+            <td>${(metrics.totalTonsCo2Saved || 0).toFixed(1)} tons CO₂e</td>
+            <td style="color: #7f8c8d; font-style: italic;">(€${shadowCarbonValue.toFixed(2)})</td>
         </tr>
     `;
 
     const totalBenefit = document.getElementById('totalBenefit');
     if (totalBenefit) {
-        const realTotal = etsAvoidance + vcmRevenue + moneyEnergy + moneyFuel;
-        totalBenefit.innerText = "€" + realTotal.toFixed(2);
+        totalBenefit.innerHTML = `
+            €${realCashSavings.toFixed(2)} 
+            <div style="font-size: 0.8rem; color: var(--gray); font-weight: normal; margin-top: 0.25rem;">
+                Direct savings only • Excludes speculative carbon pricing
+            </div>
+        `;
     }
-    }
+}
 
 // ================== UPDATE BUSINESS CASE ==================active
 function updateBusinessCase() {
