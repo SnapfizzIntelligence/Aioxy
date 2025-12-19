@@ -2555,6 +2555,35 @@ let massBalanceData = {};
 let auditTrailData = {};
 let currentComparisonBaseline = null;
 let currentAnnualVolume = 10000;
+
+// ================== SINGLE SOURCE OF TRUTH HELPER ==================
+function getUnifiedMetrics(pefResults, massData) {
+    // 1. Get the authoritative weight (Final Product Output)
+    // Priority: Mass Balance Output > Input Field > Default 0.2
+    let validWeight = 0.2;
+    
+    if (massData && massData.final_content_weight_kg > 0) {
+        validWeight = massData.final_content_weight_kg;
+    } else {
+        const inputVal = parseFloat(document.getElementById('productWeight').value);
+        if (inputVal > 0) validWeight = inputVal;
+    }
+
+    // 2. Safely extract totals
+    const totalCO2 = pefResults?.["Climate Change"]?.total || 0;
+    const totalWater = pefResults?.["Water Use/Scarcity (AWARE)"]?.total || 0;
+    const totalLand = pefResults?.["Land Use"]?.total || 0;
+    const totalFossil = pefResults?.["Resource Use, fossils"]?.total || 0;
+
+    // 3. Calculate consistent per-kg values
+    return {
+        weightUsed: validWeight,
+        co2PerKg: totalCO2 / validWeight,
+        waterPerKg: totalWater / validWeight,
+        landPerKg: totalLand / validWeight,
+        fossilPerKg: totalFossil / validWeight
+    };
+    }
 // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
 const PHYSICS_DB = {
     // 1. INGREDIENT ORIGINS (AGRONOMIC TRUTH)
