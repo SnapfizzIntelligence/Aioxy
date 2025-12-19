@@ -5849,57 +5849,70 @@ function updateHardFinancialLedgerWithCredits(financialResults, volume) {
 
 // ================== UPDATE RESULTS UI ==================
 function updateResultsUI(results) {
+    // 1. Force Consistency: Pull the UNIFIED metric directly
+    const unifiedCO2 = results.co2PerKg; 
+
     updateMassBalanceDisplay();
     updateDataQualityDisplay(results);
     updateEnvironmentalStory(results);
     
-    renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline, results.comparison?.uplift_applied);
-    document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
+    // 2. Pass the UNIFIED number to the comparison renderer
+    // This fixes the "Comparison Bar vs Metric Card" discrepancy
+    renderUniversalComparisons(unifiedCO2, currentComparisonBaseline, results.comparison?.uplift_applied);
+
+    // 3. Update Metric Cards with the UNIFIED numbers
+    document.getElementById('co2Value').textContent = unifiedCO2.toFixed(2) + ' kg';
     document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(4) + ' m³';
     document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
     document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
     
-    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.474184;
-    const baselineWater = currentComparisonBaseline ? currentComparisonBaseline.waterPerKg : 1.1559368;
+    // 4. Calculate Savings Badge Percentage using the UNIFIED number
+    const baselineCO2 = results.comparison.baseline.co2PerKg;
+    const baselineWater = results.comparison.baseline.waterPerKg;
     
-    const co2SavingsPercent = ((baselineCO2 - results.co2PerKg) / baselineCO2 * 100).toFixed(1);
-    const waterSavingsPercent = ((baselineWater - results.waterScarcityPerKg) / baselineWater * 100).toFixed(1);
-    
-    document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
-    document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
+    // Prevent division by zero
+    const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
+    const safeBaseWater = baselineWater > 0 ? baselineWater : 1;
 
+    const co2SavingsPercent = ((safeBaseCO2 - unifiedCO2) / safeBaseCO2 * 100).toFixed(1);
+    const waterSavingsPercent = ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater * 100).toFixed(1);
+    
+    const baselineName = currentComparisonBaseline ? currentComparisonBaseline.name.replace(' (Cradle-to-Retail)', '') : 'benchmark';
+
+    document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + baselineName;
+    document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + baselineName;
+
+    // Equivalencies
     const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
-const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
+    const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
 
-// FIXED: REAL-WORLD EQUIVALENCIES (EU + Honest Scaling)
-const carKmPerKgCO2 = 5.2;   // 1 kg CO₂e ≈ 5.2 km in average EU car (0.192 kg/km)
-const treeYearPerKgCO2 = 0.04;  // 1 mature tree ≈ 25 kg CO₂/year
-const householdDaysPerKgCO2 = 0.1;  // Avg household ~10 kg/day
-const waterBottlesPerM3 = 666;  // 1 m³ water ≈ 666 PET bottles (1.5L each)
+    const carKmPerKgCO2 = 5.2; 
+    const treeYearPerKgCO2 = 0.04;
+    const householdDaysPerKgCO2 = 0.1;
+    const waterBottlesPerM3 = 666;
 
-const carKm = Math.round(co2SavedPerKg * carKmPerKgCO2);
-const treeYears = (co2SavedPerKg * treeYearPerKgCO2).toFixed(2);
-const householdDays = Math.round(co2SavedPerKg * householdDaysPerKgCO2);
-const waterBottles = Math.round(waterSavedPerKg * waterBottlesPerM3);
+    const carKm = Math.round(co2SavedPerKg * carKmPerKgCO2);
+    const treeYears = (co2SavedPerKg * treeYearPerKgCO2).toFixed(2);
+    const householdDays = Math.round(co2SavedPerKg * householdDaysPerKgCO2);
+    const waterBottles = Math.round(waterSavedPerKg * waterBottlesPerM3);
 
-// FIXED: Indicative Equivalencies (clearly labeled)
-document.getElementById('carKm').innerHTML = carKm > 0 ? 
-    `${carKm} km <span style="font-size:0.7em; color:#999">(avg. EU diesel car)</span>` : '—';
+    document.getElementById('carKm').innerHTML = carKm > 0 ? 
+        `${carKm} km <span style="font-size:0.7em; color:#999">(avg. EU diesel car)</span>` : '—';
+    
+    if (treeYears > 0) {
+        const displayTree = treeYears < 1 ? Math.round(treeYears * 365) + " tree-days" : treeYears + " tree-years";
+        document.getElementById('treesPlanted').innerHTML = 
+            `${displayTree} <span style="font-size:0.7em; color:#999">(sequestration eq.)</span>`;
+    } else {
+        document.getElementById('treesPlanted').textContent = '—';
+    }
 
-if (treeYears > 0) {
-    // Convert to tree-years to be scientifically accurate
-    const displayTree = treeYears < 1 ? Math.round(treeYears * 365) + " tree-days" : treeYears + " tree-years";
-    document.getElementById('treesPlanted').innerHTML = 
-        `${displayTree} <span style="font-size:0.7em; color:#999">(sequestration eq.)</span>`;
-} else {
-    document.getElementById('treesPlanted').textContent = '—';
-}
+    document.getElementById('householdEnergy').innerHTML = householdDays > 0 ? 
+        `${householdDays} days <span style="font-size:0.7em; color:#999">(avg. EU elec.)</span>` : '—';
+    
+    document.getElementById('waterBottles').textContent = waterBottles > 0 ? 
+        `${waterBottles} bottles (indicative)` : '—';
 
-document.getElementById('householdEnergy').innerHTML = householdDays > 0 ? 
-    `${householdDays} days <span style="font-size:0.7em; color:#999">(avg. EU elec.)</span>` : '—';
-
-document.getElementById('waterBottles').textContent = waterBottles > 0 ? 
-    `${waterBottles} bottles (indicative)` : '—';
     createEmissionChart(results);
     
     // =========== INTEGRATION POINT: CALL ALL FIXES ===========
@@ -5908,7 +5921,7 @@ document.getElementById('waterBottles').textContent = waterBottles > 0 ?
     displayForegroundBackground();
     displayCompleteAuditTrail();
     displayISOCompliance();
-}
+                               }
 
 // ================== UPDATE ENVIRONMENTAL STORY ==================
 function updateEnvironmentalStory(results) {
