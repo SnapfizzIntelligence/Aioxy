@@ -3150,50 +3150,53 @@ window.debugAIOXY = debugCurrentState;
         "Resource Use, minerals/metals": { unit: "kg Sb e", icon: "gem" },
         "Resource Use, fossils": { unit: "MJ", icon: "oil-can" }
     };
+    // ================== UNIVERSAL BASELINES — RETAIL EQUIVALENT (CRADLE-TO-RETAIL) ==================
+const UNIVERSAL_BASELINES = {
+    'beef-product': {
+        name: 'Conventional Beef (Retail Ready)',
+        co2PerKg: 16.5,  // Agribalyse beef + conservative processing/packaging/distribution uplift
+        waterPerKg: 1.16,
+        landUsePerKg: 966,
+        fossilPerKg: 28.0
+    },
+    'milk-product': {
+        name: 'Cow Milk (Retail Ready)',
+        co2PerKg: 1.40,  // Farm-gate 1.1 + 0.3 downstream (conservative)
+        waterPerKg: 0.12,
+        landUsePerKg: 59,
+        fossilPerKg: 3.5
+    },
+    'chicken-product': {
+        name: 'Conventional Chicken (Retail Ready)',
+        co2PerKg: 2.8,
+        waterPerKg: 0.72,
+        landUsePerKg: 162,
+        fossilPerKg: 15.0
+    },
+    'pork-product': {
+        name: 'Conventional Pork (Retail Ready)',
+        co2PerKg: 3.5,
+        waterPerKg: 0.95,
+        landUsePerKg: 162,
+        fossilPerKg: 20.0
+    },
+    'cheese-product': {
+        name: 'Conventional Cheese (Retail Ready)',
+        co2PerKg: 9.0,  // Conservative average
+        waterPerKg: 3.0,
+        landUsePerKg: 40,
+        fossilPerKg: 12.0
+    },
+    'default': {
+        name: 'Global Food Average (Retail Ready)',
+        co2PerKg: 4.5,
+        waterPerKg: 0.5,
+        landUsePerKg: 10,
+        fossilPerKg: 10.0
+    }
+};
 
-    // ================== UNIVERSAL COMPARISON SYSTEM ==================
-    const UNIVERSAL_BASELINES = {
-        'beef-product': {
-            name: 'Beef cattle, conventional, national average, at farm gate',
-            category: 'food',
-            co2PerKg: 14.474184,
-            waterPerKg: 1.1559368,
-            landUsePerKg: 965.59624,
-            fossilPerKg: 24.202021
-        },
-        'chicken-product': {
-            name: 'Broiler, conventional, at farm gate',
-            category: 'food', 
-            co2PerKg: 1.8638007,
-            waterPerKg: 0.71976888,
-            landUsePerKg: 161.6369,
-            fossilPerKg: 11.335022
-        },
-        'pork-product': {
-            name: 'Pig, conventional, national average, at farm gate',
-            category: 'food',
-            co2PerKg: 2.7941587,
-            waterPerKg: 0.95123835,
-            landUsePerKg: 161.62783,
-            fossilPerKg: 19.019492
-        },
-        'cheese-product': {
-            name: 'Conventional Cheese Product',
-            category: 'food',
-            co2PerKg: 8.5,
-            waterPerKg: 3.2,
-            landUsePerKg: 1200,
-            fossilPerKg: 6.8
-        },
-        'milk-product': {
-            name: 'Cow milk, conventional, national average, at farm gate',
-            category: 'food',
-            co2PerKg: 1.1061238,
-            waterPerKg: 0.11527343,
-            landUsePerKg: 59.0766,
-            fossilPerKg: 2.2493909
-        }
-    };
+    
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
 const FOOD_PHYSICS_DB = {
     'milk-product':      { target_hydration: 0.88, default_density: 1.03, note: "Oat/cow/soy milk" },
