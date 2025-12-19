@@ -5867,13 +5867,34 @@ function updateResultsUI(results) {
     document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
 
     const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
-    const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
-    
-    document.getElementById('carKm').textContent = Math.round(co2SavedPerKg * 1000 / 120) + ' km';
-    document.getElementById('householdEnergy').textContent = (co2SavedPerKg * 1000 / 12000).toFixed(1) + ' days';
-    document.getElementById('treesPlanted').textContent = Math.round(co2SavedPerKg / 0.025) + ' trees';
-    document.getElementById('waterBottles').textContent = Math.round(waterSavedPerKg * 1000 / 1.5) + ' bottles';
+const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
 
+// FIXED: REAL-WORLD EQUIVALENCIES (EU + Honest Scaling)
+const carKmPerKgCO2 = 5.2;   // 1 kg CO₂e ≈ 5.2 km in average EU car (0.192 kg/km)
+const treeYearPerKgCO2 = 0.04;  // 1 mature tree ≈ 25 kg CO₂/year
+const householdDaysPerKgCO2 = 0.1;  // Avg household ~10 kg/day
+const waterBottlesPerM3 = 666;  // 1 m³ water ≈ 666 PET bottles (1.5L each)
+
+const carKm = Math.round(co2SavedPerKg * carKmPerKgCO2);
+const treeYears = (co2SavedPerKg * treeYearPerKgCO2).toFixed(2);
+const householdDays = Math.round(co2SavedPerKg * householdDaysPerKgCO2);
+const waterBottles = Math.round(waterSavedPerKg * waterBottlesPerM3);
+
+document.getElementById('carKm').textContent = carKm > 0 ? `${carKm} km car drive avoided` : '—';
+
+// Tree-years instead of inflated tree counts
+if (treeYears > 0) {
+    if (treeYears < 1) {
+        document.getElementById('treesPlanted').textContent = `${Math.round(treeYears * 365)} tree-days of absorption`;
+    } else {
+        document.getElementById('treesPlanted').textContent = `${treeYears} tree-years of absorption`;
+    }
+} else {
+    document.getElementById('treesPlanted').textContent = '—';
+}
+
+document.getElementById('householdEnergy').textContent = householdDays > 0 ? `${householdDays} days household electricity` : '—';
+document.getElementById('waterBottles').textContent = waterBottles > 0 ? `${waterBottles} PET bottles of water saved` : '—';
     createEmissionChart(results);
     
     // =========== INTEGRATION POINT: CALL ALL FIXES ===========
