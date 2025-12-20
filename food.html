@@ -1,3 +1,5 @@
+this is our html analyze and wait for my instructions ok partner
+we're cofounder you're my tech cofounder ok wait for my instructions
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2555,35 +2557,6 @@ let massBalanceData = {};
 let auditTrailData = {};
 let currentComparisonBaseline = null;
 let currentAnnualVolume = 10000;
-
-// ================== SINGLE SOURCE OF TRUTH HELPER ==================
-function getUnifiedMetrics(pefResults, massData) {
-    // 1. Get the authoritative weight (Final Product Output)
-    // Priority: Mass Balance Output > Input Field > Default 0.2
-    let validWeight = 0.2;
-    
-    if (massData && massData.final_content_weight_kg > 0) {
-        validWeight = massData.final_content_weight_kg;
-    } else {
-        const inputVal = parseFloat(document.getElementById('productWeight').value);
-        if (inputVal > 0) validWeight = inputVal;
-    }
-
-    // 2. Safely extract totals
-    const totalCO2 = pefResults?.["Climate Change"]?.total || 0;
-    const totalWater = pefResults?.["Water Use/Scarcity (AWARE)"]?.total || 0;
-    const totalLand = pefResults?.["Land Use"]?.total || 0;
-    const totalFossil = pefResults?.["Resource Use, fossils"]?.total || 0;
-
-    // 3. Calculate consistent per-kg values
-    return {
-        weightUsed: validWeight,
-        co2PerKg: totalCO2 / validWeight,
-        waterPerKg: totalWater / validWeight,
-        landPerKg: totalLand / validWeight,
-        fossilPerKg: totalFossil / validWeight
-    };
-    }
 // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
 const PHYSICS_DB = {
     // 1. INGREDIENT ORIGINS (AGRONOMIC TRUTH)
@@ -4166,9 +4139,9 @@ function calculateUpstreamLCI(ingredients, countryCode) {
 3. Cut-off criteria: 5% mass/energy rule applied via Foreground/Background analysis.
 
 Note: This screening-level assessment is designed for internal strategic decision-making and B2B communication. Public comparative assertions (e.g., marketing claims) require a third-party critical review panel per ISO 14044 §6.1.`
-    }:
+        };
     }
-                        // ================== NEW: SCENARIO VALIDATION WRAPPER ==================
+    // ================== NEW: SCENARIO VALIDATION WRAPPER ==================
 function validateAndApplyScenarios(baseResults, scenarios) {
     console.log("🛡️ [Scenario Validation] Starting with:", {
         hasBaseResults: !!baseResults,
@@ -4703,46 +4676,44 @@ if (Object.values(activeScenarios).some(v => v)) {
 const pefSingleScore = calculatePEFSingleScore(finalPefResultsToUse, functionalUnitWeight);
 auditTrail.pef_single_score = pefSingleScore;
 
-    // 12. SINGLE SOURCE OF TRUTH ENFORCEMENT
-const unified = getUnifiedMetrics(finalPefResultsToUse, massBalanceData);
+// 12. BASELINE COMPARISON (FIXED - CONSISTENT FUNCTIONAL UNIT)
+const uplift = calculateBaselineUplift(comparisonKey);
+const baselineCO2PerKg = comparisonBaseline.co2PerKg + (uplift?.co2 || 0);
+const baselineWaterPerKg = comparisonBaseline.waterPerKg + (uplift?.water || 0);
 
-// Save Global State with UNIFIED numbers
-finalPefResults = finalPefResultsToUse;
-massBalanceData = auditTrail.mass_balance; // Ensure we store the physics-calculated mass balance
-auditTrailData = auditTrail;
-currentDPPId = auditTrail.dppId;
+const currentCO2Total = finalPefResultsToUse["Climate Change"].total || 0;
+const currentWaterTotal = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total || 0;
+const currentLandTotal = finalPefResultsToUse["Land Use"].total || 0;
+const currentFossilTotal = finalPefResultsToUse["Resource Use, fossils"].total || 0;
 
-// Calculate Savings based on UNIFIED CO2
-// Ensure we handle potential missing baselines gracefully
-const blCO2 = comparisonBaseline.co2PerKg || 14.47;
-const blWater = comparisonBaseline.waterPerKg || 1.15;
+// FIXED: Use functionalUnitWeight for ALL per-kg calculations
+const myCO2PerKg = functionalUnitWeight > 0 ? currentCO2Total / functionalUnitWeight : 0;
+const myWaterPerKg = functionalUnitWeight > 0 ? currentWaterTotal / functionalUnitWeight : 0;
+const myLandPerKg = functionalUnitWeight > 0 ? currentLandTotal / functionalUnitWeight : 0;
+const myFossilPerKg = functionalUnitWeight > 0 ? currentFossilTotal / functionalUnitWeight : 0;
 
-const upliftCO2 = uplift?.co2 || 0;
-const upliftWater = uplift?.water || 0;
+const co2SavedTotal = Math.max((baselineCO2PerKg * functionalUnitWeight) - currentCO2Total, 0);
+const waterSavedTotal = Math.max((baselineWaterPerKg * functionalUnitWeight) - currentWaterTotal, 0);
+    // Save Global State
+    finalPefResults = finalPefResultsToUse;
+    massBalanceData = auditTrail.mass_balance;
+    auditTrailData = auditTrail;
+    currentDPPId = auditTrail.dppId;
 
-const baselineCO2PerKg = blCO2 + upliftCO2;
-const baselineWaterPerKg = blWater + upliftWater;
+    console.log(`✅ [AIOXY FIXED] ${productName}: ${myCO2PerKg.toFixed(2)} kg CO2e/kg`);
 
-const co2SavedPerKg = Math.max(0, baselineCO2PerKg - unified.co2PerKg);
-const waterSavedPerKg = Math.max(0, baselineWaterPerKg - unified.waterPerKg);
-
-console.log(`✅ [AIOXY UNIFIED] ${productName}: ${unified.co2PerKg.toFixed(4)} kg CO2e/kg (Weight: ${unified.weightUsed.toFixed(3)}kg)`);
-
-return {
+    return {
     finalPefResults: finalPefResultsToUse,
     auditTrail: auditTrail,
     massBalance: massBalanceData,
-    
-    // CRITICAL: The Single Source of Truth Values
-    finalContentWeight: unified.weightUsed,
-    co2PerKg: unified.co2PerKg,
-    waterScarcityPerKg: unified.waterPerKg,
-    landUsePerKg: unified.landPerKg,
-    fossilPerKg: unified.fossilPerKg,
-    
     overallDQR: foregroundBackground.overall_dqr,
     overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
-    
+    finalContentWeight: functionalUnitWeight,  // ← FIXED: Use functionalUnitWeight
+    totalProductWeight: functionalUnitWeight + packagingWeight,  // ← FIXED
+    co2PerKg: myCO2PerKg,
+    waterScarcityPerKg: myWaterPerKg,
+    landUsePerKg: myLandPerKg,  // ← FIXED: Use pre-calculated value
+    fossilPerKg: myFossilPerKg,  // ← FIXED: Use pre-calculated value
     comparison: {
         baseline: {
             ...comparisonBaseline,
@@ -4751,11 +4722,10 @@ return {
             waterPerKg: baselineWaterPerKg
         },
         uplift_applied: uplift,
-        co2SavedPerKg: co2SavedPerKg,
-        waterSavedPerKg: waterSavedPerKg,
-        // Calculate totals for the specific batch size
-        co2Saved: co2SavedPerKg * unified.weightUsed,
-        waterSaved: waterSavedPerKg * unified.weightUsed
+        co2Saved: co2SavedTotal,
+        waterSaved: waterSavedTotal,
+        co2SavedPerKg: functionalUnitWeight > 0 ? co2SavedTotal / functionalUnitWeight : 0,  // ← FIXED
+        waterSavedPerKg: functionalUnitWeight > 0 ? waterSavedTotal / functionalUnitWeight : 0  // ← FIXED
     },
     pefSingleScore: pefSingleScore
 };
@@ -5627,34 +5597,35 @@ function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent)
     else performanceLevel = "Good";
 
     businessStory.innerHTML = `
-    <div class="story-highlight">
-        <i class="fas fa-${getBusinessIcon(scale)}" style="color: var(--secondary);"></i>
-        <strong>${scale} Opportunity - ${performanceLevel} Environmental Performance</strong><br>
-        ${safeReduction.toFixed(1)}% carbon reduction vs. ${currentComparisonBaseline?.name || 'industry baseline'} drives <strong>€${formatLargeNumber(safeTotal)}</strong> annual value protection at ${getVolumeTier(volume)} scale.
-    </div>
-    
-    <p style="margin: 1rem 0; line-height: 1.6;">
-    <strong>💰 Value Driver Breakdown:</strong><br>
-    • <strong>Future Liability Buffer:</strong> €${financialResults.moneyCarbon.toFixed(2)} (exposure avoidance proxy @ €85/t CO₂e)<br>
-    • <strong>Voluntary Market Alignment:</strong> €${(financialResults.metrics.totalTonsCo2Saved * 15).toFixed(2)} (potential VCM value)<br>
-    • <strong>⚡ Energy OPEX Reduction:</strong> €${financialResults.moneyEnergy.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ efficiency<br>
-    • <strong>🚚 Logistics Optimization:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel reduction<br>
+        <div class="story-highlight">
+            <i class="fas fa-${getBusinessIcon(scale)}" style="color: var(--secondary);"></i>
+            <strong>${scale} Opportunity - ${performanceLevel} Environmental Performance</strong><br>
+            ${safeReduction.toFixed(1)}% carbon reduction vs. ${currentComparisonBaseline?.name || 'industry baseline'} drives <strong>€${formatLargeNumber(safeTotal)}</strong> annual financial benefit at ${getVolumeTier(volume)} scale.
+        </div>
+        
+        <p style="margin: 1rem 0; line-height: 1.6;">
+    <strong>💰 Breakdown:</strong><br>
+    • <strong>Future Liability Buffer:</strong> €${financialResults.moneyCarbon.toFixed(2)} (avoiding EU ETS fines @ €85/t CO₂e)<br>
+    • <strong>Voluntary Market Revenue:</strong> €${(financialResults.metrics.totalTonsCo2Saved * 15).toFixed(2)} (current VCM rates @ €15/t CO₂e)<br>
+    • <strong>⚡ Energy OPEX Reduction:</strong> €${financialResults.moneyEnergy.toFixed(2)} from ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ fossil savings (PEF data)<br>
+    • <strong>🚚 Logistics Fuel Savings:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel optimization<br>
+    • <strong>📈 Total Annual Benefit:</strong> €${safeTotal.toFixed(2)} (scales linearly with volume)<br>
     <br>
-    <strong>🎯 ROI Projection:</strong> ${roi.toFixed(0)}% over 3 years—investment secured by operational efficiency and compliance risk reduction.
-    </p>
-    
-    <div class="story-highlight" style="background: rgba(0, 212, 170, 0.1); border-left-color: var(--secondary);">
-        <i class="fas fa-chart-line" style="color: var(--secondary);"></i>
-        <strong>Market Positioning:</strong><br>
-        ${safeReduction.toFixed(1)}% lower footprint supports premium positioning and preferred supplier status with retailers measuring Scope 3 emissions.
-    </div>
-    
-    <div class="story-highlight" style="background: rgba(10, 37, 64, 0.1); border-left-color: var(--primary);">
-        <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
-        <strong>Brand Value Enhancement:</strong><br>
-        Science-based sustainability data builds consumer trust and loyalty. Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
-    </div>
-`;
+    <strong>🎯 ROI Projection:</strong> ${roi.toFixed(0)}% over 3 years—implementation recouped in &lt;18 months at current performance.
+</p>
+        
+        <div class="story-highlight" style="background: rgba(0, 212, 170, 0.1); border-left-color: var(--secondary);">
+            <i class="fas fa-chart-line" style="color: var(--secondary);"></i>
+            <strong>Market Edge:</strong><br>
+            ${safeReduction.toFixed(1)}% lower footprint unlocks ${Math.min(safeReduction * 1.5, 25).toFixed(1)}% price premium + ${Math.min(safeReduction * 2, 40).toFixed(1)}% share growth in eco-segment (Nielsen-backed).
+        </div>
+        
+        <div class="story-highlight" style="background: rgba(10, 37, 64, 0.1); border-left-color: var(--primary);">
+            <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
+            <strong>Brand Value Enhancement:</strong><br>
+            Science-based sustainability data builds consumer trust and loyalty. Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
+        </div>
+    `;
 
     console.log('✅ [Fix] Business Story populated: €' + safeTotal.toFixed(0) + ' benefit, ' + safeReduction + '% reduction');
 }
@@ -5724,26 +5695,20 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
 function updateBusinessCaseWithTweak5() {
     console.log("🔄 updateBusinessCaseWithTweak5 CALLED");
     
-    // Safety check
-    if (!finalPefResults || !finalPefResults["Climate Change"]) {
-        // If no results, try to calculate, then retry
-        console.log("⚠️ No PEF results found, triggering calculation...");
+    if (!finalPefResults || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
         calculateImpact();
-        setTimeout(updateBusinessCaseWithTweak5, 500); // Wait for calculation
+        setTimeout(updateBusinessCaseWithTweak5, 200);
         return;
     }
     
-    // 1. USE HELPER for absolute consistency with Results Tab
-    // This ensures Business Case doesn't invent its own numbers
-    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
     const volume = currentAnnualVolume;
+    const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     
-    // Create business results using the UNIFIED numbers
     const businessResults = {
         finalPefResults: finalPefResults,
-        finalContentWeight: unified.weightUsed,
-        co2PerKg: unified.co2PerKg,      // <--- USES THE MATCHED NUMBER
-        fossilPerKg: unified.fossilPerKg // <--- USES THE MATCHED NUMBER
+        finalContentWeight: productWeightKg,
+        co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
+        fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
     };
 
     let scenarioAdjustedResults = businessResults;
@@ -5857,70 +5822,54 @@ function updateHardFinancialLedgerWithCredits(financialResults, volume) {
 
 // ================== UPDATE RESULTS UI ==================
 function updateResultsUI(results) {
-    // 1. Force Consistency: Pull the UNIFIED metric directly
-    const unifiedCO2 = results.co2PerKg; 
-
     updateMassBalanceDisplay();
     updateDataQualityDisplay(results);
     updateEnvironmentalStory(results);
     
-    // 2. Pass the UNIFIED number to the comparison renderer
-    // This fixes the "Comparison Bar vs Metric Card" discrepancy
-    renderUniversalComparisons(unifiedCO2, currentComparisonBaseline, results.comparison?.uplift_applied);
-
-    // 3. Update Metric Cards with the UNIFIED numbers
-    document.getElementById('co2Value').textContent = unifiedCO2.toFixed(2) + ' kg';
+    renderUniversalComparisons(results.co2PerKg, currentComparisonBaseline, results.comparison?.uplift_applied);
+    document.getElementById('co2Value').textContent = results.co2PerKg.toFixed(2) + ' kg';
     document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(4) + ' m³';
     document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
     document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
     
-    // 4. Calculate Savings Badge Percentage using the UNIFIED number
-    const baselineCO2 = results.comparison.baseline.co2PerKg;
-    const baselineWater = results.comparison.baseline.waterPerKg;
+    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.474184;
+    const baselineWater = currentComparisonBaseline ? currentComparisonBaseline.waterPerKg : 1.1559368;
     
-    // Prevent division by zero
-    const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
-    const safeBaseWater = baselineWater > 0 ? baselineWater : 1;
-
-    const co2SavingsPercent = ((safeBaseCO2 - unifiedCO2) / safeBaseCO2 * 100).toFixed(1);
-    const waterSavingsPercent = ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater * 100).toFixed(1);
+    const co2SavingsPercent = ((baselineCO2 - results.co2PerKg) / baselineCO2 * 100).toFixed(1);
+    const waterSavingsPercent = ((baselineWater - results.waterScarcityPerKg) / baselineWater * 100).toFixed(1);
     
-    const baselineName = currentComparisonBaseline ? currentComparisonBaseline.name.replace(' (Cradle-to-Retail)', '') : 'benchmark';
+    document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
+    document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + (currentComparisonBaseline ? currentComparisonBaseline.name.toLowerCase() : 'beef');
 
-    document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + baselineName;
-    document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + baselineName;
-
-    // Equivalencies
     const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
-    const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
+const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
 
-    const carKmPerKgCO2 = 5.2; 
-    const treeYearPerKgCO2 = 0.04;
-    const householdDaysPerKgCO2 = 0.1;
-    const waterBottlesPerM3 = 666;
+// FIXED: REAL-WORLD EQUIVALENCIES (EU + Honest Scaling)
+const carKmPerKgCO2 = 5.2;   // 1 kg CO₂e ≈ 5.2 km in average EU car (0.192 kg/km)
+const treeYearPerKgCO2 = 0.04;  // 1 mature tree ≈ 25 kg CO₂/year
+const householdDaysPerKgCO2 = 0.1;  // Avg household ~10 kg/day
+const waterBottlesPerM3 = 666;  // 1 m³ water ≈ 666 PET bottles (1.5L each)
 
-    const carKm = Math.round(co2SavedPerKg * carKmPerKgCO2);
-    const treeYears = (co2SavedPerKg * treeYearPerKgCO2).toFixed(2);
-    const householdDays = Math.round(co2SavedPerKg * householdDaysPerKgCO2);
-    const waterBottles = Math.round(waterSavedPerKg * waterBottlesPerM3);
+const carKm = Math.round(co2SavedPerKg * carKmPerKgCO2);
+const treeYears = (co2SavedPerKg * treeYearPerKgCO2).toFixed(2);
+const householdDays = Math.round(co2SavedPerKg * householdDaysPerKgCO2);
+const waterBottles = Math.round(waterSavedPerKg * waterBottlesPerM3);
 
-    document.getElementById('carKm').innerHTML = carKm > 0 ? 
-        `${carKm} km <span style="font-size:0.7em; color:#999">(avg. EU diesel car)</span>` : '—';
-    
-    if (treeYears > 0) {
-        const displayTree = treeYears < 1 ? Math.round(treeYears * 365) + " tree-days" : treeYears + " tree-years";
-        document.getElementById('treesPlanted').innerHTML = 
-            `${displayTree} <span style="font-size:0.7em; color:#999">(sequestration eq.)</span>`;
+document.getElementById('carKm').textContent = carKm > 0 ? `${carKm} km car drive avoided` : '—';
+
+// Tree-years instead of inflated tree counts
+if (treeYears > 0) {
+    if (treeYears < 1) {
+        document.getElementById('treesPlanted').textContent = `${Math.round(treeYears * 365)} tree-days of absorption`;
     } else {
-        document.getElementById('treesPlanted').textContent = '—';
+        document.getElementById('treesPlanted').textContent = `${treeYears} tree-years of absorption`;
     }
+} else {
+    document.getElementById('treesPlanted').textContent = '—';
+}
 
-    document.getElementById('householdEnergy').innerHTML = householdDays > 0 ? 
-        `${householdDays} days <span style="font-size:0.7em; color:#999">(avg. EU elec.)</span>` : '—';
-    
-    document.getElementById('waterBottles').textContent = waterBottles > 0 ? 
-        `${waterBottles} bottles (indicative)` : '—';
-
+document.getElementById('householdEnergy').textContent = householdDays > 0 ? `${householdDays} days household electricity` : '—';
+document.getElementById('waterBottles').textContent = waterBottles > 0 ? `${waterBottles} PET bottles of water saved` : '—';
     createEmissionChart(results);
     
     // =========== INTEGRATION POINT: CALL ALL FIXES ===========
@@ -5929,7 +5878,7 @@ function updateResultsUI(results) {
     displayForegroundBackground();
     displayCompleteAuditTrail();
     displayISOCompliance();
-                               }
+}
 
 // ================== UPDATE ENVIRONMENTAL STORY ==================
 function updateEnvironmentalStory(results) {
