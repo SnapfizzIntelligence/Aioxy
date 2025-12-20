@@ -4806,32 +4806,35 @@ function renderUniversalComparisons(myCo2, baseline, uplift) {
     // Get uplifted baseline if available
     const upliftedBaseline = baseline.co2PerKg + (uplift?.co2 || 0);
     
+    // UPLIFT ADJUSTRS FOR OTHER COMPARATORS (Approximations for context)
+    const baseUplift = uplift?.co2 || 0.5;
+
     let list = [];
-    if(baseline === UNIVERSAL_BASELINES['milk-product']) {
+    if(baseline.name.includes('Milk') || baseline === UNIVERSAL_BASELINES['milk-product']) {
         list = [
-            {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Cow Milk (Cradle-to-Retail)", val: upliftedBaseline},
-            {name: "Almond Milk", val: 0.7},
-            {name: "Soy Milk", val: 0.45892391}
+            {name: "Your Product (Cradle-to-Retail)", val: myCo2, highlight: true},
+            {name: "Cow Milk (Retail Equiv.)", val: upliftedBaseline},
+            {name: "Almond Milk (Retail Equiv.)", val: 0.7 + baseUplift},
+            {name: "Soy Milk (Retail Equiv.)", val: 0.46 + baseUplift}
         ];
     } else if (baseline === UNIVERSAL_BASELINES['beef-product']) {
         list = [
-            {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Beef (Cradle-to-Retail)", val: upliftedBaseline},
-            {name: "Chicken", val: 2.81},
-            {name: "Pork", val: 4.04}
+            {name: "Your Product (Cradle-to-Retail)", val: myCo2, highlight: true},
+            {name: "Beef (Retail Equiv.)", val: upliftedBaseline},
+            {name: "Chicken (Retail Equiv.)", val: 2.81 + baseUplift},
+            {name: "Pork (Retail Equiv.)", val: 4.04 + baseUplift}
         ];
     } else if (baseline === UNIVERSAL_BASELINES['chicken-product']) {
         list = [
-            {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Chicken (Cradle-to-Retail)", val: upliftedBaseline},
-            {name: "Pork", val: 4.04},
-            {name: "Beef", val: 16.52}
+            {name: "Your Product (Cradle-to-Retail)", val: myCo2, highlight: true},
+            {name: "Chicken (Retail Equiv.)", val: upliftedBaseline},
+            {name: "Pork (Retail Equiv.)", val: 4.04 + baseUplift},
+            {name: "Beef (Retail Equiv.)", val: 16.5 + (baseUplift * 3)}
         ];
     } else {
         list = [
             {name: "Your Product", val: myCo2, highlight: true},
-            {name: "Industry Average", val: 5.0}
+            {name: `${baseline.name} (Retail Equiv.)`, val: upliftedBaseline}
         ];
     }
 
@@ -4841,16 +4844,15 @@ function renderUniversalComparisons(myCo2, baseline, uplift) {
         const pct = (item.val / max) * 100;
         grid.innerHTML += `
             <div class="universal-comparison-item ${item.highlight ? 'highlight' : ''}">
-                <div style="width:150px; font-weight:600; font-size:0.9rem;">${item.name}</div>
+                <div style="width:150px; font-weight:600; font-size:0.8rem; line-height:1.2;">${item.name}</div>
                 <div class="bar-container"><div class="bar-fill" style="width:${pct}%"></div></div>
-                <div style="width:80px; text-align:right; font-weight:700;">${item.val.toFixed(2)} kg CO₂e</div>
+                <div style="width:80px; text-align:right; font-weight:700; font-size:0.9rem;">${item.val.toFixed(2)}</div>
             </div>
         `;
     });
-
     const baselineName = document.getElementById('baselineName');
     if (baselineName) {
-        baselineName.innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name} (Cradle-to-Retail)</strong>`;
+        baselineName.innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name} (Cradle-to-Retail Equivalent)</strong>`;
     }
     }
 
