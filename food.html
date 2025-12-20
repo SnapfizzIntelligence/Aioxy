@@ -4130,17 +4130,14 @@ function calculateUpstreamLCI(ingredients, countryCode) {
                 }
             },
             
-            compliance_statement: `This assessment follows the principles of ISO 14040:2006 and ISO 14044:2006 
-            with the following simplifications for demonstration purposes:
-            
-            1. System boundary excludes capital goods and some upstream processes
-            2. Data quality varies by component (DQR 1.0-2.0)
-            3. Simplified uncertainty propagation (full Monte Carlo available)
-            4. Peer-reviewed critical review pending commercial deployment
-            
-            Full ISO-compliant assessment available upon commercial engagement.`
-        };
-    }
+                    compliance_statement: `This assessment aligns with the principles of ISO 14040:2006 and ISO 14044:2006 for comparative life cycle assessment.
+
+1. System boundary: Cradle-to-Retail (includes ingredients, processing, packaging, distribution).
+2. Data sources: AGRIBALYSE 3.2 (secondary data), GLEC v4.0 (logistics).
+3. Cut-off criteria: 5% mass/energy rule applied via Foreground/Background analysis.
+
+Note: This screening-level assessment is designed for internal strategic decision-making and B2B communication. Public comparative assertions (e.g., marketing claims) require a third-party critical review panel per ISO 14044 §6.1.`
+                        
     // ================== NEW: SCENARIO VALIDATION WRAPPER ==================
 function validateAndApplyScenarios(baseResults, scenarios) {
     console.log("🛡️ [Scenario Validation] Starting with:", {
