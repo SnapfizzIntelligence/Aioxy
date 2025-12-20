@@ -5493,7 +5493,7 @@ function updateHardFinancialLedger(financialResults, volume) {
     tbody.innerHTML = `
     <tr>
         <td>
-            <strong>🛡️ Strategic Carbon Liability</strong><br>
+            "<strong>🛡️ Scope 3 Liability Buffer</strong><br>"
             <small>Scope 3 Risk / Shadow Price (€85/t)</small>
         </td>
         <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
@@ -5854,27 +5854,51 @@ function updateHardFinancialLedgerWithCredits(financialResults, volume) {
     if (!tbody) return;
     
     const { moneyCarbon, moneyFuel, moneyEnergy, total, metrics } = financialResults;
-    
+
+    // DISCLAIMER INJECTION (Only adds if not present)
+    const ledgerContainer = tbody.closest('.business-case') || tbody.parentNode.parentNode.parentNode;
+    if (ledgerContainer && !document.getElementById('financeDisclaimer')) {
+        const disclaimer = document.createElement('div');
+        disclaimer.id = 'financeDisclaimer';
+        disclaimer.style = "background: #FFF3E0; border-left: 4px solid #FF9800; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-size: 0.85rem;";
+        disclaimer.innerHTML = `<strong>⚠️ Carbon Pricing Note:</strong> Values shown are internal shadow pricing estimates (€85/t CO₂e proxy) representing potential future Scope 3 buyer liability or risk exposure. They do not represent guaranteed regulatory cash savings.`;
+        // Insert after table
+        tbody.parentNode.parentNode.insertBefore(disclaimer, tbody.parentNode.nextSibling);
+    }
+
     tbody.innerHTML = `
     <tr>
-        <td><strong>🛡️ Future Liability Buffer</strong><br><small>Avoiding EU ETS fines (€85/t CO₂e)</small></td>
+        <td>
+            <strong>🛡️ Scope 3 Liability Buffer</strong><br>
+            <small>Internal Shadow Price (€85/t CO₂e)</small>
+        </td>
         <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
         <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
     </tr>
     <tr>
-        <td><strong>🌱 Voluntary Carbon Market</strong><br><small>Current VCM rates (€15/t CO₂e)</small></td>
+        <td>
+            <strong>🌱 Voluntary Carbon Value</strong><br>
+            <small>Potential VCM Benefit (€15/t CO₂e)</small>
+        </td>
         <td>+${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
         <td class="money-positive">+€${(metrics.totalTonsCo2Saved * 15).toFixed(2)}</td>
     </tr>
-            <td><strong>⚡ Energy OPEX</strong><br><small>Fossil fuel reduction (PEF Data)</small></td>
-            <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
-            <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
-        </tr>
-        <tr>
-            <td><strong>🚚 Logistics Fuel</strong><br><small>Transport optimization</small></td>
-            <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
-            <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
-        </tr>
+    <tr>
+        <td>
+            <strong>⚡ Energy OPEX</strong><br>
+            <small>Fossil fuel reduction (Physics Data)</small>
+        </td>
+        <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
+        <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
+    </tr>
+    <tr>
+        <td>
+            <strong>🚚 Logistics Fuel</strong><br>
+            <small>Transport optimization</small>
+        </td>
+        <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
+        <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
+    </tr>
     `;
 
     const totalBenefit = document.getElementById('totalBenefit');
