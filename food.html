@@ -3180,52 +3180,65 @@ window.debugAIOXY = debugCurrentState;
         "Resource Use, minerals/metals": { unit: "kg Sb e", icon: "gem" },
         "Resource Use, fossils": { unit: "MJ", icon: "oil-can" }
     };
-    // ================== UNIVERSAL BASELINES — RETAIL EQUIVALENT (CRADLE-TO-RETAIL) ==================
+// ================== UNIVERSAL BASELINES — RETAIL EQUIVALENT (CRADLE-TO-RETAIL) ==================
 const UNIVERSAL_BASELINES = {
     'beef-product': {
-        name: 'Conventional Beef (Retail Ready)',
-        co2PerKg: 16.5,  // Agribalyse beef + conservative processing/packaging/distribution uplift
+        name: 'Conventional Beef',
+        co2PerKg: 16.5,
         waterPerKg: 1.16,
         landUsePerKg: 966,
         fossilPerKg: 28.0
     },
     'milk-product': {
-        name: 'Cow Milk (Retail Ready)',
-        co2PerKg: 1.40,  // Farm-gate 1.1 + 0.3 downstream (conservative)
+        name: 'Conventional Cow Milk',
+        co2PerKg: 1.40,
         waterPerKg: 0.12,
         landUsePerKg: 59,
         fossilPerKg: 3.5
     },
     'chicken-product': {
-        name: 'Conventional Chicken (Retail Ready)',
+        name: 'Conventional Chicken',
         co2PerKg: 2.8,
         waterPerKg: 0.72,
         landUsePerKg: 162,
         fossilPerKg: 15.0
     },
     'pork-product': {
-        name: 'Conventional Pork (Retail Ready)',
+        name: 'Conventional Pork',
         co2PerKg: 3.5,
         waterPerKg: 0.95,
         landUsePerKg: 162,
         fossilPerKg: 20.0
     },
     'cheese-product': {
-        name: 'Conventional Cheese (Retail Ready)',
-        co2PerKg: 9.0,  // Conservative average
+        name: 'Conventional Cheese',
+        co2PerKg: 9.0,
         waterPerKg: 3.0,
         landUsePerKg: 40,
         fossilPerKg: 12.0
     },
+    'coffee-product': {
+        name: 'Conventional Coffee',
+        co2PerKg: 28.5,
+        waterPerKg: 1.5,
+        landUsePerKg: 20,
+        fossilPerKg: 15.0
+    },
+    'chocolate-product': {
+        name: 'Conventional Chocolate',
+        co2PerKg: 19.0,
+        waterPerKg: 2.0,
+        landUsePerKg: 30,
+        fossilPerKg: 18.0
+    },
     'default': {
-        name: 'Global Food Average (Retail Ready)',
+        name: 'Global Food Average',
         co2PerKg: 4.5,
         waterPerKg: 0.5,
         landUsePerKg: 10,
         fossilPerKg: 10.0
     }
 };
-
     
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
 const FOOD_PHYSICS_DB = {
