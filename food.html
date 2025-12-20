@@ -4704,44 +4704,46 @@ if (Object.values(activeScenarios).some(v => v)) {
 const pefSingleScore = calculatePEFSingleScore(finalPefResultsToUse, functionalUnitWeight);
 auditTrail.pef_single_score = pefSingleScore;
 
-// 12. BASELINE COMPARISON (FIXED - CONSISTENT FUNCTIONAL UNIT)
-const uplift = calculateBaselineUplift(comparisonKey);
-const baselineCO2PerKg = comparisonBaseline.co2PerKg + (uplift?.co2 || 0);
-const baselineWaterPerKg = comparisonBaseline.waterPerKg + (uplift?.water || 0);
+// 12. SINGLE SOURCE OF TRUTH ENFORCEMENT
+const unified = getUnifiedMetrics(finalPefResultsToUse, massBalanceData);
 
-const currentCO2Total = finalPefResultsToUse["Climate Change"].total || 0;
-const currentWaterTotal = finalPefResultsToUse["Water Use/Scarcity (AWARE)"].total || 0;
-const currentLandTotal = finalPefResultsToUse["Land Use"].total || 0;
-const currentFossilTotal = finalPefResultsToUse["Resource Use, fossils"].total || 0;
+// Save Global State with UNIFIED numbers
+finalPefResults = finalPefResultsToUse;
+massBalanceData = auditTrail.mass_balance; // Ensure we store the physics-calculated mass balance
+auditTrailData = auditTrail;
+currentDPPId = auditTrail.dppId;
 
-// FIXED: Use functionalUnitWeight for ALL per-kg calculations
-const myCO2PerKg = functionalUnitWeight > 0 ? currentCO2Total / functionalUnitWeight : 0;
-const myWaterPerKg = functionalUnitWeight > 0 ? currentWaterTotal / functionalUnitWeight : 0;
-const myLandPerKg = functionalUnitWeight > 0 ? currentLandTotal / functionalUnitWeight : 0;
-const myFossilPerKg = functionalUnitWeight > 0 ? currentFossilTotal / functionalUnitWeight : 0;
+// Calculate Savings based on UNIFIED CO2
+// Ensure we handle potential missing baselines gracefully
+const blCO2 = comparisonBaseline.co2PerKg || 14.47;
+const blWater = comparisonBaseline.waterPerKg || 1.15;
 
-const co2SavedTotal = Math.max((baselineCO2PerKg * functionalUnitWeight) - currentCO2Total, 0);
-const waterSavedTotal = Math.max((baselineWaterPerKg * functionalUnitWeight) - currentWaterTotal, 0);
-    // Save Global State
-    finalPefResults = finalPefResultsToUse;
-    massBalanceData = auditTrail.mass_balance;
-    auditTrailData = auditTrail;
-    currentDPPId = auditTrail.dppId;
+const upliftCO2 = uplift?.co2 || 0;
+const upliftWater = uplift?.water || 0;
 
-    console.log(`✅ [AIOXY FIXED] ${productName}: ${myCO2PerKg.toFixed(2)} kg CO2e/kg`);
+const baselineCO2PerKg = blCO2 + upliftCO2;
+const baselineWaterPerKg = blWater + upliftWater;
 
-    return {
+const co2SavedPerKg = Math.max(0, baselineCO2PerKg - unified.co2PerKg);
+const waterSavedPerKg = Math.max(0, baselineWaterPerKg - unified.waterPerKg);
+
+console.log(`✅ [AIOXY UNIFIED] ${productName}: ${unified.co2PerKg.toFixed(4)} kg CO2e/kg (Weight: ${unified.weightUsed.toFixed(3)}kg)`);
+
+return {
     finalPefResults: finalPefResultsToUse,
     auditTrail: auditTrail,
     massBalance: massBalanceData,
+    
+    // CRITICAL: The Single Source of Truth Values
+    finalContentWeight: unified.weightUsed,
+    co2PerKg: unified.co2PerKg,
+    waterScarcityPerKg: unified.waterPerKg,
+    landUsePerKg: unified.landPerKg,
+    fossilPerKg: unified.fossilPerKg,
+    
     overallDQR: foregroundBackground.overall_dqr,
     overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
-    finalContentWeight: functionalUnitWeight,  // ← FIXED: Use functionalUnitWeight
-    totalProductWeight: functionalUnitWeight + packagingWeight,  // ← FIXED
-    co2PerKg: myCO2PerKg,
-    waterScarcityPerKg: myWaterPerKg,
-    landUsePerKg: myLandPerKg,  // ← FIXED: Use pre-calculated value
-    fossilPerKg: myFossilPerKg,  // ← FIXED: Use pre-calculated value
+    
     comparison: {
         baseline: {
             ...comparisonBaseline,
@@ -4750,10 +4752,11 @@ const waterSavedTotal = Math.max((baselineWaterPerKg * functionalUnitWeight) - c
             waterPerKg: baselineWaterPerKg
         },
         uplift_applied: uplift,
-        co2Saved: co2SavedTotal,
-        waterSaved: waterSavedTotal,
-        co2SavedPerKg: functionalUnitWeight > 0 ? co2SavedTotal / functionalUnitWeight : 0,  // ← FIXED
-        waterSavedPerKg: functionalUnitWeight > 0 ? waterSavedTotal / functionalUnitWeight : 0  // ← FIXED
+        co2SavedPerKg: co2SavedPerKg,
+        waterSavedPerKg: waterSavedPerKg,
+        // Calculate totals for the specific batch size
+        co2Saved: co2SavedPerKg * unified.weightUsed,
+        waterSaved: waterSavedPerKg * unified.weightUsed
     },
     pefSingleScore: pefSingleScore
 };
