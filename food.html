@@ -5852,21 +5852,24 @@ const treeYears = (co2SavedPerKg * treeYearPerKgCO2).toFixed(2);
 const householdDays = Math.round(co2SavedPerKg * householdDaysPerKgCO2);
 const waterBottles = Math.round(waterSavedPerKg * waterBottlesPerM3);
 
-document.getElementById('carKm').textContent = carKm > 0 ? `${carKm} km car drive avoided` : '—';
+// FIXED: Indicative Equivalencies (clearly labeled)
+document.getElementById('carKm').innerHTML = carKm > 0 ? 
+    `${carKm} km <span style="font-size:0.7em; color:#999">(avg. EU diesel car)</span>` : '—';
 
-// Tree-years instead of inflated tree counts
 if (treeYears > 0) {
-    if (treeYears < 1) {
-        document.getElementById('treesPlanted').textContent = `${Math.round(treeYears * 365)} tree-days of absorption`;
-    } else {
-        document.getElementById('treesPlanted').textContent = `${treeYears} tree-years of absorption`;
-    }
+    // Convert to tree-years to be scientifically accurate
+    const displayTree = treeYears < 1 ? Math.round(treeYears * 365) + " tree-days" : treeYears + " tree-years";
+    document.getElementById('treesPlanted').innerHTML = 
+        `${displayTree} <span style="font-size:0.7em; color:#999">(sequestration eq.)</span>`;
 } else {
     document.getElementById('treesPlanted').textContent = '—';
 }
 
-document.getElementById('householdEnergy').textContent = householdDays > 0 ? `${householdDays} days household electricity` : '—';
-document.getElementById('waterBottles').textContent = waterBottles > 0 ? `${waterBottles} PET bottles of water saved` : '—';
+document.getElementById('householdEnergy').innerHTML = householdDays > 0 ? 
+    `${householdDays} days <span style="font-size:0.7em; color:#999">(avg. EU elec.)</span>` : '—';
+
+document.getElementById('waterBottles').textContent = waterBottles > 0 ? 
+    `${waterBottles} bottles (indicative)` : '—';
     createEmissionChart(results);
     
     // =========== INTEGRATION POINT: CALL ALL FIXES ===========
