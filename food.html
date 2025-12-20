@@ -4719,8 +4719,10 @@ currentDPPId = auditTrail.dppId;
 const blCO2 = comparisonBaseline.co2PerKg || 14.47;
 const blWater = comparisonBaseline.waterPerKg || 1.15;
 
-const upliftCO2 = uplift?.co2 || 0;
-const upliftWater = uplift?.water || 0;
+// SAFETY CHECK: uplift might be undefined if scope issue
+const safeUplift = uplift || { co2: 0, water: 0, notes: "No uplift calculated" };
+const upliftCO2 = safeUplift.co2 || 0;
+const upliftWater = safeUplift.water || 0;
 
 const baselineCO2PerKg = blCO2 + upliftCO2;
 const baselineWaterPerKg = blWater + upliftWater;
@@ -4752,7 +4754,7 @@ return {
             co2PerKg: baselineCO2PerKg,
             waterPerKg: baselineWaterPerKg
         },
-        uplift_applied: uplift,
+        uplift_applied: safeUplift,  // FIXED: Use safeUplift instead of uplift
         co2SavedPerKg: co2SavedPerKg,
         waterSavedPerKg: waterSavedPerKg,
         // Calculate totals for the specific batch size
