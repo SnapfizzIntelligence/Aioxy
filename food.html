@@ -4458,6 +4458,7 @@ calculateFoodImpact() {
     const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
     const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
     currentComparisonBaseline = comparisonBaseline;
+    const uplift = calculateBaselineUplift(comparisonKey);
 
     const auditTrail = {
         productName,
