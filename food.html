@@ -5659,34 +5659,46 @@ function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent)
     businessStory.innerHTML = `
     <div class="story-highlight">
         <i class="fas fa-${getBusinessIcon(scale)}" style="color: var(--secondary);"></i>
-        <strong>${scale} Opportunity - ${performanceLevel} Environmental Performance</strong><br>
-        ${safeReduction.toFixed(1)}% carbon reduction vs. ${currentComparisonBaseline?.name || 'industry baseline'} drives <strong>€${formatLargeNumber(safeTotal)}</strong> annual value protection at ${getVolumeTier(volume)} scale.
-    </div>
+        <strong>${scale} Strategic Assessment - Modeled Performance Analysis</strong><br>
+        PEF 3.1 modeling indicates ~${safeReduction.toFixed(1)}% lower carbon footprint vs ${currentComparisonBaseline?.name || 'industry'} baseline.
+        
+        <div style="margin-top: 0.75rem; font-size: 0.9rem; background: rgba(10, 37, 64, 0.05); padding: 0.75rem; border-radius: 6px;">
+            <strong>Modeled Annual Financial Implications:</strong><br>
+            • Scope 3 Liability Buffer: €${financialResults.moneyCarbon.toFixed(0)} (@€85/t shadow price)<br>
+            • Operational Efficiency Potential: €${(financialResults.moneyEnergy + financialResults.moneyFuel).toFixed(0)}<br>
+            • Total Modeled Value: €${formatLargeNumber(safeTotal)} at ${getVolumeTier(volume)} scale
+        </div>
+    </div> 
     
     <p style="margin: 1rem 0; line-height: 1.6;">
-    <strong>💰 Value Driver Breakdown:</strong><br>
-    • <strong>Future Liability Buffer:</strong> €${financialResults.moneyCarbon.toFixed(2)} (exposure avoidance proxy @ €85/t CO₂e)<br>
-    • <strong>Voluntary Market Alignment:</strong> €${(financialResults.metrics.totalTonsCo2Saved * 15).toFixed(2)} (potential VCM value)<br>
-    • <strong>⚡ Energy OPEX Reduction:</strong> €${financialResults.moneyEnergy.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ efficiency<br>
-    • <strong>🚚 Logistics Optimization:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel reduction<br>
+    <strong>📊 Modeled Value Driver Analysis:</strong><br>
+    • <strong>Scope 3 Exposure Management:</strong> €${financialResults.moneyCarbon.toFixed(2)} (shadow pricing analysis @ €85/t CO₂e)<br>
+    • <strong>Voluntary Market Alignment Potential:</strong> €${(financialResults.metrics.totalTonsCo2Saved * 15).toFixed(2)} (VCM benchmark analysis)<br>
+    • <strong>Energy Efficiency Modeling:</strong> €${financialResults.moneyEnergy.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ reduction potential<br>
+    • <strong>Logistics Optimization Modeling:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel reduction potential<br>
     <br>
-    <strong>🎯 ROI Projection:</strong> ${roi.toFixed(0)}% over 3 years—investment secured by operational efficiency and compliance risk reduction.
+    <strong>📈 Investment Analysis:</strong> Modeled ROI of ${roi.toFixed(0)}% over 3 years—based on operational efficiency and compliance risk reduction modeling.
     </p>
     
     <div class="story-highlight" style="background: rgba(0, 212, 170, 0.1); border-left-color: var(--secondary);">
         <i class="fas fa-chart-line" style="color: var(--secondary);"></i>
-        <strong>Market Positioning:</strong><br>
-        ${safeReduction.toFixed(1)}% lower footprint supports premium positioning and preferred supplier status with retailers measuring Scope 3 emissions.
+        <strong>Market Positioning Analysis:</strong><br>
+        Modeled ~${safeReduction.toFixed(1)}% lower footprint supports strategic positioning with retailers implementing Scope 3 emissions reporting.
     </div>
     
     <div class="story-highlight" style="background: rgba(10, 37, 64, 0.1); border-left-color: var(--primary);">
-        <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
-        <strong>Brand Value Enhancement:</strong><br>
-        Science-based sustainability data builds consumer trust and loyalty. Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
+        <i class="fas fa-balance-scale" style="color: var(--primary);"></i>
+        <strong>Compliance & Transparency Assessment:</strong><br>
+        PEF 3.1 methodology provides structured data for stakeholder reporting. Transparent environmental assessment supports informed decision-making and risk management.
+    </div>
+    
+    <div style="margin-top: 1rem; padding: 0.75rem; background: #FFF3E0; border-left: 4px solid #FF9800; border-radius: 4px; font-size: 0.8rem;">
+        <i class="fas fa-exclamation-triangle" style="color: #FF9800;"></i>
+        <strong>Methodology Note:</strong> Analysis based on PEF 3.1 methodology with AGRIBALYSE 3.2 secondary data. For certified claims or product labeling, conduct ISO 14044 critical review with primary data.
     </div>
 `;
 
-    console.log('✅ [Fix] Business Story populated: €' + safeTotal.toFixed(0) + ' benefit, ' + safeReduction + '% reduction');
+console.log('✅ Business Story updated: €' + safeTotal.toFixed(0) + ' modeled value, ~' + safeReduction + '% footprint reduction potential');
 }
     
 // =========== FIX: DISCOUNTED ROI WITH VOLUME SCALING ===========
