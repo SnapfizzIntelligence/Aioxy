@@ -6010,20 +6010,19 @@ const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retai
 storyContent.innerHTML = `
     <div class="story-highlight">
         <i class="fas fa-seedling"></i>
-        <strong>Hey ${customerName}, your product design saves ${co2SavedPerKg.toFixed(2)} kg CO₂e per kg.</strong><br>
-        That's ${savingsPercent.toFixed(0)}% better than ${baselineName}.
+        <strong>Hey ${customerName}, standard industry comparisons indicate this product's carbon footprint is ~${savingsPercent.toFixed(0)}% lower than conventional ${baselineName}.</strong><br>
+        Based on PEF 3.1 methodology, this suggests a potential reduction of ~${co2SavedPerKg.toFixed(2)} kg CO₂e per kg vs. conventional ${baselineName} baseline.
     </div>
     
     <div style="margin-top: 1rem; padding: 1rem; background: rgba(10, 37, 64, 0.05); border-radius: 8px; border-left: 3px solid var(--primary);">
         <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 0.25rem;">
-            <i class="fas fa-balance-scale"></i> COMPARISON METHODOLOGY
+            <i class="fas fa-balance-scale"></i> METHODOLOGY DISCLAIMER
         </div>
         <div style="font-size: 0.7rem; color: var(--gray); line-height: 1.4;">
-            <strong>Comparative assertion based on:</strong> PEF 3.1 methodology using AGRIBALYSE 3.2 secondary data.<br>
+            <strong>Comparative assessment based on:</strong> PEF 3.1 methodology using AGRIBALYSE 3.2 secondary data.<br>
             <strong>System boundary:</strong> Cradle-to-Retail (includes farming, processing, packaging, distribution).<br>
-            <strong>Functional unit:</strong> 1 kg consumable product at retail point.<br>
-            <strong>Use case:</strong> Suitable for B2B communication and strategic planning under EU Green Claims Directive.<br>
-            <strong>Disclaimer:</strong> Does not constitute an Environmental Product Declaration (EPD). For verified claims, conduct ISO 14044 critical review.
+            <strong>Use case:</strong> For strategic planning and B2B communication. Not for product labeling without primary data verification.<br>
+            <strong>Uncertainty:</strong> ±${auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15'}% (based on ${auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'} DQR)
         </div>
     </div>
 `;
