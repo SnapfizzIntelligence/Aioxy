@@ -6409,63 +6409,78 @@ function calculateCO2ReductionPercent() {
     }
 
     // ================== PEF SCORECARD ==================
-    function displayFullPefScorecard() {
-        const tbody = document.getElementById('pefScorecardBody');
-        const ingredientDataQuality = document.getElementById('ingredientDataQuality');
+function displayFullPefScorecard() {
+    const tbody = document.getElementById('pefScorecardBody');
+    const ingredientDataQuality = document.getElementById('ingredientDataQuality');
+    
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+
+    // === REGULATOR-PROOF DISCLAIMER ROW ===
+    const disclaimerRow = document.createElement('tr');
+    disclaimerRow.innerHTML = `
+        <td colspan="6" style="background: #FFF3E0; color: #E65100; padding: 1rem; font-size: 0.85rem; border-left: 4px solid #FF9800; border-bottom: 2px solid #FF9800;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>SCREENING-LEVEL ASSESSMENT</strong><br>
+            Results based on AGRIBALYSE 3.2 secondary data using PEF 3.1 methodology. 
+            For Environmental Product Declarations (EPD) or product labeling claims, 
+            conduct ISO 14044 critical review with primary data.<br>
+            <small>Overall uncertainty: ±${auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15'}% 
+            (DQR: ${auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})</small>
+        </td>
+    `;
+    tbody.appendChild(disclaimerRow);
+    
+    const totalWeight = massBalanceData.final_content_weight_kg || 0.2;
+    
+    for (const category in finalPefResults) {
+        const row = document.createElement('tr');
+        const unit = pefCategories[category].unit;
+        const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
         
-        if (!tbody) return;
+        let displayValue = formatPEFValue(finalPefResults[category].total);
+        let perKgDisplay = formatPEFValue(perKgValue);
         
-        tbody.innerHTML = '';
+        const categoryUncertainty = auditTrailData.uncertainty_analysis?.overall_uncertainty || 15;
+        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(auditTrailData.dqr_summary?.overall_dqr || 1.5);
         
-        const totalWeight = massBalanceData.final_content_weight_kg || 0.2;
-        
-        for (const category in finalPefResults) {
-            const row = document.createElement('tr');
-            const unit = pefCategories[category].unit;
-            const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
-            
-            let displayValue = formatPEFValue(finalPefResults[category].total);
-            let perKgDisplay = formatPEFValue(perKgValue);
-            
-            const categoryUncertainty = auditTrailData.uncertainty_analysis?.overall_uncertainty || 15;
-            const dqrQuality = foodCalculationEngine.getDQRQualityLevel(auditTrailData.dqr_summary?.overall_dqr || 1.5);
-            
-            row.innerHTML = `
-                <td class="pef-category">${category}</td>
-                <td class="pef-value">${displayValue}</td>
-                <td class="pef-unit">${unit}</td>
-                <td class="pef-value">${perKgDisplay}</td>
-                <td>
-                    <span class="dqr-badge ${dqrQuality.class}">
-                        <i class="fas fa-star"></i>
-                        ${dqrQuality.level}
-                    </span>
-                </td>
-                <td class="pef-value">±${categoryUncertainty}%</td>
-            `;
-            tbody.appendChild(row);
-        }
-        
-        if (ingredientDataQuality && auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs) {
-            let qualityHTML = '';
-            auditTrailData.dqr_summary.component_dqrs.forEach(score => {
-                const dqrQuality = foodCalculationEngine.getDQRQualityLevel(score.dqr);
-                qualityHTML += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border);">
-                        <div>
-                            <strong>${score.name}</strong>
-                            <div style="font-size: 0.8rem; color: var(--gray);">${score.source}</div>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <span class="dqr-badge ${dqrQuality.class}">DQR: ${score.dqr.toFixed(1)}</span>
-                            <span class="badge">±${score.uncertainty}% uncertainty</span>
-                        </div>
-                    </div>
-                `;
-            });
-            ingredientDataQuality.innerHTML = qualityHTML;
-        }
+        row.innerHTML = `
+            <td class="pef-category">${category}</td>
+            <td class="pef-value">${displayValue}</td>
+            <td class="pef-unit">${unit}</td>
+            <td class="pef-value">${perKgDisplay}</td>
+            <td>
+                <span class="dqr-badge ${dqrQuality.class}">
+                    <i class="fas fa-star"></i>
+                    ${dqrQuality.level}
+                </span>
+            </td>
+            <td class="pef-value">±${categoryUncertainty}%</td>
+        `;
+        tbody.appendChild(row);
     }
+    
+    if (ingredientDataQuality && auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs) {
+        let qualityHTML = '';
+        auditTrailData.dqr_summary.component_dqrs.forEach(score => {
+            const dqrQuality = foodCalculationEngine.getDQRQualityLevel(score.dqr);
+            qualityHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                    <div>
+                        <strong>${score.name}</strong>
+                        <div style="font-size: 0.8rem; color: var(--gray);">${score.source}</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span class="dqr-badge ${dqrQuality.class}">DQR: ${score.dqr.toFixed(1)}</span>
+                        <span class="badge">±${score.uncertainty}% uncertainty</span>
+                    </div>
+                </div>
+            `;
+        });
+        ingredientDataQuality.innerHTML = qualityHTML;
+    }
+        }
 
     // ================== TRANSPARENCY LOG ==================
     function displayAuditTrail() {
