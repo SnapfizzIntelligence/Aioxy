@@ -4810,32 +4810,34 @@ function renderUniversalComparisons(myCo2, baseline, uplift) {
     const baseUplift = uplift?.co2 || 0.5;
 
     let list = [];
-    if(baseline.name.includes('Milk') || baseline === UNIVERSAL_BASELINES['milk-product']) {
-        list = [
-            {name: "Your Product (Cradle-to-Retail)", val: myCo2, highlight: true},
-            {name: "Cow Milk (Retail Equiv.)", val: upliftedBaseline},
-            {name: "Almond Milk (Retail Equiv.)", val: 0.7 + baseUplift},
-            {name: "Soy Milk (Retail Equiv.)", val: 0.46 + baseUplift}
-        ];
-    } else if (baseline === UNIVERSAL_BASELINES['beef-product']) {
-        list = [
-            {name: "Your Product (Cradle-to-Retail)", val: myCo2, highlight: true},
-            {name: "Beef (Retail Equiv.)", val: upliftedBaseline},
-            {name: "Chicken (Retail Equiv.)", val: 2.81 + baseUplift},
-            {name: "Pork (Retail Equiv.)", val: 4.04 + baseUplift}
-        ];
-    } else if (baseline === UNIVERSAL_BASELINES['chicken-product']) {
-        list = [
-            {name: "Your Product (Cradle-to-Retail)", val: myCo2, highlight: true},
-            {name: "Chicken (Retail Equiv.)", val: upliftedBaseline},
-            {name: "Pork (Retail Equiv.)", val: 4.04 + baseUplift},
-            {name: "Beef (Retail Equiv.)", val: 16.5 + (baseUplift * 3)}
-        ];
-    } else {
-        list = [
-            {name: "Your Product", val: myCo2, highlight: true},
-            {name: `${baseline.name} (Retail Equiv.)`, val: upliftedBaseline}
-        ];
+    // REPLACE THE ENTIRE if-else BLOCK WITH THIS:
+
+if(baseline.name.includes('Milk') || baseline === UNIVERSAL_BASELINES['milk-product']) {
+    list = [
+        {name: `This Product (Modeled: PEF 3.1)`, val: myCo2, highlight: true},
+        {name: `Conventional Cow Milk (Industry Average)`, val: upliftedBaseline},
+        {name: `Almond Milk (Industry Benchmark)`, val: 0.7 + baseUplift},
+        {name: `Soy Milk (Industry Benchmark)`, val: 0.46 + baseUplift}
+    ];
+} else if (baseline === UNIVERSAL_BASELINES['beef-product']) {
+    list = [
+        {name: `This Product (Modeled: PEF 3.1)`, val: myCo2, highlight: true},
+        {name: `Conventional Beef (Industry Average)`, val: upliftedBaseline},
+        {name: `Chicken (Industry Benchmark)`, val: 2.81 + baseUplift},
+        {name: `Pork (Industry Benchmark)`, val: 4.04 + baseUplift}
+    ];
+} else if (baseline === UNIVERSAL_BASELINES['chicken-product']) {
+    list = [
+        {name: `This Product (Modeled: PEF 3.1)`, val: myCo2, highlight: true},
+        {name: `Conventional Chicken (Industry Average)`, val: upliftedBaseline},
+        {name: `Pork (Industry Benchmark)`, val: 4.04 + baseUplift},
+        {name: `Beef (Industry Benchmark)`, val: 16.5 + (baseUplift * 3)}
+    ];
+} else {
+    list = [
+        {name: `This Product (PEF 3.1 Assessment)`, val: myCo2, highlight: true},
+        {name: `${baseline.name} (Industry Average)`, val: upliftedBaseline}
+    ];
     }
 
     const max = Math.max(...list.map(i=>i.val));
