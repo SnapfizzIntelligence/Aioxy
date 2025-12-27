@@ -5939,9 +5939,9 @@ function updateResultsUI(results) {
     
     const baselineName = currentComparisonBaseline ? currentComparisonBaseline.name.replace(' (Cradle-to-Retail)', '') : 'benchmark';
 
-    document.getElementById('co2Savings').textContent = Math.max(co2SavingsPercent, 0) + '% saved vs ' + baselineName;
-    document.getElementById('waterSavings').textContent = Math.max(waterSavingsPercent, 0) + '% saved vs ' + baselineName;
-
+document.getElementById('co2Savings').textContent = `~${Math.max(co2SavingsPercent, 0)}% lower footprint vs ${baselineName}`;
+document.getElementById('waterSavings').textContent = `~${Math.max(waterSavingsPercent, 0)}% lower water impact vs ${baselineName}`;
+ 
     // Equivalencies
     const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
     const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
