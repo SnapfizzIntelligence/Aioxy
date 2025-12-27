@@ -2015,7 +2015,7 @@
             <th>Data Quality</th>
             <th>Uncertainty</th>
         </tr>
-        <!-- REGULATOR-PROOF METHODOLOGY HEADER -->
+        <!-- REGULATION-ALIGNED METHODOLOGY HEADER -->
         <tr style="background: #E3F2FD;">
             <td colspan="6" style="padding: 0.5rem; font-size: 0.75rem; color: #1976D2; text-align: center;">
                 <i class="fas fa-info-circle"></i>
@@ -6507,7 +6507,7 @@ function displayFullPefScorecard() {
     
     tbody.innerHTML = '';
 
-    // === REGULATOR-PROOF DISCLAIMER ROW ===
+    // === REGULATION-ALIGNED DISCLAIMER ROW ===
     const disclaimerRow = document.createElement('tr');
     disclaimerRow.innerHTML = `
         <td colspan="6" style="background: #FFF3E0; color: #E65100; padding: 1rem; font-size: 0.85rem; border-left: 4px solid #FF9800; border-bottom: 2px solid #FF9800;">
@@ -6737,93 +6737,81 @@ function displayFullPefScorecard() {
             `;
         }
     }
-    // ================== REGULATOR DISCLAIMER (EU GREEN CLAIMS DIRECTIVE) ==================
+// ================== REGULATOR DISCLAIMER ==================
 function generateRegulatorDisclaimer() {
     const productName = document.getElementById('productName').value || 'Product';
+    const countryCode = document.getElementById('manufacturingCountry').value || 'FR';
+    const countryName = aioxyData.countries[countryCode]?.name || countryCode;
     const dqr = auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5';
     const uncertainty = auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15';
-    
+
     const disclaimer = `
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                     AIOXY SCIENCE-BASED DISCLAIMER                          ║
-║                  REGULATOR-PROOF METHODOLOGY v2.1                           ║
+║                  REGULATION-ALIGNED METHODOLOGY v2.1                        ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 PRODUCT: ${productName}
+MANUFACTURING REGION: ${countryName}
 ASSESSMENT ID: ${currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
 TIMESTAMP: ${new Date().toISOString()}
 
 ────────────────────────────────────────────────────────────────────────────────
-                       ASSESSMENT METHODOLOGY
+                       HYBRID LCI DATA MODEL
 ────────────────────────────────────────────────────────────────────────────────
-• PEF 3.1 Compliant (European Commission JRC EF 3.1)
-• AGRIBALYSE 3.2 Secondary Data (French LCA Database)
-• GLEC v4.0 Transport Factors (Global Logistics Emissions Council)
-• Thermodynamic Physics Engine (First Law: Q = mcΔT + mL)
-• AWARE 2.0 Water Scarcity (Regionalized Characterization)
-• ISO 14044:2006 Principles (Foreground/Background, 5% cutoff)
+This assessment uses a "Hybrid Proxy" approach to maximize accuracy without 
+primary data:
+
+1. ⚡ ENERGY & UTILITIES (Specific): 
+   Calculated using ${countryName}-specific grid intensity factors (${aioxyData.countries[countryCode]?.electricityCO2 || 'N/A'}g CO₂e/kWh) 
+   and regional water scarcity (AWARE 2.0).
+
+2. 🚛 LOGISTICS (Specific):
+   Transport emissions calculated using GLEC v4.0 factors based on actual 
+   distances and modes selected.
+
+3. 🌾 INGREDIENTS (Proxy):
+   Agricultural production modeled using AGRIBALYSE 3.2 (France/EU average) 
+   as a technological proxy. Actual agricultural impacts in ${countryName} 
+   may vary based on local yield and fertilizer practices.
 
 ────────────────────────────────────────────────────────────────────────────────
                       COMPLIANCE STATEMENT
 ────────────────────────────────────────────────────────────────────────────────
-THIS IS A SCREENING-LEVEL LIFE CYCLE ASSESSMENT (LCA) BASED ON SECONDARY DATA.
-
+THIS IS A SCREENING-LEVEL LIFE CYCLE ASSESSMENT (LCA).
 FOR A CERTIFIED ENVIRONMENTAL PRODUCT DECLARATION (EPD):
-1. Replace AGRIBALYSE secondary data with primary supply chain data
-2. Conduct critical review per ISO 14044:2006
-3. Obtain third-party verification from approved Program Operator
-4. Register in recognized EPD program (e.g., EN 15804:2012+A2:2019)
+1. Replace proxy ingredient data with primary supply chain data.
+2. Conduct critical review per ISO 14044:2006.
+3. Obtain third-party verification.
 
 ────────────────────────────────────────────────────────────────────────────────
-                  REGULATOR-PROOF SAFEGUARDS APPLIED
+                  REGULATION-ALIGNED SAFEGUARDS APPLIED
 ────────────────────────────────────────────────────────────────────────────────
 ✓ NO UNVERIFIED BIOGENIC CARBON CLAIMS
-  • Default biogenic_net = 0.0 kg CO₂e/kg
-  • EU Green Claims Directive (2026/...) Article 3 compliance
-  • Credits only with verified removal certificates
-
-✓ GLEC v4.0 LOAD FACTOR COMPLIANCE
-  • Road transport: 85% load factor (empty running penalty)
-  • Sea freight: 70% container utilization
-  • Rail: 90% load efficiency
-  • Air: 95% cargo capacity
+  • Default biogenic_net = 0.0 kg CO₂e/kg (Conservative)
+  • Credits applied ONLY if explicit negative emissions data is verified.
 
 ✓ THERMODYNAMIC ENERGY CALCULATIONS
-  • Specific heat of water: 4.18 kJ/kg·°C
-  • Latent heat of vaporization: 2260 kJ/kg
-  • Manufacturing energy calculated from evaporation mass
-  • Country-specific electricity grid factors
+  • Manufacturing energy derived from mass-balance evaporation physics 
+    (Q = mcΔT + mL) rather than generic coefficients.
 
 ✓ MONTE CARLO UNCERTAINTY PROPAGATION
-  • 5000 iterations
-  • Lognormal distribution
-  • DQR-based parameter uncertainty
+  • 5000 iterations to determine confidence intervals (±${uncertainty}%).
 
 ────────────────────────────────────────────────────────────────────────────────
                       DATA QUALITY METADATA
 ────────────────────────────────────────────────────────────────────────────────
 Overall Data Quality Rating (DQR): ${dqr}/5.0
-Uncertainty Range: ±${uncertainty}%
 Foreground System: ${auditTrailData?.foreground_background?.foreground_count || '0'} processes
 Background System: ${auditTrailData?.foreground_background?.background_count || '0'} processes
-Temporal Horizon: 100 years (PEF default)
-Discount Rates: Category-specific (PEF 3.1)
 
 ────────────────────────────────────────────────────────────────────────────────
-                      LEGAL FOOTNOTE
-────────────────────────────────────────────────────────────────────────────────
-This assessment follows ISO 14040/14044 principles for screening LCA.
-For marketing claims in the European Union, verify compliance with national
-implementation of EU Green Claims Directive (2026/...).
-Carbon removal claims require verified certificates (EU Carbon Removal
-Certification Framework).
-
 Report generated by: AIOXY Sustainability Intelligence v2.1
-Methodology version: 2025.01 (Regulator-Proof Edition)
 `;
     
     return disclaimer;
-                                     }
+}
+
 
     // ================== EXPORT FUNCTIONALITY ==================
 function generatePDFReport(reportType) {
@@ -6893,7 +6881,7 @@ function generatePDFReport(reportType) {
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(10);
             doc.text('Generated by AIOXY Sustainability Intelligence v2.1', 105, 280, null, null, 'center');
-            doc.text('Regulator-Proof Methodology | EU Green Claims Directive Compliant', 105, 285, null, null, 'center');
+            doc.text('Regulation-Aligned Methodology | EU Green Claims Directive Compliant', 105, 285, null, null, 'center');
             
             // ==================== EXECUTIVE SUMMARY PAGE ====================
             doc.addPage();
@@ -7021,7 +7009,7 @@ function generatePDFReport(reportType) {
                     ]
                 },
                 {
-                    title: 'Regulator-Proof Safeguards',
+                    title: 'Regulation-Aligned Safeguards',
                     content: [
                         '✓ NO UNVERIFIED BIOGENIC CARBON CLAIMS',
                         '  • Default biogenic_net = 0.0 kg CO₂e/kg',
