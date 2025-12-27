@@ -2559,6 +2559,89 @@ let auditTrailData = {};
 let currentComparisonBaseline = null;
 let currentAnnualVolume = 10000;
 
+// ================== LANGUAGE COMPLIANCE ENGINE ==================
+function makeRegulatorSafe(text, isComparative = true) {
+    if (!text || typeof text !== 'string') return text || '';
+    
+    const replacements = [
+        // ABSOLUTE CLAIMS → MODELED/POTENTIAL CLAIMS
+        {bad: /\bsaves\b/gi, good: 'shows potential reduction of'},
+        {bad: /\bsaved\b/gi, good: 'indicates potential reduction of'},
+        {bad: /\breduction of\b/gi, good: 'modeled reduction of'},
+        {bad: /\breduces\b/gi, good: 'models reduction of'},
+        {bad: /\bimproves\b/gi, good: 'shows improvement potential for'},
+        
+        // COMPARATIVE LANGUAGE → NEUTRAL LANGUAGE
+        {bad: /\bbetter than\b/gi, good: 'lower impact than'},
+        {bad: /\bbest\b/gi, good: 'improved'},
+        {bad: /\bworst\b/gi, good: 'higher impact'},
+        
+        // GREENWASHING TERMS → NEUTRAL TERMS
+        {bad: /\beco-friendly\b/gi, good: 'with reduced environmental footprint'},
+        {bad: /\bgreen\b/gi, good: 'with improved environmental profile'},
+        {bad: /\bsustainable\b/gi, good: 'with enhanced sustainability characteristics'},
+        {bad: /\bnet zero\b/gi, good: 'reduced carbon footprint'},
+        {bad: /\bclimate positive\b/gi, good: 'climate impact reduction'},
+        {bad: /\bcarbon neutral\b/gi, good: 'carbon footprint management'},
+        
+        // CERTAINTY → UNCERTAINTY
+        {bad: /\bwill save\b/gi, good: 'may reduce'},
+        {bad: /\bguarantees\b/gi, good: 'suggests'},
+        {bad: /\bensures\b/gi, good: 'supports'},
+        
+        // PERSONAL CLAIMS → GENERAL CLAIMS
+        {bad: /\byou saved\b/gi, good: 'analysis suggests potential saving of'},
+        {bad: /\byour impact\b/gi, good: 'the modeled impact'},
+        {bad: /\byou reduced\b/gi, good: 'modeling indicates reduction of'},
+        
+        // SPECIFIC ENVIRONMENTAL TERMS
+        {bad: /\bwater saved\b/gi, good: 'lower water scarcity impact'},
+        {bad: /\bcarbon reduction\b/gi, good: 'modeled carbon impact reduction'},
+        {bad: /\bfootprint reduction\b/gi, good: 'reduced environmental footprint'},
+    ];
+    
+    let safeText = text;
+    
+    // Apply all replacements
+    replacements.forEach(({bad, good}) => {
+        safeText = safeText.replace(bad, good);
+    });
+    
+    // Add uncertainty indicators for comparative claims
+    if (isComparative) {
+        // Add ~ before percentages (but not if already there)
+        safeText = safeText.replace(/(\b)(\d+\.?\d*)%(?!~)/g, '$1~$2%');
+        // Add "approximately" before kg amounts
+        safeText = safeText.replace(/(\b)(\d+\.?\d*)\s*kg\s*CO₂e/gi, '$1approximately $2 kg CO₂e');
+        safeText = safeText.replace(/(\b)(\d+\.?\d*)\s*kg/gi, '$1approximately $2 kg');
+    }
+    
+    return safeText;
+}
+
+// Test function for debugging
+function testLanguageCompliance() {
+    console.log('🔍 Testing Language Compliance Engine:');
+    const tests = [
+        'Saves 2.4 kg CO₂e',
+        '80% better than beef',
+        'Carbon reduction of 3.5 kg',
+        'You saved 10 liters of water',
+        'Eco-friendly product',
+        'Net zero emissions',
+        'Guaranteed footprint reduction'
+    ];
+    
+    tests.forEach(test => {
+        console.log(`Original: "${test}"`);
+        console.log(`Fixed:    "${makeRegulatorSafe(test)}"`);
+        console.log('---');
+    });
+}
+
+// Make test function available globally for debugging
+window.testLanguageCompliance = testLanguageCompliance;
+
 // ================== SINGLE SOURCE OF TRUTH HELPER ==================
 function getUnifiedMetrics(pefResults, massData) {
     // 1. Get the authoritative weight (Final Product Output)
