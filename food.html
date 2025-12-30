@@ -5628,16 +5628,11 @@ function updateHardFinancialLedger(financialResults, volume) {
     }
 }
 
-// ================== UPDATE BUSINESS CASE ==================active
+// ================== UPDATE BUSINESS CASE (FIXED) ==================
 function updateBusinessCase() {
-    console.log('🔄 updateBusinessCase CALLED with state:', {
-        hasFinalPefResults: !!finalPefResults,
-        pefKeys: finalPefResults ? Object.keys(finalPefResults) : [],
-        hasClimateData: finalPefResults?.["Climate Change"]?.total > 0,
-        ingredientCount: selectedIngredients.length
-    });
+    console.log("🔄 [UNIFIED] Business Case Update");
     
-    // Ensure we have valid physics data
+    // Safety check - If no physics data, calculate it first
     if (!finalPefResults || Object.keys(finalPefResults).length === 0 || 
         !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
         
@@ -5663,20 +5658,19 @@ function updateBusinessCase() {
         }
     }
     
+    // 1. USE UNIFIED METRICS for absolute consistency with Results Tab
+    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
     const volume = currentAnnualVolume;
     
-    // Create results object for financial engine
-    const productWeightKg = massBalanceData?.final_content_weight_kg || 
-                          parseFloat(document.getElementById('productWeight').value) || 0.2;
-    
+    // 2. CREATE BUSINESS RESULTS with UNIFIED numbers
     const businessResults = {
         finalPefResults: finalPefResults,
-        finalContentWeight: productWeightKg,
-        co2PerKg: productWeightKg > 0 ? finalPefResults["Climate Change"].total / productWeightKg : 0,
-        fossilPerKg: productWeightKg > 0 ? finalPefResults["Resource Use, fossils"].total / productWeightKg : 0
+        finalContentWeight: unified.weightUsed,
+        co2PerKg: unified.co2PerKg,      // Uses the SAME number as Results tab
+        fossilPerKg: unified.fossilPerKg // Uses the SAME number as Results tab
     };
-    
-    // Apply scenarios if active
+
+    // 3. APPLY SCENARIOS if active
     let scenarioAdjustedResults = businessResults;
     if (Object.values(activeScenarios).some(v => v)) {
         console.log('🔧 Applying physics scenarios:', activeScenarios);
@@ -5684,45 +5678,59 @@ function updateBusinessCase() {
             ...businessResults,
             finalPefResults: validateAndApplyScenarios({
                 finalPefResults: finalPefResults,
-                finalContentWeight: productWeightKg
+                finalContentWeight: unified.weightUsed
             }, activeScenarios)
         };
+        // Re-unify metrics after scenarios
+        const scenarioUnified = getUnifiedMetrics(scenarioAdjustedResults.finalPefResults, massBalanceData);
+        scenarioAdjustedResults.co2PerKg = scenarioUnified.co2PerKg;
+        scenarioAdjustedResults.fossilPerKg = scenarioUnified.fossilPerKg;
     }
     
-    // Calculate financials
+    // 4. CALCULATE FINANCIALS with physics-based math
     const financialResults = calculateHardFinancialMath(scenarioAdjustedResults, volume, activeScenarios);
     console.log('💰 Financial results:', financialResults);
     
-    // Update UI
-    updateHardFinancialLedger(financialResults, volume);
+    // 5. CALCULATE DISCOUNTED ROI (with carbon credits)
+    const discountedROI = calculateDiscountedROI(financialResults, volume);
     
-    const totalBenefit = financialResults.total;
+    // 6. CALCULATE IMPLEMENTATION COST
     const implementationCost = calculateImplementationCost(volume);
-    const roi = implementationCost > 0 ? ((totalBenefit * 3 - implementationCost) / implementationCost * 100) : 0;
     
-    // Calculate market metrics based on CO2 reduction
-    const co2ReductionPercent = calculateCO2ReductionPercent();
-    const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);
-    const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);
+    // 7. UPDATE ALL UI ELEMENTS
     
-    // Update display elements
-    document.getElementById('roiValue').innerText = Math.max(0, roi).toFixed(0) + "%";
-    document.getElementById('savingsValue').innerText = "€" + formatLargeNumber(financialResults.total);
-    document.getElementById('premiumValue').innerText = premiumPct.toFixed(1) + "%";
-    document.getElementById('marketValue').innerText = marketGrowthPct.toFixed(1) + "%";
+    // ROI & Badges
+    document.getElementById('roiValue').textContent = discountedROI.npvROI + '% (NPV)';
+    document.getElementById('roiBadge').textContent = 'Shadow Pricing @ €85/t';
     
-    // ========== DELETED THE CRASHING LINE HERE ==========
-    // document.getElementById('roiDisplay').innerText = Math.max(0, roi).toFixed(0) + "%";
-    
+    // Savings & Costs
+    document.getElementById('savingsValue').textContent = "€" + formatLargeNumber(financialResults.total);
     document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
+    
+    // Returns & Benefits
+    document.getElementById('netReturnDisplay').textContent = '€' + discountedROI.totalDiscounted;
+    document.getElementById('totalBenefitDisplay').textContent = '€' + discountedROI.totalDiscounted;
     document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
-    document.getElementById('totalBenefitDisplay').textContent = '€' + formatLargeNumber(totalBenefit);
-    document.getElementById('netReturnDisplay').textContent = '€' + formatLargeNumber(Math.max(0, (totalBenefit * 3) - implementationCost));
     
-    updateBusinessStory(financialResults, roi, volume, co2ReductionPercent);
+    // Market Metrics
+    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.47;
+    const currentCO2 = scenarioAdjustedResults.co2PerKg;
+    const co2ReductionPercent = Math.max(0, ((baselineCO2 - currentCO2) / baselineCO2) * 100);
     
-    console.log('✅ Business case updated successfully');
-                    }
+    const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);  // Cap at 40%
+    const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);    // Cap at 25%
+    
+    document.getElementById('premiumValue').textContent = premiumPct.toFixed(1) + "%";
+    document.getElementById('marketValue').textContent = marketGrowthPct.toFixed(1) + "%";
+    
+    // 8. UPDATE COMPONENTS
+    updateHardFinancialLedgerWithCredits(financialResults, volume); // Updated ledger with carbon credits
+    addCarbonCreditCard(discountedROI); // Show carbon credit card
+    updateBusinessStory(financialResults, parseFloat(discountedROI.npvROI), volume, co2ReductionPercent);
+    
+    console.log('✅ [UNIFIED] Business case updated with discounted ROI & carbon credits');
+}
+
 // ================== UPDATE BUSINESS STORY ==================
 function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent) {
     const businessStory = document.getElementById('businessStory');
@@ -5793,7 +5801,7 @@ console.log('✅ Business Story updated: €' + safeTotal.toFixed(0) + ' modeled
     
 // =========== FIX: DISCOUNTED ROI WITH VOLUME SCALING ===========
 function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
-    console.log("💰 [Tweak5] Calculating discounted ROI with physics...", {
+    console.log("💰 Calculating discounted ROI with physics...", {
         volume: volume,
         hasMetrics: !!financialResults.metrics,
         tonsSaved: financialResults.metrics?.totalTonsCo2Saved
@@ -5801,7 +5809,7 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
     
     // Safety check
     if (!financialResults || !financialResults.total || !financialResults.metrics) {
-        console.warn("⚠️ [Tweak5] Missing financial results, using defaults");
+        console.warn("⚠️ Missing financial results, using defaults");
         return {
             npvBenefit: "0",
             npvROI: "0",
@@ -5824,9 +5832,7 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
     
     const npvROI = implementationCost > 0 ? (npvBenefit - implementationCost) / implementationCost * 100 : 0;
     
-    // 2. CARBON CREDITS - FIXED: Scale with volume!
-    // metrics.totalTonsCo2Saved is already TOTAL for the selected volume
-    // We use it directly (no need to multiply by volume again)
+    // 2. CARBON CREDITS - Scale with volume!
     const creditRevenue = (metrics.totalTonsCo2Saved || 0) * 85; // €85 per ton CO₂e
     
     // 3. PREMIUM SCALING (Nielsen: 15% CO₂ cut → +12% price; linear to 25%)
@@ -5834,7 +5840,7 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
     const premiumMultiplier = 1 + Math.min(co2ReductionPct / 100 * 1.67, 0.25); // Max +25%
     const discountedPremium = annualBenefit * premiumMultiplier;
     
-    console.log("✅ [Tweak5] FIXED Discounted ROI:", {
+    console.log("✅ Discounted ROI:", {
         volume: volume,
         annualBenefit: annualBenefit,
         tonsSavedTotal: metrics.totalTonsCo2Saved,
@@ -5851,83 +5857,6 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
         totalDiscounted: (npvBenefit + creditRevenue).toFixed(0),
         discountRate: `${(discountRate * 100).toFixed(1)}% (AR5 social rate)`
     };
-        }
-// =========== UPDATE BUSINESS CASE WITH TWEAK 5 ===========
-function updateBusinessCaseWithTweak5() {
-    console.log("🔄 updateBusinessCaseWithTweak5 CALLED");
-    
-    // Safety check
-    if (!finalPefResults || !finalPefResults["Climate Change"]) {
-        // If no results, try to calculate, then retry
-        console.log("⚠️ No PEF results found, triggering calculation...");
-        calculateImpact();
-        setTimeout(updateBusinessCaseWithTweak5, 500); // Wait for calculation
-        return;
-    }
-    
-    // 1. USE HELPER for absolute consistency with Results Tab
-    // This ensures Business Case doesn't invent its own numbers
-    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
-    const volume = currentAnnualVolume;
-    
-    // Create business results using the UNIFIED numbers
-    const businessResults = {
-        finalPefResults: finalPefResults,
-        finalContentWeight: unified.weightUsed,
-        co2PerKg: unified.co2PerKg,      // <--- USES THE MATCHED NUMBER
-        fossilPerKg: unified.fossilPerKg // <--- USES THE MATCHED NUMBER
-    };
-
-    let scenarioAdjustedResults = businessResults;
-    if (Object.values(activeScenarios).some(v => v)) {
-        scenarioAdjustedResults = {
-            ...businessResults,
-            finalPefResults: validateAndApplyScenarios({
-                finalPefResults: finalPefResults,
-                finalContentWeight: productWeightKg
-            }, activeScenarios)
-        };
-    }
-    
-    const financialResults = calculateHardFinancialMath(scenarioAdjustedResults, volume, activeScenarios);
-    
-    const discountedROI = calculateDiscountedROI(financialResults, volume);
-    
-    updateHardFinancialLedgerWithCredits(financialResults, volume);
-    
-    const roiValueElement = document.getElementById('roiValue');
-    const roiBadgeElement = document.getElementById('roiBadge');
-    const netReturnElement = document.getElementById('netReturnDisplay');
-    
-    if (roiValueElement) roiValueElement.textContent = discountedROI.npvROI + '% (NPV)';
-    if (roiBadgeElement) roiBadgeElement.textContent = `Shadow Pricing @ €85/t`;
-    if (netReturnElement) netReturnElement.textContent = '€' + formatLargeNumber(discountedROI.totalDiscounted);
-    
-    document.getElementById('savingsValue').textContent = "€" + formatLargeNumber(financialResults.total);
-    
-    // Force percentage recalc
-    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.47;
-    const currentCO2 = scenarioAdjustedResults.co2PerKg;
-    const reductionRaw = ((baselineCO2 - currentCO2) / baselineCO2) * 100;
-    const co2ReductionPercent = Math.max(0, reductionRaw);
-
-    const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);
-    const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);
-    
-    document.getElementById('premiumValue').textContent = premiumPct.toFixed(1) + "%";
-    document.getElementById('marketValue').textContent = marketGrowthPct.toFixed(1) + "%";
-
-    addCarbonCreditCard(discountedROI);
-    
-    const implementationCost = calculateImplementationCost(volume);
-    
-    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
-    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
-    document.getElementById('totalBenefitDisplay').textContent = '€' + discountedROI.totalDiscounted;
-    
-    updateBusinessStory(financialResults, parseFloat(discountedROI.npvROI), volume, co2ReductionPercent);
-    
-    console.log("✅ [Tweak5] Business case updated with discounted ROI");
     }
 
 // =========== FIX: LIABILITY CARD AUTO-UPDATE ===========
