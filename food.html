@@ -6124,17 +6124,18 @@ storyContent.innerHTML = `
         Based on PEF 3.1 methodology, this suggests a potential reduction of ~${co2SavedPerKg.toFixed(2)} kg CO₂e per kg vs. conventional ${baselineName} baseline.
     </div>
     
-    <div style="margin-top: 1rem; padding: 1rem; background: rgba(10, 37, 64, 0.05); border-radius: 8px; border-left: 3px solid var(--primary);">
-        <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-bottom: 0.25rem;">
-            <i class="fas fa-balance-scale"></i> METHODOLOGY DISCLAIMER
+    <!-- ========== GEMINI'S REGULATORY SHIELD PATCH ========== -->
+    <div style="margin-top: 1rem; padding: 1rem; background: #FFF8E1; border-radius: 8px; border-left: 4px solid #FFC107;">
+        <div style="font-size: 0.75rem; color: #B7791F; font-weight: 700; margin-bottom: 0.25rem;">
+            <i class="fas fa-shield-alt"></i> REGULATORY COMPLIANCE NOTICE (EU GREEN CLAIMS)
         </div>
-        <div style="font-size: 0.7rem; color: var(--gray); line-height: 1.4;">
-            <strong>Comparative assessment based on:</strong> PEF 3.1 methodology using AGRIBALYSE 3.2 secondary data.<br>
-            <strong>System boundary:</strong> Cradle-to-Retail (includes farming, processing, packaging, distribution).<br>
-            <strong>Use case:</strong> For strategic planning and B2B communication. Not for product labeling without primary data verification.<br>
-            <strong>Uncertainty:</strong> ±${auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15'}% (based on ${auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'} DQR)
+        <div style="font-size: 0.7rem; color: #744210; line-height: 1.4;">
+            <strong>1. Data Hierarchy:</strong> This assessment uses a Hybrid approach (Primary Factory Data + Secondary AGRIBALYSE 3.2 Ingredients).<br>
+            <strong>2. Usage:</strong> Valid for internal eco-design, B2B reporting (Scope 3), and consumer transparency (Digital Product Passport).<br>
+            <strong>3. Claims:</strong> Comparative marketing claims (e.g. "50% less CO2") require ISO 14044 Critical Review. This report serves as the <em>pre-verification screening</em>.
         </div>
     </div>
+    <!-- ========== END REGULATORY SHIELD ========== -->
 `;
 
     storyComparison.innerHTML = `
