@@ -2586,7 +2586,17 @@ let massBalanceData = {};
 let auditTrailData = {};
 let currentComparisonBaseline = null;
 let currentAnnualVolume = 10000;
-
+    
+// ================== FACTORY PRIMARY DATA TOGGLE ==================
+function toggleFactoryInputs() {
+    const isChecked = document.getElementById('usePrimaryFactoryData').checked;
+    const inputs = document.getElementById('factoryDataInputs');
+    if (isChecked) {
+        inputs.classList.remove('hidden');
+    } else {
+        inputs.classList.add('hidden');
+    }
+    }
 // ================== LANGUAGE COMPLIANCE ENGINE ==================
 function makeRegulatorSafe(text, isComparative = true) {
     if (!text || typeof text !== 'string') return text || '';
