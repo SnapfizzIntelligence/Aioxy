@@ -3457,7 +3457,121 @@ const FOOD_PHYSICS_DB = {
     'soup-product':      { target_hydration: 0.92, default_density: 1.02 },
     'sauce-product':     { target_hydration: 0.75, default_density: 1.10 },
     'default':           { target_hydration: 0.00, default_density: 1.00 }
-};
+}; 
+    // ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (2025) ==================
+// The "Brain" that connects Ingredients to Physics
+
+function calculateUniversalAdjustments(ingredientName, originCountry, processingMethod, manufacturingCountry) {
+    const log = [];
+    let adjustmentMultipliers = {
+        co2: 1.0,
+        land: 1.0,
+        water: 1.0
+    };
+
+    // 1. DETECT CROP TYPE & CLASS
+    const nameLower = ingredientName.toLowerCase();
+    let cropKey = null;
+    let cropClass = null;
+
+    // A. Direct Crop Match (Check specifically defined crops first)
+    for (const [key, data] of Object.entries(window.aioxyData.yield_benchmarks)) {
+        if (nameLower.includes(key)) { cropKey = key; break; }
+    }
+    
+    // B. Class Inference (If no specific crop found)
+    if (!cropKey) {
+        if (nameLower.includes("flour") || nameLower.includes("bread") || nameLower.includes("pasta") || nameLower.includes("semolina")) cropClass = "cereal";
+        else if (nameLower.includes("milk") && !nameLower.includes("cow") && !nameLower.includes("goat") && !nameLower.includes("sheep")) cropClass = "pulse"; // Plant milks
+        else if (nameLower.includes("oil") || nameLower.includes("butter") || nameLower.includes("fat")) cropClass = "oilseed";
+        else if (nameLower.includes("sugar") || nameLower.includes("syrup")) cropClass = "sugarbeet";
+        else if (nameLower.includes("bean") || nameLower.includes("lentil") || nameLower.includes("pea")) cropClass = "pulse";
+        else if (nameLower.includes("fruit") || nameLower.includes("berry") || nameLower.includes("apple") || nameLower.includes("citrus")) cropClass = "fruit";
+        else if (nameLower.includes("coffee") || nameLower.includes("cocoa") || nameLower.includes("chocolate") || nameLower.includes("tea")) cropClass = "tropical";
+        else cropClass = "vegetable"; // Safe fallback for undefined plant matter
+    }
+
+    // 2. YIELD PHYSICS (Land & CO2 Intensity)
+    // Impact is inversely proportional to yield.
+    let localYield, standardYield;
+    
+    if (cropKey) {
+        // Specific Crop Logic
+        const yields = window.aioxyData.yield_benchmarks[cropKey];
+        // If country missing, use Global. If Global missing, use FR (standard high-yield baseline)
+        localYield = yields[originCountry] || yields["Global"] || 4000;
+        standardYield = yields["Global"] || 4000;
+        log.push(`🌾 Exact Match: ${cropKey} in ${originCountry} (${localYield} kg/ha) vs Global (${standardYield} kg/ha)`);
+    } else if (cropClass) {
+        // Class Fallback Logic
+        const classData = window.aioxyData.crop_classes[cropClass];
+        // Assume developed nations/major exporters have higher yields (1.4x class avg)
+        const isHighYieldEcon = ["US","FR","DE","UK","CA","AU","NL","BE","DK"].includes(originCountry);
+        localYield = isHighYieldEcon ? classData.global_yield * 1.4 : classData.global_yield;
+        standardYield = classData.global_yield;
+        log.push(`🧠 Class Inference: ${ingredientName} -> ${classData.name}. Yield Est: ${localYield} kg/ha`);
+    }
+
+    // Apply Yield Adjustment (Cap at 0.5x to 2.5x to prevent extreme outliers)
+    if (localYield && standardYield) {
+        const rawFactor = standardYield / localYield;
+        const yieldFactor = Math.max(0.4, Math.min(2.5, rawFactor)); // Safety Caps
+        
+        adjustmentMultipliers.land *= yieldFactor;
+        // CO2 correlates partially with yield (efficiency) but not 1:1 (machinery/fertilizer use often increases with yield)
+        adjustmentMultipliers.co2 *= (0.6 + (0.4 * yieldFactor)); 
+    }
+
+    // 3. CLIMATE PHYSICS (IPCC N2O Volatilization)
+    // Tropical heat = higher fertilizer emissions. Arid = lower.
+    const tropical = window.aioxyData.climate_zones.tropical.includes(originCountry);
+    const arid = window.aioxyData.climate_zones.arid.includes(originCountry);
+    const boreal = window.aioxyData.climate_zones.boreal.includes(originCountry);
+    
+    if (tropical) {
+        adjustmentMultipliers.co2 *= 1.15; // +15% N2O penalty
+        log.push(`☀️ Tropical Climate (${originCountry}): +15% N2O physics`);
+    } else if (arid) {
+        adjustmentMultipliers.co2 *= 0.90; // -10% N2O credit
+        log.push(`🌵 Arid Climate (${originCountry}): -10% N2O physics`);
+    } else if (boreal) {
+        adjustmentMultipliers.co2 *= 0.95; // -5% Cold soil credit
+        log.push(`❄️ Boreal Climate (${originCountry}): -5% N2O physics`);
+    }
+
+    // 4. WATER SCARCITY PHYSICS (AWARE 2.0)
+    // The most critical localized metric. 1L water in Spain != 1L water in Norway.
+    const localAware = window.aioxyData.aware_factors[originCountry] || window.aioxyData.aware_factors["Global"];
+    const globalAware = window.aioxyData.aware_factors["Global"];
+    const waterFactor = localAware / globalAware;
+    
+    adjustmentMultipliers.water *= waterFactor;
+    log.push(`💧 Water Scarcity (${originCountry}): AWARE factor ${localAware} (x${waterFactor.toFixed(2)} vs global)`);
+
+    // 5. GRID PHYSICS (Manufacturing Energy)
+    // Returns an ADDER (kg CO2e), not a multiplier.
+    // Base assumption: Ingredient data assumes EU Average Grid (~250g).
+    // We calculate the delta for the specific manufacturing country.
+    const gridIntensity = window.aioxyData.grid_intensity[manufacturingCountry] || 475;
+    const euBaseline = 250; 
+    
+    // Estimate Energy Intensity per kg based on processing method (roughly)
+    let kWhPerKg = 0.3; // Default (Milling/Mixing)
+    if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
+    if (processingMethod === 'sterilization') kWhPerKg = 0.5;
+    if (processingMethod === 'freezing') kWhPerKg = 0.8;
+
+    const energyDelta = (gridIntensity - euBaseline) / 1000; // Convert g to kg
+    const processingAdder = kWhPerKg * energyDelta;
+    
+    log.push(`⚡ Grid Physics (${manufacturingCountry}): ${gridIntensity}g vs ${euBaseline}g baseline. Adder: ${processingAdder.toFixed(4)} kg CO2e`);
+
+    return {
+        multipliers: adjustmentMultipliers,
+        adder: processingAdder,
+        logs: log
+    };
+    }
 
     // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
