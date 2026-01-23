@@ -4600,6 +4600,55 @@ function applyScenarioPhysics(baseResults, scenarios) {
     console.log("✅ [Physics Fix] Scenario Engine Applied:", scenarioLog);
     return modifiedResults;
     }
+    // ================== PRIMARY DATA ADJUSTMENT CALCULATORS ==================
+
+function calculateNitrogenAdjustment(primaryNitrogenKgPerTon, ingredientData) {
+    // Primary data nitrogen vs Agribalyse average
+    const agribalyseAverage = ingredientData.data?.lci?.nitrogen_kg_per_kg || 0.02; // 20 kg/ton default
+    const primaryValue = primaryNitrogenKgPerTon / 1000; // Convert to kg/kg
+    
+    if (primaryValue <= 0 || agribalyseAverage <= 0) return 1.0;
+    
+    // Nitrogen drives N2O emissions (GWP 273) and fertilizer production
+    const adjustment = primaryValue / agribalyseAverage;
+    
+    console.log(`   Nitrogen: ${(primaryValue*1000).toFixed(1)} vs ${(agribalyseAverage*1000).toFixed(1)} kg/t → ${adjustment.toFixed(3)}x`);
+    return Math.max(0.5, Math.min(adjustment, 1.5)); // Cap between 0.5x and 1.5x
+}
+
+function calculateYieldAdjustment(primaryYieldKgPerHa, ingredientData) {
+    // Higher yield = lower land use impact per kg
+    const agribalyseAverage = 3500; // Default yield in kg/ha
+    const primaryValue = primaryYieldKgPerHa;
+    
+    if (primaryValue <= 0) return 1.0;
+    
+    // Land use impact inversely proportional to yield
+    const adjustment = agribalyseAverage / primaryValue;
+    
+    console.log(`   Yield: ${primaryValue} vs ${agribalyseAverage} kg/ha → ${adjustment.toFixed(3)}x`);
+    return Math.max(0.7, Math.min(adjustment, 1.3)); // Cap between 0.7x and 1.3x
+}
+
+function calculateRegionalAdjustment(farmRegion, ingredientData) {
+    // Regional water scarcity adjustment (AWARE factors)
+    // This is simplified - real implementation would map region to AWARE watershed
+    const regionLower = farmRegion.toLowerCase();
+    
+    let waterFactor = 1.0;
+    
+    // Example regional adjustments
+    if (regionLower.includes('normandy') || regionLower.includes('brittany')) {
+        waterFactor = 0.8; // Water-rich regions
+    } else if (regionLower.includes('provence') || regionLower.includes('languedoc')) {
+        waterFactor = 1.4; // Water-scarce regions
+    } else if (regionLower.includes('spain') || regionLower.includes('italy')) {
+        waterFactor = 1.6; // Mediterranean water stress
+    }
+    
+    console.log(`   Region: ${farmRegion} → Water factor: ${waterFactor}x`);
+    return waterFactor;
+    }
     // ================== MAIN CALCULATION ENGINE ==================
     const foodCalculationEngine = {
         getDQRQualityLevel(dqrScore) {
