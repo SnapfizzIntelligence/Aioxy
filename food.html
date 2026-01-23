@@ -8119,33 +8119,69 @@ document.head.appendChild(style);
     }, 5000);
     
     function proceedWithInitialization() {
-        console.log('📊 [AIOXY] Starting full initialization...');
-        
-        // Now we can safely access the data
-        console.log('   Available ingredients:', Object.keys(window.aioxyData.ingredients).length);
-        
-        // Populate dropdowns
-        populateIngredientSelect();
-        populateCountrySelect();
-        
-        // Set up demo data
-        setupDemoData();
-        
-        // Initialize UI
-        updateTabIndicator();
-        
-        // Validate data
-        validateDataIntegrity();
-        
-        console.log('✅ [AIOXY] Initialization complete!');
-        
-        // Force a calculation to test
-        setTimeout(() => {
-            console.log('🧪 [AIOXY] Running test calculation...');
-            if (selectedIngredients.length > 0) {
-                calculateImpact();
+    console.log('📊 [AIOXY] Starting full initialization...');
+    
+    // ========== UNIVERSAL PHYSICS ENGINE CHECK ==========
+    if (window.aioxyData.yield_benchmarks && window.aioxyData.grid_intensity) {
+        console.log('✅ Universal Physics Engine Ready:', {
+            crops: Object.keys(window.aioxyData.yield_benchmarks).length,
+            countries: Object.keys(window.aioxyData.grid_intensity).length,
+            aware_factors: Object.keys(window.aioxyData.aware_factors).length,
+            climate_zones: {
+                tropical: window.aioxyData.climate_zones.tropical.length,
+                arid: window.aioxyData.climate_zones.arid.length,
+                boreal: window.aioxyData.climate_zones.boreal.length
             }
-        }, 500);
+        });
+    } else {
+        console.warn('⚠️ Universal physics data not found. Using legacy mode.');
+        // Show notification but continue
+        if (window.aioxyData.ingredients) {
+            const warningDiv = document.createElement('div');
+            warningDiv.style.background = '#FFF3E0';
+            warningDiv.style.padding = '0.75rem';
+            warningDiv.style.margin = '0.5rem 0';
+            warningDiv.style.borderRadius = '6px';
+            warningDiv.style.borderLeft = '4px solid #FF9800';
+            warningDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="color: #FF9800;"></i>
+                <strong> Universal Physics Data Missing</strong><br>
+                <small>Using legacy calculations. Please ensure ingredients.js includes yield_benchmarks, grid_intensity, and aware_factors.</small>
+            `;
+            
+            const firstCard = document.querySelector('.card');
+            if (firstCard) {
+                firstCard.parentNode.insertBefore(warningDiv, firstCard);
+            }
+        }
+    }
+    // ========== END UNIVERSAL PHYSICS CHECK ==========
+    
+    // Now we can safely access the data
+    console.log('   Available ingredients:', Object.keys(window.aioxyData.ingredients).length);
+    
+    // Populate dropdowns
+    populateIngredientSelect();
+    populateCountrySelect();
+    
+    // Set up demo data
+    setupDemoData();
+    
+    // Initialize UI
+    updateTabIndicator();
+    
+    // Validate data
+    validateDataIntegrity();
+    
+    console.log('✅ [AIOXY] Initialization complete!');
+    
+    // Force a calculation to test
+    setTimeout(() => {
+        console.log('🧪 [AIOXY] Running test calculation...');
+        if (selectedIngredients.length > 0) {
+            calculateImpact();
+        }
+    }, 500);
     }
     }
         // ================== HYDRATION SUGGESTION FUNCTIONS ==================
