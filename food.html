@@ -5058,12 +5058,6 @@ Object.keys(pefCategories).forEach(cat => {
     }
 
     // =========== GROK'S FIX: TRANSPORT NOW USES finalIngredients ===========
-// Helper functions (YOUR EXISTING LOGIC) - MOVED UP to fix initialization error
-const getIngredientOrigin = (ingredientId) => {
-    return PHYSICS_DB.origins[ingredientId] || "FR";
-};
-const getCurrentMonth = () => new Date().getMonth();
-
 let inboundTransportCO2 = 0;
 let totalWaterImpact = 0;
     finalIngredients.forEach(ing => {
