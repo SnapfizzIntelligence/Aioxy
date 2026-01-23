@@ -7642,28 +7642,41 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
             const uncertainty = foodCalculationEngine.calculateUncertainty(ingredientData.data.metadata.dqr.P);
             
             const item = document.createElement('div');
-            item.className = 'ingredient-item';
-            item.innerHTML = `
-                <div class="ingredient-info">
-                    <div class="ingredient-name">${ingredient.name}</div>
-                    <div class="ingredient-stats">
-                        ${ingredientData.data.pef["Climate Change"]} kg CO₂e/kg • 
-                        ${ingredientData.data.pef["Water Use/Scarcity (AWARE)"]} m³ water/kg •
-                        <span class="dqr-badge ${dqrQuality.class}">DQR: ${dqrQuality.level}</span>
-                        <span class="badge" style="margin-left: 0.5rem;">±${uncertainty}% uncertainty</span>
-                    </div>
-                    <div style="margin-top: 0.5rem;">
-                        <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
-                    </div>
-                </div>
-                <div class="ingredient-actions">
-                    <input type="number" class="quantity-input" value="${ingredient.quantity}" step="0.001" min="0" 
-                           onchange="updateIngredientQuantity(${index}, this.value)">
-                    <button class="remove-btn" onclick="removeIngredient(${index})">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
+item.className = 'ingredient-item';
+item.innerHTML = `
+    <div class="ingredient-info">
+        <div class="ingredient-name">${ingredient.name}</div>
+        <div class="ingredient-stats">
+            ${ingredientData.data.pef["Climate Change"]} kg CO₂e/kg • 
+            ${ingredientData.data.pef["Water Use/Scarcity (AWARE)"]} m³ water/kg •
+            <span class="dqr-badge ${dqrQuality.class}">DQR: ${dqrQuality.level}</span>
+            <span class="badge" style="margin-left: 0.5rem;">±${uncertainty}% uncertainty</span>
+        </div>
+        <div style="margin-top: 0.5rem;">
+            <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
+            
+            <!-- ========== SUPPLIER ASK BUTTON ========== -->
+            <button class="btn btn-outline" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.7rem;" 
+                    onclick="openSupplierModal(${index})">
+                <i class="fas fa-tractor"></i> Supplier Data?
+            </button>
+            
+            ${ingredient.primaryData ? `
+            <span class="badge" style="background: #48BB78; color: white; margin-left: 0.5rem;">
+                <i class="fas fa-check-circle"></i> Primary Farm Data
+            </span>
+            ` : ''}
+            <!-- ========== END SUPPLIER ASK ========== -->
+        </div>
+    </div>
+    <div class="ingredient-actions">
+        <input type="number" class="quantity-input" value="${ingredient.quantity}" step="0.001" min="0" 
+               onchange="updateIngredientQuantity(${index}, this.value)">
+        <button class="remove-btn" onclick="removeIngredient(${index})">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+`;
             list.appendChild(item);
         });
     }
