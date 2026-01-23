@@ -5975,40 +5975,34 @@ function updateHardFinancialLedgerWithCredits(financialResults, volume) {
         tbody.parentNode.parentNode.insertBefore(disclaimer, tbody.parentNode.nextSibling);
     }
 
-    tbody.innerHTML = `
-    <tr>
+    // ========== GEMINI'S HONEST LEDGER PATCH ==========
+tbody.innerHTML = `
+    <tr style="background-color: #F0FFF4;">
         <td>
-            <strong>🛡️ Scope 3 Liability Buffer</strong><br>
-            <small>Internal Shadow Price (€85/t CO₂e)</small>
-        </td>
-        <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-        <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
-    </tr>
-    <tr>
-        <td>
-            <strong>🌱 Voluntary Carbon Value</strong><br>
-            <small>Potential VCM Benefit (€15/t CO₂e)</small>
-        </td>
-        <td>+${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-        <td class="money-positive">+€${(metrics.totalTonsCo2Saved * 15).toFixed(2)}</td>
-    </tr>
-    <tr>
-        <td>
-            <strong>⚡ Energy OPEX</strong><br>
-            <small>Fossil fuel reduction (Physics Data)</small>
+            <strong>⚡ Energy OPEX Efficiency</strong><br>
+            <small>Direct cash savings via physics optimization</small>
         </td>
         <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
-        <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
+        <td class="money-positive" style="color: #276749;">+€${moneyEnergy.toFixed(2)}</td>
     </tr>
-    <tr>
+    <tr style="background-color: #F0FFF4;">
         <td>
-            <strong>🚚 Logistics Fuel</strong><br>
-            <small>Transport optimization</small>
+            <strong>🚚 Logistics Fuel Efficiency</strong><br>
+            <small>Transport optimization savings</small>
         </td>
         <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
-        <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
+        <td class="money-positive" style="color: #276749;">+€${moneyFuel.toFixed(2)}</td>
     </tr>
-    `;
+
+    <tr style="border-top: 2px solid #E2E8F0;">
+        <td>
+            <strong>🛡️ Carbon Liability Risk</strong><br>
+            <small>Avoided future carbon tax exposure (€85/t)</small>
+        </td>
+        <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
+        <td style="color: #718096; font-style: italic;">(€${moneyCarbon.toFixed(2)})</td>
+    </tr>
+`;
 
     const totalBenefit = document.getElementById('totalBenefit');
     if (totalBenefit) {
