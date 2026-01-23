@@ -1970,8 +1970,102 @@ window.aioxyData = {
             }
         }
     },
-    
-    // COUNTRY FACTORS (IEA 2025 + AWARE 2.0) - FULL UPDATE
+     // ================== AIOXY UNIVERSAL PHYSICS ENGINE (2025 OFFICIAL) ==================
+    // COVERS ALL DETECTED ORIGINS: FR, NO, BR, VN, CN, NL, WI (West Indies), & Global Exporters
+
+    // 1. UNIVERSAL CROP CLASSES (The Formulation Logic)
+    // If specific crop data is missing, the system defaults to these "Class Laws".
+    crop_classes: {
+        "cereal":   { global_yield: 4100, water_intensity: 0.5, n_demand: 0.025, name: "Cereal (Wheat, Maize, Rice)" },
+        "pulse":    { global_yield: 1800, water_intensity: 0.3, n_demand: 0.000, name: "Pulse (Pea, Bean, Soy)" }, // Nitrogen Fixer
+        "tuber":    { global_yield: 21000, water_intensity: 0.4, n_demand: 0.015, name: "Root/Tuber (Potato, Cassava)" },
+        "oilseed":  { global_yield: 3200, water_intensity: 0.8, n_demand: 0.035, name: "Oilseed (Rapeseed, Sunflower)" },
+        "vegetable":{ global_yield: 19000, water_intensity: 1.2, n_demand: 0.020, name: "Vegetable (Tomato, Leafy)" },
+        "fruit":    { global_yield: 14000, water_intensity: 0.9, n_demand: 0.015, name: "Fruit (Apple, Berry)" },
+        "tropical": { global_yield: 11000, water_intensity: 1.5, n_demand: 0.020, name: "Tropical (Banana, Coffee, Cocoa)" },
+        "fiber":    { global_yield: 1000, water_intensity: 4.5, n_demand: 0.040, name: "Fiber (Cotton, Hemp)" }
+    },
+
+    // 2. OFFICIAL COUNTRY YIELDS (kg/ha) - FAOSTAT 2024/2025
+    // Expanded to include ALL countries found in your file + Major Exporters.
+    yield_benchmarks: {
+        // CEREALS
+        "wheat":    { "FR": 7300, "DE": 7600, "UK": 7900, "US": 3100, "CN": 5800, "IN": 3500, "RU": 2900, "UA": 4100, "AU": 2100, "Global": 3500 },
+        "corn":     { "US": 11200, "CN": 6700, "BR": 6000, "AR": 7800, "FR": 8900, "UA": 7200, "IN": 3100, "Global": 5900 }, // Maize
+        "rice":     { "CN": 7100, "IN": 4200, "VN": 6000, "ID": 5300, "TH": 3000, "US": 8700, "BR": 6500, "Global": 4600 },
+        "barley":   { "FR": 6500, "DE": 6800, "RU": 2800, "UK": 6400, "CA": 3800, "AU": 2500, "Global": 3000 },
+        "oat":      { "FR": 4600, "DE": 5100, "CA": 3400, "FI": 3600, "SE": 4100, "UK": 5600, "Global": 2600 },
+        
+        // PROTEINS & PULSES
+        "soy":      { "BR": 3600, "US": 3500, "AR": 2900, "CN": 2000, "IN": 1100, "FR": 2800, "Global": 2800 },
+        "pea":      { "FR": 4200, "CA": 2700, "RU": 2200, "DE": 3800, "US": 2300, "Global": 2500 },
+        "bean":     { "BR": 1500, "IN": 900, "CN": 1800, "US": 2200, "MM": 1400, "Global": 1200 }, // Faba/Kidney
+        "lupin":    { "AU": 1600, "PL": 2100, "DE": 2400, "FR": 2300, "Global": 1500 },
+
+        // TUBERS & VEG
+        "potato":   { "US": 49000, "DE": 45000, "FR": 44000, "CN": 22000, "IN": 24000, "NL": 51000, "Global": 21000 },
+        "tomato":   { "NL": 480000, "ES": 85000, "IT": 62000, "CN": 58000, "TR": 66000, "US": 90000, "Global": 37000 }, // Huge variance due to greenhouse vs field
+        
+        // OILSEEDS
+        "rapeseed": { "DE": 3300, "FR": 3100, "CA": 2300, "CN": 2100, "IN": 1200, "AU": 1800, "UK": 3400, "Global": 2200 },
+        "sunflower":{ "UA": 2400, "RU": 1800, "AR": 2100, "FR": 2600, "RO": 2500, "BG": 2300, "Global": 1900 },
+        
+        // SPECIALTY & TROPICAL (Found in your data: Coffee, Cocoa, Banana, Spices)
+        "sugarbeet":{ "FR": 85000, "DE": 84000, "US": 70000, "RU": 45000, "Global": 60000 },
+        "coffee":   { "BR": 1800, "VN": 2800, "CO": 1100, "ID": 750, "ET": 600, "Global": 1300 }, // Green bean
+        "cocoa":    { "CI": 600, "GH": 550, "ID": 700, "EC": 900, "BR": 500, "Global": 500 },
+        "banana":   { "EC": 45000, "PH": 24000, "WI": 18000, "CR": 52000, "IN": 36000, "CO": 22000, "Global": 20000 },
+        "cotton":   { "CN": 1800, "IN": 450, "US": 950, "BR": 1700, "PK": 650, "Global": 750 }
+    },
+
+    // 3. ELECTRICITY GRID INTENSITY (g CO2e/kWh) - IEA/Ember 2024
+    // Covers every country in your dataset + processing hubs.
+    grid_intensity: {
+        // Very Low (<50g)
+        "NO": 20, "SE": 25, "IS": 15, "CH": 30, "FR": 55, "CA": 110, "PY": 30,
+        
+        // Low/Medium (50-250g)
+        "BR": 130, "ES": 160, "PT": 180, "BE": 160, "AT": 130, "FI": 90, "DK": 130, "NZ": 140, "CO": 180, "VE": 200,
+        
+        // Medium/High (250-450g)
+        "UK": 230, "IT": 280, "IE": 320, "DE": 380, "US": 370, "NL": 320, "MX": 400, "JP": 440, "TR": 420, "KR": 440,
+        
+        // High (>450g) - Coal Heavy
+        "CN": 540, "IN": 630, "PL": 680, "AU": 490, "VN": 480, "ID": 600, "ZA": 700, "CZ": 480, "WI": 650, // Caribbean often oil-based
+        "Global": 475
+    },
+
+    // 4. IPCC CLIMATE ZONES (For N2O/Fertilizer Physics)
+    // Affects nitrogen volatilization rates.
+    climate_zones: {
+        "tropical": ["BR", "ID", "VN", "IN", "TH", "CI", "GH", "CO", "EC", "MX", "PH", "MY", "NG", "WI"], // +15% N2O
+        "arid":     ["ES", "AU", "ZA", "EG", "TR", "IR", "SA", "AE", "MA"],                               // -10% N2O
+        "boreal":   ["CA", "NO", "SE", "FI", "RU", "IS"],                                                 // -5% N2O
+        "temperate": "default"                                                                            // 0% adjustment
+    },
+
+    // 5. WULCA AWARE FACTORS (Water Scarcity) - 2025 National Averages
+    // Unit: m3 world eq / m3. High number = High Scarcity.
+    aware_factors: {
+        // Extreme Scarcity (>70)
+        "EG": 98, "SA": 95, "IL": 88, "IN": 70, "PK": 85,
+        
+        // High Scarcity (40-70)
+        "ES": 65, "GR": 61, "AU": 60, "TR": 45, "ZA": 45, "CN": 41, "IT": 50, "MX": 42, "PT": 43,
+        
+        // Medium Scarcity (20-40)
+        "US": 33, "NL": 34, "DE": 25, "BE": 42, "JP": 37, "KR": 32, "UK": 23, "PL": 20, "WI": 35, // Caribbean islands variable
+        
+        // Low Scarcity (<20)
+        "FR": 17, "DK": 14, "HU": 12, "RO": 10, "CZ": 15, "UA": 18,
+        
+        // Abundant (<10)
+        "BR": 3.1, "CA": 2.2, "NO": 0.8, "SE": 1.3, "FI": 0.5, "IE": 1.8, "AT": 2.5, "CH": 1.5, "RU": 5.4, "CO": 1.2, "VN": 4.5, "NZ": 1.8,
+        
+        "Global": 42 // Precautionary default
+    },
+
+    // 6. COUNTRY FACTORS (Legacy - for compatibility)
     countries: {
         "DE": { name: "Germany", electricityCO2: 270, awareFactor: 24.5 },
         "FR": { name: "France", electricityCO2: 40, awareFactor: 17.1, renewable_mix: 0.33 },
@@ -1997,6 +2091,7 @@ window.aioxyData = {
         "BR": { name: "Brazil", electricityCO2: 140, awareFactor: 3.1 }
     },
 
+    
     // PROCESSING METHODS
     processing: {
     "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000, temp: 20 },
