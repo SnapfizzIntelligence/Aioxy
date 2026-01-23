@@ -7659,6 +7659,33 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
             const dqrQuality = foodCalculationEngine.getDQRQualityLevel(results.overallDQR);
             overallDQRBadge.className = `dqr-badge ${dqrQuality.class}`;
             overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${dqrQuality.level} (DQR: ${results.overallDQR.toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
+       // ========== ADD UNIVERSAL PHYSICS STATUS ==========
+if (window.aioxyData && window.aioxyData.yield_benchmarks) {
+    const physicsNote = document.createElement('div');
+    physicsNote.style.background = '#E3F2FD';
+    physicsNote.style.padding = '1rem';
+    physicsNote.style.borderRadius = '8px';
+    physicsNote.style.marginTop = '1rem';
+    physicsNote.style.borderLeft = '4px solid #0A2540';
+    physicsNote.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <i class="fas fa-globe-americas" style="color: var(--primary);"></i>
+            <strong style="color: var(--primary);">🌍 Universal Physics Engine Active</strong>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--dark);">
+            • <strong>Yield-adjusted land use:</strong> ${Object.keys(window.aioxyData.yield_benchmarks).length} crops<br>
+            • <strong>Climate-zone N2O adjustments:</strong> Tropical/Arid/Boreal physics<br>
+            • <strong>AWARE 2.0 water scarcity:</strong> ${Object.keys(window.aioxyData.aware_factors).length} countries<br>
+            • <strong>Grid intensity physics:</strong> ${Object.keys(window.aioxyData.grid_intensity).length} countries<br>
+            • <strong>Crop classes:</strong> ${Object.keys(window.aioxyData.crop_classes).length} categories
+        </div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--gray);">
+            <i class="fas fa-info-circle"></i> Ingredients dynamically adjusted for origin yield, climate, and water scarcity
+        </div>
+    `;
+    
+    dataQualitySection.appendChild(physicsNote);
+        }
         } else {
             dataQualitySection.classList.add('hidden');
         }
