@@ -7760,7 +7760,75 @@ item.innerHTML = `
             list.appendChild(item);
         });
     }
+// ================== SUPPLIER DATA MODAL FUNCTIONS ==================
+let currentIngredientIndex = null;
 
+function openSupplierModal(index) {
+    currentIngredientIndex = index;
+    const ingredient = selectedIngredients[index];
+    const modal = document.getElementById('supplierModal');
+    
+    // Populate with existing data if available
+    if (ingredient.primaryData) {
+        document.getElementById('supplierFarmRegion').value = ingredient.primaryData.farmRegion || '';
+        document.getElementById('supplierNitrogen').value = ingredient.primaryData.nitrogenKgPerTon || '';
+        document.getElementById('supplierYield').value = ingredient.primaryData.yieldKgPerHa || '';
+        document.getElementById('supplierWaterSource').value = ingredient.primaryData.waterSource || '';
+        document.getElementById('supplierPractice').value = ingredient.primaryData.farmingPractice || '';
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeSupplierModal() {
+    document.getElementById('supplierModal').classList.add('hidden');
+    currentIngredientIndex = null;
+}
+
+function saveSupplierData() {
+    if (currentIngredientIndex === null) return;
+    
+    const farmRegion = document.getElementById('supplierFarmRegion').value.trim();
+    const nitrogen = parseFloat(document.getElementById('supplierNitrogen').value);
+    const yieldVal = parseFloat(document.getElementById('supplierYield').value);
+    const waterSource = document.getElementById('supplierWaterSource').value;
+    const practice = document.getElementById('supplierPractice').value;
+    
+    // Validate
+    if (!farmRegion || isNaN(nitrogen) || isNaN(yieldVal)) {
+        alert('Please fill in required fields: Farm Region, Nitrogen, and Yield');
+        return;
+    }
+    
+    // Save to ingredient
+    selectedIngredients[currentIngredientIndex].primaryData = {
+        farmRegion,
+        nitrogenKgPerTon: nitrogen,
+        yieldKgPerHa: yieldVal,
+        waterSource,
+        farmingPractice: practice,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Update display
+    updateIngredientList();
+    
+    // Recalculate impacts
+    calculateImpact();
+    
+    // Close modal
+    closeSupplierModal();
+    
+    console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex].name}`);
+}
+
+// Add CSS for the modal
+const style = document.createElement('style');
+style.textContent = `
+    .hidden { display: none !important; }
+    #supplierModal { transition: opacity 0.3s ease; }
+`;
+document.head.appendChild(style);
     function updateIngredientQuantity(index, newQuantity) {
         selectedIngredients[index].quantity = parseFloat(newQuantity);
         calculateImpact();
