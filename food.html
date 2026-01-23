@@ -6005,8 +6005,15 @@ tbody.innerHTML = `
 `;
 
     const totalBenefit = document.getElementById('totalBenefit');
-    if (totalBenefit) {
-        totalBenefit.innerText = "€" + total.toFixed(2);
+if (totalBenefit) {
+    // Only count REAL cash savings (energy + fuel), not speculative carbon "savings"
+    const realCashSavings = moneyEnergy + moneyFuel;
+    totalBenefit.innerHTML = `
+        €${realCashSavings.toFixed(2)} 
+        <div style="font-size: 0.8rem; color: var(--gray); font-weight: normal; margin-top: 0.25rem;">
+            Direct operational savings only
+        </div>
+    `;
     }
 }
 
