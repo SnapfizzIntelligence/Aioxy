@@ -3668,50 +3668,88 @@ function calculateGLECTransport(grossWeightKg, distanceKm, mode, refrigerationTy
 
     return emissions;
     }
-  // ================== AIOXY THERMODYNAMIC PROCESSING ENGINE ==================
+// ================== AIOXY THERMODYNAMIC PROCESSING ENGINE (WITH PRIMARY DATA) ==================
 function calculateThermodynamicImpact(massInputKg, massOutputKg, processingMethod, countryCode) {
     console.log("🔥 [Physics] Calculating thermodynamic impact...");
     
-    // 1. PHYSICS CONSTANTS
-    const SPECIFIC_HEAT_WATER = 4.18; // kJ/kg·°C
-    const LATENT_HEAT_VAPORIZATION = 2260; // kJ/kg
-    const AMBIENT_TEMP = 20; // °C
-    
-    // 2. DETERMINE PROCESS TEMPERATURE & EVAPORATION
-    const process = aioxyData.processing[processingMethod] || { yield: 1.0, temp: 20 };
-    const targetTemp = process.temp || 100; // Default to boiling if heating involved
-    const evaporationMass = Math.max(0, massInputKg - massOutputKg);
-    
-    // 3. THERMODYNAMICS CALCULATION
-    const energyHeatingMJ = (massInputKg * SPECIFIC_HEAT_WATER * (targetTemp - AMBIENT_TEMP)) / 1000;
-    const energyEvaporationMJ = (evaporationMass * LATENT_HEAT_VAPORIZATION) / 1000;
-    const totalThermalEnergyMJ = energyHeatingMJ + energyEvaporationMJ;
-    
-    // 4. CONVERT TO ELECTRICITY (assuming electric heating efficiency ~90%)
-    const efficiency = 0.90;
-    const electricityKWh = (totalThermalEnergyMJ / 3.6) / efficiency;
-    
-    // 5. CARBON INTENSITY
+    // 1. CHECK FOR PRIMARY DATA OVERRIDE (GEMINI'S CRITICAL FIX)
+    const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
+    const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+    const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+
+    let electricityKWh = 0;
+    let methodUsed = "Secondary (Thermodynamic Model)";
+    let physicsData = null;
+
+    if (usePrimary && totalKWh > 0 && totalProd > 0) {
+        // PRIMARY DATA CALCULATION: (Total Bill / Total Output) * Batch Size
+        const kwhPerKg = totalKWh / totalProd;
+        electricityKWh = kwhPerKg * massOutputKg; 
+        methodUsed = "Primary (Utility Bills)";
+        
+        console.log(`🏭 [Factory Primary] Using REAL DATA: ${kwhPerKg.toFixed(4)} kWh/kg`);
+        console.log(`   Annual: ${totalKWh} kWh / ${totalProd} kg = ${kwhPerKg.toFixed(4)} kWh/kg`);
+        
+        physicsData = {
+            source: "primary_utility_bills",
+            kwh_per_kg: kwhPerKg,
+            annual_electricity_kwh: totalKWh,
+            annual_production_kg: totalProd,
+            method: "direct_measurement"
+        };
+        
+    } else {
+        // 2. PHYSICS-BASED THERMODYNAMIC CALCULATION (Fallback - Your Existing Logic)
+        const SPECIFIC_HEAT_WATER = 4.18; // kJ/kg·°C
+        const LATENT_HEAT_VAPORIZATION = 2260; // kJ/kg
+        const AMBIENT_TEMP = 20; // °C
+        
+        // Get temperature from processing data
+        const process = aioxyData.processing[processingMethod] || { yield: 1.0, temp: 20 };
+        const targetTemp = process.temp || 100; // Default to boiling if heating involved
+        const evaporationMass = Math.max(0, massInputKg - massOutputKg);
+        
+        // THERMODYNAMICS CALCULATION (First Law: Q = mcΔT + mL)
+        const energyHeatingMJ = (massInputKg * SPECIFIC_HEAT_WATER * (targetTemp - AMBIENT_TEMP)) / 1000;
+        const energyEvaporationMJ = (evaporationMass * LATENT_HEAT_VAPORIZATION) / 1000;
+        const totalThermalEnergyMJ = energyHeatingMJ + energyEvaporationMJ;
+        
+        // CONVERT TO ELECTRICITY (assuming electric heating efficiency ~90%)
+        const efficiency = 0.90;
+        electricityKWh = (totalThermalEnergyMJ / 3.6) / efficiency;
+        
+        methodUsed = "Secondary (Thermodynamic Physics)";
+        
+        console.log(`🔥 [Factory Physics] ${massInputKg.toFixed(2)}kg → ${massOutputKg.toFixed(2)}kg`);
+        console.log(`   Evaporated: ${evaporationMass.toFixed(2)}kg | Energy: ${totalThermalEnergyMJ.toFixed(2)} MJ`);
+        
+        physicsData = {
+            source: "thermodynamic_model",
+            energy_heating_mj: energyHeatingMJ,
+            energy_evaporation_mj: energyEvaporationMJ,
+            evaporation_kg: evaporationMass,
+            target_temperature_c: targetTemp,
+            efficiency_factor: efficiency,
+            method: "thermodynamic_calculation"
+        };
+    }
+
+    // 3. CARBON INTENSITY (Country-Specific Grid)
     const country = aioxyData.countries[countryCode] || aioxyData.countries['FR'];
     const gridCarbonFactor = country.electricityCO2 / 1000; // kg CO2e/kWh
     const manufacturingCO2 = electricityKWh * gridCarbonFactor;
 
-    console.log(`🔥 Thermodynamics: ${massInputKg.toFixed(2)}kg → ${massOutputKg.toFixed(2)}kg`);
-    console.log(`   Evaporated: ${evaporationMass.toFixed(2)}kg | Energy: ${totalThermalEnergyMJ.toFixed(2)} MJ`);
     console.log(`   Grid: ${country.name} (${country.electricityCO2}g/kWh) → ${manufacturingCO2.toFixed(3)} kg CO2e`);
+    console.log(`   Method: ${methodUsed}`);
 
     return {
         co2: manufacturingCO2,
         kwh: electricityKWh,
-        water_evaporated_kg: evaporationMass,
-        physics_data: {
-            energy_heating_mj: energyHeatingMJ,
-            energy_evaporation_mj: energyEvaporationMJ,
-            target_temperature_c: targetTemp,
-            efficiency_factor: efficiency
-        }
+        method: methodUsed,
+        physics_data: physicsData,
+        water_evaporated_kg: physicsData?.evaporation_kg || 0
     };
-    }  
+    }
 
 // ================== UNIVERSAL PHYSICS FIX: ALL FOOD PRODUCTS ==================
 function calculateBaselineUplift(baselineKey) {
