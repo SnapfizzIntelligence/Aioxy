@@ -4749,63 +4749,93 @@ calculateFoodImpact() {
     let dqrComponents = [];
 
     finalIngredients.forEach(item => {
-        let ing = aioxyData.ingredients[item.id];
+    let ing = aioxyData.ingredients[item.id];
+    
+    // Water fallback (GROK'S SAFETY FIX)
+    if (!ing && item.id === 'tap-water-municipal') {
+        ing = {
+            name: 'Tap Water (Municipal)',
+            loss: 0.0,
+            data: {
+                pef: { 
+                    "Climate Change": 0.0003,
+                    "Water Use/Scarcity (AWARE)": 0.0,
+                    "Land Use": 0.0,
+                    "Resource Use, fossils": 0.0
+                },
+                metadata: { dqr_overall: 2.0, source_dataset: 'Estimated Fallback' }
+            }
+        };
+    }
+    
+    if (!ing) return;
+
+    // ========== PRIMARY DATA OVERRIDE CHECK ==========
+    let impactMultipliers = {
+        "Climate Change": 1.0,
+        "Water Use/Scarcity (AWARE)": 1.0,
+        "Land Use": 1.0
+    };
+    
+    let dataSourceNote = "Agribalyse PEF (France/EU average)";
+    
+    if (item.primaryData) {
+        console.log(`🌾 [Primary Data] Applying farm-specific adjustments for ${ing.name}`);
         
-        // Water fallback (GROK'S SAFETY FIX)
-        if (!ing && item.id === 'tap-water-municipal') {
-            ing = {
-                name: 'Tap Water (Municipal)',
-                loss: 0.0,
-                data: {
-                    pef: { 
-                        "Climate Change": 0.0003,
-                        "Water Use/Scarcity (AWARE)": 0.0,
-                        "Land Use": 0.0,
-                        "Resource Use, fossils": 0.0
-                    },
-                    metadata: { dqr_overall: 2.0, source_dataset: 'Estimated Fallback' }
-                }
-            };
-        }
+        // Calculate adjustments based on primary data
+        const nitrogenAdjustment = calculateNitrogenAdjustment(item.primaryData.nitrogenKgPerTon, ing);
+        const yieldAdjustment = calculateYieldAdjustment(item.primaryData.yieldKgPerHa, ing);
+        const regionAdjustment = calculateRegionalAdjustment(item.primaryData.farmRegion, ing);
         
-        if (!ing) return;
-
-        // Farm Loss Logic (YOUR EXISTING LOGIC)
-        const farmLoss = ing.loss || 0.0;
-        const grownMass = item.quantity / (1 - farmLoss);
+        // Apply adjustments to impact categories
+        impactMultipliers["Climate Change"] *= nitrogenAdjustment * yieldAdjustment;
+        impactMultipliers["Water Use/Scarcity (AWARE)"] *= regionAdjustment;
+        impactMultipliers["Land Use"] *= yieldAdjustment;
         
-        totalIngredientQuantity += item.quantity;
-        totalInputQuantity += grownMass;
-        agriculturalLoss += (grownMass - item.quantity);
+        dataSourceNote = `Primary Farm Data (${item.primaryData.farmRegion}) - N:${item.primaryData.nitrogenKgPerTon}kg/t, Yield:${item.primaryData.yieldKgPerHa}kg/ha`;
+    }
+    // ========== END PRIMARY DATA CHECK ==========
 
-        // DQR Tracking (YOUR EXISTING LOGIC)
-        if (ing.data.metadata && ing.data.metadata.dqr_overall) {
-            dqrComponents.push({
-                name: ing.name,
-                dqr: ing.data.metadata.dqr_overall,
-                source: ing.data.metadata.source_dataset || 'Agribalyse 3.2',
-                uncertainty: this.calculateUncertainty(ing.data.metadata.dqr ? ing.data.metadata.dqr.P : 2.0)
-            });
-        }
-
-        // PEF Calculations (YOUR EXISTING LOGIC)
-        Object.keys(pefCategories).forEach(cat => {
-            const impactPerKg = ing.data.pef[cat] || 0;
-            const impactTotal = grownMass * impactPerKg;
-
-            auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-                name: ing.name,
-                id: item.id,
-                quantity_kg: grownMass,
-                subtotal: impactTotal,
-                note: "Agribalyse PEF (includes upstream LCI - Cradle-to-Farm-Gate)"
-            });
-            
-            auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
-            auditTrail.pefCategories[cat].total += impactTotal;
+    // Farm Loss Logic (YOUR EXISTING LOGIC)
+    const farmLoss = ing.loss || 0.0;
+    const grownMass = item.quantity / (1 - farmLoss);
+    
+    totalIngredientQuantity += item.quantity;
+    totalInputQuantity += grownMass;
+    agriculturalLoss += (grownMass - item.quantity);
+    
+    // DQR Tracking (YOUR EXISTING LOGIC)
+    if (ing.data.metadata && ing.data.metadata.dqr_overall) {
+        dqrComponents.push({
+            name: ing.name,
+            dqr: ing.data.metadata.dqr_overall,
+            source: ing.data.metadata.source_dataset || 'Agribalyse 3.2',
+            uncertainty: this.calculateUncertainty(ing.data.metadata.dqr ? ing.data.metadata.dqr.P : 2.0),
+            hasPrimaryData: !!item.primaryData
         });
-    });
+    }
+    
+    // PEF Calculations (WITH PRIMARY DATA ADJUSTMENTS)
+    Object.keys(pefCategories).forEach(cat => {
+        const baseImpactPerKg = ing.data.pef[cat] || 0;
+        const multiplier = impactMultipliers[cat] || 1.0;
+        const adjustedImpactPerKg = baseImpactPerKg * multiplier;
+        const impactTotal = grownMass * adjustedImpactPerKg;
 
+        auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+            name: ing.name,
+            id: item.id,
+            quantity_kg: grownMass,
+            subtotal: impactTotal,
+            note: dataSourceNote,
+            primary_data_used: !!item.primaryData,
+            adjustment_factor: multiplier
+        });
+        
+        auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
+        auditTrail.pefCategories[cat].total += impactTotal;
+    });
+});
     // 5. MANUFACTURING IMPACTS (YOUR EXISTING LOGIC - UNCHANGED)
     const processingData = aioxyData.processing[processingMethod];
     if (processingData && massBalanceData.productMass > 0) {
