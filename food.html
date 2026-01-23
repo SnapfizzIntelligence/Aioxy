@@ -5058,15 +5058,14 @@ Object.keys(pefCategories).forEach(cat => {
     }
 
     // =========== GROK'S FIX: TRANSPORT NOW USES finalIngredients ===========
-    let inboundTransportCO2 = 0;
-    let totalWaterImpact = 0;
+// Helper functions (YOUR EXISTING LOGIC) - MOVED UP to fix initialization error
+const getIngredientOrigin = (ingredientId) => {
+    return PHYSICS_DB.origins[ingredientId] || "FR";
+};
+const getCurrentMonth = () => new Date().getMonth();
 
-    // Helper functions (YOUR EXISTING LOGIC)
-    const getIngredientOrigin = (ingredientId) => {
-        return PHYSICS_DB.origins[ingredientId] || "FR";
-    };
-    const getCurrentMonth = () => new Date().getMonth();
-
+let inboundTransportCO2 = 0;
+let totalWaterImpact = 0;
     finalIngredients.forEach(ing => {
         // GROK'S FIX: Skip virtual water for transport
         if (ing.isVirtual) return;
