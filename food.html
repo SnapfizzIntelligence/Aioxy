@@ -2540,6 +2540,86 @@
     <p>This may take a few moments.</p>
 </div>
 
+<!-- ========== SUPPLIER DATA MODAL ========== -->
+<div id="supplierModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: var(--primary);">
+                <i class="fas fa-tractor"></i> Primary Farm Data
+            </h3>
+            <button onclick="closeSupplierModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--gray); cursor: pointer;">×</button>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <p style="color: var(--gray); margin-bottom: 1rem;">
+                <i class="fas fa-info-circle"></i> 
+                Replace Agribalyse averages with your <strong>specific farm data</strong> for accurate calculations.
+                Required for "Carbon Neutral" or comparative claims.
+            </p>
+            
+            <div class="form-group">
+                <label class="form-label">Farm Region/Country</label>
+                <input type="text" id="supplierFarmRegion" class="form-control" placeholder="e.g., Normandy, France">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Nitrogen Fertilizer (kg per ton of crop)</label>
+                <input type="number" id="supplierNitrogen" class="form-control" placeholder="e.g., 15 (Agribalyse average: 20)">
+                <small style="color: var(--gray);">Lower = better. Organic farms: 0-5 kg/ton</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Yield (kg per hectare)</label>
+                <input type="number" id="supplierYield" class="form-control" placeholder="e.g., 5000 (Agribalyse average: 3500)">
+                <small style="color: var(--gray);">Higher = better. Good yield: 4000-6000 kg/ha</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Irrigation Water Source</label>
+                <select id="supplierWaterSource" class="form-control">
+                    <option value="">Select...</option>
+                    <option value="rainfed">Rainfed (no irrigation)</option>
+                    <option value="surface">Surface water (river, lake)</option>
+                    <option value="groundwater">Groundwater (well)</option>
+                    <option value="mixed">Mixed irrigation</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Farming Practice</label>
+                <select id="supplierPractice" class="form-control">
+                    <option value="">Select...</option>
+                    <option value="conventional">Conventional</option>
+                    <option value="organic">Organic Certified</option>
+                    <option value="regen">Regenerative Agriculture</option>
+                    <option value="precision">Precision Farming</option>
+                </select>
+            </div>
+        </div>
+        
+        <div style="background: #F0F9FF; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #BDE0FE;">
+            <div style="font-size: 0.8rem; color: #084B82;">
+                <i class="fas fa-shield-alt"></i>
+                <strong>Compliance Note:</strong> This primary data enables:
+                <ul style="margin: 0.5rem 0 0 1rem;">
+                    <li>Specific "Carbon Reduced" claims</li>
+                    <li>Accurate water footprint (regional AWARE factors)</li>
+                    <li>Verifiable supply chain transparency</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+            <button class="btn btn-outline" onclick="closeSupplierModal()" style="flex: 1;">
+                <i class="fas fa-times"></i> Use Agribalyse Average
+            </button>
+            <button class="btn" onclick="saveSupplierData()" style="flex: 1; background: var(--gradient-secondary);">
+                <i class="fas fa-save"></i> Save Primary Data
+            </button>
+        </div>
+    </div>
+                    </div>
+    
 <script>
     // ================== DATA INTEGRITY CHECK ==================
 console.log("🔍 [AIOXY Startup] Checking data integrity...");
