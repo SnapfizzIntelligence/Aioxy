@@ -1480,6 +1480,34 @@
                             <option value="oat-processing">Oat Enzyming/Heat Treatment</option>
                         </select>
                     </div>
+                    <div style="background: #F0F9FF; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 1px solid #BDE0FE;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <label class="form-label" style="margin-bottom: 0; color: #084B82;">
+            <i class="fas fa-bolt"></i> Factory Energy Override (Primary Data)
+        </label>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="usePrimaryFactoryData" onchange="toggleFactoryInputs()">
+            <label class="form-check-label" for="usePrimaryFactoryData" style="font-size: 0.8rem;">I have real bills</label>
+        </div>
+    </div>
+    
+    <div id="factoryDataInputs" class="hidden">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <label class="form-label" style="font-size: 0.8rem;">Annual Elec. Bill (kWh)</label>
+                <input type="number" id="factoryTotalKWh" class="form-control" placeholder="e.g. 50000">
+            </div>
+            <div>
+                <label class="form-label" style="font-size: 0.8rem;">Total Production (kg)</label>
+                <input type="number" id="factoryTotalOutput" class="form-control" placeholder="e.g. 100000">
+            </div>
+        </div>
+        <div style="font-size: 0.75rem; color: #084B82; margin-top: 0.5rem;">
+            <i class="fas fa-check-circle"></i> This replaces generic processing estimates with your verified data.
+        </div>
+    </div>
+</div>
+
 
                     <div class="form-group">
                         <label class="form-label">Transportation</label>
