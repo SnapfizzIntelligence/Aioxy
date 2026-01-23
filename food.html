@@ -4978,26 +4978,60 @@ calculateFoodImpact() {
         });
     }
     
-    // PEF Calculations (WITH PRIMARY DATA ADJUSTMENTS)
-    Object.keys(pefCategories).forEach(cat => {
-        const baseImpactPerKg = ing.data.pef[cat] || 0;
-        const multiplier = impactMultipliers[cat] || 1.0;
-        const adjustedImpactPerKg = baseImpactPerKg * multiplier;
-        const impactTotal = grownMass * adjustedImpactPerKg;
-
-        auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-            name: ing.name,
-            id: item.id,
-            quantity_kg: grownMass,
-            subtotal: impactTotal,
-            note: dataSourceNote,
-            primary_data_used: !!item.primaryData,
-            adjustment_factor: multiplier
-        });
+    // PEF Calculations (WITH UNIVERSAL PHYSICS ADJUSTMENTS)
+Object.keys(pefCategories).forEach(cat => {
+    let baseImpactPerKg = ing.data.pef[cat] || 0;
+    
+    // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
+    let universalAdjustments = null;
+    if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
+        const ingredientOrigin = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
+        universalAdjustments = calculateUniversalAdjustments(
+            ing.name,
+            ingredientOrigin,              // Origin country
+            processingMethod,              // Processing method
+            manufacturingCountryCode || 'FR' // Manufacturing country
+        );
         
-        auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
-        auditTrail.pefCategories[cat].total += impactTotal;
+        console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
+        
+        // Apply multipliers based on category
+        if (cat === "Climate Change") {
+            baseImpactPerKg *= universalAdjustments.multipliers.co2;
+            // Add grid intensity adder
+            const adderPerKg = universalAdjustments.adder;
+            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
+        } else if (cat === "Land Use") {
+            baseImpactPerKg *= universalAdjustments.multipliers.land;
+        } else if (cat === "Water Use/Scarcity (AWARE)") {
+            baseImpactPerKg *= universalAdjustments.multipliers.water;
+        }
+    }
+    
+    // Apply primary data adjustments (existing logic)
+    const multiplier = impactMultipliers[cat] || 1.0;
+    const adjustedImpactPerKg = baseImpactPerKg * multiplier;
+    const impactTotal = grownMass * adjustedImpactPerKg;
+
+    auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+        name: ing.name,
+        id: item.id,
+        quantity_kg: grownMass,
+        subtotal: impactTotal,
+        note: dataSourceNote + (universalAdjustments ? " + Universal Physics" : ""),
+        primary_data_used: !!item.primaryData,
+        adjustment_factor: multiplier,
+        universal_adjustments: universalAdjustments ? {
+            yield_factor: universalAdjustments.multipliers.land,
+            climate_factor: universalAdjustments.multipliers.co2,
+            water_factor: universalAdjustments.multipliers.water,
+            grid_adder: universalAdjustments.adder
+        } : null
     });
+    
+    auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
+    auditTrail.pefCategories[cat].total += impactTotal;
+});
 });
     // 5. MANUFACTURING IMPACTS (YOUR EXISTING LOGIC - UNCHANGED)
     const processingData = aioxyData.processing[processingMethod];
