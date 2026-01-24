@@ -4981,7 +4981,7 @@ calculateFoodImpact() {
     // PEF Calculations (WITH UNIVERSAL PHYSICS ADJUSTMENTS)
 Object.keys(pefCategories).forEach(cat => {
     let baseImpactPerKg = ing.data.pef[cat] || 0;
-    
+    const ingredientOrigin = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
     // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
     let universalAdjustments = null;
     if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
