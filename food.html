@@ -6881,51 +6881,31 @@ function displayFullPefScorecard() {
     }
         }
 
-// ================== IMPROVED TRANSPARENCY LOG DISPLAY ==================
+// ================== IMPROVED TRANSPARENCY LOG DISPLAY (REGULATOR READY) ==================
 function displayAuditTrail() {
     const auditContent = document.getElementById('auditTrailContent');
     if (!auditContent) return;
 
     if (!auditTrailData || !auditTrailData.pefCategories) {
         auditContent.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-calculator"></i>
-                    <h3>No calculation data available</h3>
-                    <p>Calculate environmental impacts first to generate the transparency log</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-calculator"></i>
+                <h3>No calculation data available</h3>
+                <p>Calculate environmental impacts first to generate the transparency log</p>
+            </div>`;
         return;
     }
 
-    // Helper: Get country name & flag from code
-    function getCountryDisplay(countryCode) {
-        const countries = {
-            'FR': { name: 'France', flag: '🇫🇷' },
-            'DE': { name: 'Germany', flag: '🇩🇪' },
-            'ES': { name: 'Spain', flag: '🇪🇸' },
-            'IT': { name: 'Italy', flag: '🇮🇹' },
-            'UK': { name: 'UK', flag: '🇬🇧' },
-            'US': { name: 'USA', flag: '🇺🇸' },
-            'CN': { name: 'China', flag: '🇨🇳' },
-            'NL': { name: 'Netherlands', flag: '🇳🇱' },
-            'SE': { name: 'Sweden', flag: '🇸🇪' },
-            'DK': { name: 'Denmark', flag: '🇩🇰' },
-            'PL': { name: 'Poland', flag: '🇵🇱' },
-            'BR': { name: 'Brazil', flag: '🇧🇷' },
-            'IN': { name: 'India', flag: '🇮🇳' },
-            'AU': { name: 'Australia', flag: '🇦🇺' },
-            'CA': { name: 'Canada', flag: '🇨🇦' },
-            'NO': { name: 'Norway', flag: '🇳🇴' },
-            'VN': { name: 'Vietnam', flag: '🇻🇳' },
-            'ID': { name: 'Indonesia', flag: '🇮🇩' }
-        };
-        const c = countries[countryCode];
-        return c ? `${c.flag} ${c.name}` : `🏳️ ${countryCode}`;
+    // Helper: Get country name & flag
+    function getCountryDisplay(code) {
+        if (!code) return 'Unknown';
+        const country = window.aioxyData.countries[code];
+        // Simple flag mapping if name available, else code
+        return country ? `${country.name}` : code;
     }
 
     let auditHTML = '';
-    
-    // We focus on the big 4 categories for clarity
+    // Focus on the big categories where physics adjustments matter most
     const keyCategories = ["Climate Change", "Water Use/Scarcity (AWARE)", "Land Use", "Resource Use, fossils"];
     
     keyCategories.forEach(category => {
@@ -6933,164 +6913,156 @@ function displayAuditTrail() {
             const cat = auditTrailData.pefCategories[category];
             
             auditHTML += `
-                    <div class="audit-category">
-                        <div class="audit-category-header">
-                            <span>${category}</span>
-                            <span class="pef-value">${formatPEFValue(cat.total)} ${cat.unit}</span>
+                <div class="audit-category">
+                    <div class="audit-category-header">
+                        <span>${category}</span>
+                        <span class="pef-value">${formatPEFValue(cat.total)} ${cat.unit}</span>
+                    </div>
+                    
+                    <div class="audit-component">
+                        <div class="audit-component-header">
+                            <span>Ingredients & Agriculture</span>
+                            <span>${formatPEFValue(cat.contribution_tree.Ingredients.total)} ${cat.unit}</span>
                         </div>
-                        
-                        <div class="audit-component">
-                            <div class="audit-component-header">
-                                <span>Ingredients & Agriculture</span>
-                                <span>${formatPEFValue(cat.contribution_tree.Ingredients.total)} ${cat.unit}</span>
-                            </div>
-                            ${cat.contribution_tree.Ingredients.components.map(comp => {
-                                // === PHYSICS ADJUSTMENT BADGE LOGIC ===
-                                let adjustmentBadge = '';
+                        ${cat.contribution_tree.Ingredients.components.map(comp => {
+                            
+                            // === REGULATOR PROOF DISPLAY LOGIC ===
+                            let adjustmentBlock = '';
+                            
+                            // Check if Universal Physics were applied
+                            if (comp.universal_adjustments) {
+                                const adj = comp.universal_adjustments;
+                                const fromC = adj.adjusted_from_country || 'FR';
+                                const toC = adj.adjusted_for_country || 'FR';
+                                const isAdjusted = (fromC !== toC);
                                 
-                                // Check if universal adjustments exist AND if they actually changed the numbers
-                                if (comp.universal_adjustments) {
-                                    const adj = comp.universal_adjustments;
-                                    const fromC = adj.adjusted_from_country || 'FR';
-                                    const toC = adj.adjusted_for_country || 'FR';
-                                    
-                                    // Only show if countries differ OR meaningful physics applied
-                                    const distinctFactors = [];
-                                    
-                                    // 1. Water Physics
-                                    if (category.includes("Water") && Math.abs(adj.water_factor - 1.0) > 0.05) {
-                                        const direction = adj.water_factor > 1 ? "Scarcity Penalty" : "Abundance Credit";
-                                        distinctFactors.push(`<strong>💧 Water:</strong> ${direction} (x${adj.water_factor.toFixed(2)})`);
-                                    }
-                                    
-                                    // 2. Land/Yield Physics
-                                    if ((category.includes("Land") || category.includes("Climate")) && Math.abs(adj.yield_factor - 1.0) > 0.05) {
-                                        distinctFactors.push(`<strong>🌾 Yield:</strong> ${getCountryDisplay(toC)} specific (x${adj.yield_factor.toFixed(2)} land use)`);
-                                    }
-                                    
-                                    // 3. Grid/Processing Physics (If manufacturing involved)
-                                    if (category.includes("Climate") && adj.grid_adder > 0.001) {
-                                        distinctFactors.push(`<strong>⚡ Processing Grid:</strong> ${getCountryDisplay(toC)} mix (+${adj.grid_adder.toFixed(3)} kg)`);
-                                    }
-
-                                    // RENDER BADGE if we have factors to show
-                                    if (distinctFactors.length > 0 || fromC !== toC) {
-                                        adjustmentBadge = `
-                                        <div style="margin-top:8px; font-size:0.75rem; background:#FFF8E1; padding:8px 10px; border-radius:6px; border-left:3px solid #FFC107;">
-                                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; color:#B7791F;">
-                                                <span>
-                                                    <i class="fas fa-globe-americas"></i> 
-                                                    <strong>Origin Adjustment Active</strong>
-                                                </span>
-                                                <span style="font-size:0.7rem; background:white; padding:2px 6px; border-radius:4px; border:1px solid #FFECB3;">
-                                                    ${getCountryDisplay(fromC)} ➝ ${getCountryDisplay(toC)}
-                                                </span>
-                                            </div>
-                                            <div style="color:#5D4037; line-height:1.4;">
-                                                ${distinctFactors.join('<br>')}
-                                            </div>
-                                        </div>`;
+                                // Build dynamic adjustment strings based on Category
+                                let physicsDetails = [];
+                                
+                                if (category.includes("Water")) {
+                                    if (Math.abs(adj.water_factor - 1.0) > 0.01) {
+                                        physicsDetails.push(`Water Scarcity x${adj.water_factor.toFixed(2)}`);
                                     }
                                 }
+                                if (category.includes("Land") || category.includes("Climate")) {
+                                    if (Math.abs(adj.yield_factor - 1.0) > 0.01) {
+                                        physicsDetails.push(`Yield Efficiency x${adj.yield_factor.toFixed(2)}`);
+                                    }
+                                    if (category.includes("Climate") && Math.abs(adj.climate_factor - 1.0) > 0.01) {
+                                        physicsDetails.push(`N₂O Climate Volatility x${adj.climate_factor.toFixed(2)}`);
+                                    }
+                                }
+                                if (category.includes("Climate") && adj.grid_adder > 0) {
+                                    physicsDetails.push(`Processing Grid +${adj.grid_adder.toFixed(3)}kg`);
+                                }
 
-                                // Default Source Note
-                                let sourceNote = comp.note || 'Agribalyse 3.2';
-                                if (comp.primary_data_used) sourceNote = '✓ Verified Primary Supplier Data';
+                                // Only render if we have something to show
+                                if (physicsDetails.length > 0 || isAdjusted) {
+                                    adjustmentBlock = `
+                                    <div style="margin-top: 8px; font-size: 0.75rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px;">
+                                        
+                                        <div style="margin-bottom: 4px; color: #475569;">
+                                            📍 <strong>Origin:</strong> ${getCountryDisplay(fromC)} &nbsp;→&nbsp; <strong>Mfg:</strong> ${getCountryDisplay(toC)}
+                                        </div>
 
-                                return `
-                                <div class="audit-item" style="flex-direction:column; align-items:flex-start;">
-                                    <div style="display:flex; justify-content:space-between; width:100%;">
-                                        <span class="audit-item-name" style="font-weight:500;">${comp.name}</span>
-                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
-                                    </div>
-                                    ${adjustmentBadge}
-                                    <div style="font-size:0.7rem; color:#94A3B8; margin-top:4px; display:flex; gap:6px; align-items:center;">
-                                        <i class="fas fa-database"></i> ${sourceNote}
-                                    </div>
-                                </div>`;
-                            }).join('')}
-                        </div>
-                        
-                        ${cat.contribution_tree.Manufacturing.total > 0 ? `
-                        <div class="audit-component">
-                            <div class="audit-component-header">
-                                <span>Manufacturing</span>
-                                <span>${formatPEFValue(cat.contribution_tree.Manufacturing.total)} ${cat.unit}</span>
-                            </div>
-                            ${cat.contribution_tree.Manufacturing.components.map(comp => `
-                                <div class="audit-item">
-                                    <div style="display:flex; flex-direction:column; width:100%;">
-                                        <div style="display:flex; justify-content:space-between;">
-                                            <span class="audit-item-name">${comp.name}</span>
-                                            <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                        <div style="margin-bottom: 4px; color: ${isAdjusted ? '#059669' : '#475569'}; font-weight: 600;">
+                                            ${isAdjusted ? '✅ Country-Specific Physics Applied' : '✅ Standard Origin Data Used'}
                                         </div>
-                                        <div style="font-size:0.7rem; color:#94A3B8; margin-top:2px;">
-                                            ${comp.details || ''}
+
+                                        ${physicsDetails.length > 0 ? `
+                                        <div style="background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 2px;">
+                                            🔄 <strong>Adjusted Physics:</strong> ${physicsDetails.join(', ')}
                                         </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        ` : ''}
-                        
-                        ${cat.contribution_tree.Transport.total > 0 ? `
-                        <div class="audit-component">
-                            <div class="audit-component-header">
-                                <span>Distribution</span>
-                                <span>${formatPEFValue(cat.contribution_tree.Transport.total)} ${cat.unit}</span>
-                            </div>
-                            ${cat.contribution_tree.Transport.components.map(comp => `
-                                <div class="audit-item">
-                                    <div style="display:flex; flex-direction:column; width:100%;">
-                                        <div style="display:flex; justify-content:space-between;">
-                                            <span class="audit-item-name">${comp.name}</span>
-                                            <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                        ` : ''}
+
+                                        ${isAdjusted ? `
+                                        <div style="margin-top: 4px; color: #64748B; font-style: italic;">
+                                            🌍 Adjusted from ${getCountryDisplay(fromC)} proxy data to ${getCountryDisplay(toC)} local conditions
                                         </div>
-                                        <div style="font-size:0.7rem; color:#94A3B8; margin-top:2px;">
-                                            ${comp.details || ''}
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        ` : ''}
-                        
-                        ${cat.contribution_tree.Upstream && cat.contribution_tree.Upstream.total > 0 ? `
-                        <div class="audit-component">
-                            <div class="audit-component-header">
-                                <span>Upstream Logistics</span>
-                                <span>${formatPEFValue(cat.contribution_tree.Upstream.total)} ${cat.unit}</span>
-                            </div>
-                            ${cat.contribution_tree.Upstream.components.map(comp => `
-                                <div class="audit-item">
-                                    <span class="audit-item-name">${comp.name}</span>
+                                        ` : ''}
+                                    </div>`;
+                                }
+                            }
+
+                            // Standard Audit Item Render
+                            return `
+                            <div class="audit-item" style="flex-direction:column; align-items:flex-start;">
+                                <div style="display:flex; justify-content:space-between; width:100%;">
+                                    <span class="audit-item-name" style="font-weight:600; color:var(--primary);">${comp.name}</span>
                                     <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
                                 </div>
-                            `).join('')}
+                                
+                                ${adjustmentBlock}
+                                
+                                <div style="font-size:0.7rem; color:#94A3B8; margin-top:6px; display:flex; gap:6px; align-items:center;">
+                                    <i class="fas fa-database"></i> Source: ${comp.primary_data_used ? 'Primary Supplier Data' : comp.note || 'Agribalyse 3.2'}
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    
+                    ${cat.contribution_tree.Manufacturing.total > 0 ? `
+                    <div class="audit-component">
+                        <div class="audit-component-header">
+                            <span>Manufacturing</span>
+                            <span>${formatPEFValue(cat.contribution_tree.Manufacturing.total)} ${cat.unit}</span>
                         </div>
-                        ` : ''}
-                        
-                        ${cat.contribution_tree.Packaging && cat.contribution_tree.Packaging.total > 0 ? `
-                        <div class="audit-component">
-                            <div class="audit-component-header">
-                                <span>Packaging</span>
-                                <span>${formatPEFValue(cat.contribution_tree.Packaging.total)} ${cat.unit}</span>
-                            </div>
-                            ${cat.contribution_tree.Packaging.components.map(comp => `
-                                <div class="audit-item">
-                                    <div style="display:flex; flex-direction:column; width:100%;">
-                                        <div style="display:flex; justify-content:space-between;">
-                                            <span class="audit-item-name">${comp.name}</span>
-                                            <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
-                                        </div>
-                                        <div style="font-size:0.7rem; color:#94A3B8; margin-top:2px;">
-                                            ${comp.notes || ''}
-                                        </div>
+                        ${cat.contribution_tree.Manufacturing.components.map(comp => `
+                            <div class="audit-item">
+                                <div style="display:flex; flex-direction:column; width:100%;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                    <div style="font-size:0.7rem; color:#94A3B8; margin-top:2px;">
+                                        ${comp.details || ''}
                                     </div>
                                 </div>
-                            `).join('')}
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+                    
+                    ${cat.contribution_tree.Transport.total > 0 ? `
+                    <div class="audit-component">
+                        <div class="audit-component-header">
+                            <span>Distribution</span>
+                            <span>${formatPEFValue(cat.contribution_tree.Transport.total)} ${cat.unit}</span>
                         </div>
-                        ` : ''}
+                        ${cat.contribution_tree.Transport.components.map(comp => `
+                            <div class="audit-item">
+                                <div style="display:flex; flex-direction:column; width:100%;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                    <div style="font-size:0.7rem; color:#94A3B8; margin-top:2px;">
+                                        ${comp.details || ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+
+                    ${cat.contribution_tree.Packaging && cat.contribution_tree.Packaging.total > 0 ? `
+                    <div class="audit-component">
+                        <div class="audit-component-header">
+                            <span>Packaging</span>
+                            <span>${formatPEFValue(cat.contribution_tree.Packaging.total)} ${cat.unit}</span>
+                        </div>
+                        ${cat.contribution_tree.Packaging.components.map(comp => `
+                            <div class="audit-item">
+                                <div style="display:flex; flex-direction:column; width:100%;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                    <div style="font-size:0.7rem; color:#94A3B8; margin-top:2px;">
+                                        ${comp.notes || ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
                 </div>
             `;
         }
