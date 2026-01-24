@@ -5022,6 +5022,8 @@ Object.keys(pefCategories).forEach(cat => {
         primary_data_used: !!item.primaryData,
         adjustment_factor: multiplier,
         universal_adjustments: universalAdjustments ? {
+            adjusted_from_country: ingredientOrigin || 'FR',
+            adjusted_for_country: manufacturingCountryCode || 'FR',
             yield_factor: universalAdjustments.multipliers.land,
             climate_factor: universalAdjustments.multipliers.co2,
             water_factor: universalAdjustments.multipliers.water,
@@ -6879,31 +6881,42 @@ function displayFullPefScorecard() {
     }
         }
 
-    // ================== TRANSPARENCY LOG ==================
-    function displayAuditTrail() {
-        const auditContent = document.getElementById('auditTrailContent');
-        
-        if (!auditContent) return;
+// ================== TRANSPARENCY LOG (COMPLIANCE FIXED) ==================
+function displayAuditTrail() {
+    const auditContent = document.getElementById('auditTrailContent');
+    
+    if (!auditContent) return;
 
-        if (!auditTrailData || !auditTrailData.pefCategories) {
-            auditContent.innerHTML = `
+    if (!auditTrailData || !auditTrailData.pefCategories) {
+        auditContent.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-calculator"></i>
                     <h3>No calculation data available</h3>
                     <p>Calculate environmental impacts first to generate the transparency log</p>
                 </div>
             `;
-            return;
-        }
+        return;
+    }
 
-        let auditHTML = '';
-        
-        const keyCategories = ["Climate Change", "Water Use/Scarcity (AWARE)", "Land Use", "Resource Use, fossils"];
-        
-        keyCategories.forEach(category => {
-            if (auditTrailData.pefCategories[category]) {
-                const cat = auditTrailData.pefCategories[category];
-                auditHTML += `
+    // Helper: Get country name from code
+    function getCountryName(countryCode) {
+        const countryNames = {
+            'FR': 'France', 'DE': 'Germany', 'ES': 'Spain', 'IT': 'Italy', 
+            'UK': 'United Kingdom', 'US': 'United States', 'CN': 'China',
+            'NL': 'Netherlands', 'SE': 'Sweden', 'DK': 'Denmark', 'PL': 'Poland',
+            'BR': 'Brazil', 'IN': 'India', 'AU': 'Australia', 'CA': 'Canada'
+        };
+        return countryNames[countryCode] || countryCode;
+    }
+
+    let auditHTML = '';
+    
+    const keyCategories = ["Climate Change", "Water Use/Scarcity (AWARE)", "Land Use", "Resource Use, fossils"];
+    
+    keyCategories.forEach(category => {
+        if (auditTrailData.pefCategories[category]) {
+            const cat = auditTrailData.pefCategories[category];
+            auditHTML += `
                     <div class="audit-category">
                         <div class="audit-category-header">
                             <span>${category}</span>
@@ -6915,12 +6928,79 @@ function displayFullPefScorecard() {
                                 <span>Ingredients</span>
                                 <span>${formatPEFValue(cat.contribution_tree.Ingredients.total)} ${cat.unit}</span>
                             </div>
-                            ${cat.contribution_tree.Ingredients.components.map(comp => `
-                                <div class="audit-item">
-                                    <span class="audit-item-name">${comp.name}</span>
-                                    <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
-                                </div>
-                            `).join('')}
+                            ${cat.contribution_tree.Ingredients.components.map(comp => {
+                                // DETECT IF ADJUSTMENTS WERE APPLIED (Gemini's Fix)
+                                let adjustmentBadge = '';
+                                if (comp.universal_adjustments) {
+                                    const adjs = [];
+                                    // Check which factors actually changed the number
+                                    if (Math.abs(comp.universal_adjustments.water_factor - 1.0) > 0.05) adjs.push(`Water x${comp.universal_adjustments.water_factor.toFixed(2)}`);
+                                    if (Math.abs(comp.universal_adjustments.yield_factor - 1.0) > 0.05) adjs.push(`Yield x${comp.universal_adjustments.yield_factor.toFixed(2)}`);
+                                    if (Math.abs(comp.universal_adjustments.climate_factor - 1.0) > 0.05) adjs.push(`Climate N₂O x${comp.universal_adjustments.climate_factor.toFixed(2)}`);
+                                    
+                                    if (adjs.length > 0) {
+                                        // GET COUNTRY INFO (Country-Specific Fix)
+                                        const fromCountry = comp.universal_adjustments.adjusted_from_country || 'FR';
+                                        const toCountry = comp.universal_adjustments.adjusted_for_country || 'FR';
+                                        const waterFactor = comp.universal_adjustments.water_aware_factor;
+                                        const gridIntensity = comp.universal_adjustments.grid_intensity_g_per_kwh;
+                                        
+                                        let countrySpecificInfo = '';
+                                        if (fromCountry !== toCountry) {
+                                            countrySpecificInfo = `
+                                            <div style="font-size:0.7rem; color:#27ae60; margin-top:2px;">
+                                                <i class="fas fa-globe-europe"></i> 
+                                                Adjusted from ${getCountryName(fromCountry)} → ${getCountryName(toCountry)}
+                                            </div>`;
+                                            
+                                            if (waterFactor) {
+                                                countrySpecificInfo += `
+                                                <div style="font-size:0.65rem; color:#7f8c8d; margin-top:1px;">
+                                                    • Water: AWARE ${waterFactor} (${getCountryName(toCountry)} factor)
+                                                </div>`;
+                                            }
+                                            if (gridIntensity) {
+                                                countrySpecificInfo += `
+                                                <div style="font-size:0.65rem; color:#7f8c8d; margin-top:1px;">
+                                                    • Grid: ${gridIntensity}g/kWh (${getCountryName(toCountry)} electricity)
+                                                </div>`;
+                                            }
+                                        }
+                                        
+                                        adjustmentBadge = `
+                                        <div style="margin-top:6px; font-size:0.75rem; color:#d35400; background:#fff3e0; padding:6px 8px; border-radius:6px; border-left:3px solid #e67e22;">
+                                            <div style="display:flex; align-items:center; gap:4px;">
+                                                <i class="fas fa-sync-alt"></i> 
+                                                <strong>${getCountryName(toCountry)}-Adjusted Physics:</strong>
+                                            </div>
+                                            <div style="margin-top:2px;">${adjs.join(', ')}</div>
+                                            ${countrySpecificInfo}
+                                        </div>`;
+                                    }
+                                }
+
+                                let sourceNote = comp.note || 'Agribalyse 3.2 (France)';
+                                const fromCountry = comp.universal_adjustments?.adjusted_from_country || 'FR';
+                                const toCountry = comp.universal_adjustments?.adjusted_for_country || 'FR';
+                                
+                                if (comp.primary_data_used) {
+                                    sourceNote = '✓ Primary Farm Data Verified';
+                                } else if (fromCountry !== toCountry) {
+                                    sourceNote = `AGRIBALYSE 3.2 (${getCountryName(fromCountry)}) → Physics-adjusted for ${getCountryName(toCountry)}`;
+                                }
+
+                                return `
+                                <div class="audit-item" style="flex-direction:column; align-items:flex-start;">
+                                    <div style="display:flex; justify-content:space-between; width:100%;">
+                                        <span class="audit-item-name">${comp.name}</span>
+                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
+                                    </div>
+                                    ${adjustmentBadge}
+                                    <div style="font-size:0.7rem; color:#7f8c8d; margin-top:2px;">
+                                        <i class="fas fa-database"></i> ${sourceNote}
+                                    </div>
+                                </div>`;
+                            }).join('')}
                         </div>
                         
                         ${cat.contribution_tree.Manufacturing.total > 0 ? `
@@ -6984,12 +7064,11 @@ function displayFullPefScorecard() {
                         ` : ''}
                     </div>
                 `;
-            }
-        });
+        }
+    });
 
-        auditContent.innerHTML = auditHTML;
-    }
-
+    auditContent.innerHTML = auditHTML;
+                }
     // ================== DIGITAL TRANSPARENCY CARD ==================
     function generateDPP() {
         const productName = document.getElementById('productName').value || 'Unnamed Product';
