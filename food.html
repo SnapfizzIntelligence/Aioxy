@@ -5022,7 +5022,7 @@ Object.keys(pefCategories).forEach(cat => {
         primary_data_used: !!item.primaryData,
         adjustment_factor: multiplier,
         universal_adjustments: universalAdjustments ? {
-            adjusted_from_country: ingredientOrigin || 'FR',
+            adjusted_from_country: originCountry || 'FR',
             adjusted_for_country: manufacturingCountryCode || 'FR',
             yield_factor: universalAdjustments.multipliers.land,
             climate_factor: universalAdjustments.multipliers.co2,
