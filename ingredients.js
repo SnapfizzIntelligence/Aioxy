@@ -129,7 +129,7 @@ window.aioxyData = {
         },
         
     }
-}
+},
 
         "broiler-conventional-at-farm-gate-fr": { 
             name: "Broiler, conventional, at farm gate",
@@ -210,7 +210,7 @@ window.aioxyData = {
             data: {
                 pef: { 
                     "Climate Change": 1.1061238, "Ozone Depletion": 6.1238304e-09, "Human Toxicity, non-cancer": 1.3642623e-08,
-                    "Human Toxicity, cancer": 5.2881169e-10, "Particulate Matter": 1.010635e-07, "Ionizing Radiation": 0.035083814,
+                    "Human Toxicity, cancer": 5.2881169e-09, "Particulate Matter": 1.010635e-07, "Ionizing Radiation": 0.035083814,
                     "Photochemical Ozone Formation": 0.0017671955, "Acidification": 0.014976555, "Eutrophication, terrestrial": 0.065590084,
                     "Eutrophication, freshwater": 6.8064244e-05, "Eutrophication, marine": 0.003992328, "Ecotoxicity, freshwater": 14.5777639,
                     "Land Use": 59.0766, "Water Use/Scarcity (AWARE)": 0.11527343, "Resource Use, minerals/metals": 1.8201174e-06,
