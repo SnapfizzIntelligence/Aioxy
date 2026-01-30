@@ -1345,6 +1345,7 @@
                             <option value="auto">Auto-detect (Recommended)</option>
                         <optgroup label="Food Products (Cradle-to-Retail Equivalent)">
     <option value="beef-product">Conventional Beef (Retail Equiv.)</option>
+    <option value="chocolate-spread-conventional">Conventional Palm Oil Spread (The Real Competitor)</option>
     <option value="chicken-product">Conventional Chicken (Retail Equiv.)</option>
     <option value="pork-product">Conventional Pork (Retail Equiv.)</option>
     <option value="cheese-product">Conventional Cheese (Retail Equiv.)</option>
@@ -3393,6 +3394,13 @@ const UNIVERSAL_BASELINES = {
         landUsePerKg: 966,
         fossilPerKg: 28.0
     },
+    'chocolate-spread-conventional': {
+    name: 'Conventional Palm Oil Spread',
+    co2PerKg: 5.8,  // Industry avg for Palm Oil/Sugar/Skim Milk mix
+    waterPerKg: 0.95,
+    landUsePerKg: 14.0,
+    fossilPerKg: 12.5
+},
     'milk-product': {
         name: 'Conventional Cow Milk',
         co2PerKg: 1.40,
