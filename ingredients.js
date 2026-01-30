@@ -1776,6 +1776,7 @@ window.aioxyData = {
         "oilseed":  { global_yield: 3200, water_intensity: 0.8, n_demand: 0.035, name: "Oilseed (Rapeseed, Sunflower)" },
         "vegetable":{ global_yield: 19000, water_intensity: 1.2, n_demand: 0.020, name: "Vegetable (Tomato, Leafy)" },
         "fruit":    { global_yield: 14000, water_intensity: 0.9, n_demand: 0.015, name: "Fruit (Apple, Berry)" },
+        "sugarbeet":{ global_yield: 60000, water_intensity: 0.4, n_demand: 0.015, name: "Sugar Beet" },
         "tropical": { global_yield: 11000, water_intensity: 1.5, n_demand: 0.020, name: "Tropical (Banana, Coffee, Cocoa)" },
         "fiber":    { global_yield: 1000, water_intensity: 4.5, n_demand: 0.040, name: "Fiber (Cotton, Hemp)" }
     },
@@ -1802,6 +1803,7 @@ window.aioxyData = {
         
         // OILSEEDS
         "rapeseed": { "DE": 3300, "FR": 3100, "CA": 2300, "CN": 2100, "IN": 1200, "AU": 1800, "UK": 3400, "Global": 2200 },
+        "palm":     { "ID": 17000, "MY": 19000, "TH": 16000, "Global": 15000 },
         "sunflower":{ "UA": 2400, "RU": 1800, "AR": 2100, "FR": 2600, "RO": 2500, "BG": 2300, "Global": 1900 },
         
         // SPECIALTY & TROPICAL (Found in your data: Coffee, Cocoa, Banana, Spices)
