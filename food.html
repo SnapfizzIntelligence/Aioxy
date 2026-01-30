@@ -6418,6 +6418,40 @@ function updateEnvironmentalStory(results) {
     // Calculate savings percentage
 const savingsPercent = ((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100);
 const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
+// Update the dynamic baseline name in the technical proof
+const baselineElement = document.getElementById('dynamicBaselineName');
+if (baselineElement && results.comparison?.baseline?.name) {
+    // Clean up the baseline name
+    let cleanName = results.comparison.baseline.name;
+    if (cleanName.includes('(Cradle-to-Retail)')) {
+        cleanName = cleanName.replace('(Cradle-to-Retail)', '').trim();
+    }
+    
+    // Format it properly
+    if (cleanName.includes('Milk')) {
+        cleanName = 'Conventional Cow Milk';
+    } else if (cleanName.includes('Beef')) {
+        cleanName = 'Conventional Beef';
+    } else if (cleanName.includes('Chicken')) {
+        cleanName = 'Conventional Chicken';
+    } else if (cleanName.includes('Pork')) {
+        cleanName = 'Conventional Pork';
+    } else if (cleanName.includes('Cheese')) {
+        cleanName = 'Conventional Cheese';
+    } else if (cleanName.includes('Coffee')) {
+        cleanName = 'Conventional Coffee';
+    } else if (cleanName.includes('Chocolate')) {
+        cleanName = 'Conventional Chocolate';
+    } else if (cleanName.includes('Bread')) {
+        cleanName = 'Conventional Bread';
+    } else if (cleanName.includes('Soda')) {
+        cleanName = 'Conventional Soda';
+    } else if (cleanName.includes('Juice')) {
+        cleanName = 'Conventional Juice';
+    }
+    
+    baselineElement.textContent = cleanName;
+    }    
 
 storyContent.innerHTML = `
     <div class="story-highlight">
