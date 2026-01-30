@@ -5253,6 +5253,10 @@ detectProductCategory(productName, ingredients, selectedCategory) {
     const name = productName.toLowerCase();
     const category = selectedCategory.toLowerCase();
     
+        // SMART DETECTION FIX - SPREAD PRODUCTS FIRST
+if (name.includes('spread') || name.includes('choco') || name.includes('hazelnut') || name.includes('nut butter')) {
+    return 'chocolate-spread-conventional';
+    }
     if ((name.includes('milk') || name.includes('drink') || name.includes('latte')) && !name.includes('burger')) {
         return 'milk-product';
     }
