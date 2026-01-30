@@ -1989,18 +1989,29 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn" onclick="showTab('results', event)">
-                            <i class="fas fa-arrow-left"></i>
-                            Back to Results
-                        </button>
-                        <button class="btn btn-success" onclick="generatePDFReport('executive')">
-                            <i class="fas fa-file-pdf"></i>
-                            Download Business Case
-                        </button>
-                        <button class="btn" onclick="showTab('export', event)">
-                            <i class="fas fa-file-export"></i>
-                            Export All Reports
-                        </button>
+    <!-- Navigation -->
+    <button class="btn btn-outline" onclick="showTab('results', event)">
+        <i class="fas fa-arrow-left"></i>
+        Back
+    </button>
+    
+    <!-- Professional Report (PRIMARY) -->
+    <button class="btn btn-success" onclick="generateProfessionalPDF('business-case-tab', 'Business Case Analysis')">
+        <i class="fas fa-file-certificate"></i>
+        Professional Report
+    </button>
+    
+    <!-- Quick Visual -->
+    <button class="btn" onclick="downloadScreenViewPDF('business-case-tab', 'Business_Case_Visual')">
+        <i class="fas fa-camera"></i>
+        Quick Visual
+    </button>
+    
+    <!-- Data Export -->
+    <button class="btn btn-outline" onclick="downloadEditablePDF('business-case-tab', 'Business_Case_Data')">
+        <i class="fas fa-table"></i>
+        Data Export
+    </button>
                     </div>
                 </div>
             </div>
@@ -2075,18 +2086,29 @@
                 <div id="isoComplianceSection"></div>
 
                 <div class="action-buttons">
-                    <button class="btn" onclick="showTab('dpp', event)">
-                        <i class="fas fa-qrcode"></i>
-                        Generate Transparency Card with Full Data
-                    </button>
-                    <button class="btn" onclick="generatePDFReport('technical')">
-                        <i class="fas fa-file-pdf"></i>
-                        Download Scorecard PDF
-                    </button>
-                    <button class="btn btn-outline" onclick="downloadRawData()">
-                        <i class="fas fa-download"></i>
-                        Download Raw Data
-                    </button>
+    <!-- Navigation -->
+    <button class="btn btn-outline" onclick="showTab('dpp', event)">
+        <i class="fas fa-qrcode"></i>
+        Transparency Card
+    </button>
+    
+    <!-- Professional Report (PRIMARY) -->
+    <button class="btn btn-success" onclick="generateProfessionalPDF('pef-scorecard-tab', 'PEF 3.1 Scorecard')">
+        <i class="fas fa-file-certificate"></i>
+        Professional Report
+    </button>
+    
+    <!-- Quick Visual -->
+    <button class="btn" onclick="downloadScreenViewPDF('pef-scorecard-tab', 'PEF_Scorecard_Visual')">
+        <i class="fas fa-camera"></i>
+        Quick Visual
+    </button>
+    
+    <!-- Data Export -->
+    <button class="btn" onclick="downloadRawData()">
+        <i class="fas fa-database"></i>
+        Raw Data
+    </button>
                 </div>
             </div>
         </div>
@@ -2277,18 +2299,29 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn" onclick="calculateImpact(); showTab('transparency', event)">
-                        <i class="fas fa-sync-alt"></i>
-                        Regenerate Log
-                    </button>
-                    <button class="btn" onclick="exportAuditData()">
-                        <i class="fas fa-download"></i>
-                        Export Log Data
-                    </button>
-                    <button class="btn btn-outline" onclick="showTab('methodology', event)">
-                        <i class="fas fa-file-contract"></i>
-                        View Methodology
-                    </button>
+    <!-- Regenerate -->
+    <button class="btn btn-outline" onclick="calculateImpact(); showTab('transparency', event)">
+        <i class="fas fa-sync-alt"></i>
+        Refresh
+    </button>
+    
+    <!-- Professional Report (PRIMARY) -->
+    <button class="btn btn-success" onclick="generateProfessionalPDF('transparency-tab', 'Transparency Log')">
+        <i class="fas fa-file-certificate"></i>
+        Professional Log
+    </button>
+    
+    <!-- Quick Visual -->
+    <button class="btn" onclick="downloadScreenViewPDF('transparency-tab', 'Transparency_Log_Visual')">
+        <i class="fas fa-camera"></i>
+        Quick Visual
+    </button>
+    
+    <!-- Data Export -->
+    <button class="btn" onclick="exportAuditData()">
+        <i class="fas fa-download"></i>
+        JSON Data
+    </button>
                 </div>
             </div>
         </div>
