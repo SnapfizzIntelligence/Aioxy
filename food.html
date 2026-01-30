@@ -6410,75 +6410,57 @@ function updateEnvironmentalStory(results) {
     const carKm = Math.round(co2SavedPerKg * 1000 / 120);
     const trees = Math.round(co2SavedPerKg / 0.025);
     const householdEnergy = Math.round(co2SavedPerKg * 1000 / 1.5) + ' days';
-// 1.5 kg CO₂e per day for average EU household energy
     const waterBottles = Math.round(waterSavedPerKg * 1000 / 1.5);
     
     const productName = document.getElementById('productName').value || 'your product';
     
     // Calculate savings percentage
-const savingsPercent = ((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100);
-const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
-// Update the dynamic baseline name in the technical proof
-const baselineElement = document.getElementById('dynamicBaselineName');
-if (baselineElement && results.comparison?.baseline?.name) {
-    // Clean up the baseline name
-    let cleanName = results.comparison.baseline.name;
-    if (cleanName.includes('(Cradle-to-Retail)')) {
-        cleanName = cleanName.replace('(Cradle-to-Retail)', '').trim();
-    }
+    const savingsPercent = ((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100);
+    const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
     
-    // Format it properly
-    if (cleanName.includes('Milk')) {
-        cleanName = 'Conventional Cow Milk';
-    } else if (cleanName.includes('Beef')) {
-        cleanName = 'Conventional Beef';
-    } else if (cleanName.includes('Chicken')) {
-        cleanName = 'Conventional Chicken';
-    } else if (cleanName.includes('Pork')) {
-        cleanName = 'Conventional Pork';
-    } else if (cleanName.includes('Cheese')) {
-        cleanName = 'Conventional Cheese';
-    } else if (cleanName.includes('Coffee')) {
-        cleanName = 'Conventional Coffee';
-    } else if (cleanName.includes('Chocolate')) {
-        cleanName = 'Conventional Chocolate';
-    } else if (cleanName.includes('Bread')) {
-        cleanName = 'Conventional Bread';
-    } else if (cleanName.includes('Soda')) {
-        cleanName = 'Conventional Soda';
-    } else if (cleanName.includes('Juice')) {
-        cleanName = 'Conventional Juice';
-    }
+    // FIX: Get the actual baseline name (not hardcoded)
+    const dynamicBaselineName = baselineName || "Conventional Beef"; // Fallback
     
-    baselineElement.textContent = cleanName;
-    }    
+    // Map baseline names to more readable versions
+    const baselineDisplayNames = {
+        'Conventional Beef': 'Conventional Beef',
+        'Conventional Cow Milk': 'Conventional Cow Milk',
+        'Conventional Chicken': 'Conventional Chicken',
+        'Conventional Pork': 'Conventional Pork',
+        'Conventional Cheese': 'Conventional Cheese',
+        'Conventional Coffee': 'Conventional Coffee',
+        'Conventional Chocolate': 'Conventional Chocolate',
+        'Conventional Bread': 'Conventional Bread'
+    };
+    
+    const displayBaselineName = baselineDisplayNames[dynamicBaselineName] || dynamicBaselineName;
 
-storyContent.innerHTML = `
-    <div class="story-highlight">
-        <i class="fas fa-seedling"></i>
-        <strong>Hey ${customerName}, standard industry comparisons indicate this product's carbon footprint is ~${savingsPercent.toFixed(0)}% lower than conventional ${baselineName}.</strong><br>
-        Based on PEF 3.1 methodology, this suggests a potential reduction of ~${co2SavedPerKg.toFixed(2)} kg CO₂e per kg vs. conventional ${baselineName} baseline.
-    </div>
-    
-<!-- ========== TECHNICAL PROOF & METHODOLOGY ========== -->
-<div style="margin-top: 1rem; padding: 1rem; background: #FFF3E0; border-radius: 8px; border-left: 4px solid #FF9800;">
-    <div style="font-size: 0.75rem; color: #B7791F; font-weight: 700; margin-bottom: 0.25rem;">
-        <i class="fas fa-file-contract"></i> TECHNICAL PROOF & METHODOLOGY
-    </div>
-    <div style="font-size: 0.7rem; color: #744210; line-height: 1.4;">
-        <strong>This data is provided to ensure full transparency and compliance with EU PEF 3.1 standards.</strong><br><br>
+    storyContent.innerHTML = `
+        <div class="story-highlight">
+            <i class="fas fa-seedling"></i>
+            <strong>Hey ${customerName}, standard industry comparisons indicate this product's carbon footprint is ~${savingsPercent.toFixed(0)}% lower than conventional ${displayBaselineName}.</strong><br>
+            Based on PEF 3.1 methodology, this suggests a potential reduction of ~${co2SavedPerKg.toFixed(2)} kg CO₂e per kg vs. conventional ${displayBaselineName} baseline.
+        </div>
         
-        <strong>Calculation Model:</strong> Comparative Life Cycle Assessment (LCA) based on PEF 3.1 methodology.<br>
-        <strong>Data Source:</strong> Secondary data sourced from AGRIBALYSE 3.2, the French/EU reference database for food environmental impact.<br>
-        <strong>System Boundary:</strong> Cradle-to-Retail (includes agricultural production, industrial processing, packaging, and distribution logistics).<br>
-        <strong>Baseline:</strong> Compared against the average EU <span id="dynamicBaselineName">Conventional Cow Milk</span> profile.<br>
-        <strong>Data Quality:</strong> High (DQR: 1.4) with a calculated uncertainty of ±15%.<br><br>
-        
-        <strong style="color: #E65100;">Status:</strong> Screening-level assessment. Full ISO 14044 critical review/verification is the next stage for our 2026 sustainability roadmap.
-    </div>
-</div>
-<!-- ========== END TECHNICAL PROOF ========== -->
-`;
+        <!-- ========== TECHNICAL PROOF & METHODOLOGY ========== -->
+        <div style="margin-top: 1rem; padding: 1rem; background: #FFF3E0; border-radius: 8px; border-left: 4px solid #FF9800;">
+            <div style="font-size: 0.75rem; color: #B7791F; font-weight: 700; margin-bottom: 0.25rem;">
+                <i class="fas fa-file-contract"></i> TECHNICAL PROOF & METHODOLOGY
+            </div>
+            <div style="font-size: 0.7rem; color: #744210; line-height: 1.4;">
+                <strong>This data is provided to ensure full transparency and compliance with EU PEF 3.1 standards.</strong><br><br>
+                
+                <strong>Calculation Model:</strong> Comparative Life Cycle Assessment (LCA) based on PEF 3.1 methodology.<br>
+                <strong>Data Source:</strong> Secondary data sourced from AGRIBALYSE 3.2, the French/EU reference database for food environmental impact.<br>
+                <strong>System Boundary:</strong> Cradle-to-Retail (includes agricultural production, industrial processing, packaging, and distribution logistics).<br>
+                <strong>Baseline:</strong> Compared against the average EU <span id="dynamicBaselineName">${displayBaselineName}</span> profile.<br>
+                <strong>Data Quality:</strong> High (DQR: 1.4) with a calculated uncertainty of ±15%.<br><br>
+                
+                <strong style="color: #E65100;">Status:</strong> Screening-level assessment. Full ISO 14044 critical review/verification is the next stage for our 2026 sustainability roadmap.
+            </div>
+        </div>
+        <!-- ========== END TECHNICAL PROOF ========== -->
+    `;
 
     storyComparison.innerHTML = `
         <div class="story-item">
@@ -6504,7 +6486,7 @@ storyContent.innerHTML = `
     `;
     
     environmentalStory.classList.remove('hidden');
-}
+    }
 
 // ================== SCENARIO TOGGLE ==================
 function toggleScenario(key) {
