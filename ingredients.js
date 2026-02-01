@@ -53,24 +53,25 @@ window.aioxyData = {
     }
 },
 
-"palm-oil-refined-agribalyse-3-2": { 
+
+    "palm-oil-refined-agribalyse-3-2": { 
     name: "Palm oil, refined",
     loss: 0.02,
     processing_yield: 0.99,
     data: {
         pef: { 
-            "Climate Change": 0.00619, "Ozone Depletion": 1.50e-11, "Human Toxicity, non-cancer": 5.68e-11,
-            "Human Toxicity, cancer": 2.61e-12, "Particulate Matter": 3.21e-10, "Ionizing Radiation": 0.0000234,
-            "Photochemical Ozone Formation": 0.000015, "Acidification": 0.0000239, "Eutrophication, terrestrial": 0.0000959,
-            "Eutrophication, freshwater": 2.99e-07, "Eutrophication, marine": 0.0000342, "Ecotoxicity, freshwater": 0.0332,
-            "Land Use": 0.155, "Water Use/Scarcity (AWARE)": 0.00199, "Resource Use, minerals/metals": 6.23e-09,
-            "Resource Use, fossils": 0.029
+            "Climate Change": 0.487, "Ozone Depletion": 7.64e-08, "Human Toxicity, non-cancer": 0.204,
+            "Human Toxicity, cancer": 0.0176, "Particulate Matter": 3.58e-07, "Ionizing Radiation": 6.10e-08,
+            "Photochemical Ozone Formation": 3.15e-09, "Acidification": 0.0252, "Eutrophication, terrestrial": 0.000405,
+            "Eutrophication, freshwater": 0.0312, "Eutrophication, marine": 0.0937, "Ecotoxicity, freshwater": 40.9,
+            "Land Use": 147, "Water Use/Scarcity (AWARE)": 1.96, "Resource Use, minerals/metals": 44.3,
+            "Resource Use, fossils": 8.81e-06
         },
         metadata: {
             source_dataset: "AGRIBALYSE 3.2",
-            source_activity: "Palm oil, refined, from baby cereal breakdown {FR} | Huile de palme, Céréales instantanées, poudre reconstituée chez le consommateur, dès 4/6 mois",
-            source_uuid: "agb-3-2-13167-palm-oil-refined",
-            agribalyse_code: "13167",
+            source_activity: "Huile de palme raffinée / Palm oil, refined",
+            source_uuid: "agb-3.2-16150-palm-oil-refined",
+            agribalyse_code: "16150",
             allocation_method: "Economic Allocation",
             dqr: { TeR: 1.0, GR: 1.0, TiR: 1.0, C: 1.0, P: 1.0 },
             dqr_overall: 1.0
@@ -78,28 +79,27 @@ window.aioxyData = {
         
     }
 },
-
 "white-sugar-refined-agribalyse-3-2": { 
     name: "White sugar, refined",
     loss: 0.02,
     processing_yield: 0.99,
     data: {
         pef: { 
-            "Climate Change": 0.00913, "Ozone Depletion": 1.32e-10, "Human Toxicity, non-cancer": -2.13e-10,
-            "Human Toxicity, cancer": 2.74e-12, "Particulate Matter": 1.84e-09, "Ionizing Radiation": 0.000395,
-            "Photochemical Ozone Formation": 0.0000432, "Acidification": 0.000249, "Eutrophication, terrestrial": 0.00106,
-            "Eutrophication, freshwater": 0.0000024, "Eutrophication, marine": 0.0000792, "Ecotoxicity, freshwater": 0.151,
-            "Land Use": 0.467, "Water Use/Scarcity (AWARE)": 0.0274, "Resource Use, minerals/metals": 5.10e-08,
-            "Resource Use, fossils": 0.0956
+            "Climate Change": 0.126, "Ozone Depletion": 1.22e-08, "Human Toxicity, non-cancer": 1.31e-07,
+            "Human Toxicity, cancer": -1.18e-08, "Particulate Matter": 0.00332, "Ionizing Radiation": 0.0990,
+            "Photochemical Ozone Formation": 2.56e-10, "Acidification": 0.0166, "Eutrophication, terrestrial": 0.000176,
+            "Eutrophication, freshwater": 0.00530, "Eutrophication, marine": 0.0702, "Ecotoxicity, freshwater": 10.9,
+            "Land Use": 31.9, "Water Use/Scarcity (AWARE)": 1.80, "Resource Use, minerals/metals": 9.66,
+            "Resource Use, fossils": 4.30e-06
         },
         metadata: {
             source_dataset: "AGRIBALYSE 3.2",
-            source_activity: "White sugar, from cocoa/chocolate beverage breakdown {FR} | Sucre blanc, Boisson cacaotée ou au chocolat, instantanée, sucrée, enrichie en vitamines, prête à boire",
-            source_uuid: "agb-3-2-18106-white-sugar",
-            agribalyse_code: "18106",
+            source_activity: "Sucre blanc / Sugar, white",
+            source_uuid: "agb-3.2-31016-white-sugar",
+            agribalyse_code: "31016",
             allocation_method: "Economic Allocation",
-            dqr: { TeR: 1.0, GR: 1.0, TiR: 1.0, C: 1.0, P: 1.0 },
-            dqr_overall: 1.0
+            dqr: { TeR: 3.0, GR: 3.0, TiR: 3.0, C: 3.0, P: 3.0 },
+            dqr_overall: 3.1
         },
         
     }
@@ -111,21 +111,21 @@ window.aioxyData = {
     processing_yield: 0.97,
     data: {
         pef: { 
-            "Climate Change": 0.0856, "Ozone Depletion": 5.40e-09, "Human Toxicity, non-cancer": 6.54e-10,
-            "Human Toxicity, cancer": 3.60e-11, "Particulate Matter": 3.82e-09, "Ionizing Radiation": 0.0218,
-            "Photochemical Ozone Formation": 0.000211, "Acidification": 0.000254, "Eutrophication, terrestrial": 0.000653,
-            "Eutrophication, freshwater": 0.0000186, "Eutrophication, marine": 0.00014, "Ecotoxicity, freshwater": 0.785,
-            "Land Use": 1.67, "Water Use/Scarcity (AWARE)": 0.0328, "Resource Use, minerals/metals": 2.46e-07,
-            "Resource Use, fossils": 1.43
+            "Climate Change": 0.973, "Ozone Depletion": 3.93e-07, "Human Toxicity, non-cancer": 6.50e-08,
+            "Human Toxicity, cancer": 4.29e-09, "Particulate Matter": 3.74e-07, "Ionizing Radiation": 9.85,
+            "Photochemical Ozone Formation": 0.0230, "Acidification": 0.0335, "Eutrophication, terrestrial": 0.00105,
+            "Eutrophication, freshwater": 0.0158, "Eutrophication, marine": 0.0957, "Ecotoxicity, freshwater": 62.7,
+            "Land Use": 151, "Water Use/Scarcity (AWARE)": 1.42, "Resource Use, minerals/metals": 281,
+            "Resource Use, fossils": 2.80e-05
         },
         metadata: {
             source_dataset: "AGRIBALYSE 3.2",
-            source_activity: "Chicory, powder, instant, ingredient-level breakdown {FR} | Chicorée, Substitut de repas hypocalorique, crème dessert",
-            source_uuid: "agb-3-2-42000-chicory-powder-instant",
-            agribalyse_code: "42000",
+            source_activity: "Chicorée, poudre soluble, non réhydratée",
+            source_uuid: "agb-3.2-18152-1-chicory-powder",
+            agribalyse_code: "18152",
             allocation_method: "Economic Allocation",
-            dqr: { TeR: 1.0, GR: 1.0, TiR: 1.0, C: 1.0, P: 1.0 },
-            dqr_overall: 1.0
+            dqr: { TeR: 1.0, GR: 2.0, TiR: 2.0, C: 2.0, P: 2.0 },
+            dqr_overall: 1.9
         },
         
     }
@@ -420,29 +420,30 @@ window.aioxyData = {
             }
         },
         "quinoa-fr-conventional-at-farm-gate-fr-corrected": { 
-            name: "Quinoa FR, conventional, at farm gate (corrected)",
-            loss: 0.03,
-            processing_yield: 0.88,
-            data: {
-                pef: { 
-                    "Climate Change": 1.7, "Ozone Depletion": 2.37e-08, "Human Toxicity, non-cancer": 1.29e-07,
-                    "Human Toxicity, cancer": 2.91e-09, "Particulate Matter": 1.09e-07, "Ionizing Radiation": 0.0624,
-                    "Photochemical Ozone Formation": 0.00691, "Acidification": 0.0165, "Eutrophication, terrestrial": 0.0642,
-                    "Eutrophication, freshwater": 0.00042, "Eutrophication, marine": 0.0371, "Ecotoxicity, freshwater": 17.1,
-                    "Land Use": 264, "Water Use/Scarcity (AWARE)": 12, "Resource Use, minerals/metals": 2.12e-05,
-                    "Resource Use, fossils": 11
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Quinoa FR, conventional, at farm gate {FR} U (corrected)",
-                    source_uuid: "agb-3.2-quinoa-fr-conventional-at-farm-gate-fr-corrected",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.4, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
-                    dqr_overall: 1.3
-                },
-                
-            }
+    name: "Quinoa FR, conventional, at farm gate",
+    loss: 0.03,
+    processing_yield: 0.88,
+    data: {
+        pef: { 
+            "Climate Change": 0.641, "Ozone Depletion": 3.28e-08, "Human Toxicity, non-cancer": 1.36e-07,
+            "Human Toxicity, cancer": 1.47e-07, "Particulate Matter": 0.00851, "Ionizing Radiation": 0.171,
+            "Photochemical Ozone Formation": 3.39e-09, "Acidification": 0.0191, "Eutrophication, terrestrial": 0.100,
+            "Eutrophication, freshwater": 0.000504, "Eutrophication, marine": 0.0736, "Ecotoxicity, freshwater": 24.5,
+            "Land Use": 288, "Water Use/Scarcity (AWARE)": 13.5, "Resource Use, minerals/metals": 17.7,
+            "Resource Use, fossils": 2.48e-05
         },
+        metadata: {
+            source_dataset: "AGRIBALYSE 3.2",
+            source_activity: "Quinoa FR, raw {FR} U",
+            source_uuid: "agb-3.2-9340-2-quinoa-fr-raw",
+            agribalyse_code: "9340",
+            allocation_method: "Economic Allocation",
+            dqr: { TeR: 2.0, GR: 3.0, TiR: 3.0, C: 3.0, P: 3.0 },
+            dqr_overall: 2.8
+        },
+        
+    }
+},
         "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr": { 
             name: "Ware potato, conventional, variety mix, national average, at farm gate",
             loss: 0.03,
@@ -1827,7 +1828,7 @@ window.aioxyData = {
         "UK": 230, "IT": 280, "IE": 320, "DE": 380, "US": 370, "NL": 320, "MX": 400, "JP": 440, "TR": 420, "KR": 440,
         
         // High (>450g) - Coal Heavy
-        "CN": 540, "IN": 630, "PL": 680, "AU": 490, "VN": 480, "ID": 600, "ZA": 700, "CZ": 480, "WI": 650, // Caribbean often oil-based
+        "CN": 581, "IN": 630, "PL": 680, "AU": 490, "VN": 480, "ID": 600, "ZA": 700, "CZ": 480, "WI": 650, // Caribbean often oil-based
         "Global": 475
     },
 
