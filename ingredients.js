@@ -26,7 +26,7 @@ window.aioxyData = {
                 
             }
         },
-        
+      
 "hazelnuts-shelled-agribalyse-3-2": { 
     name: "Hazelnuts, shelled",
     loss: 0.05,
@@ -35,7 +35,7 @@ window.aioxyData = {
         pef: { 
             "Climate Change": 0.732, "Ozone Depletion": 1.14e-08, "Human Toxicity, non-cancer": 5.04e-08,
             "Human Toxicity, cancer": 1.79e-09, "Particulate Matter": 7.52e-08, "Ionizing Radiation": 0.0173,
-            "Photochemical Ozone Formation": 0.0052, "Acidification": 0.0115, "Eutrophication, terrestrial": 0.0562,
+            "Photochemical Oone Formation": 0.0052, "Acidification": 0.0115, "Eutrophication, terrestrial": 0.0562,
             "Eutrophication, freshwater": 0.000219, "Eutrophication, marine": 0.0118, "Ecotoxicity, freshwater": 19.2,
             "Land Use": 132, "Water Use/Scarcity (AWARE)": 2.25, "Resource Use, minerals/metals": 3.61e-06,
             "Resource Use, fossils": 4.69
@@ -1722,20 +1722,21 @@ window.aioxyData = {
     processing_yield: 0.96,
     data: {
         pef: { 
-            "Climate Change": 0.121, "Ozone Depletion": 1.24e-10, "Human Toxicity, non-cancer": 1.46e-10,
-            "Human Toxicity, cancer": 5.01e-11, "Particulate Matter": 1.21e-09, "Ionizing Radiation": 0.000373,
-            "Photochemical Ozone Formation": 0.000191, "Acidification": 0.000125, "Eutrophication, terrestrial": 0.000491,
-            "Eutrophication, freshwater": 0.0000126, "Eutrophication, marine": 0.000284, "Ecotoxicity, freshwater": 0.241,
-            "Land Use": 4.73, "Water Use/Scarcity (AWARE)": 0.00113, "Resource Use, minerals/metals": 3.13e-08,
-            "Resource Use, fossils": 0.24
+            "Climate Change": 1.45, "Ozone Depletion": 2.32e-07, "Human Toxicity, non-cancer": 5.26e-08,
+            "Human Toxicity, cancer": 1.17e-08, "Particulate Matter": 4.02e-07, "Ionizing Radiation": 0.509,
+            "Photochemical Ozone Formation": 0.0519, "Acidification": 0.0386, "Eutrophication, terrestrial": 0.00299,
+            "Eutrophication, freshwater": 0.0654, "Eutrophication, marine": 0.131, "Ecotoxicity, freshwater": 80.6,
+            "Land Use": 1050, "Water Use/Scarcity (AWARE)": 0.742, "Resource Use, minerals/metals": 91.7,
+            "Resource Use, fossils": 1.12e-05
         },
         metadata: {
             source_dataset: "AGRIBALYSE 3.2",
-            source_activity: "Cocoa powder, from cocoa/chocolate beverage breakdown",
-            source_uuid: "agb-3-2-18106-cocoa-powder",
+            source_activity: "Cacao, non sucré, poudre soluble / Cocoa powder, without sugar, powder, instant",
+            source_uuid: "agb-3.2-18100-cocoa-powder",
+            agribalyse_code: "18100",
             allocation_method: "Economic Allocation",
-            dqr: { TeR: 1.0, GR: 1.0, TiR: 1.0, C: 1.0, P: 1.0 },
-            dqr_overall: 1.0
+            dqr: { TeR: 2.0, GR: 3.0, TiR: 3.0, C: 3.0, P: 3.0 },
+            dqr_overall: 2.8
         },
         
     }
