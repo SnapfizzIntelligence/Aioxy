@@ -6709,11 +6709,9 @@ function formatLargeNumber(num) {
 }
 
 function calculateImplementationCost(volume) {
-    if (volume <= 1000) return 5000;
-    if (volume <= 10000) return 20000;
-    if (volume <= 100000) return 50000;
-    if (volume <= 1000000) return 150000;
-    return 500000;
+    // AIOXY Pricing: €3,500 flat per SKU
+    // Fast 48-hour delivery vs 6-month consultants
+    return 3500;
 }
 
 // ================== FIX: ROBUST PERCENTAGE CALCULATOR ==================
