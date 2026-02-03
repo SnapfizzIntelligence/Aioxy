@@ -1657,7 +1657,7 @@
                                     <i class="fas fa-smog"></i>
                                 </div>
                                 <div class="metric-value" id="co2Value">0.00 kg</div>
-                                <div class="metric-label">CO₂e per kg</div>
+                                <div class="metric-label">Climate Change (GWP100)</div>
                                 <div class="savings-badge" id="co2Savings">0% saved</div>
                             </div>
                             
@@ -6315,6 +6315,13 @@ function updateResultsUI(results) {
     document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
     document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
     
+    // === STEP 4: ISO-COMPLIANT LABELING ===
+// Change "CO₂e per kg" to "Climate Change (GWP100)"
+const co2Label = document.querySelector('#co2Value + .metric-label');
+if (co2Label) {
+    co2Label.textContent = "Climate Change (GWP100)";
+}
+   
     // 4. Calculate Savings Badge Percentage using the UNIFIED number
     const baselineCO2 = results.comparison.baseline.co2PerKg;
     const baselineWater = results.comparison.baseline.waterPerKg;
