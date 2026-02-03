@@ -5377,8 +5377,10 @@ function displayPEFSingleScore() {
     const resultsContent = document.getElementById('resultsContent');
     if (!resultsContent || !finalPefResults) return;
 
-    // Calculate PEF Single Score
-    const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+    // FIX: Use Unified Metrics for weight
+    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
+    const productWeightKg = unified.weightUsed;
+    
     const singleScoreResult = calculatePEFSingleScore(finalPefResults, productWeightKg);
 
     // Create or update display section
