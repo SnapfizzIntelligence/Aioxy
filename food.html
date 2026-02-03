@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+) ))))llllll<!DOCTYPE html>
 <html lang="en">
 <head>
 <head>
@@ -6896,7 +6896,9 @@ function displayFullPefScorecard() {
     `;
     tbody.appendChild(disclaimerRow);
     
-    const totalWeight = massBalanceData.final_content_weight_kg || 0.2;
+    // =========== FIX: USE SINGLE SOURCE OF TRUTH ===========
+    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
+    const totalWeight = unified.weightUsed;
     
     for (const category in finalPefResults) {
         const row = document.createElement('tr');
