@@ -6391,11 +6391,15 @@ function updateEnvironmentalStory(results) {
     const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
     const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
     
-    const carKm = Math.round(co2SavedPerKg * 1000 / 120);
-    const trees = Math.round(co2SavedPerKg / 0.025);
-    const householdEnergy = Math.round(co2SavedPerKg * 1000 / 1.5) + ' days';
-    const waterBottles = Math.round(waterSavedPerKg * 1000 / 1.5);
-    
+    // Use Physics Constants instead of magic numbers
+const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
+const trees = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR);
+const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
+const householdEnergy = householdDays + ' days';
+
+// For water bottles, we need to convert from AWARE m³ to liters
+const rawWaterVol = results.waterScarcityPerKg / 42; // Same reverse-engineering from AWARE
+const waterBottles = Math.round((rawWaterVol * 1000) / PHYSICS_CONSTANTS.WATER_BOTTLE_LITERS);
     const productName = document.getElementById('productName').value || 'your product';
     
     // Calculate savings percentage
