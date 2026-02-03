@@ -6337,7 +6337,21 @@ if (co2Label) {
 
 document.getElementById('co2Savings').textContent = `~${Math.max(co2SavingsPercent, 0)}% lower footprint vs ${baselineName}`;
 document.getElementById('waterSavings').textContent = `~${Math.max(waterSavingsPercent, 0)}% lower water impact vs ${baselineName}`;
- 
+
+    // === STEP 5: ZERO DATA SAFETY VALVE ===
+// If the calculated impact is effectively zero (likely missing data), 
+// do NOT claim 100% savings. That is greenwashing.
+if (unifiedCO2 <= 0.001) {
+    document.getElementById('co2Savings').textContent = "Data unavailable";
+    document.getElementById('co2Savings').style.background = "#CBD5E0"; // Grey
+}
+
+if (results.waterScarcityPerKg <= 0.001) {
+    document.getElementById('waterSavings').textContent = "Data unavailable";
+    document.getElementById('waterValue').textContent = "—";
+    document.getElementById('waterSavings').style.background = "#CBD5E0"; // Grey
+    }
+    
     // Equivalencies - Using Physics-Based Constants
 const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
 const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
