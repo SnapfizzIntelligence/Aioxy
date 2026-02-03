@@ -3817,31 +3817,7 @@ function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
     };
     }
 
-// Fix B: GLEC v4.0 Transport Physics
-function calculateTransportPhysics(grossWeightKg, distanceKm, mode, isRefrigerated) {
-    const massTons = grossWeightKg / 1000;
-    
-    let factor = 0;
-    if (mode === 'road') {
-        factor = isRefrigerated ? PHYSICS_DATA.transport.road.refrigerated 
-                                : PHYSICS_DATA.transport.road.ambient;
-    } else if (PHYSICS_DATA.transport[mode]) {
-        factor = typeof PHYSICS_DATA.transport[mode] === 'object' 
-                 ? PHYSICS_DATA.transport[mode].container || PHYSICS_DATA.transport[mode].diesel 
-                 : 0;
-    }
-
-    const transportCO2 = massTons * distanceKm * factor;
-
-    return {
-        co2: transportCO2,
-        tonKm: massTons * distanceKm,
-        factorUsed: factor,
-        details: `${mode.toUpperCase()} (${isRefrigerated ? 'Refrigerated' : 'Ambient'}) @ ${factor} kgCO2e/tkm`
-    };
-}
-
-// Fix C: Regionalized Upstream LCI
+// Fix B: Regionalized Upstream LCI
 function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
     let upstreamCO2 = 0;
 
