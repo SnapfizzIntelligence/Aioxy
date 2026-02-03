@@ -3410,64 +3410,71 @@ window.debugAIOXY = debugCurrentState;
         "Resource Use, minerals/metals": { unit: "kg Sb e", icon: "gem" },
         "Resource Use, fossils": { unit: "MJ", icon: "oil-can" }
     };
-// ================== UNIVERSAL BASELINES — RETAIL EQUIVALENT (CRADLE-TO-RETAIL) ==================
+// ================== PHASE 2: SCIENTIFIC BASELINES (JRC/WULCA ALIGNED) ==================
 const UNIVERSAL_BASELINES = {
     'beef-product': {
         name: 'Conventional Beef',
-        co2PerKg: 16.5,
-        waterPerKg: 1.16,
-        landUsePerKg: 966,
+        co2PerKg: 35.2,  // Poore & Nemecek (2018) median
+        waterPerKg: 42.5, // AWARE 2.0 (High scarcity weighting for feed crops)
+        landUsePerKg: 326,
         fossilPerKg: 28.0
     },
     'chocolate-spread-conventional': {
-    name: 'Conventional Palm Oil Spread',
-    co2PerKg: 5.8,  // Industry avg for Palm Oil/Sugar/Skim Milk mix
-    waterPerKg: 0.95,
-    landUsePerKg: 14.0,
-    fossilPerKg: 12.5
-},
+        name: 'Conventional Palm Oil Spread',
+        co2PerKg: 6.1,
+        waterPerKg: 12.4, // High due to nut/oil irrigation requirements
+        landUsePerKg: 14.0,
+        fossilPerKg: 15.5
+    },
     'milk-product': {
         name: 'Conventional Cow Milk',
-        co2PerKg: 1.40,
-        waterPerKg: 0.12,
-        landUsePerKg: 59,
-        fossilPerKg: 3.5
+        co2PerKg: 3.2,
+        waterPerKg: 4.8,  // AWARE 2.0
+        landUsePerKg: 8.9,
+        fossilPerKg: 4.5
     },
     'chicken-product': {
         name: 'Conventional Chicken',
-        co2PerKg: 2.8,
-        waterPerKg: 0.72,
-        landUsePerKg: 162,
-        fossilPerKg: 15.0
+        co2PerKg: 6.8,   // Adjusted for retail-ready (slaughter + pkg)
+        waterPerKg: 8.2,
+        landUsePerKg: 12.2,
+        fossilPerKg: 18.0
     },
     'pork-product': {
         name: 'Conventional Pork',
-        co2PerKg: 3.5,
-        waterPerKg: 0.95,
-        landUsePerKg: 162,
-        fossilPerKg: 20.0
+        co2PerKg: 7.9,
+        waterPerKg: 11.5,
+        landUsePerKg: 17.0,
+        fossilPerKg: 22.0
     },
     'cheese-product': {
         name: 'Conventional Cheese',
-        co2PerKg: 9.0,
-        waterPerKg: 3.0,
-        landUsePerKg: 40,
-        fossilPerKg: 12.0
+        co2PerKg: 23.8,  // High processing energy + milk concentration
+        waterPerKg: 38.0,
+        landUsePerKg: 85.0,
+        fossilPerKg: 25.0
     },
     'coffee-product': {
         name: 'Conventional Coffee',
         co2PerKg: 28.5,
-        waterPerKg: 1.5,
-        landUsePerKg: 20,
+        waterPerKg: 240.0, // Extremely high AWARE score (tropical irrigation)
+        landUsePerKg: 20.0,
         fossilPerKg: 15.0
     },
     'chocolate-product': {
         name: 'Conventional Chocolate',
         co2PerKg: 19.0,
-        waterPerKg: 2.0,
-        landUsePerKg: 30,
+        waterPerKg: 55.0,
+        landUsePerKg: 30.0,
         fossilPerKg: 18.0
     },
+    'bread-product': {
+        name: 'Conventional Bread',
+        co2PerKg: 1.4,
+        waterPerKg: 2.1,
+        landUsePerKg: 3.2,
+        fossilPerKg: 8.0
+    }
     'default': {
         name: 'Global Food Average',
         co2PerKg: 4.5,
@@ -3475,7 +3482,7 @@ const UNIVERSAL_BASELINES = {
         landUsePerKg: 10,
         fossilPerKg: 10.0
     }
-};
+    };
     
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
 const FOOD_PHYSICS_DB = {
