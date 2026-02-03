@@ -2692,6 +2692,25 @@ let massBalanceData = {};
 let auditTrailData = {};
 let currentComparisonBaseline = null;
 let currentAnnualVolume = 10000;
+
+    // ================== AIOXY PHYSICS CONSTANTS (AUDITABLE) ==================
+const PHYSICS_CONSTANTS = {
+    // Source: European Environment Agency (EEA) 2024, Avg Passenger Car (Diesel/Petrol mix)
+    // Value: 192g CO2e per km -> 0.192 kg/km
+    CAR_EMISSIONS_KG_PER_KM: 0.192, 
+
+    // Source: European Environment Agency / Arbor Day Foundation
+    // Value: Mature broadleaf tree absorbs ~25kg CO2 per year
+    TREE_ABSORPTION_KG_YEAR: 25.0,
+
+    // Source: Eurostat 2023, Avg EU Household Electricity
+    // Value: ~10 kWh/day * 0.25 kg/kWh (grid intensity) = ~2.5 kg/day
+    HOUSEHOLD_ELEC_KG_DAY: 2.5,
+    
+    // Source: WULCA AWARE 2.0 (Global Avg)
+    // Value: 1 m3 world eq. represents the scarcity-weighted impact of 1 m3 water
+    WATER_BOTTLE_LITERS: 0.5 // Standard 500ml bottle
+};
     
 // ================== FACTORY PRIMARY DATA TOGGLE ==================
 function toggleFactoryInputs() {
@@ -3474,14 +3493,14 @@ const UNIVERSAL_BASELINES = {
         waterPerKg: 2.1,
         landUsePerKg: 3.2,
         fossilPerKg: 8.0
-    }
+    }, 
     'default': {
         name: 'Global Food Average',
         co2PerKg: 4.5,
         waterPerKg: 0.5,
         landUsePerKg: 10,
         fossilPerKg: 10.0
-    }
+    } 
     };
     
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
