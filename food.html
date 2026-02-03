@@ -2695,21 +2695,31 @@ let currentAnnualVolume = 10000;
 
     // ================== AIOXY PHYSICS CONSTANTS (AUDITABLE) ==================
 const PHYSICS_CONSTANTS = {
-    // Source: European Environment Agency (EEA) 2024, Avg Passenger Car (Diesel/Petrol mix)
+    // --- EQUIVALENCIES ---
+    CAR_EMISSIONS_KG_PER_KM: 0.192, // Source: European Environment Agency (EEA) 2024, Avg Passenger Car (Diesel/Petrol mix)
     // Value: 192g CO2e per km -> 0.192 kg/km
-    CAR_EMISSIONS_KG_PER_KM: 0.192, 
-
-    // Source: European Environment Agency / Arbor Day Foundation
+    TREE_ABSORPTION_KG_YEAR: 25.0, // Source: European Environment Agency / Arbor Day Foundation
     // Value: Mature broadleaf tree absorbs ~25kg CO2 per year
-    TREE_ABSORPTION_KG_YEAR: 25.0,
-
-    // Source: Eurostat 2023, Avg EU Household Electricity
+    HOUSEHOLD_ELEC_KG_DAY: 2.5, // Source: Eurostat 2023, Avg EU Household Electricity
     // Value: ~10 kWh/day * 0.25 kg/kWh (grid intensity) = ~2.5 kg/day
-    HOUSEHOLD_ELEC_KG_DAY: 2.5,
-    
-    // Source: WULCA AWARE 2.0 (Global Avg)
-    // Value: 1 m3 world eq. represents the scarcity-weighted impact of 1 m3 water
-    WATER_BOTTLE_LITERS: 0.5 // Standard 500ml bottle
+    WATER_BOTTLE_LITERS: 0.5,// Source: WULCA AWARE 2.0 (Global Avg)
+    // Value: 1 m3 world eq. represents the scarcity-weighted impact of 1 m3 water // Standard 500ml bottle
+
+    // --- LCA PHYSICS (AR6 & EMISSIONS) ---
+    gwp: { 
+        ch4: 29.8,  // AR6 2025
+        n2o: 273,   // AR6 2025
+        ar6_dynamic: true,
+        biogenic_discount: 0.95
+    },
+    emission_factors: {
+        nitrogen_synthetic: 5.7,
+        nitrogen_legume: 1.2,
+        electricity_fr: 0.04,
+        diesel: 2.68,
+        n_to_n2o_synthetic: 0.01,
+        n_to_n2o_legume: 0.003
+    }
 };
     
 // ================== FACTORY PRIMARY DATA TOGGLE ==================
@@ -4145,25 +4155,7 @@ function calculateBaselineUplift(baselineKey) {
     };
     }
 
-    // ================== FIX 3: UNCERTAINTY MONTE CARLO (PHYSICS-CORRECT) ==================
-    // ================== GROK'S 100% PHYSICS CONSTANTS ==================
-const PHYSICS_CONSTANTS = {
-    gwp: { 
-        ch4: 29.8,  // AR6 2025 (was 28)
-        n2o: 273,   // AR6 2025 (was 265)
-        ar6_dynamic: true,
-        biogenic_discount: 0.95  // 5% net uptake
-    },
-    emission_factors: {
-        nitrogen_synthetic: 5.7,
-        nitrogen_legume: 1.2,
-        electricity_fr: 0.04,
-        diesel: 2.68,
-        n_to_n2o_synthetic: 0.01,
-        n_to_n2o_legume: 0.003
-    }
-};
-// ================== END PHYSICS CONSTANTS ==================
+     // ================== FIX 3: UNCERTAINTY MONTE CARLO (PHYSICS-CORRECT) ==================
 function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     console.log("🔬 [Physics Monte Carlo] Running with lognormal distribution...");
     
