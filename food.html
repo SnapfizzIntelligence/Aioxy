@@ -3985,139 +3985,54 @@ function calculateThermodynamicImpact(massInputKg, massOutputKg, processingMetho
     };
     }
 
-// ================== UNIVERSAL PHYSICS FIX: ALL FOOD PRODUCTS ==================
+// ================== PHASE 2: DYNAMIC BASELINE MODELING ==================
 function calculateBaselineUplift(baselineKey) {
-    console.log(`🔍 [Universal Fix] Calculating uplift for: ${baselineKey}`);
+    console.log(`🔍 [Physics] Modeling dynamic baseline for: ${baselineKey}`);
     
-    // DEFAULT UPLIFT FACTORS (kg CO₂e per kg product)
-    const UPLIFT_DATABASE = {
-        // MEAT PRODUCTS
-        'beef-product': {
-            processing: 1.85,    // Slaughtering, cutting, freezing
-            packaging: 0.15,     // MAP plastic tray
-            water_adder: 0.5,    // Cleaning water
-            notes: "Farm + Slaughterhouse + Cold Chain + Retail Pkg"
-        },
-        'pork-product': {
-            processing: 1.10,
-            packaging: 0.15,
-            water_adder: 0.4,
-            notes: "Farm + Processing + Cold Chain"
-        },
-        'chicken-product': {
-            processing: 0.75,
-            packaging: 0.15,
-            water_adder: 0.3,
-            notes: "Farm + Processing + Cold Chain"
-        },
-        
-        // DAIRY PRODUCTS
-        'milk-product': {
-            processing: 0.15,    // Pasteurization
-            packaging: 0.10,     // Tetra/plastic bottle
-            water_adder: 0.05,
-            notes: "Farm + Pasteurization + Transport"
-        },
-        'cheese-product': {
-            processing: 2.5,     // Cheese making + aging
-            packaging: 0.10,
-            water_adder: 0.3,
-            notes: "Farm + Cheese Making + Aging + Packaging"
-        },
-        
-        // PLANT-BASED COMPARISONS (NEED UPLIFT TOO!)
-        'coffee-product': {
-            processing: 3.0,     // Roasting energy intensive
-            packaging: 0.05,     // Bag/container
-            water_adder: 0.1,
-            notes: "Farm + Roasting + Packaging + Transport"
-        },
-        'chocolate-product': {
-            processing: 2.0,     // Conching, tempering
-            packaging: 0.08,
-            water_adder: 0.2,
-            notes: "Farm + Processing + Chocolate Making"
-        },
-        'bread-product': {
-            processing: 0.8,     // Baking energy
-            packaging: 0.05,     // Plastic bag
-            water_adder: 0.05,
-            notes: "Farm + Milling + Baking + Packaging"
-        },
-        
-        // BEVERAGES
-        'soda-drink': {
-            processing: 0.3,     // Carbonation, bottling
-            packaging: 0.08,     // PET bottle
-            water_adder: 0.02,
-            notes: "Ingredients + Carbonation + Bottling"
-        },
-        'juice-drink': {
-            processing: 0.25,    // Pasteurization, bottling
-            packaging: 0.08,
-            water_adder: 0.03,
-            notes: "Farm + Pasteurization + Bottling"
-        },
-        
-        // PERSONAL CARE
-        'shampoo-conventional': {
-            processing: 0.4,     // Mixing, bottling
-            packaging: 0.12,     // Plastic bottle + cap
-            water_adder: 0.15,
-            notes: "Ingredients + Mixing + Bottling"
-        },
-        'soap-conventional': {
-            processing: 0.3,
-            packaging: 0.05,
-            water_adder: 0.1,
-            notes: "Saponification + Molding + Wrapping"
-        },
-        
-        // TEXTILES
-        'cotton-tshirt': {
-            processing: 1.2,     // Spinning, weaving, dyeing
-            packaging: 0.02,     // Polybag
-            water_adder: 2.0,    // Dyeing water intensive
-            notes: "Farm + Spinning + Weaving + Dyeing + Sewing"
-        },
-        'polyester-tshirt': {
-            processing: 1.5,     // Polymerization, spinning
-            packaging: 0.02,
-            water_adder: 0.5,
-            notes: "Oil extraction + Polymerization + Spinning + Sewing"
-        },
-        
-        // DEFAULT FOR UNKNOWN PRODUCTS
-        'default': {
-            processing: 0.5,
-            packaging: 0.07,
-            water_adder: 0.1,
-            notes: "Generic processing + packaging uplift"
-        }
+    // 1. DEFINE PROCESS PHYSICS
+    // Energy intensity (kWh/kg) for standard industrial processing
+    const processPhysics = {
+        'beef-product': { kwh: 1.8, loss: 0.02, water: 5.0, type: "Slaughter + Cold Chain" },
+        'milk-product': { kwh: 0.3, loss: 0.01, water: 2.0, type: "Pasteurization" },
+        'cheese-product': { kwh: 2.5, loss: 0.05, water: 8.0, type: "Fermentation + Aging" },
+        'plant-alt': { kwh: 1.2, loss: 0.03, water: 4.0, type: "Extrusion/Mixing" },
+        'default': { kwh: 0.5, loss: 0.02, water: 3.0, type: "Standard Processing" }
     };
 
-    // Retail Transport (Average EU Cold Chain Logistics)
-    const TRANSPORT_FACTOR = 0.095; // kg CO2e per ton-km (Refrigerated Truck)
-    const AVG_DISTANCE = 500; 
-    const LOGISTICS_ADDER = (AVG_DISTANCE * TRANSPORT_FACTOR) / 1000; // per kg
+    // 2. DETECT TYPE
+    let type = 'default';
+    if (baselineKey.includes('beef') || baselineKey.includes('chicken') || baselineKey.includes('pork')) type = 'beef-product';
+    else if (baselineKey.includes('milk')) type = 'milk-product';
+    else if (baselineKey.includes('cheese')) type = 'cheese-product';
+    else if (baselineKey.includes('meat_alt') || baselineKey.includes('dairy_alt')) type = 'plant-alt';
 
-    // SELECT THE RIGHT UPLIFT PROFILE
-    const profile = UPLIFT_DATABASE[baselineKey] || UPLIFT_DATABASE.default;
+    const physics = processPhysics[type] || processPhysics['default'];
+
+    // 3. CALCULATE IMPACTS (Standard EU Grid: ~0.3 kgCO2e/kWh)
+    const euGridIntensity = 0.3; 
+    const processingCO2 = physics.kwh * euGridIntensity;
     
-    // CALCULATE TOTAL UPLIFT
-    const totalUplift = profile.processing + LOGISTICS_ADDER + profile.packaging;
-    
-    console.log(`✅ [Universal Fix] Uplift for ${baselineKey}: ${totalUplift.toFixed(3)} kg CO₂e (${profile.notes})`);
-    
+    // 4. ADD LOGISTICS (Retail Distribution)
+    // Assume standard retail loop: 400km ambient or chilled
+    const transportMode = baselineKey.includes('beef') || baselineKey.includes('milk') ? 'chilled' : 'ambient';
+    const transportFactor = transportMode === 'chilled' ? 0.088 : 0.062; // GLEC factors
+    const logisticsCO2 = (400 * transportFactor) / 1000; // per kg
+
+    // 5. PACKAGING DEFAULT (Standard Retail)
+    const packagingCO2 = 0.15; // Avg mixed plastic/cardboard impact per kg product
+
+    const totalUplift = processingCO2 + logisticsCO2 + packagingCO2;
+
+    console.log(`✅ [Physics] Baseline Uplift: ${totalUplift.toFixed(3)} kg CO2e (${physics.type})`);
+
     return {
         co2: totalUplift,
-        water: profile.water_adder,
-        notes: profile.notes,
+        water: physics.water * 0.01, // AWARE impact of processing water (approx)
+        notes: `Modeled: ${physics.type} + EU Retail Logistics`,
         breakdown: {
-            processing: profile.processing,
-            transport: LOGISTICS_ADDER,
-            packaging: profile.packaging,
-            source: "AGRIBALYSE 3.2 + GLEC v3.0 + PEF v3.1 reconstructed"
+            processing: processingCO2,
+            transport: logisticsCO2,
+            packaging: packagingCO2
         }
     };
     }
