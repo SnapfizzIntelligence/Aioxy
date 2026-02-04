@@ -2693,34 +2693,52 @@ let auditTrailData = {};
 let currentComparisonBaseline = null;
 let currentAnnualVolume = 10000;
 
-    // ================== AIOXY PHYSICS CONSTANTS (AUDITABLE) ==================
+    // ================== AIOXY OFFICIAL PHYSICS CONSTANTS (AUDIT GRADE v2.2) ==================
+// REGULATORY COMPLIANCE: EMPCO DIRECTIVE (EU) 2024/825
 const PHYSICS_CONSTANTS = {
-    // --- EQUIVALENCIES ---
-    CAR_EMISSIONS_KG_PER_KM: 0.192, // Source: European Environment Agency (EEA) 2024, Avg Passenger Car (Diesel/Petrol mix)
-    // Value: 192g CO2e per km -> 0.192 kg/km
-    TREE_ABSORPTION_KG_YEAR: 25.0, // Source: European Environment Agency / Arbor Day Foundation
-    // Value: Mature broadleaf tree absorbs ~25kg CO2 per year
-    HOUSEHOLD_ELEC_KG_DAY: 2.5, // Source: Eurostat 2023, Avg EU Household Electricity
-    // Value: ~10 kWh/day * 0.25 kg/kWh (grid intensity) = ~2.5 kg/day
-    WATER_BOTTLE_LITERS: 0.5,// Source: WULCA AWARE 2.0 (Global Avg)
-    // Value: 1 m3 world eq. represents the scarcity-weighted impact of 1 m3 water // Standard 500ml bottle
+    // --- EQUIVALENCIES (CONSERVATIVE ESTIMATES) ---
+    // Source: European Environment Agency (EEA) "Trees and Carbon" (2022 Update)
+    // Metric: Mature broadleaf tree absorption. Lowered from 25 to 22 for regulatory safety.
+    TREE_ABSORPTION_KG_YEAR: 22.0, 
+    
+    // Source: EEA 2023 Monitoring CO2 emissions from passenger cars (Regulation EU 2019/631)
+    // 108g (WLTP Tailpipe) + ~42g WTT (Well-to-Tank) = ~150g = 0.150 kg/km
+    // PREVIOUS "0.192" WAS TOO HIGH (risk of overstating savings).
+    CAR_EMISSIONS_KG_PER_KM: 0.150, 
 
-    // --- LCA PHYSICS (AR6 & EMISSIONS) ---
+    // Source: Eurostat 2023 (EU-27 Avg Household: 3700 kWh/year) -> ~10.1 kWh/day
+    // Grid intensity EU avg (2023) ~255g/kWh -> 2.58 kg CO2e/day
+    HOUSEHOLD_ELEC_KG_DAY: 2.58, 
+
+    // Source: WULCA AWARE 2.0 (Global Consensus)
+    // 1 m3 world eq. represents the scarcity-weighted impact of 1 m3 water in world avg basin
+    // We use VOLUME of bottled water (0.5L) for the visual, not the AWARE score.
+    WATER_BOTTLE_LITERS: 0.5,
+
+    // --- FINANCIAL RISK PROXY (NOT "SAVINGS") ---
+    // Source: Quinet Report (France 2019) & EPA Social Cost of Carbon (2023 Update)
+    // Must be labeled "Shadow Price" or "Risk Exposure", NEVER "Cash Savings" in B2B reports.
+    SHADOW_PRICE_EUR_TON: 85.0, 
+
+    // --- LCA PHYSICS (IPCC AR6 & EMISSIONS) ---
+    // Source: IPCC Assessment Report 6 (2021/2023), Chapter 7
     gwp: { 
-        ch4: 29.8,  // AR6 2025
-        n2o: 273,   // AR6 2025
-        ar6_dynamic: true,
-        biogenic_discount: 0.95
+        ch4: 27.9,  // AR6 GWP100 for Methane (Non-fossil) - CORRECTED from 29.8 (Fossil)
+        n2o: 273,   // AR6 GWP100 for Nitrous Oxide
+        biogenic_discount: 0.0, // REGULATOR SAFETY: Default to 0. No credit without certificates.
+        ar6_dynamic: true
     },
+    
+    // Source: Agribalyse 3.2 LCI / Ecoinvent 3.9
     emission_factors: {
-        nitrogen_synthetic: 5.7,
-        nitrogen_legume: 1.2,
-        electricity_fr: 0.04,
-        diesel: 2.68,
-        n_to_n2o_synthetic: 0.01,
-        n_to_n2o_legume: 0.003
+        nitrogen_synthetic: 5.7, // kg CO2e per kg N fertilizer
+        nitrogen_legume: 0.0,    // 0 emissions for biological fixation (natural process)
+        diesel: 3.24,            // kg CO2e per liter (Well-to-Wheel, JRC 2020) - CORRECTED from 2.68
+        n_to_n2o_synthetic: 0.01,// IPCC Tier 1 factor (1% of N becomes N2O)
+        n_to_n2o_legume: 0.0     // Biological fixation has negligible N2O leakage
     }
 };
+
     
 // ================== FACTORY PRIMARY DATA TOGGLE ==================
 function toggleFactoryInputs() {
@@ -6375,101 +6393,92 @@ function updateEnvironmentalStory(results) {
 
     if (!environmentalStory || !storyContent || !storyComparison) return;
 
-    const customerName = document.getElementById('customerName').value || 'Sustainability Champion';
+    const customerName = document.getElementById('customerName').value || 'Maria'; // Default to Maria as requested
     
-    const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
-    const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
+    // 1. EXTRACT DATA (SINGLE SOURCE OF TRUTH)
+    const unifiedCO2 = results.co2PerKg;
+    const baselineCO2 = results.comparison.baseline.co2PerKg;
+    const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
     
-    // Use Physics Constants instead of magic numbers
-const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
-const trees = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR);
-const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
-const householdEnergy = householdDays + ' days';
-
-// For water bottles, we need to convert from AWARE m³ to liters
-const rawWaterVol = results.waterScarcityPerKg / 42; // Same reverse-engineering from AWARE
-const waterBottles = Math.round((rawWaterVol * 1000) / PHYSICS_CONSTANTS.WATER_BOTTLE_LITERS);
-        const productName = document.getElementById('productName').value || 'your product';
+    // 2. CALCULATE SAVINGS (AUDIT MATH)
+    // Formula: (Baseline - Product) / Baseline * 100
+    // Logic: Clamp min at 0 (no negative savings displayed here).
+    const savingsRaw = baselineCO2 - unifiedCO2;
+    const savingsPercent = Math.max(0, (savingsRaw / baselineCO2) * 100);
     
-    // Calculate savings percentage
-const savingsPercent = ((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg * 100);
-const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
+    // 3. GENERATE EQUIVALENCIES (USING PHYSICS CONSTANTS)
+    const carKm = Math.round(savingsRaw / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
+    const householdDays = Math.round(savingsRaw / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
+    const trees = (savingsRaw / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1); // Show decimal for accuracy
+    const waterBottles = Math.round((results.waterScarcityPerKg / 42 * 1000) / PHYSICS_CONSTANTS.WATER_BOTTLE_LITERS); // Reverse AWARE to Volume
 
-// FIX: Get the actual baseline name (not hardcoded)
-const dynamicBaselineName = baselineName || "Conventional Beef"; // Fallback
-
-// Map baseline names to more readable versions
-const baselineDisplayNames = {
-    'Conventional Beef': 'Conventional Beef',
-    'Conventional Cow Milk': 'Conventional Cow Milk',
-    'Conventional Chicken': 'Conventional Chicken',
-    'Conventional Pork': 'Conventional Pork',
-    'Conventional Cheese': 'Conventional Cheese',
-    'Conventional Coffee': 'Conventional Coffee',
-    'Conventional Chocolate': 'Conventional Chocolate',
-    'Conventional Bread': 'Conventional Bread'
-};
-
-const displayBaselineName = baselineDisplayNames[dynamicBaselineName] || dynamicBaselineName;
-
-// ========== NEW REGULATOR SAFETY BLOCK ==========
-const rawHeadline = `Hey ${customerName}, standard industry comparisons indicate this product's carbon footprint is ~${savingsPercent.toFixed(0)}% lower than conventional ${displayBaselineName}.`;
-const safeHeadline = makeRegulatorSafe(rawHeadline);
-// ========== END SAFETY BLOCK ==========
-
-storyContent.innerHTML = `
-    <div class="story-highlight">
-        <i class="fas fa-seedling"></i>
-        <strong>${safeHeadline}</strong><br>
-        Based on PEF 3.1 methodology, this suggests a potential reduction of ~${co2SavedPerKg.toFixed(2)} kg CO₂e per kg vs. conventional ${displayBaselineName} baseline.
-    </div>
-        
-        <!-- ========== TECHNICAL PROOF & METHODOLOGY ========== -->
-        <div style="margin-top: 1rem; padding: 1rem; background: #FFF3E0; border-radius: 8px; border-left: 4px solid #FF9800;">
-            <div style="font-size: 0.75rem; color: #B7791F; font-weight: 700; margin-bottom: 0.25rem;">
-                <i class="fas fa-file-contract"></i> TECHNICAL PROOF & METHODOLOGY
+    // 4. REGULATOR-PROOF TEXT GENERATION
+    storyContent.innerHTML = `
+        <div style="font-family: 'Inter', sans-serif;">
+            <div style="background: rgba(0, 212, 170, 0.1); border-left: 4px solid #00D4AA; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h3 style="color: #0A2540; margin-top: 0; margin-bottom: 0.5rem;">
+                    <i class="fas fa-leaf"></i> Environmental Impact Story
+                </h3>
+                <p style="font-size: 1.1rem; color: #2D3748; line-height: 1.6;">
+                    Hey <strong>${customerName}</strong>, standard industry comparisons indicate this product's carbon footprint is 
+                    <strong style="color: #00B894;">~${savingsPercent.toFixed(0)}% lower</strong> than conventional <strong>${baselineName}</strong>.
+                </p>
+                <p style="font-size: 0.95rem; color: #4A5568;">
+                    Based on PEF 3.1 methodology, this suggests a potential reduction of 
+                    <strong>~${savingsRaw.toFixed(2)} kg CO₂e per kg</strong> vs. conventional ${baselineName} baseline.
+                </p>
             </div>
-            <div style="font-size: 0.7rem; color: #744210; line-height: 1.4;">
-                <strong>This data is provided to ensure full transparency and compliance with EU PEF 3.1 standards.</strong><br><br>
-                
-                <strong>Calculation Model:</strong> Comparative Life Cycle Assessment (LCA) based on PEF 3.1 methodology.<br>
-                <strong>Data Source:</strong> Secondary data sourced from AGRIBALYSE 3.2, the French/EU reference database for food environmental impact.<br>
-                <strong>System Boundary:</strong> Cradle-to-Retail (includes agricultural production, industrial processing, packaging, and distribution logistics).<br>
-                <strong>Baseline:</strong> Compared against the average EU <span id="dynamicBaselineName">${displayBaselineName}</span> profile.<br>
-                <strong>Data Quality:</strong> High (DQR: 1.4) with a calculated uncertainty of ±15%.<br><br>
-                
-                <strong style="color: #E65100;">Status:</strong> Screening-level assessment. Full ISO 14044 critical review/verification is the next stage for our 2026 sustainability roadmap.
+
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.25rem;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: #718096; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+                    <i class="fas fa-shield-alt"></i> TECHNICAL PROOF & METHODOLOGY
+                </div>
+                <div style="font-size: 0.8rem; color: #4A5568; line-height: 1.5;">
+                    <p style="margin-bottom: 0.75rem;">This data is provided to ensure full transparency and compliance with EU PEF 3.1 standards.</p>
+                    
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 0.5rem;"><strong>Calculation Model:</strong> Comparative Life Cycle Assessment (LCA) based on PEF 3.1 methodology.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Data Source:</strong> Secondary data sourced from AGRIBALYSE 3.2, the French/EU reference database for food environmental impact.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>System Boundary:</strong> Cradle-to-Retail (includes agricultural production, industrial processing, packaging, and distribution logistics).</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Baseline:</strong> Compared against the average EU ${baselineName} profile.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Data Quality:</strong> High (DQR: ${results.overallDQR.toFixed(1)}) with a calculated uncertainty of ±${results.overallUncertainty}%.</li>
+                    </ul>
+                    
+                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #E2E8F0; font-style: italic; color: #718096;">
+                        Status: Screening-level assessment. Full ISO 14044 critical review/verification is the next stage for our 2026 sustainability roadmap.
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- ========== END TECHNICAL PROOF ========== -->
     `;
 
     storyComparison.innerHTML = `
-        <div class="story-item">
-            <div class="story-icon">🚗</div>
-            <div class="story-value">${carKm} km</div>
-            <div class="story-label">Car driving equivalent saved</div>
-        </div>
-        <div class="story-item">
-            <div class="story-icon">🏠</div>
-            <div class="story-value">${householdEnergy} days</div>
-            <div class="story-label">Home energy equivalent saved</div>
-        </div>
-        <div class="story-item">
-            <div class="story-icon">🌳</div>
-            <div class="story-value">${trees}</div>
-            <div class="story-label">Trees equivalent planted</div>
-        </div>
-        <div class="story-item">
-            <div class="story-icon">💧</div>
-            <div class="story-value">${waterBottles}</div>
-            <div class="story-label">Water bottles saved</div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
+            <div class="story-item">
+                <div class="story-icon">🚗</div>
+                <div class="story-value">${carKm} km</div>
+                <div class="story-label">Car driving equivalent</div>
+            </div>
+            <div class="story-item">
+                <div class="story-icon">🏠</div>
+                <div class="story-value">${householdDays} days</div>
+                <div class="story-label">Home energy equivalent</div>
+            </div>
+            <div class="story-item">
+                <div class="story-icon">🌳</div>
+                <div class="story-value">${trees}</div>
+                <div class="story-label">Trees equivalent</div>
+            </div>
+            <div class="story-item">
+                <div class="story-icon">💧</div>
+                <div class="story-value">${waterBottles}</div>
+                <div class="story-label">Water bottles saved</div>
+            </div>
         </div>
     `;
-    
-    environmentalStory.classList.remove('hidden');
-    }
 
+    environmentalStory.classList.remove('hidden');
+}
 // ================== SCENARIO TOGGLE ==================
 function toggleScenario(key) {
     activeScenarios[key] = !activeScenarios[key];
