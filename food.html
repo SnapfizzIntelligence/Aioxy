@@ -6012,15 +6012,14 @@ function updateBusinessCase() {
         
         console.log('⚠️ No valid physics data found, attempting to calculate...');
         
-        if (selectedIngredients.length > 0) {
-            // We have ingredients but no results - calculate them
-            calculateImpact();
-            // Schedule business case update after calculation
-            setTimeout(() => {
-                console.log('🔄 Retrying business case after physics calculation...');
-                updateBusinessCase();
-            }, 500);
-            return;
+        // Fixed Code
+if (selectedIngredients.length > 0) {
+    console.log("⚠️ Recalculating for Business Case...");
+    // Pass a flag to prevent recursive updates
+    calculateImpactEnhanced({ skipUpdate: true }); 
+    return;
+}
+
         } else {
             console.log('⚠️ No ingredients available, using demo data...');
             setupDemoData();
