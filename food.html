@@ -6379,92 +6379,103 @@ document.getElementById('waterBottles').innerHTML =
     }
 // ================== UPDATE ENVIRONMENTAL STORY ==================
 function updateEnvironmentalStory(results) {
-    const environmentalStory = document.getElementById('environmentalStory');
     const storyContent = document.getElementById('storyContent');
-    const storyComparison = document.getElementById('storyComparison');
-
-    if (!environmentalStory || !storyContent || !storyComparison) return;
-
-    const customerName = document.getElementById('customerName').value || 'Maria'; // Default to Maria as requested
-    
-    // 1. EXTRACT DATA (SINGLE SOURCE OF TRUTH)
-    const unifiedCO2 = results.co2PerKg;
-    const baselineCO2 = results.comparison.baseline.co2PerKg;
+    const customerName = document.getElementById('customerName').value || 'Consumer';
     const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
     
-    // 2. CALCULATE SAVINGS (AUDIT MATH)
-    // Formula: (Baseline - Product) / Baseline * 100
-    // Logic: Clamp min at 0 (no negative savings displayed here).
-    const savingsRaw = baselineCO2 - unifiedCO2;
-    const savingsPercent = Math.max(0, (savingsRaw / baselineCO2) * 100);
-    
-    // 3. GENERATE EQUIVALENCIES (USING PHYSICS CONSTANTS)
-    const carKm = Math.round(savingsRaw / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
-    const householdDays = Math.round(savingsRaw / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
-    const trees = (savingsRaw / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1); // Show decimal for accuracy
-    const waterBottles = Math.round((results.waterScarcityPerKg / 42 * 1000) / PHYSICS_CONSTANTS.WATER_BOTTLE_LITERS); // Reverse AWARE to Volume
+    // 1. Calculate Uncertain Savings (Lower Bound)
+    // We use the conservative end of the uncertainty range to be safe.
+    const uncertainty = results.overallUncertainty || 15; // e.g., 15%
+    const nominalReduction = results.comparison.co2SavedPerKg;
+    // Conservative reduction = Nominal - (Nominal * Uncertainty%)
+    // This is what makes you "Jail Proof" -> You claim the LOWER bound.
+    const conservativeReduction = nominalReduction * (1 - (uncertainty/100));
+    const percent = Math.min(99, (conservativeReduction / results.comparison.baseline.co2PerKg) * 100);
 
-    // 4. REGULATOR-PROOF TEXT GENERATION
     storyContent.innerHTML = `
-        <div style="font-family: 'Inter', sans-serif;">
-            <div style="background: rgba(0, 212, 170, 0.1); border-left: 4px solid #00D4AA; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <h3 style="color: #0A2540; margin-top: 0; margin-bottom: 0.5rem;">
-                    <i class="fas fa-leaf"></i> Environmental Impact Story
+        <div style="font-family: 'Inter', sans-serif; color: #2D3748;">
+            <div style="background: linear-gradient(135deg, #F0FFF4 0%, #E6FFFA 100%); padding: 1.5rem; border-radius: 12px; border: 1px solid #B2F5EA; margin-bottom: 1.5rem;">
+                <h3 style="color: #2C7A7B; margin-top: 0; font-size: 1.2rem;">
+                    <i class="fas fa-leaf"></i> Environmental Impact Analysis
                 </h3>
-                <p style="font-size: 1.1rem; color: #2D3748; line-height: 1.6;">
-                    Hey <strong>${customerName}</strong>, standard industry comparisons indicate this product's carbon footprint is 
-                    <strong style="color: #00B894;">~${savingsPercent.toFixed(0)}% lower</strong> than conventional <strong>${baselineName}</strong>.
+                <p style="font-size: 1.05rem; line-height: 1.6;">
+                    Hey <strong>${customerName}</strong>, standard industry modeling indicates this product's carbon footprint is 
+                    <strong style="color: #2C7A7B; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px;">~${percent.toFixed(0)}% lower</strong> 
+                    than conventional <strong>${baselineName}</strong>.
                 </p>
-                <p style="font-size: 0.95rem; color: #4A5568;">
-                    Based on PEF 3.1 methodology, this suggests a potential reduction of 
-                    <strong>~${savingsRaw.toFixed(2)} kg CO₂e per kg</strong> vs. conventional ${baselineName} baseline.
+                <p style="font-size: 0.9rem; color: #4A5568; margin-bottom: 0;">
+                    <i class="fas fa-chart-line"></i> PEF 3.1 methodology models a potential reduction of 
+                    <strong>~${conservativeReduction.toFixed(2)} kg CO₂e/kg</strong> vs. baseline.
                 </p>
             </div>
 
-            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.25rem;">
-                <div style="font-size: 0.75rem; font-weight: 700; color: #718096; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
-                    <i class="fas fa-shield-alt"></i> TECHNICAL PROOF & METHODOLOGY
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid #E2E8F0; padding-bottom: 0.5rem;">
+                    <i class="fas fa-shield-alt" style="color: #718096;"></i>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #718096; letter-spacing: 0.05em; text-transform: uppercase;">
+                        Technical Proof & Methodology
+                    </span>
                 </div>
-                <div style="font-size: 0.8rem; color: #4A5568; line-height: 1.5;">
-                    <p style="margin-bottom: 0.75rem;">This data is provided to ensure full transparency and compliance with EU PEF 3.1 standards.</p>
+                
+                <div style="font-size: 0.85rem; color: #4A5568; line-height: 1.5;">
+                    <p><strong>Transparency Statement:</strong> This data ensures compliance with EMPCO & PEF 3.1 reporting standards.</p>
                     
-                    <ul style="list-style: none; padding: 0; margin: 0;">
-                        <li style="margin-bottom: 0.5rem;"><strong>Calculation Model:</strong> Comparative Life Cycle Assessment (LCA) based on PEF 3.1 methodology.</li>
-                        <li style="margin-bottom: 0.5rem;"><strong>Data Source:</strong> Secondary data sourced from AGRIBALYSE 3.2, the French/EU reference database for food environmental impact.</li>
-                        <li style="margin-bottom: 0.5rem;"><strong>System Boundary:</strong> Cradle-to-Retail (includes agricultural production, industrial processing, packaging, and distribution logistics).</li>
-                        <li style="margin-bottom: 0.5rem;"><strong>Baseline:</strong> Compared against the average EU ${baselineName} profile.</li>
-                        <li style="margin-bottom: 0.5rem;"><strong>Data Quality:</strong> High (DQR: ${results.overallDQR.toFixed(1)}) with a calculated uncertainty of ±${results.overallUncertainty}%.</li>
+                    <ul style="list-style: none; padding: 0; margin: 1rem 0;">
+                        <li style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem;">
+                            <span style="color: #4299E1;">🔹</span>
+                            <div><strong>Calculation Model:</strong> Comparative Life Cycle Assessment (LCA) based on PEF 3.1.</div>
+                        </li>
+                        <li style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem;">
+                            <span style="color: #4299E1;">🔹</span>
+                            <div><strong>Data Source:</strong> AGRIBALYSE® 3.2 (EU Reference Database) + GLEC v3.0 Logistics.</div>
+                        </li>
+                        <li style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem;">
+                            <span style="color: #4299E1;">🔹</span>
+                            <div><strong>System Boundary:</strong> Cradle-to-Retail (Farm + Processing + Pkg + Transport).</div>
+                        </li>
+                        <li style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem;">
+                            <span style="color: #4299E1;">🔹</span>
+                            <div><strong>Quality & Uncertainty:</strong> DQR ${results.overallDQR.toFixed(1)}/5.0 (High) with ±${results.overallUncertainty}% modeled uncertainty.</div>
+                        </li>
                     </ul>
-                    
-                    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #E2E8F0; font-style: italic; color: #718096;">
-                        Status: Screening-level assessment. Full ISO 14044 critical review/verification is the next stage for our 2026 sustainability roadmap.
+
+                    <div style="font-size: 0.75rem; background: #FFFAF0; border-left: 3px solid #ED8936; padding: 0.75rem; color: #9C4221; margin-top: 1rem;">
+                        <strong>Status:</strong> Screening-level assessment. Results are specific to the modeled supply chain configuration. 
+                        Full ISO 14044 critical review is recommended for public comparative assertions.
                     </div>
                 </div>
             </div>
         </div>
     `;
+    
+    // Ensure the comparison section is updated (using the fixed equivalencies from Fix A)
+    // [Note: The equivalency update happens in updateResultsUI, which populates the DOM elements used here]
+}
+
 
     storyComparison.innerHTML = `
+    // Use THESE variables in the story:
+storyComparison.innerHTML = `
         <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem;">
             <div class="story-item">
                 <div class="story-icon">🚗</div>
-                <div class="story-value">${carKm} km</div>
-                <div class="story-label">Car driving equivalent</div>
+                <div class="story-value">${carKm > 0 ? carKm : '—'}</div>
+                <div class="story-label">avoided driving</div>
             </div>
             <div class="story-item">
                 <div class="story-icon">🏠</div>
-                <div class="story-value">${householdDays} days</div>
-                <div class="story-label">Home energy equivalent</div>
+                <div class="story-value">${householdDays > 0 ? householdDays : '—'}</div>
+                <div class="story-label">of electricity</div>
             </div>
             <div class="story-item">
                 <div class="story-icon">🌳</div>
-                <div class="story-value">${trees}</div>
-                <div class="story-label">Trees equivalent</div>
+                <div class="story-value">${treeYears > 0 ? treeYears : '—'}</div>
+                <div class="story-label">mature tree-years</div>
             </div>
             <div class="story-item">
                 <div class="story-icon">💧</div>
-                <div class="story-value">${waterBottles}</div>
-                <div class="story-label">Water bottles saved</div>
+                <div class="story-value">${waterScoreDiff > 0.01 ? waterScoreDiff.toFixed(1) : '—'}</div>
+                <div class="story-label">m³ world eq. (AWARE)</div>
             </div>
         </div>
     `;
