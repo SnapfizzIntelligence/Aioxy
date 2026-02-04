@@ -8290,7 +8290,7 @@ function applyISOAllocation(totalImpact, mainProductYield, coProductYield, price
 // Prevents comparing "Mushroom Burger" to "Beef" automatically without disclaimer.
 function getSafeBaseline(userInputName, selectedCategory) {
     // Try detection
-    const detectedKey = detectProductCategory(userInputName, [], selectedCategory);
+    const detectedKey = foodCalculationEngine.detectProductCategory(userInputName, [], selectedCategory);
     const baselineData = UNIVERSAL_BASELINES[detectedKey];
     
     // SAFETY CHECK: Does the product name imply a non-animal category?
