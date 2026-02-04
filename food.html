@@ -6338,27 +6338,27 @@ if (results.waterScarcityPerKg <= 0.001) {
     document.getElementById('waterSavings').style.background = "#CBD5E0"; // Grey
     }
     
-    // Equivalencies - Using Physics-Based Constants
+    // === REGULATOR-PROOF EQUIVALENCIES ENGINE (FIX A) ===
 const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
-const waterSavedPerKg = results.comparison.waterSavedPerKg || 0;
+const baselineWater = results.comparison.baseline.waterPerKg || 0;
+const currentWater = results.waterScarcityPerKg || 0;
 
-// === USING PHYSICS CONSTANTS INSTEAD OF MAGIC NUMBERS ===
-// 1. Car KM: (Saved kg) / (kg per km)
+// 1. Car KM: Based on EEA 2023 Average Fleet (0.150 kg/km)
 const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
 
-// 2. Tree Years: (Saved kg) / (Absorption per year)
-// Result is "Tree-Years" (e.g., 1 tree growing for X years, or X trees for 1 year)
-const treeYears = (co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(2);
+// 2. Tree-Years: Time-based sequestration (EEA Mature Beech: ~22kg/yr)
+// We label it "Tree-Years" to avoid implying we physically planted a tree today.
+const treeYears = (co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
 
 // 3. Household Days: (Saved kg) / (Daily consumption kg)
 const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
 
-// 4. Water Bottles: (Saved m3 * 1000 liters) / (Bottle Size)
-// Note: This is VOLUME saved, not scarcity-weighted (AWARE). 
-// We use raw water volume from the unified metric if available, or estimate from AWARE.
-const rawWaterVol = results.waterScarcityPerKg / 42; // Rough reverse-engineer from AWARE global avg
-const waterBottles = Math.round((rawWaterVol * 1000) / PHYSICS_CONSTANTS.WATER_BOTTLE_LITERS);
-   
+// 4. Water Scarcity (AWARE 2.0): THE LEGAL FIX
+// We DO NOT convert to bottles. We display the Scarcity Index difference.
+// This prevents "apples to oranges" lawsuits.
+const waterScoreDiff = Math.max(0, baselineWater - currentWater);
+
+// 5. UPDATE UI ELEMENTS (Keep the rest of your existing code below)
     document.getElementById('carKm').innerHTML = carKm > 0 ? 
         `${carKm} km <span style="font-size:0.7em; color:#999">(avg. EU diesel car)</span>` : '—';
     
@@ -6373,8 +6373,10 @@ const waterBottles = Math.round((rawWaterVol * 1000) / PHYSICS_CONSTANTS.WATER_B
     document.getElementById('householdEnergy').innerHTML = householdDays > 0 ? 
         `${householdDays} days <span style="font-size:0.7em; color:#999">(avg. EU elec.)</span>` : '—';
     
-    document.getElementById('waterBottles').textContent = waterBottles > 0 ? 
-        `${waterBottles} bottles (indicative)` : '—';
+    // STRICT COMPLIANCE: Display AWARE Score, not "Bottles"
+document.getElementById('waterBottles').innerHTML = 
+    waterScoreDiff > 0.01 ? 
+    `${waterScoreDiff.toFixed(1)} <div style="font-size:0.7em; opacity:0.8">m³ world eq. (AWARE)</div>` : '—';
 
     createEmissionChart(results);
     
