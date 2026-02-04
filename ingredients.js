@@ -1765,7 +1765,7 @@ window.aioxyData = {
                 
             }
         }
-    },
+    };
      // ================== AIOXY UNIVERSAL PHYSICS ENGINE (AUDIT READY v2.2) ==================
 // REGULATORY COMPLIANCE: EMPCO DIRECTIVE (EU) 2024/825
 
