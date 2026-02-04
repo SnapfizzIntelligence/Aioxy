@@ -5109,6 +5109,39 @@ let totalWaterImpact = 0;
 const functionalUnitWeight = massBalanceData.final_content_weight_kg || 0.2;
 
 auditTrail.mass_balance = massBalanceData; // Use the physics-calculated mass balance
+// === GROK'S REGULATORY SAFEGUARD: ORIGIN RISK FACTOR ===
+// Automatically detects high-risk origins and flags them in the audit trail.
+finalIngredients.forEach(item => {
+    // 1. Define High-Risk Origins (LUC = Land Use Change)
+    const riskMap = {
+        'BR': { keywords: ['soy', 'beef', 'coffee'], factor: 5.0, reason: "Deforestation Risk (LUC)" },
+        'ID': { keywords: ['palm', 'oil'], factor: 3.5, reason: "Peatland Drainage Risk" },
+        'CN': { keywords: ['manufacturing', 'steel'], factor: 1.4, reason: "Coal-Heavy Grid Intensity" }
+    };
+
+    const origin = item.primaryData?.farmRegion || document.getElementById('manufacturingCountry').value || 'FR';
+    const riskProfile = riskMap[origin];
+
+    if (riskProfile && riskProfile.keywords.some(k => item.name.toLowerCase().includes(k))) {
+        console.warn(`⚠️ REGULATORY FLAG: Applying ${riskProfile.factor}x risk factor to ${item.name} from ${origin}`);
+        
+        // Apply the penalty to the audit trail
+        const cat = "Climate Change";
+        if (auditTrail.pefCategories[cat]) {
+            // Find the component and apply the factor
+            const comp = auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.find(c => c.id === item.id);
+            if (comp) {
+                const originalVal = comp.subtotal;
+                comp.subtotal *= riskProfile.factor;
+                comp.note += ` [⚠️ AUDIT: ${riskProfile.reason} Applied x${riskProfile.factor}]`;
+                
+                // Add the difference to the total
+                const delta = comp.subtotal - originalVal;
+                auditTrail.pefCategories[cat].total += delta;
+            }
+        }
+    }
+});
 
 // 9. FINALIZING METRICS (FIXED TO USE CONSISTENT WEIGHT)
 const totalClimateImpact = auditTrail.pefCategories["Climate Change"].total;
