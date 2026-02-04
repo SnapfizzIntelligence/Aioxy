@@ -8348,25 +8348,6 @@ window.validatePhysics = function() {
     console.groupEnd();
     return passed ? "✅ SYSTEM AUDIT PASSED: READY FOR SCREENING USE" : "❌ SYSTEM AUDIT FAILED";
 };
-
-// ================== OVERRIDE EXISTING FUNCTION TO USE SAFEGUARDS ==================
-// This wraps your existing detect logic with the safety check
-if (typeof foodCalculationEngine !== 'undefined') {
-    const originalDetect = foodCalculationEngine.detectProductCategory;
-    foodCalculationEngine.detectProductCategory = function(name, ingredients, category) {
-        const detected = originalDetect.call(this, name, ingredients, category);
-        
-        // Log the audit check
-        const safeCheck = getSafeBaseline(name, category);
-        if (safeCheck.auditFlag) {
-            console.warn(`🛡️ Regulator Safeguard: ${safeCheck.disclaimer}`);
-        }
-        
-        return detected;
-    };
-}
-
 </script>
 </body>
 </html>
-  
