@@ -1737,9 +1737,9 @@
                                 <div class="comparison-label">Equivalent CO₂ absorption</div>
                             </div>
                             <div class="comparison-card">
-                                <i class="fas fa-wine-bottle" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="comparison-value" id="waterBottles">0 bottles</div>
-                                <div class="comparison-label">Drinking water equivalent</div>
+    <i class="fas fa-tint" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+    <div class="comparison-value" id="waterScarcity">0</div>
+    <div class="comparison-label">Water scarcity reduction (AWARE)</div>
                             </div>
                         </div>
 
@@ -6397,7 +6397,7 @@ document.getElementById('householdEnergy').innerHTML =
     householdDays > 0 ? `${householdDays} days <div style="font-size:0.7em; opacity:0.8">avg. electricity</div>` : '—';
 
 // STRICT COMPLIANCE: Display AWARE Score, not "Bottles"
-document.getElementById('waterBottles').innerHTML = 
+document.getElementById('waterScarcity').innerHTML = 
     waterScoreDiff > 0.01 ? 
     `${waterScoreDiff.toFixed(1)} <div style="font-size:0.7em; opacity:0.8">m³ world eq. (AWARE)</div>` : '—';
 
