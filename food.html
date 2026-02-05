@@ -8435,9 +8435,32 @@ function getIngredientOrigin(ingredientId) {
         return manufacturingCountry || 'FR';
     }
     
-    // Default to France (Agribalyse database)
+    // Default to France if unknown (Safe fallback)
     return 'FR';
+}
+
+// ================== EQUIVALENCE ENGINE ==================
+function renderEquivalences(co2) {
+    // 1. Define Equivalence Factors
+    const eq = [
+        { icon: '🚗', text: 'km driving (gas car)', factor: 0.192 },
+        { icon: '🥩', text: 'steaks (200g beef)', factor: 14.0 },
+        { icon: '💡', text: 'hours of LED light', factor: 0.015 },
+        { icon: '📱', text: 'smartphone charges', factor: 0.008 }
+    ];
+
+    // 2. Render to DOM
+    const container = document.getElementById('equivalenceContainer');
+    if (container) {
+        container.innerHTML = eq.map(item => `
+            <div class="stat-item" style="text-align: center; padding: 10px;">
+                <div style="font-size: 24px;">${item.icon}</div>
+                <div style="font-weight: bold; color: var(--primary);">${(co2 / item.factor).toFixed(1)}</div>
+                <div style="font-size: 12px; color: #666;">${item.text}</div>
+            </div>
+        `).join('');
     }
+}
 </script>
 </body>
-    </html>
+</html>
