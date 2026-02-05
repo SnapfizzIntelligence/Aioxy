@@ -8406,6 +8406,35 @@ window.validatePhysics = function() {
     console.groupEnd();
     return passed ? "✅ SYSTEM AUDIT PASSED: READY FOR SCREENING USE" : "❌ SYSTEM AUDIT FAILED";
 };
+    // ================== INGREDIENT ORIGIN DATABASE ==================
+function getIngredientOrigin(ingredientId) {
+    if (!ingredientId) return 'FR';
+    
+    // Simple mapping based on ingredient ID
+    if (ingredientId.includes('soy')) return 'BR'; // Brazil
+    if (ingredientId.includes('coffee')) return 'VN'; // Vietnam
+    if (ingredientId.includes('cocoa')) return 'CI'; // Ivory Coast
+    if (ingredientId.includes('rice')) return 'IN'; // India
+    if (ingredientId.includes('corn') || ingredientId.includes('maize')) return 'US'; // USA
+    
+    // French ingredients (Agribalyse defaults)
+    if (ingredientId.includes('oat')) return 'FR';
+    if (ingredientId.includes('wheat')) return 'FR';
+    if (ingredientId.includes('pea')) return 'FR';
+    if (ingredientId.includes('milk')) return 'FR';
+    if (ingredientId.includes('beef')) return 'FR';
+    if (ingredientId.includes('pig')) return 'FR';
+    if (ingredientId.includes('chicken')) return 'FR';
+    
+    // Water is local
+    if (ingredientId.includes('water')) {
+        const manufacturingCountry = document.getElementById('manufacturingCountry')?.value;
+        return manufacturingCountry || 'FR';
+    }
+    
+    // Default to France (Agribalyse database)
+    return 'FR';
+    }
 </script>
 </body>
     </html>
