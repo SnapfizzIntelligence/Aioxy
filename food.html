@@ -7641,7 +7641,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         const elements = [
             'co2Value', 'waterValue', 'landValue', 'fossilValue',
             'co2Savings', 'waterSavings', 'carKm', 'householdEnergy',
-            'treesPlanted', 'waterBottles'
+            'treesPlanted', 'waterScarcity'
         ];
         
         elements.forEach(id => {
@@ -7656,7 +7656,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
                         (id.includes('carKm') ? ' km' : '') +
                         (id.includes('householdEnergy') ? ' days' : '') +
                         (id.includes('treesPlanted') ? ' trees' : '') +
-                        (id.includes('waterBottles') ? ' bottles' : '');
+                        (id.includes('waterScarcity') ? ' bottles' : '');
                 } else if (id.includes('Savings')) {
                     element.textContent = '0% saved';
                 }
