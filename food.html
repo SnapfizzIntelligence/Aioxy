@@ -1732,9 +1732,9 @@
                                 <div class="comparison-label">Household energy consumption</div>
                             </div>
                             <div class="comparison-card">
-                                <i class="fas fa-tree" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
-                                <div class="comparison-value" id="treesPlanted">0 trees</div>
-                                <div class="comparison-label">Equivalent CO₂ absorption</div>
+    <i class="fas fa-tree" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+    <div class="comparison-value" id="treeYears">0</div>
+    <div class="comparison-label">Tree-year sequestration equivalent</div>
                             </div>
                             <div class="comparison-card">
     <i class="fas fa-tint" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
@@ -6390,7 +6390,7 @@ const waterScoreDiff = Math.max(0, baselineWater - currentWater);
 document.getElementById('carKm').innerHTML = 
     carKm > 0 ? `${carKm} km <div style="font-size:0.7em; opacity:0.8">avoided driving</div>` : '—';
 
-document.getElementById('treesPlanted').innerHTML = 
+document.getElementById('tree-years').innerHTML = 
     treeYears > 0 ? `${treeYears} <div style="font-size:0.7em; opacity:0.8">mature tree-years</div>` : '—';
 
 document.getElementById('householdEnergy').innerHTML = 
@@ -7641,27 +7641,29 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         const elements = [
             'co2Value', 'waterValue', 'landValue', 'fossilValue',
             'co2Savings', 'waterSavings', 'carKm', 'householdEnergy',
-            'treesPlanted', 'waterScarcity'
+            'tree-years', 'waterScarcity'
         ];
         
         elements.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                if (id.includes('Value') || id.includes('Km') || id.includes('Energy') || id.includes('trees') || id.includes('bottles')) {
-                    element.textContent = '0' + (id.includes('Value') ? '.00' : '') + 
-                        (id.includes('co2Value') ? ' kg' : '') +
-                        (id.includes('waterValue') ? ' m³' : '') +
-                        (id.includes('landValue') ? ' Pt' : '') +
-                        (id.includes('fossilValue') ? ' MJ' : '') +
-                        (id.includes('carKm') ? ' km' : '') +
-                        (id.includes('householdEnergy') ? ' days' : '') +
-                        (id.includes('treesPlanted') ? ' trees' : '') +
-                        (id.includes('waterScarcity') ? ' bottles' : '');
-                } else if (id.includes('Savings')) {
-                    element.textContent = '0% saved';
-                }
-            }
-        });
+    const element = document.getElementById(id);
+    if (element) {
+        // FIX THE CONDITION: Check for new IDs
+        if (id.includes('Value') || id.includes('Km') || id.includes('Energy') || id.includes('treeYears') || id.includes('waterScarcity')) {
+            //                                                      ^^^^^^^^^^^^^ CORRECT               ^^^^^^^^^^^^^^^^^^ CORRECT
+            element.textContent = '0' + (id.includes('Value') ? '.00' : '') + 
+                (id.includes('co2Value') ? ' kg' : '') +
+                (id.includes('waterValue') ? ' m³' : '') +
+                (id.includes('landValue') ? ' Pt' : '') +
+                (id.includes('fossilValue') ? ' MJ' : '') +
+                (id.includes('carKm') ? ' km' : '') +
+                (id.includes('householdEnergy') ? ' days' : '') +
+                (id.includes('treeYears') ? '' : '') +  // treeYears gets just "0"
+                (id.includes('waterScarcity') ? '' : ''); // waterScarcity gets just "0"
+        } else if (id.includes('Savings')) {
+            element.textContent = '0% saved';
+        }
+    }
+});
 
         const sections = ['environmentalStory', 'massBalanceSection', 'dataQualitySection'];
         sections.forEach(id => {
