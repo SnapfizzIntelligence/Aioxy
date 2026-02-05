@@ -3843,7 +3843,7 @@ function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
         const ingData = aioxyData.ingredients[item.id];
         if (!ingData) return;
 
-        const originCountry = PHYSICS_DB.origins[item.id] || manufacturingCountryCode|| 'FR';
+        const originCountry = INGREDIENT_ORIGINS[item.id] || manufacturingCountryCode;
         
         let inboundTransportCO2 = 0;
         if (originCountry !== manufacturingCountryCode) {
@@ -4945,7 +4945,7 @@ Object.keys(pefCategories).forEach(cat => {
     // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
     let universalAdjustments = null;
     if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
-        const const originCountry = PHYSICS_DB.origins[item.id] || manufacturingCountryCode; 
+        const ingredientOrigin = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
         universalAdjustments = calculateUniversalAdjustments(
             ing.name,
             ingredientOrigin,              // Origin country
