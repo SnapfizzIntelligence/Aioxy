@@ -3843,7 +3843,7 @@ function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
         const ingData = aioxyData.ingredients[item.id];
         if (!ingData) return;
 
-        const originCountry = PHYSICS_DB.origins[item.id] || manufacturingCountryCode;
+        const originCountry = PHYSICS_DB.origins[item.id] || manufacturingCountryCode|| 'FR';
         
         let inboundTransportCO2 = 0;
         if (originCountry !== manufacturingCountryCode) {
