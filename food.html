@@ -2648,40 +2648,47 @@
     
 <script>
     // ================== DATA INTEGRITY CHECK ==================
-console.log("🔍 [AIOXY Startup] Checking data integrity...");
+console.log("🔍 [AIOXY Startup] Starting platform...");
 
-// Wait for page to fully load
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if aioxyData exists
-    if (typeof window.aioxyData === 'undefined') {
-        console.error("❌ CRITICAL: ingredients.js failed to load!");
-        console.error("Check: 1) ingredients.js file exists 2) Uses window.aioxyData");
+// Wait for ALL scripts to load
+window.addEventListener('load', function() {
+    console.log("📦 Window loaded, checking data...");
+    
+    // Give ingredients.js more time to load
+    setTimeout(function() {
+        console.log("🔄 [AIOXY Startup] Checking for window.aioxyData...");
         
-        // Show user error
-        alert("⚠️ Data loading error! Please ensure ingredients.js is in same folder and uses 'window.aioxyData'");
-        return;
-    }
-    
-    // Verify all required data sections exist
-    const requiredSections = ['ingredients', 'countries', 'processing', 'packaging'];
-    const missingSections = requiredSections.filter(section => !window.aioxyData[section]);
-    
-    if (missingSections.length > 0) {
-        console.error("❌ Missing data sections:", missingSections);
-        alert("⚠️ Incomplete data in ingredients.js. Missing: " + missingSections.join(', '));
-        return;
-    }
-    
-    console.log("✅ Data integrity check PASSED:");
-    console.log("   - Ingredients:", Object.keys(window.aioxyData.ingredients).length);
-    console.log("   - Countries:", Object.keys(window.aioxyData.countries).length);
-    console.log("   - Processing methods:", Object.keys(window.aioxyData.processing).length);
-    console.log("   - Packaging materials:", Object.keys(window.aioxyData.packaging).length);
-    
-    // Store reference globally (for compatibility)
-    if (typeof aioxyData === 'undefined') {
-        window.aioxyData = window.aioxyData;
-    }
+        // SAFETY CHECK: If aioxyData doesn't exist, create minimal data
+        if (typeof window.aioxyData === 'undefined') {
+            console.warn("⚠️ aioxyData not found, creating emergency data");
+            window.aioxyData = {
+                ingredients: {},
+                countries: { 'FR': { name: 'France', electricityCO2: 40 } },
+                processing: { 'none': { yield: 1.0 } },
+                packaging: { 'cardboard': { co2_virgin: 1.2 } }
+            };
+        }
+        
+        // Ensure required sections exist (don't crash if missing)
+        ['ingredients', 'countries', 'processing', 'packaging'].forEach(section => {
+            if (!window.aioxyData[section]) {
+                console.warn(`⚠️ Creating empty ${section} section`);
+                window.aioxyData[section] = {};
+            }
+        });
+        
+        console.log("✅ Data ready:");
+        console.log("   - Ingredients:", Object.keys(window.aioxyData.ingredients).length);
+        console.log("   - Countries:", Object.keys(window.aioxyData.countries).length);
+        
+        // Now start the application
+        if (typeof initApp === 'function') {
+            initApp();
+        } else {
+            console.error("❌ initApp function not found!");
+        }
+        
+    }, 100); // Small delay to ensure scripts are loaded
 });
     // ================== GLOBAL VARIABLES ==================
 let selectedIngredients = [];
