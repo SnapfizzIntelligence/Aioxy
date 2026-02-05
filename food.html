@@ -4941,7 +4941,7 @@ calculateFoodImpact() {
     // PEF Calculations (WITH UNIVERSAL PHYSICS ADJUSTMENTS)
 Object.keys(pefCategories).forEach(cat => {
     let baseImpactPerKg = ing.data.pef[cat] || 0;
-    const ingredientOrigin = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
+    
     // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
     let universalAdjustments = null;
     if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
@@ -4958,13 +4958,19 @@ Object.keys(pefCategories).forEach(cat => {
         // Apply multipliers based on category
         if (cat === "Climate Change") {
             baseImpactPerKg *= universalAdjustments.multipliers.co2;
-            // Add grid intensity adder
+            // Add grid intensity adder to manufacturing
             const adderPerKg = universalAdjustments.adder;
             auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
         } else if (cat === "Land Use") {
             baseImpactPerKg *= universalAdjustments.multipliers.land;
         } else if (cat === "Water Use/Scarcity (AWARE)") {
             baseImpactPerKg *= universalAdjustments.multipliers.water;
+        }
+        // GRID ADDER FOR FOSSIL RESOURCES TOO
+        else if (cat === "Resource Use, fossils") {
+            // Grid intensity affects fossil resource use (electricity generation)
+            const adderPerKg = universalAdjustments.adder / 3.6; // Convert CO2 adder to MJ adder (approx)
+            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
         }
     }
     
