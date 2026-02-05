@@ -6378,12 +6378,15 @@ if (results.waterScarcityPerKg <= 0.001) {
     }
     
     // === REGULATOR-PROOF EQUIVALENCIES ENGINE ===
-// 1. Car KM: Based on EEA 2023 Average Fleet (0.150 kg/km)
-const carKm = Math.round(co2SavedPerKg / 0.150);
 
-// 2. Tree-Years: Time-based sequestration (EEA Mature Beech: ~22kg/yr)
-// We label it "Tree-Years" to avoid implying we physically planted a tree today.
-const treeYears = (co2SavedPerKg / 22.0).toFixed(1);
+// 1. DEFINE BASE METRICS (Fixing ReferenceError)
+const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
+
+// 2. CALCULATE DERIVED METRICS
+const carKm = Math.round(co2SavedPerKg / 0.150); // 0.150 kg/km (EEA)
+const treeYears = (co2SavedPerKg / 22.0).toFixed(1); // 22 kg/yr (Mature Tree)
+// Use the global constant for household electricity
+const householdDays = Math.round(co2SavedPerKg / (typeof PHYSICS_CONSTANTS !== 'undefined' ? PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY : 2.58));
 
 // 3. Water Scarcity (AWARE 2.0): THE LEGAL FIX
 // We DO NOT convert to bottles. We display the Scarcity Index difference.
@@ -7772,11 +7775,11 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
         </div>
     `;
     
-    dataQualitySection.appendChild(physicsNote);
+        dataQualitySection.appendChild(physicsNote);
         }
-        } else {
-            dataQualitySection.classList.add('hidden');
-        }
+    } else {
+        dataQualitySection.classList.add('hidden');
+    }
     }
 
     function updateMassBalanceDisplay() {
