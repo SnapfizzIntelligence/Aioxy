@@ -6399,7 +6399,7 @@ const waterScoreDiff = Math.max(0, baselineWater - currentWater);
 document.getElementById('carKm').innerHTML = 
     carKm > 0 ? `${carKm} km <div style="font-size:0.7em; opacity:0.8">avoided driving</div>` : '—';
 
-document.getElementById('tree-years').innerHTML = 
+document.getElementById('treeYears').innerHTML = 
     treeYears > 0 ? `${treeYears} <div style="font-size:0.7em; opacity:0.8">mature tree-years</div>` : '—';
 
 document.getElementById('householdEnergy').innerHTML = 
@@ -7650,7 +7650,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         const elements = [
             'co2Value', 'waterValue', 'landValue', 'fossilValue',
             'co2Savings', 'waterSavings', 'carKm', 'householdEnergy',
-            'tree-years', 'waterScarcity'
+            'treeYears', 'waterScarcity'
         ];
         
         elements.forEach(id => {
