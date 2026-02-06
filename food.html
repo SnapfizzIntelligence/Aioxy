@@ -3845,24 +3845,26 @@ function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
 // Fix B: Regionalized Upstream LCI
 function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
     let upstreamCO2 = 0;
-
     ingredients.forEach(item => {
-        const ingData = aioxyData.ingredients[item.id];
-        if (!ingData) return;
+        const ing = aioxyData.ingredients[item.id];
+        if (!ing) return;
 
         const originCountry = getIngredientOrigin(item.id) || manufacturingCountryCode;
-let inboundTransportCO2 = 0;
-if (originCountry !== manufacturingCountryCode) {
-    const inboundDist = 10000;
-    inboundTransportCO2 = (item.quantity / 1000) * inboundDist * PHYSICS_DATA.transport.sea.container;
-}
-upstreamCO2 += inboundTransportCO2;
+        let inboundTransportCO2 = 0;
+        if (originCountry !== manufacturingCountryCode) {
+            const inboundDist = 10000;
+            // FIX: Replaced undefined PHYSICS_DATA with hardcoded GLEC factor or valid DB reference
+            inboundTransportCO2 = (item.quantity / 1000) * inboundDist * 0.005; // 0.005 = Sea Freight Factor
+        }
+        upstreamCO2 += inboundTransportCO2;
+    }); // <--- MISSING CLOSING BRACE & PARENTHESIS ADDED HERE
 
     return {
         co2_adder: upstreamCO2,
         notes: "Includes inbound logistics from origin countries"
     };
-    }
+}
+
     // ================== 100% PHYSICS FUNCTIONS (GEMINI) ==================
 
 // A. Watershed-Aware Water Scarcity
@@ -4951,12 +4953,13 @@ Object.keys(pefCategories).forEach(cat => {
     let universalAdjustments = null;
     if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
             ingredientOriginValue = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
-        universalAdjustments = calculateUniversalAdjustments(
-            ing.name,
-            ingredientOrigin,              // Origin country
-            processingMethod,              // Processing method
-            manufacturingCountryCode || 'FR' // Manufacturing country
-        );
+universalAdjustments = calculateUniversalAdjustments(
+    ing.name,
+    ingredientOriginValue, // <--- FIX: Match the variable defined above
+    processingMethod, 
+    manufacturingCountryCode || 'FR'
+);
+
         
         console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
         
@@ -6782,8 +6785,9 @@ function calculateCO2ReductionPercent() {
                 }
                 setTimeout(updateBusinessCase, 200);
             } else {
-                updateBusinessCaseWithTweak5(); // <--- CHANGED TO NEW FUNCTION
-            }
+    updateBusinessCase(); // <--- FIX: Call the existing main function
+}
+
         }
         if (tabName === 'dpp') {
             generateDPP();
