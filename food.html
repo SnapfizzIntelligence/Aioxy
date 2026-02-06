@@ -3211,10 +3211,9 @@ function getProcessingType(productType) {
 }
 
 function calculateFoodAllocation(ingredientName, quantity, physicsProfile) {
-    // ⭐⭐⭐ ADD THESE 3 LINES ⭐⭐⭐
-    // SAFETY CHECK: If physicsProfile is undefined, use global one
-    if (!physicsProfile && window.currentPhysicsProfile) {
-        physicsProfile = window.currentPhysicsProfile;
+    // Safety check: If physicsProfile is undefined, use global one
+if (!physicsProfile && window.currentPhysicsProfile) {
+    physicsProfile = window.currentPhysicsProfile;
     }
     
     let factor = 1.0;
