@@ -3815,13 +3815,13 @@ function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
             inboundTransportCO2 = (item.quantity / 1000) * inboundDist * 0.005; // 0.005 = Sea Freight Factor
         }
         upstreamCO2 += inboundTransportCO2;
-    }); // <--- MISSING CLOSING BRACE & PARENTHESIS ADDED HERE
+    }); // This closes the forEach loop
 
     return {
         co2_adder: upstreamCO2,
         notes: "Includes inbound logistics from origin countries"
     };
-}
+} // ← THIS CLOSING BRACE MUST EXIST!
 
     // ================== 100% PHYSICS FUNCTIONS (GEMINI) ==================
 
