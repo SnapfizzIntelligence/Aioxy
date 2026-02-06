@@ -4996,33 +4996,32 @@ Object.keys(pefCategories).forEach(cat => {
     // =========== GROK'S FIX: TRANSPORT NOW USES finalIngredients ===========
 let inboundTransportCO2 = 0;
 let totalWaterImpact = 0;
-    finalIngredients.forEach(ing => {
-        // GROK'S FIX: Skip virtual water for transport
-        if (ing.isVirtual) return;
-        
-        // Water Physics (YOUR EXISTING LOGIC)
-        const originCountry = getIngredientOrigin(ing.id);
-        const ingredientData = aioxyData.ingredients[ing.id];
-        
-        if (ingredientData && ingredientData.data && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
-            const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
-            const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
-            totalWaterImpact += waterPhysics.impact;
-        } else {
-            const pefWater = ingredientData?.data.pef ? ingredientData.data.pef["Water Use/Scarcity (AWARE)"] : 0;
-            totalWaterImpact += pefWater * ing.quantity;
-        }
+finalIngredients.forEach(ing => {
+    // GROK'S FIX: Skip virtual water for transport
+    if (ing.isVirtual) return;
+    
+    // Water Physics (YOUR EXISTING LOGIC)
+    const originCountry = getIngredientOrigin(ing.id); // ← ONLY ONE ORIGINCOUNTRY NOW
+    const ingredientData = aioxyData.ingredients[ing.id];
+    
+    if (ingredientData && ingredientData.data && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
+        const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
+        const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
+        totalWaterImpact += waterPhysics.impact;
+    } else {
+        const pefWater = ingredientData?.data.pef ? ingredientData.data.pef["Water Use/Scarcity (AWARE)"] : 0;
+        totalWaterImpact += pefWater * ing.quantity;
+    }
 
-        const originCountry = getIngredientOrigin(ing.id) || manufacturingCountryCode;
-// Inbound Transport (YOUR EXISTING LOGIC)
-if (originCountry !== manufacturingCountryCode) {
-            const inboundDistSea = 8000;
-            const inboundDistRoad = 300;
-            const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
-            const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', 'ambient');
-            inboundTransportCO2 += (seaImpact + roadImpact);
-        }
-    });
+    // Inbound Transport (YOUR EXISTING LOGIC) ← NO DUPLICATE ORIGINCOUNTRY HERE
+    if (originCountry !== manufacturingCountryCode) {
+        const inboundDistSea = 8000;
+        const inboundDistRoad = 300;
+        const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
+        const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', 'ambient');
+        inboundTransportCO2 += (seaImpact + roadImpact);
+    }
+});
 
     // Apply Advanced Water Physics (YOUR EXISTING LOGIC)
     if (totalWaterImpact > 0) {
