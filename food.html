@@ -4948,16 +4948,18 @@ calculateFoodImpact() {
 Object.keys(pefCategories).forEach(cat => {
     let baseImpactPerKg = ing.data.pef[cat] || 0;
     
-    // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
-    let universalAdjustments = null;
-    if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
-            ingredientOriginValue = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
-universalAdjustments = calculateUniversalAdjustments(
-    ing.name,
-    ingredientOriginValue, // <--- FIX: Match the variable defined above
-    processingMethod, 
-    manufacturingCountryCode || 'FR'
-);
+        // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
+        let universalAdjustments = null;
+        if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
+            // FIX: Added 'let' to prevent ReferenceError
+            let ingredientOriginValue = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
+            
+            universalAdjustments = calculateUniversalAdjustments(
+                ing.name,
+                ingredientOriginValue, 
+                processingMethod, 
+                manufacturingCountryCode || 'FR'
+            );
 
         
         console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
