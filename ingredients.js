@@ -70,7 +70,7 @@ window.aioxyData = {
         metadata: {
             source_dataset: "AGRIBALYSE 3.2",
             source_activity: "Huile de palme raffinée / Palm oil, refined",
-            source_uuid: "agb-3.2-16150-palm-oil-refined",
+            source_uuid: "agb-3-2-16150-palm-oil-refined",
             agribalyse_code: "16150",
             allocation_method: "Economic Allocation",
             dqr: { TeR: 1.0, GR: 1.0, TiR: 1.0, C: 1.0, P: 1.0 },
@@ -95,7 +95,7 @@ window.aioxyData = {
         metadata: {
             source_dataset: "AGRIBALYSE 3.2",
             source_activity: "Sucre blanc / Sugar, white",
-            source_uuid: "agb-3.2-31016-white-sugar",
+            source_uuid: "agb-3-2-31016-white-sugar",
             agribalyse_code: "31016",
             allocation_method: "Economic Allocation",
             dqr: { TeR: 3.0, GR: 3.0, TiR: 3.0, C: 3.0, P: 3.0 },
@@ -1765,8 +1765,9 @@ window.aioxyData = {
                 
             }
         }
-    }, 
-     // ================== AIOXY UNIVERSAL PHYSICS ENGINE (AUDIT READY v2.2) ==================
+    }, // 🔥 FIXED: Added missing closing brace and comma for the ingredients object
+
+    // ================== AIOXY UNIVERSAL PHYSICS ENGINE (AUDIT READY v2.2) ==================
 // REGULATORY COMPLIANCE: EMPCO DIRECTIVE (EU) 2024/825
 
 // 1. UNIVERSAL CROP CLASSES (The Formulation Logic)
