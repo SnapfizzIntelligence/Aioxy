@@ -3556,6 +3556,9 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         water: 1.0
     };
 
+    // AUDITOR FIX: Define base country ONCE at the top
+    const baseCountry = 'FR'; // Agribalyse data is French-based
+    
     // 1. DETECT CROP TYPE & CLASS
     const nameLower = ingredientName.toLowerCase();
     let cropKey = null;
@@ -3581,14 +3584,16 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
     // 2. YIELD PHYSICS (Land & CO2 Intensity)
     // Impact is inversely proportional to yield.
     let localYield, standardYield;
+    let yieldFactor = 1.0; // Track for quality penalty
     
     if (cropKey) {
         // Specific Crop Logic
         const yields = window.aioxyData.yield_benchmarks[cropKey];
-        // If country missing, use Global. If Global missing, use FR (standard high-yield baseline)
-        localYield = yields[originCountry] || yields["Global"] || 4000;
-        standardYield = yields["Global"] || 4000;
-        log.push(`🌾 Exact Match: ${cropKey} in ${originCountry} (${localYield} kg/ha) vs Global (${standardYield} kg/ha)`);
+        // AUDITOR FIX: Use France as base, not Global
+        // If country missing, use France (Agribalyse base)
+        localYield = yields[originCountry] || yields[baseCountry] || yields["Global"] || 4000;
+        standardYield = yields[baseCountry] || yields["Global"] || 4000;
+        log.push(`🌾 Yield Physics: ${cropKey} (${baseCountry}: ${standardYield}kg/ha vs ${originCountry}: ${localYield}kg/ha)`);
     } else if (cropClass) {
         // Class Fallback Logic
         const classData = window.aioxyData.crop_classes[cropClass];
@@ -3602,7 +3607,7 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
     // Apply Yield Adjustment (Cap at 0.5x to 2.5x to prevent extreme outliers)
     if (localYield && standardYield) {
         const rawFactor = standardYield / localYield;
-        const yieldFactor = Math.max(0.4, Math.min(2.5, rawFactor)); // Safety Caps
+        yieldFactor = Math.max(0.4, Math.min(2.5, rawFactor)); // Safety Caps
         
         adjustmentMultipliers.land *= yieldFactor;
         // CO2 correlates partially with yield (efficiency) but not 1:1 (machinery/fertilizer use often increases with yield)
@@ -3626,40 +3631,50 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         log.push(`❄️ Boreal Climate (${originCountry}): -5% N2O physics`);
     }
 
-    // 4. WATER SCARCITY PHYSICS (AWARE 2.0)
-    // The most critical localized metric. 1L water in Spain != 1L water in Norway.
-    const localAware = window.aioxyData.aware_factors[originCountry] || window.aioxyData.aware_factors["Global"];
-    const globalAware = window.aioxyData.aware_factors["Global"];
-    const waterFactor = localAware / globalAware;
+    // 4. WATER SCARCITY PHYSICS (AWARE 2.0) - AUDITOR IMPROVED
+    // Formula: Impact_Local = Impact_Base * (AWARE_Local / AWARE_Base)
+    // Base is France (Agribalyse), not Global average
+    const awareFactors = window.aioxyData.aware_factors;
+    const baseAware = awareFactors[baseCountry] || awareFactors["Global"] || 17.1; // France AWARE ~17.1
+    const localAware = awareFactors[originCountry] || awareFactors["Global"] || 17.1;
+    
+    const waterFactor = localAware / baseAware;
     
     adjustmentMultipliers.water *= waterFactor;
-    log.push(`💧 Water Scarcity (${originCountry}): AWARE factor ${localAware} (x${waterFactor.toFixed(2)} vs global)`);
+    log.push(`💧 Water Physics: AWARE Factor (${baseCountry}: ${baseAware} vs ${originCountry}: ${localAware}) → Adjustment: x${waterFactor.toFixed(2)}`);
 
-    // 5. GRID PHYSICS (Manufacturing Energy)
-    // Returns an ADDER (kg CO2e), not a multiplier.
-    // Base assumption: Ingredient data assumes EU Average Grid (~250g).
-    // We calculate the delta for the specific manufacturing country.
-    const gridIntensity = window.aioxyData.grid_intensity[manufacturingCountry] || 475;
-    const euBaseline = 250; 
+    // 5. GRID PHYSICS (Manufacturing Energy) - AUDITOR IMPROVED
+    // Formula: Adder = Energy_kWh * (Grid_Local - Grid_Base)
+    // Base country is France (Agribalyse source), NOT "EU Average"
+    const grids = window.aioxyData.grid_intensity;
+    const baseGrid = grids[baseCountry] || grids["Global"] || 56; // French grid: ~56g CO2e/kWh
+    const localGrid = grids[manufacturingCountry] || grids["Global"] || 475;
     
-    // Estimate Energy Intensity per kg based on processing method (roughly)
+    // Estimate Processing Energy (kWh/kg) based on method
     let kWhPerKg = 0.3; // Default (Milling/Mixing)
     if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
     if (processingMethod === 'sterilization') kWhPerKg = 0.5;
     if (processingMethod === 'freezing') kWhPerKg = 0.8;
-
-    const energyDelta = (gridIntensity - euBaseline) / 1000; // Convert g to kg
-    const processingAdder = kWhPerKg * energyDelta;
     
-    log.push(`⚡ Grid Physics (${manufacturingCountry}): ${gridIntensity}g vs ${euBaseline}g baseline. Adder: ${processingAdder.toFixed(4)} kg CO2e`);
+    // Calculate the ADDER (kg CO2e per kg product)
+    // (Local_Grid - Base_Grid) is in grams, convert to kg (/1000)
+    const processingAdder = kWhPerKg * ((localGrid - baseGrid) / 1000);
+    
+    log.push(`⚡ Grid Physics: ${manufacturingCountry} (${localGrid}g) vs ${baseCountry} (${baseGrid}g). Energy: ${kWhPerKg} kWh/kg → Adder: ${processingAdder > 0 ? '+' : ''}${processingAdder.toFixed(3)} kg CO2e`);
+
+    // 6. QUALITY PENALTY (Auditor's key addition)
+    const qualityPenalty = (yieldFactor > 1.5 || waterFactor > 2.0) ? 1.0 : 0.0;
 
     return {
         multipliers: adjustmentMultipliers,
         adder: processingAdder,
-        logs: log
+        logs: log,
+        qualityPenalty: qualityPenalty, // NEW: DQR penalty for heavy adjustments
+        base_country: baseCountry, // NEW: Show we're adjusting FROM France
+        adjusted_from_country: originCountry, // NEW: Show we're adjusting TO origin
+        adjusted_for_country: manufacturingCountry // NEW: Show manufacturing location
     };
     }
-
     // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     console.log("📦 CFF Calculation with:", { 
