@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIOXY | Science-Based Sustainability Intelligence</title>
@@ -2566,13 +2567,13 @@
 </div>
 
 <!-- ========== SUPPLIER DATA MODAL ========== -->
-<div id="supplierModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: none; align-items: center; justify-content: center;">
+<div id="supplierModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
     <div style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <h3 style="color: var(--primary);">
                 <i class="fas fa-tractor"></i> Primary Farm Data
             </h3>
-            <button onclick="document.getElementById('supplierModal').style.display = 'none'" style="background: none; border: none; font-size: 1.5rem; color: var(--gray); cursor: pointer;">×</button>
+            <button onclick="closeSupplierModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--gray); cursor: pointer;">×</button>
         </div>
         
         <div style="margin-bottom: 1.5rem;">
@@ -2647,8 +2648,41 @@
     
 <script>
     // ================== DATA INTEGRITY CHECK ==================
-console.log("🔍 [AIOXY Startup] Starting platform...");
+console.log("🔍 [AIOXY Startup] Checking data integrity...");
+
+// Wait for page to fully load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if aioxyData exists
+    if (typeof window.aioxyData === 'undefined') {
+        console.error("❌ CRITICAL: ingredients.js failed to load!");
+        console.error("Check: 1) ingredients.js file exists 2) Uses window.aioxyData");
+        
+        // Show user error
+        alert("⚠️ Data loading error! Please ensure ingredients.js is in same folder and uses 'window.aioxyData'");
+        return;
+    }
     
+    // Verify all required data sections exist
+    const requiredSections = ['ingredients', 'countries', 'processing', 'packaging'];
+    const missingSections = requiredSections.filter(section => !window.aioxyData[section]);
+    
+    if (missingSections.length > 0) {
+        console.error("❌ Missing data sections:", missingSections);
+        alert("⚠️ Incomplete data in ingredients.js. Missing: " + missingSections.join(', '));
+        return;
+    }
+    
+    console.log("✅ Data integrity check PASSED:");
+    console.log("   - Ingredients:", Object.keys(window.aioxyData.ingredients).length);
+    console.log("   - Countries:", Object.keys(window.aioxyData.countries).length);
+    console.log("   - Processing methods:", Object.keys(window.aioxyData.processing).length);
+    console.log("   - Packaging materials:", Object.keys(window.aioxyData.packaging).length);
+    
+    // Store reference globally (for compatibility)
+    if (typeof aioxyData === 'undefined') {
+        window.aioxyData = window.aioxyData;
+    }
+});
     // ================== GLOBAL VARIABLES ==================
 let selectedIngredients = [];
 let currentChart = null;
@@ -3211,9 +3245,10 @@ function getProcessingType(productType) {
 }
 
 function calculateFoodAllocation(ingredientName, quantity, physicsProfile) {
-    // Safety check: If physicsProfile is undefined, use global one
-if (!physicsProfile && window.currentPhysicsProfile) {
-    physicsProfile = window.currentPhysicsProfile;
+    // ⭐⭐⭐ ADD THESE 3 LINES ⭐⭐⭐
+    // SAFETY CHECK: If physicsProfile is undefined, use global one
+    if (!physicsProfile && window.currentPhysicsProfile) {
+        physicsProfile = window.currentPhysicsProfile;
     }
     
     let factor = 1.0;
@@ -3803,26 +3838,26 @@ function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
 // Fix B: Regionalized Upstream LCI
 function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
     let upstreamCO2 = 0;
-    ingredients.forEach(item => {
-        const ing = aioxyData.ingredients[item.id];
-        if (!ing) return;
 
-        const originCountry = getIngredientOrigin(item.id) || manufacturingCountryCode;
+    ingredients.forEach(item => {
+        const ingData = aioxyData.ingredients[item.id];
+        if (!ingData) return;
+
+        const originCountry = INGREDIENT_ORIGINS[item.id] || manufacturingCountryCode;
+        
         let inboundTransportCO2 = 0;
         if (originCountry !== manufacturingCountryCode) {
             const inboundDist = 10000;
-            // FIX: Replaced undefined PHYSICS_DATA with hardcoded GLEC factor or valid DB reference
-            inboundTransportCO2 = (item.quantity / 1000) * inboundDist * 0.005; // 0.005 = Sea Freight Factor
+            inboundTransportCO2 = (item.quantity / 1000) * inboundDist * PHYSICS_DATA.transport.sea.container;
         }
         upstreamCO2 += inboundTransportCO2;
-    }); // This closes the forEach loop
+    });
 
     return {
         co2_adder: upstreamCO2,
         notes: "Includes inbound logistics from origin countries"
     };
-} // ← THIS CLOSING BRACE MUST EXIST!
-
+    }
     // ================== 100% PHYSICS FUNCTIONS (GEMINI) ==================
 
 // A. Watershed-Aware Water Scarcity
@@ -4909,18 +4944,15 @@ Object.keys(pefCategories).forEach(cat => {
     
     // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
     let universalAdjustments = null;
-    // ✅ GEMINI'S FIX: Declare variable OUTSIDE the if block
-    let ingredientOriginValue = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
-    
     if (window.aioxyData && window.aioxyData.yield_benchmarks) { // Check if new physics data exists
-        
+        const ingredientOrigin = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
         universalAdjustments = calculateUniversalAdjustments(
             ing.name,
-            ingredientOriginValue, 
-            processingMethod, 
-            manufacturingCountryCode || 'FR'
+            ingredientOrigin,              // Origin country
+            processingMethod,              // Processing method
+            manufacturingCountryCode || 'FR' // Manufacturing country
         );
-
+        
         console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
         
         // Apply multipliers based on category
@@ -4956,7 +4988,7 @@ Object.keys(pefCategories).forEach(cat => {
         primary_data_used: !!item.primaryData,
         adjustment_factor: multiplier,
         universal_adjustments: universalAdjustments ? {
-            adjusted_from_country: ingredientOriginValue, 
+            adjusted_from_country: ingredientOrigin || 'FR',
             adjusted_for_country: manufacturingCountryCode || 'FR', 
             yield_factor: universalAdjustments.multipliers.land,
             climate_factor: universalAdjustments.multipliers.co2,
@@ -4996,32 +5028,32 @@ Object.keys(pefCategories).forEach(cat => {
     // =========== GROK'S FIX: TRANSPORT NOW USES finalIngredients ===========
 let inboundTransportCO2 = 0;
 let totalWaterImpact = 0;
-finalIngredients.forEach(ing => {
-    // GROK'S FIX: Skip virtual water for transport
-    if (ing.isVirtual) return;
-    
-    // Water Physics (YOUR EXISTING LOGIC)
-    const originCountry = getIngredientOrigin(ing.id); // ← ONLY ONE ORIGINCOUNTRY NOW
-    const ingredientData = aioxyData.ingredients[ing.id];
-    
-    if (ingredientData && ingredientData.data && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
-        const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
-        const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
-        totalWaterImpact += waterPhysics.impact;
-    } else {
-        const pefWater = ingredientData?.data.pef ? ingredientData.data.pef["Water Use/Scarcity (AWARE)"] : 0;
-        totalWaterImpact += pefWater * ing.quantity;
-    }
+    finalIngredients.forEach(ing => {
+        // GROK'S FIX: Skip virtual water for transport
+        if (ing.isVirtual) return;
+        
+        // Water Physics (YOUR EXISTING LOGIC)
+        const originCountry = getIngredientOrigin(ing.id);
+        const ingredientData = aioxyData.ingredients[ing.id];
+        
+        if (ingredientData && ingredientData.data && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
+            const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
+            const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
+            totalWaterImpact += waterPhysics.impact;
+        } else {
+            const pefWater = ingredientData?.data.pef ? ingredientData.data.pef["Water Use/Scarcity (AWARE)"] : 0;
+            totalWaterImpact += pefWater * ing.quantity;
+        }
 
-    // Inbound Transport (YOUR EXISTING LOGIC) ← NO DUPLICATE ORIGINCOUNTRY HERE
-    if (originCountry !== manufacturingCountryCode) {
-        const inboundDistSea = 8000;
-        const inboundDistRoad = 300;
-        const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
-        const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', 'ambient');
-        inboundTransportCO2 += (seaImpact + roadImpact);
-    }
-});
+        // Inbound Transport (YOUR EXISTING LOGIC)
+        if (originCountry !== manufacturingCountryCode) {
+            const inboundDistSea = 8000;
+            const inboundDistRoad = 300;
+            const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
+            const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', 'ambient');
+            inboundTransportCO2 += (seaImpact + roadImpact);
+        }
+    });
 
     // Apply Advanced Water Physics (YOUR EXISTING LOGIC)
     if (totalWaterImpact > 0) {
@@ -6758,9 +6790,8 @@ function calculateCO2ReductionPercent() {
                 }
                 setTimeout(updateBusinessCase, 200);
             } else {
-    updateBusinessCase(); // <--- FIX: Call the existing main function
-}
-
+                updateBusinessCaseWithTweak5(); // <--- CHANGED TO NEW FUNCTION
+            }
         }
         if (tabName === 'dpp') {
             generateDPP();
@@ -7632,7 +7663,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         const elements = [
             'co2Value', 'waterValue', 'landValue', 'fossilValue',
             'co2Savings', 'waterSavings', 'carKm', 'householdEnergy',
-            'treeYears', 'waterScarcity'
+            'tree-years', 'waterScarcity'
         ];
         
         elements.forEach(id => {
@@ -7757,11 +7788,11 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
         </div>
     `;
     
-        dataQualitySection.appendChild(physicsNote);
+    dataQualitySection.appendChild(physicsNote);
         }
-    } else {
-        dataQualitySection.classList.add('hidden');
-    }
+        } else {
+            dataQualitySection.classList.add('hidden');
+        }
     }
 
     function updateMassBalanceDisplay() {
@@ -8165,18 +8196,73 @@ document.head.appendChild(style);
         const advanced = document.getElementById('advancedOptions');
         if (advanced) advanced.classList.toggle('hidden');
     }
-function initApp() {
+
+    // ================== INITIALIZE APPLICATION ==================
+    function initApp() {
     console.log('🚀 [AIOXY] Initializing application...');
     
-    // CRITICAL: Check if data is loaded
-    if (!window.aioxyData || !window.aioxyData.ingredients) {
-        console.error('❌ [AIOXY] CRITICAL: ingredients.js not loaded!');
-        alert('⚠️ Data not loaded. Check if ingredients.js is in the same folder.');
-        return;
-    }
+    // WAIT for data to be ready
+    const checkData = setInterval(() => {
+        if (window.aioxyData && window.aioxyData.ingredients) {
+            clearInterval(checkData);
+            console.log('✅ [AIOXY] Data confirmed loaded. Proceeding...');
+            proceedWithInitialization();
+        } else {
+            console.log('⏳ [AIOXY] Waiting for data...');
+        }
+    }, 100); // Check every 100ms
     
-    console.log('✅ [AIOXY] Data loaded:', 
-        Object.keys(window.aioxyData.ingredients).length, 'ingredients');
+    // Timeout after 5 seconds
+    setTimeout(() => {
+        if (!window.aioxyData || !window.aioxyData.ingredients) {
+            clearInterval(checkData);
+            console.error('❌ [AIOXY] Data load timeout! Using fallback demo mode.');
+            alert('Data loading timed out. Running in demo mode with limited data.');
+            proceedWithInitialization(); // Continue anyway
+        }
+    }, 5000);
+    
+    function proceedWithInitialization() {
+    console.log('📊 [AIOXY] Starting full initialization...');
+    
+    // ========== UNIVERSAL PHYSICS ENGINE CHECK ==========
+    if (window.aioxyData.yield_benchmarks && window.aioxyData.grid_intensity) {
+        console.log('✅ Universal Physics Engine Ready:', {
+            crops: Object.keys(window.aioxyData.yield_benchmarks).length,
+            countries: Object.keys(window.aioxyData.grid_intensity).length,
+            aware_factors: Object.keys(window.aioxyData.aware_factors).length,
+            climate_zones: {
+                tropical: window.aioxyData.climate_zones.tropical.length,
+                arid: window.aioxyData.climate_zones.arid.length,
+                boreal: window.aioxyData.climate_zones.boreal.length
+            }
+        });
+    } else {
+        console.warn('⚠️ Universal physics data not found. Using legacy mode.');
+        // Show notification but continue
+        if (window.aioxyData.ingredients) {
+            const warningDiv = document.createElement('div');
+            warningDiv.style.background = '#FFF3E0';
+            warningDiv.style.padding = '0.75rem';
+            warningDiv.style.margin = '0.5rem 0';
+            warningDiv.style.borderRadius = '6px';
+            warningDiv.style.borderLeft = '4px solid #FF9800';
+            warningDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="color: #FF9800;"></i>
+                <strong> Universal Physics Data Missing</strong><br>
+                <small>Using legacy calculations. Please ensure ingredients.js includes yield_benchmarks, grid_intensity, and aware_factors.</small>
+            `;
+            
+            const firstCard = document.querySelector('.card');
+            if (firstCard) {
+                firstCard.parentNode.insertBefore(warningDiv, firstCard);
+            }
+        }
+    }
+    // ========== END UNIVERSAL PHYSICS CHECK ==========
+    
+    // Now we can safely access the data
+    console.log('   Available ingredients:', Object.keys(window.aioxyData.ingredients).length);
     
     // Populate dropdowns
     populateIngredientSelect();
@@ -8188,16 +8274,20 @@ function initApp() {
     // Initialize UI
     updateTabIndicator();
     
+    // Validate data
+    validateDataIntegrity();
+    
     console.log('✅ [AIOXY] Initialization complete!');
     
     // Force a calculation to test
     setTimeout(() => {
+        console.log('🧪 [AIOXY] Running test calculation...');
         if (selectedIngredients.length > 0) {
             calculateImpact();
         }
     }, 500);
     }
-    
+    }
         // ================== HYDRATION SUGGESTION FUNCTIONS ==================
     let currentHydrationSuggestion = null;
 
@@ -8332,30 +8422,35 @@ window.validatePhysics = function() {
     console.groupEnd();
     return passed ? "✅ SYSTEM AUDIT PASSED: READY FOR SCREENING USE" : "❌ SYSTEM AUDIT FAILED";
 };
+    // ================== INGREDIENT ORIGIN DATABASE ==================
+function getIngredientOrigin(ingredientId) {
+    if (!ingredientId) return 'FR';
     
-
-// ================== EQUIVALENCE ENGINE ==================
-function renderEquivalences(co2) {
-    // 1. Define Equivalence Factors
-    const eq = [
-        { icon: '🚗', text: 'km driving (gas car)', factor: 0.192 },
-        { icon: '🥩', text: 'steaks (200g beef)', factor: 14.0 },
-        { icon: '💡', text: 'hours of LED light', factor: 0.015 },
-        { icon: '📱', text: 'smartphone charges', factor: 0.008 }
-    ];
-
-    // 2. Render to DOM
-    const container = document.getElementById('equivalenceContainer');
-    if (container) {
-        container.innerHTML = eq.map(item => `
-            <div class="stat-item" style="text-align: center; padding: 10px;">
-                <div style="font-size: 24px;">${item.icon}</div>
-                <div style="font-weight: bold; color: var(--primary);">${(co2 / item.factor).toFixed(1)}</div>
-                <div style="font-size: 12px; color: #666;">${item.text}</div>
-            </div>
-        `).join('');
+    // Simple mapping based on ingredient ID
+    if (ingredientId.includes('soy')) return 'BR'; // Brazil
+    if (ingredientId.includes('coffee')) return 'VN'; // Vietnam
+    if (ingredientId.includes('cocoa')) return 'CI'; // Ivory Coast
+    if (ingredientId.includes('rice')) return 'IN'; // India
+    if (ingredientId.includes('corn') || ingredientId.includes('maize')) return 'US'; // USA
+    
+    // French ingredients (Agribalyse defaults)
+    if (ingredientId.includes('oat')) return 'FR';
+    if (ingredientId.includes('wheat')) return 'FR';
+    if (ingredientId.includes('pea')) return 'FR';
+    if (ingredientId.includes('milk')) return 'FR';
+    if (ingredientId.includes('beef')) return 'FR';
+    if (ingredientId.includes('pig')) return 'FR';
+    if (ingredientId.includes('chicken')) return 'FR';
+    
+    // Water is local
+    if (ingredientId.includes('water')) {
+        const manufacturingCountry = document.getElementById('manufacturingCountry')?.value;
+        return manufacturingCountry || 'FR';
     }
-}
+    
+    // Default to France (Agribalyse database)
+    return 'FR';
+    }
 </script>
 </body>
-</html>
+    </html>
