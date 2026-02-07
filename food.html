@@ -4948,7 +4948,7 @@ Object.keys(pefCategories).forEach(cat => {
         const ingredientOrigin = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
         universalAdjustments = calculateUniversalAdjustments(
             ing.name,
-            ingredientOrigin,              // Origin country
+            getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR',  // Origin country
             processingMethod,              // Processing method
             manufacturingCountryCode || 'FR' // Manufacturing country
         );
