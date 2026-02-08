@@ -7080,45 +7080,60 @@ function displayAuditTrail() {
                                 
                                 if (category.includes("Water")) {
                                     if (Math.abs(adj.water_factor - 1.0) > 0.01) {
-                                        physicsDetails.push(`Water Scarcity x${adj.water_factor.toFixed(2)}`);
+                                        physicsDetails.push(`Water Scarcity: ${adj.water_factor.toFixed(2)}x`);
                                     }
                                 }
                                 if (category.includes("Land") || category.includes("Climate")) {
                                     if (Math.abs(adj.yield_factor - 1.0) > 0.01) {
-                                        physicsDetails.push(`Yield Efficiency x${adj.yield_factor.toFixed(2)}`);
+                                        physicsDetails.push(`Yield: ${adj.yield_factor.toFixed(2)}x`);
                                     }
                                     if (category.includes("Climate") && Math.abs(adj.climate_factor - 1.0) > 0.01) {
-                                        physicsDetails.push(`N₂O Climate Volatility x${adj.climate_factor.toFixed(2)}`);
+                                        physicsDetails.push(`N₂O Climate: ${adj.climate_factor.toFixed(2)}x`);
+                                    }
+                                    // 🔥 CRITICAL: Add Grid Intensity for Climate Change
+                                    if (category.includes("Climate") && adj.grid_adder > 0.001) {
+                                        physicsDetails.push(`Grid Intensity: +${adj.grid_adder.toFixed(3)}kg CO₂/kg`);
                                     }
                                 }
-                                if (category.includes("Climate") && adj.grid_adder > 0) {
-                                    physicsDetails.push(`Processing Grid +${adj.grid_adder.toFixed(3)}kg`);
+                                if (category.includes("Resource Use, fossils") && adj.grid_adder > 0.001) {
+                                    // Convert CO2 adder to MJ adder for fossil resources
+                                    const mjAdder = adj.grid_adder / 3.6;
+                                    physicsDetails.push(`Grid MJ: +${mjAdder.toFixed(3)} MJ/kg`);
                                 }
 
                                 // Only render if we have something to show
                                 if (physicsDetails.length > 0 || isAdjusted) {
                                     adjustmentBlock = `
-                                    <div style="margin-top: 8px; font-size: 0.75rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px;">
+                                    <div style="margin-top: 8px; font-size: 0.75rem; background: ${isAdjusted ? '#FFF3E0' : '#F8FAFC'}; 
+                                                border: 1px solid ${isAdjusted ? '#FFB74D' : '#E2E8F0'}; border-radius: 6px; padding: 10px;">
                                         
-                                        <div style="margin-bottom: 4px; color: #475569;">
-                                            📍 <strong>Origin:</strong> ${getCountryDisplay(fromC)} &nbsp;→&nbsp; <strong>Mfg:</strong> ${getCountryDisplay(toC)}
+                                        ${isAdjusted ? `
+                                        <div style="margin-bottom: 4px; color: #E65100; font-weight: 600;">
+                                            🌍 <strong>INTERNATIONAL PHYSICS ADJUSTMENT</strong>
                                         </div>
-
-                                        <div style="margin-bottom: 4px; color: ${isAdjusted ? '#059669' : '#475569'}; font-weight: 600;">
-                                            ${isAdjusted ? '✅ Country-Specific Physics Applied' : '✅ Standard Origin Data Used'}
+                                        ` : `
+                                        <div style="margin-bottom: 4px; color: #475569; font-weight: 600;">
+                                            🔧 <strong>REGIONAL PHYSICS APPLIED</strong>
+                                        </div>
+                                        `}
+                                        
+                                        <div style="margin-bottom: 4px; color: #5D4037;">
+                                            📍 <strong>Data Source:</strong> ${getCountryDisplay(fromC)} (Agribalyse Proxy) 
+                                            &nbsp;→&nbsp; <strong>Target:</strong> ${getCountryDisplay(toC)}
                                         </div>
 
                                         ${physicsDetails.length > 0 ? `
-                                        <div style="background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 2px;">
-                                            🔄 <strong>Adjusted Physics:</strong> ${physicsDetails.join(', ')}
+                                        <div style="background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 2px; margin-bottom: 4px;">
+                                            🔄 <strong>Physics Adjustments:</strong> ${physicsDetails.join(', ')}
                                         </div>
                                         ` : ''}
 
-                                        ${isAdjusted ? `
-                                        <div style="margin-top: 4px; color: #64748B; font-style: italic;">
-                                            🌍 Adjusted from ${getCountryDisplay(fromC)} proxy data to ${getCountryDisplay(toC)} local conditions
+                                        <div style="margin-top: 4px; color: #64748B; font-size: 0.7rem; font-style: italic;">
+                                            ${isAdjusted ? 
+                                                `Base French Agribalyse data mathematically adapted to ${getCountryDisplay(toC)} local conditions (yield, water, climate, grid)` :
+                                                `Standard calculation using ${getCountryDisplay(fromC)} reference data`
+                                            }
                                         </div>
-                                        ` : ''}
                                     </div>`;
                                 }
                             }
@@ -7208,8 +7223,7 @@ function displayAuditTrail() {
     });
 
     auditContent.innerHTML = auditHTML;
-}
-
+                           }
     // ================== DIGITAL TRANSPARENCY CARD ==================
     function generateDPP() {
         const productName = document.getElementById('productName').value || 'Unnamed Product';
