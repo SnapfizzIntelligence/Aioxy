@@ -7840,7 +7840,8 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
             const dqrQuality = foodCalculationEngine.getDQRQualityLevel(results.overallDQR);
             overallDQRBadge.className = `dqr-badge ${dqrQuality.class}`;
             overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${dqrQuality.level} (DQR: ${results.overallDQR.toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
-       // ========== ADD UNIVERSAL PHYSICS STATUS ==========
+       
+            // ========== ADD UNIVERSAL PHYSICS STATUS ==========
 if (window.aioxyData && window.aioxyData.yield_benchmarks) {
     const physicsNote = document.createElement('div');
     physicsNote.style.background = '#E3F2FD';
@@ -7848,25 +7849,42 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
     physicsNote.style.borderRadius = '8px';
     physicsNote.style.marginTop = '1rem';
     physicsNote.style.borderLeft = '4px solid #0A2540';
+    
+    // Get current manufacturing country
+    const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'FR';
+    const mfgCountryName = aioxyData.countries[mfgCountry]?.name || mfgCountry;
+    
+    // Count adjusted ingredients
+    let adjustedIngredients = 0;
+    if (auditTrailData?.pefCategories?.["Climate Change"]?.contribution_tree?.Ingredients?.components) {
+        adjustedIngredients = auditTrailData.pefCategories["Climate Change"].contribution_tree.Ingredients.components
+            .filter(comp => comp.universal_adjustments?.adjusted_from_country !== comp.universal_adjustments?.adjusted_for_country)
+            .length;
+    }
+    
     physicsNote.innerHTML = `
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
             <i class="fas fa-globe-americas" style="color: var(--primary);"></i>
-            <strong style="color: var(--primary);">🌍 Universal Physics Engine Active</strong>
+            <strong style="color: var(--primary);">🌍 UNIVERSAL PHYSICS ENGINE ACTIVE</strong>
         </div>
         <div style="font-size: 0.85rem; color: var(--dark);">
-            • <strong>Yield-adjusted land use:</strong> ${Object.keys(window.aioxyData.yield_benchmarks).length} crops<br>
-            • <strong>Climate-zone N2O adjustments:</strong> Tropical/Arid/Boreal physics<br>
-            • <strong>AWARE 2.0 water scarcity:</strong> ${Object.keys(window.aioxyData.aware_factors).length} countries<br>
-            • <strong>Grid intensity physics:</strong> ${Object.keys(window.aioxyData.grid_intensity).length} countries<br>
-            • <strong>Crop classes:</strong> ${Object.keys(window.aioxyData.crop_classes).length} categories
+            • <strong>Manufacturing Location:</strong> ${mfgCountryName}<br>
+            • <strong>International Adjustments:</strong> ${adjustedIngredients} ingredient(s) adjusted from French proxy data<br>
+            • <strong>Yield Physics:</strong> ${Object.keys(window.aioxyData.yield_benchmarks).length} crops (country-specific yields)<br>
+            • <strong>Water Physics:</strong> ${Object.keys(window.aioxyData.aware_factors).length} countries (AWARE 2.0 factors)<br>
+            • <strong>Grid Physics:</strong> ${Object.keys(window.aioxyData.grid_intensity).length} countries (electricity CO₂ intensity)<br>
+            • <strong>Climate Physics:</strong> Tropical/Arid/Boreal N₂O adjustments
         </div>
         <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--gray);">
-            <i class="fas fa-info-circle"></i> Ingredients dynamically adjusted for origin yield, climate, and water scarcity
+            <i class="fas fa-info-circle"></i> Agribalyse (French) proxy data mathematically adapted to ${mfgCountryName} local conditions
+            ${adjustedIngredients > 0 ? '<br><i class="fas fa-check-circle" style="color: #48BB78;"></i> See Transparency Log for detailed physics adjustments' : ''}
         </div>
     `;
     
     dataQualitySection.appendChild(physicsNote);
-        }
+              }
+
+    
         } else {
             dataQualitySection.classList.add('hidden');
         }
