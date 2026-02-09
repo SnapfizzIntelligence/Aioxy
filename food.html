@@ -6147,40 +6147,39 @@ function updateBusinessCase() {
     
     // 6. CALCULATE IMPLEMENTATION COST
     const implementationCost = calculateImplementationCost(volume);
+    // 7. MARKET METRICS - USE THE SAME BASELINE AS RESULTS TAB
+let baselineCO2, baselineName;
+
+// CRITICAL FIX: Use the exact baseline from Results tab calculation
+if (auditTrailData && auditTrailData.comparison_baseline) {
+    baselineCO2 = auditTrailData.comparison_baseline.co2PerKg || 14.47;
+    baselineName = auditTrailData.comparison_baseline.name || "Conventional Beef";
     
-    // 7. UPDATE ALL UI ELEMENTS
-    
-    // ROI & Badges
-    document.getElementById('roiValue').textContent = discountedROI.npvROI + '% (NPV)';
-    document.getElementById('roiBadge').textContent = 'Shadow Pricing @ €85/t';
-    
-    // Savings & Costs
-    document.getElementById('savingsValue').textContent = "€" + formatLargeNumber(financialResults.total);
-    document.getElementById('implementationCost').textContent = '€' + formatLargeNumber(implementationCost);
-    
-    // Returns & Benefits
-    document.getElementById('netReturnDisplay').textContent = '€' + discountedROI.totalDiscounted;
-    document.getElementById('totalBenefitDisplay').textContent = '€' + discountedROI.totalDiscounted;
-    document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
-    
-    // Market Metrics
-    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.47;
-    const currentCO2 = scenarioAdjustedResults.co2PerKg;
-    const co2ReductionPercent = Math.max(0, ((baselineCO2 - currentCO2) / baselineCO2) * 100);
-    
-    const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);  // Cap at 40%
-    const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);    // Cap at 25%
-    
-    document.getElementById('premiumValue').textContent = premiumPct.toFixed(1) + "%";
-    document.getElementById('marketValue').textContent = marketGrowthPct.toFixed(1) + "%";
-    
-    // 8. UPDATE COMPONENTS
-    updateHardFinancialLedgerWithCredits(financialResults, volume); // Updated ledger with carbon credits
-    addCarbonCreditCard(discountedROI); // Show carbon credit card
-    updateBusinessStory(financialResults, parseFloat(discountedROI.npvROI), volume, co2ReductionPercent);
-    
-    console.log('✅ [UNIFIED] Business case updated with discounted ROI & carbon credits');
+    // Apply the same uplift that was used in Results tab
+    if (auditTrailData.comparison && auditTrailData.comparison.uplift_applied) {
+        baselineCO2 += (auditTrailData.comparison.uplift_applied.co2 || 0);
+    }
+} else {
+    // Fallback
+    baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.47;
+    baselineName = currentComparisonBaseline ? currentComparisonBaseline.name : "Conventional Beef";
 }
+
+const currentCO2 = scenarioAdjustedResults.co2PerKg;
+const co2ReductionPercent = Math.max(0, ((baselineCO2 - currentCO2) / baselineCO2) * 100);
+
+const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);  // Cap at 40%
+const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);    // Cap at 25%
+
+document.getElementById('premiumValue').textContent = premiumPct.toFixed(1) + "%";
+document.getElementById('marketValue').textContent = marketGrowthPct.toFixed(1) + "%";
+
+// 8. UPDATE COMPONENTS
+updateHardFinancialLedgerWithCredits(financialResults, volume);
+addCarbonCreditCard(discountedROI);
+updateBusinessStory(financialResults, parseFloat(discountedROI.npvROI), volume, co2ReductionPercent, baselineName);
+
+console.log('✅ [FIX #3] Business case updated with consistent baseline from Results tab');
 
 // ================== UPDATE BUSINESS STORY ==================
 function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent) {
