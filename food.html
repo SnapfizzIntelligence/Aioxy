@@ -1387,29 +1387,34 @@
                             50 Ingredients • AGRIBALYSE 3.2 • DQR Rated
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Select Ingredient</label>
-                        <select id="ingredientSelect" class="form-control">
-                            <option value="">Choose from science-based ingredients...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Quantity (kg)</label>
-                        <input type="number" id="ingredientQuantity" value="0.150" step="0.001" min="0" class="form-control">
-                    </div>
-                    <button class="btn" onclick="addIngredient()">
-                        <i class="fas fa-plus"></i>
-                        Add Ingredient
-                    </button>
-                    
-                    <div class="ingredient-list" id="ingredientList">
-                        <div class="empty-state">
-                            <i class="fas fa-apple-alt"></i>
-                            <h3>No ingredients added yet</h3>
-                            <p>Add ingredients to calculate your environmental impact</p>
-                        </div>
-                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+    <div class="form-group">
+        <label class="form-label">Select Ingredient (Base Data)</label>
+        <select id="ingredientSelect" class="form-control">
+            <option value="">Loading database...</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label class="form-label">Origin Country <span style="font-weight:normal; color:#718096; font-size:0.8em;">(Scenario Trigger)</span></label>
+        <select id="ingredientOriginSelect" class="form-control">
+            <option value="FR">🇫🇷 France (Base)</option>
+        </select>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+    <div class="form-group">
+        <label class="form-label">Quantity (kg)</label>
+        <input type="number" id="ingredientQuantity" class="form-control" placeholder="0.0">
+    </div>
+    <div class="form-group" style="display: flex; align-items: flex-end;">
+        <button class="btn btn-primary" style="width: 100%;" onclick="addIngredient()">
+            <i class="fas fa-plus"></i> Add to BOM
+        </button>
+    </div>
                 </div>
+                    
                 <!-- HYDRATION SUGGESTION CARD -->
 <div class="card hidden" id="hydrationSuggestionCard" style="margin-top: 1rem; border-left: 4px solid #00D4AA;">
     <div class="card-header">
