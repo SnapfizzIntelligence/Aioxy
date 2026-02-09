@@ -7073,77 +7073,86 @@ function displayAuditTrail() {
                         ${cat.contribution_tree.Ingredients.components.map(comp => {
                             
                             // === REGULATOR PROOF DISPLAY LOGIC ===
-                            let adjustmentBlock = '';
-                            
-                            // Check if Universal Physics were applied
-                            if (comp.universal_adjustments) {
-                                const adj = comp.universal_adjustments;
-                                const fromC = adj.adjusted_from_country || 'FR';
-                                const toC = adj.adjusted_for_country || 'FR';
-                                const isAdjusted = (fromC !== toC);
-                                
-                                // Build dynamic adjustment strings based on Category
-                                let physicsDetails = [];
-                                
-                                if (category.includes("Water")) {
-                                    if (Math.abs(adj.water_factor - 1.0) > 0.01) {
-                                        physicsDetails.push(`Water Scarcity: ${adj.water_factor.toFixed(2)}x`);
-                                    }
-                                }
-                                if (category.includes("Land") || category.includes("Climate")) {
-                                    if (Math.abs(adj.yield_factor - 1.0) > 0.01) {
-                                        physicsDetails.push(`Yield: ${adj.yield_factor.toFixed(2)}x`);
-                                    }
-                                    if (category.includes("Climate") && Math.abs(adj.climate_factor - 1.0) > 0.01) {
-                                        physicsDetails.push(`N₂O Climate: ${adj.climate_factor.toFixed(2)}x`);
-                                    }
-                                    // 🔥 CRITICAL: Add Grid Intensity for Climate Change
-                                    if (category.includes("Climate") && adj.grid_adder > 0.001) {
-                                        physicsDetails.push(`Grid Intensity: +${adj.grid_adder.toFixed(3)}kg CO₂/kg`);
-                                    }
-                                }
-                                if (category.includes("Resource Use, fossils") && adj.grid_adder > 0.001) {
-                                    // Convert CO2 adder to MJ adder for fossil resources
-                                    const mjAdder = adj.grid_adder / 3.6;
-                                    physicsDetails.push(`Grid MJ: +${mjAdder.toFixed(3)} MJ/kg`);
-                                }
+let adjustmentBlock = '';
 
-                                // Only render if we have something to show
-                                if (physicsDetails.length > 0 || isAdjusted) {
-                                    adjustmentBlock = `
-                                    <div style="margin-top: 8px; font-size: 0.75rem; background: ${isAdjusted ? '#FFF3E0' : '#F8FAFC'}; 
-                                                border: 1px solid ${isAdjusted ? '#FFB74D' : '#E2E8F0'}; border-radius: 6px; padding: 10px;">
-                                        
-                                        ${isAdjusted ? `
-                                        <div style="margin-bottom: 4px; color: #E65100; font-weight: 600;">
-                                            🌍 <strong>INTERNATIONAL PHYSICS ADJUSTMENT</strong>
-                                        </div>
-                                        ` : `
-                                        <div style="margin-bottom: 4px; color: #475569; font-weight: 600;">
-                                            🔧 <strong>REGIONAL PHYSICS APPLIED</strong>
-                                        </div>
-                                        `}
-                                        
-                                        <div style="margin-bottom: 4px; color: #5D4037;">
-                                            📍 <strong>Data Source:</strong> ${getCountryDisplay(fromC)} (Agribalyse Proxy) 
-                                            &nbsp;→&nbsp; <strong>Target:</strong> ${getCountryDisplay(toC)}
-                                        </div>
+// Check if Universal Physics were applied
+if (comp.universal_adjustments) {
+    const adj = comp.universal_adjustments;
+    const fromC = adj.adjusted_from_country || 'FR';
+    const toC = adj.adjusted_for_country || 'FR';
+    const isProxy = adj.is_proxy_adjustment;  // <-- CRITICAL: Use the flag from Fix #1
+    const isAdjusted = isProxy || (fromC !== toC);  // <-- Fallback for compatibility
+    
+    // Build dynamic adjustment strings based on Category
+    let physicsDetails = [];
+    
+    // IMPORTANT: Also need to access the multipliers correctly
+    // Your function returns multipliers object, not individual factors
+    const yieldFactor = adj.multipliers?.land || 1.0;
+    const waterFactor = adj.multipliers?.water || 1.0;
+    const climateFactor = adj.multipliers?.co2 || 1.0;
+    const gridAdder = adj.adder || 0;
+    
+    if (category.includes("Water")) {
+        if (Math.abs(waterFactor - 1.0) > 0.01) {
+            physicsDetails.push(`Water Scarcity: ${waterFactor.toFixed(2)}x`);
+        }
+    }
+    if (category.includes("Land") || category.includes("Climate")) {
+        if (Math.abs(yieldFactor - 1.0) > 0.01) {
+            physicsDetails.push(`Yield: ${yieldFactor.toFixed(2)}x`);
+        }
+        if (category.includes("Climate") && Math.abs(climateFactor - 1.0) > 0.01) {
+            physicsDetails.push(`Climate: ${climateFactor.toFixed(2)}x`);
+        }
+        // 🔥 CRITICAL: Add Grid Intensity for Climate Change
+        if (category.includes("Climate") && gridAdder > 0.001) {
+            physicsDetails.push(`Grid Intensity: +${gridAdder.toFixed(3)}kg CO₂/kg`);
+        }
+    }
+    if (category.includes("Resource Use, fossils") && gridAdder > 0.001) {
+        // Convert CO2 adder to MJ adder for fossil resources
+        const mjAdder = gridAdder / 3.6;
+        physicsDetails.push(`Grid MJ: +${mjAdder.toFixed(3)} MJ/kg`);
+    }
 
-                                        ${physicsDetails.length > 0 ? `
-                                        <div style="background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 2px; margin-bottom: 4px;">
-                                            🔄 <strong>Physics Adjustments:</strong> ${physicsDetails.join(', ')}
-                                        </div>
-                                        ` : ''}
+    // Only render if this is a proxy adjustment OR we have physics details
+    if (isProxy || physicsDetails.length > 0) {
+        adjustmentBlock = `
+        <div style="margin-top: 8px; font-size: 0.75rem; background: ${isProxy ? '#FFF3E0' : '#F8FAFC'}; 
+                    border: 1px solid ${isProxy ? '#FFB74D' : '#E2E8F0'}; border-radius: 6px; padding: 10px;">
+            
+            ${isProxy ? `
+            <div style="margin-bottom: 4px; color: #E65100; font-weight: 600;">
+                🌍 <strong>INTERNATIONAL PHYSICS ADJUSTMENT</strong>
+                ${adj.quality_penalty > 0 ? `<span style="color: #B00020; margin-left: 8px;">DQR Penalty: +${adj.quality_penalty}</span>` : ''}
+            </div>
+            ` : `
+            <div style="margin-bottom: 4px; color: #475569; font-weight: 600;">
+                🔧 <strong>REGIONAL PHYSICS APPLIED</strong>
+            </div>
+            `}
+            
+            <div style="margin-bottom: 4px; color: #5D4037;">
+                📍 <strong>Data Source:</strong> ${getCountryDisplay(fromC)} (Agribalyse Proxy) 
+                &nbsp;→&nbsp; <strong>Target:</strong> ${getCountryDisplay(toC)}
+            </div>
 
-                                        <div style="margin-top: 4px; color: #64748B; font-size: 0.7rem; font-style: italic;">
-                                            ${isAdjusted ? 
-                                                `Base French Agribalyse data mathematically adapted to ${getCountryDisplay(toC)} local conditions (yield, water, climate, grid)` :
-                                                `Standard calculation using ${getCountryDisplay(fromC)} reference data`
-                                            }
-                                        </div>
-                                    </div>`;
-                                }
-                            }
+            ${physicsDetails.length > 0 ? `
+            <div style="background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 2px; margin-bottom: 4px;">
+                🔄 <strong>Physics Adjustments:</strong> ${physicsDetails.join(', ')}
+            </div>
+            ` : ''}
+
+            <div style="margin-top: 4px; color: #64748B; font-size: 0.7rem; font-style: italic;">
+                ${isProxy ? 
+                    `Base French Agribalyse data mathematically adapted to ${getCountryDisplay(toC)} local conditions (yield, water, climate, grid)` :
+                    `Standard calculation using ${getCountryDisplay(fromC)} reference data`
+                }
+            </div>
+        </div>`;
+    }
+}
 
                             // Standard Audit Item Render
                             return `
