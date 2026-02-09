@@ -4955,21 +4955,39 @@ calculateFoodImpact() {
     totalInputQuantity += grownMass;
     agriculturalLoss += (grownMass - item.quantity);
     
-    // ========== AUDITOR'S DQR PENALTY SYSTEM ==========
-    // Get ingredient origin FIRST (we need it for DQR penalty)
-    const ingredientOrigin = getIngredientOrigin(item.id) || manufacturingCountryCode || 'FR';
-    let dqrPenalty = 0;
-    let isProxyData = false;
-    
-    // Check if this is proxy data (non-French origin)
-    if (ingredientOrigin !== 'FR') {
-        isProxyData = true;
-        dqrPenalty = 1.0; // Base penalty for using French data for non-French ingredient
+    // [REGULATORY FIX 4: The Physics Engine Wiring]
+    // 1. ESTABLISH GEOGRAPHICAL TRUTH
+    // We prioritize the User's Explicit Selection over any guesses.
+    let ingredientOrigin = 'FR'; // Default Base
+
+    if (item.originCountry) {
+        ingredientOrigin = item.originCountry; // Scenario 1 or 2 (Explicit)
+    } else {
+        ingredientOrigin = getIngredientOrigin(item.id); // Fallback (Scenario 3)
+    }
+
+    const manufacturingCountryCode = document.getElementById('manufacturingCountry').value || 'FR';
+
+    // 2. DEFINE THE PHYSICS PROXY
+    // We are taking French data and morphing it to the Target Country.
+    let universalAdjustments = null;
+    let isProxyData = (ingredientOrigin !== 'FR');
+    let dqrPenalty = isProxyData ? 1.0 : 0.0;
+
+    if (window.aioxyData && window.aioxyData.yield_benchmarks) {
+        // CALL THE PHYSICS ENGINE WITH THE CORRECT ORIGIN
+        universalAdjustments = calculateUniversalAdjustments(
+            ing.name,
+            ingredientOrigin, // <--- This now carries the correct country code (e.g., 'IN', 'ES')
+            processingMethod,
+            manufacturingCountryCode
+        );
         
-        // Extra penalty for heavy physics adjustments will be added after physics calculation
+        // LOG FOR AUDIT TRAIL
+        console.log(`🌍 [Physics] Mapping ${ing.name}: Base(FR) -> Target(${ingredientOrigin})`);
     }
     
-    // DQR Tracking WITH PENALTY
+    // DQR Tracking WITH PENALTY  <--- YOU DELETED THIS WHOLE BLOCK!
     if (ing.data.metadata && ing.data.metadata.dqr_overall) {
         const baseDQR = ing.data.metadata.dqr_overall;
         const adjustedDQR = baseDQR + dqrPenalty; // Apply base penalty
@@ -4992,90 +5010,90 @@ calculateFoodImpact() {
     }
     // ========== END DQR PENALTY ==========
     
-    // PEF Calculations (WITH UNIVERSAL PHYSICS ADJUSTMENTS)
-Object.keys(pefCategories).forEach(cat => {
-    let baseImpactPerKg = ing.data.pef[cat] || 0;
-    
-    // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
-    let universalAdjustments = null;
+    // PEF Calculations (WITH UNIVERSAL PHYSICS ADJUSTMENTS)  <--- YOU DELETED THIS LINE!
+    Object.keys(pefCategories).forEach(cat => {
+        let baseImpactPerKg = ing.data.pef[cat] || 0;
+        
+        // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
+        let universalAdjustments = null;
 
-    // SKIP universal physics if we have primary supplier data (already location-specific)
-    if (item.primaryData) {
-        console.log(`✅ Skipping universal physics for ${ing.name} - Using primary supplier data from ${item.primaryData.farmRegion}`);
-    } else if (window.aioxyData && window.aioxyData.yield_benchmarks) {
-        // Only apply universal physics if NO primary data
-        universalAdjustments = calculateUniversalAdjustments(
-            ing.name,
-            ingredientOrigin,  // Use the variable from above
-            processingMethod,
-            manufacturingCountryCode || 'FR'
-        );
-        
-        console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
-        
-        // ADD EXTRA DQR PENALTY for heavy adjustments
-        if (isProxyData && universalAdjustments.qualityPenalty > 0) {
-            dqrPenalty += universalAdjustments.qualityPenalty;
-            console.log(`📉 Extra DQR penalty: +${universalAdjustments.qualityPenalty} for heavy adjustments`);
+        // SKIP universal physics if we have primary supplier data (already location-specific)
+        if (item.primaryData) {
+            console.log(`✅ Skipping universal physics for ${ing.name} - Using primary supplier data from ${item.primaryData.farmRegion}`);
+        } else if (window.aioxyData && window.aioxyData.yield_benchmarks) {
+            // Only apply universal physics if NO primary data
+            universalAdjustments = calculateUniversalAdjustments(
+                ing.name,
+                ingredientOrigin,  // Use the variable from above
+                processingMethod,
+                manufacturingCountryCode || 'FR'
+            );
             
-            // Update the DQR component we already pushed
-            const lastComponent = dqrComponents[dqrComponents.length - 1];
-            if (lastComponent && lastComponent.name === ing.name) {
-                lastComponent.dqr += universalAdjustments.qualityPenalty;
-                lastComponent.dqr_penalty += universalAdjustments.qualityPenalty;
+            console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
+            
+            // ADD EXTRA DQR PENALTY for heavy adjustments
+            if (isProxyData && universalAdjustments.qualityPenalty > 0) {
+                dqrPenalty += universalAdjustments.qualityPenalty;
+                console.log(`📉 Extra DQR penalty: +${universalAdjustments.qualityPenalty} for heavy adjustments`);
+                
+                // Update the DQR component we already pushed
+                const lastComponent = dqrComponents[dqrComponents.length - 1];
+                if (lastComponent && lastComponent.name === ing.name) {
+                    lastComponent.dqr += universalAdjustments.qualityPenalty;
+                    lastComponent.dqr_penalty += universalAdjustments.qualityPenalty;
+                }
+            }
+            
+            // Apply multipliers based on category
+            if (cat === "Climate Change") {
+                baseImpactPerKg *= universalAdjustments.multipliers.co2;
+                // Add grid intensity adder to manufacturing
+                const adderPerKg = universalAdjustments.adder;
+                auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
+            } else if (cat === "Land Use") {
+                baseImpactPerKg *= universalAdjustments.multipliers.land;
+            } else if (cat === "Water Use/Scarcity (AWARE)") {
+                baseImpactPerKg *= universalAdjustments.multipliers.water;
+            }
+            // GRID ADDER FOR FOSSIL RESOURCES TOO
+            else if (cat === "Resource Use, fossils") {
+                // Grid intensity affects fossil resource use (electricity generation)
+                const adderPerKg = universalAdjustments.adder / 3.6; // Convert CO2 adder to MJ adder (approx)
+                auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
             }
         }
         
-        // Apply multipliers based on category
-        if (cat === "Climate Change") {
-            baseImpactPerKg *= universalAdjustments.multipliers.co2;
-            // Add grid intensity adder to manufacturing
-            const adderPerKg = universalAdjustments.adder;
-            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
-        } else if (cat === "Land Use") {
-            baseImpactPerKg *= universalAdjustments.multipliers.land;
-        } else if (cat === "Water Use/Scarcity (AWARE)") {
-            baseImpactPerKg *= universalAdjustments.multipliers.water;
-        }
-        // GRID ADDER FOR FOSSIL RESOURCES TOO
-        else if (cat === "Resource Use, fossils") {
-            // Grid intensity affects fossil resource use (electricity generation)
-            const adderPerKg = universalAdjustments.adder / 3.6; // Convert CO2 adder to MJ adder (approx)
-            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
-        }
-    }
-    
-    // Apply primary data adjustments (existing logic)
-    const multiplier = impactMultipliers[cat] || 1.0;
-    const adjustedImpactPerKg = baseImpactPerKg * multiplier;
-    const impactTotal = grownMass * adjustedImpactPerKg;
+        // Apply primary data adjustments (existing logic)
+        const multiplier = impactMultipliers[cat] || 1.0;
+        const adjustedImpactPerKg = baseImpactPerKg * multiplier;
+        const impactTotal = grownMass * adjustedImpactPerKg;
 
-    auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-        name: ing.name,
-        id: item.id,
-        quantity_kg: grownMass,
-        subtotal: applyISOAllocation(impactTotal, 0.8, 0.2, 0.3),
-        note: dataSourceNote + 
-              (universalAdjustments && !item.primaryData ? " + Universal Physics" : "") +
-              (item.primaryData ? " (Primary Supplier Data)" : "") +
-              (isProxyData && !item.primaryData ? ` [Proxy: ${ingredientOrigin}→FR, DQR +${dqrPenalty.toFixed(1)}]` : ""),
-        primary_data_used: !!item.primaryData,
-        adjustment_factor: multiplier,
-        universal_adjustments: universalAdjustments ? {
-            adjusted_from_country: ingredientOrigin || 'FR',
-            adjusted_for_country: manufacturingCountryCode || 'FR', 
-            yield_factor: universalAdjustments.multipliers.land,
-            climate_factor: universalAdjustments.multipliers.co2,
-            water_factor: universalAdjustments.multipliers.water,
-            grid_adder: universalAdjustments.adder,
-            quality_penalty: universalAdjustments.qualityPenalty,
-            is_proxy_adjustment: isProxyData && !item.primaryData // Only proxy if no primary data
-        } : null
+        auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+            name: ing.name,
+            id: item.id,
+            quantity_kg: grownMass,
+            subtotal: applyISOAllocation(impactTotal, 0.8, 0.2, 0.3),
+            note: dataSourceNote + 
+                  (universalAdjustments && !item.primaryData ? " + Universal Physics" : "") +
+                  (item.primaryData ? " (Primary Supplier Data)" : "") +
+                  (isProxyData && !item.primaryData ? ` [Proxy: ${ingredientOrigin}→FR, DQR +${dqrPenalty.toFixed(1)}]` : ""),
+            primary_data_used: !!item.primaryData,
+            adjustment_factor: multiplier,
+            universal_adjustments: universalAdjustments ? {
+                adjusted_from_country: ingredientOrigin || 'FR',
+                adjusted_for_country: manufacturingCountryCode || 'FR', 
+                yield_factor: universalAdjustments.multipliers.land,
+                climate_factor: universalAdjustments.multipliers.co2,
+                water_factor: universalAdjustments.multipliers.water,
+                grid_adder: universalAdjustments.adder,
+                quality_penalty: universalAdjustments.qualityPenalty,
+                is_proxy_adjustment: isProxyData && !item.primaryData // Only proxy if no primary data
+            } : null
+        });
+        
+        auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
+        auditTrail.pefCategories[cat].total += impactTotal;
     });
-    
-    auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += impactTotal;
-    auditTrail.pefCategories[cat].total += impactTotal;
-});
 });
     // 5. MANUFACTURING IMPACTS (YOUR EXISTING LOGIC - UNCHANGED)
     const processingData = aioxyData.processing[processingMethod];
