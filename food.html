@@ -8120,36 +8120,42 @@ function populateCountrySelect() {
     }, 300);
     }
 
-    // ================== INGREDIENT MANAGEMENT ==================
-    function addIngredient() {
-        const select = document.getElementById('ingredientSelect');
-        const quantityInput = document.getElementById('ingredientQuantity');
-        
-        const ingredientId = select.value;
-        const quantity = parseFloat(quantityInput.value);
-        
-        if (!ingredientId || isNaN(quantity) || quantity <= 0) {
-            alert('Please select an ingredient and enter a valid quantity');
-            return;
-        }
-        
-        if (!aioxyData.ingredients[ingredientId]) {
-            alert('Selected ingredient not found in database');
-            return;
-        }
-        
-        const ingredient = aioxyData.ingredients[ingredientId];
-        selectedIngredients.push({
-            id: ingredientId,
-            name: ingredient.name,
-            quantity: quantity
-        });
-        
-        updateIngredientList();
-        calculateImpact();
-        
-        select.value = '';
-        quantityInput.value = '0.150';
+    // [REGULATORY FIX 3: Capture Origin Scenario]
+function addIngredient() {
+    const select = document.getElementById('ingredientSelect');
+    const quantityInput = document.getElementById('ingredientQuantity');
+    const originSelect = document.getElementById('ingredientOriginSelect'); // <--- CAPTURE THIS
+    
+    const ingredientId = select.value;
+    const quantity = parseFloat(quantityInput.value);
+    // If user didn't touch it, default to FR (Scenario 3)
+    const origin = originSelect ? originSelect.value : 'FR'; 
+
+    if (!ingredientId || isNaN(quantity) || quantity <= 0) {
+        alert('Please select an ingredient and enter a valid quantity');
+        return;
+    }
+    
+    if (!aioxyData.ingredients[ingredientId]) {
+        alert('Selected ingredient not found in database');
+        return;
+    }
+    
+    const ingredient = aioxyData.ingredients[ingredientId];
+    
+    // Create the BOM line item with the SPECIFIC ORIGIN
+    selectedIngredients.push({
+        id: ingredientId,
+        name: ingredient.name,
+        quantity: quantity,
+        originCountry: origin // <--- CRITICAL: This drives the physics engine
+    });
+
+    updateIngredientList();
+    calculateImpact();
+    
+    // UX: Reset quantity but keep the ingredient/origin selected for rapid entry
+    quantityInput.value = '';
     }
 
     function removeIngredient(index) {
