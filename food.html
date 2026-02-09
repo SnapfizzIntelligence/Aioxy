@@ -5017,13 +5017,14 @@ calculateFoodImpact() {
     }
     // ========== END DQR PENALTY ==========
     
-    // PEF Calculations (WITH UNIVERSAL PHYSICS ADJUSTMENTS)  <--- YOU DELETED THIS LINE!
-    Object.keys(pefCategories).forEach(cat => {
-        let baseImpactPerKg = ing.data.pef[cat] || 0;
-        
-        // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
-        let universalAdjustments = null;
-
+    // PEF Calculations (WITH UNIVERSAL PHYSICS ADJUSTMENTS)
+Object.keys(pefCategories).forEach(cat => {
+    let baseImpactPerKg = ing.data.pef[cat] || 0;
+    
+    // APPLY UNIVERSAL PHYSICS ADJUSTMENTS
+    // Use the outer universalAdjustments variable (already calculated above)
+    // NO NEW DECLARATION HERE!
+    
         // SKIP universal physics if we have primary supplier data (already location-specific)
         if (item.primaryData) {
             console.log(`✅ Skipping universal physics for ${ing.name} - Using primary supplier data from ${item.primaryData.farmRegion}`);
