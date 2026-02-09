@@ -3666,22 +3666,23 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
     const qualityPenalty = (yieldFactor > 1.5 || waterFactor > 2.0) ? 1.0 : 0.0;
 
     return {
-    multipliers: adjustmentMultipliers,
-    adder: processingAdder,
-    logs: log,
-    qualityPenalty: qualityPenalty,
-    base_country: baseCountry,
-    adjusted_from_country: originCountry,
-    adjusted_for_country: manufacturingCountry,
-    is_proxy_adjustment: (originCountry !== baseCountry), // CRITICAL: Flag for transparency
-    details: {
-        yield: yieldFactor,
-        water: waterFactor,
-        grid: processingAdder,
-        origin: originCountry,
-        base: baseCountry
-    }
-};
+        multipliers: adjustmentMultipliers,
+        adder: processingAdder,
+        logs: log,
+        qualityPenalty: qualityPenalty,
+        base_country: baseCountry,
+        adjusted_from_country: originCountry,
+        adjusted_for_country: manufacturingCountry,
+        is_proxy_adjustment: (originCountry !== baseCountry), // CRITICAL: Flag for transparency
+        details: {
+            yield: yieldFactor,
+            water: waterFactor,
+            grid: processingAdder,
+            origin: originCountry,
+            base: baseCountry
+        }
+    };
+} 
     // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     console.log("📦 CFF Calculation with:", { 
