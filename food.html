@@ -7034,25 +7034,20 @@ function displayAuditTrail() {
     if (!auditContent) return;
 
     if (!auditTrailData || !auditTrailData.pefCategories) {
-        auditContent.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-calculator"></i>
-                <h3>No calculation data available</h3>
-                <p>Calculate environmental impacts first to generate the transparency log</p>
-            </div>`;
+        auditContent.innerHTML = `<div class="empty-state"><i class="fas fa-calculator"></i><h3>No calculation data available</h3></div>`;
         return;
     }
 
-    // Helper: Get country name & flag
-    function getCountryDisplay(code) {
+    // Helper: Get country name
+    function getCountryName(code) {
         if (!code) return 'Unknown';
-        const country = window.aioxyData.countries[code];
-        // Simple flag mapping if name available, else code
-        return country ? `${country.name}` : code;
+        const c = window.aioxyData.countries[code];
+        return c ? c.name : code;
     }
 
     let auditHTML = '';
-    // Focus on the big categories where physics adjustments matter most
+    
+    // Focus on key categories where adjustments matter most
     const keyCategories = ["Climate Change", "Water Use/Scarcity (AWARE)", "Land Use", "Resource Use, fossils"];
     
     keyCategories.forEach(category => {
@@ -7073,107 +7068,85 @@ function displayAuditTrail() {
                         </div>
                         ${cat.contribution_tree.Ingredients.components.map(comp => {
                             
-                            // === REGULATOR PROOF DISPLAY LOGIC ===
-let adjustmentBlock = '';
+                            // === REGULATOR COMPLIANCE DISPLAY LOGIC ===
+                            let detailBlock = '';
 
-// Check if Universal Physics were applied
-if (comp.universal_adjustments) {
-    const adj = comp.universal_adjustments;
-    const fromC = adj.adjusted_from_country || 'FR';
-    const toC = adj.adjusted_for_country || 'FR';
-    const isProxy = adj.is_proxy_adjustment;  // <-- CRITICAL: Use the flag from Fix #1
-    const isAdjusted = isProxy || (fromC !== toC);  // <-- Fallback for compatibility
-    
-    // Build dynamic adjustment strings based on Category
-    let physicsDetails = [];
-    
-    // IMPORTANT: Also need to access the multipliers correctly
-    // Your function returns multipliers object, not individual factors
-    const yieldFactor = adj.multipliers?.land || 1.0;
-    const waterFactor = adj.multipliers?.water || 1.0;
-    const climateFactor = adj.multipliers?.co2 || 1.0;
-    const gridAdder = adj.adder || 0;
-    
-    if (category.includes("Water")) {
-        if (Math.abs(waterFactor - 1.0) > 0.01) {
-            physicsDetails.push(`Water Scarcity: ${waterFactor.toFixed(2)}x`);
-        }
-    }
-    if (category.includes("Land") || category.includes("Climate")) {
-        if (Math.abs(yieldFactor - 1.0) > 0.01) {
-            physicsDetails.push(`Yield: ${yieldFactor.toFixed(2)}x`);
-        }
-        if (category.includes("Climate") && Math.abs(climateFactor - 1.0) > 0.01) {
-            physicsDetails.push(`Climate: ${climateFactor.toFixed(2)}x`);
-        }
-        // 🔥 CRITICAL: Add Grid Intensity for Climate Change
-        if (category.includes("Climate") && gridAdder > 0.001) {
-            physicsDetails.push(`Grid Intensity: +${gridAdder.toFixed(3)}kg CO₂/kg`);
-        }
-    }
-    if (category.includes("Resource Use, fossils") && gridAdder > 0.001) {
-        // Convert CO2 adder to MJ adder for fossil resources
-        const mjAdder = gridAdder / 3.6;
-        physicsDetails.push(`Grid MJ: +${mjAdder.toFixed(3)} MJ/kg`);
-    }
+                            // CASE A: PRIMARY SUPPLIER DATA (Green / Verified)
+                            // This is when the brand actually has real farm data.
+                            if (comp.primary_data_used && comp.primary_data_details) {
+                                const pd = comp.primary_data_details;
+                                detailBlock = `
+                                <div style="margin-top: 8px; font-size: 0.75rem; background: #F0FFF4; border: 1px solid #48BB78; border-radius: 6px; padding: 10px;">
+                                    <div style="margin-bottom: 4px; color: #2F855A; font-weight: 700;">
+                                        ✅ PRIMARY FARM DATA VERIFIED
+                                    </div>
+                                    <div style="color: #2D3748;">
+                                        <strong>Source:</strong> Actual Farm Data (${pd.farmRegion})<br>
+                                        <strong>Inputs:</strong> Nitrogen: ${pd.nitrogenKgPerTon}kg/t | Yield: ${pd.yieldKgPerHa}kg/ha
+                                    </div>
+                                    <div style="margin-top: 4px; color: #2F855A; font-style: italic;">
+                                        <i class="fas fa-check-circle"></i> High data quality. No proxy adjustments needed.
+                                    </div>
+                                </div>`;
+                            } 
+                            
+                            // CASE B: PROXY DATA ADJUSTMENT (Orange / Transparent)
+                            // This is the "India using French Data" scenario.
+                            // We MUST disclose the adjustment to be legal.
+                            else if (comp.universal_adjustments && comp.universal_adjustments.is_proxy_adjustment) {
+                                const adj = comp.universal_adjustments;
+                                const fromC = getCountryName(adj.adjusted_from_country); // e.g., India
+                                const toC = getCountryName('FR'); // Agribalyse Base (France)
+                                
+                                // Dynamic Physics Factors based on Category
+                                let physicsStr = '';
+                                if (category === "Climate Change") physicsStr = `🌾 Yield Adj: x${adj.yield_factor.toFixed(2)} | ⚡ Grid Adj: +${adj.grid_adder.toFixed(3)}kg`;
+                                if (category.includes("Water")) physicsStr = `💧 Water Scarcity Adj: x${adj.water_factor.toFixed(2)} (AWARE)`;
+                                if (category.includes("Land")) physicsStr = `🌾 Yield Efficiency Adj: x${adj.yield_factor.toFixed(2)}`;
 
-    // Only render if this is a proxy adjustment OR we have physics details
-    if (isProxy || physicsDetails.length > 0) {
-        adjustmentBlock = `
-        <div style="margin-top: 8px; font-size: 0.75rem; background: ${isProxy ? '#FFF3E0' : '#F8FAFC'}; 
-                    border: 1px solid ${isProxy ? '#FFB74D' : '#E2E8F0'}; border-radius: 6px; padding: 10px;">
-            
-            ${isProxy ? `
-            <div style="margin-bottom: 4px; color: #E65100; font-weight: 600;">
-                🌍 <strong>INTERNATIONAL PHYSICS ADJUSTMENT</strong>
-                ${adj.quality_penalty > 0 ? `<span style="color: #B00020; margin-left: 8px;">DQR Penalty: +${adj.quality_penalty}</span>` : ''}
-            </div>
-            ` : `
-            <div style="margin-bottom: 4px; color: #475569; font-weight: 600;">
-                🔧 <strong>REGIONAL PHYSICS APPLIED</strong>
-            </div>
-            `}
-            
-            <div style="margin-bottom: 4px; color: #5D4037;">
-                📍 <strong>Data Source:</strong> ${getCountryDisplay(fromC)} (Agribalyse Proxy) 
-                &nbsp;→&nbsp; <strong>Target:</strong> ${getCountryDisplay(toC)}
-            </div>
+                                detailBlock = `
+                                <div style="margin-top: 8px; font-size: 0.75rem; background: #FFFAF0; border: 1px solid #ED8936; border-radius: 6px; padding: 10px;">
+                                    <div style="margin-bottom: 4px; color: #C05621; font-weight: 700; display: flex; justify-content: space-between;">
+                                        <span>⚠️ PROXY DATA ADJUSTED</span>
+                                        <span style="background: #FEEBC8; padding: 0 6px; border-radius: 4px;">DQR +1.5 Penalty</span>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 6px; color: #744210;">
+                                        <strong>📍 Origin Adjustment:</strong> ${fromC} <i class="fas fa-arrow-right"></i> ${toC} (Agribalyse Proxy)
+                                    </div>
 
-            ${physicsDetails.length > 0 ? `
-            <div style="background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 2px; margin-bottom: 4px;">
-                🔄 <strong>Physics Adjustments:</strong> ${physicsDetails.join(', ')}
-            </div>
-            ` : ''}
+                                    <div style="background: white; border: 1px solid #E2E8F0; padding: 6px; border-radius: 4px; color: #4A5568; font-family: monospace;">
+                                        ${physicsStr || 'Physics factors applied'}
+                                    </div>
 
-            <div style="margin-top: 4px; color: #64748B; font-size: 0.7rem; font-style: italic;">
-                ${isProxy ? 
-                    `Base French Agribalyse data mathematically adapted to ${getCountryDisplay(toC)} local conditions (yield, water, climate, grid)` :
-                    `Standard calculation using ${getCountryDisplay(fromC)} reference data`
-                }
-            </div>
-        </div>`;
-    }
-}
+                                    <div style="margin-top: 4px; color: #A0AEC0; font-style: italic; font-size: 0.7rem;">
+                                        <i class="fas fa-info-circle"></i> Scientific Adaptation: Base data mathematically adapted to local conditions to bridge data gap.
+                                    </div>
+                                </div>`;
+                            }
+                            
+                            // CASE C: STANDARD DATA (Grey / Neutral)
+                            // France using French data.
+                            else {
+                                detailBlock = `
+                                <div style="margin-top: 6px; font-size: 0.75rem; color: #718096; padding-left: 8px; border-left: 2px solid #CBD5E0;">
+                                    Standard Agribalyse 3.2 Dataset (France/EU Avg)
+                                </div>`;
+                            }
 
-                            // Standard Audit Item Render
                             return `
                             <div class="audit-item" style="flex-direction:column; align-items:flex-start;">
                                 <div style="display:flex; justify-content:space-between; width:100%;">
                                     <span class="audit-item-name" style="font-weight:600; color:var(--primary);">${comp.name}</span>
                                     <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
                                 </div>
-                                
-                                ${adjustmentBlock}
-                                
-                                <div style="font-size:0.7rem; color:#94A3B8; margin-top:6px; display:flex; gap:6px; align-items:center;">
-                                    <i class="fas fa-database"></i> Source: ${comp.primary_data_used ? 'Primary Supplier Data' : comp.note || 'Agribalyse 3.2'}
-                                </div>
+                                ${detailBlock}
                             </div>`;
                         }).join('')}
                     </div>
                     
-                    ${cat.contribution_tree.Manufacturing.total > 0 ? `
-                    <div class="audit-component">
+                    ${cat.contribution_tree.Manufacturing.total > 0 ?
+                    `<div class="audit-component">
                         <div class="audit-component-header">
                             <span>Manufacturing</span>
                             <span>${formatPEFValue(cat.contribution_tree.Manufacturing.total)} ${cat.unit}</span>
@@ -7193,8 +7166,8 @@ if (comp.universal_adjustments) {
                         `).join('')}
                     </div>` : ''}
                     
-                    ${cat.contribution_tree.Transport.total > 0 ? `
-                    <div class="audit-component">
+                    ${cat.contribution_tree.Transport.total > 0 ?
+                    `<div class="audit-component">
                         <div class="audit-component-header">
                             <span>Distribution</span>
                             <span>${formatPEFValue(cat.contribution_tree.Transport.total)} ${cat.unit}</span>
@@ -7213,34 +7186,14 @@ if (comp.universal_adjustments) {
                             </div>
                         `).join('')}
                     </div>` : ''}
-
-                    ${cat.contribution_tree.Packaging && cat.contribution_tree.Packaging.total > 0 ? `
-                    <div class="audit-component">
-                        <div class="audit-component-header">
-                            <span>Packaging</span>
-                            <span>${formatPEFValue(cat.contribution_tree.Packaging.total)} ${cat.unit}</span>
-                        </div>
-                        ${cat.contribution_tree.Packaging.components.map(comp => `
-                            <div class="audit-item">
-                                <div style="display:flex; flex-direction:column; width:100%;">
-                                    <div style="display:flex; justify-content:space-between;">
-                                        <span class="audit-item-name">${comp.name}</span>
-                                        <span class="audit-item-value">${formatPEFValue(comp.subtotal)} ${cat.unit}</span>
-                                    </div>
-                                    <div style="font-size:0.7rem; color:#94A3B8; margin-top:2px;">
-                                        ${comp.notes || ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>` : ''}
                 </div>
             `;
         }
     });
 
     auditContent.innerHTML = auditHTML;
-                           }
+}
+
     // ================== DIGITAL TRANSPARENCY CARD ==================
     function generateDPP() {
         const productName = document.getElementById('productName').value || 'Unnamed Product';
