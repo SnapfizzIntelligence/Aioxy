@@ -1934,33 +1934,52 @@ if (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.ingred
         };
     }
     
-    // ================ CRITICAL COMPLIANCE FIX ================
-    // *** EU GREEN CLAIMS DIRECTIVE COMPLIANCE ***
-    // Default biogenic net carbon to 0.0
-    // Claiming negative emissions without specific primary data 
-    // (Soil Carbon Certificates, Verified Carbon Removal) is ILLEGAL.
-    
-    if (ingredient.data.metadata.biogenic_net === undefined) {
-        // SAFE DEFAULT: No credit without proof
-        ingredient.data.metadata.biogenic_net = 0.0;
-        console.log(`✅ [Compliance] ${ingredient.name}: Biogenic default set to 0.0 (safe)`);
-    } else if (ingredient.data.metadata.biogenic_net < 0) {
-        // WARNING: Database has unverified credit
-        console.warn(`⚠️ [Compliance] ${ingredient.name}: Ignored unverified biogenic credit (${ingredient.data.metadata.biogenic_net}). Set to 0.0 for safety.`);
-        ingredient.data.metadata.biogenic_net = 0.0; 
-    } else {
-        // Positive value is fine (emissions, not credit)
-        console.log(`📊 [Compliance] ${ingredient.name}: Biogenic = ${ingredient.data.metadata.biogenic_net} (verified)`);
-    }
-    
-    // Ensure EF version for AR6 dynamic adjustments
-    if (!ingredient.data.metadata.ef_version) {
-        ingredient.data.metadata.ef_version = '3.1'; // Force latest standard
-    }
-});
+    // ================== REGULATOR-PROOF LCI COMPATIBILITY LAYER ==================
+// Logic runs AFTER the data object is fully created
+if (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.ingredients) {
+    console.log("🔌 [AIOXY] Initializing Regulator-Proof LCI Layer...");
 
-console.log("✅ [AIOXY] REGULATOR-PROOF LCI layer implemented");
-console.log("   • Biogenic credits default to 0.0 (EU Directive compliant)");
-console.log("   • No unverified carbon removal claims");
-console.log("   • EF version forced to 3.1 (latest)");
-console.log("📊 [AIOXY] Total ingredients processed:", Object.keys(window.aioxyData.ingredients).length);
+    Object.keys(window.aioxyData.ingredients).forEach(key => {
+        const ingredient = window.aioxyData.ingredients[key];
+         
+        // Ensure data structure exists
+        if (!ingredient.data) {
+            console.warn(`⚠️ [AIOXY] Ingredient ${key} missing data structure`);
+            return;
+        }
+        
+        // Create LCI structure for AR6 physics calculations
+        if (!ingredient.data.lci) {
+            const upstream = ingredient.data.upstream || {};
+            ingredient.data.lci = {
+                enteric_ch4_per_kg: key.includes('beef') || key.includes('cattle') || key.includes('cow') || key.includes('milk') ? 0.1 : 0,
+                manure_ch4_per_kg: key.includes('beef') || key.includes('pig') || key.includes('chicken') || key.includes('milk') ? 0.05 : 0,
+                manure_n2o_per_kg: 0.003, 
+                nitrogen_kg_per_kg: upstream.n_demand_kg_per_kg || 0,
+                electricity_kwh_per_kg: upstream.electricity_kwh_per_kg || 0,
+                land_ha_per_kg: upstream.land_ha_per_kg || 0,
+                water_m3_per_kg: 0.5, 
+                diesel_kg_per_kg: 0.02,
+                direct_co2_per_kg: 0.1,
+                biogenic_co2_per_kg: 0,
+                is_legume: key.includes('pea') || key.includes('bean') || key.includes('soy') || key.includes('lupin'),
+                nitrogen_fixation_kg_per_kg: (key.includes('pea') || key.includes('bean') || key.includes('soy') || key.includes('lupin')) ? (upstream.n_demand_kg_per_kg || 0) * 0.7 : 0
+            };
+        }
+        
+        // *** EU GREEN CLAIMS DIRECTIVE COMPLIANCE ***
+        if (ingredient.data.metadata.biogenic_net === undefined) {
+            ingredient.data.metadata.biogenic_net = 0.0;
+        } else if (ingredient.data.metadata.biogenic_net < 0) {
+            ingredient.data.metadata.biogenic_net = 0.0; 
+        }
+        
+        if (!ingredient.data.metadata.ef_version) {
+            ingredient.data.metadata.ef_version = '3.1';
+        }
+    });
+
+    console.log("✅ [AIOXY] REGULATOR-PROOF LCI layer implemented");
+    console.log("📊 [AIOXY] Total ingredients processed:", Object.keys(window.aioxyData.ingredients).length);
+} 
+// END OF FILE - NO EXTRA BRACES HERE
