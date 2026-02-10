@@ -1932,21 +1932,20 @@ countries: {
             r1_max: 0.10, r2: 0.01, q: 0.80
         },
                 "mycelium": {
-            co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
-            r1_max: 0.0, r2: 1.0, q: 1.00
-        }
-    } // Closes packaging
-}; // <--- THIS CLOSES THE MAIN AIOXYDATA OBJECT. THIS WAS MISSING.
+    co2_virgin: 0.5, co2_recycled: 0.1, co2_disposal: 0.0, co2_avoided_credit: 0.0,
+    r1_max: 0.0, r2: 1.0, q: 1.00
+}
+} // Closes packaging AND the main AIOXYDATA object (single brace does both)
+}; // Semicolon ends the assignment
 
 // ================== REGULATOR-PROOF LCI COMPATIBILITY LAYER ==================
 // Logic below runs AFTER the data object is fully created
 if (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.ingredients) {
     console.log("🔌 [AIOXY] Initializing Regulator-Proof LCI Layer...");
-
-
-Object.keys(window.aioxyData.ingredients).forEach(key => {
-    const ingredient = window.aioxyData.ingredients[key];
-    
+}
+    Object.keys(window.aioxyData.ingredients).forEach(key => {
+        const ingredient = window.aioxyData.ingredients[key];
+         
     // Ensure data structure exists
     if (!ingredient.data) {
         console.warn(`⚠️ [AIOXY] Ingredient ${key} missing data structure`);
