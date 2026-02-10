@@ -5045,7 +5045,7 @@ if (item.primaryData) {
             console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
             
             // ADD EXTRA DQR PENALTY for heavy adjustments
-            if (isProxyData && universalAdjustments.qualityPenalty > 0) {
+            if (isProxyData && universalAdjustments && universalAdjustments.qualityPenalty > 0) {
                 dqrPenalty += universalAdjustments.qualityPenalty;
                 console.log(`📉 Extra DQR penalty: +${universalAdjustments.qualityPenalty} for heavy adjustments`);
                 
@@ -5068,7 +5068,7 @@ if (item.primaryData) {
     }
             
             // ADD EXTRA DQR PENALTY for heavy adjustments
-            if (isProxyData && universalAdjustments.qualityPenalty > 0) {
+            if (isProxyData && universalAdjustments && universalAdjustments.qualityPenalty > 0) {
                 dqrPenalty += universalAdjustments.qualityPenalty;
                 console.log(`📉 Extra DQR penalty: +${universalAdjustments.qualityPenalty} for heavy adjustments`);
                 
@@ -6922,7 +6922,7 @@ function calculateCO2ReductionPercent() {
                 }
                 setTimeout(updateBusinessCase, 200);
             } else {
-                updateBusinessCaseWithTweak5(); // <--- CHANGED TO NEW FUNCTION
+                updateBusinessCase();
             }
         }
         if (tabName === 'dpp') {
