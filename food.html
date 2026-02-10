@@ -5029,15 +5029,22 @@ Object.keys(pefCategories).forEach(cat => {
         if (item.primaryData) {
             console.log(`✅ Skipping universal physics for ${ing.name} - Using primary supplier data from ${item.primaryData.farmRegion}`);
         } else if (window.aioxyData && window.aioxyData.yield_benchmarks) {
-            // Only apply universal physics if NO primary data
-            universalAdjustments = calculateUniversalAdjustments(
-                ing.name,
-                ingredientOrigin,  // Use the variable from above
-                processingMethod,
-                manufacturingCountryCode || 'FR'
-            );
-            
-            console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
+            // Only apply universal physics if NO primary data AND we have universalAdjustments
+if (!universalAdjustments) {
+    universalAdjustments = calculateUniversalAdjustments(
+        ing.name,
+        ingredientOrigin,
+        processingMethod,
+        manufacturingCountryCode || 'FR'
+    );
+}
+
+// SAFETY CHECK: universalAdjustments might still be null
+if (universalAdjustments && universalAdjustments.logs) {
+    console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
+} else {
+    console.log("ℹ️ Using default physics for", ing.name);
+}
             
             // ADD EXTRA DQR PENALTY for heavy adjustments
             if (isProxyData && universalAdjustments.qualityPenalty > 0) {
