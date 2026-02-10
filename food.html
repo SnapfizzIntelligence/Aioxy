@@ -4976,12 +4976,13 @@ calculateFoodImpact() {
     const manufacturingCountryCode = document.getElementById('manufacturingCountry').value || 'FR';
 
     // 2. DEFINE THE PHYSICS PROXY
-    // We are taking French data and morphing it to the Target Country.
-    let universalAdjustments = null;
-    let isProxyData = (ingredientOrigin !== 'FR');
-    let dqrPenalty = isProxyData ? 1.0 : 0.0;
+let universalAdjustments = null;
+let isProxyData = (ingredientOrigin !== 'FR');
+let dqrPenalty = isProxyData ? 1.0 : 0.0;
 
-    if (window.aioxyData && window.aioxyData.yield_benchmarks) {
+// CRITICAL SAFETY CHECK: Only run physics if data loaded successfully
+if (window.aioxyData && window.aioxyData.yield_benchmarks && window.aioxyData.climate_zones) {
+    try {
         // CALL THE PHYSICS ENGINE WITH THE CORRECT ORIGIN
         universalAdjustments = calculateUniversalAdjustments(
             ing.name,
@@ -4992,6 +4993,13 @@ calculateFoodImpact() {
         
         // LOG FOR AUDIT TRAIL
         console.log(`🌍 [Physics] Mapping ${ing.name}: Base(FR) -> Target(${ingredientOrigin})`);
+    } catch (e) {
+        console.warn(`⚠️ Physics Engine Skipped for ${ing.name} (Data missing):`, e);
+        universalAdjustments = null; // Fail gracefully, do not crash app
+    }
+} else {
+    // Data file incomplete? Skip physics, log warning, keep running.
+    if(isProxyData) console.warn("⚠️ Physics data missing in ingredients.js - using standard Agribalyse data without adjustment.");
     }
     
     // DQR Tracking WITH PENALTY  <--- YOU DELETED THIS WHOLE BLOCK!
@@ -5028,7 +5036,7 @@ Object.keys(pefCategories).forEach(cat => {
         // SKIP universal physics if we have primary supplier data (already location-specific)
 if (item.primaryData) {
     console.log(`✅ Skipping universal physics for ${ing.name} - Using primary supplier data from ${item.primaryData.farmRegion}`);
-} else if (window.aioxyData && window.aioxyData.yield_benchmarks) {
+} else if (window.aioxyData && window.aioxyData.yield_benchmarks && window.aioxyData.climate_zones) {
     try {
         // Only apply universal physics if NO primary data AND we have universalAdjustments
         if (!universalAdjustments) {
@@ -5065,21 +5073,10 @@ if (item.primaryData) {
         universalAdjustments = null; // Safety fallback
         isProxyData = false; // Don't penalize if physics failed
     }
-    }
+}
             
-            // ADD EXTRA DQR PENALTY for heavy adjustments
-            if (isProxyData && universalAdjustments && universalAdjustments.qualityPenalty > 0) {
-                dqrPenalty += universalAdjustments.qualityPenalty;
-                console.log(`📉 Extra DQR penalty: +${universalAdjustments.qualityPenalty} for heavy adjustments`);
-                
-                // Update the DQR component we already pushed
-                const lastComponent = dqrComponents[dqrComponents.length - 1];
-                if (lastComponent && lastComponent.name === ing.name) {
-                    lastComponent.dqr += universalAdjustments.qualityPenalty;
-                    lastComponent.dqr_penalty += universalAdjustments.qualityPenalty;
-                }
-            }
-            
+            // REGULATOR-SAFE: Apply multipliers based on category
+if (universalAdjustments && universalAdjustments.multipliers) {
             // REGULATOR-SAFE: Apply multipliers based on category
 if (universalAdjustments && universalAdjustments.multipliers) {
     if (cat === "Climate Change") {
