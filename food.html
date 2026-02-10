@@ -5075,9 +5075,8 @@ if (item.primaryData) {
     }
 }
             
-            // REGULATOR-SAFE: Apply multipliers based on category
-if (universalAdjustments && universalAdjustments.multipliers) {
-            // REGULATOR-SAFE: Apply multipliers based on category
+            
+    // REGULATOR-SAFE: Apply multipliers based on category
 if (universalAdjustments && universalAdjustments.multipliers) {
     if (cat === "Climate Change") {
         baseImpactPerKg *= (universalAdjustments.multipliers.co2 || 1.0);
