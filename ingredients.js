@@ -1862,6 +1862,7 @@ countries: {
     "IN": { name: "India", electricityCO2: 640, awareFactor: 70.4 },
     "BR": { name: "Brazil", electricityCO2: 140, awareFactor: 3.1 }
 },
+           }//
     
     // PROCESSING METHODS
     processing: {
