@@ -5026,25 +5026,46 @@ Object.keys(pefCategories).forEach(cat => {
     // NO NEW DECLARATION HERE!
     
         // SKIP universal physics if we have primary supplier data (already location-specific)
-        if (item.primaryData) {
-            console.log(`✅ Skipping universal physics for ${ing.name} - Using primary supplier data from ${item.primaryData.farmRegion}`);
-        } else if (window.aioxyData && window.aioxyData.yield_benchmarks) {
-            // Only apply universal physics if NO primary data AND we have universalAdjustments
-if (!universalAdjustments) {
-    universalAdjustments = calculateUniversalAdjustments(
-        ing.name,
-        ingredientOrigin,
-        processingMethod,
-        manufacturingCountryCode || 'FR'
-    );
-}
-
-// SAFETY CHECK: universalAdjustments might still be null
-if (universalAdjustments && universalAdjustments.logs) {
-    console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
-} else {
-    console.log("ℹ️ Using default physics for", ing.name);
-}
+if (item.primaryData) {
+    console.log(`✅ Skipping universal physics for ${ing.name} - Using primary supplier data from ${item.primaryData.farmRegion}`);
+} else if (window.aioxyData && window.aioxyData.yield_benchmarks) {
+    try {
+        // Only apply universal physics if NO primary data AND we have universalAdjustments
+        if (!universalAdjustments) {
+            universalAdjustments = calculateUniversalAdjustments(
+                ing.name,
+                ingredientOrigin,
+                processingMethod,
+                manufacturingCountryCode || 'FR'
+            );
+        }
+        
+        // REGULATOR SAFEGUARD: Validate the result
+        if (universalAdjustments && typeof universalAdjustments === 'object') {
+            console.log("🌍 Universal Physics Applied to", ing.name + ":", universalAdjustments.logs);
+            
+            // ADD EXTRA DQR PENALTY for heavy adjustments
+            if (isProxyData && universalAdjustments.qualityPenalty > 0) {
+                dqrPenalty += universalAdjustments.qualityPenalty;
+                console.log(`📉 Extra DQR penalty: +${universalAdjustments.qualityPenalty} for heavy adjustments`);
+                
+                // Update the DQR component we already pushed
+                const lastComponent = dqrComponents[dqrComponents.length - 1];
+                if (lastComponent && lastComponent.name === ing.name) {
+                    lastComponent.dqr += universalAdjustments.qualityPenalty;
+                    lastComponent.dqr_penalty += universalAdjustments.qualityPenalty;
+                }
+            }
+        } else {
+            console.log("ℹ️ Using default physics for", ing.name);
+            universalAdjustments = null; // Ensure it's null to avoid crashes
+        }
+    } catch (physicsError) {
+        console.warn(`⚠️ Physics Engine failed for ${ing.name}:`, physicsError);
+        universalAdjustments = null; // Safety fallback
+        isProxyData = false; // Don't penalize if physics failed
+    }
+    }
             
             // ADD EXTRA DQR PENALTY for heavy adjustments
             if (isProxyData && universalAdjustments.qualityPenalty > 0) {
@@ -5059,24 +5080,26 @@ if (universalAdjustments && universalAdjustments.logs) {
                 }
             }
             
-            // Apply multipliers based on category
-            if (cat === "Climate Change") {
-                baseImpactPerKg *= universalAdjustments.multipliers.co2;
-                // Add grid intensity adder to manufacturing
-                const adderPerKg = universalAdjustments.adder;
-                auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
-            } else if (cat === "Land Use") {
-                baseImpactPerKg *= universalAdjustments.multipliers.land;
-            } else if (cat === "Water Use/Scarcity (AWARE)") {
-                baseImpactPerKg *= universalAdjustments.multipliers.water;
-            }
-            // GRID ADDER FOR FOSSIL RESOURCES TOO
-            else if (cat === "Resource Use, fossils") {
-                // Grid intensity affects fossil resource use (electricity generation)
-                const adderPerKg = universalAdjustments.adder / 3.6; // Convert CO2 adder to MJ adder (approx)
-                auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
-            }
+            // REGULATOR-SAFE: Apply multipliers based on category
+if (universalAdjustments && universalAdjustments.multipliers) {
+    if (cat === "Climate Change") {
+        baseImpactPerKg *= (universalAdjustments.multipliers.co2 || 1.0);
+        // Add grid intensity adder to manufacturing
+        if (universalAdjustments.adder) {
+            const adderPerKg = universalAdjustments.adder;
+            auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
         }
+    } else if (cat === "Land Use") {
+        baseImpactPerKg *= (universalAdjustments.multipliers.land || 1.0);
+    } else if (cat === "Water Use/Scarcity (AWARE)") {
+        baseImpactPerKg *= (universalAdjustments.multipliers.water || 1.0);
+    }
+    // GRID ADDER FOR FOSSIL RESOURCES TOO
+    else if (cat === "Resource Use, fossils" && universalAdjustments.adder) {
+        const adderPerKg = universalAdjustments.adder / 3.6; // Convert CO2 adder to MJ adder (approx)
+        auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
+    }
+    }
         
         // Apply primary data adjustments (existing logic)
         const multiplier = impactMultipliers[cat] || 1.0;
