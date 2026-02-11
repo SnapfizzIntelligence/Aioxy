@@ -8034,48 +8034,73 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
     console.log(`✅ [populateIngredientSelect] Added ${sortedKeys.length} ingredients to dropdown`);
     }
 
-    function populateCountrySelect() {
-    const select = document.getElementById('manufacturingCountry');
-    if (!select) return;
+    // ================== FIX 2: CRASH-PROOF COUNTRY POPULATOR (DUAL TARGET) ==================
+function populateCountrySelect() {
+    const targets = ['manufacturingCountry', 'ingredientOriginSelect'];
     
-    select.innerHTML = '<option value="">Select country...</option>';
-    
-    if (window.aioxyData && window.aioxyData.countries) {
-        const countries = window.aioxyData.countries;
-        const sortedKeys = Object.keys(countries).sort((a, b) => {
-            return countries[a].name.localeCompare(countries[b].name);
-        });
-        
-        sortedKeys.forEach(code => {
-            const option = document.createElement('option');
-            option.value = code;
-            option.textContent = `${countries[code].name} (${countries[code].electricityCO2}g CO₂/kWh)`;
-            if (code === 'FR') option.selected = true;
-            select.appendChild(option);
-        });
-        
-        console.log(`✅ [populateCountrySelect] Added ${sortedKeys.length} countries to dropdown`);
-    } else {
-        console.warn('⚠️ [populateCountrySelect] No country data available, using fallback');
-        // Fallback countries if data not loaded
-        const fallbackCountries = {
-            'FR': 'France (40g CO₂/kWh)',
-            'DE': 'Germany (270g CO₂/kWh)',
-            'ES': 'Spain (180g CO₂/kWh)',
-            'IT': 'Italy (220g CO₂/kWh)',
-            'NL': 'Netherlands (200g CO₂/kWh)'
-        };
-        
-        for (const [code, name] of Object.entries(fallbackCountries)) {
-            const option = document.createElement('option');
-            option.value = code;
-            option.textContent = name;
-            if (code === 'FR') option.selected = true;
-            select.appendChild(option);
-        }
+    // Safety Check: Does data exist? If not, exit silently (no crash)
+    if (!window.aioxyData || !window.aioxyData.countries) {
+        console.warn('⚠️ [populateCountrySelect] No country data available');
+        return;
     }
-            }
 
+    const countries = window.aioxyData.countries;
+    const sortedKeys = Object.keys(countries).sort((a, b) => 
+        countries[a].name.localeCompare(countries[b].name)
+    );
+
+    targets.forEach(id => {
+        const select = document.getElementById(id);
+        
+        // ANTI-CRASH: If element missing, skip silently (don't crash)
+        if (!select) {
+            console.warn(`⚠️ [populateCountrySelect] Element #${id} not found, skipping`);
+            return;
+        }
+
+        // Clear existing options (keep first option if it's placeholder)
+        if (id === 'manufacturingCountry') {
+            select.innerHTML = '<option value="">Select country...</option>';
+        } else if (id === 'ingredientOriginSelect') {
+            select.innerHTML = '<option value="FR">🇫🇷 France (Base)</option>';
+        }
+
+        // Add all other countries
+        sortedKeys.forEach(code => {
+            // Skip France for origin selector (already added as default)
+            if (id === 'ingredientOriginSelect' && code === 'FR') return;
+            
+            const option = document.createElement('option');
+            option.value = code;
+            
+            // Show grid intensity for manufacturing, just name for origin
+            if (id === 'manufacturingCountry') {
+                option.textContent = `${countries[code].name} (${countries[code].electricityCO2}g CO₂/kWh)`;
+            } else {
+                option.textContent = `${getFlagEmoji(code)} ${countries[code].name}`;
+            }
+            
+            select.appendChild(option);
+        });
+        
+        // Auto-select France for manufacturing
+        if (id === 'manufacturingCountry') {
+            select.value = 'FR';
+        }
+        
+        console.log(`✅ [populateCountrySelect] Added ${sortedKeys.length} countries to #${id}`);
+    });
+}
+
+// Helper function for flag emojis (add this right after the function)
+function getFlagEmoji(countryCode) {
+    const codePoints = countryCode
+        .toUpperCase()
+        .split('')
+        .map(char => 127397 + char.charCodeAt());
+    return String.fromCodePoint(...codePoints);
+    }
+    
     function setupDemoData() {
     console.log('🎯 [AIOXY] Setting up demo data...');
     
