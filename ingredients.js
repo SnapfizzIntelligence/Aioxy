@@ -1836,7 +1836,7 @@ aware_factors: {
     
     "Global": 42.0 // WULCA Recommended Default for unknown origin
 },
-
+};
 // 6. COUNTRY FACTORS (Legacy - for compatibility)
 countries: {
     "DE": { name: "Germany", electricityCO2: 270, awareFactor: 24.5 },
@@ -1936,7 +1936,7 @@ countries: {
             r1_max: 0.0, r2: 1.0, q: 1.00
         }
     }          
-};
+
 // ================== REGULATOR-PROOF LCI COMPATIBILITY LAYER ==================
 // EU Green Claims Directive Compliant - No Unverified Credits
 console.log("🔌 [AIOXY] Initializing Regulator-Proof LCI Layer...");
