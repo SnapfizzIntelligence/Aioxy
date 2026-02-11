@@ -6510,8 +6510,18 @@ if (totalBenefit) {
 
 // ================== UPDATE RESULTS UI (FIXED) ==================
 function updateResultsUI(results) {
+    // 🛡️ SAFETY FIX - Add this entire block
+    if (!results) {
+        console.warn("⚠️ updateResultsUI called without results, using global state");
+        results = window.calculationResults;
+        if (!results) {
+            console.error("❌ No results available for UI update");
+            return;
+        }
+    }
+    
     // 1. Force Consistency: Pull the UNIFIED metric directly
-    const unifiedCO2 = results.co2PerKg; 
+    const unifiedCO2 = results.co2PerKg;
 
     updateMassBalanceDisplay();
     updateDataQualityDisplay(results);
@@ -6968,12 +6978,12 @@ function calculateCO2ReductionPercent() {
     }
     
     // FIXED: Results tab should SHOW results, not recalculate!
-    if (tabName === 'results') {
-        if (finalPefResults && Object.keys(finalPefResults).length > 0) {
-            updateResultsUI();  // ← SHOW existing results
-        } else {
-            calculateImpact();  // ← Only calculate if no data exists
-        }
+if (tabName === 'results') {
+    if (window.calculationResults && finalPefResults && Object.keys(finalPefResults).length > 0) {
+        updateResultsUI(window.calculationResults);  // ← FIXED: Pass the results!
+    } else {
+        calculateImpact();  // ← Only calculate if no data exists
+    }
     }
     
     if (tabName === 'business-case') {
