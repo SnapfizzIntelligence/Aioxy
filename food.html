@@ -5348,7 +5348,7 @@ currentDPPId = auditTrail.dppId;
 
 // Calculate Savings based on UNIFIED CO2
 // Ensure we handle potential missing baselines gracefully
-const blCO2 = comparisonBaseline.co2PerKg || 14.47;
+const blCO2 = (typeof comparisonBaseline !== 'undefined' && comparisonBaseline) ? (comparisonBaseline.co2PerKg || 14.47) : 14.47;
 const blWater = comparisonBaseline.waterPerKg || 1.15;
 
 // SAFETY CHECK: uplift might be undefined if scope issue
@@ -5447,8 +5447,8 @@ function renderUniversalComparisons(myCo2, baseline, uplift) {
     grid.innerHTML = "";
     
     // Get uplifted baseline if available
-    const upliftedBaseline = baseline.co2PerKg + (uplift?.co2 || 0);
-    
+    const upliftedBaseline = (typeof comparisonBaseline !== 'undefined' && comparisonBaseline?.co2PerKg ? comparisonBaseline.co2PerKg : 14.47) + (uplift?.co2 || 0);
+
     // UPLIFT ADJUSTRS FOR OTHER COMPARATORS (Approximations for context)
     const baseUplift = uplift?.co2 || 0.5;
 
@@ -6531,7 +6531,7 @@ function updateResultsUI(results) {
     }
    
     // 4. Calculate Savings Badge Percentage
-    const baselineCO2 = results.comparison.baseline.co2PerKg;
+    const baselineCO2 = results.comparison?.baseline?.co2PerKg || 14.47;
     const baselineWater = results.comparison.baseline.waterPerKg;
     
     const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
@@ -6786,7 +6786,7 @@ function updateVolumeDisplay(volume) {
 
 function calculateScalableBusinessCase(results, annualVolume) {
     const co2PerKg = results.co2PerKg || 0;
-    const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.474184;
+    const baselineCO2PerKg = (window.currentComparisonBaseline && window.currentComparisonBaseline.co2PerKg) ? window.currentComparisonBaseline.co2PerKg : 14.474184;
     const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
     const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
     
