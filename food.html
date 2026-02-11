@@ -6907,7 +6907,7 @@ function calculateCO2ReductionPercent() {
             tab.classList.remove('active');
         });
         
-        const targetTab = document.getElementById(tabName);  
+        const targetTab = document.getElementById(`${tabName}-tab`);  
         if (targetTab) {
             targetTab.classList.remove('hidden');
         }
