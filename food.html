@@ -4929,23 +4929,6 @@ calculateFoodImpact() {
     
     if (!ing) return;
     
-// ========== FIX 4: REGULATORY ORIGIN TRUTH ENGINE ==========
-// [SURGICAL STENT] Forces the physics engine to use user-selected origin
-// SAFETY: If no origin selected, defaults to FR (no crash, backward compatible)
-
-// 1. Determine effective origin: User Selection > Database Default > France
-const effectiveOrigin = item.originCountry || getIngredientOrigin(item.id) || 'FR';
-
-// 2. Override the helper variable for this specific iteration
-// This tells the physics engine: "Pretend this French data is actually from X"
-const ingredientOrigin = effectiveOrigin;
-
-// 3. Log the adjustment for transparency (helps debugging)
-if (item.originCountry && item.originCountry !== 'FR') {
-    console.log(`🌍 [Origin Physics] ${ing.name}: ${item.originCountry} (user selected) → Adjusting from FR proxy`);
-}
-// ========== END FIX 4 ==========
-    
         // ========== PRIMARY DATA OVERRIDE CHECK ==========
     let impactMultipliers = {
         "Climate Change": 1.0,
