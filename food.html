@@ -5188,8 +5188,8 @@ let totalWaterImpact = 0;
         if (originCountry !== manufacturingCountryCode) {
             const inboundDistSea = 8000;
             const inboundDistRoad = 300;
-            const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
-            const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', 'ambient');
+            const seaImpact = calculateGLECTransport(ingredientItem.quantity, inboundDistSea, 'sea', 'ambient');
+            const roadImpact = calculateGLECTransport(ingredientItem.quantity, inboundDistRoad, 'road', 'ambient');
             inboundTransportCO2 += (seaImpact + roadImpact);
         }
     });
@@ -6907,7 +6907,7 @@ function calculateCO2ReductionPercent() {
             tab.classList.remove('active');
         });
         
-        const targetTab = document.getElementById(`${tabName}-tab`);
+        const targetTab = document.getElementById(tabName);  
         if (targetTab) {
             targetTab.classList.remove('hidden');
         }
