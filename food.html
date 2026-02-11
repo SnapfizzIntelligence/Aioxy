@@ -6055,7 +6055,10 @@ function displayCompleteAuditTrail() {
 // calculateHardFinancialMath function with improved version:
 function calculateHardFinancialMath(results, volume, scenarios) {
     console.log("💰 [Financial Engine] Starting calculation for volume:", volume);
-
+    
+    // 🛡️ CRITICAL SAFETY FIX - ADD THIS LINE
+    if (!currentComparisonBaseline) currentComparisonBaseline = { co2PerKg: 14.47, fossilPerKg: 10.0, waterPerKg: 1.15 };
+    
     // 1. DEFINE SAFETY FALLBACK (The Fix)
     const safetyBaseline = {
         co2PerKg: 14.47,
