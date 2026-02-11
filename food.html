@@ -4949,22 +4949,17 @@ calculateFoodImpact() {
     
     if (!ing) return;
     
-    // ========== FIX 4: REGULATORY ORIGIN TRUTH ENGINE ==========
-// [SURGICAL STENT] Forces the physics engine to use user-selected origin
-// SAFETY: If no origin selected, defaults to FR (no crash, backward compatible)
-
-// 1. Determine effective origin: User Selection > Database Default > France
-const effectiveOrigin = item.originCountry || getIngredientOrigin(item.id) || 'FR';
-
-// 2. Override the helper variable for this specific iteration
-// This tells the physics engine: "Pretend this French data is actually from X"
-const ingredientOrigin = effectiveOrigin;
-
-// 3. Log the adjustment for transparency (helps debugging)
-if (item.originCountry && item.originCountry !== 'FR') {
-    console.log(`🌍 [Origin Physics] ${ing.name}: ${item.originCountry} (user selected) → Adjusting from FR proxy`);
-}
-// ========== END FIX 4 ==========
+// [REGULATOR FIX: STRICT ORIGIN CHAIN OF CUSTODY]
+    // 1. User Selection (Highest Priority - The "Scenario")
+    // 2. Primary Data Region (If specific farm data exists)
+    // 3. Manufacturing Country (Fallback)
+    // 4. Default 'FR' (Safety Net)
+    const ingredientOrigin = item.originCountry || item.primaryData?.farmRegion || document.getElementById('manufacturingCountry').value || 'FR';
+    
+    // AUDIT LOG: Prove the logic is working in the console
+    if (item.originCountry && item.originCountry !== 'FR') {
+        console.log(`🚀 [AIOXY PHYSICS] FORCING ORIGIN for ${ing.name}: ${ingredientOrigin} (User Selected)`);
+    } 
     
         // ========== PRIMARY DATA OVERRIDE CHECK ==========
     let impactMultipliers = {
