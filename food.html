@@ -8147,35 +8147,48 @@ function getFlagEmoji(countryCode) {
     }
 
     // ================== INGREDIENT MANAGEMENT ==================
-    function addIngredient() {
-        const select = document.getElementById('ingredientSelect');
-        const quantityInput = document.getElementById('ingredientQuantity');
-        
-        const ingredientId = select.value;
-        const quantity = parseFloat(quantityInput.value);
-        
-        if (!ingredientId || isNaN(quantity) || quantity <= 0) {
-            alert('Please select an ingredient and enter a valid quantity');
-            return;
-        }
-        
-        if (!aioxyData.ingredients[ingredientId]) {
-            alert('Selected ingredient not found in database');
-            return;
-        }
-        
-        const ingredient = aioxyData.ingredients[ingredientId];
-        selectedIngredients.push({
-            id: ingredientId,
-            name: ingredient.name,
-            quantity: quantity
-        });
-        
-        updateIngredientList();
-        calculateImpact();
-        
-        select.value = '';
-        quantityInput.value = '0.150';
+    // ================== FIX 3: ADD INGREDIENT WITH ORIGIN COUNTRY ==================
+function addIngredient() {
+    const select = document.getElementById('ingredientSelect');
+    const quantityInput = document.getElementById('ingredientQuantity');
+    const originSelect = document.getElementById('ingredientOriginSelect');
+    
+    // SAFETY: If origin dropdown missing, default to France (no crash)
+    const originCountry = originSelect ? originSelect.value : 'FR';
+    
+    const ingredientId = select.value;
+    const quantity = parseFloat(quantityInput.value);
+    
+    if (!ingredientId || isNaN(quantity) || quantity <= 0) {
+        alert('Please select an ingredient and enter a valid quantity');
+        return;
+    }
+    
+    // SAFETY: Check if ingredient exists in database
+    if (!window.aioxyData || !window.aioxyData.ingredients || !window.aioxyData.ingredients[ingredientId]) {
+        alert('Selected ingredient not found in database');
+        return;
+    }
+    
+    const ingredient = window.aioxyData.ingredients[ingredientId];
+    
+    // CRITICAL: Save the origin country WITH the ingredient
+    selectedIngredients.push({
+        id: ingredientId,
+        name: ingredient.name,
+        quantity: quantity,
+        originCountry: originCountry  // <--- THIS IS THE KEY FIX
+    });
+    
+    console.log(`🌍 [addIngredient] Added ${ingredient.name} from ${originCountry}`);
+    
+    updateIngredientList();
+    calculateImpact();
+    
+    // Reset form
+    select.value = '';
+    quantityInput.value = '0.150';
+    if (originSelect) originSelect.value = 'FR';  // Reset to France default
     }
 
     function removeIngredient(index) {
