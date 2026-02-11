@@ -8022,7 +8022,16 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
     }
 
     // ================== ENHANCED CALCULATION ENGINE ==================
-    function calculateImpactEnhanced() {
+const transportMatrix = {
+    'IN': { 'FR': 7500, 'UK': 7200, 'ES': 6800 },
+    'CN': { 'FR': 9000, 'UK': 8500, 'ES': 8200 },
+    'BR': { 'FR': 9000, 'UK': 9200, 'ES': 8500 },
+    'US': { 'FR': 6000, 'UK': 5800, 'ES': 6200 },
+    'ES': { 'FR': 1200, 'UK': 1800 },
+    'UK': { 'FR': 350, 'ES': 1800 }
+};
+
+function calculateImpactEnhanced() {
     if (selectedIngredients.length === 0) {
         clearResults();
         return;
@@ -8036,20 +8045,33 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
 
     setTimeout(() => {
         try {
+            console.log("🚀 [System] Starting PEF Physics Engine...");
+            
             const baseResults = foodCalculationEngine.calculateFoodImpact();
             
             let finalResults = baseResults;
             if (Object.values(activeScenarios).some(v => v)) {
-                const scenarioPefResults = validateAndApplyScenarios(baseResults, activeScenarios); // <-- CHANGE HERE
+                const scenarioPefResults = validateAndApplyScenarios(baseResults, activeScenarios);
                 finalResults = {
-    ...baseResults,
-    finalPefResults: scenarioPefResults,
-    co2PerKg: baseResults.finalContentWeight > 0 ? (scenarioPefResults["Climate Change"]?.total || 0) / baseResults.finalContentWeight : 0
-};
+                    ...baseResults,
+                    finalPefResults: scenarioPefResults,
+                    co2PerKg: baseResults.finalContentWeight > 0 ? (scenarioPefResults["Climate Change"]?.total || 0) / baseResults.finalContentWeight : 0
+                };
             }
             
+            // CRITICAL FIX: Store results globally
+            window.finalPefResults = finalResults.finalPefResults;
+            window.calculationResults = finalResults;
+            
+            console.log("✅ [System] Calculation Complete. Results stored in Global State.");
+            
+            // Update UI
             updateResultsUI(finalResults);
             
+            // Auto-switch to results tab
+            showTab('results');
+            
+            // Update business case if needed
             const businessTab = document.getElementById('business-case-tab');
             if (businessTab && !businessTab.classList.contains('hidden')) {
                 updateBusinessCase();
@@ -8063,10 +8085,10 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
             if (resultsContent) resultsContent.classList.remove('hidden');
         }
     }, 100);
-    }
+}
 
-    function calculateImpact() {
-        calculateImpactEnhanced();
+function calculateImpact() {
+    calculateImpactEnhanced();
     }
 
     // ================== INITIALIZATION ==================
