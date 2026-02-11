@@ -5172,16 +5172,16 @@ let totalWaterImpact = 0;
     finalIngredients.forEach(ingredientItem => {  // ← RENAME to 'ingredientItem'
     if (ingredientItem.isVirtual) return;     // ← CHANGE HERE
     
-    const originCountry = getIngredientOrigin(ingredientItem.id);  // ← AND HERE
-    const ingredientData = aioxyData.ingredients[ingredientItem.id];  // ← AND HERE
+    const originCountry = getIngredientOrigin(ingredientItem.id);  
+    const ingredientData = aioxyData.ingredients[ingredientItem.id];  
     
         if (ingredientData && ingredientData.data && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
-            const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
+            const waterVol = ingredientData.data.lci.water_m3_per_kg * ingredientItem.quantity;
             const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
             totalWaterImpact += waterPhysics.impact;
         } else {
             const pefWater = ingredientData?.data.pef ? ingredientData.data.pef["Water Use/Scarcity (AWARE)"] : 0;
-            totalWaterImpact += pefWater * ing.quantity;
+            totalWaterImpact += pefWater * ingredientItem.quantity;
         }
 
         // Inbound Transport (YOUR EXISTING LOGIC)
