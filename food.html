@@ -4879,12 +4879,29 @@ calculateFoodImpact() {
     // Mass balance uses finalIngredients
     let massBalanceData = calculateMassBalance(finalIngredients, processingMethod, packagingWeight);
 
-    // 3. AUDIT TRAIL INIT + BASELINE (YOUR EXISTING LOGIC)
-    const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
-    const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
-    currentComparisonBaseline = comparisonBaseline;
-    const uplift = calculateBaselineUplift(comparisonKey);
+    // 3. AUDIT TRAIL INIT + BASELINE (FIXED & SAFEGUARDED)
+const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
 
+// Define a hardcoded safety fallback in case the database fails
+const safetyFallback = {
+    name: 'Conventional Beef (Fallback)',
+    co2PerKg: 35.2,
+    waterPerKg: 42.5,
+    landUsePerKg: 326,
+    fossilPerKg: 28.0
+};
+
+// Robust lookup: Try specific key -> Try 'beef-product' -> Use Hardcoded Safety
+let comparisonBaseline = safetyFallback; 
+if (typeof UNIVERSAL_BASELINES !== 'undefined') {
+    if (UNIVERSAL_BASELINES[comparisonKey]) {
+        comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey];
+    } else if (UNIVERSAL_BASELINES['beef-product']) {
+        comparisonBaseline = UNIVERSAL_BASELINES['beef-product'];
+    }
+}
+
+currentComparisonBaseline = comparisonBaseline; // Update global state
     const auditTrail = {
         productName,
         dppId: 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
