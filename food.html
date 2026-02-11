@@ -6639,8 +6639,8 @@ function updateEnvironmentalStory(results) {
     // 1. Calculate Uncertain Savings (Lower Bound)
     const uncertainty = results.overallUncertainty || 15;
     const conservativeReduction = co2SavedPerKg * Math.max(0, 1 - (uncertainty/100));
-    const percent = Math.min(99, (conservativeReduction / (results.comparison.baseline.co2PerKg || 1)) * 100);
-
+    const percent = Math.min(99, (conservativeReduction / (results.comparison?.baseline?.co2PerKg || 1)) * 100);
+    
     // 2. Generate Regulator-Proof Content
     storyContent.innerHTML = `
         <div style="font-family: 'Inter', sans-serif; color: #2D3748;">
