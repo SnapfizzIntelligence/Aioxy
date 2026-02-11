@@ -1936,7 +1936,7 @@ countries: {
             r1_max: 0.0, r2: 1.0, q: 1.00
         }
     }
-            };
+};
 
 // ================== REGULATOR-PROOF LCI COMPATIBILITY LAYER ==================
 // EU Green Claims Directive Compliant - No Unverified Credits
