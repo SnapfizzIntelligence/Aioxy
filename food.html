@@ -3560,6 +3560,19 @@ const FOOD_PHYSICS_DB = {
 // The "Brain" that connects Ingredients to Physics
 
 function calculateUniversalAdjustments(ingredientName, originCountry, processingMethod, manufacturingCountry) {
+    // Safety Check: Prevent crash if Physics Data is missing
+    if (!window.aioxyData || !window.aioxyData.yield_benchmarks) {
+        console.warn("⚠️ Physics Engine: Data missing or malformed. Skipping adjustments.");
+        return {
+            multipliers: { co2: 1.0, land: 1.0, water: 1.0 },
+            adder: 0,
+            logs: ["Physics data missing - using defaults"],
+            qualityPenalty: 0,
+            base_country: 'FR',
+            is_proxy_adjustment: false
+        };
+    }
+
     const log = [];
     let adjustmentMultipliers = {
         co2: 1.0,
