@@ -6056,8 +6056,20 @@ function displayCompleteAuditTrail() {
 function calculateHardFinancialMath(results, volume, scenarios) {
     console.log("💰 [Financial Engine] Starting calculation for volume:", volume);
 
+    // 1. DEFINE SAFETY FALLBACK (The Fix)
+    const safetyBaseline = {
+        co2PerKg: 14.47,
+        fossilPerKg: 10.0,
+        waterPerKg: 1.15
+    };
+
+    // 2. ENSURE BASELINE EXISTS
     if (!currentComparisonBaseline) {
-        currentComparisonBaseline = UNIVERSAL_BASELINES['beef-product'];
+        if (typeof UNIVERSAL_BASELINES !== 'undefined' && UNIVERSAL_BASELINES['beef-product']) {
+            currentComparisonBaseline = UNIVERSAL_BASELINES['beef-product'];
+        } else {
+            currentComparisonBaseline = safetyBaseline; // Last resort to prevent crash
+        }
     }
 
     // FIX 1: USE SINGLE SOURCE OF TRUTH FOR WEIGHT
