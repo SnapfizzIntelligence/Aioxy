@@ -5169,14 +5169,12 @@ if (universalAdjustments && universalAdjustments.multipliers) {
     // =========== GROK'S FIX: TRANSPORT NOW USES finalIngredients ===========
 let inboundTransportCO2 = 0;
 let totalWaterImpact = 0;
-    finalIngredients.forEach(ing => {
-        // GROK'S FIX: Skip virtual water for transport
-        if (ing.isVirtual) return;
-        
-        // Water Physics (YOUR EXISTING LOGIC)
-        const originCountry = getIngredientOrigin(ing.id);
-        const ingredientData = aioxyData.ingredients[ing.id];
-        
+    finalIngredients.forEach(ingredientItem => {  // ← RENAME to 'ingredientItem'
+    if (ingredientItem.isVirtual) return;     // ← CHANGE HERE
+    
+    const originCountry = getIngredientOrigin(ingredientItem.id);  // ← AND HERE
+    const ingredientData = aioxyData.ingredients[ingredientItem.id];  // ← AND HERE
+    
         if (ingredientData && ingredientData.data && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
             const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
             const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
@@ -5220,7 +5218,7 @@ let totalWaterImpact = 0;
     else if (isChilled) refType = 'chilled';
 
     const distributionCO2 = calculateGLECTransport(
-        massBalanceData.grossWeight || massBalanceData.total_product_weight_kg || 0.2, 
+    massBalanceData.grossWeight || 0.2,  // ← REMOVE the non-existent variable
         transportDistance, 
         transportMode, 
         refType
