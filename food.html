@@ -5102,8 +5102,9 @@ if (universalAdjustments && universalAdjustments.multipliers) {
     } else if (cat === "Water Use/Scarcity (AWARE)") {
         baseImpactPerKg *= (universalAdjustments.multipliers.water || 1.0);
     }
-    // GRID ADDER FOR FOSSIL RESOURCES TOO
-    else if (cat === "Resource Use, fossils" && universalAdjustments.adder) {
+// GRID ADDER FOR FOSSIL RESOURCES TOO
+    // FIX: Added check for (universalAdjustments && ...) to prevent crash
+    else if (cat === "Resource Use, fossils" && universalAdjustments && universalAdjustments.adder) {
         const adderPerKg = universalAdjustments.adder / 3.6; // Convert CO2 adder to MJ adder (approx)
         auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += adderPerKg * grownMass;
     }
