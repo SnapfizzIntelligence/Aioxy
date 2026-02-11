@@ -4881,7 +4881,7 @@ calculateFoodImpact() {
 
     // 3. AUDIT TRAIL INIT + BASELINE (FIXED & SAFEGUARDED)
 const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
-
+const uplift = calculateBaselineUplift(comparisonKey); 
 // Define a hardcoded safety fallback in case the database fails
 const safetyFallback = {
     name: 'Conventional Beef (Fallback)',
