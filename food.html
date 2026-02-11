@@ -5347,6 +5347,22 @@ const waterSavedPerKg = Math.max(0, baselineWaterPerKg - unified.waterPerKg);
 
 console.log(`✅ [AIOXY UNIFIED] ${productName}: ${unified.co2PerKg.toFixed(4)} kg CO2e/kg (Weight: ${unified.weightUsed.toFixed(3)}kg)`);
 
+    
+// ========== CRITICAL DATA BRIDGE ==========
+// Save results globally so all tabs can access them
+window.finalPefResults = finalPefResultsToUse;
+window.massBalanceData = massBalanceData;
+window.auditTrailData = auditTrail;
+window.currentDPPId = auditTrail.dppId;
+
+// Force UI update
+setTimeout(() => {
+    if (typeof updateResultsUI === 'function') {
+        console.log('🔄 Forcing UI update with new results...');
+        updateResultsUI();
+    }
+}, 100);
+
 return {
     finalPefResults: finalPefResultsToUse,
     auditTrail: auditTrail,
@@ -6899,50 +6915,62 @@ function calculateCO2ReductionPercent() {
     }
     // ================== TAB MANAGEMENT ==================
     function showTab(tabName, event) {
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        
-        const targetTab = document.getElementById(`${tabName}-tab`);  
-        if (targetTab) {
-            targetTab.classList.remove('hidden');
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+    
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    const targetTab = document.getElementById(`${tabName}-tab`);  
+    if (targetTab) {
+        targetTab.classList.remove('hidden');
+    } else {
+        console.error(`❌ Tab not found: ${tabName}-tab`);
+        return;
+    }
+    
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
+    
+    // FIXED: Results tab should SHOW results, not recalculate!
+    if (tabName === 'results') {
+        if (finalPefResults && Object.keys(finalPefResults).length > 0) {
+            updateResultsUI();  // ← SHOW existing results
+        } else {
+            calculateImpact();  // ← Only calculate if no data exists
         }
-        
-        if (event && event.currentTarget) {
-            event.currentTarget.classList.add('active');
-        }
-        
-        if (tabName === 'results') {
-            calculateImpact();
-        }
-        if (tabName === 'business-case') {
-            if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
-                console.log('🔧 [Fix] Priming missing physics data for business case...');
-                if (selectedIngredients.length === 0) {
-                    setupDemoData();
-                } else {
-                    calculateImpact();
-                }
-                setTimeout(updateBusinessCase, 200);
+    }
+    
+    if (tabName === 'business-case') {
+        if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
+            console.log('🔧 [Fix] Priming missing physics data for business case...');
+            if (selectedIngredients.length === 0) {
+                setupDemoData();
             } else {
-                updateBusinessCase();
+                calculateImpact();
             }
+            setTimeout(updateBusinessCase, 200);
+        } else {
+            updateBusinessCase();
         }
-        if (tabName === 'dpp') {
-            generateDPP();
-        }
-        if (tabName === 'pef-scorecard') {
-            displayFullPefScorecard();
-        }
-        if (tabName === 'transparency') {
-            displayAuditTrail();
-        }
-        
-        updateTabIndicator();
+    }
+    
+    if (tabName === 'dpp') {
+        generateDPP();
+    }
+    
+    if (tabName === 'pef-scorecard') {
+        displayFullPefScorecard();
+    }
+    
+    if (tabName === 'transparency') {
+        displayAuditTrail();
+    }
+    
+    updateTabIndicator();
     }
 
     function updateTabIndicator() {
