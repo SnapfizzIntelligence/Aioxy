@@ -3558,10 +3558,12 @@ const FOOD_PHYSICS_DB = {
     'sauce-product':     { target_hydration: 0.75, default_density: 1.10 },
     'default':           { target_hydration: 0.00, default_density: 1.00 }
 }; 
-    // ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (2025) ==================
-// The "Brain" that connects Ingredients to Physics
 
+// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (HYBRID FIX v4.0) ==================
+// INTEGRATES: Google AI Studio's Animal/Grid Proxy + Gemini's Origin Fix + Crash Safety
 function calculateUniversalAdjustments(ingredientName, originCountry, processingMethod, manufacturingCountry) {
+    // 1. INITIALIZE (Base Country = France Agribalyse)
+    const baseCountry = 'FR'; 
     const log = [];
     let adjustmentMultipliers = {
         co2: 1.0,
@@ -3569,114 +3571,138 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         water: 1.0
     };
 
-    // AUDITOR FIX: Define base country ONCE at the top
-    const baseCountry = 'FR'; // Agribalyse data is French-based
-    
-    // 1. DETECT CROP TYPE & CLASS
+    // 🔒 CRASH SAFETY: If data missing, return neutral factors (app won't break)
+    if (!window.aioxyData || !window.aioxyData.grid_intensity) {
+        console.warn("⚠️ Physics Data Missing - Using neutral factors");
+        return { 
+            multipliers: adjustmentMultipliers, 
+            adder: 0, 
+            logs: ["⚠️ Data Missing - Using Default"], 
+            qualityPenalty: 0,
+            base_country: baseCountry,
+            adjusted_from_country: originCountry,
+            adjusted_for_country: manufacturingCountry,
+            is_proxy_adjustment: false
+        };
+    }
+
+    // 2. DETECT CATEGORY (Crop vs Animal vs Processed)
     const nameLower = ingredientName.toLowerCase();
-    let cropKey = null;
-    let cropClass = null;
-
-    // A. Direct Crop Match (Check specifically defined crops first)
-    for (const [key, data] of Object.entries(window.aioxyData.yield_benchmarks)) {
-        if (nameLower.includes(key)) { cropKey = key; break; }
-    }
     
-    // B. Class Inference (If no specific crop found)
-    if (!cropKey) {
-        if (nameLower.includes("flour") || nameLower.includes("bread") || nameLower.includes("pasta") || nameLower.includes("semolina")) cropClass = "cereal";
-        else if (nameLower.includes("milk") && !nameLower.includes("cow") && !nameLower.includes("goat") && !nameLower.includes("sheep")) cropClass = "pulse"; // Plant milks
-        else if (nameLower.includes("oil") || nameLower.includes("butter") || nameLower.includes("fat")) cropClass = "oilseed";
-        else if (nameLower.includes("sugar") || nameLower.includes("syrup")) cropClass = "sugarbeet";
-        else if (nameLower.includes("bean") || nameLower.includes("lentil") || nameLower.includes("pea")) cropClass = "pulse";
-        else if (nameLower.includes("fruit") || nameLower.includes("berry") || nameLower.includes("apple") || nameLower.includes("citrus")) cropClass = "fruit";
-        else if (nameLower.includes("coffee") || nameLower.includes("cocoa") || nameLower.includes("chocolate") || nameLower.includes("tea")) cropClass = "tropical";
-        else cropClass = "vegetable"; // Safe fallback for undefined plant matter
+    // Check if it's an animal product
+    const isAnimal = nameLower.includes('beef') || nameLower.includes('cow') || 
+                    nameLower.includes('milk') || nameLower.includes('dairy') ||
+                    nameLower.includes('chicken') || nameLower.includes('pork') || 
+                    nameLower.includes('pig') || nameLower.includes('lamb') ||
+                    nameLower.includes('cheese') || nameLower.includes('egg') ||
+                    nameLower.includes('turkey') || nameLower.includes('fish') ||
+                    nameLower.includes('salmon') || nameLower.includes('meat');
+    
+    // Try to find specific crop match
+    let cropKey = null;
+    if (window.aioxyData.yield_benchmarks) {
+        for (const [key, data] of Object.entries(window.aioxyData.yield_benchmarks)) {
+            if (nameLower.includes(key)) { 
+                cropKey = key; 
+                break; 
+            }
+        }
     }
 
-    // 2. YIELD PHYSICS (Land & CO2 Intensity)
-    // Impact is inversely proportional to yield.
-    let localYield, standardYield;
-    let yieldFactor = 1.0; // Track for quality penalty
+    // 3. 💧 WATER PHYSICS (AWARE 2.0) - Always active
+    const awareFactors = window.aioxyData.aware_factors || {};
+    const baseAware = awareFactors[baseCountry] || 17.1;
+    const localAware = awareFactors[originCountry] || awareFactors["Global"] || 42.0;
+    
+    // Cap at 20x to prevent extreme values from breaking UI
+    const waterFactor = Math.max(0.1, Math.min(20, localAware / baseAware));
+    adjustmentMultipliers.water *= waterFactor;
+    log.push(`💧 Water Physics: ${originCountry} (${localAware.toFixed(1)}) vs ${baseCountry} (${baseAware}) → x${waterFactor.toFixed(2)}`);
+
+    // 4. 🌍 CO2 & LAND PHYSICS - The "Move the Numbers" Logic
     
     if (cropKey) {
-        // Specific Crop Logic
+        // === SCENARIO A: It's a CROP with yield data (Original logic) ===
         const yields = window.aioxyData.yield_benchmarks[cropKey];
-        // AUDITOR FIX: Use France as base, not Global
-        // If country missing, use France (Agribalyse base)
-        localYield = yields[originCountry] || yields[baseCountry] || yields["Global"] || 4000;
-        standardYield = yields[baseCountry] || yields["Global"] || 4000;
-        log.push(`🌾 Yield Physics: ${cropKey} (${baseCountry}: ${standardYield}kg/ha vs ${originCountry}: ${localYield}kg/ha)`);
-    } else if (cropClass) {
-        // Class Fallback Logic
-        const classData = window.aioxyData.crop_classes[cropClass];
-        // Assume developed nations/major exporters have higher yields (1.4x class avg)
-        const isHighYieldEcon = ["US","FR","DE","UK","CA","AU","NL","BE","DK"].includes(originCountry);
-        localYield = isHighYieldEcon ? classData.global_yield * 1.4 : classData.global_yield;
-        standardYield = classData.global_yield;
-        log.push(`🧠 Class Inference: ${ingredientName} -> ${classData.name}. Yield Est: ${localYield} kg/ha`);
-    }
-
-    // Apply Yield Adjustment (Cap at 0.5x to 2.5x to prevent extreme outliers)
-    if (localYield && standardYield) {
-        const rawFactor = standardYield / localYield;
-        yieldFactor = Math.max(0.4, Math.min(2.5, rawFactor)); // Safety Caps
+        const localYield = yields[originCountry] || yields["Global"] || 4000;
+        const standardYield = yields[baseCountry] || yields["Global"] || 4000;
         
+        // Yield factor: lower yield = more land & more inputs per kg
+        const yieldFactor = standardYield / localYield;
+        
+        // Apply adjustments (dampened for CO2)
         adjustmentMultipliers.land *= yieldFactor;
-        // CO2 correlates partially with yield (efficiency) but not 1:1 (machinery/fertilizer use often increases with yield)
-        adjustmentMultipliers.co2 *= (0.6 + (0.4 * yieldFactor)); 
+        adjustmentMultipliers.co2 *= (0.6 + (0.4 * yieldFactor));
+        log.push(`🌾 Crop Physics (${cropKey}): Yield x${yieldFactor.toFixed(2)}`);
+        
+    } else if (isAnimal) {
+        // === SCENARIO B: It's an ANIMAL product (Google's critical fix) ===
+        // Use grid intensity as a proxy for overall agricultural efficiency
+        const grids = window.aioxyData.grid_intensity;
+        const baseGrid = grids[baseCountry] || 56;
+        const localGrid = grids[originCountry] || grids["Global"] || 475;
+        
+        // Calculate the efficiency gap
+        const dirtyRatio = localGrid / baseGrid;
+        
+        // Dampened factor: assume 30% of total animal footprint is energy-related
+        const energyFactor = 1 + ((dirtyRatio - 1) * 0.3);
+        const cappedFactor = Math.max(0.8, Math.min(3.0, energyFactor));
+        
+        adjustmentMultipliers.co2 *= cappedFactor;
+        adjustmentMultipliers.land *= cappedFactor; // Less efficient = more land for feed
+        log.push(`🐄 Animal Physics: ${originCountry} grid proxy → x${cappedFactor.toFixed(2)}`);
+        
+    } else {
+        // === SCENARIO C: Generic processed ingredient (Fallback) ===
+        // Mild adjustment based on grid to ensure numbers move
+        const grids = window.aioxyData.grid_intensity;
+        const baseGrid = grids[baseCountry] || 56;
+        const localGrid = grids[originCountry] || grids["Global"] || 475;
+        
+        const dirtyRatio = localGrid / baseGrid;
+        const mildFactor = 1 + ((dirtyRatio - 1) * 0.15);
+        const cappedMild = Math.max(0.9, Math.min(1.8, mildFactor));
+        
+        adjustmentMultipliers.co2 *= cappedMild;
+        log.push(`🏭 Generic Physics: ${originCountry} proxy → x${cappedMild.toFixed(2)}`);
     }
 
-    // 3. CLIMATE PHYSICS (IPCC N2O Volatilization)
-    // Tropical heat = higher fertilizer emissions. Arid = lower.
-    const tropical = window.aioxyData.climate_zones.tropical.includes(originCountry);
-    const arid = window.aioxyData.climate_zones.arid.includes(originCountry);
-    const boreal = window.aioxyData.climate_zones.boreal.includes(originCountry);
-    
-    if (tropical) {
-        adjustmentMultipliers.co2 *= 1.15; // +15% N2O penalty
-        log.push(`☀️ Tropical Climate (${originCountry}): +15% N2O physics`);
-    } else if (arid) {
-        adjustmentMultipliers.co2 *= 0.90; // -10% N2O credit
-        log.push(`🌵 Arid Climate (${originCountry}): -10% N2O physics`);
-    } else if (boreal) {
-        adjustmentMultipliers.co2 *= 0.95; // -5% Cold soil credit
-        log.push(`❄️ Boreal Climate (${originCountry}): -5% N2O physics`);
+    // 5. ☀️ CLIMATE N2O PHYSICS (Tropical penalty)
+    if (window.aioxyData.climate_zones) {
+        const tropical = window.aioxyData.climate_zones.tropical?.includes(originCountry);
+        const arid = window.aioxyData.climate_zones.arid?.includes(originCountry);
+        
+        if (tropical) {
+            adjustmentMultipliers.co2 *= 1.15;
+            log.push(`☀️ Tropical Climate: +15% N2O`);
+        } else if (arid) {
+            adjustmentMultipliers.co2 *= 0.90;
+            log.push(`🌵 Arid Climate: -10% N2O`);
+        }
     }
 
-    // 4. WATER SCARCITY PHYSICS (AWARE 2.0) - AUDITOR IMPROVED
-    // Formula: Impact_Local = Impact_Base * (AWARE_Local / AWARE_Base)
-    // Base is France (Agribalyse), not Global average
-    const awareFactors = window.aioxyData.aware_factors;
-    const baseAware = awareFactors[baseCountry] || awareFactors["Global"] || 17.1; // France AWARE ~17.1
-    const localAware = awareFactors[originCountry] || awareFactors["Global"] || 17.1;
-    
-    const waterFactor = localAware / baseAware;
-    
-    adjustmentMultipliers.water *= waterFactor;
-    log.push(`💧 Water Physics: AWARE Factor (${baseCountry}: ${baseAware} vs ${originCountry}: ${localAware}) → Adjustment: x${waterFactor.toFixed(2)}`);
-
-    // 5. GRID PHYSICS (Manufacturing Energy) - AUDITOR IMPROVED
-    // Formula: Adder = Energy_kWh * (Grid_Local - Grid_Base)
-    // Base country is France (Agribalyse source), NOT "EU Average"
+    // 6. ⚡ MANUFACTURING ADDER (Grid intensity for processing)
     const grids = window.aioxyData.grid_intensity;
-    const baseGrid = grids[baseCountry] || grids["Global"] || 56; // French grid: ~56g CO2e/kWh
-    const localGrid = grids[manufacturingCountry] || grids["Global"] || 475;
+    const baseGrid = grids[baseCountry] || 56;
+    const mfgGrid = grids[manufacturingCountry] || grids["Global"] || 475;
     
-    // Estimate Processing Energy (kWh/kg) based on method
-    let kWhPerKg = 0.3; // Default (Milling/Mixing)
+    // Estimate energy use based on processing method
+    let kWhPerKg = 0.3;
     if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
-    if (processingMethod === 'sterilization') kWhPerKg = 0.5;
+    if (processingMethod === 'sterilization' || processingMethod === 'pasteurization') kWhPerKg = 0.5;
     if (processingMethod === 'freezing') kWhPerKg = 0.8;
+    if (processingMethod === 'fermentation') kWhPerKg = 0.6;
     
-    // Calculate the ADDER (kg CO2e per kg product)
-    // (Local_Grid - Base_Grid) is in grams, convert to kg (/1000)
-    const processingAdder = kWhPerKg * ((localGrid - baseGrid) / 1000);
+    // Calculate the CO2 adder
+    const processingAdder = kWhPerKg * ((mfgGrid - baseGrid) / 1000);
     
-    log.push(`⚡ Grid Physics: ${manufacturingCountry} (${localGrid}g) vs ${baseCountry} (${baseGrid}g). Energy: ${kWhPerKg} kWh/kg → Adder: ${processingAdder > 0 ? '+' : ''}${processingAdder.toFixed(3)} kg CO2e`);
+    if (Math.abs(processingAdder) > 0.001) {
+        log.push(`⚡ Manufacturing: ${manufacturingCountry} grid → ${processingAdder > 0 ? '+' : ''}${processingAdder.toFixed(3)} kg CO₂e/kg`);
+    }
 
-    // 6. QUALITY PENALTY (Auditor's key addition)
-    const qualityPenalty = (yieldFactor > 1.5 || waterFactor > 2.0) ? 1.0 : 0.0;
+    // 7. QUALITY PENALTY for DQR
+    const qualityPenalty = (adjustmentMultipliers.co2 > 1.5 || adjustmentMultipliers.water > 2.0) ? 1.0 : 0.0;
 
     return {
         multipliers: adjustmentMultipliers,
@@ -3686,16 +3712,10 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         base_country: baseCountry,
         adjusted_from_country: originCountry,
         adjusted_for_country: manufacturingCountry,
-        is_proxy_adjustment: (originCountry !== baseCountry), // CRITICAL: Flag for transparency
-        details: {
-            yield: yieldFactor,
-            water: waterFactor,
-            grid: processingAdder,
-            origin: originCountry,
-            base: baseCountry
-        }
+        is_proxy_adjustment: (originCountry !== baseCountry)
     };
-} 
+    }
+    
     // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     console.log("📦 CFF Calculation with:", { 
