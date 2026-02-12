@@ -8389,53 +8389,7 @@ window.validatePhysics = function() {
     console.groupEnd();
     return passed ? "✅ SYSTEM AUDIT PASSED: READY FOR SCREENING USE" : "❌ SYSTEM AUDIT FAILED";
 };
-    // ================== FIXED INGREDIENT ORIGIN DETECTION ==================
-function getIngredientOrigin(ingredientId) {
-    if (!ingredientId) return 'FR';
     
-    // 1. FIRST: Check your comprehensive PHYSICS_DB.origins (line 283-350 in your code)
-    // This has 50+ real origins like: "coffee-bean-robusta-depulped-brazil-at-farm-gate-br": "BR"
-    if (window.PHYSICS_DB && window.PHYSICS_DB.origins && window.PHYSICS_DB.origins[ingredientId]) {
-        return window.PHYSICS_DB.origins[ingredientId];
-    }
-    
-    // 2. FALLBACK: Smart keyword detection
-    const nameLower = ingredientId.toLowerCase();
-    
-    // International ingredients
-    if (nameLower.includes('soy') || nameLower.includes('soya')) return 'BR'; // Brazil
-    if (nameLower.includes('coffee')) return 'BR'; // Most coffee is Brazilian
-    if (nameLower.includes('cocoa') || nameLower.includes('chocolate')) return 'CI'; // Ivory Coast
-    if (nameLower.includes('palm') || nameLower.includes('oil')) return 'ID'; // Indonesia
-    if (nameLower.includes('rice') || nameLower.includes('basmati')) return 'IN'; // India
-    if (nameLower.includes('avocado') || nameLower.includes('mexico')) return 'MX';
-    if (nameLower.includes('banana')) return 'EC'; // Ecuador
-    if (nameLower.includes('tea')) return 'CN'; // China
-    if (nameLower.includes('spices')) return 'IN'; // India
-    
-    // European ingredients (for demo)
-    if (nameLower.includes('tomato') || nameLower.includes('tomate')) return 'ES'; // Spain
-    if (nameLower.includes('olive') || nameLower.includes('oli')) return 'ES'; // Spain
-    if (nameLower.includes('pea') || nameLower.includes('lentil') || nameLower.includes('chickpea')) return 'IN'; // India
-    if (nameLower.includes('potato') || nameLower.includes('pomme')) return 'NL'; // Netherlands
-    
-    // French ingredients (Agribalyse defaults)
-    if (nameLower.includes('oat') || nameLower.includes('avoine')) return 'FR';
-    if (nameLower.includes('wheat') || nameLower.includes('ble')) return 'FR';
-    if (nameLower.includes('milk') || nameLower.includes('lait')) return 'FR';
-    if (nameLower.includes('beef') || nameLower.includes('boeuf')) return 'FR';
-    if (nameLower.includes('pig') || nameLower.includes('porc')) return 'FR';
-    if (nameLower.includes('chicken') || nameLower.includes('poulet')) return 'FR';
-    if (nameLower.includes('cheese') || nameLower.includes('fromage')) return 'FR';
-    
-    // Water uses manufacturing location
-    if (nameLower.includes('water') || nameLower.includes('aqua') || nameLower.includes('eau')) {
-        return document.getElementById('manufacturingCountry')?.value || 'FR';
-    }
-    
-    // Default to France (Agribalyse base database)
-    return 'FR';
-}
 </script>
 </body>
   </html>
