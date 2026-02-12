@@ -3559,7 +3559,7 @@ const FOOD_PHYSICS_DB = {
     'default':           { target_hydration: 0.00, default_density: 1.00 }
 }; 
 
-// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (FINAL v6.0 - PROXY AWARE) ==================
+// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (FINAL AUDIT VERSION) ==================
 function calculateUniversalAdjustments(ingredientName, originCountry, processingMethod, manufacturingCountry) {
     // 1. SETUP DEFAULTS
     const baseCountry = 'FR'; 
@@ -3568,13 +3568,13 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
 
     // 2. CRASH PROTECTION
     if (!window.aioxyData || !window.aioxyData.grid_intensity) {
-        return { multipliers: adjustmentMultipliers, adder: 0, logs: ["Database Loading..."], qualityPenalty: 0 };
+        return { multipliers: adjustmentMultipliers, adder: 0, logs: ["Data Missing"], qualityPenalty: 0 };
     }
 
     const nameLower = ingredientName.toLowerCase();
 
     // ==============================================================================
-    // 🛡️ GEMINI FIX: PROXY MAPPING (Bridge Ingredient Name -> Data Key)
+    // 🛡️ THE CRITICAL MAP: Connects "Oats" to "Wheat" data
     // ==============================================================================
     const cropProxies = {
         'oat': 'wheat', 'barley': 'wheat', 'rye': 'wheat', 'triticale': 'wheat', 
@@ -3584,20 +3584,21 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         'potato': 'tuber', 'sugar': 'sugarbeet'
     };
 
-    // 3. DETECT CATEGORY (Crop vs Animal)
-    let cropKey = null;
-    let isAnimal = nameLower.includes('beef') || nameLower.includes('cow') || nameLower.includes('milk') || 
-                   nameLower.includes('chicken') || nameLower.includes('pork') || nameLower.includes('cheese') ||
-                   nameLower.includes('lamb') || nameLower.includes('egg') || nameLower.includes('fish');
+    const animalKeywords = ['beef', 'cow', 'milk', 'cheese', 'butter', 'cream', 
+                           'chicken', 'broiler', 'poultry', 'duck', 'turkey', 'egg', 
+                           'pig', 'pork', 'ham', 'lamb', 'sheep', 'fish', 'salmon'];
 
-    // A. Check Direct Match
+    // 3. DETECT CATEGORY
+    let cropKey = null;
+    
+    // A. Check Direct Match (e.g. "Wheat")
     if (window.aioxyData.yield_benchmarks) {
         for (const key of Object.keys(window.aioxyData.yield_benchmarks)) {
             if (nameLower.includes(key)) { cropKey = key; break; }
         }
     }
     
-    // B. Check Proxy Match (GEMINI'S LOGIC)
+    // B. Check Proxy Match (e.g. "Oats" -> "Wheat")
     if (!cropKey) {
         for (const [ing, proxy] of Object.entries(cropProxies)) {
             if (nameLower.includes(ing)) { cropKey = proxy; break; }
@@ -3608,14 +3609,15 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
     const awareFactors = window.aioxyData.aware_factors || {};
     const baseAware = awareFactors[baseCountry] || 17.1;
     const localAware = awareFactors[originCountry] || awareFactors["Global"] || 42.0;
+    
     adjustmentMultipliers.water *= Math.max(0.1, Math.min(20, localAware / baseAware));
     if (originCountry !== baseCountry) {
-        log.push(`💧 Water Physics: ${originCountry} (${localAware.toFixed(1)}) vs FR (${baseAware}) → x${(localAware/baseAware).toFixed(2)}`);
+        log.push(`💧 Water Physics: ${originCountry} (${localAware}) vs FR (${baseAware})`);
     }
 
     // 5. CARBON PHYSICS
     if (cropKey) {
-        // SCENARIO A: CROP (Use Yield Data via Proxy)
+        // === SCENARIO A: CROP (Yield Physics) ===
         const yields = window.aioxyData.yield_benchmarks[cropKey];
         if (yields) {
             const localYield = yields[originCountry] || yields["Global"] || 4000;
@@ -3624,12 +3626,13 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
             const yieldFactor = standardYield / localYield;
             
             adjustmentMultipliers.land *= yieldFactor;
-            adjustmentMultipliers.co2 *= (0.6 + (0.4 * yieldFactor)); 
-            log.push(`🌾 Crop Physics [${cropKey}]: ${originCountry} Yield (${localYield}) vs FR (${standardYield}) → Impact x${(0.6 + (0.4 * yieldFactor)).toFixed(2)}`);
+            adjustmentMultipliers.co2 *= (0.4 + (0.6 * yieldFactor)); 
+            
+            log.push(`🌾 Crop Physics [${cropKey}]: ${originCountry} Yield (${localYield}) vs FR (${standardYield}) → Impact x${adjustmentMultipliers.co2.toFixed(2)}`);
         }
         
-    } else if (isAnimal) {
-        // SCENARIO B: ANIMAL (Use Grid Proxy)
+    } else if (animalKeywords.some(k => nameLower.includes(k))) {
+        // === SCENARIO B: ANIMAL (Grid Proxy) ===
         const grids = window.aioxyData.grid_intensity;
         const baseGrid = grids[baseCountry] || 56;
         const localGrid = grids[originCountry] || 475; 
@@ -3637,30 +3640,28 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         const dirtyRatio = localGrid / baseGrid;
         const energyFactor = 1 + ((dirtyRatio - 1) * 0.3);
         
-        adjustmentMultipliers.co2 *= Math.max(0.8, Math.min(3.0, energyFactor));
-        log.push(`⚡ Animal Physics: ${originCountry} Grid (${localGrid}g) vs FR (${baseGrid}g) → Impact x${adjustmentMultipliers.co2.toFixed(2)}`);
+        adjustmentMultipliers.co2 *= Math.max(0.8, Math.min(4.0, energyFactor));
+        log.push(`⚡ Animal Physics: ${originCountry} Grid → x${adjustmentMultipliers.co2.toFixed(2)}`);
         
     } else {
-        // SCENARIO C: GENERIC (Mild Proxy)
+        // === SCENARIO C: GENERIC (Mild Proxy) ===
         const grids = window.aioxyData.grid_intensity;
         const baseGrid = grids[baseCountry] || 56;
         const localGrid = grids[originCountry] || 475; 
         const mildFactor = 1 + (((localGrid / baseGrid) - 1) * 0.15);
         adjustmentMultipliers.co2 *= Math.max(0.9, Math.min(1.5, mildFactor));
-        log.push(`🏭 Generic Proxy: ${originCountry} Grid adjustment → x${adjustmentMultipliers.co2.toFixed(2)}`);
+        log.push(`🏭 Generic Proxy: x${adjustmentMultipliers.co2.toFixed(2)}`);
     }
 
-    // 6. CLIMATE ADJUSTMENT
+    // 6. CLIMATE & MANUFACTURING
     if (window.aioxyData.climate_zones?.tropical?.includes(originCountry)) {
         adjustmentMultipliers.co2 *= 1.15;
         log.push(`☀️ Tropical Climate: +15% N2O`);
     }
 
-    // 7. MANUFACTURING ADDER
     const grids = window.aioxyData.grid_intensity;
     const mfgGrid = grids[manufacturingCountry] || 475;
     const baseGrid = grids[baseCountry] || 56;
-    
     let kWhPerKg = 0.5;
     if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
     
