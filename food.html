@@ -3559,123 +3559,126 @@ const FOOD_PHYSICS_DB = {
     'default':           { target_hydration: 0.00, default_density: 1.00 }
 }; 
 
-// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (FINAL AUDIT VERSION) ==================
+// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (FIXED v3.1) ==================
 function calculateUniversalAdjustments(ingredientName, originCountry, processingMethod, manufacturingCountry) {
     // 1. SETUP DEFAULTS
     const baseCountry = 'FR'; 
     const log = [];
-    let adjustmentMultipliers = { co2: 1.0, land: 1.0, water: 1.0 };
-
-    // 2. CRASH PROTECTION
-    if (!window.aioxyData || !window.aioxyData.grid_intensity) {
-        return { multipliers: adjustmentMultipliers, adder: 0, logs: ["Data Missing"], qualityPenalty: 0 };
+    let multipliers = { co2: 1.0, land: 1.0, water: 1.0 };
+    
+    // SAFETY CHECK: Ensure data exists
+    if (!window.aioxyData || !window.aioxyData.yield_benchmarks) { 
+        return { multipliers, adder: 0, logs: ["Data Missing"], qualityPenalty: 0 }; 
     }
 
     const nameLower = ingredientName.toLowerCase();
 
     // ==============================================================================
-    // 🛡️ THE CRITICAL MAP: Connects "Oats" to "Wheat" data
+    // 🛡️ FIX 2: ALIGNED PROXY MAP (Matches Data.txt Keys Exactly)
     // ==============================================================================
     const cropProxies = {
-        'oat': 'wheat', 'barley': 'wheat', 'rye': 'wheat', 'triticale': 'wheat', 
-        'durum': 'wheat', 'maize': 'corn', 'sorghum': 'corn', 
-        'pea': 'pulse', 'faba': 'pulse', 'bean': 'pulse', 'lentil': 'pulse', 'lupin': 'pulse',
-        'rapeseed': 'oilseed', 'sunflower': 'oilseed', 'canola': 'oilseed',
-        'potato': 'tuber', 'sugar': 'sugarbeet'
+        // CEREALS -> map to 'wheat' or 'corn' (Keys exist in Data.txt)
+        'oat': 'wheat', 'barley': 'wheat', 'rye': 'wheat', 'triticale': 'wheat', 'durum': 'wheat', 'wheat': 'wheat',
+        'maize': 'corn', 'corn': 'corn', 'sorghum': 'corn',
+        // PULSES -> map to 'pulse'
+        'pea': 'pulse', 'faba': 'pulse', 'bean': 'pulse', 'lentil': 'pulse', 'lupin': 'pulse', 'soy': 'soy',
+        // OILS -> map to 'rapeseed' (Data.txt uses 'rapeseed', not 'oilseed')
+        'rapeseed': 'rapeseed', 'sunflower': 'rapeseed', 'canola': 'rapeseed', 'oil': 'rapeseed',
+        // ROOTS -> map to 'potato' or 'sugarbeet' (Data.txt uses 'potato', not 'tuber')
+        'potato': 'potato', 'cassava': 'potato', 'yam': 'potato',
+        'sugar': 'sugarbeet', 'beet': 'sugarbeet',
+        // TROPICAL -> map to 'coffee' or 'cocoa'
+        'coffee': 'coffee', 'cocoa': 'cocoa', 'chocolate': 'cocoa'
     };
 
     const animalKeywords = ['beef', 'cow', 'milk', 'cheese', 'butter', 'cream', 
                            'chicken', 'broiler', 'poultry', 'duck', 'turkey', 'egg', 
-                           'pig', 'pork', 'ham', 'lamb', 'sheep', 'fish', 'salmon'];
+                           'pig', 'pork', 'ham', 'lamb', 'sheep', 'fish', 'salmon', 'shrimp'];
 
-    // 3. DETECT CATEGORY
+    // 2. DETECT EXACT CROP KEY
     let cropKey = null;
     
-    // A. Check Direct Match (e.g. "Wheat")
-    if (window.aioxyData.yield_benchmarks) {
-        for (const key of Object.keys(window.aioxyData.yield_benchmarks)) {
-            if (nameLower.includes(key)) { cropKey = key; break; }
-        }
-    }
-    
-    // B. Check Proxy Match (e.g. "Oats" -> "Wheat")
-    if (!cropKey) {
-        for (const [ing, proxy] of Object.entries(cropProxies)) {
-            if (nameLower.includes(ing)) { cropKey = proxy; break; }
-        }
+    // Check Proxy Match (The Bridge)
+    for (const [ing, proxy] of Object.entries(cropProxies)) {
+        if (nameLower.includes(ing)) { cropKey = proxy; break; }
     }
 
-    // 4. WATER PHYSICS (Always Active)
+    // 3. WATER PHYSICS (AWARE 2.0)
     const awareFactors = window.aioxyData.aware_factors || {};
     const baseAware = awareFactors[baseCountry] || 17.1;
     const localAware = awareFactors[originCountry] || awareFactors["Global"] || 42.0;
     
-    adjustmentMultipliers.water *= Math.max(0.1, Math.min(20, localAware / baseAware));
-    if (originCountry !== baseCountry) {
-        log.push(`💧 Water Physics: ${originCountry} (${localAware}) vs FR (${baseAware})`);
+    if (baseAware > 0) {
+        // Limit water variance to 20x to prevent outliers
+        multipliers.water = Math.max(0.1, Math.min(20, localAware / baseAware));
     }
 
-    // 5. CARBON PHYSICS
-    if (cropKey) {
+    // 4. CARBON & LAND PHYSICS
+    if (cropKey && window.aioxyData.yield_benchmarks[cropKey]) {
         // === SCENARIO A: CROP (Yield Physics) ===
         const yields = window.aioxyData.yield_benchmarks[cropKey];
-        if (yields) {
-            const localYield = yields[originCountry] || yields["Global"] || 4000;
-            const standardYield = yields[baseCountry] || yields["Global"] || 4000;
-            
-            const yieldFactor = standardYield / localYield;
-            
-            adjustmentMultipliers.land *= yieldFactor;
-            adjustmentMultipliers.co2 *= (0.4 + (0.6 * yieldFactor)); 
-            
-            log.push(`🌾 Crop Physics [${cropKey}]: ${originCountry} Yield (${localYield}) vs FR (${standardYield}) → Impact x${adjustmentMultipliers.co2.toFixed(2)}`);
-        }
         
+        // Handle Fallback: If country (e.g. 'ES') not in list, use Global or FR*0.85
+        const baseYield = yields[baseCountry] || yields["Global"] || 4000;
+        const localYield = yields[originCountry] || yields["Global"] || (baseYield * 0.85);
+
+        // Physics: Lower yield = Higher land use & Higher CO2 (machinery/fertilizer intensity)
+        const yieldFactor = baseYield / localYield; 
+        
+        multipliers.land = yieldFactor;
+        multipliers.co2 = (0.4 + (0.6 * yieldFactor)); 
+        
+        log.push(`🌾 Crop Physics [${cropKey}]: ${originCountry} Yield (${localYield}) vs FR (${baseYield})`);
+
     } else if (animalKeywords.some(k => nameLower.includes(k))) {
-        // === SCENARIO B: ANIMAL (Grid Proxy) ===
+        // === SCENARIO B: ANIMAL (Grid & Feed Physics) ===
         const grids = window.aioxyData.grid_intensity;
         const baseGrid = grids[baseCountry] || 56;
-        const localGrid = grids[originCountry] || 475; 
+        const localGrid = grids[originCountry] || 475;
         
-        const dirtyRatio = localGrid / baseGrid;
-        const energyFactor = 1 + ((dirtyRatio - 1) * 0.3);
+        const gridRatio = localGrid / baseGrid;
+        // Animals are ~30% energy dependent (heating/ventilation/feed processing)
+        const energyFactor = 1 + ((gridRatio - 1) * 0.30); 
         
-        adjustmentMultipliers.co2 *= Math.max(0.8, Math.min(4.0, energyFactor));
-        log.push(`⚡ Animal Physics: ${originCountry} Grid → x${adjustmentMultipliers.co2.toFixed(2)}`);
-        
+        multipliers.co2 = Math.max(0.8, Math.min(4.0, energyFactor));
+        log.push(`⚡ Animal Physics: ${originCountry} Grid (${localGrid}g)`);
+
     } else {
-        // === SCENARIO C: GENERIC (Mild Proxy) ===
+        // === SCENARIO C: GENERIC (Grid Proxy) ===
         const grids = window.aioxyData.grid_intensity;
         const baseGrid = grids[baseCountry] || 56;
-        const localGrid = grids[originCountry] || 475; 
-        const mildFactor = 1 + (((localGrid / baseGrid) - 1) * 0.15);
-        adjustmentMultipliers.co2 *= Math.max(0.9, Math.min(1.5, mildFactor));
-        log.push(`🏭 Generic Proxy: x${adjustmentMultipliers.co2.toFixed(2)}`);
+        const localGrid = grids[originCountry] || 475;
+        
+        // Low sensitivity for generic ingredients
+        const genericFactor = 1 + (((localGrid / baseGrid) - 1) * 0.15);
+        multipliers.co2 = Math.max(0.9, Math.min(1.5, genericFactor));
     }
 
-    // 6. CLIMATE & MANUFACTURING
-    if (window.aioxyData.climate_zones?.tropical?.includes(originCountry)) {
-        adjustmentMultipliers.co2 *= 1.15;
-        log.push(`☀️ Tropical Climate: +15% N2O`);
+    // 5. CLIMATE ZONES (N2O Emissions)
+    if (window.aioxyData.climate_zones) {
+        if (window.aioxyData.climate_zones.tropical?.includes(originCountry)) {
+            multipliers.co2 *= 1.15; // +15% N2O volatilization
+        }
     }
 
+    // 6. MANUFACTURING ADDER (Processing Grid Intensity)
     const grids = window.aioxyData.grid_intensity;
     const mfgGrid = grids[manufacturingCountry] || 475;
-    const baseGrid = grids[baseCountry] || 56;
-    let kWhPerKg = 0.5;
+    const baseGridRef = grids[baseCountry] || 56;
+    
+    let kWhPerKg = 0.5; // Base processing
     if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
     
-    const processingAdder = Math.max(0, kWhPerKg * ((mfgGrid - baseGrid) / 1000));
+    // Add CO2 burden based on electricity grid difference
+    const processingAdder = Math.max(0, kWhPerKg * ((mfgGrid - baseGridRef) / 1000));
 
     return {
-        multipliers: adjustmentMultipliers,
+        multipliers: multipliers,
         adder: processingAdder,
         logs: log,
         qualityPenalty: (originCountry !== baseCountry) ? 1.0 : 0.0,
-        base_country: baseCountry,
-        adjusted_from_country: originCountry,
-        adjusted_for_country: manufacturingCountry,
-        is_proxy_adjustment: (originCountry !== baseCountry)
+        adjusted_from_country: baseCountry,
+        adjusted_for_country: originCountry
     };
     }
      
@@ -4891,38 +4894,33 @@ calculateFoodImpact() {
     let dqrComponents = [];
 
     finalIngredients.forEach(item => {
-    let ing = aioxyData.ingredients[item.id];
-    
-    // Water fallback (GROK'S SAFETY FIX)
-    if (!ing && item.id === 'tap-water-municipal') {
-        ing = {
-            name: 'Tap Water (Municipal)',
-            loss: 0.0,
-            data: {
-                pef: { 
-                    "Climate Change": 0.0003,
-                    "Water Use/Scarcity (AWARE)": 0.0,
-                    "Land Use": 0.0,
-                    "Resource Use, fossils": 0.0
-                },
-                metadata: { dqr_overall: 2.0, source_dataset: 'Estimated Fallback' }
-            }
-        };
-    }
-    
-    if (!ing) return;
-    
-// [REGULATOR FIX: STRICT ORIGIN CHAIN OF CUSTODY]
-    // 1. User Selection (Highest Priority - The "Scenario")
-    // 2. Primary Data Region (If specific farm data exists)
-    // 3. Manufacturing Country (Fallback)
-    // 4. Default 'FR' (Safety Net)
-    const ingredientOrigin = item.originCountry || item.primaryData?.farmRegion || document.getElementById('manufacturingCountry').value || 'FR';
-    
-    // AUDIT LOG: Prove the logic is working in the console
-    if (item.originCountry && item.originCountry !== 'FR') {
-        console.log(`🚀 [AIOXY PHYSICS] FORCING ORIGIN for ${ing.name}: ${ingredientOrigin} (User Selected)`);
-    } 
+        let ing = aioxyData.ingredients[item.id];
+        
+        // Water fallback (Safety Check)
+        if (!ing && item.id === 'tap-water-municipal') {
+            ing = { name: 'Tap Water', data: { pef: { "Climate Change": 0.0003 }, metadata: { dqr_overall: 2.0 } } };
+        }
+        
+        if (!ing) return;
+
+        // =========================================================
+        // 🛡️ FIX 1: GLOBAL SCENARIO OVERRIDE (The "UK" Switch)
+        // =========================================================
+        // 1. Get the country selected at the top of the calculator
+        const globalCountry = document.getElementById('manufacturingCountry').value || 'FR';
+        
+        // 2. Get the ingredient's specific origin (default is usually FR)
+        let ingredientOrigin = item.originCountry || 'FR';
+
+        // 3. THE LOGIC FIX:
+        // If the ingredient is still set to default 'FR', AND the user wants to simulate 
+        // manufacturing in a different country (e.g. 'UK'), AND this isn't specific farm data...
+        // ...THEN force the ingredient to be sourced from the 'UK'.
+        if (ingredientOrigin === 'FR' && globalCountry !== 'FR' && !item.primaryData) {
+            ingredientOrigin = globalCountry;
+            console.log(`🔄 Scenario Active: Simulating ${ing.name} sourced from ${globalCountry}`);
+        }
+        // =========================================================
     
         // ========== PRIMARY DATA OVERRIDE CHECK ==========
     let impactMultipliers = {
