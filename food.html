@@ -4837,32 +4837,31 @@ function calculateRegionalAdjustment(farmRegion, ingredientData) {
         });
     }
 
-    // ==================================================================================
-    // 🛡️ CTO ARCHITECTURE FIX: SINGLE SOURCE OF TRUTH FOR ORIGINS
+ // ==================================================================================
+    // 🛡️ CTO FIX v2.0: USER SELECTION ALWAYS WINS - SINGLE SOURCE OF TRUTH
     // ==================================================================================
     const effectiveOrigins = {};
     
     finalIngredients.forEach(item => {
-        // Priority 1: Primary Data (Overrides everything)
-        if (item.primaryData && item.primaryData.farmRegion) {
-            effectiveOrigins[item.id] = 'PrimaryData'; 
-        }
-        // Priority 2: Specific User Selection (If distinct from default)
-        else if (item.originCountry && item.originCountry !== 'FR') {
+        // PRIORITY 1: USER SELECTION - ALWAYS USE IF PRESENT (NO CONDITIONS)
+        if (item.originCountry) {
             effectiveOrigins[item.id] = item.originCountry;
-        } 
-        // Priority 3: SCENARIO MODE (The Fix for Gimmick Numbers)
-        // If Mfg != France, assume ingredients are sourced locally in Mfg country
-        else if (manufacturingCountryCode !== 'FR') {
-            effectiveOrigins[item.id] = manufacturingCountryCode;
-            console.log(`🌍 Scenario Active: ${item.name} mapped to local source (${manufacturingCountryCode})`);
+            console.log(`✅ User selected: ${item.name} from ${item.originCountry}`);
         }
-        // Priority 4: Default Database Origin
+        // PRIORITY 2: Primary Data (if no user selection)
+        else if (item.primaryData && item.primaryData.farmRegion) {
+            effectiveOrigins[item.id] = 'PrimaryData';
+            console.log(`📊 Primary data: ${item.name} from ${item.primaryData.farmRegion}`);
+        }
+        // PRIORITY 3: Default Database Origin
         else {
             effectiveOrigins[item.id] = getIngredientOrigin(item.id);
+            console.log(`📚 Default origin: ${item.name} from ${effectiveOrigins[item.id]}`);
         }
     });
-    // ==================================================================================
+    
+    // 🚨 SCENARIO MODE REMOVED - User selection now always respected
+    // Manufacturing country no longer overrides ingredient origin
 
     // 3. MASS BALANCE
     let massBalanceData = calculateMassBalance(finalIngredients, processingMethod, packagingWeight);
