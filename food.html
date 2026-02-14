@@ -4360,122 +4360,135 @@ function calculateUpstreamLCI(ingredients, countryCode) {
     return upstreamImpacts;
 }
 
-    // ================== FIX 6: FOREGROUND/BACKGROUND ANALYSIS ==================
-    function analyzeForegroundBackground(ingredients, totalImpact) {
-        const foregroundComponents = [];
-        const backgroundComponents = [];
-        const foregroundCutoff = 0.05; // 5% cutoff rule
+    // ================== FIX 6: FOREGROUND/BACKGROUND ANALYSIS (ISO 14044 COMPLIANT) ==================
+function analyzeForegroundBackground(ingredients, totalImpact) {
+    // REGULATOR NOTE: ISO 14044 requires significance analysis of ALL life cycle stages.
+    // We scan Ingredients + Manufacturing + Packaging + Transport to meet the 5% Cut-off Rule.
+    
+    const foregroundComponents = [];
+    const backgroundComponents = [];
+    const foregroundCutoff = 0.05; // 5% Cut-off Rule (ISO Standard)
 
-        ingredients.forEach(item => {
-            const ingredient = aioxyData.ingredients[item.id];
-            if (!ingredient) return;
-            
-            const contribution = item.quantity * ingredient.data.pef["Climate Change"];
-            const isForeground = contribution >= (totalImpact * foregroundCutoff);
-            
-            if (isForeground) {
-                foregroundComponents.push({
-                    name: ingredient.name,
-                    contribution: contribution,
-                    dqr: ingredient.data.metadata.dqr_overall,
-                    data_type: "foreground"
-                });
-            } else {
-                backgroundComponents.push({
-                    name: ingredient.name,
-                    contribution: contribution,
-                    dqr: ingredient.data.metadata.dqr_overall,
-                    data_type: "background"
-                });
-            }
-        });
-
-        const foregroundDQR = foregroundComponents.length > 0 ? 
-            foregroundComponents.reduce((sum, c) => sum + c.dqr, 0) / foregroundComponents.length : 1.0;
-            
-        const backgroundDQR = backgroundComponents.length > 0 ? 
-            backgroundComponents.reduce((sum, c) => sum + c.dqr, 0) / backgroundComponents.length : 1.5;
-
-        const overallDQR = (foregroundDQR * 0.7) + (backgroundDQR * 0.3);
-
-        return {
-            cutoff_percentage: foregroundCutoff,
-            foreground_count: foregroundComponents.length,
-            background_count: backgroundComponents.length,
-            foreground_contribution: foregroundComponents.reduce((sum, c) => sum + c.contribution, 0),
-            background_contribution: backgroundComponents.reduce((sum, c) => sum + c.contribution, 0),
-            foreground_dqr: foregroundDQR,
-            background_dqr: backgroundDQR,
-            overall_dqr: overallDQR,
-            components: {
-                foreground: foregroundComponents,
-                background: backgroundComponents
-            }
+    // Helper: Add component to the correct list
+    const processComponent = (name, impact, dqr) => {
+        if (impact <= 0) return;
+        
+        // Safety: Prevent division by zero if totalImpact is 0
+        const contribution = impact;
+        const safeTotal = totalImpact > 0 ? totalImpact : 1;
+        const isSignificant = contribution >= (safeTotal * foregroundCutoff);
+        
+        const data = {
+            name: name,
+            contribution: contribution,
+            dqr: dqr || 3.0, // Default to "Fair" if unknown
+            data_type: isSignificant ? "foreground" : "background"
         };
+
+        if (isSignificant) foregroundComponents.push(data);
+        else backgroundComponents.push(data);
+    };
+
+    // 1. Analyze Ingredients (Always Available)
+    ingredients.forEach(item => {
+        const ingredient = aioxyData.ingredients[item.id];
+        if (!ingredient) return;
+        const impact = item.quantity * (ingredient.data.pef["Climate Change"] || 0);
+        processComponent(ingredient.name, impact, ingredient.data.metadata.dqr_overall);
+    });
+
+    // 2. Analyze Non-Ingredient Stages (Fail-Safe Mode)
+    // We attempt to read from the calculated Audit Trail. If missing (first run),
+    // we estimate from DOM inputs to ensure the graph doesn't break/look empty.
+    
+    if (typeof auditTrailData !== 'undefined' && auditTrailData.pefCategories) {
+        // ACCURATE MODE: Use calculated values
+        const tree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
+        if (tree.Manufacturing.total > 0) processComponent("Manufacturing & Energy", tree.Manufacturing.total, 2.0);
+        if (tree.Packaging.total > 0) processComponent("Packaging", tree.Packaging.total, 1.5);
+        if (tree.Transport.total > 0) processComponent("Logistics", tree.Transport.total, 2.5);
+    } else {
+        // ESTIMATE MODE: Prevent crash on first click by reading DOM inputs
+        const pkgWeight = parseFloat(document.getElementById('packagingWeight')?.value || 0);
+        if (pkgWeight > 0) processComponent("Packaging (Est)", pkgWeight * 1.5, 1.5); // Approx factor
+        
+        const dist = parseFloat(document.getElementById('transportDistance')?.value || 0);
+        if (dist > 0) processComponent("Logistics (Est)", (dist/1000) * 0.1, 2.5); // Approx factor
     }
 
-    // ================== FIX 7: TEMPORAL DISCOUNTING ==================
-    function applyTemporalDiscounting(pefResults, timeHorizon = 100) {
-        const discountedResults = {};
+    // 3. Calculate Weighted DQRs
+    const calcWeightedDQR = (components) => {
+        if (components.length === 0) return 2.0; 
+        const totalWeight = components.reduce((sum, c) => sum + c.contribution, 0);
+        if (totalWeight === 0) return 2.0;
+        return components.reduce((sum, c) => sum + (c.dqr * c.contribution), 0) / totalWeight;
+    };
+
+    const foregroundDQR = calcWeightedDQR(foregroundComponents);
+    const backgroundDQR = calcWeightedDQR(backgroundComponents);
+
+    // ISO Compliance: Overall quality is weighted by impact contribution
+    const totalRecordedImpact = foregroundComponents.reduce((s,c)=>s+c.contribution,0) + 
+                               backgroundComponents.reduce((s,c)=>s+c.contribution,0);
+                               
+    const overallDQR = totalRecordedImpact > 0 ? 
+        ((foregroundDQR * foregroundComponents.reduce((s,c)=>s+c.contribution,0)) + 
+         (backgroundDQR * backgroundComponents.reduce((s,c)=>s+c.contribution,0))) / totalRecordedImpact
+        : 2.0;
+
+    return {
+        cutoff_percentage: foregroundCutoff,
+        foreground_count: foregroundComponents.length,
+        background_count: backgroundComponents.length,
+        foreground_contribution: foregroundComponents.reduce((sum, c) => sum + c.contribution, 0),
+        background_contribution: backgroundComponents.reduce((sum, c) => sum + c.contribution, 0),
+        foreground_dqr: foregroundDQR,
+        background_dqr: backgroundDQR,
+        overall_dqr: overallDQR, 
+        components: {
+            foreground: foregroundComponents,
+            background: backgroundComponents
+        }
+    };
+}
+
+// ================== FIX 7: TEMPORAL DISCOUNTING (REGULATOR CORRECTED) ==================
+function applyTemporalDiscounting(pefResults, timeHorizon = 100) {
+    // REGULATOR NOTE: Discounting physical environmental flows (kg CO2e) is 
+    // NON-COMPLIANT with PEF 3.1 and EPD standards.
+    // This function now returns the un-discounted GWP100 baseline to prevent greenwashing liability.
+    
+    const compliantResults = {};
+    
+    // We remove the financial discount rates. 
+    // Environmental impact does not depreciate like money.
+    
+    Object.keys(pefResults).forEach(category => {
+        const baseImpact = pefResults[category].total || 0;
         
-        // DISCOUNT RATES BY IMPACT CATEGORY
-        const discountRates = {
-            "Climate Change": 0.01,
-            "Ozone Depletion": 0.03,
-            "Human Toxicity, cancer": 0.0,
-            "Human Toxicity, non-cancer": 0.0,
-            "Particulate Matter": 0.0,
-            "Ionizing Radiation": 0.02,
-            "Photochemical Ozone Formation": 0.0,
-            "Acidification": 0.01,
-            "Eutrophication, terrestrial": 0.01,
-            "Eutrophication, freshwater": 0.01,
-            "Eutrophication, marine": 0.01,
-            "Ecotoxicity, freshwater": 0.02,
-            "Land Use": 0.005,
-            "Water Use/Scarcity (AWARE)": 0.0,
-            "Resource Use, minerals/metals": 0.01,
-            "Resource Use, fossils": 0.01
+        // STRICT COMPLIANCE:
+        // Discount Rate = 0.0 (No discounting allowed for physical flows)
+        const discountRate = 0.0;
+        
+        // Optional: Keep dynamic factors only if scientifically justified (AR6)
+        // Here we default to 1.0 (Static) for maximum safety.
+        const dynamicFactor = 1.0; 
+
+        compliantResults[category] = {
+            base_impact: baseImpact,
+            discounted_impact: baseImpact, // MUST match base for PEF compliance
+            discount_rate: discountRate,
+            time_horizon: timeHorizon,
+            present_value_equivalent: baseImpact, // No NPV for carbon
+            dynamic_factor: dynamicFactor,
+            note: "Standard GWP100 (No discounting applied per PEF 3.1)"
         };
-        
-        // DYNAMIC CHARACTERIZATION FACTORS
-        const dynamicFactors = {
-            "Climate Change": 1.02,
-            year: 2024,
-            baseYear: 2010
-        };
-        
-        Object.keys(pefResults).forEach(category => {
-            const baseImpact = pefResults[category].total || 0;
-            const discountRate = discountRates[category] || 0;
-            const years = timeHorizon;
-            
-            let discountedImpact;
-            if (discountRate === 0) {
-                discountedImpact = baseImpact * years;
-            } else {
-                discountedImpact = baseImpact * (1 - Math.exp(-discountRate * years)) / discountRate;
-            }
-            
-            // APPLY DYNAMIC FACTOR FOR CLIMATE CHANGE
-            if (category === "Climate Change") {
-                const yearsFromBase = dynamicFactors.year - dynamicFactors.baseYear;
-                const dynamicFactor = Math.pow(dynamicFactors[category], yearsFromBase / 10);
-                discountedImpact *= dynamicFactor;
-            }
-            
-            discountedResults[category] = {
-                base_impact: baseImpact,
-                discounted_impact: discountedImpact,
-                discount_rate: discountRate,
-                time_horizon: years,
-                present_value_equivalent: discountedImpact / years,
-                dynamic_factor: category === "Climate Change" ? dynamicFactors[category] : 1.0
-            };
-        });
-        
-        return discountedResults;
-    }
+    });
+    
+    console.log("⚖️ [Regulator Audit] Temporal Discounting bypassed for PEF compliance.");
+    return compliantResults;
+}
+
 
     // ================== FIX 8: ISO COMPLIANCE FRAMEWORK ==================
     function getISOCompliance() {
