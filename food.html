@@ -4638,87 +4638,64 @@ function applyScenarioPhysics(baseResults, scenarios) {
     }
     
 
-// ================== PRIMARY DATA ADJUSTMENT CALCULATORS ==================
-
+// ================== AUDIT-READY PRIMARY DATA ADJUSTMENT ==================
 function calculateNitrogenAdjustment(primaryNitrogenKgPerTon, ingredientData) {
-    // SAFEGUARD: No verified baseline? No adjustment allowed
-    const agribalyseAverage = ingredientData.data?.metadata?.nitrogen_content_kg_kg;
+    // Look for verified baseline in your Data.txt
+    const baselineN = ingredientData.data?.metadata?.nitrogen_content_kg_kg;
+
+    // REGULATORY SAFEGUARD: No verified baseline? No adjustment allowed.
+    if (!baselineN || baselineN <= 0) return 1.0;
+
+    const userValue = primaryNitrogenKgPerTon / 1000; // Convert to kg/kg
+    const adjustment = userValue / baselineN;
     
-    // If no baseline, return neutral (1.0) - NO DEFAULT VALUES!
-    if (!agribalyseAverage || agribalyseAverage <= 0) return 1.0;
-    
-    const primaryValue = primaryNitrogenKgPerTon / 1000; // Convert to kg/kg
-    if (primaryValue <= 0) return 1.0;
-    
-    const adjustment = primaryValue / agribalyseAverage;
-    
-    console.log(`   Nitrogen: ${(primaryValue*1000).toFixed(1)} vs ${(agribalyseAverage*1000).toFixed(1)} kg/t → ${adjustment.toFixed(3)}x`);
-    return Math.max(0.5, Math.min(adjustment, 1.5)); // PEF-compliant caps
+    // Log for verification
+    console.log(`[Audit] N-Adjustment: ${adjustment.toFixed(2)}x`);
+    return Math.max(0.5, Math.min(adjustment, 1.5));
 }
 
 function calculateYieldAdjustment(primaryYieldKgPerHa, ingredientData) {
-    // SAFEGUARD: No verified baseline? No adjustment allowed
-    const agribalyseAverage = ingredientData.data?.metadata?.yield_kg_ha;
-    
-    if (!agribalyseAverage || agribalyseAverage <= 0) return 1.0;
-    
-    const primaryValue = primaryYieldKgPerHa;
-    if (primaryValue <= 0) return 1.0;
-    
-    // Inverse relationship: Higher yield = Lower impact per kg
-    const adjustment = agribalyseAverage / primaryValue;
-    
-    console.log(`   Yield: ${primaryValue} vs ${agribalyseAverage} kg/ha → ${adjustment.toFixed(3)}x`);
-    return Math.max(0.5, Math.min(adjustment, 1.5)); // PEF-compliant caps
+    // Look for verified yield baseline in your Data.txt
+    const baselineYield = ingredientData.data?.metadata?.yield_kg_ha;
+
+    // REGULATORY SAFEGUARD: Prevent arbitrary land-use claims
+    if (!baselineYield || baselineYield <= 0) return 1.0;
+
+    const adjustment = baselineYield / primaryYieldKgPerHa;
+    return Math.max(0.5, Math.min(adjustment, 1.5));
 }
 
 function calculateRegionalAdjustment(farmRegion, ingredientData) {
     if (!farmRegion) return 1.0;
+    const region = farmRegion.toLowerCase();
     
-    const regionLower = farmRegion.toLowerCase();
-    let waterFactor = 1.0;
+    // Compliant proxy mapping for AWARE water stress
+    if (region.includes('normandy') || region.includes('brittany')) return 0.8;
+    if (region.includes('spain') || region.includes('italy') || region.includes('california')) return 1.6;
+    if (region.includes('provence') || region.includes('greece')) return 1.4;
     
-    // AWARE water scarcity factors
-    if (regionLower.includes('normandy') || regionLower.includes('brittany') || regionLower.includes('ireland')) {
-        waterFactor = 0.8;
-    } else if (regionLower.includes('provence') || regionLower.includes('languedoc') || regionLower.includes('california')) {
-        waterFactor = 1.4;
-    } else if (regionLower.includes('spain') || regionLower.includes('italy') || regionLower.includes('australia')) {
-        waterFactor = 1.6;
-    }
-    
-    console.log(`   Region: ${farmRegion} → Water factor: ${waterFactor}x`);
-    return waterFactor;
+    return 1.0;
 }
 
-  // ================== MAIN CALCULATION ENGINE ==================
+// ================== MAIN ENGINE (PEF 3.1 COMPLIANT) ==================
 const foodCalculationEngine = {
     getDQRQualityLevel(dqrScore) {
         if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
         if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
         if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
-        if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
-        return { level: 'Poor', class: 'dqr-poor' };
+        return { level: 'Fair/Poor', class: 'dqr-poor' };
     },
 
     calculateUncertainty(dqrScore) {
-    // Handle both object {P: 1.0} and number 1.0 inputs
-    let score;
+        // Linear Interpolation: PEF Standard Method
+        let score = (typeof dqrScore === 'object') ? (dqrScore.P || 2.0) : (dqrScore || 2.0);
+        if (score <= 1) return 10;
+        if (score <= 2) return 10 + 15 * (score - 1); // 25% at DQR 2
+        return 25 + 25 * (score - 2);                 // 50% at DQR 3
+    }, 
+
+
     
-    if (typeof dqrScore === 'object' && dqrScore.P !== undefined) {
-        score = dqrScore.P;
-    } else if (typeof dqrScore === 'number') {
-        score = dqrScore;
-    } else {
-        console.warn('⚠️ [Uncertainty Fix] Invalid DQR:', dqrScore);
-        return 15;
-    }
-    
-    // PEF 3.1 compliant formula
-    if (score <= 1) return 10;
-    if (score <= 2) return 10 + 15 * (score - 1);
-    return 25 + 25 * (score - 2);
-}, 
 
       
 
@@ -5123,7 +5100,8 @@ if (name.includes('spread') || name.includes('choco') || name.includes('hazelnut
     
     return 'beef-product';
     }
-   };     
+    };
+   
 // ================== UNIVERSAL COMPARISON ENGINE ==================
 function renderUniversalComparisons(myCo2, baseline, uplift) {
     const grid = document.getElementById('universalComparisonGrid');
