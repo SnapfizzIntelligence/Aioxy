@@ -4718,9 +4718,9 @@ const foodCalculationEngine = {
     if (score <= 1) return 10;
     if (score <= 2) return 10 + 15 * (score - 1);
     return 25 + 25 * (score - 2);
-} // <-- NO comma here, just closing bracket for the function
-},// <-- ONE closing bracket for the object, with semicolon
-        calculateFoodImpact() {
+}, 
+};
+    calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
     let suggestedWater = 0;
     
