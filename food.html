@@ -4637,119 +4637,88 @@ function applyScenarioPhysics(baseResults, scenarios) {
     return modifiedResults;
     }
     
-// ================== AIOXY PRIMARY DATA ADJUSTMENT ENGINE (AUDIT-SAFE) ==================
 
-/**
- * REGULATOR NOTE: 
- * Nitrogen adjustment is capped (0.5x - 1.5x) to prevent unrealistic "Zero Emission" claims.
- * Baseline logic checks against Agribalyse LCI data to ensure physics compliance.
- */
+    // ================== PRIMARY DATA ADJUSTMENT CALCULATORS ==================
+
 function calculateNitrogenAdjustment(primaryNitrogenKgPerTon, ingredientData) {
-    // 1. CRASH PROTECTION: Handle missing or malformed data gracefully
-    if (!ingredientData || !ingredientData.data) return 1.0;
-
-    // 2. AUDIT LOGIC: Retrieve verified baseline from Metadata or LCI
-    // Default to 0.02 (20kg/ton) if specific data is missing to prevent division by zero
-    const baselineN = ingredientData.data.metadata?.nitrogen_content_kg_kg || 
-                      ingredientData.data.lci?.nitrogen_kg_per_kg || 
-                      0.02;
-
-    // 3. SAFETY CHECK: Ignore invalid user input (e.g., negative numbers)
-    if (!primaryNitrogenKgPerTon || primaryNitrogenKgPerTon <= 0) return 1.0;
-
-    // 4. CALCULATION: Compare User Data vs. Baseline
-    const userValue = primaryNitrogenKgPerTon / 1000; // Convert ton input to kg/kg
-    const adjustment = userValue / baselineN;
-
-    console.log(`[Audit] N-Adjustment: ${adjustment.toFixed(2)}x (Base: ${baselineN}, User: ${userValue})`);
+    // Primary data nitrogen vs Agribalyse average
+    const agribalyseAverage = ingredientData.data?.lci?.nitrogen_kg_per_kg || 0.02; // 20 kg/ton default
+    const primaryValue = primaryNitrogenKgPerTon / 1000; // Convert to kg/kg
     
-    // 5. REGULATORY CAP: Limit impact to realistic variance (50% - 150%)
-    return Math.max(0.5, Math.min(adjustment, 1.5));
+    if (primaryValue <= 0 || agribalyseAverage <= 0) return 1.0;
+    
+    // Nitrogen drives N2O emissions (GWP 273) and fertilizer production
+    const adjustment = primaryValue / agribalyseAverage;
+    
+    console.log(`   Nitrogen: ${(primaryValue*1000).toFixed(1)} vs ${(agribalyseAverage*1000).toFixed(1)} kg/t → ${adjustment.toFixed(3)}x`);
+    return Math.max(0.5, Math.min(adjustment, 1.5)); // Cap between 0.5x and 1.5x
 }
 
-/**
- * REGULATOR NOTE:
- * Higher yield = Lower land use impact per kg.
- * Inverse relationship validated against JRC EF 3.0 guidelines.
- */
 function calculateYieldAdjustment(primaryYieldKgPerHa, ingredientData) {
-    // 1. CRASH PROTECTION
-    if (!ingredientData || !ingredientData.data) return 1.0;
-    if (!primaryYieldKgPerHa || primaryYieldKgPerHa <= 0) return 1.0;
-
-    // 2. AUDIT LOGIC: Smart Baseline Detection
-    // Attempts to find crop-specific yield in Global Benchmarks, defaults to Cereal Avg (4000)
-    let baselineYield = 4000; 
+    // Higher yield = lower land use impact per kg
+    const agribalyseAverage = 3500; // Default yield in kg/ha
+    const primaryValue = primaryYieldKgPerHa;
     
-    if (window.aioxyData && window.aioxyData.yield_benchmarks) {
-        const name = ingredientData.name.toLowerCase();
-        for (const [crop, data] of Object.entries(window.aioxyData.yield_benchmarks)) {
-            if (name.includes(crop)) {
-                baselineYield = data.Global || 4000;
-                break;
-            }
-        }
-    } else if (ingredientData.data.metadata?.yield_kg_ha) {
-        baselineYield = ingredientData.data.metadata.yield_kg_ha;
-    }
-
-    // 3. CALCULATION: Inverse Physics (Baseline / User Yield)
-    const adjustment = baselineYield / primaryYieldKgPerHa;
+    if (primaryValue <= 0) return 1.0;
     
-    console.log(`[Audit] Yield-Adjustment: ${adjustment.toFixed(2)}x (Base: ${baselineYield}, User: ${primaryYieldKgPerHa})`);
-    return Math.max(0.5, Math.min(adjustment, 1.5));
+    // Land use impact inversely proportional to yield
+    const adjustment = agribalyseAverage / primaryValue;
+    
+    console.log(`   Yield: ${primaryValue} vs ${agribalyseAverage} kg/ha → ${adjustment.toFixed(3)}x`);
+    return Math.max(0.7, Math.min(adjustment, 1.3)); // Cap between 0.7x and 1.3x
 }
 
-/**
- * RESTORED FUNCTION: Prevents "undefined" error when calculating water scarcity
- */
 function calculateRegionalAdjustment(farmRegion, ingredientData) {
-    if (!farmRegion) return 1.0;
-    
+    // Regional water scarcity adjustment (AWARE factors)
+    // This is simplified - real implementation would map region to AWARE watershed
     const regionLower = farmRegion.toLowerCase();
+    
     let waterFactor = 1.0;
     
-    // Audit-Ready: Maps user region to AWARE Water Scarcity Factors
-    if (regionLower.includes('normandy') || regionLower.includes('brittany') || regionLower.includes('north')) {
-        waterFactor = 0.8; // Water-rich (Low Risk)
-    } else if (regionLower.includes('provence') || regionLower.includes('south') || regionLower.includes('arid')) {
-        waterFactor = 1.4; // Water-scarce (High Risk)
-    } else if (regionLower.includes('spain') || regionLower.includes('italy') || regionLower.includes('california')) {
-        waterFactor = 1.6; // Severe Stress
+    // Example regional adjustments
+    if (regionLower.includes('normandy') || regionLower.includes('brittany')) {
+        waterFactor = 0.8; // Water-rich regions
+    } else if (regionLower.includes('provence') || regionLower.includes('languedoc')) {
+        waterFactor = 1.4; // Water-scarce regions
+    } else if (regionLower.includes('spain') || regionLower.includes('italy')) {
+        waterFactor = 1.6; // Mediterranean water stress
     }
     
-    console.log(`[Audit] Region: ${farmRegion} → Water factor: ${waterFactor}x`);
+    console.log(`   Region: ${farmRegion} → Water factor: ${waterFactor}x`);
     return waterFactor;
-}
-
-// ================== MAIN CALCULATION ENGINE (RESTORED) ==================
-// 🚨 CRITICAL: This object is required for the UI to render! Do not delete.
-const foodCalculationEngine = {
-    getDQRQualityLevel(dqrScore) {
-        if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
-        if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
-        if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
-        if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
-        return { level: 'Poor', class: 'dqr-poor' };
-    },
-
-    calculateUncertainty(dqrScore) {
-        let score;
-        // Handle both object {P: 1.0} and number 1.0 inputs
-        if (typeof dqrScore === 'object' && dqrScore.P !== undefined) {
-            score = dqrScore.P;
-        } else if (typeof dqrScore === 'number') {
-            score = dqrScore;
-        } else {
-            return 15; // Default safety margin
-        }
-        
-        // Physics-based Uncertainty Formula (EF 3.0)
-        if (score <= 1) return 10;
-        if (score <= 2) return 10 + 15 * (score - 1);
-        return 25 + 25 * (score - 2);
     }
-};
+    // ================== MAIN CALCULATION ENGINE ==================
+    const foodCalculationEngine = {
+        getDQRQualityLevel(dqrScore) {
+            if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
+            if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
+            if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
+            if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
+            return { level: 'Poor', class: 'dqr-poor' };
+        },
+
+        calculateUncertainty(dqrScore) {
+    // Handle both object {P: 1.0} and number 1.0 inputs
+    let score;
+    
+    if (typeof dqrScore === 'object' && dqrScore.P !== undefined) {
+        score = dqrScore.P;
+    } else if (typeof dqrScore === 'number') {
+        score = dqrScore;
+    } else {
+        console.warn('⚠️ [Uncertainty Fix] Invalid DQR:', dqrScore);
+        return 15;
+    }
+    
+    // Grok's corrected formula
+    if (score <= 1) return 10;
+    if (score <= 2) return 10 + 15 * (score - 1);
+    return 25 + 25 * (score - 2);
+},
+
+
+
+
 
         calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
