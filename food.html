@@ -4691,34 +4691,35 @@ function calculateRegionalAdjustment(farmRegion, ingredientData) {
     return waterFactor;
 }
 
-// ================== MAIN CALCULATION ENGINE ==================
-const foodCalculationEngine = {
-    getDQRQualityLevel(dqrScore) {
-        if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
-        if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
-        if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
-        if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
-        return { level: 'Poor', class: 'dqr-poor' };
-    },
+  // ================== MAIN CALCULATION ENGINE ==================
+    const foodCalculationEngine = {
+        getDQRQualityLevel(dqrScore) {
+            if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
+            if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
+            if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
+            if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
+            return { level: 'Poor', class: 'dqr-poor' };
+        },
 
-    calculateUncertainty(dqrScore) {
-        // Handle both object {P: 1.0} and number 1.0 inputs
-        let score;
-        
-        if (typeof dqrScore === 'object' && dqrScore.P !== undefined) {
-            score = dqrScore.P;
-        } else if (typeof dqrScore === 'number') {
-            score = dqrScore;
-        } else {
-            return 15; // Default safety margin
-        }
-        
-        // PEF-compliant uncertainty formula
-        if (score <= 1) return 10;
-        if (score <= 2) return 10 + 15 * (score - 1);
-        return 25 + 25 * (score - 2);
+        calculateUncertainty(dqrScore) {
+    // Handle both object {P: 1.0} and number 1.0 inputs
+    let score;
+    
+    if (typeof dqrScore === 'object' && dqrScore.P !== undefined) {
+        score = dqrScore.P;
+    } else if (typeof dqrScore === 'number') {
+        score = dqrScore;
+    } else {
+        console.warn('⚠️ [Uncertainty Fix] Invalid DQR:', dqrScore);
+        return 15;
     }
-};
+    
+    // Grok's corrected formula
+    if (score <= 1) return 10;
+    if (score <= 2) return 10 + 15 * (score - 1);
+    return 25 + 25 * (score - 2);
+},
+
 
         calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
