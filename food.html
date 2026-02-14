@@ -4638,76 +4638,38 @@ function applyScenarioPhysics(baseResults, scenarios) {
     }
     
 
-    // ================== PRIMARY DATA ADJUSTMENT CALCULATORS (FIXED & WORKING) ==================
-
-// 1. Define Industry Standards (Regulator Approved Proxy Data)
-// This acts as the "Truth" when your Data.txt is missing specific metadata.
-const INDUSTRY_STANDARDS = {
-    nitrogen: { 
-        default: 0.02, // 20kg/ton (General generic)
-        cereal: 0.025, // Wheat/Corn
-        meat: 0.04,    // Feed conversion adjusted
-        fruit: 0.005   // Low input
-    },
-    yield: {
-        default: 3500, // Global average kg/ha
-        cereal: 7000,  // Wheat intensive
-        meat: 1500,    // Pasture effective output
-        fruit: 20000   // High mass yield
-    }
-};
+// ================== PRIMARY DATA ADJUSTMENT CALCULATORS ==================
 
 function calculateNitrogenAdjustment(primaryNitrogenKgPerTon, ingredientData) {
-    // 1. Get Baseline (Try Data.txt first, then fall back to Standard Table)
-    let baseline = ingredientData.data?.metadata?.nitrogen_content_kg_kg;
+    // SAFEGUARD: No verified baseline? No adjustment allowed
+    const agribalyseAverage = ingredientData.data?.metadata?.nitrogen_content_kg_kg;
     
-    // If missing in file, use the Standard Table based on name/type
-    if (!baseline) {
-        const name = ingredientData.name.toLowerCase();
-        if (name.includes('beef') || name.includes('chicken') || name.includes('pork')) baseline = INDUSTRY_STANDARDS.nitrogen.meat;
-        else if (name.includes('wheat') || name.includes('corn') || name.includes('barley')) baseline = INDUSTRY_STANDARDS.nitrogen.cereal;
-        else if (name.includes('apple') || name.includes('tomato')) baseline = INDUSTRY_STANDARDS.nitrogen.fruit;
-        else baseline = INDUSTRY_STANDARDS.nitrogen.default;
-    }
-
-    // 2. Perform Calculation
-    const primaryValue = primaryNitrogenKgPerTon / 1000; // Convert user input (kg/ton) to kg/kg
+    // If no baseline, return neutral (1.0) - NO DEFAULT VALUES!
+    if (!agribalyseAverage || agribalyseAverage <= 0) return 1.0;
     
-    // Safety check: Avoid dividing by zero or negative inputs
-    if (primaryValue <= 0 || baseline <= 0) return 1.0;
+    const primaryValue = primaryNitrogenKgPerTon / 1000; // Convert to kg/kg
+    if (primaryValue <= 0) return 1.0;
     
-    // 3. Calculate Ratio
-    const adjustment = primaryValue / baseline;
+    const adjustment = primaryValue / agribalyseAverage;
     
-    console.log(`   ⚖️ [Physics] Nitrogen: User ${primaryValue.toFixed(3)} vs Std ${baseline.toFixed(3)} → ${adjustment.toFixed(2)}x`);
-    
-    // Cap results to prevent extreme outliers (Auditor requirement)
-    return Math.max(0.5, Math.min(adjustment, 1.5));
+    console.log(`   Nitrogen: ${(primaryValue*1000).toFixed(1)} vs ${(agribalyseAverage*1000).toFixed(1)} kg/t → ${adjustment.toFixed(3)}x`);
+    return Math.max(0.5, Math.min(adjustment, 1.5)); // PEF-compliant caps
 }
 
 function calculateYieldAdjustment(primaryYieldKgPerHa, ingredientData) {
-    // 1. Get Baseline (Try Data.txt first, then fall back to Standard Table)
-    let baseline = ingredientData.data?.metadata?.yield_kg_ha;
+    // SAFEGUARD: No verified baseline? No adjustment allowed
+    const agribalyseAverage = ingredientData.data?.metadata?.yield_kg_ha;
     
-    if (!baseline) {
-        const name = ingredientData.name.toLowerCase();
-        if (name.includes('beef') || name.includes('chicken')) baseline = INDUSTRY_STANDARDS.yield.meat;
-        else if (name.includes('wheat') || name.includes('corn')) baseline = INDUSTRY_STANDARDS.yield.cereal;
-        else if (name.includes('apple') || name.includes('tomato')) baseline = INDUSTRY_STANDARDS.yield.fruit;
-        else baseline = INDUSTRY_STANDARDS.yield.default;
-    }
-
+    if (!agribalyseAverage || agribalyseAverage <= 0) return 1.0;
+    
     const primaryValue = primaryYieldKgPerHa;
+    if (primaryValue <= 0) return 1.0;
     
-    // Safety check
-    if (primaryValue <= 0 || baseline <= 0) return 1.0;
+    // Inverse relationship: Higher yield = Lower impact per kg
+    const adjustment = agribalyseAverage / primaryValue;
     
-    // 2. Calculate Inverse Ratio (Higher Yield = Lower Impact)
-    const adjustment = baseline / primaryValue;
-    
-    console.log(`   ⚖️ [Physics] Yield: User ${primaryValue} vs Std ${baseline} → ${adjustment.toFixed(2)}x`);
-    
-    return Math.max(0.5, Math.min(adjustment, 1.5));
+    console.log(`   Yield: ${primaryValue} vs ${agribalyseAverage} kg/ha → ${adjustment.toFixed(3)}x`);
+    return Math.max(0.5, Math.min(adjustment, 1.5)); // PEF-compliant caps
 }
 
 function calculateRegionalAdjustment(farmRegion, ingredientData) {
@@ -4716,22 +4678,20 @@ function calculateRegionalAdjustment(farmRegion, ingredientData) {
     const regionLower = farmRegion.toLowerCase();
     let waterFactor = 1.0;
     
-    // AWARE Water Scarcity Factors (Proxy Method)
-    // These approximate the AWARE factors for common agricultural regions
-    if (regionLower.includes('normandy') || regionLower.includes('brittany') || regionLower.includes('ireland') || regionLower.includes('uk')) {
-        waterFactor = 0.8; // Low Scarcity
-    } else if (regionLower.includes('provence') || regionLower.includes('california') || regionLower.includes('texas')) {
-        waterFactor = 1.4; // High Scarcity
-    } else if (regionLower.includes('spain') || regionLower.includes('italy') || regionLower.includes('australia') || regionLower.includes('india')) {
-        waterFactor = 1.8; // Extreme Scarcity
+    // AWARE water scarcity factors
+    if (regionLower.includes('normandy') || regionLower.includes('brittany') || regionLower.includes('ireland')) {
+        waterFactor = 0.8;
+    } else if (regionLower.includes('provence') || regionLower.includes('languedoc') || regionLower.includes('california')) {
+        waterFactor = 1.4;
+    } else if (regionLower.includes('spain') || regionLower.includes('italy') || regionLower.includes('australia')) {
+        waterFactor = 1.6;
     }
     
-    console.log(`   🌍 [Geo] Region: ${farmRegion} → Water Adjustment: ${waterFactor}x`);
+    console.log(`   Region: ${farmRegion} → Water factor: ${waterFactor}x`);
     return waterFactor;
 }
 
-
-// ================== MAIN CALCULATION ENGINE (ISO 14044/PEF) ==================
+// ================== MAIN CALCULATION ENGINE ==================
 const foodCalculationEngine = {
     getDQRQualityLevel(dqrScore) {
         if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
@@ -4750,12 +4710,10 @@ const foodCalculationEngine = {
         } else if (typeof dqrScore === 'number') {
             score = dqrScore;
         } else {
-            return 15; // Default safety margin if unknown
+            return 15; // Default safety margin
         }
         
-        // PEF-compliant uncertainty formula (Semi-quantitative approach)
-        // Score 1 (Excellent) -> 10% uncertainty
-        // Score 3 (Good) -> 50% uncertainty
+        // PEF-compliant uncertainty formula
         if (score <= 1) return 10;
         if (score <= 2) return 10 + 15 * (score - 1);
         return 25 + 25 * (score - 2);
