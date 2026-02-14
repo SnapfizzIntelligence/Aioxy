@@ -4692,16 +4692,16 @@ function calculateRegionalAdjustment(farmRegion, ingredientData) {
 }
 
   // ================== MAIN CALCULATION ENGINE ==================
-    const foodCalculationEngine = {
-        getDQRQualityLevel(dqrScore) {
-            if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
-            if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
-            if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
-            if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
-            return { level: 'Poor', class: 'dqr-poor' };
-        },
+const foodCalculationEngine = {
+    getDQRQualityLevel(dqrScore) {
+        if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
+        if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
+        if (dqrScore <= 3.0) return { level: 'Good', class: 'dqr-good' };
+        if (dqrScore <= 4.0) return { level: 'Fair', class: 'dqr-fair' };
+        return { level: 'Poor', class: 'dqr-poor' };
+    },
 
-        calculateUncertainty(dqrScore) {
+    calculateUncertainty(dqrScore) {
     // Handle both object {P: 1.0} and number 1.0 inputs
     let score;
     
@@ -4714,13 +4714,12 @@ function calculateRegionalAdjustment(farmRegion, ingredientData) {
         return 15;
     }
     
-    // Grok's corrected formula
+    // PEF 3.1 compliant formula
     if (score <= 1) return 10;
     if (score <= 2) return 10 + 15 * (score - 1);
     return 25 + 25 * (score - 2);
-},
-
-
+} // <-- NO comma here, just closing bracket for the function
+}; // <-- ONE closing bracket for the object, with semicolon
         calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
     let suggestedWater = 0;
