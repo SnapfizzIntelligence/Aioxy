@@ -2602,16 +2602,23 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">Nitrogen Fertilizer (kg per ton of crop)</label>
-                <input type="number" id="supplierNitrogen" class="form-control" placeholder="e.g., 15 (Agribalyse average: 20)">
-                <small style="color: var(--gray);">Lower = better. Organic farms: 0-5 kg/ton</small>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Yield (kg per hectare)</label>
-                <input type="number" id="supplierYield" class="form-control" placeholder="e.g., 5000 (Agribalyse average: 3500)">
-                <small style="color: var(--gray);">Higher = better. Good yield: 4000-6000 kg/ha</small>
-            </div>
+    <label>Nitrogen Fertilizer (kg per ton of crop)</label>
+    <div class="input-hint">
+        <i class="fas fa-info-circle"></i> 
+        Enter farm data. Baseline varies by crop type (Logic: Audit-Safe).
+    </div>
+    <input type="number" id="primaryNitrogen" placeholder="e.g. 15">
+</div>
+
+<div class="form-group">
+    <label>Yield (kg per hectare)</label>
+    <div class="input-hint">
+        <i class="fas fa-info-circle"></i> 
+        Higher yield = Lower land impact. Baseline varies by crop.
+    </div>
+    <input type="number" id="primaryYield" placeholder="e.g. 5000">
+</div>
+
             
             <div class="form-group">
                 <label class="form-label">Irrigation Water Source</label>
