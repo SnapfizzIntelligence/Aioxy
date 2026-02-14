@@ -6806,8 +6806,8 @@ function displayFullPefScorecard() {
         let displayValue = formatPEFValue(finalPefResults[category].total);
         const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
         
-let displayValue = formatPEFValue(finalPefResults[category]?.total ?? 0);
-let perKgDisplay = formatPEFValue(perKgValue);
+        let displayValue = formatPEFValue(finalPefResults[category].total);
+        let perKgDisplay = formatPEFValue(perKgValue);
         
         row.innerHTML = `
             <td class="pef-category">${category}</td>
