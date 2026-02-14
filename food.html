@@ -4636,12 +4636,15 @@ function applyScenarioPhysics(baseResults, scenarios) {
     console.log("✅ [Physics Fix] Scenario Engine Applied:", scenarioLog);
     return modifiedResults;
     }
-    // ================== AUDIT-READY PRIMARY DATA ADJUSTMENT ==================
+    // ================== AUDIT-READY PRIMARY DATA ADJUSTMENT (CRASH PROOF) ==================
 function calculateNitrogenAdjustment(primaryNitrogenKgPerTon, ingredientData) {
-    // Look for verified baseline in your Data.txt
-    const baselineN = ingredientData.data?.metadata?.nitrogen_content_kg_kg;
+    // 1. CRASH PROOFING: Handle missing ingredient object completely
+    if (!ingredientData || !ingredientData.data) return 1.0;
 
-    // REGULATORY SAFEGUARD: No verified baseline? No adjustment allowed.
+    // 2. Look for verified baseline in your Data.txt
+    const baselineN = ingredientData.data.metadata?.nitrogen_content_kg_kg;
+
+    // 3. REGULATORY SAFEGUARD: No verified baseline? No adjustment allowed.
     if (!baselineN || baselineN <= 0) return 1.0;
 
     const userValue = primaryNitrogenKgPerTon / 1000; // Convert to kg/kg
@@ -4653,16 +4656,18 @@ function calculateNitrogenAdjustment(primaryNitrogenKgPerTon, ingredientData) {
 }
 
 function calculateYieldAdjustment(primaryYieldKgPerHa, ingredientData) {
-    // Look for verified yield baseline in your Data.txt
-    const baselineYield = ingredientData.data?.metadata?.yield_kg_ha;
+    // 1. CRASH PROOFING
+    if (!ingredientData || !ingredientData.data) return 1.0;
 
-    // REGULATORY SAFEGUARD: Prevent arbitrary land-use claims
+    // 2. Look for verified yield baseline
+    const baselineYield = ingredientData.data.metadata?.yield_kg_ha;
+
+    // 3. REGULATORY SAFEGUARD
     if (!baselineYield || baselineYield <= 0) return 1.0;
 
     const adjustment = baselineYield / primaryYieldKgPerHa;
     return Math.max(0.5, Math.min(adjustment, 1.5));
-}
-
+    }
 function calculateRegionalAdjustment(farmRegion, ingredientData) {
     if (!farmRegion) return 1.0;
     const region = farmRegion.toLowerCase();
