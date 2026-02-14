@@ -1079,6 +1079,11 @@
             border-radius: 4px;
             transition: width 0.5s ease;
         }
+        /* ADD THIS TO YOUR CSS STYLE SECTION */
+#supplierModal.hidden {
+    display: none !important;
+}
+
 
         /* ================== UI INTEGRATION STYLES ================== */
         .fix-badge {
@@ -3683,9 +3688,9 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     // 1. DATA VALIDATION
     const p = packagingData || {};
-    const R1 = recycledContentPercent / 100; // Recycled content (0-1)
+    const R1 = recycledContentPercent / 100; 
     
-    // 2. DEFINE MATERIAL-SPECIFIC 'A' FACTORS (PEF Compliant)
+    // 2. MATERIAL 'A' FACTORS (PEF Compliant)
     let A_factor = 0.5; 
     const matName = (p.name || "").toLowerCase();
     if (matName.includes('aluminum') || matName.includes('steel') || matName.includes('glass') || matName.includes('paper') || matName.includes('cardboard')) {
@@ -3696,7 +3701,6 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     const Ev = p.co2_virgin || 2.5;
     const Erecycled = p.co2_recycled || 1.2;
     const Ed = p.co2_disposal || 0.3;
-    // Use avoided_credit if available, otherwise assume substitution of virgin
     const Ecredit = p.co2_avoided_credit || Ev; 
 
     // Quality Ratios
@@ -3707,33 +3711,25 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     // R2 Calculation
     const R2 = (p.r1_max || 0.8) * (p.r2 || 0.7); 
 
-    // 4. THE OFFICIAL CFF MATH
-    // Virgin Burden (No 0.5 discount!)
+    // 4. OFFICIAL CFF MATH (No 0.5 discount on virgin!)
     const burdenVirgin = (1 - R1) * Ev;
-    
-    // Recycled Input Burden
     const burdenRecycledInput = R1 * ((A_factor * Erecycled) + ((1 - A_factor) * Ev * qualityRatio));
     
-    // End of Life (Disposal vs Credit)
-    // We calculate credit as a positive value here to fit your UI's expectation
+    // Credits & Disposal
     const recyclingCreditVal = R2 * (A_factor * Ecredit); 
     const disposalBurdenVal = (1 - R2) * Ed;
 
-    // 5. TOTAL IMPACT (Net)
-    // Total = (Virgin + RecycledInput + Disposal) - Credit
+    // 5. TOTAL
     const impactPerKg = (burdenVirgin + burdenRecycledInput + disposalBurdenVal) - recyclingCreditVal;
     const totalImpact = Math.max(0, impactPerKg * weightKg);
 
-    // 6. RETURN OBJECT (MATCHING YOUR UI SCHEMA EXACTLY)
     return {
         totalImpact: totalImpact,
-        
-        // These keys MUST exist for your UI to work:
+        // THESE KEYS FIXED THE CRASH:
         virginBurden: burdenVirgin * weightKg,
         recycledBurden: burdenRecycledInput * weightKg,
         disposalBurden: disposalBurdenVal * weightKg,
-        recyclingCredit: recyclingCreditVal * weightKg, // Positive number (UI subtracts it visually)
-        
+        recyclingCredit: recyclingCreditVal * weightKg, 
         effectiveRecyclingRate: R2,
         cff_parameters: { A: A_factor, Methodology: "PEF 3.1" }
     };
@@ -4075,27 +4071,19 @@ function calculateBaselineUplift(baselineKey) {
     }
     // ================== AIOXY COMPLIANCE ENGINE: EF 3.1 (UI COMPATIBLE) ==================
 function calculatePEFSingleScore(pefResults, productWeightKg) {
-    // OFFICIAL JRC EF 3.1 NORMALIZATION FACTORS (Global 2010 Person Equivalents)
+    // JRC EF 3.1 NORMALIZATION FACTORS
     const pefNormalizationFactors = {
-        "Climate Change": 1/7553.08,
-        "Ozone Depletion": 1/0.0523,
-        "Human Toxicity, cancer": 1/0.0000173,
-        "Human Toxicity, non-cancer": 1/0.000129,
-        "Particulate Matter": 1/0.000595,
-        "Ionizing Radiation": 1/4220.16,
-        "Photochemical Ozone Formation": 1/40.86,
-        "Acidification": 1/55.57,
-        "Eutrophication, terrestrial": 1/176.75,
-        "Eutrophication, freshwater": 1/1.61,
-        "Eutrophication, marine": 1/19.55,
-        "Ecotoxicity, freshwater": 1/56716.59,
-        "Land Use": 1/819498.18,
-        "Water Use/Scarcity (AWARE)": 1/11468.71,
-        "Resource Use, minerals/metals": 1/0.0636,
-        "Resource Use, fossils": 1/65004.26
+        "Climate Change": 1/7553.08, "Ozone Depletion": 1/0.0523,
+        "Human Toxicity, cancer": 1/0.0000173, "Human Toxicity, non-cancer": 1/0.000129,
+        "Particulate Matter": 1/0.000595, "Ionizing Radiation": 1/4220.16,
+        "Photochemical Ozone Formation": 1/40.86, "Acidification": 1/55.57,
+        "Eutrophication, terrestrial": 1/176.75, "Eutrophication, freshwater": 1/1.61,
+        "Eutrophication, marine": 1/19.55, "Ecotoxicity, freshwater": 1/56716.59,
+        "Land Use": 1/819498.18, "Water Use/Scarcity (AWARE)": 1/11468.71,
+        "Resource Use, minerals/metals": 1/0.0636, "Resource Use, fossils": 1/65004.26
     };
 
-    // OFFICIAL JRC EF 3.1 WEIGHTING FACTORS (%)
+    // JRC EF 3.1 WEIGHTING FACTORS
     const pefWeightingFactors = {
         "Climate Change": 0.2106, "Ozone Depletion": 0.0631,
         "Human Toxicity, cancer": 0.0213, "Human Toxicity, non-cancer": 0.0184,
@@ -4109,12 +4097,11 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
 
     let weightedScore = 0;
     let normalizedScore = 0;
-    const singleScoreBreakdown = {}; // <--- THIS WAS MISSING, CAUSING CRASH
+    const singleScoreBreakdown = {}; // THIS FIXED THE CRASH
 
     Object.keys(pefResults).forEach(category => {
         const impact = pefResults[category].total || 0;
         const perKg = productWeightKg > 0 ? impact / productWeightKg : 0;
-
         const normFactor = pefNormalizationFactors[category] || 0;
         const weightFactor = pefWeightingFactors[category] || 0;
 
@@ -4124,7 +4111,7 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
         weightedScore += weighted;
         normalizedScore += normalized;
 
-        // Populate the breakdown object exactly as UI expects
+        // POPULATE BREAKDOWN FOR UI
         singleScoreBreakdown[category] = { 
             raw: perKg, 
             normalized: normalized, 
@@ -4134,12 +4121,11 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
         };
     });
 
-    // RETURN WITH BREAKDOWN
     return {
-        singleScore: weightedScore * 1000, // mPt
+        singleScore: weightedScore * 1000, 
         normalizedScore: normalizedScore,
         weightedScore: weightedScore,
-        breakdown: singleScoreBreakdown, // <--- CRITICAL FIX
+        breakdown: singleScoreBreakdown, // REQUIRED FOR UI
         unit: 'mPt'
     };
 }
