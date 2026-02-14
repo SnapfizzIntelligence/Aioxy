@@ -3679,79 +3679,57 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
     };
     }
      
-    // ================== FIX 1: CFF CALCULATION FUNCTION (UPDATED FOR YOUR DATA) ==================
+    // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
-    console.log("📦 CFF Calculation with:", { 
-        packaging: packagingData, 
-        weight: weightKg, 
-        recycled: recycledContentPercent 
-    });
-    
-    // SAFETY: Use provided data or defaults
+    // 1. DATA VALIDATION
     const p = packagingData || {};
+    const R1 = recycledContentPercent / 100; 
     
-    // Map YOUR data structure to CFF variables
-    const CFF = {
-        // Material impacts from your data
-        M_virgin: p.co2_virgin || 2.5,
-        M_recycled: p.co2_recycled || 1.2,
-        M_disposal: p.co2_disposal || 0.3,
-        M_avoided: p.co2_avoided_credit || -1.8,
-        
-        // Recycling rates from YOUR data (r1_max = collection, r2 = sorting+recycling)
-        R_collection: p.r1_max || 0.45,
-        R_sorting: p.r2 || 0.85,
-        R_recycling: p.r2 || 0.75,  // Using same as sorting
-        R_market: 0.9,  // Default market availability
-        
-        // Quality from YOUR data
-        Q_virgin: 1.0,
-        Q_recycled: p.q || 0.95,
-        Q_downgrade: 0.5,
-        
-        // Allocation factors (PEF standard)
-        A_virgin: 0.5,
-        A_recycled: 0.5,
-        A_energy: 0.3
-    };
+    // 2. MATERIAL 'A' FACTORS (PEF Compliant)
+    let A_factor = 0.5; 
+    const matName = (p.name || "").toLowerCase();
+    if (matName.includes('aluminum') || matName.includes('steel') || matName.includes('glass') || matName.includes('paper') || matName.includes('cardboard')) {
+        A_factor = 0.2;
+    }
 
-    const recycledFraction = recycledContentPercent / 100;
-    const collectionEfficiency = CFF.R_collection * CFF.R_sorting;
-    const effectiveRecyclingRate = collectionEfficiency * CFF.R_recycling * CFF.R_market;
+    // 3. MAP VARIABLES
+    const Ev = p.co2_virgin || 2.5;
+    const Erecycled = p.co2_recycled || 1.2;
+    const Ed = p.co2_disposal || 0.3;
+    const Ecredit = p.co2_avoided_credit || Ev; 
 
-    // Virgin material burden
-    const virginBurden = (1 - recycledFraction) * CFF.M_virgin * CFF.A_virgin;
+    // Quality Ratios
+    const Qs_in = p.q || 0.9; 
+    const Qp = 1.0; 
+    const qualityRatio = Qs_in / Qp;
 
-    // Recycled material burden  
-    const recycledBurden = recycledFraction * CFF.M_recycled * CFF.A_recycled * CFF.Q_recycled;
+    // R2 Calculation
+    const R2 = (p.r1_max || 0.8) * (p.r2 || 0.7); 
 
-    // End-of-life
-    const disposedFraction = 1 - effectiveRecyclingRate;
-    const disposalBurden = disposedFraction * CFF.M_disposal;
-    const recyclingCredit = effectiveRecyclingRate * CFF.M_avoided * CFF.A_recycled;
+    // 4. OFFICIAL CFF MATH (No 0.5 discount on virgin!)
+    const burdenVirgin = (1 - R1) * Ev;
+    const burdenRecycledInput = R1 * ((A_factor * Erecycled) + ((1 - A_factor) * Ev * qualityRatio));
+    
+    // Credits & Disposal
+    const recyclingCreditVal = R2 * (A_factor * Ecredit); 
+    const disposalBurdenVal = (1 - R2) * Ed;
 
-    // TOTAL CFF IMPACT
-    const cffImpact = (virginBurden + recycledBurden) + (disposalBurden - recyclingCredit);
-    const totalImpact = cffImpact * weightKg;
-
-    console.log("✅ CFF Result:", {
-        totalImpact: totalImpact,
-        virginBurden: virginBurden * weightKg,
-        recycledBurden: recycledBurden * weightKg,
-        disposalBurden: disposalBurden * weightKg,
-        recyclingCredit: recyclingCredit * weightKg
-    });
+    // 5. TOTAL
+    const impactPerKg = (burdenVirgin + burdenRecycledInput + disposalBurdenVal) - recyclingCreditVal;
+    const totalImpact = Math.max(0, impactPerKg * weightKg);
 
     return {
-        totalImpact: isNaN(totalImpact) ? 0 : totalImpact,
-        virginBurden: virginBurden * weightKg,
-        recycledBurden: recycledBurden * weightKg,
-        disposalBurden: disposalBurden * weightKg,
-        recyclingCredit: recyclingCredit * weightKg,
-        effectiveRecyclingRate: effectiveRecyclingRate,
-        cff_parameters: CFF
+        totalImpact: totalImpact,
+        // THESE KEYS FIXED THE CRASH:
+        virginBurden: burdenVirgin * weightKg,
+        recycledBurden: burdenRecycledInput * weightKg,
+        disposalBurden: disposalBurdenVal * weightKg,
+        recyclingCredit: recyclingCreditVal * weightKg, 
+        effectiveRecyclingRate: R2,
+        cff_parameters: { A: A_factor, Methodology: "PEF 3.1" }
     };
-    }
+}
+
     // ================== FIX 2: AWARE 2.0 WATER CALCULATION ==================
     function calculateAWARE(waterUse, countryCode, watershed = 'default', processingMethod = 'none') {
         // WATERSHED-SPECIFIC AWARE 2.0 FACTORS
