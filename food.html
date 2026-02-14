@@ -6804,10 +6804,9 @@ function displayFullPefScorecard() {
         const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
         
         let displayValue = formatPEFValue(finalPefResults[category].total);
-        const categoryTotal = finalPefResults[category]?.total ?? 0;
-const perKgValue = totalWeight > 0 ? categoryTotal / totalWeight : 0;
+        const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
         
-let displayValue = formatPEFValue(categoryTotal);
+let displayValue = formatPEFValue(finalPefResults[category]?.total ?? 0);
 let perKgDisplay = formatPEFValue(perKgValue);
         
         row.innerHTML = `
