@@ -6804,10 +6804,11 @@ function displayFullPefScorecard() {
         const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
         
         let displayValue = formatPEFValue(finalPefResults[category].total);
-        let perKgDisplay = formatPEFValue(perKgValue);
+        const categoryTotal = finalPefResults[category]?.total ?? 0;
+const perKgValue = totalWeight > 0 ? categoryTotal / totalWeight : 0;
         
-        const categoryUncertainty = auditTrailData.uncertainty_analysis?.overall_uncertainty || 15;
-        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(auditTrailData.dqr_summary?.overall_dqr || 1.5);
+let displayValue = formatPEFValue(categoryTotal);
+let perKgDisplay = formatPEFValue(perKgValue);
         
         row.innerHTML = `
             <td class="pef-category">${category}</td>
