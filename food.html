@@ -5729,59 +5729,77 @@ function displayCompleteAuditTrail() {
     `;
 }
 
-// calculateHardFinancialMath function with improved version:
+// ================== FINANCIAL ROI ENGINE (AUDIT-SAFE) ==================
 function calculateHardFinancialMath(results, volume, scenarios) {
-    console.log("💰 [Financial Engine] Starting calculation for volume:", volume);
+    console.log("💰 [Financial Engine] Starting ROI Audit for volume:", volume);
 
-    if (!currentComparisonBaseline) {
-        currentComparisonBaseline = UNIVERSAL_BASELINES['beef-product'];
-    }
-
-    // FIX 1: USE SINGLE SOURCE OF TRUTH FOR WEIGHT
-    // We pass the results into the unified calculator to get the EXACT weight used in the Results tab
+    // 1. DATA INTEGRITY: Use Unified Metrics (Single Source of Truth)
     const unified = getUnifiedMetrics(results?.finalPefResults || finalPefResults, massBalanceData);
     const productWeightKg = unified.weightUsed;
-
-    // FIX 2: USE UNIFIED PER-KG METRICS
-    // Do not recalculate manually. Use the unified values.
     const currentCo2PerKg = unified.co2PerKg;
     const currentFossilPerKg = unified.fossilPerKg;
-    
-    // Baseline calculations
-    const baselineCo2PerKg = currentComparisonBaseline.co2PerKg || 14.47;
-    const baselineFossilPerKg = currentComparisonBaseline.fossilPerKg || 10.0;
 
+    // 2. REGULATOR FIX: STRICT BASELINE MATCHING
+    // Risk: Defaulting to "Beef" (14.47) for non-meat products is Greenwashing.
+    // Fix: If no valid baseline is found, use the product's own score + 10% (Conservative "Industry Avg") 
+    // or strictly require a selection. Here we use a safe fallback.
+    let baselineCo2PerKg, baselineFossilPerKg;
+
+    if (currentComparisonBaseline && currentComparisonBaseline.co2PerKg > 0) {
+        baselineCo2PerKg = currentComparisonBaseline.co2PerKg;
+        baselineFossilPerKg = currentComparisonBaseline.fossilPerKg || (baselineCo2PerKg * 0.7); // Safe ratio
+    } else {
+        console.warn("⚠️ [Compliance] No Baseline Selected. Comparing to Self (Zero Savings) to avoid false claims.");
+        baselineCo2PerKg = currentCo2PerKg; // Zero savings
+        baselineFossilPerKg = currentFossilPerKg;
+    }
+
+    // 3. CALCULATE SAVINGS (No Negative Savings)
     const co2SavedPerKg = Math.max(0, baselineCo2PerKg - currentCo2PerKg);
     const fossilSavedPerKg = Math.max(0, baselineFossilPerKg - currentFossilPerKg);
 
     const totalCo2SavedKg = co2SavedPerKg * volume * productWeightKg;
     const totalFossilSavedMJ = fossilSavedPerKg * volume * productWeightKg;
 
-    const moneyCarbon = (totalCo2SavedKg / 1000) * 85;
-    const moneyEnergy = totalFossilSavedMJ * 0.04;
+    // 4. DEFENSIBLE FINANCIAL CONSTANTS (2025/2026 AUDIT VALUES)
+    const COST_CONSTANTS = {
+        // EU ETS Forecast 2025 / Corporate Shadow Price (Conservative)
+        CARBON_PRICE_EUR_TON: 85.00, 
+        // Industrial Energy Avg (Gas/Elec mix) ~€0.14/kWh = ~€0.04/MJ
+        ENERGY_PRICE_EUR_MJ: 0.04,   
+        // EU Average Diesel Price (Tax included)
+        DIESEL_PRICE_EUR_LITER: 1.75 
+    };
 
-    // Logistics (simplified logic)
+    const moneyCarbon = (totalCo2SavedKg / 1000) * COST_CONSTANTS.CARBON_PRICE_EUR_TON;
+    const moneyEnergy = totalFossilSavedMJ * COST_CONSTANTS.ENERGY_PRICE_EUR_MJ;
+
+    // 5. LOGISTICS AUDIT (GLEC FRAMEWORK SIMPLIFIED)
     const transportMode = document.getElementById('transportMode')?.value || 'road';
     const isLocal = scenarios && scenarios.local;
     const isLightweight = scenarios && scenarios.lightweight;
 
-    const distanceBaseline = 500;
+    const distanceBaseline = 500; // Standard Regional Distribution
     const distanceOptimized = isLocal ? 50 : (parseFloat(document.getElementById('transportDistance')?.value) || 300);
 
     const packagingWeight = parseFloat(document.getElementById('packagingWeight')?.value) || 0.05;
     const pkgWeightOptimized = isLightweight ? packagingWeight * 0.8 : packagingWeight;
 
+    // Load Calculation (Ton-Km)
     const massBaselineTon = (productWeightKg + packagingWeight) / 1000;
     const massOptimizedTon = (productWeightKg + pkgWeightOptimized) / 1000;
 
     const tonKmBaseline = massBaselineTon * distanceBaseline * volume;
     const tonKmOptimized = massOptimizedTon * distanceOptimized * volume;
 
+    // Fuel Factor: 0.03 L/tkm (approx 30L/100km truck with 10t payload) - GLEC safe avg
     const dieselLitersSaved = Math.max(0, (tonKmBaseline - tonKmOptimized) * 0.03);
-    const moneyFuel = dieselLitersSaved * 1.75;
+    const moneyFuel = dieselLitersSaved * COST_CONSTANTS.DIESEL_PRICE_EUR_LITER;
 
     const totalMoney = moneyCarbon + moneyEnergy + moneyFuel;
-    
+
+    console.log(`✅ [ROI Calculated] Total: €${totalMoney.toFixed(2)} (C: €${moneyCarbon} | E: €${moneyEnergy} | F: €${moneyFuel})`);
+
     return {
         moneyCarbon,
         moneyEnergy,
@@ -5792,70 +5810,78 @@ function calculateHardFinancialMath(results, volume, scenarios) {
             totalMJSaved: totalFossilSavedMJ,
             fuelLitersSaved: dieselLitersSaved,
             co2SavedPerKg,
-            fossilSavedPerKg
+            fossilSavedPerKg,
+            baselineUsed: baselineCo2PerKg.toFixed(2) // Exposed for Audit
         }
     };
 }
 
 
-// ================== UPDATE FINANCIAL LEDGER ==================
+
+// ================== UPDATE FINANCIAL LEDGER (CRASH FIX + AUDIT READY) ==================
 function updateHardFinancialLedger(financialResults, volume) {
     const tbody = document.getElementById('ledgerBody');
     if (!tbody) return;
     
-    const { moneyFuel, moneyEnergy, metrics } = financialResults;
+    // [FIX] Destructure moneyCarbon so it can be used in the HTML below
+    const { moneyCarbon, moneyFuel, moneyEnergy, metrics } = financialResults;
     
-    // Shadow Carbon Pricing (EU ETS proxy - for strategic planning only)
-    const shadowCarbonValue = (metrics.totalTonsCo2Saved || 0) * 85;
-    
-    // REAL direct savings (energy + fuel only)
+    // REGULATOR COMPLIANCE: 
+    // We separate "Real Cash" (OPEX) from "Shadow Value" (Risk Avoidance).
+    // This prevents misleading CFOs into thinking Carbon Credits are immediate cash.
     const realCashSavings = moneyEnergy + moneyFuel;
+
+    // VCM (Voluntary Carbon Market) Estimate: Conservative €15/t (vs €85 compliance cost)
+    const vcmValue = (metrics.totalTonsCo2Saved || 0) * 15;
 
     tbody.innerHTML = `
     <tr>
         <td>
-            "<strong>🛡️ Scope 3 Liability Buffer</strong><br>"
-            <small>Scope 3 Risk / Shadow Price (€85/t)</small>
+            <strong>🛡️ Scope 3 Liability Buffer</strong><br>
+            <small>Internal Carbon Pricing / Shadow Cost (€85/t)</small>
         </td>
         <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-        <td class="money-positive">+€${moneyCarbon.toFixed(2)}</td>
+        <td class="money-positive" style="color: #2c3e50;">€${moneyCarbon.toFixed(2)}</td> 
     </tr>
     <tr>
         <td>
             <strong>🌱 Voluntary Carbon Value</strong><br>
-            <small>Potential VCM Benefit (€15/t)</small>
+            <small>Potential VCM Revenue (Conservative €15/t)</small>
         </td>
         <td>+${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-        <td class="money-positive">+€${(metrics.totalTonsCo2Saved * 15).toFixed(2)}</td>
+        <td class="money-positive" style="opacity: 0.7;">€${vcmValue.toFixed(2)}</td>
     </tr>
     <tr>
         <td>
             <strong>⚡ Energy OPEX</strong><br>
-            <small>Fossil fuel reduction (Physics-Based)</small>
+            <small>Direct Fossil Fuel Reduction</small>
         </td>
         <td>-${Math.round(metrics.totalMJSaved).toLocaleString()} MJ</td>
-        <td class="money-positive">+€${moneyEnergy.toFixed(2)}</td>
+        <td class="money-positive" style="font-weight:bold; color: #27ae60;">+€${moneyEnergy.toFixed(2)}</td>
     </tr>
     <tr>
         <td>
             <strong>🚚 Logistics Fuel</strong><br>
-            <small>Transport optimization</small>
+            <small>Transport Optimization Savings</small>
         </td>
         <td>-${Math.round(metrics.fuelLitersSaved).toLocaleString()} L Diesel</td>
-        <td class="money-positive">+€${moneyFuel.toFixed(2)}</td>
+        <td class="money-positive" style="font-weight:bold; color: #27ae60;">+€${moneyFuel.toFixed(2)}</td>
     </tr>
 `;
 
     const totalBenefit = document.getElementById('totalBenefit');
     if (totalBenefit) {
+        // REGULATOR APPROVED DISPLAY: 
+        // Only show Real Cash (Energy + Fuel) as the "Total Benefit" to avoid overpromising.
         totalBenefit.innerHTML = `
             €${realCashSavings.toFixed(2)} 
             <div style="font-size: 0.8rem; color: var(--gray); font-weight: normal; margin-top: 0.25rem;">
-                Direct savings only • Excludes speculative carbon pricing
+                Direct OPEX savings • Excludes avoided carbon tax
             </div>
         `;
     }
 }
+
 
 // ================== UPDATE BUSINESS CASE (FIXED) ==================
 function updateBusinessCase() {
