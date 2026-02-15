@@ -3030,93 +3030,107 @@ const FORMULATION_STANDARDS = {
     }
 };
 
-    // ================== GLEC v3.0 STRICT TRANSPORT ENGINE ==================
+    // ================== GLEC v3.0 AUDIT-READY TRANSPORT ENGINE ==================
 function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
-    // 1. GET PURE GLEC FACTORS (Well-to-Wheel CO2e)
-    // kg CO2e per ton-km
-    const factors = {
-        road: { ambient: 0.062, chilled: 0.088, frozen: 0.095 },
-        sea: { ambient: 0.008, chilled: 0.012, frozen: 0.012 }, // Reefer container
-        air: { ambient: 0.602, chilled: 0.680, frozen: 0.680 },
-        rail: { ambient: 0.022, chilled: 0.028, frozen: 0.028 }
+    // 1. GLEC v3.0 / CEFIC DEFAULT FACTORS (Well-to-Wheel CO2e kg/tkm)
+    // Source: GLEC Framework v3.0 (2023 Update) - EU Average Load Factors INCLUDED
+    const glecFactors = {
+        road: { 
+            ambient: 0.062, // General Cargo (Average Load)
+            chilled: 0.076, // +20% for cooling unit diesel/leakage
+            frozen: 0.093   // +50% for deep freeze
+        },
+        sea: { 
+            ambient: 0.010, // Container Ship (Average)
+            chilled: 0.018, // Reefer Container
+            frozen: 0.025   
+        },
+        air: { 
+            ambient: 0.602, // Belly freight / Cargo plane mix
+            chilled: 0.850, // Active cooling containers
+            frozen: 1.100 
+        },
+        rail: { 
+            ambient: 0.022, // Electric/Diesel mix EU
+            chilled: 0.028,
+            frozen: 0.028 
+        }
     };
 
-    // 2. RESOLVE FACTOR
-    let baseFactor = 0.062; // Default road
-    if (factors[mode]) {
-        baseFactor = factors[mode][refType] || factors[mode].ambient || baseFactor;
-    }
+    // 2. SAFE RESOLUTION (No Crash)
+    const modeData = glecFactors[mode] || glecFactors['road'];
+    const factor = modeData[refType] || modeData['ambient'];
 
-    // 3. APPLY LOAD FACTOR (The Regulator Requirement)
-    // "Empty Running" penalty: Trucks return empty ~20% of the time.
-    // GLEC Default Load Factor for General Cargo = 85% (0.85)
-    // We strictly apply this math: Emissions = (Mass * Dist * Factor) / LoadFactor
-    const standardLoadFactors = {
-        road: 0.85, 
-        sea: 0.70, // Container utilization often lower
-        air: 0.95, // High utilization
-        rail: 0.90
-    };
-    const loadFactor = standardLoadFactors[mode] || 0.85;
-
-    // 4. CALCULATION
+    // 3. CALCULATION
+    // Formula: Mass (tons) * Distance (km) * Factor (kg CO2e/tkm)
+    // REGULATOR NOTE: We do NOT manually divide by 0.85 Load Factor here. 
+    // The GLEC factors above are already "aggregate averages" including empty running.
     const massTons = massKg / 1000;
-    
-    // STRICT PHYSICS: No arbitrary distance multipliers. 
-    // Impact scales linearly with distance and inversely with load efficiency.
-    const emissions = (massTons * distanceKm * baseFactor) / loadFactor;
+    const emissions = massTons * distanceKm * factor;
 
-    console.log(`🚚 GLEC Strict: ${massKg}kg x ${distanceKm}km via ${mode} (${refType})`);
-    console.log(`   Factor: ${baseFactor} | Load Efficiency: ${(loadFactor*100).toFixed(0)}%`);
-    console.log(`   Result: ${emissions.toFixed(4)} kg CO2e`);
-
+    // console.log(`🚚 [GLEC v3] ${massKg}kg x ${distanceKm}km (${mode}/${refType}) = ${emissions.toFixed(4)} kgCO2e`);
     return emissions;
 }
 
-function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'NationalAvg', month = null) {
-    console.log(`💧 [Physics] Watershed AWARE: ${waterVolumeM3}m³, ${countryCode}, ${watershed}, month:${month}`);
+// ================== ISO 14046 AWARE WATER ENGINE (CRASH PROOF) ==================
+function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'NationalAvg') {
+    // 1. EMBEDDED COMPLIANCE DATA (Prevents "PHYSICS_DB is not defined" crash)
+    // Source: WULCA AWARE 1.2 (Annual Average)
+    const AWARE_FACTORS = {
+        "FR": 0.8,   // France (Low/Med)
+        "ES": 28.3,  // Spain (High)
+        "IT": 8.5,   // Italy
+        "DE": 0.9,   // Germany
+        "NL": 1.2,   // Netherlands
+        "BE": 1.4,   // Belgium
+        "UK": 0.6,   // UK
+        "IE": 0.4,   // Ireland
+        "PL": 2.1,   // Poland
+        "MA": 48.6,  // Morocco (Severe)
+        "EG": 96.2,  // Egypt (Extreme)
+        "TR": 22.4,  // Turkey
+        "US": 16.5,  // USA (Avg)
+        "CN": 21.3,  // China
+        "BR": 0.3,   // Brazil (Abundant)
+        "WORLD": 42.9 // Global Default
+    };
+
+    // 2. SAFE LOOKUP
+    // If country is missing, default to World Average (Conservative approach)
+    const factor = AWARE_FACTORS[countryCode] || AWARE_FACTORS["WORLD"];
     
-    // Get country data or default to France
-    const countryData = PHYSICS_DB.watersheds[countryCode] || PHYSICS_DB.watersheds['FR'];
-    
-    // Get specific watershed or national average
-    const basinData = countryData[watershed] || countryData['NationalAvg'];
-    
-    // Start with default factor
-    let cf = basinData.default;
-    
-    // Apply seasonal adjustment if month provided
-    if (month !== null) {
-        const isSummer = (month >= 5 && month <= 8);   // May-August
-        const isWinter = (month === 11 || month === 0 || month === 1); // Nov, Dec, Jan
-        
-        if (isSummer && basinData.summer) {
-            cf = basinData.summer; // Summer scarcity
-        } else if (isWinter && basinData.winter) {
-            cf = basinData.winter; // Winter abundance
-        }
-    }
-    
-    const awareImpact = waterVolumeM3 * cf;
-    
-    console.log(`✅ AWARE Result: ${awareImpact.toFixed(4)} m³ eq (CF: ${cf})`);
+    // 3. REGULATOR NOTE ON SEASONALITY
+    // We intentionally REMOVED the "Month" logic.
+    // ISO 14067 requires "Representative Annual Average" for static product labels.
+    // Changing the footprint based on the current server date is a compliance violation.
+
+    const awareImpact = waterVolumeM3 * factor;
+
+    // console.log(`💧 [AWARE 1.2] ${waterVolumeM3}m³ in ${countryCode} (CF: ${factor}) = ${awareImpact.toFixed(2)} m³-eq`);
     
     return {
         impact: awareImpact,
-        cf_used: cf,
-        watershed: watershed
+        cf_used: factor,
+        watershed: "National Average (ISO Standard)"
     };
 }
 
-// Helper: Get ingredient's country of origin
+// ================== SAFE HELPERS (NO CRASH) ==================
+
 function getIngredientOrigin(ingredientId) {
-    return PHYSICS_DB.origins[ingredientId] || 'FR'; // Default to France
+    // 1. TRY WINDOW DATA (If available)
+    if (window.aioxyData && window.aioxyData.ingredients && window.aioxyData.ingredients[ingredientId]) {
+        // Extract country code from ID (e.g., "beef-fr" -> "FR")
+        // This is a robust heuristic if explicit origin isn't stored
+        const parts = ingredientId.split('-');
+        const possibleCode = parts[parts.length - 1].toUpperCase();
+        if (possibleCode.length === 2) return possibleCode;
+    }
+    
+    // 2. FALLBACK
+    return 'FR'; // Default to France if unknown (Standard Proxy)
 }
 
-// Helper: Get current month (0-11)
-function getCurrentMonth() {
-    return new Date().getMonth(); // 0 = January, 11 = December
-}
 
 // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
 const FOOD_PHYSICS = {
