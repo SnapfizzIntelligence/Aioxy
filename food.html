@@ -3032,28 +3032,28 @@ const FORMULATION_STANDARDS = {
 
     // ================== GLEC v3.0 AUDIT-READY TRANSPORT ENGINE ==================
 function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
-    // 1. GLEC v3.0 / CEFIC DEFAULT FACTORS (Well-to-Wheel CO2e kg/tkm)
-    // Source: GLEC Framework v3.0 (2023 Update) - EU Average Load Factors INCLUDED
+    // 1. GLEC v3.0 / ISO 14083 PROXY FACTORS (WTW CO2e kg/tkm)
+    // Regulator Note: Using "Conservative Averages" to prevent under-reporting.
     const glecFactors = {
         road: { 
-            ambient: 0.062, // General Cargo (Average Load)
-            chilled: 0.076, // +20% for cooling unit diesel/leakage
-            frozen: 0.093   // +50% for deep freeze
+            ambient: 0.096, // EU Avg HGV (Mixed Load) - Safer than 0.062 (Fully Loaded)
+            chilled: 0.115, // EU Avg Refrigerated
+            frozen: 0.130   // EU Avg Frozen
         },
         sea: { 
-            ambient: 0.010, // Container Ship (Average)
-            chilled: 0.018, // Reefer Container
+            ambient: 0.012, // Container Ship (Average Trade)
+            chilled: 0.020, // Reefer Container
             frozen: 0.025   
         },
         air: { 
-            ambient: 0.602, // Belly freight / Cargo plane mix
-            chilled: 0.850, // Active cooling containers
-            frozen: 1.100 
+            ambient: 1.13,  // IATA "General Cargo" (Short/Medium Haul Mix) - Conservative
+            chilled: 1.35,  // Active Temp Control Uplift
+            frozen: 1.45 
         },
         rail: { 
-            ambient: 0.022, // Electric/Diesel mix EU
-            chilled: 0.028,
-            frozen: 0.028 
+            ambient: 0.028, // EU Grid Mix Traction
+            chilled: 0.035,
+            frozen: 0.035 
         }
     };
 
@@ -3063,12 +3063,10 @@ function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
 
     // 3. CALCULATION
     // Formula: Mass (tons) * Distance (km) * Factor (kg CO2e/tkm)
-    // REGULATOR NOTE: We do NOT manually divide by 0.85 Load Factor here. 
-    // The GLEC factors above are already "aggregate averages" including empty running.
+    // REGULATOR NOTE: The GLEC factors above are already "aggregate averages" including empty running.
     const massTons = massKg / 1000;
     const emissions = massTons * distanceKm * factor;
 
-    // console.log(`🚚 [GLEC v3] ${massKg}kg x ${distanceKm}km (${mode}/${refType}) = ${emissions.toFixed(4)} kgCO2e`);
     return emissions;
 }
 
@@ -3102,11 +3100,8 @@ function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'Nation
     // 3. REGULATOR NOTE ON SEASONALITY
     // We intentionally REMOVED the "Month" logic.
     // ISO 14067 requires "Representative Annual Average" for static product labels.
-    // Changing the footprint based on the current server date is a compliance violation.
 
     const awareImpact = waterVolumeM3 * factor;
-
-    // console.log(`💧 [AWARE 1.2] ${waterVolumeM3}m³ in ${countryCode} (CF: ${factor}) = ${awareImpact.toFixed(2)} m³-eq`);
     
     return {
         impact: awareImpact,
@@ -3114,6 +3109,7 @@ function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'Nation
         watershed: "National Average (ISO Standard)"
     };
 }
+
 
 // ================== SAFE HELPERS (NO CRASH) ==================
 
