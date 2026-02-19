@@ -1343,6 +1343,7 @@
     <option value="coffee-product">Conventional Coffee (Retail Equiv.)</option>
     <option value="chocolate-product">Conventional Chocolate (Retail Equiv.)</option>
     <option value="bread-product">Conventional Bread (Retail Equiv.)</option>
+    <option value="pasta-product">Conventional Egg Pasta (Dry Retail Equiv.)</option>
 </optgroup>
 <optgroup label="Personal Care (Cradle-to-Retail Equivalent)">
     <option value="shampoo-conventional">Conventional Shampoo</option>
@@ -3552,6 +3553,13 @@ const UNIVERSAL_BASELINES = {
         landUsePerKg: 3.2,
         fossilPerKg: 8.0
     }, 
+    'pasta-product': {
+        name: 'Conventional Egg Pasta (Dry)',
+        co2PerKg: 1.86,
+        waterPerKg: 207.0, // Extremely high due to egg/poultry water footprint
+        landUsePerKg: 0.926,
+        fossilPerKg: 21.8
+    },
     'default': {
         name: 'Global Food Average',
         co2PerKg: 4.5,
@@ -5035,7 +5043,9 @@ if (name.includes('spread') || name.includes('choco') || name.includes('hazelnut
     if ((name.includes('milk') || name.includes('drink') || name.includes('latte')) && !name.includes('burger')) {
         return 'milk-product';
     }
-    
+    if (name.includes('pasta') || name.includes('spaghetti') || name.includes('macaroni') || name.includes('noodle')) {
+        return 'pasta-product';
+    }
     if (name.includes('burger') || name.includes('patty') || name.includes('sausage')) {
         return 'beef-product';
     }
@@ -5082,6 +5092,7 @@ if(baseline.name.includes('Milk') || baseline === UNIVERSAL_BASELINES['milk-prod
         {name: `Chicken (Industry Benchmark)`, val: 2.81 + baseUplift},
         {name: `Pork (Industry Benchmark)`, val: 4.04 + baseUplift}
     ];
+
 } else if (baseline === UNIVERSAL_BASELINES['chicken-product']) {
     list = [
         {name: `This Product (Modeled: PEF 3.1)`, val: myCo2, highlight: true},
@@ -5089,6 +5100,13 @@ if(baseline.name.includes('Milk') || baseline === UNIVERSAL_BASELINES['milk-prod
         {name: `Pork (Industry Benchmark)`, val: 4.04 + baseUplift},
         {name: `Beef (Industry Benchmark)`, val: 16.5 + (baseUplift * 3)}
     ];
+ } else if (baseline === UNIVERSAL_BASELINES['pasta-product']) {
+        list = [
+            {name: `This Product (Modeled: PEF 3.1)`, val: myCo2, highlight: true},
+            {name: `Conventional Egg Pasta (Dry)`, val: upliftedBaseline},
+            {name: `Standard Wheat Pasta (Dry)`, val: 1.25 + baseUplift}, 
+            {name: `Fresh Pasta (Wet)`, val: 2.10 + baseUplift} 
+        ];
 } else {
     list = [
         {name: `This Product (PEF 3.1 Assessment)`, val: myCo2, highlight: true},
