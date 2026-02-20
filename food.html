@@ -4645,17 +4645,17 @@ const foodCalculationEngine = {
     },
 
     calculateUncertainty(dqrScore) {
-        // Linear Interpolation: PEF Standard Method
-        let score = (typeof dqrScore === 'object') ? (dqrScore.P || 2.0) : (dqrScore || 2.0);
-        if (score <= 1) return 10;
-        if (score <= 2) return 10 + 15 * (score - 1); // 25% at DQR 2
-        return 25 + 25 * (score - 2);                 // 50% at DQR 3
-    }, 
-
-
+    // Linear Interpolation: PEF Standard Method
+    let score = (typeof dqrScore === 'object') ? (dqrScore.P || 2.0) : (dqrScore || 2.0);
+    let uncertainty = 0;
     
-
-      
+    if (score <= 1) uncertainty = 10;
+    else if (score <= 2) uncertainty = 10 + 15 * (score - 1);
+    else uncertainty = 25 + 25 * (score - 2);
+    
+    // THE FIX: Round to 1 decimal place
+    return parseFloat(uncertainty.toFixed(1));
+},
 
     calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
