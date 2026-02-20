@@ -7923,10 +7923,12 @@ function populateCountrySelect() {
             select.appendChild(option);
         });
         
-        // Auto-select France for manufacturing
-        if (id === 'manufacturingCountry') {
-            select.value = 'FR';
-        }
+        // Auto-select France for manufacturing ONLY if no selection exists
+if (id === 'manufacturingCountry') {
+    if (!select.value || select.value === "") {
+        select.value = 'FR';
+    }
+    }
         
         console.log(`✅ [populateCountrySelect] Added ${sortedKeys.length} countries to #${id}`);
     });
