@@ -1815,7 +1815,6 @@ window.aioxyData = {
     processing: {
         "none": { co2_impact: 0, water_impact: 0, yield: 1.00, loss: 0.000, temp: 20, kwh_per_kg: 0.00 },
         "pasteurization": { co2_impact: 0.06, water_impact: 0.15, yield: 0.995, loss: 0.005, temp: 72, kwh_per_kg: 0.20 },
-        "industrial_baking": { co2_impact: 0.45, water_impact: 0.12, yield: 0.88, loss: 0.120, temp: 180, kwh_per_kg: 0.85 }
         "sterilization": { co2_impact: 0.12, water_impact: 0.30, yield: 0.985, loss: 0.015, temp: 121, kwh_per_kg: 0.35 },
         "baking": { co2_impact: 0.55, water_impact: 0.12, yield: 0.88, loss: 0.120, temp: 180, kwh_per_kg: 1.20 },
         "frying": { co2_impact: 0.75, water_impact: 0.22, yield: 0.75, loss: 0.250, temp: 180, kwh_per_kg: 1.80 },
@@ -1829,7 +1828,8 @@ window.aioxyData = {
         "cleaning": { co2_impact: 0.02, water_impact: 2.0, yield: 0.98, loss: 0.02, temp: 25, kwh_per_kg: 0.05 },
         "wet_milling": { co2_impact: 0.25, water_impact: 8.0, yield: 0.65, loss: 0.35, temp: 50, kwh_per_kg: 0.60 },
         "canning": { co2_impact: 0.30, water_impact: 3.5, yield: 0.95, loss: 0.05, temp: 110, kwh_per_kg: 0.60 },
-        "crushing": { co2_impact: 0.12, water_impact: 1.0, yield: 0.40, loss: 0.60, temp: 40, kwh_per_kg: 0.30 }
+        "crushing": { co2_impact: 0.12, water_impact: 1.0, yield: 0.40, loss: 0.60, temp: 40, kwh_per_kg: 0.30 }, 
+        "industrial_baking": { co2_impact: 0.45, water_impact: 0.12, yield: 0.88, loss: 0.120, temp: 180, kwh_per_kg: 0.85 }, 
     },
 
     // 6. TRANSPORTATION (GLEC v3.0) - UPDATED WITH 2024 DATA
