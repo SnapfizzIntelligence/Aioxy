@@ -1831,15 +1831,43 @@ window.aioxyData = {
         "crushing": { co2_impact: 0.12, water_impact: 1.0, yield: 0.40, loss: 0.60, temp: 40, kwh_per_kg: 0.30 }
     },
 
-    // 6. TRANSPORTATION (GLEC v3.0) - UPDATED WITH 2024 DATA
+    // 6. TRANSPORTATION (GLEC v3.2) - UPDATED WITH 2024/2025 DATA & AIR POLLUTANTS (Module 6)
     transportation: {
-        "road": { co2: 0.062, refrigerated_factor: 1.20, load_factor: 0.85, van_factor: 5.5 },
-        "rail": { co2: 0.022, refrigerated_factor: 1.10 },
-        "sea": { co2: 0.008, refrigerated_factor: 1.40 },
-        "air": { co2: 0.602, short_haul_co2: 1.13, refrigerated_factor: 1.05 },
-        "lastmile": { co2: 0.20, refrigerated_factor: 1.15 },
-        "electric_van": { co2: 0.015, refrigerated_factor: 1.25 }
+        "road": { 
+            co2: 0.060, // kg CO2e/tkm (Articulated 34-40t, EU Average, WTW)
+            refrigerated_factor: 1.12, // 12% uplift for >3.5t GVW per GLEC v3.2
+            load_factor: 0.60, // Standardized 60% load factor
+            van_factor: 14.03, // Van WTW is 0.842 kg/tkm -> (0.842 / 0.060)
+            air_pollutants_g_per_tkm: { nox: 0.519, pm10: 0.011, bc: 0.006 } // Derived from Tier 1 EF * FI
+        },
+        "rail": { 
+            co2: 0.0184, // kg CO2e/tkm (EU Average mixed traction)
+            refrigerated_factor: 1.12, // 12% uplift applied for temperature control
+            air_pollutants_g_per_tkm: { nox: 0.250, pm10: 0.012, bc: 0.007 }
+        },
+        "sea": { 
+            co2: 0.0072, // kg CO2e/tkm (Clean Cargo Industry Average Container)
+            refrigerated_factor: 1.98, // Clean Cargo reefer (142.3) vs dry (71.7) ratio
+            air_pollutants_g_per_tkm: { sox: 0.008, nox: 0.144, pm10: 0.002 }
+        },
+        "air": { 
+            co2: 0.788, // kg CO2e/tkm (Long-haul >1500km, unknown belly/freighter)
+            short_haul_co2: 1.363, // kg CO2e/tkm (Short-haul <1500km)
+            refrigerated_factor: 1.05,
+            air_pollutants_g_per_tkm: { nox: 1.020, sox: 0.080 } 
+        },
+        "lastmile": { 
+            co2: 0.223, // kg CO2e/tkm (Rigid urban delivery truck 7.5-12t GVW)
+            refrigerated_factor: 1.12,
+            air_pollutants_g_per_tkm: { nox: 1.375, pm10: 0.029, bc: 0.015 }
+        },
+        "electric_van": { 
+            co2: 0.022, // kg CO2e/tkm (Grid-aware charging emissions default WTW)
+            refrigerated_factor: 1.25,
+            air_pollutants_g_per_tkm: { nox: 0.0, pm10: 0.0, bc: 0.0 } // Zero tailpipe emissions
+        }
     },
+
 
     // 7. PACKAGING (CFF COMPLIANT) - CO2 VALUES UPDATED WITH 2024 DATA
     packaging: {
