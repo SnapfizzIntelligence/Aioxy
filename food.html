@@ -4149,26 +4149,17 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     }
     
     // 4. CALCULATE STATISTICS (AUDITABLE METRICS)
-const stats = (values) => {
-    values.sort((a, b) => a - b);
-    const mean = values.reduce((a, b) => a + b, 0) / iterations;
-    const p5 = values[Math.floor(iterations * 0.05)];
-    const p95 = values[Math.floor(iterations * 0.95)];
-    
-    // 🔥 CALCULATE THE UNCERTAINTY PERCENTAGE AND ROUND TO 1 DECIMAL
-    const uncertaintyPercent = (((p95 - mean) / mean) * 100).toFixed(1);
-    
-    return {
-        // Keep numbers for calculations, but rounded for display
-        mean: Number(mean.toFixed(2)),
-        median: Number(values[Math.floor(iterations * 0.5)].toFixed(2)),
-        p5: Number(p5.toFixed(2)),
-        p95: Number(p95.toFixed(2)),
-        range: Number((values[iterations - 1] - values[0]).toFixed(2)),
-        // 🔥 NEW: Pre-formatted string for the UI
-        formatted_uncertainty: `±${uncertaintyPercent}%`
+    const stats = (values) => {
+        values.sort((a, b) => a - b);
+        const mean = values.reduce((a, b) => a + b, 0) / iterations;
+        return {
+            mean: mean,
+            median: values[Math.floor(iterations * 0.5)],
+            p5: values[Math.floor(iterations * 0.05)],    // Lower Confidence Bound (90% CI)
+            p95: values[Math.floor(iterations * 0.95)],   // Upper Confidence Bound (Risk Cap)
+            range: values[iterations - 1] - values[0]
+        };
     };
-};
 
     const co2Stats = stats(results.co2);
     const waterStats = stats(results.water);
@@ -6795,119 +6786,225 @@ function displayFullPefScorecard() {
     }
         }
 
-// ================== UI INTEGRATION: COMPLETE AUDIT TRAIL ==================
-function displayCompleteAuditTrail() {
-    const transparencyTab = document.getElementById('transparency-tab');
-    if (!transparencyTab || !auditTrailData) return;
+// ================== REGULATORY AUDIT TRAIL ENGINE (ISO 14044) ==================
+function displayAuditTrail() {
+    const auditContent = document.getElementById('auditTrailContent');
+    if (!auditContent) return;
 
-    let auditSection = document.getElementById('completeAuditTrailSection');
-    if (!auditSection) {
-        auditSection = document.createElement('div');
-        auditSection.id = 'completeAuditTrailSection';
-        auditSection.className = 'card';
-        auditSection.style.marginTop = '1.5rem';
-        
-        transparencyTab.querySelector('.main-content').appendChild(auditSection);
+    if (!auditTrailData || !auditTrailData.pefCategories) {
+        auditContent.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><h3>Awaiting Calculation Data</h3><p>Run impact analysis to generate audit log.</p></div>`;
+        return;
     }
 
-    const audit = auditTrailData;
+    // 1. CONTEXT VARIABLES
+    const catCC = auditTrailData.pefCategories["Climate Change"];
+    const mb = auditTrailData.mass_balance;
+    const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'FR';
     
-    auditSection.innerHTML = `
-        <div class="card-header">
-            <div class="card-title">
-                <div class="card-icon" style="background: var(--gradient-primary);">
-                    <i class="fas fa-fingerprint"></i>
-                </div>
-                Complete Chain-of-Custody Audit Trail
-            </div>
-            <div class="badge">
-                <i class="fas fa-shield-alt"></i>
-                ISO 14044 Compliant • Tamper-Evident
-            </div>
-        </div>
+    // Helper: Country Name Resolver
+    const getCtry = (code) => (window.aioxyData.countries[code]?.name || code);
+
+    // 2. BUILD HTML STRUCTURE
+    let html = `
+    <div style="font-family: 'Courier New', Courier, monospace; color: #333;">
         
-        <div style="margin: 1.5rem 0;">
-            <!-- INTEGRITY HASH -->
-            <div style="background: var(--light); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                    <div style="width: 40px; height: 40px; background: var(--primary); color: white; 
-                                border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-hashtag"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Integrity Verification</div>
-                        <div style="color: var(--gray); font-size: 0.9rem;">
-                            SHA-256 Hash: Verifies calculation integrity
-                        </div>
-                    </div>
-                </div>
-                <div style="background: white; border-radius: 8px; padding: 1rem; font-family: monospace; 
-                            word-break: break-all; font-size: 0.8rem; color: var(--primary);">
-                    ${audit.dppId ? 
-                        audit.dppId : 
-                        '<span style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Pending Cryptographic Signature</span>'
-                    }
-                </div>
-                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: ${audit.dppId ? 'var(--success)' : 'var(--warning)'};">
-                    ${audit.dppId ? 
-                        '<i class="fas fa-check-circle"></i> Audit trail verified - calculation integrity maintained' : 
-                        '<i class="fas fa-hourglass-half"></i> Waiting for blockchain/ledger confirmation...'
-                    }
-                </div>
+        <div style="border: 2px solid #0A2540; background: #F8FAFC; padding: 15px; margin-bottom: 20px;">
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px;">
+                <strong>AUDIT ID: <span style="color:#0A2540">${auditTrailData.dppId}</span></strong>
+                <strong>TIMESTAMP: ${new Date(auditTrailData.calculationTimestamp).toISOString()}</strong>
             </div>
-            
-            <!-- CALCULATION METADATA -->
-            <h4 style="margin-bottom: 1rem; color: var(--primary);">
-                <i class="fas fa-info-circle"></i> Calculation Metadata
-            </h4>
-            <div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Product Name</div>
-                        <div>${audit.productName || 'Unnamed Product'}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Calculation Timestamp</div>
-                        <div>${new Date(audit.calculationTimestamp).toLocaleString()}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Data Quality Rating</div>
-                        <div class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
-                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Scenarios Applied</div>
-                        <div>${Object.entries(activeScenarios).filter(([_, v]) => v).map(([k]) => k).join(', ') || 'None'}</div>
-                    </div>
-                </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 0.85rem;">
+                <div><strong>PRODUCT:</strong> ${auditTrailData.productName}</div>
+                <div><strong>MFG LOCATION:</strong> ${getCtry(mfgCountry)}</div>
+                <div><strong>METHODOLOGY:</strong> PEF 3.1 (Cradle-to-Retail)</div>
             </div>
-            
-            <!-- DATA SOURCES -->
-            <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
-                <i class="fas fa-database"></i> Data Sources & Methodology
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                A. INGREDIENT LCI & PROXY ADJUSTMENTS
             </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Methodology</div>
-                    <div>PEF 3.1 Compliant</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ccc;">
+                <thead style="background: #eee;">
+                    <tr>
+                        <th style="text-align:left; padding: 8px;">INPUT COMPONENT</th>
+                        <th style="text-align:left; padding: 8px;">ORIGIN</th>
+                        <th style="text-align:right; padding: 8px;">NET MASS</th>
+                        <th style="text-align:left; padding: 8px;">DATA SOURCE</th>
+                        <th style="text-align:left; padding: 8px;">PHYSICS ADJUSTMENTS (The Bridge)</th>
+                        <th style="text-align:right; padding: 8px;">TOTAL CO₂e</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    // LOOP: Ingredients
+    const ingredients = catCC.contribution_tree.Ingredients.components;
+    ingredients.forEach(ing => {
+        const adj = ing.universal_adjustments || {};
+        const isPrimary = ing.primary_data_used;
+        const origin = adj.adjusted_for_country || 'FR';
+        const baseOrigin = adj.adjusted_from_country || 'FR';
+        const isProxy = origin !== baseOrigin;
+
+        // Formulate the "Bridge" string (Regulator wants to see the MATH)
+        let bridgeHTML = '';
+        if (isPrimary) {
+            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Yield: ${ing.primary_data_values?.yield || 'N/A'}`;
+        } else if (isProxy) {
+            let factors = [];
+            if(adj.multipliers?.co2 !== 1) factors.push(`Grid/Yield Factor: <strong>x${adj.multipliers?.co2.toFixed(2)}</strong>`);
+            if(adj.multipliers?.water !== 1) factors.push(`Water Stress: <strong>x${adj.multipliers?.water.toFixed(2)}</strong>`);
+            bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
+        } else {
+            bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
+        }
+
+        html += `
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
+                        <td style="padding: 8px;">${getCtry(origin)}</td>
+                        <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
+                        <td style="padding: 8px;">AGRIBALYSE 3.2</td>
+                        <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
+                        <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg</td>
+                    </tr>`;
+    });
+
+    html += `
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                B. MANUFACTURING & ENERGY BALANCE
+            </h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; border: 1px solid #ccc;">
+                
+                <div style="padding: 10px; border-right: 1px solid #ccc;">
+                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">MASS BALANCE (Input/Output)</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Σ Input Mass:</span>
+                        <span>${mb.inputMass.toFixed(3)} kg</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:#C0392B;">
+                        <span>- Water Evaporation:</span>
+                        <span>${mb.evaporation.toFixed(3)} kg</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
+                        <span>= Final Product:</span>
+                        <span>${mb.final_content_weight_kg.toFixed(3)} kg</span>
+                    </div>
                 </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Data Source</div>
-                    <div>AGRIBALYSE 3.2</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Characterization</div>
-                    <div>JRC EF 3.1</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Water Method</div>
-                    <div>AWARE 2.0</div>
+
+                <div style="padding: 10px;">
+                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
+                    ${catCC.contribution_tree.Manufacturing.components.map(m => `
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Process:</span>
+                            <span>${m.name}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Energy Intensity:</span>
+                            <span>${m.details}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Grid Mix (${mfgCountry}):</span>
+                            <span>${(window.aioxyData.countries[mfgCountry]?.electricityCO2 || 475)} gCO₂e/kWh</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
+                            <span>Impact:</span>
+                            <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
         </div>
-    `;  // ← Template literal ends here, that's it!
+
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                C. LOGISTICS CHAIN (GLEC v3.0)
+            </h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ccc;">
+                <thead style="background: #eee;">
+                    <tr>
+                        <th style="text-align:left; padding: 8px;">LEG</th>
+                        <th style="text-align:left; padding: 8px;">MODE</th>
+                        <th style="text-align:right; padding: 8px;">DISTANCE</th>
+                        <th style="text-align:right; padding: 8px;">LOAD FACTOR</th>
+                        <th style="text-align:right; padding: 8px;">IMPACT</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+    
+    // Inbound (Upstream)
+    const upstream = catCC.contribution_tree.Upstream.components;
+    if (upstream.length > 0) {
+        upstream.forEach(u => {
+            html += `
+                    <tr>
+                        <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
+                        <td style="padding: 8px;">Sea Freight (Container)</td>
+                        <td style="padding: 8px; text-align:right;">~8000 km</td>
+                        <td style="padding: 8px; text-align:right;">70%</td>
+                        <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg</td>
+                    </tr>`;
+        });
+    } else {
+        html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
+    }
+
+    // Outbound (Transport)
+    const outbound = catCC.contribution_tree.Transport.total;
+    const dist = document.getElementById('transportDistance')?.value || 300;
+    const mode = document.getElementById('transportMode')?.value || 'road';
+    html += `
+                    <tr>
+                        <td style="padding: 8px;"><span style="background:#FFF3E0; padding:2px 5px; border-radius:3px;">OUTBOUND</span> Mfg → Retail</td>
+                        <td style="padding: 8px;">${mode.toUpperCase()}</td>
+                        <td style="padding: 8px; text-align:right;">${dist} km</td>
+                        <td style="padding: 8px; text-align:right;">85%</td>
+                        <td style="padding: 8px; text-align:right;">${outbound.toFixed(4)} kg</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                D. PACKAGING (CIRCULAR FOOTPRINT FORMULA)
+            </h4>
+            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem; display:flex; justify-content:space-between;">
+                <div>
+                    <strong>Material:</strong> ${document.getElementById('packagingMaterial')?.value} <br>
+                    <strong>Weight:</strong> ${mb.packaging_weight_kg.toFixed(3)} kg
+                </div>
+                <div>
+                    <strong>Recycled Content:</strong> ${document.getElementById('recycledContent')?.value}% <br>
+                    <strong>End-of-Life:</strong> EU Avg (Incineration/Recycling Mix)
+                </div>
+                <div style="text-align:right;">
+                    <strong>Total Impact:</strong> <br>
+                    <span style="font-weight:bold; font-size:1rem;">${catCC.contribution_tree.Packaging.total.toFixed(4)} kg CO₂e</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <strong>TOTAL CRADLE-TO-RETAIL IMPACT:</strong>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size: 1.5rem; font-weight:bold;">${catCC.total.toFixed(3)} kg CO₂e</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)</div>
+            </div>
+        </div>
+
+    </div>`;
+
+    auditContent.innerHTML = html;
 }
+
     // ================== DIGITAL TRANSPARENCY CARD ==================
     function generateDPP() {
         const productName = document.getElementById('productName').value || 'Unnamed Product';
