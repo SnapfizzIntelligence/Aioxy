@@ -4149,17 +4149,26 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     }
     
     // 4. CALCULATE STATISTICS (AUDITABLE METRICS)
-    const stats = (values) => {
-        values.sort((a, b) => a - b);
-        const mean = values.reduce((a, b) => a + b, 0) / iterations;
-        return {
-            mean: mean,
-            median: values[Math.floor(iterations * 0.5)],
-            p5: values[Math.floor(iterations * 0.05)],    // Lower Confidence Bound (90% CI)
-            p95: values[Math.floor(iterations * 0.95)],   // Upper Confidence Bound (Risk Cap)
-            range: values[iterations - 1] - values[0]
-        };
+const stats = (values) => {
+    values.sort((a, b) => a - b);
+    const mean = values.reduce((a, b) => a + b, 0) / iterations;
+    const p5 = values[Math.floor(iterations * 0.05)];
+    const p95 = values[Math.floor(iterations * 0.95)];
+    
+    // 🔥 CALCULATE THE UNCERTAINTY PERCENTAGE AND ROUND TO 1 DECIMAL
+    const uncertaintyPercent = (((p95 - mean) / mean) * 100).toFixed(1);
+    
+    return {
+        // Keep numbers for calculations, but rounded for display
+        mean: Number(mean.toFixed(2)),
+        median: Number(values[Math.floor(iterations * 0.5)].toFixed(2)),
+        p5: Number(p5.toFixed(2)),
+        p95: Number(p95.toFixed(2)),
+        range: Number((values[iterations - 1] - values[0]).toFixed(2)),
+        // 🔥 NEW: Pre-formatted string for the UI
+        formatted_uncertainty: `±${uncertaintyPercent}%`
     };
+};
 
     const co2Stats = stats(results.co2);
     const waterStats = stats(results.water);
