@@ -4876,14 +4876,16 @@ if (!item.primaryData && window.aioxyData) {
             const allocatedTotal = applyISOAllocation(impactTotal, 0.8, 0.2, 0.3);
 
             auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-                name: ing.name,
-                id: item.id,
-                quantity_kg: grownMass,
-                subtotal: allocatedTotal,
-                note: noteText,
-                universal_adjustments: universalAdjustments,
-                primary_data_used: !!item.primaryData
-            });
+    name: ing.name,
+    id: item.id,
+    // Store BOTH values
+    quantity_kg: item.quantity,        // RECIPE MASS - shows in table
+    farm_mass_kg: grownMass,            // AGRICULTURAL MASS - for calculations
+    subtotal: allocatedTotal,
+    note: noteText,
+    universal_adjustments: universalAdjustments,
+    primary_data_used: !!item.primaryData
+});
             
             auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
             auditTrail.pefCategories[cat].total += allocatedTotal;
