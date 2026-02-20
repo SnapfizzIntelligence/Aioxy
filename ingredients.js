@@ -1826,6 +1826,7 @@ window.aioxyData = {
         "extrusion": { co2_impact: 0.45, water_impact: 0.25, yield: 0.95, loss: 0.050, temp: 150, kwh_per_kg: 0.85 },
         "oat-processing": { co2_impact: 0.35, water_impact: 0.35, yield: 0.98, loss: 0.02, temp: 85, kwh_per_kg: 0.30 },
         "cleaning": { co2_impact: 0.02, water_impact: 2.0, yield: 0.98, loss: 0.02, temp: 25, kwh_per_kg: 0.05 },
+        "industrial_baking": { co2_impact: 0.45, water_impact: 0.12, yield: 0.88, loss: 0.120, temp: 180, kwh_per_kg: 0.85 }
         "wet_milling": { co2_impact: 0.25, water_impact: 8.0, yield: 0.65, loss: 0.35, temp: 50, kwh_per_kg: 0.60 },
         "canning": { co2_impact: 0.30, water_impact: 3.5, yield: 0.95, loss: 0.05, temp: 110, kwh_per_kg: 0.60 },
         "crushing": { co2_impact: 0.12, water_impact: 1.0, yield: 0.40, loss: 0.60, temp: 40, kwh_per_kg: 0.30 }
