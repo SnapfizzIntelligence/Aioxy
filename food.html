@@ -2945,26 +2945,35 @@ const PHYSICS_DB = {
         "polyester-virgin-pet": "CN"
     },
 
-    // 2. GLEC v4.0 EXACT TRANSPORT FACTORS (kg CO2e / ton-km)
+    // 2. GLEC v3.2 EXACT TRANSPORT FACTORS (kg CO2e / ton-km)
     glec_factors: {
-        road: {
-            ambient: { hgv: 0.062, van: 0.180 },
-            chilled: { hgv: 0.088, van: 0.230 },
-            frozen:  { hgv: 0.095, van: 0.260 }
-        },
-        sea: {
-            ambient: 0.008,
-            reefer:  0.012
-        },
-        air: {
-            ambient: 0.602,
-            reefer:  0.680
-        },
-        rail: {
-            ambient: 0.022,
-            reefer:  0.028
-        }
+    road: {
+        // 34-40t Articulated (hgv) & <3.5t Van (van) EU Averages
+        ambient: { hgv: 0.060, van: 0.842 }, 
+        // GLEC v3.2 mandates +12% uplift for temperature controlled road transport
+        chilled: { hgv: 0.067, van: 0.943 }, 
+        frozen:  { hgv: 0.067, van: 0.943 }
     },
+    sea: {
+        ambient: 0.0072, // Clean Cargo Industry Avg (Dry)
+        reefer:  0.0142  // Reefer multiplier (x1.98 based on CCWG data)
+    },
+    air: {
+        ambient: 0.788,  // Long-haul >1500km avg
+        reefer:  0.827   // +5% active cooling uplift
+    },
+    rail: {
+        ambient: 0.0184, // EU Avg mixed traction
+        reefer:  0.0206  // +12% uplift for temperature control
+    },
+    // REGULATORY REQUIREMENT: Distance Adjustment Factors (DAF)
+    daf: {
+        road: 1.05, // +5% for routing diversions
+        sea: 1.15,  // +15% for actual vs shortest feasible distance
+        rail: 1.00, // 0% deviation
+        air: 95     // +95km flat addition for maneuvering
+    }
+},
 
     // 3. WATERSHED AWARE 2.0 FACTORS (m3 world eq / m3)
     watersheds: {
@@ -3031,45 +3040,64 @@ const FORMULATION_STANDARDS = {
     }
 };
 
-    // ================== GLEC v3.0 AUDIT-READY TRANSPORT ENGINE ==================
+// ================== GLEC v3.2 AUDIT-READY TRANSPORT ENGINE ==================
 function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
-    // 1. GLEC v3.0 / ISO 14083 PROXY FACTORS (WTW CO2e kg/tkm)
-    // Regulator Note: Using "Conservative Averages" to prevent under-reporting.
-    const glecFactors = {
-        road: { 
-            ambient: 0.096, // EU Avg HGV (Mixed Load) - Safer than 0.062 (Fully Loaded)
-            chilled: 0.115, // EU Avg Refrigerated
-            frozen: 0.130   // EU Avg Frozen
-        },
-        sea: { 
-            ambient: 0.012, // Container Ship (Average Trade)
-            chilled: 0.020, // Reefer Container
-            frozen: 0.025   
-        },
-        air: { 
-            ambient: 1.13,  // IATA "General Cargo" (Short/Medium Haul Mix) - Conservative
-            chilled: 1.35,  // Active Temp Control Uplift
-            frozen: 1.45 
-        },
-        rail: { 
-            ambient: 0.028, // EU Grid Mix Traction
-            chilled: 0.035,
-            frozen: 0.035 
-        }
-    };
+    // 1. SAFE RESOLUTION - Use global PHYSICS_DB if available, otherwise fallback to strict GLEC v3.2
+    let glecData;
+    
+    // Try to use the data we updated in Step 3
+    if (window.PHYSICS_DB && window.PHYSICS_DB.glec_factors) {
+        glecData = window.PHYSICS_DB.glec_factors;
+    } else {
+        // Fallback to embedded GLEC v3.2 data (regulator-safe)
+        glecData = {
+            road: { 
+                ambient: { hgv: 0.060, van: 0.842 }, 
+                chilled: { hgv: 0.067, van: 0.943 }, 
+                frozen: { hgv: 0.067, van: 0.943 } 
+            },
+            sea: { ambient: 0.0072, reefer: 0.0142 },
+            air: { ambient: 0.788, reefer: 0.827 },
+            rail: { ambient: 0.0184, reefer: 0.0206 },
+            daf: { road: 1.05, sea: 1.15, rail: 1.00, air: 95 }
+        };
+    }
 
-    // 2. SAFE RESOLUTION (No Crash)
-    const modeData = glecFactors[mode] || glecFactors['road'];
-    const factor = modeData[refType] || modeData['ambient'];
+    // 2. GET BASE EMISSION FACTOR
+    const modeData = glecData[mode] || glecData['road'];
+    let factor = 0;
+    
+    if (mode === 'road') {
+        // Road has nested structure with hgv/van
+        const vehicleType = refType === 'ambient' ? 'ambient' : (refType === 'chilled' ? 'chilled' : 'frozen');
+        // Default to hgv if van not specified
+        factor = modeData[vehicleType] ? modeData[vehicleType].hgv : modeData['ambient'].hgv;
+    } else {
+        // Sea, Air, Rail use flat values
+        const tempType = (refType === 'chilled' || refType === 'frozen') ? 'reefer' : 'ambient';
+        factor = modeData[tempType] !== undefined ? modeData[tempType] : modeData['ambient'];
+    }
 
-    // 3. CALCULATION
-    // Formula: Mass (tons) * Distance (km) * Factor (kg CO2e/tkm)
-    // REGULATOR NOTE: The GLEC factors above are already "aggregate averages" including empty running.
+    // 3. APPLY DISTANCE ADJUSTMENT FACTOR (DAF) - MANDATORY PER GLEC v3.2
+    let adjustedDistance = distanceKm;
+    const daf = glecData.daf ? (glecData.daf[mode] || 1.0) : 1.0;
+    
+    if (mode === 'air') {
+        // Air gets flat km addition
+        adjustedDistance += (typeof daf === 'number' && daf > 50) ? daf : 95;
+    } else {
+        // Road, Sea, Rail get multiplier
+        adjustedDistance *= (typeof daf === 'number' && daf <= 2) ? daf : 1.05;
+    }
+
+    // 4. CALCULATION: Mass (tons) × Adjusted Distance (km) × Factor (kg CO₂e/tkm)
     const massTons = massKg / 1000;
-    const emissions = massTons * distanceKm * factor;
+    const emissions = massTons * adjustedDistance * factor;
+    
+    console.log(`🚚 GLEC v3.2: ${mode} (${refType}) | Raw: ${distanceKm}km → Adj: ${adjustedDistance.toFixed(1)}km | Factor: ${factor.toFixed(4)} | CO₂e: ${emissions.toFixed(3)}kg`);
 
     return emissions;
-}
+    }
 
 // ================== ISO 14046 AWARE WATER ENGINE (CRASH PROOF) ==================
 function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'NationalAvg') {
@@ -3976,29 +4004,6 @@ function calculateThermodynamicImpact(massInputKg, massOutputKg, processingMetho
     };
 }
 
-// 4. TRANSPORT PHYSICS (EXACT same as existing)
-function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
-    const PHYSICS_DB = {
-        glec_factors: {
-            road: { ambient: 0.062, chilled: 0.076, frozen: 0.093 },
-            sea: { ambient: 0.010, chilled: 0.018, frozen: 0.025 },
-            air: { ambient: 0.602, chilled: 0.850, frozen: 1.100 },
-            rail: { ambient: 0.022, chilled: 0.028, frozen: 0.028 }
-        }
-    };
-    
-    let factor = 0.062; // Default
-    
-    if (PHYSICS_DB.glec_factors[mode] && PHYSICS_DB.glec_factors[mode][refType]) {
-        factor = PHYSICS_DB.glec_factors[mode][refType];
-    }
-    
-    const emissions = (massKg / 1000) * distanceKm * factor;
-    console.log(`🚚 GLEC Physics: ${mode} (${refType}) | ${distanceKm}km | CO2e: ${emissions.toFixed(3)}kg`);
-    
-    return emissions;
-}
-
 // 5. WATER PHYSICS (EXACT same as existing)
 function calculateAWARE(waterVolumeM3, countryCode) {
     const PHYSICS_DB = {
@@ -4448,7 +4453,7 @@ function applyTemporalDiscounting(pefResults, timeHorizon = 100) {
                     compliance_statement: `This assessment aligns with the principles of ISO 14040:2006 and ISO 14044:2006 for comparative life cycle assessment.
 
 1. System boundary: Cradle-to-Retail (includes ingredients, processing, packaging, distribution).
-2. Data sources: AGRIBALYSE 3.2 (secondary data), GLEC v4.0 (logistics).
+2. Data sources: AGRIBALYSE 3.2 (secondary data), GLEC v3.2 (logistics).
 3. Cut-off criteria: 5% mass/energy rule applied via Foreground/Background analysis.
 
 Note: This screening-level assessment is designed for internal strategic decision-making and B2B communication. Public comparative assertions (e.g., marketing claims) require a third-party critical review panel per ISO 14044 §6.1.`
@@ -8405,15 +8410,15 @@ window.validatePhysics = function() {
         passed = false;
     }
 
-    // B. Verify GLEC Transport Math
-    // 1 ton * 100km * 0.062 (Road Ambient) = 6.2 kg CO2e
-    const transTest = calculateGLECTransport(1000, 100, 'road', 'ambient');
-    if (Math.abs(transTest - 6.2) < 0.1) {
-        console.log("✅ PASS: GLEC v3.0 Transport Calculation.");
-    } else {
-        console.error("❌ FAIL: Transport Math. Expected ~6.2, got " + transTest);
-        passed = false;
-    }
+    // B. Verify GLEC Transport Math (GLEC v3.2)
+// Formula: 1 ton * (100km * 1.05 DAF) * 0.060 (Road Ambient) = 6.3 kg CO2e
+const transTest = calculateGLECTransport(1000, 100, 'road', 'ambient');
+if (Math.abs(transTest - 6.3) < 0.1) {
+    console.log("✅ PASS: GLEC v3.2 Transport Calculation (Includes DAF).");
+} else {
+    console.error("❌ FAIL: Transport Math. Expected ~6.3, got " + transTest);
+    passed = false;
+}
 
     // C. Verify Allocation Logic
     // 100kg Input -> 50kg Protein (Price $10) + 50kg Starch (Price $2)
