@@ -3864,28 +3864,64 @@ function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
     };
 }
 
-// 2. REGIONALIZED UPSTREAM LCI (EXACT same as existing)
+// 2. REGIONALIZED UPSTREAM LCI (ISO 14067 COMPLIANT)
 function calculateRegionalizedLCI(ingredients, manufacturingCountryCode) {
     let upstreamCO2 = 0;
+    const logisticsDetails = [];
+
+    // Define regions (same as above)
+    const regions = {
+        'EU': ['FR', 'BE', 'NL', 'DE', 'ES', 'IT', 'PL', 'IE', 'DK', 'SE', 'AT', 'CH', 'NO', 'GB', 'UK', 'FI', 'PT', 'GR'],
+        'NA': ['US', 'CA', 'MX'],
+        'SA': ['BR', 'AR', 'CO', 'CL', 'PE'],
+        'AS': ['CN', 'JP', 'IN', 'ID', 'VN', 'TH', 'MY', 'KR'],
+        'AF': ['ZA', 'EG', 'MA', 'NG', 'GH', 'KE'],
+        'OC': ['AU', 'NZ']
+    };
+
+    const getRegion = (countryCode) => {
+        for (const [region, countries] of Object.entries(regions)) {
+            if (countries.includes(countryCode)) return region;
+        }
+        return 'UNKNOWN';
+    };
 
     ingredients.forEach(item => {
         const ingData = window.aioxyData?.ingredients?.[item.id];
         if (!ingData) return;
 
-        const originCountry = window.INGREDIENT_ORIGINS?.[item.id] || manufacturingCountryCode;
+        const originCountry = item.originCountry || window.INGREDIENT_ORIGINS?.[item.id] || manufacturingCountryCode;
         
         if (originCountry !== manufacturingCountryCode) {
-            const inboundDist = 10000;
-            const seaFactor = 0.010; // GLEC v3.0 Sea Ambient
-            upstreamCO2 += (item.quantity / 1000) * inboundDist * seaFactor;
+            const originRegion = getRegion(originCountry);
+            const mfgRegion = getRegion(manufacturingCountryCode);
+            
+            let distance, mode, impact;
+            
+            if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
+                // Intra-continental: Road freight
+                distance = 1200;
+                mode = 'road';
+                impact = calculateGLECTransport(item.quantity, distance, mode, 'ambient');
+                logisticsDetails.push(`${item.name}: ${originCountry}→${manufacturingCountryCode} (${originRegion} same continent) - ${distance}km road`);
+            } else {
+                // Intercontinental: Sea freight
+                distance = 15000;
+                mode = 'sea';
+                impact = calculateGLECTransport(item.quantity, distance, mode, 'ambient');
+                logisticsDetails.push(`${item.name}: ${originCountry}→${manufacturingCountryCode} (${originRegion}→${mfgRegion}) - ${distance}km sea`);
+            }
+            
+            upstreamCO2 += impact;
         }
     });
 
     return {
         co2_adder: upstreamCO2,
-        notes: "Includes inbound logistics from origin countries"
+        notes: "Includes inbound logistics from origin countries with continental logic",
+        details: logisticsDetails
     };
-}
+    }
 
 // 3. MANUFACTURING IMPACT (EXACT same return structure as existing)
 function calculateThermodynamicImpact(massInputKg, massOutputKg, processingMethod, countryCode) {
@@ -4940,17 +4976,47 @@ if (!item.primaryData && window.aioxyData) {
         }
 
         // =========================================================
-        // 🛡️ TRANSPORT FIX: REALISTIC LOGISTICS
-        // If origin matches manufacturing country, inbound distance is 0 (Local).
-        // This prevents the "France->UK" penalty when simulating UK production.
+        // 🛡️ FIX 1: GLOBAL SUPPLY CHAIN PROXY (ISO 14067 COMPLIANT)
         // =========================================================
         if (originCountry !== manufacturingCountryCode) {
             console.log(`🚚 Logistics: Importing ${ing.name} from ${originCountry} to ${manufacturingCountryCode}`);
-            const inboundDistSea = 8000; // Proxy for intercontinental
-            const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
-            inboundTransportCO2 += seaImpact;
+            
+            // 1. Define Continental Blocks for Logistics Logic
+            const regions = {
+                'EU': ['FR', 'BE', 'NL', 'DE', 'ES', 'IT', 'PL', 'IE', 'DK', 'SE', 'AT', 'CH', 'NO', 'GB', 'UK', 'FI', 'PT', 'GR'],
+                'NA': ['US', 'CA', 'MX'],
+                'SA': ['BR', 'AR', 'CO', 'CL', 'PE'],
+                'AS': ['CN', 'JP', 'IN', 'ID', 'VN', 'TH', 'MY', 'KR'],
+                'AF': ['ZA', 'EG', 'MA', 'NG', 'GH', 'KE'],
+                'OC': ['AU', 'NZ']
+            };
+
+            // 2. Determine regions for Origin and Destination
+            const getRegion = (countryCode) => {
+                for (const [region, countries] of Object.entries(regions)) {
+                    if (countries.includes(countryCode)) return region;
+                }
+                return 'UNKNOWN'; // Default fallback
+            };
+
+            const originRegion = getRegion(originCountry);
+            const mfgRegion = getRegion(manufacturingCountryCode);
+
+            // 3. Apply GLEC v4.0 Geographically Appropriate Proxy
+            if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
+                // SCENARIO A: Intra-Continental (e.g., EU to EU, US to Canada)
+                const inboundDistRoad = 1200; // Continental cross-border proxy (km)
+                const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', 'ambient');
+                inboundTransportCO2 += roadImpact;
+            } else {
+                // SCENARIO B: Intercontinental (e.g., Asia to EU, South America to NA)
+                const inboundDistSea = 15000; // Deep sea ocean proxy (km)
+                const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', 'ambient');
+                inboundTransportCO2 += seaImpact;
+            }
         } else {
             // Local sourcing = 0 sea freight.
+            console.log(`📍 Local sourcing: ${ing.name} from ${originCountry} (no inbound freight)`);
         }
     });
 
