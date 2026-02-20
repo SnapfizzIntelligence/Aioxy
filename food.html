@@ -4908,7 +4908,7 @@ if (!item.primaryData && window.aioxyData) {
         auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
             name: `Processing (${processingMethod})`,
             subtotal: thermodynamicResult.co2,
-            details: `${thermodynamicResult.kwh.toFixed(2)} kWh (${manufacturingCountryCode} grid)`
+            details: `${thermodynamicResult.kwh.toFixed(4)} kWh (${manufacturingCountryCode} grid)`
         });
         
         const fossilMJ = thermodynamicResult.kwh * 3.6;
