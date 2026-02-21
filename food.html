@@ -6246,7 +6246,8 @@ function updateVolumeDisplay(volume) {
 
 function calculateScalableBusinessCase(results, annualVolume) {
     const co2PerKg = results.co2PerKg || 0;
-    const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.474184;
+    const baselineCO2PerKg = currentComparisonBaseline ?
+    currentComparisonBaseline.co2PerKg : (co2PerKg * 1.2); // Fallback to 20% worse than current product if no baseline exists
     const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
     const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
     
