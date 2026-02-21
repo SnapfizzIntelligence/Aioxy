@@ -4772,12 +4772,16 @@ const foodCalculationEngine = {
     // 3. MASS BALANCE
     let massBalanceData = calculateMassBalance(finalIngredients, processingMethod, packagingWeight);
 
-    // 4. AUDIT TRAIL INIT
-    const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
-    const comparisonBaseline = UNIVERSAL_BASELINES[comparisonKey] || UNIVERSAL_BASELINES['beef-product'];
-    currentComparisonBaseline = comparisonBaseline;
-    const uplift = calculateBaselineUplift(comparisonKey);
+    // 4. AUDIT TRAIL INIT & PARAMETRIC TWIN GENERATION
+const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
 
+// Call the new Parametric Twin Engine (ISO 14044 Compliant Apples-to-Apples)
+const comparisonBaseline = calculateParametricBaseline(comparisonKey, manufacturingCountryCode);
+currentComparisonBaseline = comparisonBaseline;
+
+// Uplift is strictly handled by the Parametric Twin now. No magic numbers.
+const uplift = { co2: 0 };
+    
         // DYNAMIC CRYPTOGRAPHIC HASH BINDING
     const payloadToHash = JSON.stringify({ 
         ingredients: finalIngredients.map(i => `${i.id}:${i.quantity}:${effectiveOrigins[i.id]}`), 
