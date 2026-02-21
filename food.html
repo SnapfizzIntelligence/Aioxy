@@ -3516,86 +3516,151 @@ window.debugAIOXY = debugCurrentState;
         "Resource Use, minerals/metals": { unit: "kg Sb e", icon: "gem" },
         "Resource Use, fossils": { unit: "MJ", icon: "oil-can" }
     };
-// ================== PHASE 2: SCIENTIFIC BASELINES (JRC/WULCA ALIGNED) ==================
-const UNIVERSAL_BASELINES = {
-    'beef-product': {
-        name: 'Conventional Beef',
-        co2PerKg: 35.2,  // Poore & Nemecek (2018) median
-        waterPerKg: 42.5, // AWARE 2.0 (High scarcity weighting for feed crops)
-        landUsePerKg: 326,
-        fossilPerKg: 28.0
+    
+// ============================================================================
+// ⚖️ THE PARAMETRIC TWIN ENGINE (Dynamic Apples-to-Apples Baselines)
+// ============================================================================
+const ANCHOR_DATASETS = {
+    // Maps a product category to its conventional Agribalyse "Anchor" ingredient
+    // factor: mass ratio (e.g., it takes 10kg of milk to make 1kg of cheese)
+    'beef-product': { 
+        id: 'beef-cattle-conventional-national-average-at-farm-gate-fr', 
+        processing: 'freezing', 
+        factor: 1.0,
+        name: 'Beef'
     },
-    'chocolate-spread-conventional': {
-        name: 'Conventional Palm Oil Spread',
-        co2PerKg: 6.1,
-        waterPerKg: 12.4, // High due to nut/oil irrigation requirements
-        landUsePerKg: 14.0,
-        fossilPerKg: 15.5
+    'chicken-product': { 
+        id: 'broiler-conventional-at-farm-gate-fr', 
+        processing: 'freezing', 
+        factor: 1.0,
+        name: 'Chicken'
     },
-    'milk-product': {
-        name: 'Conventional Cow Milk',
-        co2PerKg: 3.2,
-        waterPerKg: 4.8,  // AWARE 2.0
-        landUsePerKg: 8.9,
-        fossilPerKg: 4.5
+    'pork-product': { 
+        id: 'pig-conventional-national-average-at-farm-gate-fr', 
+        processing: 'freezing', 
+        factor: 1.0,
+        name: 'Pork'
     },
-    'chicken-product': {
-        name: 'Conventional Chicken',
-        co2PerKg: 6.8,   // Adjusted for retail-ready (slaughter + pkg)
-        waterPerKg: 8.2,
-        landUsePerKg: 12.2,
-        fossilPerKg: 18.0
+    'milk-product': { 
+        id: 'cow-milk-conventional-national-average-at-farm-gate-fr', 
+        processing: 'pasteurization', 
+        factor: 1.0,
+        name: 'Cow Milk'
     },
-    'pork-product': {
-        name: 'Conventional Pork',
-        co2PerKg: 7.9,
-        waterPerKg: 11.5,
-        landUsePerKg: 17.0,
-        fossilPerKg: 22.0
+    'cheese-product': { 
+        id: 'cow-milk-conventional-national-average-at-farm-gate-fr', 
+        processing: 'fermentation', 
+        factor: 10.0, // 10kg milk → 1kg cheese
+        name: 'Cheese'
     },
-    'cheese-product': {
-        name: 'Conventional Cheese',
-        co2PerKg: 23.8,  // High processing energy + milk concentration
-        waterPerKg: 38.0,
-        landUsePerKg: 85.0,
-        fossilPerKg: 25.0
+    'coffee-product': { 
+        id: 'coffee-bean-robusta-depulped-brazil-at-farm-gate-br', 
+        processing: 'drying', 
+        factor: 1.2, // 20% roasting loss
+        name: 'Coffee'
     },
-    'coffee-product': {
-        name: 'Conventional Coffee',
-        co2PerKg: 28.5,
-        waterPerKg: 240.0, // Extremely high AWARE score (tropical irrigation)
-        landUsePerKg: 20.0,
-        fossilPerKg: 15.0
+    'chocolate-product': { 
+        id: 'cocoa-powder-agribalyse-3-2', 
+        processing: 'mixing', 
+        factor: 1.0,
+        name: 'Chocolate'
     },
-    'chocolate-product': {
-        name: 'Conventional Chocolate',
-        co2PerKg: 19.0,
-        waterPerKg: 55.0,
-        landUsePerKg: 30.0,
-        fossilPerKg: 18.0
+    'chocolate-spread-conventional': { 
+        id: 'palm-oil-refined-agribalyse-3-2', 
+        processing: 'mixing', 
+        factor: 1.0,
+        name: 'Chocolate Spread'
     },
-    'bread-product': {
-        name: 'Conventional Bread',
-        co2PerKg: 1.4,
-        waterPerKg: 2.1,
-        landUsePerKg: 3.2,
-        fossilPerKg: 8.0
-    }, 
-    'pasta-product': {
-        name: 'Conventional Egg Pasta (Dry)',
-        co2PerKg: 1.86,
-        waterPerKg: 207.0, // Extremely high due to egg/poultry water footprint
-        landUsePerKg: 0.926,
-        fossilPerKg: 21.8
+    'pasta-product': { 
+        id: 'durum-wheat-grain-conventional-national-average-at-farm-gate-fr', 
+        processing: 'drying', 
+        factor: 1.0,
+        name: 'Pasta'
     },
-    'default': {
-        name: 'Global Food Average',
-        co2PerKg: 4.5,
-        waterPerKg: 0.5,
-        landUsePerKg: 10,
-        fossilPerKg: 10.0
-    } 
+    'bread-product': { 
+        id: 'durum-wheat-grain-conventional-national-average-at-farm-gate-fr', 
+        processing: 'baking', 
+        factor: 0.8, // 80% yield after baking
+        name: 'Bread'
+    },
+    // Fallback if category is unknown
+    'default': { 
+        id: 'beef-cattle-conventional-national-average-at-farm-gate-fr', 
+        processing: 'freezing', 
+        factor: 1.0,
+        name: 'Conventional Product'
+    }
+};
+
+function calculateParametricBaseline(baselineCategoryKey, targetCountry) {
+    console.log(`⚖️ [Parametric Twin] Constructing apples-to-apples baseline for: ${baselineCategoryKey}`);
+    
+    // Safety check
+    if (!window.aioxyData || !window.aioxyData.ingredients) {
+        console.warn("⚠️ [Parametric Twin] Missing ingredient data");
+        return {
+            name: `Benchmark`,
+            co2PerKg: 5.0,
+            waterPerKg: 1.0,
+            landUsePerKg: 2.0,
+            fossilPerKg: 10.0
+        };
+    }
+    
+    // 1. Fetch the Anchor ingredient
+    const anchor = ANCHOR_DATASETS[baselineCategoryKey] || ANCHOR_DATASETS['default'];
+    const anchorIng = window.aioxyData.ingredients[anchor.id];
+    
+    if (!anchorIng) {
+        console.warn(`⚠️ [Audit Warning] Anchor dataset missing for ${baselineCategoryKey}. Using fallback.`);
+        return { 
+            name: `Generic ${anchor.name || 'Product'}`, 
+            co2PerKg: 5.0, 
+            waterPerKg: 1.0,
+            landUsePerKg: 2.0,
+            fossilPerKg: 10.0
+        };
+    }
+
+    // 2. Calculate Farm Gate Impact (Agribalyse LCI * concentration factor)
+    const farmGateCO2 = (anchorIng.data.pef["Climate Change"] || 0) * anchor.factor;
+    const farmGateWater = (anchorIng.data.pef["Water Use/Scarcity (AWARE)"] || 0) * anchor.factor;
+    const farmGateLand = (anchorIng.data.pef["Land Use"] || 0) * anchor.factor;
+    const farmGateFossil = (anchorIng.data.pef["Resource Use, fossils"] || 0) * anchor.factor;
+
+    // 3. Simulate Standard Industry Manufacturing using our new engine
+    const mfgImpact = calculateManufacturingImpact(1.0, 1.0, anchor.processing, targetCountry);
+    
+    // 4. Simulate Standard Retail Logistics (EU Benchmark: 400km Road distribution)
+    const transportCO2 = calculateGLECTransport(1.0, 400, 'road', 'ambient');
+
+    // 5. Standard Packaging (Conservative estimate: 50g mixed packaging per kg)
+    const packagingCO2 = 0.15; 
+
+    // 6. Assemble the Final Baseline Profile
+    const totalCO2PerKg = farmGateCO2 + mfgImpact.co2 + transportCO2 + packagingCO2;
+
+    const baseName = anchor.name;
+
+    console.log(`   └─ Farm: ${farmGateCO2.toFixed(2)} | Mfg: ${mfgImpact.co2.toFixed(2)} | Log: ${transportCO2.toFixed(2)} | Pkg: ${packagingCO2.toFixed(2)}`);
+    console.log(`   └─ Baseline Total: ${totalCO2PerKg.toFixed(2)} kg CO₂e/kg`);
+
+    return {
+        name: `Conventional ${baseName} (Parametric Twin)`,
+        co2PerKg: totalCO2PerKg,
+        waterPerKg: farmGateWater,
+        landUsePerKg: farmGateLand,
+        fossilPerKg: farmGateFossil + (mfgImpact.kwh * 3.6), // Add manufacturing MJ
+        breakdown: {
+            farm: farmGateCO2,
+            manufacturing: mfgImpact.co2,
+            logistics: transportCO2,
+            packaging: packagingCO2
+        },
+        anchor_used: anchor.id,
+        methodology: "Dynamic parametric twin using Agribalyse + JRC benchmarks"
     };
+    }
     
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
 const FOOD_PHYSICS_DB = {
