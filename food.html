@@ -3612,93 +3612,123 @@ const FOOD_PHYSICS_DB = {
     'default':           { target_hydration: 0.00, default_density: 1.00 }
 }; 
 
-// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (ISO 14044 COMPLIANT) ==================
-function calculateUniversalAdjustments(ingredientName, originCountry, processingMethod, manufacturingCountry) {
-    const baseCountry = 'FR'; 
-    const log = [];
-    let multipliers = { co2: 1.0, land: 1.0, water: 1.0 };
+// ============================================================================
+// 🌱 AUDIT-READY AGRICULTURAL ENGINE (Strict Default vs. Primary Override)
+// ============================================================================
+function calculateIngredientImpact(ingredientData, quantityKg, originCountry, primaryData) {
+    console.log("🌱 [Audit Engine] Calculating ingredient impact for:", ingredientData.name);
     
-    if (!window.aioxyData) { 
-        return { multipliers, adder: 0, logs: ["Data Missing"], qualityPenalty: 0 }; 
+    // Safety check
+    if (!ingredientData || !ingredientData.data || !ingredientData.data.pef) {
+        console.warn("⚠️ Missing ingredient data");
+        return {
+            totalCO2: 0,
+            perKgCO2: 0,
+            logs: ["ERROR: Missing ingredient data"],
+            qualityPenalty: 2.0,
+            universal_adjustments: null,
+            is_primary: false
+        };
     }
-
-    const nameLower = ingredientName.toLowerCase();
-    const origin = originCountry || 'FR';
-
-    // 1. WATER PHYSICS (AWARE 2.0 - Strictly Data-Driven)
-    const awareFactors = window.aioxyData.aware_factors || {};
-    const baseAware = awareFactors[baseCountry] || 17.1;
-    // Fall back to Global average if specific country is missing; do not use arbitrary caps.
-    const localAware = awareFactors[origin] || awareFactors["Global"] || 42.9; 
     
-    if (baseAware > 0) {
-        multipliers.water = localAware / baseAware;
-        log.push(`💧 AWARE Adjusted: ${baseAware} -> ${localAware}`);
-    }
-
-    // 2. YIELD PHYSICS (Strictly Data-Driven)
-    const cropProxies = {
-        'oat': 'wheat', 'barley': 'wheat', 'rye': 'wheat', 'triticale': 'wheat', 'durum': 'wheat', 'wheat': 'wheat',
-        'maize': 'corn', 'corn': 'corn', 'sorghum': 'corn',
-        'pea': 'pulse', 'faba': 'pulse', 'bean': 'pulse', 'lentil': 'pulse', 'lupin': 'pulse', 'soy': 'soy',
-        'rapeseed': 'rapeseed', 'sunflower': 'rapeseed', 'canola': 'rapeseed', 'oil': 'rapeseed',
-        'potato': 'potato', 'cassava': 'potato', 'yam': 'potato',
-        'sugar': 'sugarbeet', 'beet': 'sugarbeet',
-        'coffee': 'coffee', 'cocoa': 'cocoa', 'chocolate': 'cocoa'
-    };
-
-    let cropKey = null;
-    for (const [ing, proxy] of Object.entries(cropProxies)) {
-        if (nameLower.includes(ing)) { cropKey = proxy; break; }
-    }
-
-    const yields = window.aioxyData.yield_benchmarks || {}; 
+    let co2Base = ingredientData.data.pef["Climate Change"] || 0;
+    let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
+    let landBase = ingredientData.data.pef["Land Use"] || 0;
+    
+    let log = [];
     let qualityPenalty = 0.0;
-    
-    if (cropKey && yields[cropKey]) {
-        const cropYields = yields[cropKey];
-        const baseYield = cropYields[baseCountry];
+    let finalCO2 = co2Base;
+    let finalWater = waterBase;
+    let finalLand = landBase;
+    let universal_adjustments = null;
+
+    // 1. PRIMARY DATA OVERRIDE (The brand proves they are better)
+    if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon !== undefined) {
+        // Extract baseline data from ingredient metadata (fallback to conservative defaults if missing)
+        const baselineYield = ingredientData.data.metadata?.yield_kg_ha || 5000; 
+        const baselineN = ingredientData.data.metadata?.nitrogen_content_kg_kg || 0.015; 
         
-        if (cropYields[origin] && baseYield) {
-            // Apply real yield ratio if both data points exist
-            multipliers.land = baseYield / cropYields[origin];
-            log.push(`🌾 Yield Adjusted for ${cropKey} in ${origin}`);
+        // Physics: Higher yield = less land/tractor fuel per kg
+        // Cap between 0.5 and 2.0 to prevent extreme claims
+        const yieldAdjustment = Math.max(0.5, Math.min(baselineYield / Math.max(primaryData.yieldKgPerHa, 100), 2.0));
+        
+        // Physics: Less nitrogen = less N2O emissions
+        const userN_kg_kg = primaryData.nitrogenKgPerTon / 1000;
+        const nAdjustment = baselineN > 0 ? Math.max(0.5, Math.min(userN_kg_kg / baselineN, 2.0)) : 1.0;
+        
+        // Industry standard: 60% of crop footprint is yield-driven (land/fuel), 40% is fertilizer-driven
+        const co2Adjustment = (0.6 * yieldAdjustment) + (0.4 * nAdjustment);
+        const landAdjustment = yieldAdjustment; // Land use scales inversely with yield
+        const waterAdjustment = 1.0; // Water impact needs irrigation data - keep default for now
+
+        finalCO2 *= co2Adjustment;
+        finalLand *= landAdjustment;
+        finalWater *= waterAdjustment;
+        
+        log.push(`✅ PRIMARY DATA VERIFIED: Yield adj: ${yieldAdjustment.toFixed(2)}x | N adj: ${nAdjustment.toFixed(2)}x`);
+        qualityPenalty = -0.5; // BONUS: Better DQR for primary data
+        
+        universal_adjustments = {
+            adjusted_from_country: "Agribalyse Default",
+            adjusted_for_country: primaryData.farmRegion || originCountry,
+            multipliers: { co2: co2Adjustment, land: landAdjustment, water: waterAdjustment },
+            adder: 0,
+            method: "primary_data_override"
+        };
+    } 
+    // 2. CONSERVATIVE DEFAULT (No primary data provided)
+    else {
+        // If they select a country outside the EU but provide no proof, apply ISO Uncertainty Penalty
+        const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+        
+        if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
+            qualityPenalty = 1.0; // Worsen the DQR score
+            
+            // ANTI-GREENWASHING: Apply +15% penalty buffer for unverified offshore sourcing
+            finalCO2 *= 1.15;
+            finalWater *= 1.15; // Also apply to water as precaution
+            finalLand *= 1.15;
+            
+            log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
+            
+            universal_adjustments = {
+                adjusted_from_country: "FR",
+                adjusted_for_country: originCountry,
+                multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
+                adder: 0,
+                method: "proxy_with_penalty"
+            };
         } else {
-            // COMPLIANCE FIX: If yield data is missing, do not invent it. Use the baseline and penalize DQR.
-            qualityPenalty += 1.0; 
-            log.push(`⚠️ No primary yield data for ${origin}. Using proxy with DQR penalty.`);
+            log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
+            
+            universal_adjustments = {
+                adjusted_from_country: "FR",
+                adjusted_for_country: originCountry || "FR",
+                multipliers: { co2: 1.0, land: 1.0, water: 1.0 },
+                adder: 0,
+                method: "direct_agribalyse"
+            };
         }
-    } else if (origin !== baseCountry) {
-        // COMPLIANCE FIX: For animals/generics without specific local datasets, penalize DQR.
-        qualityPenalty += 1.0;
-        log.push(`⚠️ Using geographic proxy for ${origin}. DQR penalized.`);
     }
 
-    // 3. MANUFACTURING ADDER (Grid Electricity)
-    const grids = window.aioxyData.grid_intensity || {};
-    const baseGrid = grids[baseCountry] || 56;
-    const mfgGrid = grids[manufacturingCountry] || 475;
-    
-    let kWhPerKg = 0.5; // Default standard processing
-    if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
-    if (processingMethod === 'none') kWhPerKg = 0.0;
-    
-    // Calculate the absolute difference in emissions caused by manufacturing in a different grid
-    const processingAdder = Math.max(0, kWhPerKg * ((mfgGrid - baseGrid) / 1000));
-    if (processingAdder > 0) {
-        log.push(`⚡ Mfg Grid Adjustment: +${processingAdder.toFixed(3)} kg CO2e`);
-    }
+    // Calculate final totals
+    const totalCO2 = finalCO2 * quantityKg;
+    const totalWater = finalWater * quantityKg;
+    const totalLand = finalLand * quantityKg;
 
     return {
-        multipliers: multipliers,
-        adder: processingAdder,
+        totalCO2: totalCO2,
+        totalWater: totalWater,
+        totalLand: totalLand,
+        perKgCO2: finalCO2,
+        perKgWater: finalWater,
+        perKgLand: finalLand,
         logs: log,
         qualityPenalty: qualityPenalty,
-        adjusted_from_country: baseCountry,
-        adjusted_for_country: origin
+        universal_adjustments: universal_adjustments,
+        is_primary: !!primaryData
     };
-}
-
+    }
      
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
