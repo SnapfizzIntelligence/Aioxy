@@ -4999,30 +4999,39 @@ auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
         });
     });
 
-    // 6. MANUFACTURING IMPACTS
-    const processingData = aioxyData.processing[processingMethod];
-    if (processingData && massBalanceData.productMass > 0) {
-        const thermodynamicResult = calculateThermodynamicImpact(
-            massBalanceData.inputMass,
-            massBalanceData.productMass,
-            processingMethod,
-            manufacturingCountryCode
-        );
-
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += thermodynamicResult.co2;
-        auditTrail.pefCategories["Climate Change"].total += thermodynamicResult.co2;
-        
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
-            name: `Processing (${processingMethod})`,
-            subtotal: thermodynamicResult.co2,
-            details: `${thermodynamicResult.kwh.toFixed(4)} kWh (${manufacturingCountryCode} grid)`
-        });
-        
-        const fossilMJ = thermodynamicResult.kwh * 3.6;
-        auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
-        auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
+    // 6. MANUFACTURING IMPACTS - UPDATED with Audit-Ready Engine
+if (massBalanceData.productMass > 0) {
+    // Call the new empirical manufacturing engine
+    const mfgResult = calculateManufacturingImpact(
+        massBalanceData.inputMass,
+        massBalanceData.productMass,
+        processingMethod,
+        manufacturingCountryCode
+    );
+    
+    // Add to Climate Change
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += mfgResult.co2;
+    auditTrail.pefCategories["Climate Change"].total += mfgResult.co2;
+    
+    // Add detailed component for audit trail
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
+        name: `Processing (${processingMethod || 'none'})`,
+        subtotal: mfgResult.co2,
+        details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh`,
+        confidence: mfgResult.confidence,
+        grid_intensity: mfgResult.grid_intensity_g_per_kwh
+    });
+    
+    // Add to Fossil Resources (kWh to MJ conversion: 1 kWh = 3.6 MJ)
+    const fossilMJ = mfgResult.kwh * 3.6;
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
+    auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
+    
+    // Store for business case calculations
+    window.lastManufacturingResult = mfgResult;
+    
+    console.log(`✅ [Audit] Manufacturing impact: ${mfgResult.co2.toFixed(4)} kg CO₂e using ${mfgResult.method}`);
     }
-
     // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
     let inboundTransportCO2 = 0;
     let totalWaterImpact = 0;
