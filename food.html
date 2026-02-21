@@ -7785,8 +7785,8 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
         }
     }
 
-    // ================== ENHANCED CALCULATION ENGINE ==================
-    function calculateImpactEnhanced() {
+// ================== ENHANCED CALCULATION ENGINE ==================
+function calculateImpactEnhanced() {
     if (selectedIngredients.length === 0) {
         clearResults();
         return;
@@ -7800,20 +7800,13 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
 
     setTimeout(() => {
         try {
-            const baseResults = foodCalculationEngine.calculateFoodImpact();
+            // 1. Calculate the STRICT, AUDITABLE baseline (No hypothetical scenarios allowed here)
+            const finalResults = foodCalculationEngine.calculateFoodImpact();
             
-            let finalResults = baseResults;
-            if (Object.values(activeScenarios).some(v => v)) {
-                const scenarioPefResults = validateAndApplyScenarios(baseResults, activeScenarios); // <-- CHANGE HERE
-                finalResults = {
-    ...baseResults,
-    finalPefResults: scenarioPefResults,
-    co2PerKg: baseResults.finalContentWeight > 0 ? (scenarioPefResults["Climate Change"]?.total || 0) / baseResults.finalContentWeight : 0
-};
-            }
-            
+            // 2. Feed the strict results to the UI and DPP generators
             updateResultsUI(finalResults);
             
+            // 3. Let the Business Case handle its own hypothetical scenario math internally
             const businessTab = document.getElementById('business-case-tab');
             if (businessTab && !businessTab.classList.contains('hidden')) {
                 updateBusinessCase();
@@ -7827,11 +7820,12 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
             if (resultsContent) resultsContent.classList.remove('hidden');
         }
     }, 100);
-    }
+}
 
-    function calculateImpact() {
-        calculateImpactEnhanced();
+function calculateImpact() {
+    calculateImpactEnhanced();
     }
+    
 
     // ================== INITIALIZATION ==================
     function populateIngredientSelect() {
