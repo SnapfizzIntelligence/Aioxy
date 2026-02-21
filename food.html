@@ -4850,47 +4850,55 @@ if (!item.primaryData && window.aioxyData) {
     }
     }
 
-            // [FEATURE PRESERVED] Primary Data Overrides
-            if (item.primaryData) {
-                const nitrogenAdjustment = calculateNitrogenAdjustment(item.primaryData.nitrogenKgPerTon, ing);
-                const yieldAdjustment = calculateYieldAdjustment(item.primaryData.yieldKgPerHa, ing);
-                const regionAdjustment = calculateRegionalAdjustment(item.primaryData.farmRegion, ing);
-                
-                if (cat === "Climate Change") baseImpactPerKg *= (nitrogenAdjustment * yieldAdjustment);
-                if (cat === "Land Use") baseImpactPerKg *= yieldAdjustment;
-                if (cat === "Water Use/Scarcity (AWARE)") baseImpactPerKg *= regionAdjustment;
-            }
+            // [COMPLIANT] Primary Data Overrides
+// You must partition the baseline impact to adjust only what the primary data actually affects.
+if (item.primaryData) {
+    const nitrogenAdjustment = calculateNitrogenAdjustment(item.primaryData.nitrogenKgPerTon, ing);
+    const yieldAdjustment = calculateYieldAdjustment(item.primaryData.yieldKgPerHa, ing);
+    const regionAdjustment = calculateRegionalAdjustment(item.primaryData.farmRegion, ing);
+    
+    if (cat === "Climate Change") {
+        // REGULATORY FIX: Yield affects the whole footprint (mass denominator), 
+        // but Nitrogen only affects the agricultural emission portion (e.g., ~40% of base).
+        // A true PEF engine requires isolated LCI data, but this is a safer proxy:
+        const agriEmissionsPortion = baseImpactPerKg * 0.40; 
+        const otherEmissionsPortion = baseImpactPerKg * 0.60;
+        
+        baseImpactPerKg = ((agriEmissionsPortion * nitrogenAdjustment) + otherEmissionsPortion) * yieldAdjustment;
+    }
+    if (cat === "Land Use") baseImpactPerKg *= yieldAdjustment;
+    if (cat === "Water Use/Scarcity (AWARE)") baseImpactPerKg *= regionAdjustment;
+}
 
-            let impactTotal = grownMass * baseImpactPerKg;
+let impactTotal = grownMass * baseImpactPerKg;
 
-            // [FEATURE PRESERVED] Risk Factors (Regulatory Flag)
-            // We apply this directly here to ensure it's captured in the total
-            const riskMap = {
-                'BR': { keywords: ['soy', 'beef', 'coffee'], factor: 5.0, reason: "Deforestation Risk (LUC)" },
-                'ID': { keywords: ['palm', 'oil'], factor: 3.5, reason: "Peatland Drainage Risk" },
-                'CN': { keywords: ['manufacturing', 'steel'], factor: 1.4, reason: "Coal-Heavy Grid Intensity" }
-            };
-            const riskProfile = riskMap[ingredientOrigin];
-            let noteText = `Origin: ${ingredientOrigin} ${universalAdjustments ? '(Physics Adjusted)' : ''}`;
-            
-            if (cat === "Climate Change" && riskProfile && riskProfile.keywords.some(k => ing.name.toLowerCase().includes(k))) {
-                impactTotal *= riskProfile.factor;
-                noteText += ` [⚠️ RISK: ${riskProfile.reason} x${riskProfile.factor}]`;
-            }
+// [COMPLIANT] LUC Data Handling
+// REGULATORY FIX: Removed arbitrary `riskMap` multipliers. 
+// If sourcing from high-risk areas, you must use specific regional datasets that already include dLUC, 
+// or flag it as a data gap, rather than inventing a multiplier.
+let noteText = `Origin: ${ingredientOrigin} ${universalAdjustments ? '(Physics Adjusted)' : ''}`;
 
-            const allocatedTotal = applyISOAllocation(impactTotal, 0.8, 0.2, 0.3);
+if (['BR', 'ID'].includes(ingredientOrigin)) {
+    noteText += ` [⚠️ AUDIT NOTE: High LUC Risk Region. Ensure selected AGRIBALYSE dataset includes regional Land Use Change factors.]`;
+}
 
-            auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+// [COMPLIANT] ISO Allocation
+// REGULATORY FIX: Retrieve the specific allocation factor from your physics database (FOOD_PHYSICS_DB)
+// Do not use hardcoded global constants.
+const specificAllocationFactor = ing.allocationFactor || 1.0; // Default to 100% burden if no co-products exist
+const allocatedTotal = impactTotal * specificAllocationFactor;
+
+auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
     name: ing.name,
     id: item.id,
-    // Store BOTH values
-    quantity_kg: item.quantity,        // RECIPE MASS - shows in table
-    farm_mass_kg: grownMass,            // AGRICULTURAL MASS - for calculations
+    quantity_kg: item.quantity,        
+    farm_mass_kg: grownMass,            
     subtotal: allocatedTotal,
     note: noteText,
     universal_adjustments: universalAdjustments,
     primary_data_used: !!item.primaryData
 });
+
             
             auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
             auditTrail.pefCategories[cat].total += allocatedTotal;
