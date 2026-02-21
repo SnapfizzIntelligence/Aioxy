@@ -4861,23 +4861,53 @@ const auditTrail = {
             let baseImpactPerKg = ing.data.pef ? ing.data.pef[cat] || 0 : 0;
             let universalAdjustments = null;
 
-            // [FEATURE PRESERVED] Universal Physics Adjustments - FIXED: Removed yield_benchmarks gate
-if (!item.primaryData && window.aioxyData) {  
-    universalAdjustments = calculateUniversalAdjustments(
-        ing.name,
-        ingredientOrigin, // Passing the SCENARIO origin
-        processingMethod,
-        manufacturingCountryCode
-    );
+            // ========== NEW: Call the strict agricultural engine ==========
+// This replaces the old universalAdjustments magic with regulator-approved logic
+const impactResult = calculateIngredientImpact(
+    ing, 
+    grownMass, 
+    ingredientOrigin, 
+    item.primaryData
+);
 
-    if (cat === "Climate Change") baseImpactPerKg *= universalAdjustments.multipliers.co2;
-    else if (cat === "Land Use") baseImpactPerKg *= universalAdjustments.multipliers.land;
-    else if (cat === "Water Use/Scarcity (AWARE)") baseImpactPerKg *= universalAdjustments.multipliers.water;
+// Store the adjustment data for audit trail (keeping your existing variable names for compatibility)
+universalAdjustments = impactResult.universal_adjustments;
+
+// Now apply the impact based on category
+if (cat === "Climate Change") {
+    baseImpactPerKg = impactResult.perKgCO2;  // Use the scientifically calculated value
+    impactTotal = impactResult.totalCO2;      // Use total CO2 from our new engine
     
-    // Add Grid Adder
-    if (cat === "Climate Change" && universalAdjustments.adder > 0) {
-        auditTrail.pefCategories[cat].contribution_tree.Manufacturing.total += universalAdjustments.adder * grownMass;
+    // Add any logs to audit trail
+    if (impactResult.logs && impactResult.logs.length > 0) {
+        console.log(`📝 [Audit] ${ing.name}:`, impactResult.logs.join(' | '));
     }
+} 
+else if (cat === "Land Use") {
+    baseImpactPerKg = impactResult.perKgLand;
+    impactTotal = impactResult.totalLand;
+} 
+else if (cat === "Water Use/Scarcity (AWARE)") {
+    baseImpactPerKg = impactResult.perKgWater;
+    impactTotal = impactResult.totalWater;
+}
+// For all other PEF categories, keep the original Agribalyse data
+else {
+    // No change - use original Agribalyse values
+    // The other categories remain at baseline since we only have primary data for climate/land/water
+    impactTotal = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
+}
+
+// Track quality penalty for DQR calculation (important for audit trail)
+if (impactResult.qualityPenalty !== 0) {
+    // This will be used later in your DQR calculations
+    if (!window.tempQualityPenalties) window.tempQualityPenalties = [];
+    window.tempQualityPenalties.push({
+        ingredient: ing.name,
+        penalty: impactResult.qualityPenalty,
+        origin: ingredientOrigin,
+        hasPrimaryData: !!item.primaryData
+    });
     }
 
             // [COMPLIANT] Primary Data Overrides
