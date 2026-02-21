@@ -3612,37 +3612,31 @@ const FOOD_PHYSICS_DB = {
     'default':           { target_hydration: 0.00, default_density: 1.00 }
 }; 
 
-// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (FIXED v5.0 - ALWAYS ACTIVE) ==================
+// ================== AIOXY UNIVERSAL ADJUSTMENT LOGIC (ISO 14044 COMPLIANT) ==================
 function calculateUniversalAdjustments(ingredientName, originCountry, processingMethod, manufacturingCountry) {
-    // 1. SETUP DEFAULTS
     const baseCountry = 'FR'; 
     const log = [];
     let multipliers = { co2: 1.0, land: 1.0, water: 1.0 };
     
-    // 🛡️ CRITICAL FIX: REMOVED the yield_benchmarks gate. Now only checks if main data exists.
     if (!window.aioxyData) { 
         return { multipliers, adder: 0, logs: ["Data Missing"], qualityPenalty: 0 }; 
     }
 
     const nameLower = ingredientName.toLowerCase();
-    const origin = originCountry || 'FR'; // Safety fallback
+    const origin = originCountry || 'FR';
 
-    // 2. GRID PHYSICS (THE UNIVERSAL FALLBACK - ALWAYS AVAILABLE)
-    const grids = window.aioxyData.grid_intensity || {};
-    const baseGrid = grids[baseCountry] || 56;
-    const localGrid = grids[origin] || grids["Global"] || 475;
-    const efficiencyRatio = localGrid / baseGrid;
-
-    // 3. WATER PHYSICS (PRESERVED)
+    // 1. WATER PHYSICS (AWARE 2.0 - Strictly Data-Driven)
     const awareFactors = window.aioxyData.aware_factors || {};
     const baseAware = awareFactors[baseCountry] || 17.1;
-    const localAware = awareFactors[origin] || awareFactors["Global"] || 42.0;
+    // Fall back to Global average if specific country is missing; do not use arbitrary caps.
+    const localAware = awareFactors[origin] || awareFactors["Global"] || 42.9; 
     
     if (baseAware > 0) {
-        multipliers.water = Math.max(0.1, Math.min(20, localAware / baseAware));
+        multipliers.water = localAware / baseAware;
+        log.push(`💧 AWARE Adjusted: ${baseAware} -> ${localAware}`);
     }
 
-    // 4. PROXY MAP (PRESERVED)
+    // 2. YIELD PHYSICS (Strictly Data-Driven)
     const cropProxies = {
         'oat': 'wheat', 'barley': 'wheat', 'rye': 'wheat', 'triticale': 'wheat', 'durum': 'wheat', 'wheat': 'wheat',
         'maize': 'corn', 'corn': 'corn', 'sorghum': 'corn',
@@ -3653,74 +3647,47 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         'coffee': 'coffee', 'cocoa': 'cocoa', 'chocolate': 'cocoa'
     };
 
-    const animalKeywords = ['beef', 'cow', 'milk', 'cheese', 'butter', 'cream', 
-                           'chicken', 'broiler', 'poultry', 'duck', 'turkey', 'egg', 
-                           'pig', 'pork', 'ham', 'lamb', 'sheep', 'fish', 'salmon', 'shrimp'];
-
     let cropKey = null;
     for (const [ing, proxy] of Object.entries(cropProxies)) {
         if (nameLower.includes(ing)) { cropKey = proxy; break; }
     }
 
-    // 5. CARBON & LAND PHYSICS - NOW WITH GRID FALLBACK FOR ALL CASES
-    const yields = window.aioxyData.yield_benchmarks || {}; // Safe access, may be empty
+    const yields = window.aioxyData.yield_benchmarks || {}; 
+    let qualityPenalty = 0.0;
     
     if (cropKey && yields[cropKey]) {
-        // === SCENARIO A: CROP (Yield Physics) ===
         const cropYields = yields[cropKey];
-        const baseYield = cropYields[baseCountry] || cropYields["Global"] || 4000;
+        const baseYield = cropYields[baseCountry];
         
-        let localYield;
-        let method;
-
-        if (cropYields[origin]) {
-            localYield = cropYields[origin];
-            method = "Specific Data";
+        if (cropYields[origin] && baseYield) {
+            // Apply real yield ratio if both data points exist
+            multipliers.land = baseYield / cropYields[origin];
+            log.push(`🌾 Yield Adjusted for ${cropKey} in ${origin}`);
         } else {
-            // FALLBACK: Use grid proxy to estimate yield
-            const proxyFactor = Math.pow(efficiencyRatio, -0.15); 
-            localYield = baseYield * proxyFactor;
-            method = "Grid Proxy Estimate";
+            // COMPLIANCE FIX: If yield data is missing, do not invent it. Use the baseline and penalize DQR.
+            qualityPenalty += 1.0; 
+            log.push(`⚠️ No primary yield data for ${origin}. Using proxy with DQR penalty.`);
         }
-
-        const yieldFactor = baseYield / localYield; 
-        
-        multipliers.land = yieldFactor;
-        multipliers.co2 = (0.4 + (0.6 * yieldFactor)); 
-        
-        log.push(`🌾 Crop [${cropKey}]: ${origin} (${method})`);
-
-    } else if (animalKeywords.some(k => nameLower.includes(k))) {
-        // === SCENARIO B: ANIMAL (Always uses Grid) ===
-        const energyFactor = 1 + ((efficiencyRatio - 1) * 0.30); 
-        multipliers.co2 = Math.max(0.8, Math.min(4.0, energyFactor));
-        log.push(`🐄 Animal: ${origin} Grid (${localGrid}g)`);
-
-    } else {
-        // === SCENARIO C: GENERIC (ALWAYS ACTIVE FALLBACK) ===
-        // This runs for EVERY ingredient, guaranteeing physics changes per country
-        const genericFactor = 1 + (((localGrid / baseGrid) - 1) * 0.15);
-        multipliers.co2 = Math.max(0.9, Math.min(2.5, genericFactor)); // Increased max to 2.5x for high-grid countries
-        log.push(`⚡ Generic: ${origin} Grid Ratio ${(localGrid/baseGrid).toFixed(1)}x`);
+    } else if (origin !== baseCountry) {
+        // COMPLIANCE FIX: For animals/generics without specific local datasets, penalize DQR.
+        qualityPenalty += 1.0;
+        log.push(`⚠️ Using geographic proxy for ${origin}. DQR penalized.`);
     }
 
-    // 6. CLIMATE ZONES (PRESERVED)
-    if (window.aioxyData.climate_zones) {
-        if (window.aioxyData.climate_zones.tropical?.includes(origin)) {
-            multipliers.co2 *= 1.15; 
-            log.push(`🌴 Tropical Zone: +15%`);
-        }
-    }
-
-    // 7. MANUFACTURING ADDER (PRESERVED)
+    // 3. MANUFACTURING ADDER (Grid Electricity)
+    const grids = window.aioxyData.grid_intensity || {};
+    const baseGrid = grids[baseCountry] || 56;
     const mfgGrid = grids[manufacturingCountry] || 475;
-    let kWhPerKg = 0.5;
-    if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
     
+    let kWhPerKg = 0.5; // Default standard processing
+    if (processingMethod === 'drying' || processingMethod === 'extrusion') kWhPerKg = 1.5;
+    if (processingMethod === 'none') kWhPerKg = 0.0;
+    
+    // Calculate the absolute difference in emissions caused by manufacturing in a different grid
     const processingAdder = Math.max(0, kWhPerKg * ((mfgGrid - baseGrid) / 1000));
-
-    // 8. QUALITY PENALTY (Always applied for non-FR origins)
-    const qualityPenalty = (origin !== baseCountry) ? 1.0 : 0.0;
+    if (processingAdder > 0) {
+        log.push(`⚡ Mfg Grid Adjustment: +${processingAdder.toFixed(3)} kg CO2e`);
+    }
 
     return {
         multipliers: multipliers,
@@ -3730,7 +3697,8 @@ function calculateUniversalAdjustments(ingredientName, originCountry, processing
         adjusted_from_country: baseCountry,
         adjusted_for_country: origin
     };
-    }
+}
+
      
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
@@ -4129,12 +4097,10 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
     };
 }
 
-     // ================== AIOXY UNCERTAINTY ENGINE (ISO 14044 ANNEX A COMPLIANT) ==================
+// ================== AIOXY UNCERTAINTY ENGINE (ISO 14044 / PEF COMPLIANT) ==================
 function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     console.log("🔬 [Physics Engine] Initiating Monte Carlo Simulation (n=" + iterations + ")...");
-    
-    // 1. SAFETY & COMPLIANCE CHECK
-    // Regulator Rule: Never return null/undefined. Return a "Zero Risk" object if data is missing.
+
     if (!ingredients || ingredients.length === 0 || !window.aioxyData) {
         console.warn("⚠️ [Audit Warning] Monte Carlo skipped: Missing ingredients or global data.");
         return {
@@ -4143,44 +4109,36 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
         };
     }
     
-    // 2. INITIALIZE ARRAYS
-    // We explicitly track the two "Planetary Boundary" metrics required for the dashboard.
     const results = { co2: [], water: [] };
     
-    // 3. RUN SIMULATION (5000 Iterations - Standard Error < 1%)
     for (let i = 0; i < iterations; i++) {
         let totalCO2 = 0;
         let totalWater = 0;
         
-        // Iterate through recipe ingredients
         ingredients.forEach(ing => {
-            // Safe Data Lookup
             const ingredient = window.aioxyData.ingredients[ing.id];
-            if (!ingredient) return; // Skip unknown ingredients safely
+            if (!ingredient) return;
             
-            // A. PHYSICS: DEFINE UNCERTAINTY PROFILE
-            // We use the Data Quality Rating (P) to derive the Lognormal Sigma.
-            // Default P=15% (0.15) if missing.
+            // A. STATISTICAL PHYSICS: EXACT LOGNORMAL CONVERSION
             const P_unc = ingredient.data.metadata?.dqr?.P || 15;
+            const cv = P_unc / 100;
             
-            // Standard Deviation (Sigma) approx for Lognormal: ln(1 + CV)
-            const sigma = Math.log(1 + P_unc / 100); 
+            // COMPLIANCE FIX 1: Exact Lognormal Sigma
+            const sigmaSq = Math.log(1 + Math.pow(cv, 2));
+            const sigma = Math.sqrt(sigmaSq);
             
-            // B. PHYSICS: CORRELATED SAMPLING (The "Regulator Proof" Magic)
-            // We generate ONE random Z-score for this ingredient's performance this year.
-            // Why? If a farm has low yield, CO2 goes UP and Water goes UP together.
-            // Using separate random numbers would cancel out risk (Central Limit Theorem fallacy).
-            const Z = randomNormal(); 
+            const Z = randomNormal();
             
-            // C. CALCULATE STOCHASTIC IMPACT
-            // Formula: Base * e^(sigma * Z)
             const co2Base = ingredient.data.pef["Climate Change"] || 0;
-            const co2Random = co2Base * Math.exp(sigma * Z);
-            
             const waterBase = ingredient.data.pef["Water Use/Scarcity (AWARE)"] || 0;
-            const waterRandom = waterBase * Math.exp(sigma * Z); 
+
+            // COMPLIANCE FIX 2: Preserve Arithmetic Mean (Location Parameter Shift)
+            // Lognormal multiplier = exp(Z * sigma - sigmaSq / 2)
+            const lognormalMultiplier = Math.exp((Z * sigma) - (sigmaSq / 2));
             
-            // Add to total batch impact (Weighted by mass)
+            const co2Random = co2Base * lognormalMultiplier;
+            const waterRandom = waterBase * lognormalMultiplier; 
+            
             totalCO2 += co2Random * ing.quantity;
             totalWater += waterRandom * ing.quantity;
         });
@@ -4189,15 +4147,14 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
         results.water.push(totalWater);
     }
     
-    // 4. CALCULATE STATISTICS (AUDITABLE METRICS)
     const stats = (values) => {
         values.sort((a, b) => a - b);
         const mean = values.reduce((a, b) => a + b, 0) / iterations;
         return {
             mean: mean,
             median: values[Math.floor(iterations * 0.5)],
-            p5: values[Math.floor(iterations * 0.05)],    // Lower Confidence Bound (90% CI)
-            p95: values[Math.floor(iterations * 0.95)],   // Upper Confidence Bound (Risk Cap)
+            p5: values[Math.floor(iterations * 0.05)],    // 90% CI Lower
+            p95: values[Math.floor(iterations * 0.95)],   // 90% CI Upper
             range: values[iterations - 1] - values[0]
         };
     };
@@ -4205,13 +4162,11 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     const co2Stats = stats(results.co2);
     const waterStats = stats(results.water);
 
-    console.log(`✅ [Monte Carlo] CO2 Mean: ${co2Stats.mean.toFixed(2)} (95% CI: ${co2Stats.p5.toFixed(2)} - ${co2Stats.p95.toFixed(2)})`);
-
     return {
         co2: co2Stats,
         water: waterStats,
         metadata: {
-            methodology: "Monte Carlo Lognormal",
+            methodology: "Monte Carlo Lognormal (Mean-Preserving)",
             iterations: iterations,
             compliance: "ISO 14044:2006 Annex A / PEF Guide 6.3",
             timestamp: new Date().toISOString()
@@ -4219,6 +4174,7 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     };
 }
 
+    
 // HELPER: Box-Muller Transform (High-Performance Normal Distribution)
 function randomNormal() {
     let u = 0, v = 0;
