@@ -3751,58 +3751,70 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     };
 }
 
-    // ================== AUDIT-GRADE AWARE ENGINE (ISO 14046) ==================
+    // ================== AUDIT-GRADE AWARE ENGINE (ISO 14046 / PEF 3.1) ==================
 function calculateAWARE(waterUse, countryCode, watershed = 'NationalAvg', month = null) {
-    // 1. INPUT DEFINITION CHECK
-    // Standard LCI data (Agribalyse) is usually "Water Consumption" (m3).
-    // If input is Consumption, NO return flow factor should be applied.
-    // Return flow is only for "Withdrawal" data.
-    // Regulator Assumption: Input is LCI Consumption data.
+    // 1. INPUT DEFINITION & TYPE SAFETY (Crash Prevention)
+    const waterConsumptionM3 = Number(waterUse) || 0;
+    const safeCountryCode = (countryCode || 'WORLD').toUpperCase();
     
-    const waterConsumptionM3 = waterUse; 
+    // 2. FORMAL WULCA AWARE 2.0 CONSTANTS (No Magic Numbers)
+    const GLOBAL_DEFAULT_CF = 42.9; // Official WULCA Global Average
+    
+    // Hardcoded fallback DB in case window.aioxyData is missing or malformed
+    const FALLBACK_AWARE_DB = {
+        "FR": 0.8, "ES": 28.3, "IT": 8.5, "DE": 0.9, "NL": 1.2,
+        "US": 16.5, "CN": 21.3, "WORLD": GLOBAL_DEFAULT_CF
+    };
 
-    // 2. WATERSHED FACTOR RESOLUTION
-    const countryData = window.aioxyData?.aware_factors || {}; // Use the big list from Data.txt
+    // 3. WATERSHED FACTOR RESOLUTION (Crash-Proof Tree Traversal)
+    let cf = GLOBAL_DEFAULT_CF;
     
-    // Fallback logic: Specific Watershed -> Country Average -> Global Average
-    let cf = 42.0; // Global Average (Default)
-    
-    // Check if we have country specific data
-    if (countryData[countryCode]) {
-        cf = countryData[countryCode];
-    } 
-    // Handle specific watershed overrides (if data structure supports it later)
-    if (typeof countryData[countryCode] === 'object') {
-        cf = countryData[countryCode][watershed] || countryData[countryCode]['default'] || 42.0;
-    }
+    // Safely check for external data
+    const externalData = (typeof window !== 'undefined' && window.aioxyData?.aware_factors) 
+        ? window.aioxyData.aware_factors 
+        : {};
 
-    // 3. SEASONAL ADJUSTMENT (Agri-scarcity logic)
-    // PEF requires monthly resolution for crops.
-    // If month is provided, apply simplified seasonal variation
-    if (month !== null) {
-        // Simple seasonal curve for Northern Hemisphere (May-Sept peak)
-        // This is a heuristic proxy in lieu of full monthly database
-        const isPeakSeason = (month >= 4 && month <= 8); // May to Sept
-        if (isPeakSeason && ['ES', 'IT', 'GR', 'TR', 'MA'].includes(countryCode)) {
-            cf *= 1.5; // +50% scarcity in summer for arid zones
+    if (externalData[safeCountryCode]) {
+        const countryEntry = externalData[safeCountryCode];
+        
+        // Handle if the data is a nested object (e.g., { NationalAvg: { default: 28.3 } })
+        if (typeof countryEntry === 'object' && countryEntry !== null) {
+            cf = countryEntry[watershed]?.default 
+              || countryEntry['default'] 
+              || countryEntry 
+              || GLOBAL_DEFAULT_CF;
+              
+            // If it resolved to another object, force fallback
+            if (typeof cf === 'object') cf = GLOBAL_DEFAULT_CF; 
+            
+        // Handle if the data is a flat number (e.g., "ES": 28.3)
+        } else if (typeof countryEntry === 'number') {
+            cf = countryEntry;
         }
+    } else if (FALLBACK_AWARE_DB[safeCountryCode] !== undefined) {
+        cf = FALLBACK_AWARE_DB[safeCountryCode];
     }
 
-    // 4. CALCULATION
-    // Formula: Consumption (m3) * CF (m3 world eq / m3)
+    // 4. REGULATORY INTERVENTION: REMOVED ARBITRARY SEASONAL MULTIPLIERS
+    // The previous "cf *= 1.5" heuristic for peak months violates ISO 14044/PEF 3.1.
+    // If exact monthly characterization factors are not explicitly provided by the LCI database,
+    // the annual average MUST be used to prevent unauthorized risk-inflation.
+
+    // 5. CALCULATION
     const awareImpact = waterConsumptionM3 * cf;
 
-    // 5. AUDIT LOGGING
-    console.log(`💧 [Audit AWARE] Country: ${countryCode} | CF: ${cf.toFixed(1)}`);
-    console.log(`   Input: ${waterConsumptionM3.toFixed(4)} m3 -> Impact: ${awareImpact.toFixed(2)} m3 world eq.`);
+    // 6. AUDIT LOGGING
+    console.log(`💧 [Audit AWARE] Country: ${safeCountryCode} | CF: ${cf.toFixed(2)}`);
+    console.log(`   Input: ${waterConsumptionM3.toFixed(4)} m³ -> Impact: ${awareImpact.toFixed(4)} m³ world eq.`);
 
     return {
         impact: awareImpact,
         cf_used: cf,
-        methodology: "AWARE 2.0 (WULCA)",
-        note: "Calculated on Consumption basis (No double-counting return flows)"
+        methodology: "AWARE 2.0 (WULCA) - ISO 14046",
+        note: "Calculated on Consumption basis. Arbitrary seasonal heuristics removed for strict PEF compliance."
     };
 }
+
 
 // ================== AIOXY 100% PHYSICS ENGINE (CRASH-PROOF + AUDIT-PROOF) ==================
 
@@ -3969,33 +3981,6 @@ function calculateThermodynamicImpact(massInputKg, massOutputKg, processingMetho
         method: methodUsed,
         physics_data: physicsData, // Your audit trail (UI ignores if not used)
         water_evaporated_kg: physicsData?.evaporation_kg || 0
-    };
-}
-
-// 5. WATER PHYSICS (EXACT same as existing)
-function calculateAWARE(waterVolumeM3, countryCode) {
-    const PHYSICS_DB = {
-        watersheds: {
-            "FR": { NationalAvg: { default: 0.8 } },
-            "ES": { NationalAvg: { default: 28.3 } },
-            "IT": { NationalAvg: { default: 8.5 } },
-            "DE": { NationalAvg: { default: 0.9 } },
-            "NL": { NationalAvg: { default: 1.2 } },
-            "US": { NationalAvg: { default: 16.5 } },
-            "CN": { NationalAvg: { default: 21.3 } },
-            "WORLD": { NationalAvg: { default: 42.9 } }
-        }
-    };
-    
-    const countryData = PHYSICS_DB.watersheds[countryCode] || PHYSICS_DB.watersheds["WORLD"];
-    const cf = countryData.NationalAvg.default;
-    const awareImpact = waterVolumeM3 * cf;
-
-    console.log(`💧 AWARE Physics: ${countryCode} | CF: ${cf} | Impact: ${awareImpact.toFixed(2)} m³ eq.`);
-
-    return {
-        impact: awareImpact,
-        cf_used: cf
     };
 }
 
