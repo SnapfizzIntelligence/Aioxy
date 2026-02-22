@@ -4751,7 +4751,7 @@ if (massBalanceData.productMass > 0) {
         const ingredientData = aioxyData.ingredients[ing.id];
         if (ingredientData && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
             const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
-            const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg", getCurrentMonth());
+            const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg");
             totalWaterImpact += waterPhysics.impact;
         } else {
             // Fallback PEF Water
