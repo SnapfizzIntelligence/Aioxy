@@ -7427,44 +7427,42 @@ if (window.aioxyData && window.aioxyData.yield_benchmarks) {
     }
 
     function updateMassBalanceDisplay() {
-        const massBalanceSection = document.getElementById('massBalanceSection');
-        const massBalanceContent = document.getElementById('massBalanceContent');
+    const massBalanceSection = document.getElementById('massBalanceSection');
+    const massBalanceContent = document.getElementById('massBalanceContent');
+    
+    if (!massBalanceSection || !massBalanceContent) return;
+
+    if (massBalanceData.raw_input_total_kg > 0) {
+        massBalanceSection.classList.remove('hidden');
         
-        if (!massBalanceSection || !massBalanceContent) return;
+        // Calculate balance difference safely
+        const expectedOutput = massBalanceData.raw_input_total_kg - massBalanceData.evaporation_kg;
+        const balanceDifference = Math.abs(expectedOutput - massBalanceData.final_output_kg);
+        const balanceStatus = balanceDifference < 0.001 ? "✅ Balanced" : "⚠️ Check Required";
 
-        if (massBalanceData.raw_input_total_kg > 0) {
-            massBalanceSection.classList.remove('hidden');
-            
-            const balanceDifference = Math.abs(massBalanceData.balance_check);
-            const balanceStatus = balanceDifference < 0.001 ? "✅ Balanced" : "⚠️ Check Required";
-            
-            massBalanceContent.innerHTML = `
-                <div class="mass-balance-item">
-                    <span>Total Input Weight:</span>
-                    <span>${massBalanceData.raw_input_total_kg.toFixed(3)} kg</span>
-                </div>
-                <div class="mass-balance-item">
-                    <span>Agricultural Loss:</span>
-                    <span>- ${massBalanceData.agricultural_processing_loss_kg.toFixed(3)} kg</span>
-                </div>
-                <div class="mass-balance-item">
-                    <span>Processing Loss:</span>
-                    <span>- ${massBalanceData.processing_loss_kg.toFixed(3)} kg</span>
-                </div>
-                <div class="mass-balance-item">
-                    <span>Final Product Weight:</span>
-                    <span>${massBalanceData.final_content_weight_kg.toFixed(3)} kg</span>
-                </div>
-                <div class="mass-balance-item">
-                    <span>Mass Balance:</span>
-                    <span>${balanceStatus}</span>
-                </div>
-            `;
-        } else {
-            massBalanceSection.classList.add('hidden');
-        }
+        massBalanceContent.innerHTML = `
+            <div class="mass-balance-item">
+                <span>Total Input Weight:</span>
+                <span>${massBalanceData.raw_input_total_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item">
+                <span style="color: #C0392B;">- Water Evaporation:</span>
+                <span style="color: #C0392B;">${massBalanceData.evaporation_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item" style="font-weight: 600;">
+                <span>= Final Product Weight:</span>
+                <span>${massBalanceData.final_output_kg.toFixed(3)} kg</span>
+            </div>
+            <div class="mass-balance-item" style="border-top: 2px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
+                <span>Mass Balance Status:</span>
+                <span>${balanceStatus}</span>
+            </div>
+        `;
+    } else {
+        massBalanceSection.classList.add('hidden');
     }
-
+    }
+    
 // ================== ENHANCED CALCULATION ENGINE ==================
 function calculateImpactEnhanced() {
     if (selectedIngredients.length === 0) {
