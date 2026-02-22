@@ -4611,6 +4611,9 @@ const impactResult = calculateIngredientImpact(
 // Store the adjustment data for audit trail (keeping your existing variable names for compatibility)
 universalAdjustments = impactResult.universal_adjustments;
 
+// ✅ FIX 3: Declare impactTotal HERE before using it
+let impactTotal = 0;
+
 // Now apply the impact based on category
 if (cat === "Climate Change") {
     baseImpactPerKg = impactResult.perKgCO2;  // Use the scientifically calculated value
