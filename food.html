@@ -4689,17 +4689,12 @@ if (massBalanceData.productMass > 0) {
         let originCountry = effectiveOrigins[ing.id];
         if (originCountry === 'PrimaryData') originCountry = ing.primaryData.farmRegion || 'FR';
         
-        // Water Physics
-        const ingredientData = aioxyData.ingredients[ing.id];
-        if (ingredientData && ingredientData.data.lci && ingredientData.data.lci.water_m3_per_kg) {
-            const waterVol = ingredientData.data.lci.water_m3_per_kg * ing.quantity;
-            const waterPhysics = calculateWatershedAWARE(waterVol, originCountry, "NationalAvg");
-            totalWaterImpact += waterPhysics.impact;
-        } else {
-            // Fallback PEF Water
-            const pefWater = ingredientData?.data.pef ? ingredientData.data.pef["Water Use/Scarcity (AWARE)"] : 0;
-            totalWaterImpact += pefWater * ing.quantity;
-        }
+        // Water Physics (Extracting strict AWARE 2.0 PEF values)
+const ingredientData = aioxyData.ingredients[ing.id];
+if (ingredientData?.data?.pef) {
+    const pefWater = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
+    totalWaterImpact += pefWater * ing.quantity;
+    }
 
         // =========================================================
         // 🛡️ FIX 1: GLOBAL SUPPLY CHAIN PROXY (ISO 14067 COMPLIANT)
