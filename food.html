@@ -7980,26 +7980,6 @@ document.head.appendChild(style);
 // 🛡️ AIOXY AUDITOR SAFETY PATCH v2.1 (ISO 14044 & PEF COMPLIANCE)
 // =============================================================================
 
-// 1. ISO 14044 ALLOCATION ENGINE (The "Anti-Jail" Fix)
-// Prevents over-assigning impact when a process creates multiple useful products.
-function applyISOAllocation(totalImpact, mainProductYield, coProductYield, priceRatio = 0.5) {
-    // Economic Allocation Formula:
-    // (Mass_Main * Price_Main) / ((Mass_Main * Price_Main) + (Mass_Co * Price_Co))
-    
-    // Default Price Ratio (Main Price / Co-Product Price)
-    // e.g., Protein is usually 2x-5x more expensive than starch/oil residue
-    
-    if (coProductYield <= 0) return totalImpact; // No co-products, 100% burden
-
-    const mainValue = mainProductYield * 1.0; // Normalized price 1.0
-    const coValue = coProductYield * priceRatio; 
-    
-    const allocationFactor = mainValue / (mainValue + coValue);
-    
-    console.log(`⚖️ ISO Allocation Applied: ${(allocationFactor*100).toFixed(1)}% burden to Main Product`);
-    return totalImpact * allocationFactor;
-}
-
 // 3. REGULATORY VALIDATION SCRIPT (Run this in Console)
 window.validatePhysics = function() {
     console.group("⚖️ REGULATOR AUDIT: PHYSICS & COMPLIANCE TEST");
@@ -8027,18 +8007,10 @@ if (Math.abs(transTest - 6.3) < 0.1) {
     // C. Verify Allocation Logic
     // 100kg Input -> 50kg Protein (Price $10) + 50kg Starch (Price $2)
     // Value Ratio: 500 vs 100. Allocation should be 500/600 = 83.3%
-    const allocTest = applyISOAllocation(100, 50, 50, 0.2); // Price ratio 0.2
-    if (Math.abs(allocTest - 83.33) < 1) {
-        console.log("✅ PASS: ISO 14044 Economic Allocation.");
-    } else {
-        console.error("❌ FAIL: Allocation Logic. Expected ~83.3, got " + allocTest);
-        passed = false;
-    }
-
     console.groupEnd();
     return passed ? "✅ SYSTEM AUDIT PASSED: READY FOR SCREENING USE" : "❌ SYSTEM AUDIT FAILED";
 };
     
 </script>
 </body>
-    </html>
+</html>
