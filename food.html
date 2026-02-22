@@ -4783,7 +4783,7 @@ if (ingredientData?.data?.pef) {
     const totalClimate = auditTrail.pefCategories["Climate Change"].total;
     
     // Save Global State
-    const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate);
+    const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories);
     const uncertaintyResults = calculateMonteCarloUncertainty(selectedIngredients, 500);
     
     auditTrail.mass_balance = massBalanceData;
