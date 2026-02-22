@@ -4340,46 +4340,6 @@ function applyScenarioPhysics(baseResults, scenarios) {
     console.log("✅ [Physics Fix] Scenario Engine Applied:", scenarioLog);
     return modifiedResults;
     }
-    
-
-// ================== AUDIT-READY PRIMARY DATA ADJUSTMENT ==================
-function calculateNitrogenAdjustment(primaryNitrogenKgPerTon, ingredientData) {
-    // Look for verified baseline in your Data.txt
-    const baselineN = ingredientData.data?.metadata?.nitrogen_content_kg_kg;
-
-    // REGULATORY SAFEGUARD: No verified baseline? No adjustment allowed.
-    if (!baselineN || baselineN <= 0) return 1.0;
-
-    const userValue = primaryNitrogenKgPerTon / 1000; // Convert to kg/kg
-    const adjustment = userValue / baselineN;
-    
-    // Log for verification
-    console.log(`[Audit] N-Adjustment: ${adjustment.toFixed(2)}x`);
-    return Math.max(0.5, Math.min(adjustment, 1.5));
-}
-
-function calculateYieldAdjustment(primaryYieldKgPerHa, ingredientData) {
-    // Look for verified yield baseline in your Data.txt
-    const baselineYield = ingredientData.data?.metadata?.yield_kg_ha;
-
-    // REGULATORY SAFEGUARD: Prevent arbitrary land-use claims
-    if (!baselineYield || baselineYield <= 0) return 1.0;
-
-    const adjustment = baselineYield / primaryYieldKgPerHa;
-    return Math.max(0.5, Math.min(adjustment, 1.5));
-}
-
-function calculateRegionalAdjustment(farmRegion, ingredientData) {
-    if (!farmRegion) return 1.0;
-    const region = farmRegion.toLowerCase();
-    
-    // Compliant proxy mapping for AWARE water stress
-    if (region.includes('normandy') || region.includes('brittany')) return 0.8;
-    if (region.includes('spain') || region.includes('italy') || region.includes('california')) return 1.6;
-    if (region.includes('provence') || region.includes('greece')) return 1.4;
-    
-    return 1.0;
-}
 
 // ================== REGULATORY INTEGRITY ENGINE ==================
 // Generates a deterministic, tamper-evident 64-character hash based on physical inputs
