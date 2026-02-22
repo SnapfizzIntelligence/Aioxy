@@ -4790,6 +4790,7 @@ if (ingredientData?.data?.pef) {
     auditTrail.dqr_summary = { overall_dqr: foregroundBackground.overall_dqr, component_dqrs: dqrComponents, dqr_level: this.getDQRQualityLevel(foregroundBackground.overall_dqr).level };
     auditTrail.uncertainty_analysis = { monte_carlo: uncertaintyResults, overall_uncertainty: this.calculateUncertainty(foregroundBackground.overall_dqr) };
     auditTrail.ISO_compliance = getISOCompliance();
+    auditTrail.pef_single_score = calculatePEFSingleScore(auditTrail.pefCategories, functionalUnitWeight);
     
     const unified = getUnifiedMetrics(auditTrail.pefCategories, massBalanceData);
     
