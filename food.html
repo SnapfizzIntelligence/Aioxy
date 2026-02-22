@@ -4651,28 +4651,7 @@ if (impactResult.qualityPenalty !== 0) {
     });
     }
 
-            // [COMPLIANT] Primary Data Overrides
-// You must partition the baseline impact to adjust only what the primary data actually affects.
-if (item.primaryData) {
-    const nitrogenAdjustment = calculateNitrogenAdjustment(item.primaryData.nitrogenKgPerTon, ing);
-    const yieldAdjustment = calculateYieldAdjustment(item.primaryData.yieldKgPerHa, ing);
-    const regionAdjustment = calculateRegionalAdjustment(item.primaryData.farmRegion, ing);
-    
-    if (cat === "Climate Change") {
-        // REGULATORY FIX: Yield affects the whole footprint (mass denominator), 
-        // but Nitrogen only affects the agricultural emission portion (e.g., ~40% of base).
-        // A true PEF engine requires isolated LCI data, but this is a safer proxy:
-        const agriEmissionsPortion = baseImpactPerKg * 0.40; 
-        const otherEmissionsPortion = baseImpactPerKg * 0.60;
-        
-        baseImpactPerKg = ((agriEmissionsPortion * nitrogenAdjustment) + otherEmissionsPortion) * yieldAdjustment;
-    }
-    if (cat === "Land Use") baseImpactPerKg *= yieldAdjustment;
-    if (cat === "Water Use/Scarcity (AWARE)") baseImpactPerKg *= regionAdjustment;
-}
-
-let impactTotal = grownMass * baseImpactPerKg;
-
+            
 // [COMPLIANT] LUC Data Handling
 // REGULATORY FIX: Removed arbitrary `riskMap` multipliers. 
 // If sourcing from high-risk areas, you must use specific regional datasets that already include dLUC, 
