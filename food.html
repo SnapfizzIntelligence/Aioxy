@@ -3370,6 +3370,19 @@ const ANCHOR_DATASETS = {
         factor: 1.0,
         name: 'Chocolate Spread'
     },
+    'plant-burger': { 
+        id: 'soybean-national-average-animal-feed-at-farm-gate-fr', 
+        processing: 'extrusion', 
+        factor: 0.3, // Represents a standard 30% plant-protein concentration
+        name: 'Conventional Plant-Based Patty'
+    },
+    'plant-milk': { 
+        id: 'oat-grain-national-average-animal-feed-at-farm-gate-fr', 
+        processing: 'oat-processing', 
+        factor: 0.1, // Represents a standard 10% oat concentration in plant milk
+        name: 'Conventional Oat/Plant Milk'
+    },
+
     'pasta-product': { 
         id: 'durum-wheat-grain-conventional-national-average-at-farm-gate-fr', 
         processing: 'drying', 
@@ -4801,36 +4814,47 @@ if (ingredientData?.data?.pef) {
 
     console.log(`✅ [AIOXY UNIFIED] Calc Complete. CO2: ${unified.co2PerKg.toFixed(2)} kg/kg`);
     return results;
-}, // <--- THIS COMMA IS CRITICAL. DO NOT DELETE IT.
-
+}, 
+    
 detectProductCategory(productName, ingredients, selectedCategory) {
     const name = productName.toLowerCase();
     const category = selectedCategory.toLowerCase();
     
-        // SMART DETECTION FIX - SPREAD PRODUCTS FIRST
-if (name.includes('spread') || name.includes('choco') || name.includes('hazelnut') || name.includes('nut butter')) {
-    return 'chocolate-spread-conventional';
+    // 1. Identify if the product is plant-based / vegan via modifiers
+    const isPlantBased = name.includes('plant') || name.includes('vegan') || name.includes('veggie') || 
+                         name.includes('hemp') || name.includes('soy') || name.includes('oat') || 
+                         name.includes('pea') || name.includes('mushroom');
+
+    // 2. Exact Category Routing
+    if (name.includes('spread') || name.includes('choco') || name.includes('hazelnut') || name.includes('nut butter')) {
+        return 'chocolate-spread-conventional';
     }
+    
     if ((name.includes('milk') || name.includes('drink') || name.includes('latte')) && !name.includes('burger')) {
-        return 'milk-product';
+        return isPlantBased ? 'plant-milk' : 'milk-product';
     }
+    
     if (name.includes('pasta') || name.includes('spaghetti') || name.includes('macaroni') || name.includes('noodle')) {
         return 'pasta-product';
     }
-    if (name.includes('burger') || name.includes('patty') || name.includes('sausage')) {
-        return 'beef-product';
+    
+    if (name.includes('burger') || name.includes('patty') || name.includes('sausage') || name.includes('mince') || name.includes('meatball')) {
+        // Intelligent Routing: Apples to Apples
+        if (isPlantBased) return 'plant-burger';
+        if (name.includes('chicken') || name.includes('poultry')) return 'chicken-product';
+        if (name.includes('pork') || name.includes('swine')) return 'pork-product';
+        return 'beef-product'; // Default conventional meat
     }
+    
     if (name.includes('pizza')) return 'cheese-product';
-    if (name.includes('coffee') || name.includes('espresso') || name.includes('latte')) return 'coffee-product';
+    if (name.includes('coffee') || name.includes('espresso')) return 'coffee-product';
     if (name.includes('chocolate') || name.includes('cocoa') || name.includes('candy')) return 'chocolate-product';
     if (name.includes('bread') || name.includes('bun') || name.includes('roll')) return 'bread-product';
     
-    if (category.includes('personal care') || category.includes('cosmetic')) return 'shampoo-conventional';
-    if (category.includes('textile') || category.includes('clothing')) return 'cotton-tshirt';
-    if (category.includes('beverage') || category.includes('drink')) return 'soda-drink';
-    
+    // Default fallback
     return 'beef-product';
-    }
+}
+
     };
    
 // ================== UNIVERSAL COMPARISON ENGINE (PARAMETRIC) ==================
