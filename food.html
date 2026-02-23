@@ -3370,18 +3370,18 @@ const ANCHOR_DATASETS = {
         factor: 1.0,
         name: 'Chocolate Spread'
     },
-    'plant-burger': { 
-        id: 'soybean-national-average-animal-feed-at-farm-gate-fr', 
-        processing: 'extrusion', 
-        factor: 0.3, // Represents a standard 30% plant-protein concentration
-        name: 'Conventional Plant-Based Patty'
-    },
-    'plant-milk': { 
-        id: 'oat-grain-national-average-animal-feed-at-farm-gate-fr', 
-        processing: 'oat-processing', 
-        factor: 0.1, // Represents a standard 10% oat concentration in plant milk
-        name: 'Conventional Oat/Plant Milk'
-    },
+'plant-burger': { 
+    id: 'soybean-national-average-animal-feed-at-farm-gate-fr', 
+    processing: 'extrusion', 
+    factor: 0.3, 
+    name: 'Plant-Based Patty'  
+},
+'plant-milk': { 
+    id: 'oat-grain-national-average-animal-feed-at-farm-gate-fr', 
+    processing: 'oat-processing', 
+    factor: 0.1, 
+    name: 'Oat/Plant Milk'  
+},
 
     'pasta-product': { 
         id: 'durum-wheat-grain-conventional-national-average-at-farm-gate-fr', 
@@ -6609,7 +6609,7 @@ function displayAuditTrail() {
         // Formulate the "Bridge" string (Regulator wants to see the MATH)
         let bridgeHTML = '';
         if (isPrimary) {
-            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Yield: ${ing.primary_data_values?.yield || 'N/A'}`;
+            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
         } else if (isProxy) {
             let factors = [];
             if(adj.multipliers?.co2 !== 1) factors.push(`Grid/Yield Factor: <strong>x${adj.multipliers?.co2.toFixed(2)}</strong>`);
