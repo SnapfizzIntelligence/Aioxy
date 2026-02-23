@@ -7766,11 +7766,18 @@ function openSupplierModal(index) {
     const ingredient = selectedIngredients[index];
     const modal = document.getElementById('supplierModal');
     
+    // Clear fields first to prevent cross-contamination between ingredients
+    document.getElementById('supplierFarmRegion').value = '';
+    document.getElementById('primaryNitrogen').value = '';
+    document.getElementById('primaryYield').value = '';
+    document.getElementById('supplierWaterSource').value = '';
+    document.getElementById('supplierPractice').value = '';
+
     // Populate with existing data if available
     if (ingredient.primaryData) {
         document.getElementById('supplierFarmRegion').value = ingredient.primaryData.farmRegion || '';
-        document.getElementById('supplierNitrogen').value = ingredient.primaryData.nitrogenKgPerTon || '';
-        document.getElementById('supplierYield').value = ingredient.primaryData.yieldKgPerHa || '';
+        document.getElementById('primaryNitrogen').value = ingredient.primaryData.nitrogenKgPerTon || '';
+        document.getElementById('primaryYield').value = ingredient.primaryData.yieldKgPerHa || '';
         document.getElementById('supplierWaterSource').value = ingredient.primaryData.waterSource || '';
         document.getElementById('supplierPractice').value = ingredient.primaryData.farmingPractice || '';
     }
@@ -7787,11 +7794,12 @@ function saveSupplierData() {
     if (currentIngredientIndex === null) return;
     
     const farmRegion = document.getElementById('supplierFarmRegion').value.trim();
-    const nitrogen = parseFloat(document.getElementById('supplierNitrogen').value);
-    const yieldVal = parseFloat(document.getElementById('supplierYield').value);
+    // CORRECTED IDs: primaryNitrogen and primaryYield (match your HTML)
+    const nitrogen = parseFloat(document.getElementById('primaryNitrogen').value);
+    const yieldVal = parseFloat(document.getElementById('primaryYield').value);
     const waterSource = document.getElementById('supplierWaterSource').value;
     const practice = document.getElementById('supplierPractice').value;
-    
+
     // Validate
     if (!farmRegion || isNaN(nitrogen) || isNaN(yieldVal)) {
         alert('Please fill in required fields: Farm Region, Nitrogen, and Yield');
@@ -7807,19 +7815,14 @@ function saveSupplierData() {
         farmingPractice: practice,
         timestamp: new Date().toISOString()
     };
-    
-    // Update display
+
+    // Update display & recalculate
     updateIngredientList();
-    
-    // Recalculate impacts
     calculateImpact();
-    
-    // Close modal
     closeSupplierModal();
     
     console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex].name}`);
-}
-
+    }
 // Add CSS for the modal
 const style = document.createElement('style');
 style.textContent = `
