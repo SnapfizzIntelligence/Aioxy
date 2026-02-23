@@ -4014,10 +4014,10 @@ function randomNormal() {
 }
             
 // ================== FIX 6: FOREGROUND/BACKGROUND ANALYSIS (ISO 14044 COMPLIANT) ==================
-function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategories) {
+function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategories, dqrComponentsList) {
     const foregroundComponents = [];
     const backgroundComponents = [];
-    const foregroundCutoff = 0.05; // 5% Cut-off Rule (ISO Standard)
+    const foregroundCutoff = 0.05;
 
     const processComponent = (name, impact, dqr) => {
         if (impact <= 0) return;
@@ -4039,10 +4039,15 @@ function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategor
         const ingredient = aioxyData.ingredients[item.id];
         if (!ingredient) return;
         const impact = item.quantity * (ingredient.data.pef["Climate Change"] || 0);
-        processComponent(ingredient.name, impact, ingredient.data.metadata.dqr_overall);
+        
+        // REGULATORY FIX: Pull the PENALIZED DQR from the array, not the raw database
+        const dqrObj = dqrComponentsList ? dqrComponentsList.find(d => d.name === ingredient.name) : null;
+        const finalDqr = dqrObj ? dqrObj.dqr : ingredient.data.metadata.dqr_overall;
+
+        processComponent(ingredient.name, impact, finalDqr);
     });
 
-    // 2. Analyze Non-Ingredient Stages (Using current state, not global state)
+    // 2. Analyze Non-Ingredient Stages (Using current state)
     if (currentPefCategories && currentPefCategories["Climate Change"]) {
         const tree = currentPefCategories["Climate Change"].contribution_tree;
         if (tree.Manufacturing.total > 0) processComponent("Manufacturing & Energy", tree.Manufacturing.total, 2.0);
@@ -4061,7 +4066,6 @@ function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategor
     const foregroundDQR = calcWeightedDQR(foregroundComponents);
     const backgroundDQR = calcWeightedDQR(backgroundComponents);
 
-    // ISO Compliance: Overall quality is weighted by impact contribution
     const totalRecordedImpact = foregroundComponents.reduce((s,c)=>s+c.contribution,0) + 
                                backgroundComponents.reduce((s,c)=>s+c.contribution,0);
                                
@@ -4084,7 +4088,7 @@ function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategor
             background: backgroundComponents
         }
     };
-}
+    }
 
 // ================== FIX 7: TEMPORAL DISCOUNTING (REGULATOR CORRECTED) ==================
 function applyTemporalDiscounting(pefResults, timeHorizon = 100) {
@@ -4777,7 +4781,7 @@ if (ingredientData?.data?.pef) {
     const totalClimate = auditTrail.pefCategories["Climate Change"].total;
     
     // Save Global State
-    const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories);
+    const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories, dqrComponents);
     const uncertaintyResults = calculateMonteCarloUncertainty(selectedIngredients, 500);
     
     auditTrail.mass_balance = massBalanceData;
