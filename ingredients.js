@@ -51,6 +51,42 @@ window.aioxyData = {
                 }
             }
         },
+        "tap-water-fr": { 
+    name: "Tap water",
+    loss: 0.03,
+    processing_yield: 0.99,
+    data: {
+        pef: { 
+            "Climate Change": 0.000342, "Ozone Depletion": 1.04e-11, "Human Toxicity, non-cancer": 3.51e-11,
+            "Human Toxicity, cancer": 2.95e-12, "Particulate Matter": 3.56e-11, "Ionizing Radiation": 0.000288,
+            "Photochemical Ozone Formation": 0.00000187, "Acidification": 0.00000181, "Eutrophication, terrestrial": 0.00000487,
+            "Eutrophication, freshwater": 0.000000109, "Eutrophication, marine": 0.000000485, "Ecotoxicity, freshwater": 0.00271,
+            "Land Use": 0.00117, "Water Use/Scarcity (AWARE)": 0.00707, "Resource Use, minerals/metals": 2.47e-09,
+            "Resource Use, fossils": 0.00963
+        },
+        metadata: {
+            source_dataset: "AGRIBALYSE 3.2",
+            source_activity: "Eau du robinet {FR} U",
+            source_uuid: "agb-3.2-18066-tap-water-fr",
+            allocation_method: "Economic Allocation",
+            dqr: { TeR: 2.50, GR: 1.9, TiR: 1.0, C: 1.4, P: 1.0 },
+            dqr_overall: 2.50,
+            biogenic_net: 0.000000445,
+            co2_luc_net: 0.000341,
+            co2_biogenic_2: 0.000000239,
+            seasonality_code: 2,
+            air_freight: 0,
+            storage_type: "Ambiant (long)",
+            packaging_approach: "PACK AGB",
+            preparation: "Pas de préparation",
+            code_agb: 18066,
+            groupe_aliment: "boissons",
+            sous_groupe: "eaux",
+            nom_francais: "Eau du robinet",
+            mpt_kg: 0.000104
+        }
+    }
+        }, 
         "palm-oil-refined-agribalyse-3-2": { 
             name: "Palm oil, refined",
             loss: 0.02,
