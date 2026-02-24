@@ -6702,20 +6702,18 @@ function displayAuditTrail() {
                 <tbody>`;
     
     // Inbound (Upstream)
-    const upstream = catCC.contribution_tree.Upstream.components;
-    if (upstream.length > 0) {
-        upstream.forEach(u => {
-            html += `
-                    <tr>
-                        <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
-                        <td style="padding: 8px;">Sea Freight (Container)</td>
-                        <td style="padding: 8px; text-align:right;">~8000 km</td>
-                        <td style="padding: 8px; text-align:right;">70%</td>
-                        <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg</td>
-                    </tr>`;
-        });
-    } else {
-        html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
+const upstream = catCC.contribution_tree.Upstream.components;
+if (upstream.length > 0) {
+    upstream.forEach(u => {
+        html += `
+                <tr>
+                    <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
+                    <td style="padding: 8px;" colspan="3">${u.name}: ${u.notes || 'Cross-border transport calculated'}</td>
+                    <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg</td>
+                </tr>`;
+    });
+} else {
+    html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
     }
 
     // Outbound (Transport)
