@@ -6615,12 +6615,16 @@ function displayAuditTrail() {
         if (isPrimary) {
             bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
         } else if (isProxy) {
-            let factors = [];
-            if(adj.multipliers?.co2 !== 1) factors.push(`Grid/Yield Factor: <strong>x${adj.multipliers?.co2.toFixed(2)}</strong>`);
-            if(adj.multipliers?.water !== 1) factors.push(`Water Stress: <strong>x${adj.multipliers?.water.toFixed(2)}</strong>`);
-            bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
-        } else {
-            bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
+    let factors = [];
+    if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
+    
+    if (factors.length > 0) {
+        bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
+    } else {
+        bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
+    }
+} else {
+    bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
         }
 
         html += `
