@@ -130,29 +130,49 @@ window.aioxyData = {
         },
         "white-sugar-refined-agribalyse-3-2": { 
             name: "White sugar, refined",
-            loss: 0.02,
-            processing_yield: 0.99,
-            data: {
-                pef: { 
-                    "Climate Change": 0.126, "Ozone Depletion": 1.22e-08, "Human Toxicity, non-cancer": 1.31e-07,
-                    "Human Toxicity, cancer": -1.18e-08, "Particulate Matter": 0.00332, "Ionizing Radiation": 0.0990,
-                    "Photochemical Ozone Formation": 2.56e-10, "Acidification": 0.0166, "Eutrophication, terrestrial": 0.000176,
-                    "Eutrophication, freshwater": 0.00530, "Eutrophication, marine": 0.0702, "Ecotoxicity, freshwater": 10.9,
-                    "Land Use": 31.9, "Water Use/Scarcity (AWARE)": 1.80, "Resource Use, minerals/metals": 9.66,
-                    "Resource Use, fossils": 4.30e-06
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Sucre blanc / Sugar, white",
-                    source_uuid: "agb-3-2-31016-white-sugar",
-                    agribalyse_code: "31016",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 3.0, GR: 3.0, TiR: 3.0, C: 3.0, P: 3.0 },
-                    dqr_overall: 3.1,
-                    biogenic_net: 0.0
-                }
-            }
-        },
+            
+  "loss": 0.02,
+  "processing_yield": 0.99,
+  "data": {
+    "pef": {
+      "Climate Change": 0.746,
+      "Ozone Depletion": 1.22e-08,
+      "Human Toxicity, non-cancer": -1.18e-08,
+      "Human Toxicity, cancer": 2.56e-10,
+      "Particulate Matter": 1.31e-07,
+      "Ionizing Radiation": 9.90e-02,
+      "Photochemical Ozone Formation": 3.32e-03,
+      "Acidification": 1.66e-02,
+      "Eutrophication, freshwater": 1.76e-04,
+      "Eutrophication, marine": 5.30e-03,
+      "Eutrophication, terrestrial": 7.02e-02,
+      "Ecotoxicity, freshwater": 1.09e+01,
+      "Land Use": 3.19e+01,
+      "Water Use/Scarcity (AWARE)": 1.80e+00,
+      "Resource Use, minerals/metals": 4.30e-06,
+      "Resource Use, fossils": 9.66e+00
+    },
+    "metadata": {
+      "source_dataset": "AGRIBALYSE 3.2",
+      "source_activity": "Sucre blanc / Sugar, white",
+      "source_uuid": "agb-3-2-31016-white-sugar",
+      "agribalyse_code": "31016",
+      "allocation_method": "Economic Allocation",
+      "dqr_overall": 3.09,
+      "single_score_mpt": 1.26e-01,
+      "product_name_fr": "Sucre blanc",
+      "product_name_en": "Sugar, white",
+      "food_group": "produits sucrés",
+      "food_subgroup": "sucres, miels et assimilés",
+      "lci_name": "Sugar, white",
+      "packaging_approach": "PACK PROXY",
+      "preparation": "Pas de préparation",
+      "season_code": 2,
+      "airplane_code": 0,
+      "distribution": "Ambiant (long)"
+    }
+  }
+          }, 
         "chicory-powder-instant-agribalyse-3-2": { 
             name: "Chicory, powder, instant",
             loss: 0.03,
