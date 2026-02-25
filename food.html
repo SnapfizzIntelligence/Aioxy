@@ -4677,7 +4677,6 @@ if (massBalanceData.productMass > 0) {
     }
     // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
     let inboundTransportCO2 = 0;
-    let totalWaterImpact = 0;
 
     finalIngredients.forEach(ing => {
         if (ing.isVirtual) return;
@@ -4685,13 +4684,6 @@ if (massBalanceData.productMass > 0) {
         // Retrieve Unified Origin AGAIN (Consistency Check)
         let originCountry = effectiveOrigins[ing.id];
         if (originCountry === 'PrimaryData') originCountry = ing.primaryData.farmRegion || 'FR';
-        
-        // Water Physics (Extracting strict AWARE 2.0 PEF values)
-const ingredientData = aioxyData.ingredients[ing.id];
-if (ingredientData?.data?.pef) {
-    const pefWater = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
-    totalWaterImpact += pefWater * ing.quantity;
-    }
 
         // =========================================================
         // 🛡️ FIX 1: GLOBAL SUPPLY CHAIN PROXY (ISO 14067 COMPLIANT)
@@ -4745,9 +4737,7 @@ if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
     inboundTransportCO2 += seaImpact;
     }
     });
-
-    if (totalWaterImpact > 0) auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total = totalWaterImpact;
-
+    
     if (inboundTransportCO2 > 0) {
         auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += inboundTransportCO2;
         auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
