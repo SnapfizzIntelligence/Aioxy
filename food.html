@@ -4675,7 +4675,7 @@ if (massBalanceData.productMass > 0) {
     
     console.log(`✅ [Audit] Manufacturing impact: ${mfgResult.co2.toFixed(4)} kg CO₂e using ${mfgResult.method}`);
     }
-    // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
+        // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
     let inboundTransportCO2 = 0;
 
     finalIngredients.forEach(ing => {
@@ -4706,38 +4706,37 @@ if (massBalanceData.productMass > 0) {
                 for (const [region, countries] of Object.entries(regions)) {
                     if (countries.includes(countryCode)) return region;
                 }
-                return 'UNKNOWN'; // Default fallback
+                return 'UNKNOWN';
             };
 
             const originRegion = getRegion(originCountry);
             const mfgRegion = getRegion(manufacturingCountryCode);
 
             // [AUDITOR FIX] Auto-detect if raw ingredient requires Cold Chain
-const nLower = ing.name.toLowerCase();
-const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
-                          nLower.includes('pork') || nLower.includes('milk') || 
-                          nLower.includes('cheese') || nLower.includes('salmon') || 
-                          nLower.includes('shrimp') || nLower.includes('fresh') ||
-                          nLower.includes('apple') || nLower.includes('strawberry') ||
-                          nLower.includes('pea') || nLower.includes('vegetable') ||
-                          nLower.includes('fruit');
+            const nLower = ing.name.toLowerCase();
+            const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
+                                      nLower.includes('pork') || nLower.includes('milk') || 
+                                      nLower.includes('cheese') || nLower.includes('salmon') || 
+                                      nLower.includes('shrimp') || nLower.includes('fresh') ||
+                                      nLower.includes('apple') || nLower.includes('strawberry') ||
+                                      nLower.includes('pea') || nLower.includes('vegetable') ||
+                                      nLower.includes('fruit');
 
-const inboundRefType = requiresColdChain ? 'chilled' : 'ambient';
+            const inboundRefType = requiresColdChain ? 'chilled' : 'ambient';
 
-// 3. Apply GLEC v4.0 Geographically Appropriate Proxy
-if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
-    // SCENARIO A: Intra-Continental (e.g., EU to EU, US to Canada)
-    const inboundDistRoad = 1200; // Continental cross-border proxy (km)
-    const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', inboundRefType);
-    inboundTransportCO2 += roadImpact;
-} else {
-    // SCENARIO B: Intercontinental (e.g., Asia to EU, South America to NA)
-    const inboundDistSea = 15000; // Deep sea ocean proxy (km)
-    const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', inboundRefType);
-    inboundTransportCO2 += seaImpact;
-    }
+            // 3. Apply GLEC v4.0 Geographically Appropriate Proxy
+            if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
+                const inboundDistRoad = 1200;
+                const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', inboundRefType);
+                inboundTransportCO2 += roadImpact;
+            } else {
+                const inboundDistSea = 15000;
+                const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', inboundRefType);
+                inboundTransportCO2 += seaImpact;
+            }
+        } 
     });
-    
+
     if (inboundTransportCO2 > 0) {
         auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += inboundTransportCO2;
         auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
@@ -4749,6 +4748,7 @@ if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
     }
 
     // 8. DISTRIBUTION & PACKAGING (Standard)
+
     const isFrozen = processingMethod === 'freezing';
     const isChilled = document.getElementById('refrigeratedTransport')?.value === 'yes';
     let refType = 'ambient';
