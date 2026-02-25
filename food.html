@@ -6732,13 +6732,22 @@ if (upstream.length > 0) {
     }
 
     // Outbound (Transport)
-    const outbound = catCC.contribution_tree.Transport.total;
-    const dist = document.getElementById('transportDistance')?.value || 300;
-    const mode = document.getElementById('transportMode')?.value || 'road';
-    html += `
+const outbound = catCC.contribution_tree.Transport.total;
+const dist = document.getElementById('transportDistance')?.value || 300;
+const rawMode = document.getElementById('transportMode')?.value || 'road';
+
+// UI FIX: Detect if refrigeration physics were applied
+const isFrozenUI = document.getElementById('processingMethod')?.value === 'freezing';
+const isChilledUI = document.getElementById('refrigeratedTransport')?.value === 'yes';
+
+let displayMode = rawMode.toUpperCase();
+if (isFrozenUI) displayMode += " (FROZEN REEFER)";
+else if (isChilledUI) displayMode += " (CHILLED REEFER)";
+
+html += `
                     <tr>
                         <td style="padding: 8px;"><span style="background:#FFF3E0; padding:2px 5px; border-radius:3px;">OUTBOUND</span> Mfg → Retail</td>
-                        <td style="padding: 8px;">${mode.toUpperCase()}</td>
+                        <td style="padding: 8px; font-weight: bold; color: #0A2540;">${displayMode}</td>
                         <td style="padding: 8px; text-align:right;">${dist} km</td>
                         <td style="padding: 8px; text-align:right;">85%</td>
                         <td style="padding: 8px; text-align:right;">${outbound.toFixed(4)} kg</td>
