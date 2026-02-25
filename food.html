@@ -4436,7 +4436,7 @@ const foodCalculationEngine = {
 
     if (window.userConfirmedHydration && window.confirmedHydrationKey === physicsKey) {
         finalIngredients.push({
-            id: 'tap-water-municipal',
+            id: 'tap-water-fr',  
             name: `Water (${physicsKey.replace('-product', '')} standard)`,
             quantity: suggestedWater,
             isVirtual: true,
@@ -4523,10 +4523,6 @@ const auditTrail = {
 
     finalIngredients.forEach(item => {
         let ing = aioxyData.ingredients[item.id];
-        // Water fallback
-        if (!ing && item.id === 'tap-water-municipal') {
-            ing = { name: 'Tap Water', loss: 0.0, data: { pef: { "Climate Change": 0.0003, "Water Use/Scarcity (AWARE)": 0.0, "Land Use": 0.0, "Resource Use, fossils": 0.0 }, metadata: { dqr_overall: 2.0, source_dataset: 'Estimated' } } };
-        }
         if (!ing) return;
 
         // Retrieve the Truth we decided earlier
