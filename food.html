@@ -4035,17 +4035,20 @@ function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategor
     };
 
     // 1. Analyze Ingredients 
-    ingredients.forEach(item => {
-        const ingredient = aioxyData.ingredients[item.id];
-        if (!ingredient) return;
-        const impact = item.quantity * (ingredient.data.pef["Climate Change"] || 0);
-        
-        // REGULATORY FIX: Pull the PENALIZED DQR from the array, not the raw database
-        const dqrObj = dqrComponentsList ? dqrComponentsList.find(d => d.name === ingredient.name) : null;
-        const finalDqr = dqrObj ? dqrObj.dqr : ingredient.data.metadata.dqr_overall;
+ingredients.forEach(item => {
+    const ingredient = aioxyData.ingredients[item.id];
+    if (!ingredient) return;
+    const impact = item.quantity * (ingredient.data.pef["Climate Change"] || 0);
+    
+    // REGULATORY FIX: Pull the PENALIZED DQR from the array, not the raw database
+    const dqrObj = dqrComponentsList ? dqrComponentsList.find(d => d.name === ingredient.name) : null;
+    const rawDqr = dqrObj ? dqrObj.dqr : ingredient.data.metadata.dqr_overall;
+    
+    // REGULATOR CLAMP: PEF DQR must remain strictly between 1.0 (Excellent) and 5.0 (Poor)
+    const finalDqr = Math.max(1.0, Math.min(5.0, rawDqr));
 
-        processComponent(ingredient.name, impact, finalDqr);
-    });
+    processComponent(ingredient.name, impact, finalDqr);
+});
 
     // 2. Analyze Non-Ingredient Stages (Using current state)
     if (currentPefCategories && currentPefCategories["Climate Change"]) {
