@@ -104,46 +104,48 @@ window.aioxyData = {
     }
         }, 
         
+    
     "rapeseed-oil-agribalyse-3-2": {
         "name": "Rapeseed oil",
-        "code_ciqual": 17130,
-        "food_group": "matières grasses",
-        "sub_group": "huiles et graisses végétales",
-        "name_french": "Huile de colza",
-        "lci_name": "Rapeseed oil",
-        "season_code": 2,
-        "airplane_code": 0,
-        "delivery": "Ambiant (long)",
-        "packaging_approach": "PACK AGB",
-        "preparation": "Pas de préparation",
-        "dqr": 1.99,
+        "loss": 0.02,
+        "processing_yield": 0.99,
         "data": {
             "pef": {
-                "EF_3.1_score": 0.323,
-                "Climate_Change": 2.5,
-                "Ozone_Depletion": 0.000000299,
-                "Ionizing_Radiation": 0.255,
-                "Photochemical_Ozone_Formation": 0.0088,
-                "Particulate_Matter": 0.000000238,
-                "Human_Toxicity_non_cancer": 0.0000000359,
-                "Human_Toxicity_cancer": 0.00000000284,
+                "Climate Change": 2.5,
+                "Ozone Depletion": 2.99e-07,
+                "Human Toxicity, non-cancer": 3.59e-08,
+                "Human Toxicity, cancer": 2.84e-09,
+                "Particulate Matter": 2.38e-07,
+                "Ionizing Radiation": 0.255,
+                "Photochemical Ozone Formation": 0.0088,
                 "Acidification": 0.0312,
-                "Eutrophication_freshwater": 0.000525,
-                "Eutrophication_marine": 0.0211,
-                "Eutrophication_terrestrial": 0.143,
-                "Ecotoxicity_freshwater": 47.2,
-                "Land_Use": 287,
-                "Water_Use": 0.602,
-                "Resource_Use_energy": 20.1,
-                "Resource_Use_minerals": 0.000013
+                "Eutrophication, terrestrial": 0.143,
+                "Eutrophication, freshwater": 0.000525,
+                "Eutrophication, marine": 0.0211,
+                "Ecotoxicity, freshwater": 47.2,
+                "Land Use": 287,
+                "Water Use/Scarcity (AWARE)": 0.602,
+                "Resource Use, minerals/metals": 1.3e-05,
+                "Resource Use, fossils": 20.1
             },
-            "climate_change_breakdown": {
-                "biogenic_emissions": 0.0573,
-                "fossil_emissions": 2.11,
-                "land_use_change_emissions": 0.332
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2",
+                "source_activity": "Huile de colza / Rapeseed oil",
+                "source_uuid": "agb-3.2-17130-rapeseed-oil",
+                "allocation_method": "Economic Allocation",
+                "dqr": {
+                    "TeR": null,
+                    "GR": null,
+                    "TiR": null,
+                    "C": null,
+                    "P": null
+                },
+                "dqr_overall": 1.99,
+                "biogenic_net": 0.0573
             }
         }
     }, 
+                    
 
   "white-sugar-refined-agribalyse-3-2": { 
    name: "White sugar, refined", 
@@ -2606,6 +2608,48 @@ window.aioxyData = {
         }
     }
         }, 
+    
+    "palm-oil-refined-agribalyse-3-2": {
+        "name": "Palm oil, refined",
+        "loss": 0.02,
+        "processing_yield": 0.99,
+        "data": {
+            "pef": {
+                "Climate Change": 6.65,
+                "Ozone Depletion": 7.64e-08,
+                "Human Toxicity, non-cancer": 6.1e-08,
+                "Human Toxicity, cancer": 3.15e-09,
+                "Particulate Matter": 3.58e-07,
+                "Ionizing Radiation": 0.204,
+                "Photochemical Ozone Formation": 0.0176,
+                "Acidification": 0.0252,
+                "Eutrophication, terrestrial": 0.0937,
+                "Eutrophication, freshwater": 0.000405,
+                "Eutrophication, marine": 0.0312,
+                "Ecotoxicity, freshwater": 40.9,
+                "Land Use": 147,
+                "Water Use/Scarcity (AWARE)": 1.96,
+                "Resource Use, minerals/metals": 8.81e-06,
+                "Resource Use, fossils": 44.3
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2",
+                "source_activity": "Huile de palme raffinée / Palm oil, refined",
+                "source_uuid": "agb-3.2-16150-palm-oil-refined",
+                "allocation_method": "Economic Allocation",
+                "dqr": {
+                    "TeR": null,
+                    "GR": null,
+                    "TiR": null,
+                    "C": null,
+                    "P": null
+                },
+                "dqr_overall": 1.02,
+                "biogenic_net": 0.0413
+            }
+        }
+    }, 
+            
         "duck-for-roasting-conventional-at-farm-gate-fr": { 
     "name": "Duck for roasting, conventional, at farm gate",
     "loss": 0.03,
