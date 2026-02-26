@@ -208,11 +208,11 @@ window.aioxyData = {
                     "source_uuid": "agb-3.2-17130-rapeseed-oil",
                     "allocation_method": "Economic Allocation",
                     "dqr": {
-                        "TeR": null,
-                        "GR": null,
-                        "TiR": null,
-                        "C": null,
-                        "P": null
+                        "TeR": 2.0,
+                        "GR": 1.0,
+                        "TiR": 2.0,
+                        "C": 2.5,
+                        "P": 1.9
                     },
                     "dqr_overall": 1.99,
                     "biogenic_net": 0.0573
@@ -2837,11 +2837,11 @@ window.aioxyData = {
                     "source_uuid": "agb-3.2-16150-palm-oil-refined",
                     "allocation_method": "Economic Allocation",
                     "dqr": {
-                        "TeR": null,
-                        "GR": null,
-                        "TiR": null,
-                        "C": null,
-                        "P": null
+                        "TeR": 1.0,
+                        "GR": 1.0,
+                        "TiR": 1.0,
+                        "C": 1.0,
+                        "P": 1.1
                     },
                     "dqr_overall": 1.02,
                     "biogenic_net": 0.0413
