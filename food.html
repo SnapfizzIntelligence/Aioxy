@@ -6622,7 +6622,14 @@ function displayAuditTrail() {
     }
 } else {
     bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
-        }
+}
+
+// =========================================================
+// 🛡️ THE NEW SMART FIX: Dynamic Auditor Flag
+// =========================================================
+if (ing.name.toLowerCase().includes('animal feed')) {
+    bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
+}
 
         html += `
                     <tr style="border-bottom: 1px solid #ddd;">
