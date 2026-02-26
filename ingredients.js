@@ -74,9 +74,9 @@ window.aioxyData = {
                     "dqr": {
                         "TeR": 2.0,
                         "GR": 1.0,
-                        "TiR": 2.0,
+                        "TiR": 1.6,
                         "C": 2.0,
-                        "P": 2.0
+                        "P": 2.25
                     },
                     "dqr_overall": 1.77,
                     "biogenic_net": 0.0531
