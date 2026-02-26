@@ -104,44 +104,44 @@ window.aioxyData = {
     }
         }, 
         
-    "sunflower-oil-agribalyse-3-2": {
-        "name": "Sunflower oil",
+    "rapeseed-oil-agribalyse-3-2": {
+        "name": "Rapeseed oil",
         "loss": null,
         "processing_yield": null,
         "data": {
             "pef": {
-                "Climate Change": 2.36,
-                "Ozone Depletion": 3.00e-07,
-                "Human Toxicity, non-cancer": 1.46e-07,
-                "Human Toxicity, cancer": 8.58e-09,
-                "Particulate Matter": 8.64e-03,
-                "Ionizing Radiation": 3.00e-07,
-                "Photochemical Ozone Formation": 8.64e-03,
-                "Acidification": 1.84e-02,
-                "Eutrophication, terrestrial": 2.86e-02,
-                "Eutrophication, freshwater": 1.36e-03,
-                "Eutrophication, marine": 8.29e-02,
-                "Ecotoxicity, freshwater": 92.3,
-                "Land Use": 555,
-                "Water Use": 0.788,
-                "Resource Use, minerals/metals": 1.12e-05,
-                "Resource Use, fossils": 20.5
+                "Climate Change": 2.50,
+                "Ozone Depletion": 2.99e-07,
+                "Human Toxicity, non-cancer": 3.59e-08,
+                "Human Toxicity, cancer": 2.84e-09,
+                "Particulate Matter": 2.38e-07,
+                "Ionizing Radiation": 0.255,
+                "Photochemical Ozone Formation": 8.80e-03,
+                "Acidification": 3.12e-02,
+                "Eutrophication, terrestrial": 1.43e-01,
+                "Eutrophication, freshwater": 5.25e-04,
+                "Eutrophication, marine": 2.11e-02,
+                "Ecotoxicity, freshwater": 47.2,
+                "Land Use": 287,
+                "Water Use": 0.602,
+                "Resource Use, minerals/metals": 1.30e-05,
+                "Resource Use, fossils": 20.1
             },
             "metadata": {
                 "source_dataset": "AGRIBALYSE 3.2",
-                "source_activity": "Huile de tournesol / Sunflower oil",
-                "source_uuid": "agb-3-2-17440-sunflower-oil",
-                "agribalyse_code": "17440",
-                "dqr": 1.77,
-                "biogenic_emissions": 5.31e-02,
-                "fossil_emissions": 1.69,
-                "luc_emissions": 0.611
+                "source_activity": "Huile de colza / Rapeseed oil",
+                "source_uuid": "agb-3-2-17130-rapeseed-oil",
+                "agribalyse_code": "17130",
+                "dqr": 1.99,
+                "biogenic_emissions": 5.73e-02,
+                "fossil_emissions": 2.11,
+                "luc_emissions": 0.332
             }
         }
     }, 
-        "white-sugar-refined-agribalyse-3-2": { 
-            name: "White sugar, refined",
-            
+
+  "white-sugar-refined-agribalyse-3-2": { 
+   name: "White sugar, refined", 
   "loss": 0.02,
   "processing_yield": 0.99,
   "data": {
