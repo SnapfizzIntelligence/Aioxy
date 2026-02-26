@@ -1415,6 +1415,9 @@
         <i class="fas fa-plus"></i>
         Add Ingredient
     </button>
+    <button class="btn btn-accent" style="margin-left: 1rem; background: linear-gradient(135deg, #8E44AD 0%, #9B59B6 100%);" onclick="loadBioreactorPreset()">
+    <i class="fas fa-flask"></i> Load Bioreactor Preset (Fermentation)
+    </button>
     
     <div class="ingredient-list" id="ingredientList">
         <div class="empty-state">
@@ -8056,6 +8059,56 @@ if (Math.abs(transTest - 6.3) < 0.1) {
     console.groupEnd();
     return passed ? "✅ SYSTEM AUDIT PASSED: READY FOR SCREENING USE" : "❌ SYSTEM AUDIT FAILED";
 };
+// ============================================================================
+// 🧪 UNIT PROCESS MODELING: PRECISION FERMENTATION PRESET
+// ============================================================================
+function loadBioreactorPreset() {
+    console.log("🧪 [LCA Engine] Initiating Bioreactor Unit Process...");
+
+    // 1. Clear current ingredients to start fresh
+    selectedIngredients = [];
+
+    // 2. Load the Feedstock (Sugar Beet is standard for European bioreactors)
+    selectedIngredients.push({
+        id: 'sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr',
+        name: 'Sugar Beet (Microbial Feedstock)',
+        quantity: 0.500,
+        originCountry: 'NL'
+    });
+
+    // 3. Load the Hydration Base
+    selectedIngredients.push({
+        id: 'tap-water-fr',
+        name: 'Tap Water (Bioreactor Hydration)',
+        quantity: 0.950,
+        originCountry: 'NL'
+    });
+
+    // 4. Configure the Factory Physics
+    const mfgCountry = document.getElementById('manufacturingCountry');
+    if(mfgCountry) mfgCountry.value = 'NL'; // Netherlands grid
+    
+    const processingSelect = document.getElementById('processingMethod');
+    if(processingSelect) processingSelect.value = 'fermentation';
+
+    // 5. THE CRITICAL STEP: Override with Primary Utility Data
+    const primaryToggle = document.getElementById('usePrimaryFactoryData');
+    if(primaryToggle) {
+        primaryToggle.checked = true;
+        toggleFactoryInputs(); // Opens the primary data UI
+        
+        // 5.0 kWh/kg intensity for precision fermentation
+        document.getElementById('factoryTotalKWh').value = '50000';
+        document.getElementById('factoryTotalOutput').value = '10000';
+    }
+
+    // 6. Refresh UI and Calculate Impact
+    updateIngredientList();
+    calculateImpact();
+
+    // Notify the user
+    alert("🧪 Unit Process Loaded: Bioreactor feedstock and water added. Primary Utility Override activated at 5.0 kWh/kg for fermentation thermodynamics.");
+}
     
 </script>
 </body>
