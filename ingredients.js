@@ -103,40 +103,42 @@ window.aioxyData = {
         }
     }
         }, 
-        "palm-oil-refined-agribalyse-3-2": {
-        "name": "Palm oil, refined",
+        
+    "sunflower-oil-agribalyse-3-2": {
+        "name": "Sunflower oil",
         "loss": null,
         "processing_yield": null,
         "data": {
             "pef": {
-                "Climate Change": 6.65,
-                "Ozone Depletion": 6.61e-08,
-                "Human Toxicity, non-cancer": 3.58e-07,
-                "Human Toxicity, cancer": 2.91e-09,
-                "Particulate Matter": 1.76e-02,
-                "Ionizing Radiation": 7.64e-08,
-                "Photochemical Ozone Formation": 1.59e-02,
-                "Acidification": 2.37e-02,
-                "Eutrophication, terrestrial": 3.03e-02,
-                "Eutrophication, freshwater": 3.57e-04,
-                "Eutrophication, marine": 3.12e-02,
-                "Ecotoxicity, freshwater": 37.4,
-                "Land Use": 140,
-                "Water Use": 1.96,
-                "Resource Use, minerals/metals": 8.81e-06,
-                "Resource Use, fossils": 44.3
+                "Climate Change": 2.36,
+                "Ozone Depletion": 3.00e-07,
+                "Human Toxicity, non-cancer": 1.46e-07,
+                "Human Toxicity, cancer": 8.58e-09,
+                "Particulate Matter": 8.64e-03,
+                "Ionizing Radiation": 3.00e-07,
+                "Photochemical Ozone Formation": 8.64e-03,
+                "Acidification": 1.84e-02,
+                "Eutrophication, terrestrial": 2.86e-02,
+                "Eutrophication, freshwater": 1.36e-03,
+                "Eutrophication, marine": 8.29e-02,
+                "Ecotoxicity, freshwater": 92.3,
+                "Land Use": 555,
+                "Water Use": 0.788,
+                "Resource Use, minerals/metals": 1.12e-05,
+                "Resource Use, fossils": 20.5
             },
             "metadata": {
                 "source_dataset": "AGRIBALYSE 3.2",
-                "source_activity": "Huile de palme raffinée / Palm oil, refined",
-                "source_uuid": "agb-3-2-16150-palm-oil-refined",
-                "agribalyse_code": "16150",
-                "dqr": 1.02,
-                biogenic_net: 0.0
-                "unit": "kg CO2 eq/kg for Climate Change, other units as per AGRIBALYSE 3.2"
+                "source_activity": "Huile de tournesol / Sunflower oil",
+                "source_uuid": "agb-3-2-17440-sunflower-oil",
+                "agribalyse_code": "17440",
+                "dqr": 1.77,
+                "biogenic_emissions": 5.31e-02,
+                "fossil_emissions": 1.69,
+                "luc_emissions": 0.611
             }
         }
-            }, 
+    }, 
         "white-sugar-refined-agribalyse-3-2": { 
             name: "White sugar, refined",
             
