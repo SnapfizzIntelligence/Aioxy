@@ -106,36 +106,41 @@ window.aioxyData = {
         
     "rapeseed-oil-agribalyse-3-2": {
         "name": "Rapeseed oil",
-        "loss": null,
-        "processing_yield": null,
+        "code_ciqual": 17130,
+        "food_group": "matières grasses",
+        "sub_group": "huiles et graisses végétales",
+        "name_french": "Huile de colza",
+        "lci_name": "Rapeseed oil",
+        "season_code": 2,
+        "airplane_code": 0,
+        "delivery": "Ambiant (long)",
+        "packaging_approach": "PACK AGB",
+        "preparation": "Pas de préparation",
+        "dqr": 1.99,
         "data": {
             "pef": {
-                "Climate Change": 2.50,
-                "Ozone Depletion": 2.99e-07,
-                "Human Toxicity, non-cancer": 3.59e-08,
-                "Human Toxicity, cancer": 2.84e-09,
-                "Particulate Matter": 2.38e-07,
-                "Ionizing Radiation": 0.255,
-                "Photochemical Ozone Formation": 8.80e-03,
-                "Acidification": 3.12e-02,
-                "Eutrophication, terrestrial": 1.43e-01,
-                "Eutrophication, freshwater": 5.25e-04,
-                "Eutrophication, marine": 2.11e-02,
-                "Ecotoxicity, freshwater": 47.2,
-                "Land Use": 287,
-                "Water Use": 0.602,
-                "Resource Use, minerals/metals": 1.30e-05,
-                "Resource Use, fossils": 20.1
+                "EF_3.1_score": 0.323,
+                "Climate_Change": 2.5,
+                "Ozone_Depletion": 0.000000299,
+                "Ionizing_Radiation": 0.255,
+                "Photochemical_Ozone_Formation": 0.0088,
+                "Particulate_Matter": 0.000000238,
+                "Human_Toxicity_non_cancer": 0.0000000359,
+                "Human_Toxicity_cancer": 0.00000000284,
+                "Acidification": 0.0312,
+                "Eutrophication_freshwater": 0.000525,
+                "Eutrophication_marine": 0.0211,
+                "Eutrophication_terrestrial": 0.143,
+                "Ecotoxicity_freshwater": 47.2,
+                "Land_Use": 287,
+                "Water_Use": 0.602,
+                "Resource_Use_energy": 20.1,
+                "Resource_Use_minerals": 0.000013
             },
-            "metadata": {
-                "source_dataset": "AGRIBALYSE 3.2",
-                "source_activity": "Huile de colza / Rapeseed oil",
-                "source_uuid": "agb-3-2-17130-rapeseed-oil",
-                "agribalyse_code": "17130",
-                "dqr": 1.99,
-                "biogenic_emissions": 5.73e-02,
+            "climate_change_breakdown": {
+                "biogenic_emissions": 0.0573,
                 "fossil_emissions": 2.11,
-                "luc_emissions": 0.332
+                "land_use_change_emissions": 0.332
             }
         }
     }, 
