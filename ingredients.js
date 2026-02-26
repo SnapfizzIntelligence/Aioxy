@@ -72,11 +72,11 @@ window.aioxyData = {
                     "source_uuid": "agb-3.2-17440-sunflower-oil",
                     "allocation_method": "Economic Allocation",
                     "dqr": {
-                        "TeR": null,
-                        "GR": null,
-                        "TiR": null,
-                        "C": null,
-                        "P": null
+                        "TeR": 2.0,
+                        "GR": 1.0,
+                        "TiR": 2.0,
+                        "C": 2.0,
+                        "P": 2.0
                     },
                     "dqr_overall": 1.77,
                     "biogenic_net": 0.0531
