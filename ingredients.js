@@ -103,31 +103,40 @@ window.aioxyData = {
         }
     }
         }, 
-        "palm-oil-refined-agribalyse-3-2": { 
-            name: "Palm oil, refined",
-            loss: 0.02,
-            processing_yield: 0.99,
-            data: {
-                pef: { 
-                    "Climate Change": 0.487, "Ozone Depletion": 7.64e-08, "Human Toxicity, non-cancer": 0.204,
-                    "Human Toxicity, cancer": 0.0176, "Particulate Matter": 3.58e-07, "Ionizing Radiation": 6.10e-08,
-                    "Photochemical Ozone Formation": 3.15e-09, "Acidification": 0.0252, "Eutrophication, terrestrial": 0.000405,
-                    "Eutrophication, freshwater": 0.0312, "Eutrophication, marine": 0.0937, "Ecotoxicity, freshwater": 40.9,
-                    "Land Use": 147, "Water Use/Scarcity (AWARE)": 1.96, "Resource Use, minerals/metals": 44.3,
-                    "Resource Use, fossils": 8.81e-06
-                },
-                metadata: {
-                    source_dataset: "AGRIBALYSE 3.2",
-                    source_activity: "Huile de palme raffinée / Palm oil, refined",
-                    source_uuid: "agb-3-2-16150-palm-oil-refined",
-                    agribalyse_code: "16150",
-                    allocation_method: "Economic Allocation",
-                    dqr: { TeR: 1.0, GR: 1.0, TiR: 1.0, C: 1.0, P: 1.0 },
-                    dqr_overall: 1.0,
-                    biogenic_net: 0.0
-                }
+        "palm-oil-refined-agribalyse-3-2": {
+        "name": "Palm oil, refined",
+        "loss": null,
+        "processing_yield": null,
+        "data": {
+            "pef": {
+                "Climate Change": 6.65,
+                "Ozone Depletion": 6.61e-08,
+                "Human Toxicity, non-cancer": 3.58e-07,
+                "Human Toxicity, cancer": 2.91e-09,
+                "Particulate Matter": 1.76e-02,
+                "Ionizing Radiation": 7.64e-08,
+                "Photochemical Ozone Formation": 1.59e-02,
+                "Acidification": 2.37e-02,
+                "Eutrophication, terrestrial": 3.03e-02,
+                "Eutrophication, freshwater": 3.57e-04,
+                "Eutrophication, marine": 3.12e-02,
+                "Ecotoxicity, freshwater": 37.4,
+                "Land Use": 140,
+                "Water Use": 1.96,
+                "Resource Use, minerals/metals": 8.81e-06,
+                "Resource Use, fossils": 44.3
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2",
+                "source_activity": "Huile de palme raffinée / Palm oil, refined",
+                "source_uuid": "agb-3-2-16150-palm-oil-refined",
+                "agribalyse_code": "16150",
+                "dqr": 1.02,
+                biogenic_net: 0.0
+                "unit": "kg CO2 eq/kg for Climate Change, other units as per AGRIBALYSE 3.2"
             }
-        },
+        }
+            }, 
         "white-sugar-refined-agribalyse-3-2": { 
             name: "White sugar, refined",
             
