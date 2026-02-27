@@ -8102,9 +8102,13 @@ function loadBioreactorPreset() {
         document.getElementById('factoryTotalOutput').value = '10000';
     }
 
-    // 6. Refresh UI and Calculate Impact
-    updateIngredientList();
-    calculateImpact();
+    // ✨ Set Product Name for Audit Trail Clarity
+const pName = document.getElementById('productName');
+if(pName) pName.value = "Microbial Protein Base (Precision Fermentation)";
+
+// 6. Refresh UI and Calculate Impact
+updateIngredientList();
+calculateImpact();
 
     // Notify the user
     alert("🧪 Unit Process Loaded: Bioreactor feedstock and water added. Primary Utility Override activated at 5.0 kWh/kg for fermentation thermodynamics.");
