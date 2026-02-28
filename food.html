@@ -3566,7 +3566,8 @@ if (primaryData.waterSource === 'rainfed') {
         finalLand *= landAdjustment;
         finalWater *= waterAdjustment;
         
-        log.push(`✅ PRIMARY DATA VERIFIED: Yield adj: ${yieldAdjustment.toFixed(2)}x | N adj: ${nAdjustment.toFixed(2)}x`);
+        const practiceStr = primaryData.farmingPractice ? `[${primaryData.farmingPractice.toUpperCase()}]` : '';
+        log.push(`✅ PRIMARY DATA VERIFIED ${practiceStr}: Yield adj: ${yieldAdjustment.toFixed(2)}x | N adj: ${nAdjustment.toFixed(2)}x`);
         qualityPenalty = -0.5; // BONUS: Better DQR for primary data
         
         universal_adjustments = {
