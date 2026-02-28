@@ -4778,7 +4778,26 @@ if (massBalanceData.productMass > 0) {
                 const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', inboundRefType);
                 inboundTransportCO2 += seaImpact;
             }
-        } 
+        }
+        // 🛡️ REGULATOR FIX: ADD THIS ENTIRE ELSE BLOCK FOR LOCAL INGREDIENTS
+    else {
+        console.log(`🚚 Logistics: Local sourcing ${ing.name} within ${manufacturingCountryCode}`);
+        
+        // Determine if local ingredient needs refrigeration
+        const nLower = ing.name.toLowerCase();
+        const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
+                                  nLower.includes('pork') || nLower.includes('milk') || 
+                                  nLower.includes('cheese') || nLower.includes('salmon') || 
+                                  nLower.includes('shrimp') || nLower.includes('fresh') ||
+                                  nLower.includes('apple') || nLower.includes('strawberry') ||
+                                  nLower.includes('pea') || nLower.includes('vegetable') ||
+                                  nLower.includes('fruit');
+        
+        const inboundRefType = requiresColdChain ? 'chilled' : 'ambient';
+        const localDistRoad = 200; // PEF 3.1 standard default for local agricultural inputs
+        const localImpact = calculateGLECTransport(ing.quantity, localDistRoad, 'road', inboundRefType);
+        inboundTransportCO2 += localImpact;
+    }
     });
 
     if (inboundTransportCO2 > 0) {
