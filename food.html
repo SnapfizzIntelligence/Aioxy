@@ -6882,59 +6882,73 @@ html += `
     auditContent.innerHTML = html;
 }
 
-    // ================== DIGITAL TRANSPARENCY CARD ==================
-    function generateDPP() {
-        const productName = document.getElementById('productName').value || 'Unnamed Product';
-        const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-        currentDPPId = dppId;
+// ================== DIGITAL TRANSPARENCY CARD ==================
+function generateDPP() {
+    const productName = document.getElementById('productName').value || 'Unnamed Product';
+    const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    currentDPPId = dppId;
+    
+    document.getElementById('dppId').textContent = dppId;
+    
+    const transparencyData = {
+        productId: dppId,
+        productName: productName,
+        timestamp: new Date().toISOString(),
+        methodology: {
+            approach: "PEF 3.1",
+            version: "2.1",
+            dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
+            standards: ["Science-Based Reporting", "Transparent Methodology", "ISO 14044 Compliant"]
+        },
+        environmentalFootprint: finalPefResults,
+        data_quality: auditTrailData.dqr_summary,
+        mass_balance: massBalanceData,
+        comparison_baseline: currentComparisonBaseline,
+        pef_single_score: auditTrailData.pef_single_score,
+        scenarios_applied: activeScenarios,
+        calculation_timestamp: auditTrailData.calculationTimestamp
+    };
+    
+    // 🛡️ REGULATOR FIX: In production, save transparencyData to your backend here
+    console.log("📦 DPP Data Ready for Backend Storage:", transparencyData);
+    
+    const qrElement = document.getElementById('qrcode');
+    if (!qrElement) return;
+    
+    qrElement.innerHTML = '';
+    
+    // 🛡️ REGULATOR FIX: GS1 Digital Link for ESPR Compliance
+    if (typeof QRCode !== 'undefined') {
+        // In production, you would get the actual GTIN from the brand
+        // For now, we use a placeholder
+        const brandGTIN = "00012345678905"; 
+        const dppDomain = "https://dpp.aioxy.com"; // Your future resolver domain
         
-        document.getElementById('dppId').textContent = dppId;
+        // Construct ESPR-compliant GS1 Digital Link
+        const gs1DigitalLink = `${dppDomain}/01/${brandGTIN}/21/${dppId}`;
         
-        const transparencyData = {
-            productId: dppId,
-            productName: productName,
-            timestamp: new Date().toISOString(),
-            methodology: {
-                approach: "PEF 3.1",
-                version: "2.1",
-                dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
-                standards: ["Science-Based Reporting", "Transparent Methodology", "ISO 14044 Compliant"]
-            },
-            environmentalFootprint: finalPefResults,
-            data_quality: auditTrailData.dqr_summary,
-            mass_balance: massBalanceData,
-            comparison_baseline: currentComparisonBaseline,
-            pef_single_score: auditTrailData.pef_single_score,
-            scenarios_applied: activeScenarios,
-            calculation_timestamp: auditTrailData.calculationTimestamp
-        };
+        console.log("🔗 ESPR Compliant GS1 Link:", gs1DigitalLink);
         
-        const qrElement = document.getElementById('qrcode');
-        if (!qrElement) return;
-        
-        qrElement.innerHTML = '';
-        
-        // Use QRCode library to generate QR code
-        if (typeof QRCode !== 'undefined') {
-            new QRCode(qrElement, {
-                text: JSON.stringify(transparencyData, null, 2),
-                width: 200,
-                height: 200,
-                colorDark: "#0A2540",
-                colorLight: "#FFFFFF",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        } else {
-            qrElement.innerHTML = `
-                <div style="background: #f0f0f0; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
-                    <div style="text-align: center;">
-                        <i class="fas fa-qrcode" style="font-size: 3rem; color: #666;"></i>
-                        <div style="margin-top: 1rem; font-size: 0.8rem;">QR Code would display here</div>
-                        <div style="font-size: 0.7rem; color: #999;">DPP ID: ${dppId}</div>
-                    </div>
+        // Encode ONLY the URL, not the raw data
+        new QRCode(qrElement, {
+            text: gs1DigitalLink,
+            width: 200,
+            height: 200,
+            colorDark: "#0A2540",
+            colorLight: "#FFFFFF",
+            correctLevel: QRCode.CorrectLevel.M // Medium correction is sufficient for URLs
+        });
+    } else {
+        qrElement.innerHTML = `
+            <div style="background: #f0f0f0; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+                <div style="text-align: center;">
+                    <i class="fas fa-qrcode" style="font-size: 3rem; color: #666;"></i>
+                    <div style="margin-top: 1rem; font-size: 0.8rem;">QR Code would display here</div>
+                    <div style="font-size: 0.7rem; color: #999;">DPP ID: ${dppId}</div>
                 </div>
-            `;
-        }
+            </div>
+        `;
+    }
     }
 // ================== REGULATOR DISCLAIMER ==================
 function generateRegulatorDisclaimer() {
