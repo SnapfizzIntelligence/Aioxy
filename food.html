@@ -4310,14 +4310,17 @@ function applyScenarioPhysics(baseResults, scenarios) {
     }
     
     // 4. REGENERATIVE AGRICULTURE (Physics: Soil carbon sequestration)
-    if (scenarios.regen_ag) {
-        if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
-            // RODALE INSTITUTE meta-analysis: Regenerative ag sequesters 0.5-2.0 tons C/ha/year
-            // For crops: ~15-25% reduction in net emissions
-            const sequestrationPct = 0.20; // 20% carbon credit (midpoint of studies)
-            modifiedResults["Climate Change"].contribution_tree.Ingredients.total *= (1 - sequestrationPct);
-            scenarioLog.push(`Regen Ag: ${(sequestrationPct*100).toFixed(0)}% soil carbon credit (Rodale Institute)`);
-        }
+// REGULATOR FIX: GCD explicitly bans netting out removals from gross emissions.
+if (scenarios.regen_ag) {
+    if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
+        const currentTotal = modifiedResults["Climate Change"].contribution_tree.Ingredients.total;
+        const removedCarbon = currentTotal * 0.20; // 20% estimated sequestration
+        
+        // Do NOT multiply or reduce the gross total. Store removals separately.
+        modifiedResults["Climate Change"].biogenic_removals = removedCarbon;
+        
+        scenarioLog.push(`Regen Ag: ${removedCarbon.toFixed(4)} kg CO₂e sequestration recorded separately (EU GCD Compliant - No Netting)`);
+    }
     }
     
     // 5. ZERO WASTE MANUFACTURING (Physics: Yield efficiency)
