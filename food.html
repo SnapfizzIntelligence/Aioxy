@@ -3587,35 +3587,33 @@ else {
         qualityPenalty = 1.0; // Worsen the DQR score
         
         // PEF 3.1 / EUDR COMPLIANCE: Direct Land Use Change (dLUC) Penalties
-        if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
-            // Massive penalty for unverified commodities from high deforestation-risk zones
-            finalCO2 *= 1.50; // +50% LUC penalty
-            finalWater *= 1.50;
-            finalLand *= 1.50;
-            log.push(`🛑 EUDR LUC PENALTY: Unverified ${originCountry} sourcing. Applied +50% deforestation risk multiplier.`);
-            
-            universal_adjustments = {
-                adjusted_from_country: "FR",
-                adjusted_for_country: originCountry,
-                multipliers: { co2: 1.50, land: 1.50, water: 1.50 },
-                adder: 0,
-                method: "deforestation_risk_penalty"
-            };
-        } else {
-            // Standard offshore uncertainty
-            finalCO2 *= 1.15;
-            finalWater *= 1.15;
-            finalLand *= 1.15;
-            log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
-            
-            universal_adjustments = {
-                adjusted_from_country: "FR",
-                adjusted_for_country: originCountry,
-                multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
-                adder: 0,
-                method: "proxy_with_penalty"
-            };
-        }
+if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
+    // EUDR COMPLIANCE BLOCK: Unverified high-risk commodities cannot enter EU market
+    log.push(`🛑 EUDR COMPLIANCE BLOCK: Unverified ${originCountry} sourcing. Product cannot legally enter the EU market without primary geolocation data.`);
+    qualityPenalty = 4.0; // Force DQR to Poor/Fail status
+    
+    universal_adjustments = {
+        adjusted_from_country: "FR",
+        adjusted_for_country: originCountry,
+        multipliers: { co2: 1.0, land: 1.0, water: 1.0 }, // NO PHYSICS PENALTY - just legal block
+        adder: 0,
+        method: "eudr_market_block"
+    };
+} else {
+    // Standard offshore uncertainty
+    finalCO2 *= 1.15;
+    finalWater *= 1.15;
+    finalLand *= 1.15;
+    log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
+    
+    universal_adjustments = {
+        adjusted_from_country: "FR",
+        adjusted_for_country: originCountry,
+        multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
+        adder: 0,
+        method: "proxy_with_penalty"
+    };
+    }
     } else {
         log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
         
