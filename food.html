@@ -5611,8 +5611,6 @@ function updateHardFinancialLedger(financialResults, volume) {
     // This prevents misleading CFOs into thinking Carbon Credits are immediate cash.
     const realCashSavings = moneyEnergy + moneyFuel;
 
-    // VCM (Voluntary Carbon Market) Estimate: Conservative €15/t (vs €85 compliance cost)
-    const vcmValue = (metrics.totalTonsCo2Saved || 0) * 15;
 
     tbody.innerHTML = `
     <tr>
@@ -5622,14 +5620,6 @@ function updateHardFinancialLedger(financialResults, volume) {
         </td>
         <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
         <td class="money-positive" style="color: #2c3e50;">€${moneyCarbon.toFixed(2)}</td> 
-    </tr>
-    <tr>
-        <td>
-            <strong>🌱 Voluntary Carbon Value</strong><br>
-            <small>Potential VCM Revenue (Conservative €15/t)</small>
-        </td>
-        <td>+${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-        <td class="money-positive" style="opacity: 0.7;">€${vcmValue.toFixed(2)}</td>
     </tr>
     <tr>
         <td>
