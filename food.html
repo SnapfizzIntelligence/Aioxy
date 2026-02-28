@@ -3468,21 +3468,21 @@ function calculateParametricBaseline(baselineCategoryKey, targetCountry) {
 
     const baseName = anchor.name;
 
-    console.log(`   └─ Farm: ${farmGateCO2.toFixed(2)} | Mfg: ${mfgImpact.co2.toFixed(2)} | Log: ${transportCO2.toFixed(2)} | Pkg: ${packagingCO2.toFixed(2)}`);
-    console.log(`   └─ Baseline Total: ${totalCO2PerKg.toFixed(2)} kg CO₂e/kg`);
+    console.log(`   └─ Farm: ${farmGateCO2.toFixed(2)} | Mfg: ${mfgImpact.co2.toFixed(2)} | Log: ${totalTransportCO2.toFixed(2)} | Pkg: ${packagingCO2.toFixed(2)}`);
+console.log(`   └─ Baseline Total: ${totalCO2PerKg.toFixed(2)} kg CO₂e/kg`);
 
-    return {
-        name: `Conventional ${baseName} (Parametric Twin)`,
-        co2PerKg: totalCO2PerKg,
-        waterPerKg: farmGateWater,
-        landUsePerKg: farmGateLand,
-        fossilPerKg: farmGateFossil + (mfgImpact.kwh * 3.6), // Add manufacturing MJ
-        breakdown: {
-            farm: farmGateCO2,
-            manufacturing: mfgImpact.co2,
-            logistics: transportCO2,
-            packaging: packagingCO2
-        },
+return {
+    name: `Conventional ${baseName} (Parametric Twin)`,
+    co2PerKg: totalCO2PerKg,
+    waterPerKg: farmGateWater,
+    landUsePerKg: farmGateLand,
+    fossilPerKg: farmGateFossil + (mfgImpact.kwh * 3.6),
+    breakdown: {
+        farm: farmGateCO2,
+        manufacturing: mfgImpact.co2,
+        logistics: totalTransportCO2,
+        packaging: packagingCO2
+    },
         anchor_used: anchor.id,
         methodology: "Dynamic parametric twin using Agribalyse + JRC benchmarks"
     };
