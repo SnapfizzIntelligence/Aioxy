@@ -4533,8 +4533,12 @@ const auditTrail = {
         if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.primaryData.farmRegion || 'FR';
 
         const isProxyData = (ingredientOrigin !== 'FR' && !item.primaryData);
-        let dqrPenalty = isProxyData ? 1.0 : 0.0;
+let dqrPenalty = isProxyData ? 1.0 : 0.0;
 
+// NEW: Technological Proxy Penalty for Animal Feed
+if (ing.name.toLowerCase().includes('animal feed') && !item.primaryData) {
+    dqrPenalty += 0.5; // Decreases Data Quality (TeR) slightly because it's a proxy
+    }
         // [FEATURE PRESERVED] Farm Loss Logic
         const farmLoss = ing.loss || 0.0;
         const grownMass = item.quantity / (1 - farmLoss);
