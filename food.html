@@ -3567,18 +3567,33 @@ if (primaryData.waterSource === 'rainfed') {
         };
     } 
     // 2. CONSERVATIVE DEFAULT (No primary data provided)
-    else {
-        // If they select a country outside the EU but provide no proof, apply ISO Uncertainty Penalty
-        const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+else {
+    // If they select a country outside the EU but provide no proof, apply ISO Uncertainty Penalty
+    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+    
+    if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
+        qualityPenalty = 1.0; // Worsen the DQR score
         
-        if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
-            qualityPenalty = 1.0; // Worsen the DQR score
+        // PEF 3.1 / EUDR COMPLIANCE: Direct Land Use Change (dLUC) Penalties
+        if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
+            // Massive penalty for unverified commodities from high deforestation-risk zones
+            finalCO2 *= 1.50; // +50% LUC penalty
+            finalWater *= 1.50;
+            finalLand *= 1.50;
+            log.push(`🛑 EUDR LUC PENALTY: Unverified ${originCountry} sourcing. Applied +50% deforestation risk multiplier.`);
             
-            // ANTI-GREENWASHING: Apply +15% penalty buffer for unverified offshore sourcing
+            universal_adjustments = {
+                adjusted_from_country: "FR",
+                adjusted_for_country: originCountry,
+                multipliers: { co2: 1.50, land: 1.50, water: 1.50 },
+                adder: 0,
+                method: "deforestation_risk_penalty"
+            };
+        } else {
+            // Standard offshore uncertainty
             finalCO2 *= 1.15;
-            finalWater *= 1.15; // Also apply to water as precaution
+            finalWater *= 1.15;
             finalLand *= 1.15;
-            
             log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
             
             universal_adjustments = {
@@ -3588,17 +3603,18 @@ if (primaryData.waterSource === 'rainfed') {
                 adder: 0,
                 method: "proxy_with_penalty"
             };
-        } else {
-            log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
-            
-            universal_adjustments = {
-                adjusted_from_country: "FR",
-                adjusted_for_country: originCountry || "FR",
-                multipliers: { co2: 1.0, land: 1.0, water: 1.0 },
-                adder: 0,
-                method: "direct_agribalyse"
-            };
         }
+    } else {
+        log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
+        
+        universal_adjustments = {
+            adjusted_from_country: "FR",
+            adjusted_for_country: originCountry || "FR",
+            multipliers: { co2: 1.0, land: 1.0, water: 1.0 },
+            adder: 0,
+            method: "direct_agribalyse"
+        };
+    }
     }
 
     // Calculate final totals
