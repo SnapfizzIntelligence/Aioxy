@@ -3539,8 +3539,18 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
         // Industry standard: 60% of crop footprint is yield-driven (land/fuel), 40% is fertilizer-driven
         const co2Adjustment = (0.6 * yieldAdjustment) + (0.4 * nAdjustment);
         const landAdjustment = yieldAdjustment; // Land use scales inversely with yield
-        const waterAdjustment = 1.0; // Water impact needs irrigation data - keep default for now
 
+// AUDIT FIX: Connect Supplier Water Source to AWARE Math
+let waterAdjustment = 1.0;
+if (primaryData.waterSource === 'rainfed') {
+    // Rainfed = green water (not blue water). Massive reduction in AWARE scarcity impact.
+    waterAdjustment = 0.05; 
+    log.push(`💧 Verified Rainfed: -95% Water Scarcity Impact`);
+} else if (primaryData.waterSource === 'groundwater') {
+    // Groundwater depletion carries a higher penalty in PEF
+    waterAdjustment = 1.25;
+    log.push(`💧 Groundwater source identified: +25% Scarcity Penalty`);
+    }
         finalCO2 *= co2Adjustment;
         finalLand *= landAdjustment;
         finalWater *= waterAdjustment;
