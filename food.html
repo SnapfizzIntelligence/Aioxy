@@ -4520,8 +4520,23 @@ const foodCalculationEngine = {
     // 4. AUDIT TRAIL INIT & PARAMETRIC TWIN GENERATION
 const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
 
-// Call the new Parametric Twin Engine (ISO 14044 Compliant Apples-to-Apples)
-const comparisonBaseline = calculateParametricBaseline(comparisonKey, manufacturingCountryCode);
+// REGULATOR FIX: Custom Baseline Enforcement
+const customBaselineInput = parseFloat(document.getElementById('customBaseline').value);
+let comparisonBaseline;
+
+if (customBaselineInput > 0) {
+    comparisonBaseline = {
+        name: "Custom User Baseline",
+        co2PerKg: customBaselineInput,
+        waterPerKg: 0, 
+        landUsePerKg: 0, 
+        fossilPerKg: 0,
+        is_custom: true
+    };
+} else {
+    // Call the new Parametric Twin Engine (ISO 14044 Compliant Apples-to-Apples)
+    comparisonBaseline = calculateParametricBaseline(comparisonKey, manufacturingCountryCode);
+}
 currentComparisonBaseline = comparisonBaseline;
 
 // Uplift is strictly handled by the Parametric Twin now. No magic numbers.
@@ -5968,9 +5983,35 @@ if (totalBenefit) {
 
 // ================== UPDATE RESULTS UI (FIXED) ==================
 function updateResultsUI(results) {
+    // REGULATOR FIX: Custom Baseline Warning
+    const resultsContent = document.getElementById('resultsContent');
+    let customWarningDiv = document.getElementById('gcdCustomWarning');
+    
+    if (results.comparison?.baseline?.is_custom) {
+        if (!customWarningDiv && resultsContent) {
+            customWarningDiv = document.createElement('div');
+            customWarningDiv.id = 'gcdCustomWarning';
+            customWarningDiv.className = 'compliance-notice';
+            customWarningDiv.style.borderColor = '#E65100';
+            customWarningDiv.style.backgroundColor = '#FFF3E0';
+            customWarningDiv.innerHTML = `
+                <div class="compliance-icon" style="background: #E65100;">
+                    <i class="fas fa-gavel"></i>
+                </div>
+                <div>
+                    <strong style="color: #E65100;">Green Claims Directive Warning</strong><br>
+                    <span style="color: #9C4221;">Comparative assertion is based on an unsubstantiated custom user baseline. Requires external LCA verification and PEF-compliant dataset comparison for any public or B2B claims.</span>
+                </div>
+            `;
+            resultsContent.insertBefore(customWarningDiv, resultsContent.firstChild);
+        }
+    } else if (customWarningDiv) {
+        customWarningDiv.remove();
+    }
+
     // 1. Force Consistency: Pull the UNIFIED metric directly
     const unifiedCO2 = results.co2PerKg; 
-
+    
     updateMassBalanceDisplay();
     updateDataQualityDisplay(results);
     updateEnvironmentalStory(results);
