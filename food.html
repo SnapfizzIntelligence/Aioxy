@@ -3444,16 +3444,27 @@ function calculateParametricBaseline(baselineCategoryKey, targetCountry) {
     const farmGateFossil = (anchorIng.data.pef["Resource Use, fossils"] || 0) * anchor.factor;
 
     // 3. Simulate Standard Industry Manufacturing using our new engine
-    const mfgImpact = calculateManufacturingImpact(1.0, 1.0, anchor.processing, targetCountry);
+    const mfgImpact = calculateManufacturingImpact(anchor.factor, 1.0, anchor.processing, targetCountry);
+
+    // 4. Simulate Standard Logistics (Inbound + Outbound)
+    // A. Inbound (Farm to Factory): Assume 500km regional sourcing
+    const inboundRef = (anchor.processing === 'freezing' || anchor.processing === 'pasteurization') ? 'chilled' : 'ambient';
+    const inboundTransportCO2 = calculateGLECTransport(anchor.factor, 500, 'road', inboundRef);
     
-    // 4. Simulate Standard Retail Logistics (EU Benchmark: 400km Road distribution)
-    const transportCO2 = calculateGLECTransport(1.0, 400, 'road', 'ambient');
+    // B. Outbound (Factory to Retail): Assume 400km distribution
+    let outboundRef = 'ambient';
+    if (anchor.processing === 'freezing') outboundRef = 'frozen';
+    else if (anchor.processing === 'pasteurization') outboundRef = 'chilled';
+    const outboundTransportCO2 = calculateGLECTransport(1.0, 400, 'road', outboundRef);
+    
+    const totalTransportCO2 = inboundTransportCO2 + outboundTransportCO2;
 
     // 5. Standard Packaging (Conservative estimate: 50g mixed packaging per kg)
     const packagingCO2 = 0.15; 
 
     // 6. Assemble the Final Baseline Profile
-    const totalCO2PerKg = farmGateCO2 + mfgImpact.co2 + transportCO2 + packagingCO2;
+    const totalCO2PerKg = farmGateCO2 + mfgImpact.co2 + totalTransportCO2 + packagingCO2;
+
 
     const baseName = anchor.name;
 
