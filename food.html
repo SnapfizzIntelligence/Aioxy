@@ -3631,8 +3631,8 @@ if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
     };
 } else {
     universal_adjustments.method = "eudr_dluc_penalty";
-    universal_adjustments.multipliers.co2 = 1.50;
-    universal_adjustments.multipliers.land = 1.50;
+universal_adjustments.multipliers.co2 *= 1.50; // 🛡️ REGULATOR FIX: Multiply, do not overwrite
+universal_adjustments.multipliers.land *= 1.50;
     }
     }
 
