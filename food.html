@@ -3578,7 +3578,7 @@ if (primaryData.waterSource === 'rainfed') {
             method: "primary_data_override"
         };
     } 
-    // 2. CONSERVATIVE DEFAULT (No primary data provided)
+// 2. CONSERVATIVE DEFAULT (No primary data provided)
 else {
     // If they select a country outside the EU but provide no proof, apply ISO Uncertainty Penalty
     const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
@@ -3586,36 +3586,19 @@ else {
     if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
         qualityPenalty = 1.0; // Worsen the DQR score
         
-        // PEF 3.1 / EUDR COMPLIANCE: Direct Land Use Change (dLUC) Penalties
-if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
-    // EUDR COMPLIANCE & GHG PROTOCOL BLOCK: dLUC Penalty applied
-    finalCO2 *= 1.50; // Apply the 50% Land Use Change penalty
-    finalLand *= 1.50; 
-    log.push(`🛑 EUDR/dLUC PENALTY: Unverified ${originCountry} sourcing. Applied +50% Deforestation Risk Multiplier. Product cannot legally enter EU market.`);
-    qualityPenalty = 4.0; // Force DQR to Poor/Fail status
-    
-    universal_adjustments = {
-        adjusted_from_country: "FR",
-        adjusted_for_country: originCountry,
-        multipliers: { co2: 1.50, land: 1.50, water: 1.0 }, 
-        adder: 0,
-        method: "eudr_dluc_penalty"
-    };
-} else {
-    // Standard offshore uncertainty
-    finalCO2 *= 1.15;
-    finalWater *= 1.15;
-    finalLand *= 1.15;
-    log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
-    
-    universal_adjustments = {
-        adjusted_from_country: "FR",
-        adjusted_for_country: originCountry,
-        multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
-        adder: 0,
-        method: "proxy_with_penalty"
-    };
-    }
+        // Standard offshore uncertainty (NO EUDR HERE - it's moved outside)
+        finalCO2 *= 1.15;
+        finalWater *= 1.15;
+        finalLand *= 1.15;
+        log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
+        
+        universal_adjustments = {
+            adjusted_from_country: "FR",
+            adjusted_for_country: originCountry,
+            multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
+            adder: 0,
+            method: "proxy_with_penalty"
+        };
     } else {
         log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
         
@@ -3626,6 +3609,22 @@ if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
             adder: 0,
             method: "direct_agribalyse"
         };
+    }
+}
+
+// =========================================================
+// 🛡️ MANDATORY EUDR OVERLAY - Applies to EVERYONE regardless of data source
+// =========================================================
+if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
+    finalCO2 *= 1.50;
+    finalLand *= 1.50; 
+    log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied.`);
+    qualityPenalty = 4.0;
+    
+    if (universal_adjustments) {
+        universal_adjustments.method = "eudr_dluc_penalty";
+        universal_adjustments.multipliers.co2 = 1.50;
+        universal_adjustments.multipliers.land = 1.50;
     }
     }
 
@@ -7143,11 +7142,20 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             const fossilTotal = window.finalPefResults["Resource Use, fossils"]?.total || 0;
             
             const metricsData = [
-                ['Climate Change (CO₂e)', `${(climateTotal/productWeightKg).toFixed(2)} kg/kg`, 'Global Warming Potential'],
-                ['Water Scarcity (AWARE)', `${(waterTotal/productWeightKg).toFixed(4)} m³ world eq/kg`, 'Water Deprivation'],
-                ['Fossil Resources', `${(fossilTotal/productWeightKg).toFixed(1)} MJ/kg`, 'Energy Demand'],
-                ['Overall DQR', auditTrailData?.dqr_summary?.dqr_level || 'Good', 'Data Quality Rating']
-            ];
+    ['Climate Change (CO₂e)', `${(climateTotal/productWeightKg).toFixed(2)} kg/kg`, 'Gross Global Warming Potential']
+];
+
+// REGULATOR FIX: Explicitly report removals in PDF per EU Green Claims Directive
+if (window.finalPefResults?.["Climate Change"]?.biogenic_removals > 0) {
+    const removals = window.finalPefResults["Climate Change"].biogenic_removals;
+    metricsData.push(['↳ Biogenic Removals', `-${(removals/productWeightKg).toFixed(2)} kg/kg`, 'Reported separately (No Netting)']);
+}
+
+metricsData.push(
+    ['Water Scarcity (AWARE)', `${(waterTotal/productWeightKg).toFixed(4)} m³ world eq/kg`, 'Water Deprivation'],
+    ['Fossil Resources', `${(fossilTotal/productWeightKg).toFixed(1)} MJ/kg`, 'Energy Demand'],
+    ['Overall DQR', auditTrailData?.dqr_summary?.dqr_level || 'Good', 'Data Quality Rating']
+);
 
             doc.autoTable({
                 startY: currentY,
