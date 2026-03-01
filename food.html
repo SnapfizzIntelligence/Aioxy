@@ -3588,16 +3588,18 @@ else {
         
         // PEF 3.1 / EUDR COMPLIANCE: Direct Land Use Change (dLUC) Penalties
 if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
-    // EUDR COMPLIANCE BLOCK: Unverified high-risk commodities cannot enter EU market
-    log.push(`🛑 EUDR COMPLIANCE BLOCK: Unverified ${originCountry} sourcing. Product cannot legally enter the EU market without primary geolocation data.`);
+    // EUDR COMPLIANCE & GHG PROTOCOL BLOCK: dLUC Penalty applied
+    finalCO2 *= 1.50; // Apply the 50% Land Use Change penalty
+    finalLand *= 1.50; 
+    log.push(`🛑 EUDR/dLUC PENALTY: Unverified ${originCountry} sourcing. Applied +50% Deforestation Risk Multiplier. Product cannot legally enter EU market.`);
     qualityPenalty = 4.0; // Force DQR to Poor/Fail status
     
     universal_adjustments = {
         adjusted_from_country: "FR",
         adjusted_for_country: originCountry,
-        multipliers: { co2: 1.0, land: 1.0, water: 1.0 }, // NO PHYSICS PENALTY - just legal block
+        multipliers: { co2: 1.50, land: 1.50, water: 1.0 }, 
         adder: 0,
-        method: "eudr_market_block"
+        method: "eudr_dluc_penalty"
     };
 } else {
     // Standard offshore uncertainty
@@ -5998,6 +6000,23 @@ function updateResultsUI(results) {
     if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(4) + ' m³';
     if(document.getElementById('landValue')) document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
     if(document.getElementById('fossilValue')) document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
+
+    // REGULATOR UI FIX: Display Separated Biogenic Removals if Regen Ag is active
+let removalsDiv = document.getElementById('biogenicRemovalsDisplay');
+const totalRemovals = results.finalPefResults["Climate Change"]?.biogenic_removals || 0;
+
+if (totalRemovals > 0) {
+    if (!removalsDiv) {
+        removalsDiv = document.createElement('div');
+        removalsDiv.id = 'biogenicRemovalsDisplay';
+        removalsDiv.style = 'font-size: 0.85rem; color: #48BB78; font-weight: 700; margin-top: 0.5rem;';
+        document.getElementById('co2Value').parentNode.appendChild(removalsDiv);
+    }
+    const removalsPerKg = totalRemovals / (massBalanceData?.final_content_weight_kg || 0.2);
+    removalsDiv.innerHTML = `<i class="fas fa-arrow-down"></i> ${removalsPerKg.toFixed(2)} kg biogenic removals<br><span style="font-size: 0.7rem; font-weight: normal; color: var(--gray);">*Reported separately per EU Green Claims</span>`;
+} else if (removalsDiv) {
+    removalsDiv.remove();
+    }
     
     // === STEP 4: ISO-COMPLIANT LABELING ===
     const co2Label = document.querySelector('#co2Value + .metric-label');
