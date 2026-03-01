@@ -4737,95 +4737,70 @@ if (massBalanceData.productMass > 0) {
     console.log(`✅ [Audit] Manufacturing impact: ${mfgResult.co2.toFixed(4)} kg CO₂e using ${mfgResult.method}`);
     }
         // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
-    let inboundTransportCO2 = 0;
+finalIngredients.forEach(ing => {
+    if (ing.isVirtual) return;
 
-    finalIngredients.forEach(ing => {
-        if (ing.isVirtual) return;
+    let originCountry = effectiveOrigins[ing.id];
+    if (originCountry === 'PrimaryData') originCountry = ing.primaryData.farmRegion || 'FR';
 
-        // Retrieve Unified Origin AGAIN (Consistency Check)
-        let originCountry = effectiveOrigins[ing.id];
-        if (originCountry === 'PrimaryData') originCountry = ing.primaryData.farmRegion || 'FR';
+    const nLower = ing.name.toLowerCase();
+    const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
+                              nLower.includes('pork') || nLower.includes('milk') || 
+                              nLower.includes('cheese') || nLower.includes('salmon') || 
+                              nLower.includes('shrimp') || nLower.includes('fresh') ||
+                              nLower.includes('apple') || nLower.includes('strawberry') ||
+                              nLower.includes('pea') || nLower.includes('vegetable') ||
+                              nLower.includes('fruit');
 
-        // =========================================================
-        // 🛡️ FIX 1: GLOBAL SUPPLY CHAIN PROXY (ISO 14067 COMPLIANT)
-        // =========================================================
-        if (originCountry !== manufacturingCountryCode) {
-            console.log(`🚚 Logistics: Importing ${ing.name} from ${originCountry} to ${manufacturingCountryCode}`);
-            
-            // 1. Define Continental Blocks for Logistics Logic
-            const regions = {
-                'EU': ['FR', 'BE', 'NL', 'DE', 'ES', 'IT', 'PL', 'IE', 'DK', 'SE', 'AT', 'CH', 'NO', 'GB', 'UK', 'FI', 'PT', 'GR'],
-                'NA': ['US', 'CA', 'MX'],
-                'SA': ['BR', 'AR', 'CO', 'CL', 'PE'],
-                'AS': ['CN', 'JP', 'IN', 'ID', 'VN', 'TH', 'MY', 'KR'],
-                'AF': ['ZA', 'EG', 'MA', 'NG', 'GH', 'KE'],
-                'OC': ['AU', 'NZ']
-            };
+    const inboundRefType = requiresColdChain ? 'chilled' : 'ambient';
+    
+    let transportNote = "";
+    let ingredientTransportCO2 = 0;
 
-            // 2. Determine regions for Origin and Destination
-            const getRegion = (countryCode) => {
-                for (const [region, countries] of Object.entries(regions)) {
-                    if (countries.includes(countryCode)) return region;
-                }
-                return 'UNKNOWN';
-            };
-
-            const originRegion = getRegion(originCountry);
-            const mfgRegion = getRegion(manufacturingCountryCode);
-
-            // [AUDITOR FIX] Auto-detect if raw ingredient requires Cold Chain
-            const nLower = ing.name.toLowerCase();
-            const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
-                                      nLower.includes('pork') || nLower.includes('milk') || 
-                                      nLower.includes('cheese') || nLower.includes('salmon') || 
-                                      nLower.includes('shrimp') || nLower.includes('fresh') ||
-                                      nLower.includes('apple') || nLower.includes('strawberry') ||
-                                      nLower.includes('pea') || nLower.includes('vegetable') ||
-                                      nLower.includes('fruit');
-
-            const inboundRefType = requiresColdChain ? 'chilled' : 'ambient';
-
-            // 3. Apply GLEC v4.0 Geographically Appropriate Proxy
-            if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
-                const inboundDistRoad = 1200;
-                const roadImpact = calculateGLECTransport(ing.quantity, inboundDistRoad, 'road', inboundRefType);
-                inboundTransportCO2 += roadImpact;
-            } else {
-                const inboundDistSea = 15000;
-                const seaImpact = calculateGLECTransport(ing.quantity, inboundDistSea, 'sea', inboundRefType);
-                inboundTransportCO2 += seaImpact;
+    if (originCountry !== manufacturingCountryCode) {
+        console.log(`🚚 Logistics: Importing ${ing.name} from ${originCountry} to ${manufacturingCountryCode}`);
+        
+        const regions = {
+            'EU': ['FR', 'BE', 'NL', 'DE', 'ES', 'IT', 'PL', 'IE', 'DK', 'SE', 'AT', 'CH', 'NO', 'GB', 'UK', 'FI', 'PT', 'GR'],
+            'NA': ['US', 'CA', 'MX'],
+            'SA': ['BR', 'AR', 'CO', 'CL', 'PE'],
+            'AS': ['CN', 'JP', 'IN', 'ID', 'VN', 'TH', 'MY', 'KR'],
+            'AF': ['ZA', 'EG', 'MA', 'NG', 'GH', 'KE'],
+            'OC': ['AU', 'NZ']
+        };
+        const getRegion = (countryCode) => {
+            for (const [region, countries] of Object.entries(regions)) {
+                if (countries.includes(countryCode)) return region;
             }
-        }
-        // 🛡️ REGULATOR FIX: ADD THIS ENTIRE ELSE BLOCK FOR LOCAL INGREDIENTS
-    else {
-        console.log(`🚚 Logistics: Local sourcing ${ing.name} within ${manufacturingCountryCode}`);
+            return 'UNKNOWN';
+        };
         
-        // Determine if local ingredient needs refrigeration
-        const nLower = ing.name.toLowerCase();
-        const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
-                                  nLower.includes('pork') || nLower.includes('milk') || 
-                                  nLower.includes('cheese') || nLower.includes('salmon') || 
-                                  nLower.includes('shrimp') || nLower.includes('fresh') ||
-                                  nLower.includes('apple') || nLower.includes('strawberry') ||
-                                  nLower.includes('pea') || nLower.includes('vegetable') ||
-                                  nLower.includes('fruit');
-        
-        const inboundRefType = requiresColdChain ? 'chilled' : 'ambient';
-        const localDistRoad = 200; // PEF 3.1 standard default for local agricultural inputs
-        const localImpact = calculateGLECTransport(ing.quantity, localDistRoad, 'road', inboundRefType);
-        inboundTransportCO2 += localImpact;
-    }
-    });
+        const originRegion = getRegion(originCountry);
+        const mfgRegion = getRegion(manufacturingCountryCode);
 
-    if (inboundTransportCO2 > 0) {
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += inboundTransportCO2;
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
-            name: "Inbound Logistics (GLEC)",
-            subtotal: inboundTransportCO2,
-            notes: "International freight to factory"
-        });
-        auditTrail.pefCategories["Climate Change"].total += inboundTransportCO2;
+        if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
+            ingredientTransportCO2 = calculateGLECTransport(ing.quantity, 1200, 'road', inboundRefType);
+            transportNote = `Regional cross-border transport (${originCountry} → ${manufacturingCountryCode})`;
+        } else {
+            ingredientTransportCO2 = calculateGLECTransport(ing.quantity, 15000, 'sea', inboundRefType);
+            transportNote = `Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode})`;
+        }
+    } else {
+        console.log(`🚚 Logistics: Local sourcing ${ing.name} within ${manufacturingCountryCode}`);
+        ingredientTransportCO2 = calculateGLECTransport(ing.quantity, 200, 'road', inboundRefType);
+        transportNote = `Local domestic sourcing (${manufacturingCountryCode})`;
     }
+
+    if (ingredientTransportCO2 > 0) {
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+            name: `Inbound: ${ing.name}`,
+            subtotal: ingredientTransportCO2,
+            notes: transportNote
+        });
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += ingredientTransportCO2;
+        auditTrail.pefCategories["Climate Change"].total += ingredientTransportCO2;
+    }
+});
 
     // 8. DISTRIBUTION & PACKAGING (Standard)
 
