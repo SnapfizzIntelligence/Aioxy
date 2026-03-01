@@ -6701,8 +6701,9 @@ function displayAuditTrail() {
         let bridgeHTML = '';
         if (isPrimary) {
             bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
-        } else if (adj.method === "eudr_market_block") {
-    bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified origin. Illegal for EU Market.`;
+                } else if (adj.method === "eudr_dluc_penalty") {
+            bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR/dLUC PENALTY]</span><br>Unverified high-risk origin. +50% CO₂ penalty applied.`;
+
 } else if (isProxy) {
     let factors = [];
     if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
