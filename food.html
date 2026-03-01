@@ -5583,19 +5583,20 @@ const moneyCarbon = ((totalCo2SavedKg + totalRemovalsKg) / 1000) * COST_CONSTANT
     console.log(`✅ [ROI Calculated] Total: €${totalMoney.toFixed(2)} (C: €${moneyCarbon} | E: €${moneyEnergy} | F: €${moneyFuel})`);
 
     return {
-        moneyCarbon,
-        moneyEnergy,
-        moneyFuel,
-        total: totalMoney,
-        metrics: {
-            totalTonsCo2Saved: totalCo2SavedKg / 1000,
-            totalMJSaved: totalFossilSavedMJ,
-            fuelLitersSaved: dieselLitersSaved,
-            co2SavedPerKg,
-            fossilSavedPerKg,
-            baselineUsed: baselineCo2PerKg.toFixed(2) // Exposed for Audit
-        }
-    };
+    moneyCarbon,
+    moneyEnergy,
+    moneyFuel,
+    total: totalMoney,
+    metrics: {
+        totalTonsCo2Saved: totalCo2SavedKg / 1000,
+        totalMJSaved: totalFossilSavedMJ,
+        fuelLitersSaved: dieselLitersSaved,
+        co2SavedPerKg,
+        fossilSavedPerKg,
+        baselineUsed: baselineCo2PerKg.toFixed(2), // Exposed for Audit
+        totalRemovalsKg: totalRemovalsKg // 🛡️ REGULATOR FIX: Pass removals to ROI engine
+    }
+};
 }
 
 
@@ -5859,8 +5860,9 @@ function calculateDiscountedROI(financialResults, volume, timeHorizon = 3) {
     
     const npvROI = implementationCost > 0 ? (npvBenefit - implementationCost) / implementationCost * 100 : 0;
     
-    // 2. CARBON CREDITS - Scale with volume!
-    const creditRevenue = (metrics.totalTonsCo2Saved || 0) * 85; // €85 per ton CO₂e
+    // 2. CARBON CREDITS - Scale with volume AND include separated biogenic removals!
+const totalRemovalsTons = (metrics.totalRemovalsKg || 0) / 1000;
+const creditRevenue = ((metrics.totalTonsCo2Saved || 0) + totalRemovalsTons) * 85; // €85 per ton CO₂e 
     
     // 3. PREMIUM SCALING (Nielsen: 15% CO₂ cut → +12% price; linear to 25%)
     const co2ReductionPct = calculateCO2ReductionPercent();
