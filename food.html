@@ -3618,7 +3618,7 @@ else {
 if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
     finalCO2 *= 1.50;
     finalLand *= 1.50; 
-    log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied.`);
+    log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied. Product cannot legally enter EU market.`);
     qualityPenalty = 4.0;
     
     if (universal_adjustments) {
@@ -6701,8 +6701,7 @@ function displayAuditTrail() {
         if (isPrimary) {
             bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
                 } else if (adj.method === "eudr_dluc_penalty") {
-            bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR/dLUC PENALTY]</span><br>Unverified high-risk origin. +50% CO₂ penalty applied.`;
-
+    bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
 } else if (isProxy) {
     let factors = [];
     if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
