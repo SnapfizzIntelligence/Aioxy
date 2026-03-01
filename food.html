@@ -7101,12 +7101,28 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         
         currentY = 40;
 
-        // ========== PRODUCT SUMMARY SECTION ==========
-        setPrimaryColor();
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text("PRODUCT OVERVIEW", 15, currentY);
-        currentY += 8;
+// 🛡️ REGULATOR FIX: EUDR Non-Compliance PDF Watermark/Warning
+const hasEUDRViolation = auditTrailData?.pefCategories?.["Climate Change"]?.contribution_tree?.Ingredients?.components?.some(c => c.universal_adjustments?.method === "eudr_dluc_penalty");
+
+if (hasEUDRViolation) {
+    doc.setFillColor(255, 235, 238); // Light red background
+    doc.rect(15, currentY, pageWidth - 30, 20, 'F');
+    doc.setTextColor(192, 57, 43); // Dark red text
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("⚠️ REGULATORY BLOCK: EUDR NON-COMPLIANCE DETECTED", 20, currentY + 8);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Product contains high-risk commodities without primary geolocation data. Illegal for EU market entry.", 20, currentY + 14);
+    currentY += 28;
+}
+
+// ========== PRODUCT SUMMARY SECTION ==========
+setPrimaryColor();
+doc.setFontSize(14);
+doc.setFont("helvetica", "bold");
+doc.text("PRODUCT OVERVIEW", 15, currentY);
+currentY += 8;
 
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
