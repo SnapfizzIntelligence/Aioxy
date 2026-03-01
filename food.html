@@ -5524,11 +5524,15 @@ function calculateHardFinancialMath(results, volume, scenarios) {
     }
 
     // 3. CALCULATE SAVINGS (No Negative Savings)
-    const co2SavedPerKg = Math.max(0, baselineCo2PerKg - currentCo2PerKg);
-    const fossilSavedPerKg = Math.max(0, baselineFossilPerKg - currentFossilPerKg);
+const co2SavedPerKg = Math.max(0, baselineCo2PerKg - currentCo2PerKg);
+const fossilSavedPerKg = Math.max(0, baselineFossilPerKg - currentFossilPerKg);
 
-    const totalCo2SavedKg = co2SavedPerKg * volume * productWeightKg;
-    const totalFossilSavedMJ = fossilSavedPerKg * volume * productWeightKg;
+// REGULATOR FIX: Extract Biogenic Removals for separate financial valuation (Insetting)
+const removalsPerKg = (results?.finalPefResults?.["Climate Change"]?.biogenic_removals || 0) / productWeightKg;
+
+const totalCo2SavedKg = co2SavedPerKg * volume * productWeightKg;
+const totalFossilSavedMJ = fossilSavedPerKg * volume * productWeightKg;
+const totalRemovalsKg = removalsPerKg * volume * productWeightKg; // Tracked separately
 
     // 4. DEFENSIBLE FINANCIAL CONSTANTS (2025/2026 AUDIT VALUES)
     const COST_CONSTANTS = {
@@ -5540,7 +5544,8 @@ function calculateHardFinancialMath(results, volume, scenarios) {
         DIESEL_PRICE_EUR_LITER: 1.75 
     };
 
-    const moneyCarbon = (totalCo2SavedKg / 1000) * COST_CONSTANTS.CARBON_PRICE_EUR_TON;
+    // Money Carbon includes BOTH efficiency savings AND the shadow value of separated removals
+const moneyCarbon = ((totalCo2SavedKg + totalRemovalsKg) / 1000) * COST_CONSTANTS.CARBON_PRICE_EUR_TON;
     const moneyEnergy = totalFossilSavedMJ * COST_CONSTANTS.ENERGY_PRICE_EUR_MJ;
 
     // 5. LOGISTICS AUDIT (GLEC FRAMEWORK SIMPLIFIED)
@@ -5933,13 +5938,13 @@ tbody.innerHTML = `
     </tr>
 
     <tr style="border-top: 2px solid #E2E8F0;">
-        <td>
-            <strong>🛡️ Carbon Liability Risk</strong><br>
-            <small>Avoided future carbon tax exposure (€85/t)</small>
-        </td>
-        <td>-${metrics.totalTonsCo2Saved.toFixed(1)} tons</td>
-        <td style="color: #718096; font-style: italic;">(€${moneyCarbon.toFixed(2)})</td>
-    </tr>
+    <td>
+        <strong>🛡️ Carbon Liability Risk + Removals</strong><br>
+        <small>Avoided tax exposure (€85/t) + Value of Biogenic Removals</small>
+    </td>
+    <td>-${((metrics.totalTonsCo2Saved || 0) + ((results?.finalPefResults?.["Climate Change"]?.biogenic_removals || 0) * volume / 1000)).toFixed(1)} tons</td>
+    <td style="color: #718096; font-style: italic;">(€${moneyCarbon.toFixed(2)})</td>
+</tr>
 `;
 
     const totalBenefit = document.getElementById('totalBenefit');
