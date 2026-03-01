@@ -3621,10 +3621,18 @@ if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
     log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied. Product cannot legally enter EU market.`);
     qualityPenalty = 4.0;
     
-    if (universal_adjustments) {
-        universal_adjustments.method = "eudr_dluc_penalty";
-        universal_adjustments.multipliers.co2 = 1.50;
-        universal_adjustments.multipliers.land = 1.50;
+    if (!universal_adjustments) {
+    universal_adjustments = {
+        adjusted_from_country: "FR",
+        adjusted_for_country: originCountry,
+        multipliers: { co2: 1.50, land: 1.50, water: 1.0 },
+        adder: 0,
+        method: "eudr_dluc_penalty"
+    };
+} else {
+    universal_adjustments.method = "eudr_dluc_penalty";
+    universal_adjustments.multipliers.co2 = 1.50;
+    universal_adjustments.multipliers.land = 1.50;
     }
     }
 
