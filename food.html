@@ -4511,21 +4511,21 @@ const foodCalculationEngine = {
     const effectiveOrigins = {};
     
     finalIngredients.forEach(item => {
-        // PRIORITY 1: USER SELECTION - ALWAYS USE IF PRESENT (NO CONDITIONS)
-        if (item.originCountry) {
-            effectiveOrigins[item.id] = item.originCountry;
-            console.log(`✅ User selected: ${item.name} from ${item.originCountry}`);
-        }
-        // PRIORITY 2: Primary Data (if no user selection)
-        else if (item.primaryData && item.primaryData.farmRegion) {
-            effectiveOrigins[item.id] = 'PrimaryData';
-            console.log(`📊 Primary data: ${item.name} from ${item.primaryData.farmRegion}`);
-        }
-        // PRIORITY 3: Default Database Origin
-        else {
-            effectiveOrigins[item.id] = getIngredientOrigin(item.id);
-            console.log(`📚 Default origin: ${item.name} from ${effectiveOrigins[item.id]}`);
-        }
+// PRIORITY 1: Primary Data ALWAYS wins (Highest Audit Confidence)
+if (item.primaryData && item.primaryData.farmRegion) {
+    effectiveOrigins[item.id] = 'PrimaryData';
+    console.log(`📊 Primary data priority: ${item.name} from ${item.primaryData.farmRegion}`);
+}
+// PRIORITY 2: User Dropdown Selection (Secondary Data)
+else if (item.originCountry) {
+    effectiveOrigins[item.id] = item.originCountry;
+    console.log(`✅ Secondary data selected: ${item.name} from ${item.originCountry}`);
+}
+// PRIORITY 3: Database Default
+else {
+    effectiveOrigins[item.id] = getIngredientOrigin(item.id);
+    console.log(`📚 Default origin: ${item.name} from ${effectiveOrigins[item.id]}`);
+    }
     });
     
     // 🚨 SCENARIO MODE REMOVED - User selection now always respected
@@ -7110,6 +7110,21 @@ if (hasEUDRViolation) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text("Product contains high-risk commodities without primary geolocation data. Illegal for EU market entry.", 20, currentY + 14);
+    currentY += 28;
+}
+
+// 🛡️ REGULATOR FIX 2: Green Claims Directive PDF Watermark
+if (currentComparisonBaseline && currentComparisonBaseline.is_custom) {
+    doc.setFillColor(255, 243, 224); // Light orange background
+    doc.rect(15, currentY, pageWidth - 30, 20, 'F');
+    doc.setTextColor(230, 81, 0); // Dark orange text
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("⚠️ GREEN CLAIMS DIRECTIVE NOTICE", 20, currentY + 8);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Comparative assertion based on unsubstantiated custom user baseline.", 20, currentY + 13);
+    doc.text("Requires external LCA verification for any public B2B/B2C claims.", 20, currentY + 18);
     currentY += 28;
 }
 
