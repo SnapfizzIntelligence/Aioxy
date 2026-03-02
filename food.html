@@ -4600,8 +4600,9 @@ finalIngredients.forEach(item => {
     if (!ing) return;
 
     // Retrieve the Truth we decided earlier
-    let ingredientOrigin = effectiveOrigins[item.id];
-    if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.primaryData.farmRegion || 'FR';
+let ingredientOrigin = effectiveOrigins[item.id];
+// 🛡️ REGULATOR FIX: Always use the strict ISO code for EUDR/Math, never free-text
+if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.originCountry || getIngredientOrigin(item.id);
 
     // [FEATURE PRESERVED] Farm Loss Logic
     const farmLoss = ing.loss || 0.0;
@@ -4735,7 +4736,8 @@ finalIngredients.forEach(ing => {
     if (ing.isVirtual) return;
 
     let originCountry = effectiveOrigins[ing.id];
-    if (originCountry === 'PrimaryData') originCountry = ing.primaryData.farmRegion || 'FR';
+// 🛡️ REGULATOR FIX: Always use strict ISO code to prevent intercontinental sea freight errors
+if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIngredientOrigin(ing.id);
 
     const nLower = ing.name.toLowerCase();
     const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
