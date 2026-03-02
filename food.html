@@ -3637,22 +3637,30 @@ universal_adjustments.multipliers.land *= 1.50;
     }
 
     // Calculate final totals
-    const totalCO2 = finalCO2 * quantityKg;
-    const totalWater = finalWater * quantityKg;
-    const totalLand = finalLand * quantityKg;
+const totalCO2 = finalCO2 * quantityKg;
+const totalWater = finalWater * quantityKg;
+const totalLand = finalLand * quantityKg;
 
-    return {
-        totalCO2: totalCO2,
-        totalWater: totalWater,
-        totalLand: totalLand,
-        perKgCO2: finalCO2,
-        perKgWater: finalWater,
-        perKgLand: finalLand,
-        logs: log,
-        qualityPenalty: qualityPenalty,
-        universal_adjustments: universal_adjustments,
-        is_primary: !!primaryData
-    };
+// 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
+let biogenicRemovals = 0;
+if (primaryData && primaryData.farmingPractice === 'regen') {
+    biogenicRemovals = (co2Base * 0.20) * quantityKg; // 20% of base footprint sequestered
+    log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
+}
+
+return {
+    totalCO2: totalCO2,
+    totalWater: totalWater,
+    totalLand: totalLand,
+    perKgCO2: finalCO2,
+    perKgWater: finalWater,
+    perKgLand: finalLand,
+    logs: log,
+    qualityPenalty: qualityPenalty,
+    universal_adjustments: universal_adjustments,
+    is_primary: !!primaryData,
+    biogenicRemovals: biogenicRemovals // <-- Expose this to the main engine
+};
     }
      
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
@@ -4646,11 +4654,17 @@ if (cat === "Climate Change") {
     baseImpactPerKg = impactResult.perKgCO2;  // Use the scientifically calculated value
     impactTotal = impactResult.totalCO2;      // Use total CO2 from our new engine
     
+    // 🛡️ REGULATOR FIX: Store verified primary removals into the official PEF object
+    if (impactResult.biogenicRemovals > 0) {
+        auditTrail.pefCategories["Climate Change"].biogenic_removals = 
+            (auditTrail.pefCategories["Climate Change"].biogenic_removals || 0) + impactResult.biogenicRemovals;
+    }
+
     // Add any logs to audit trail
     if (impactResult.logs && impactResult.logs.length > 0) {
         console.log(`📝 [Audit] ${ing.name}:`, impactResult.logs.join(' | '));
     }
-} 
+    }
 else if (cat === "Land Use") {
     baseImpactPerKg = impactResult.perKgLand;
     impactTotal = impactResult.totalLand;
