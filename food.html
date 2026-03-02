@@ -3965,13 +3965,14 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
         normalizedScore += normalized;
 
         // POPULATE BREAKDOWN FOR UI
-        singleScoreBreakdown[category] = { 
-            raw: perKg, 
-            normalized: normalized, 
-            weighted: weighted,
-            normalizationFactor: normFactor,
-            weightingFactor: weightFactor
-        };
+singleScoreBreakdown[category] = { 
+    raw: perKg, 
+    normalized: normalized, 
+    weighted: weighted,
+    normalizationFactor: normFactor,
+    weightingFactor: weightFactor,
+    unit: pefCategories[category]?.unit || '' // 🛡️ REGULATOR FIX: Add scientific unit
+};
     });
 
     return {
@@ -4593,138 +4594,108 @@ const auditTrail = {
     });
 
     // 5. CALCULATE INGREDIENT IMPACTS
-    let dqrComponents = [];
+let dqrComponents = [];
+finalIngredients.forEach(item => {
+    let ing = aioxyData.ingredients[item.id];
+    if (!ing) return;
 
-    finalIngredients.forEach(item => {
-        let ing = aioxyData.ingredients[item.id];
-        if (!ing) return;
+    // Retrieve the Truth we decided earlier
+    let ingredientOrigin = effectiveOrigins[item.id];
+    if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.primaryData.farmRegion || 'FR';
 
-        // Retrieve the Truth we decided earlier
-        let ingredientOrigin = effectiveOrigins[item.id];
-        if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.primaryData.farmRegion || 'FR';
+    // [FEATURE PRESERVED] Farm Loss Logic
+    const farmLoss = ing.loss || 0.0;
+    const grownMass = item.quantity / (1 - farmLoss);
 
-        const isProxyData = (ingredientOrigin !== 'FR' && !item.primaryData);
-let dqrPenalty = isProxyData ? 1.0 : 0.0;
+    // 🛡️ REGULATOR FIX 1: Run the math FIRST to extract the EUDR & Primary Data penalties
+    const impactResult = calculateIngredientImpact(ing, grownMass, ingredientOrigin, item.primaryData);
 
-// NEW: Technological Proxy Penalty for Animal Feed
-if (ing.name.toLowerCase().includes('animal feed') && !item.primaryData) {
-    dqrPenalty += 0.5; // Decreases Data Quality (TeR) slightly because it's a proxy
+    // Calculate baseline proxy penalties
+    const isProxyData = (ingredientOrigin !== 'FR' && !item.primaryData);
+    let dqrPenalty = isProxyData ? 1.0 : 0.0;
+
+    if (ing.name.toLowerCase().includes('animal feed') && !item.primaryData) {
+        dqrPenalty += 0.5; 
     }
-        // [FEATURE PRESERVED] Farm Loss Logic
-        const farmLoss = ing.loss || 0.0;
-        const grownMass = item.quantity / (1 - farmLoss);
 
-        // [FEATURE PRESERVED] DQR Tracking
-        if (ing.data?.metadata?.dqr_overall) {
-            dqrComponents.push({
-                name: ing.name,
-                dqr: ing.data.metadata.dqr_overall + dqrPenalty,
-                base_dqr: ing.data.metadata.dqr_overall,
-                dqr_penalty: dqrPenalty,
-                source: ing.data.metadata.source_dataset,
-                origin_country: ingredientOrigin,
-                is_proxy: isProxyData,
-                uncertainty: this.calculateUncertainty(ing.data.metadata.dqr_overall + dqrPenalty),
-                hasPrimaryData: !!item.primaryData
-            });
+    // 🛡️ REGULATOR FIX 2: Inject the engine's dynamic penalty (EUDR = 4.0, Primary = -0.5)
+    dqrPenalty += impactResult.qualityPenalty;
+
+    // Build the official DQR component WITH the merged penalties
+    if (ing.data?.metadata?.dqr_overall) {
+        dqrComponents.push({
+            name: ing.name,
+            dqr: ing.data.metadata.dqr_overall + dqrPenalty,
+            base_dqr: ing.data.metadata.dqr_overall,
+            dqr_penalty: dqrPenalty,
+            source: ing.data.metadata.source_dataset,
+            origin_country: ingredientOrigin,
+            is_proxy: isProxyData,
+            uncertainty: foodCalculationEngine.calculateUncertainty(ing.data.metadata.dqr_overall + dqrPenalty),
+            hasPrimaryData: !!item.primaryData
+        });
+    }
+
+    // PEF Loop
+    Object.keys(pefCategories).forEach(cat => {
+        let baseImpactPerKg = ing.data.pef ? ing.data.pef[cat] || 0 : 0;
+        let universalAdjustments = impactResult.universal_adjustments;
+        let impactTotal = 0;
+
+        // Now apply the impact based on category
+        if (cat === "Climate Change") {
+            baseImpactPerKg = impactResult.perKgCO2;  
+            impactTotal = impactResult.totalCO2;      
+            
+            if (impactResult.biogenicRemovals > 0) {
+                auditTrail.pefCategories["Climate Change"].biogenic_removals = 
+                    (auditTrail.pefCategories["Climate Change"].biogenic_removals || 0) + impactResult.biogenicRemovals;
+            }
+
+            if (impactResult.logs && impactResult.logs.length > 0) {
+                console.log(`📝 [Audit] ${ing.name}:`, impactResult.logs.join(' | '));
+            }
+        } 
+        else if (cat === "Land Use") {
+            baseImpactPerKg = impactResult.perKgLand;
+            impactTotal = impactResult.totalLand;
+        } 
+        else if (cat === "Water Use/Scarcity (AWARE)") {
+            baseImpactPerKg = impactResult.perKgWater;
+            impactTotal = impactResult.totalWater;
+        }
+        else {
+            impactTotal = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
+        }
+        
+        // Note: The old window.tempQualityPenalties block has been intentionally deleted here as it is no longer needed.
+
+        // [COMPLIANT] LUC Data Handling
+        let noteText = `Origin: ${ingredientOrigin} ${universalAdjustments ? '(Physics Adjusted)' : ''}`;
+
+        if (['BR', 'ID'].includes(ingredientOrigin)) {
+            noteText += ` [⚠️ AUDIT NOTE: High LUC Risk Region. Ensure selected AGRIBALYSE dataset includes regional Land Use Change factors.]`;
         }
 
-        // PEF Loop
-        Object.keys(pefCategories).forEach(cat => {
-            let baseImpactPerKg = ing.data.pef ? ing.data.pef[cat] || 0 : 0;
-            let universalAdjustments = null;
+        // [COMPLIANT] ISO Allocation
+        const specificAllocationFactor = ing.allocationFactor || 1.0;
+        const allocatedTotal = impactTotal * specificAllocationFactor;
 
-            // ========== NEW: Call the strict agricultural engine ==========
-// This replaces the old universalAdjustments magic with regulator-approved logic
-const impactResult = calculateIngredientImpact(
-    ing, 
-    grownMass, 
-    ingredientOrigin, 
-    item.primaryData
-);
-
-// Store the adjustment data for audit trail (keeping your existing variable names for compatibility)
-universalAdjustments = impactResult.universal_adjustments;
-
-// ✅ FIX 3: Declare impactTotal HERE before using it
-let impactTotal = 0;
-
-// Now apply the impact based on category
-if (cat === "Climate Change") {
-    baseImpactPerKg = impactResult.perKgCO2;  // Use the scientifically calculated value
-    impactTotal = impactResult.totalCO2;      // Use total CO2 from our new engine
-    
-    // 🛡️ REGULATOR FIX: Store verified primary removals into the official PEF object
-    if (impactResult.biogenicRemovals > 0) {
-        auditTrail.pefCategories["Climate Change"].biogenic_removals = 
-            (auditTrail.pefCategories["Climate Change"].biogenic_removals || 0) + impactResult.biogenicRemovals;
-    }
-
-    // Add any logs to audit trail
-    if (impactResult.logs && impactResult.logs.length > 0) {
-        console.log(`📝 [Audit] ${ing.name}:`, impactResult.logs.join(' | '));
-    }
-    }
-else if (cat === "Land Use") {
-    baseImpactPerKg = impactResult.perKgLand;
-    impactTotal = impactResult.totalLand;
-} 
-else if (cat === "Water Use/Scarcity (AWARE)") {
-    baseImpactPerKg = impactResult.perKgWater;
-    impactTotal = impactResult.totalWater;
-}
-// For all other PEF categories, keep the original Agribalyse data
-else {
-    // No change - use original Agribalyse values
-    // The other categories remain at baseline since we only have primary data for climate/land/water
-    impactTotal = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
-}
-
-// Track quality penalty for DQR calculation (important for audit trail)
-if (impactResult.qualityPenalty !== 0) {
-    // This will be used later in your DQR calculations
-    if (!window.tempQualityPenalties) window.tempQualityPenalties = [];
-    window.tempQualityPenalties.push({
-        ingredient: ing.name,
-        penalty: impactResult.qualityPenalty,
-        origin: ingredientOrigin,
-        hasPrimaryData: !!item.primaryData
-    });
-    }
-
-            
-// [COMPLIANT] LUC Data Handling
-// REGULATORY FIX: Removed arbitrary `riskMap` multipliers. 
-// If sourcing from high-risk areas, you must use specific regional datasets that already include dLUC, 
-// or flag it as a data gap, rather than inventing a multiplier.
-let noteText = `Origin: ${ingredientOrigin} ${universalAdjustments ? '(Physics Adjusted)' : ''}`;
-
-if (['BR', 'ID'].includes(ingredientOrigin)) {
-    noteText += ` [⚠️ AUDIT NOTE: High LUC Risk Region. Ensure selected AGRIBALYSE dataset includes regional Land Use Change factors.]`;
-}
-
-// [COMPLIANT] ISO Allocation
-// REGULATORY FIX: Retrieve the specific allocation factor from your physics database (FOOD_PHYSICS_DB)
-// Do not use hardcoded global constants.
-const specificAllocationFactor = ing.allocationFactor || 1.0; // Default to 100% burden if no co-products exist
-const allocatedTotal = impactTotal * specificAllocationFactor;
-
-auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-    name: ing.name,
-    id: item.id,
-    quantity_kg: item.quantity,        
-    farm_mass_kg: grownMass,            
-    subtotal: allocatedTotal,
-    note: noteText,
-    universal_adjustments: universalAdjustments,
-    primary_data_used: !!item.primaryData
-});
-
-            
-            auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
-            auditTrail.pefCategories[cat].total += allocatedTotal;
+        auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+            name: ing.name,
+            id: item.id,
+            quantity_kg: item.quantity,        
+            farm_mass_kg: grownMass,            
+            subtotal: allocatedTotal,
+            note: noteText,
+            universal_adjustments: universalAdjustments,
+            primary_data_used: !!item.primaryData
         });
+
+        auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
+        auditTrail.pefCategories[cat].total += allocatedTotal;
     });
+});
 
     // 6. MANUFACTURING IMPACTS - UPDATED with Audit-Ready Engine
 if (massBalanceData.productMass > 0) {
