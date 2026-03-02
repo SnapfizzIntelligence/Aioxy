@@ -4331,10 +4331,11 @@ if (scenarios.regen_ag) {
         const currentTotal = modifiedResults["Climate Change"].contribution_tree.Ingredients.total;
         const removedCarbon = currentTotal * 0.20; // 20% estimated sequestration
         
-        // Do NOT multiply or reduce the gross total. Store removals separately.
-        modifiedResults["Climate Change"].biogenic_removals = removedCarbon;
-        
-        scenarioLog.push(`Regen Ag: ${removedCarbon.toFixed(4)} kg CO₂e sequestration recorded separately (EU GCD Compliant - No Netting)`);
+        // 🛡️ REGULATOR FIX: Add hypothetical removals to any existing verified primary removals
+modifiedResults["Climate Change"].biogenic_removals = 
+    (modifiedResults["Climate Change"].biogenic_removals || 0) + removedCarbon;
+
+scenarioLog.push(`Regen Ag: ${removedCarbon.toFixed(4)} kg CO₂e hypothetical sequestration added (EU GCD Compliant - No Netting)`);
     }
     }
     
@@ -4575,7 +4576,6 @@ const auditTrail = {
         dqr_summary: {},
         uncertainty_analysis: {},
         comparison_baseline: comparisonBaseline,
-        scenarios_applied: activeScenarios
     };
 
     Object.keys(pefCategories).forEach(cat => {
@@ -6929,7 +6929,6 @@ function generateDPP() {
         mass_balance: massBalanceData,
         comparison_baseline: currentComparisonBaseline,
         pef_single_score: auditTrailData.pef_single_score,
-        scenarios_applied: activeScenarios,
         calculation_timestamp: auditTrailData.calculationTimestamp
     };
     
