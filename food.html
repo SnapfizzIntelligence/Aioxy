@@ -6248,14 +6248,15 @@ function updateEnvironmentalStory(results) {
 
     environmentalStory.classList.remove('hidden');
     }
-// ================== SCENARIO TOGGLE ==================
+// ================== SCENARIO TOGGLE (REGULATOR FIX: DECOUPLED FROM BASELINE) ==================
 function toggleScenario(key) {
     activeScenarios[key] = !activeScenarios[key];
     
     const btn = document.getElementById(`scenario-${key}`);
     if (btn) btn.classList.toggle('active');
     
-    calculateImpact();
+    // 🛡️ REGULATOR FIX: Do NOT call calculateImpact() here. 
+    // Scenarios are hypotheticals for the Business Case only. They must not mutate the legal baseline.
     updateBusinessCase();
 }
 
@@ -6274,7 +6275,7 @@ function resetScenarios() {
         btn.classList.remove('active');
     });
     
-    calculateImpact();
+    // 🛡️ REGULATOR FIX: Only reset the business case, preserve the baseline
     updateBusinessCase();
 }
 
