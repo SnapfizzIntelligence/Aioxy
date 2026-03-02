@@ -5065,14 +5065,14 @@ function displayPEFSingleScore() {
                     </thead>
                     <tbody>
                         ${Object.entries(singleScoreResult.breakdown).map(([cat, data]) => `
-                            <tr style="border-bottom: 1px solid var(--border);">
-                                <td style="padding: 0.5rem;"><strong>${cat}</strong></td>
-                                <td style="padding: 0.5rem; text-align: right;">${data.raw.toFixed(4)}</td>
-                                <td style="padding: 0.5rem; text-align: right;">${data.normalized.toExponential(3)}</td>
-                                <td style="padding: 0.5rem; text-align: right;">${data.weighted.toExponential(3)}</td>
-                                <td style="padding: 0.5rem; text-align: right;">${(data.weighted / singleScoreResult.weightedScore * 100).toFixed(1)}%</td>
-                            </tr>
-                        `).join('')}
+    <tr style="border-bottom: 1px solid var(--border);">
+        <td style="padding: 0.5rem;"><strong>${cat}</strong></td>
+        <td style="padding: 0.5rem; text-align: right;">${data.raw.toFixed(4)} <span style="color:var(--gray); font-size:0.75rem;">${data.unit}</span></td>
+        <td style="padding: 0.5rem; text-align: right;">${data.normalized.toExponential(3)}</td>
+        <td style="padding: 0.5rem; text-align: right;">${data.weighted.toExponential(3)}</td>
+        <td style="padding: 0.5rem; text-align: right;">${(data.weighted / singleScoreResult.weightedScore * 100).toFixed(1)}%</td>
+    </tr>
+`).join('')}
                     </tbody>
                 </table>
             </div>
