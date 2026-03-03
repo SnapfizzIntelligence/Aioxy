@@ -4848,7 +4848,7 @@ if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIng
     auditTrailData = auditTrail;
     currentDPPId = auditTrail.dppId;
 
-    const blCO2 = comparisonBaseline.co2PerKg || 14.47;
+    const blCO2 = comparisonBaseline.co2PerKg || unified.co2PerKg;
     const upliftCO2 = uplift?.co2 || 0;
     const baselineCO2Total = blCO2 + upliftCO2;
     
@@ -5444,31 +5444,27 @@ function displayCompleteAuditTrail() {
             </div>
             
             <!-- CALCULATION METADATA -->
-            <h4 style="margin-bottom: 1rem; color: var(--primary);">
-                <i class="fas fa-info-circle"></i> Calculation Metadata
-            </h4>
-            <div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Product Name</div>
-                        <div>${audit.productName || 'Unnamed Product'}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Calculation Timestamp</div>
-                        <div>${new Date(audit.calculationTimestamp).toLocaleString()}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Data Quality Rating</div>
-                        <div class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
-                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Scenarios Applied</div>
-                        <div>${Object.entries(activeScenarios).filter(([_, v]) => v).map(([k]) => k).join(', ') || 'None'}</div>
-                    </div>
-                </div>
+<h4 style="margin-bottom: 1rem; color: var(--primary);">
+    <i class="fas fa-info-circle"></i> Calculation Metadata
+</h4>
+<div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <div>
+            <div style="font-weight: 600; color: var(--primary);">Product Name</div>
+            <div>${audit.productName || 'Unnamed Product'}</div>
+        </div>
+        <div>
+            <div style="font-weight: 600; color: var(--primary);">Calculation Timestamp</div>
+            <div>${new Date(audit.calculationTimestamp).toLocaleString()}</div>
+        </div>
+        <div>
+            <div style="font-weight: 600; color: var(--primary);">Data Quality Rating</div>
+            <div class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
+                ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
             </div>
+        </div>
+    </div>
+</div>
             
             <!-- DATA SOURCES -->
             <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
@@ -6284,8 +6280,7 @@ function updateVolumeDisplay(volume) {
 
 function calculateScalableBusinessCase(results, annualVolume) {
     const co2PerKg = results.co2PerKg || 0;
-    const baselineCO2PerKg = currentComparisonBaseline ?
-    currentComparisonBaseline.co2PerKg : (co2PerKg * 1.2); // Fallback to 20% worse than current product if no baseline exists
+    const baselineCO2PerKg = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : co2PerKg; // 🛡️ REGULATOR FIX: No invented gaps
     const co2Reduction = Math.max(baselineCO2PerKg - co2PerKg, 0);
     const reductionPercentage = (co2Reduction / baselineCO2PerKg) * 100;
     
