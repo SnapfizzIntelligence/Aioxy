@@ -5759,8 +5759,9 @@ function updateBusinessStory(financialResults, roi, volume, co2ReductionPercent)
         co2Reduction: co2ReductionPercent 
     });
 
-    const safeReduction = Math.max(co2ReductionPercent, 15);
-    const safeTotal = Math.max(financialResults.total, 2000);
+    // 🛡️ REGULATOR FIX: Remove artificial minimums. The math must be honest.
+const safeReduction = co2ReductionPercent;
+const safeTotal = financialResults.total;
     const scale = getBusinessScale(volume);
     
     let performanceLevel = "World-Class";
@@ -7328,14 +7329,22 @@ metricsData.push(
         
         const productName = document.getElementById('productName').value || 'Unnamed Product';
         const transparencyData = {
-            productId: currentDPPId,
-            productName: productName,
-            timestamp: new Date().toISOString(),
-            environmentalFootprint: finalPefResults,
-            data_quality: auditTrailData.dqr_summary,
-            mass_balance: massBalanceData,
-            pef_single_score: auditTrailData.pef_single_score
-        };
+    productId: currentDPPId,
+    productName: productName,
+    timestamp: new Date().toISOString(),
+    methodology: {
+        approach: "PEF 3.1",
+        version: "2.1",
+        dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
+        standards: ["Science-Based Reporting", "Transparent Methodology", "ISO 14044 Compliant"]
+    },
+    environmentalFootprint: finalPefResults,
+    data_quality: auditTrailData.dqr_summary,
+    mass_balance: massBalanceData,
+    comparison_baseline: currentComparisonBaseline,
+    pef_single_score: auditTrailData.pef_single_score,
+    calculation_timestamp: auditTrailData.calculationTimestamp
+};
         
         const dataStr = JSON.stringify(transparencyData, null, 2);
         const dataBlob = new Blob([dataStr], {type: 'application/json'});
