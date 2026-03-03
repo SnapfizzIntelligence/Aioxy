@@ -6399,9 +6399,14 @@ function formatLargeNumber(num) {
 }
 
 function calculateImplementationCost(volume) {
-    // AIOXY Pricing: €3,500 flat per SKU
-    // Fast 48-hour delivery vs 6-month consultants
-    return 3500;
+    // 🛡️ REGULATOR FIX: Dynamic CapEx proxy. 
+    // Prevents mathematically absurd ROI percentages at enterprise scale.
+    if (volume <= 10000) return 3500;          // Software/Screening Fee
+    if (volume <= 100000) return 15000;        // Small operational shift
+    if (volume <= 1000000) return 45000;       // Medium supply chain adjustment
+    if (volume <= 10000000) return 150000;     // Large supplier transition
+    if (volume <= 100000000) return 450000;    // Major CapEx routing
+    return 1200000;                            // Global supply chain overhaul
 }
 
 // ================== FIX: ROBUST PERCENTAGE CALCULATOR ==================
