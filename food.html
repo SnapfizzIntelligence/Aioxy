@@ -3582,26 +3582,28 @@ if (primaryData.waterSource === 'rainfed') {
 else {
     // If they select a country outside the EU but provide no proof, apply ISO Uncertainty Penalty
     const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
-    
+    const eudrHighRisk = ['BR', 'ID', 'MY', 'AR']; 
+
+    // 🛡️ REGULATOR FIX: Prevent penalty double-stacking
     if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
-        qualityPenalty = 1.0; // Worsen the DQR score
-        
-        // Standard offshore uncertainty (NO EUDR HERE - it's moved outside)
-        finalCO2 *= 1.15;
-        finalWater *= 1.15;
-        finalLand *= 1.15;
-        log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
-        
-        universal_adjustments = {
-            adjusted_from_country: "FR",
-            adjusted_for_country: originCountry,
-            multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
-            adder: 0,
-            method: "proxy_with_penalty"
-        };
+        if (!eudrHighRisk.includes(originCountry)) {
+            qualityPenalty = 1.0; 
+            finalCO2 *= 1.15;
+            finalWater *= 1.15;
+            finalLand *= 1.15;
+            log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
+            
+            universal_adjustments = {
+                adjusted_from_country: "FR",
+                adjusted_for_country: originCountry,
+                multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
+                adder: 0,
+                method: "proxy_with_penalty"
+            };
+        }
+        // If it's EUDR high-risk, we skip the 15% penalty - they'll get the 50% later
     } else {
         log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
-        
         universal_adjustments = {
             adjusted_from_country: "FR",
             adjusted_for_country: originCountry || "FR",
@@ -3611,7 +3613,6 @@ else {
         };
     }
 }
-
 // =========================================================
 // 🛡️ MANDATORY EUDR OVERLAY - Applies to EVERYONE regardless of data source
 // =========================================================
@@ -5730,7 +5731,7 @@ function updateBusinessCase() {
     document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
     
     // Market Metrics
-    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : 14.47;
+    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : currentCO2;
     const currentCO2 = scenarioAdjustedResults.co2PerKg;
     const co2ReductionPercent = Math.max(0, ((baselineCO2 - currentCO2) / baselineCO2) * 100);
     
@@ -6420,7 +6421,7 @@ function calculateCO2ReductionPercent() {
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     if (productWeightKg <= 0) return 0;
 
-    const baselineCO2 = currentComparisonBaseline.co2PerKg || 14.47;
+    const baselineCO2 = currentComparisonBaseline?.co2PerKg || currentCO2;
     
     // Calculate current CO2 per kg
     let currentTotal = finalPefResults["Climate Change"].total;
