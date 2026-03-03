@@ -4330,13 +4330,15 @@ function applyScenarioPhysics(baseResults, scenarios) {
 if (scenarios.regen_ag) {
     if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
         const currentTotal = modifiedResults["Climate Change"].contribution_tree.Ingredients.total;
-        const removedCarbon = currentTotal * 0.20; // 20% estimated sequestration
+        const potentialRemovals = currentTotal * 0.20; // 20% estimated potential
+        const existingRemovals = modifiedResults["Climate Change"].biogenic_removals || 0;
         
-        // 🛡️ REGULATOR FIX: Add hypothetical removals to any existing verified primary removals
-modifiedResults["Climate Change"].biogenic_removals = 
-    (modifiedResults["Climate Change"].biogenic_removals || 0) + removedCarbon;
-
-scenarioLog.push(`Regen Ag: ${removedCarbon.toFixed(4)} kg CO₂e hypothetical sequestration added (EU GCD Compliant - No Netting)`);
+        // 🛡️ REGULATOR FIX: Prevent "Double-Dipping". Only add the difference if they haven't already verified it.
+        const newRemovals = Math.max(0, potentialRemovals - existingRemovals);
+        
+        modifiedResults["Climate Change"].biogenic_removals = existingRemovals + newRemovals;
+        
+        scenarioLog.push(`Regen Ag: ${newRemovals.toFixed(4)} kg CO₂e hypothetical sequestration added (No Double Counting)`);
     }
     }
     
@@ -5785,11 +5787,10 @@ const safeTotal = financialResults.total;
     </div> 
     
     <p style="margin: 1rem 0; line-height: 1.6;">
-    <strong>📊 Modeled Value Driver Analysis:</strong><br>
-    • <strong>Scope 3 Exposure Management:</strong> €${financialResults.moneyCarbon.toFixed(2)} (shadow pricing analysis @ €85/t CO₂e)<br>
-    • <strong>Voluntary Market Alignment Potential:</strong> €${(financialResults.metrics.totalTonsCo2Saved * 15).toFixed(2)} (VCM benchmark analysis)<br>
-    • <strong>Energy Efficiency Modeling:</strong> €${financialResults.moneyEnergy.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ reduction potential<br>
-    • <strong>Logistics Optimization Modeling:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel reduction potential<br>
+<strong>📊 Modeled Value Driver Analysis:</strong><br>
+• <strong>Scope 3 Exposure Management:</strong> €${financialResults.moneyCarbon.toFixed(2)} (shadow pricing analysis @ €85/t CO₂e)<br>
+• <strong>Energy Efficiency Modeling:</strong> €${financialResults.moneyEnergy.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.totalMJSaved)} MJ reduction potential<br>
+• <strong>Logistics Optimization Modeling:</strong> €${financialResults.moneyFuel.toFixed(2)} via ${formatLargeNumber(financialResults.metrics.fuelLitersSaved)} L diesel reduction potential<br>
     <br>
     <strong>📈 Investment Analysis:</strong> Modeled ROI of ${roi.toFixed(0)}% over 3 years—based on operational efficiency and compliance risk reduction modeling.
     </p>
@@ -5867,13 +5868,12 @@ const creditRevenue = ((metrics.totalTonsCo2Saved || 0) + totalRemovalsTons) * 8
     });
     
     return {
-        npvBenefit: npvBenefit.toFixed(0),
-        npvROI: Math.max(npvROI, 0).toFixed(1),
-        carbonCredits: Math.round(creditRevenue).toFixed(0),  // Round to whole euros
-        premiumScaled: discountedPremium.toFixed(0),
-        totalDiscounted: (npvBenefit + creditRevenue).toFixed(0),
-        discountRate: `${(discountRate * 100).toFixed(1)}% (AR5 social rate)`
-    };
+    npvBenefit: npvBenefit.toFixed(0), // Pure OPEX Cash
+    npvROI: Math.max(npvROI, 0).toFixed(1),
+    carbonCredits: Math.round(creditRevenue).toFixed(0), // Kept completely separate
+    totalDiscounted: npvBenefit.toFixed(0), // 🛡️ REGULATOR FIX: Do NOT add imaginary carbon credits to real net return
+    discountRate: `${(discountRate * 100).toFixed(1)}% (AR5 social rate)`
+};
     }
 
 // =========== FIX: LIABILITY CARD AUTO-UPDATE ===========
