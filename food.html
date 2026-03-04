@@ -4297,30 +4297,26 @@ function applyScenarioPhysics(baseResults, scenarios) {
     const country = document.getElementById('manufacturingCountry')?.value || 'FR';
     const countryData = aioxyData.countries && aioxyData.countries[country];
     
-    // 1. RENEWABLE ENERGY (Physics: Actual grid mix reduction)
-    if (scenarios.renewables) {
-        if (modifiedResults["Climate Change"]?.contribution_tree?.Manufacturing) {
-            // REAL DATA: Country renewable electricity mix (IEA 2023)
-            const renewableMix = {
-                "FR": 0.33,    // France: 33% renewable (nuclear + hydro + wind)
-                "DE": 0.46,    // Germany: 46% renewable
-                "ES": 0.42,    // Spain: 42%
-                "IT": 0.36,    // Italy: 36%
-                "NL": 0.27,    // Netherlands: 27%
-                "SE": 0.63,    // Sweden: 63%
-                "DK": 0.50,    // Denmark: 50%
-                "default": 0.30
-            };
-            
-            const renewablePct = renewableMix[country] || renewableMix.default;
-            
-            // PHYSICS: Manufacturing emissions reduced by renewable percentage
-            // (Assumes manufacturing uses grid electricity)
-            const reductionFactor = Math.max(0.05, 1 - renewablePct); // Minimum 5% reduction
-            modifiedResults["Climate Change"].contribution_tree.Manufacturing.total *= reductionFactor;
-            
-            scenarioLog.push(`Renewables: -${((1-reductionFactor)*100).toFixed(0)}% (${(renewablePct*100).toFixed(0)}% renewable grid)`);
-        }
+// 1. RENEWABLE ENERGY (Physics: Actual grid mix reduction)
+const currentEnergy = document.getElementById('energySource')?.value;
+
+// 🛡️ REGULATOR FIX: Prevent double-counting if they already use renewables
+if (scenarios.renewables && currentEnergy !== 'renewable') {
+    if (modifiedResults["Climate Change"]?.contribution_tree?.Manufacturing) {
+        // REAL DATA: Country renewable electricity mix (IEA 2023)
+        const renewableMix = {
+            "FR": 0.33, "DE": 0.46, "ES": 0.42, "IT": 0.36,
+            "NL": 0.27, "SE": 0.63, "DK": 0.50, "default": 0.30
+        };
+        
+        const country = document.getElementById('manufacturingCountry')?.value || 'FR';
+        const renewablePct = renewableMix[country] || renewableMix.default;
+        
+        const reductionFactor = Math.max(0.05, 1 - renewablePct);
+        modifiedResults["Climate Change"].contribution_tree.Manufacturing.total *= reductionFactor;
+        
+        scenarioLog.push(`Renewables: -${((1-reductionFactor)*100).toFixed(0)}% (${(renewablePct*100).toFixed(0)}% renewable grid)`);
+    }
     }
     
     // 2. LOCAL SOURCING (Physics: Distance ratio reduction)
@@ -6826,9 +6822,13 @@ if (ing.name.toLowerCase().includes('animal feed')) {
                             <span>${m.details}</span>
                         </div>
                         <div style="display:flex; justify-content:space-between;">
-                            <span>Grid Mix (${mfgCountry}):</span>
-                            <span>${(window.aioxyData.countries[mfgCountry]?.electricityCO2 || 475)} gCO₂e/kWh</span>
-                        </div>
+    <span>Energy Source:</span>
+    <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
+</div>
+<div style="display:flex; justify-content:space-between;">
+    <span>Carbon Intensity:</span>
+    <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
+</div>
                         <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
                             <span>Impact:</span>
                             <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
