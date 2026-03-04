@@ -5745,9 +5745,11 @@ function updateBusinessCase() {
     document.getElementById('carbonReductionDisplay').textContent = formatLargeNumber(financialResults.metrics.totalTonsCo2Saved) + ' tons CO₂e';
     
     // Market Metrics
-    const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : currentCO2;
-    const currentCO2 = scenarioAdjustedResults.co2PerKg;
-    const co2ReductionPercent = Math.max(0, ((baselineCO2 - currentCO2) / baselineCO2) * 100);
+    // 🛡️ DEPLOYMENT FIX: Define currentCO2 first to prevent ReferenceError crash
+const currentCO2 = scenarioAdjustedResults.co2PerKg;
+const baselineCO2 = currentComparisonBaseline ? currentComparisonBaseline.co2PerKg : currentCO2;
+
+const co2ReductionPercent = Math.max(0, ((baselineCO2 - currentCO2) / baselineCO2) * 100);
     
     const marketGrowthPct = Math.min(co2ReductionPercent * 2, 40);  // Cap at 40%
     const premiumPct = Math.min(co2ReductionPercent * 1.5, 25);    // Cap at 25%
@@ -6439,17 +6441,15 @@ function calculateCO2ReductionPercent() {
     if (!finalPefResults || !finalPefResults["Climate Change"]) return 0;
 
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
-    if (productWeightKg <= 0) return 0;
+if (productWeightKg <= 0) return 0;
 
-    const baselineCO2 = currentComparisonBaseline?.co2PerKg || currentCO2;
-    
-    // Calculate current CO2 per kg
-    let currentTotal = finalPefResults["Climate Change"].total;
-    
-    // Double check for NaN
-    if (isNaN(currentTotal)) currentTotal = 0;
-    
-    const currentCO2 = currentTotal / productWeightKg;
+// 🛡️ DEPLOYMENT FIX: Calculate currentCO2 FIRST
+let currentTotal = finalPefResults["Climate Change"].total;
+if (isNaN(currentTotal)) currentTotal = 0;
+const currentCO2 = currentTotal / productWeightKg;
+
+// Now it is safe to use as a fallback
+const baselineCO2 = currentComparisonBaseline?.co2PerKg || currentCO2;
     
     console.log('CO2 Values:', {
         baselineCO2,
