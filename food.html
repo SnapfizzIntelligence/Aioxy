@@ -4651,10 +4651,7 @@ if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.originCountry ||
             baseImpactPerKg = impactResult.perKgCO2;  
             impactTotal = impactResult.totalCO2;      
             
-            if (impactResult.biogenicRemovals > 0) {
-                auditTrail.pefCategories["Climate Change"].biogenic_removals = 
-                    (auditTrail.pefCategories["Climate Change"].biogenic_removals || 0) + impactResult.biogenicRemovals;
-            }
+            
 
             if (impactResult.logs && impactResult.logs.length > 0) {
                 console.log(`📝 [Audit] ${ing.name}:`, impactResult.logs.join(' | '));
@@ -4682,10 +4679,17 @@ if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.originCountry ||
         }
 
         // [COMPLIANT] ISO Allocation
-        const specificAllocationFactor = ing.allocationFactor || 1.0;
-        const allocatedTotal = impactTotal * specificAllocationFactor;
+const specificAllocationFactor = ing.allocationFactor || 1.0;
+const allocatedTotal = impactTotal * specificAllocationFactor;
 
-        auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
+// 🛡️ REGULATOR FIX 1: Apply economic allocation to biogenic removals (No illegal over-crediting)
+if (cat === "Climate Change" && impactResult.biogenicRemovals > 0) {
+    const allocatedRemovals = impactResult.biogenicRemovals * specificAllocationFactor;
+    auditTrail.pefCategories["Climate Change"].biogenic_removals = 
+        (auditTrail.pefCategories["Climate Change"].biogenic_removals || 0) + allocatedRemovals;
+}
+
+auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
             name: ing.name,
             id: item.id,
             quantity_kg: item.quantity,        
@@ -5865,9 +5869,11 @@ const totalRemovalsTons = (metrics.totalRemovalsKg || 0) / 1000;
 const creditRevenue = ((metrics.totalTonsCo2Saved || 0) + totalRemovalsTons) * 85; // €85 per ton CO₂e 
     
     // 3. PREMIUM SCALING (Nielsen: 15% CO₂ cut → +12% price; linear to 25%)
-    const co2ReductionPct = calculateCO2ReductionPercent();
-    const premiumMultiplier = 1 + Math.min(co2ReductionPct / 100 * 1.67, 0.25); // Max +25%
-    const discountedPremium = annualBenefit * premiumMultiplier;
+// 🛡️ REGULATOR FIX 2: Use scenario-aware metrics so What-If buttons dynamically update the ROI
+const baselineUsed = parseFloat(metrics.baselineUsed) || 1;
+const dynamicReductionPct = baselineUsed > 0 ? (metrics.co2SavedPerKg / baselineUsed) * 100 : 0;
+const premiumMultiplier = 1 + Math.min(dynamicReductionPct / 100 * 1.67, 0.25); // Max +25%
+const discountedPremium = annualBenefit * premiumMultiplier;
     
     console.log("✅ Discounted ROI:", {
         volume: volume,
@@ -6287,9 +6293,12 @@ function updateVolumeDisplay(volume) {
         display.textContent = volume.toLocaleString();
     }
     
-    const businessCase = calculateScalableBusinessCase({}, volume);
-    scaleDisplay.textContent = businessCase.businessScale;
-    tierDisplay.textContent = businessCase.volumeTier;
+    // 🛡️ REGULATOR FIX 3: Pass actual active data to prevent "100% reduction" ghost math
+const currentData = window.finalPefResults ? { co2PerKg: getUnifiedMetrics(window.finalPefResults, window.massBalanceData).co2PerKg } : { co2PerKg: 0 };
+const businessCase = calculateScalableBusinessCase(currentData, volume);
+
+scaleDisplay.textContent = businessCase.businessScale;
+tierDisplay.textContent = businessCase.volumeTier;
 }
 
 function calculateScalableBusinessCase(results, annualVolume) {
