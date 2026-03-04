@@ -3444,7 +3444,7 @@ function calculateParametricBaseline(baselineCategoryKey, targetCountry) {
     const farmGateFossil = (anchorIng.data.pef["Resource Use, fossils"] || 0) * anchor.factor;
 
     // 3. Simulate Standard Industry Manufacturing using our new engine
-    const mfgImpact = calculateManufacturingImpact(anchor.factor, 1.0, anchor.processing, targetCountry);
+    const mfgImpact = calculateManufacturingImpact(anchor.factor, 1.0, anchor.processing, targetCountry, true);
 
     // 4. Simulate Standard Logistics (Inbound + Outbound)
     // A. Inbound (Farm to Factory): Assume 500km regional sourcing
@@ -3839,7 +3839,7 @@ function calculateMassBalance(ingredients, processingMethod, packagingWeight) {
 // ============================================================================
 // 🏭 AUDIT-READY MANUFACTURING ENGINE (Utility Bills vs. Industry Benchmarks)
 // ============================================================================
-function calculateManufacturingImpact(massInputKg, massOutputKg, processingMethod, countryCode) {
+function calculateManufacturingImpact(massInputKg, massOutputKg, processingMethod, countryCode, isBaseline = false) {
     console.log("🏭 [Audit Engine] Calculating Manufacturing Impact...");
     
     // 1. DOM SAFETY & INPUTS
@@ -3901,28 +3901,30 @@ function calculateManufacturingImpact(massInputKg, massOutputKg, processingMetho
     }
 
     // 4. APPLY LOCAL GRID INTENSITY OR PRIMARY ENERGY SOURCE
-const country = window.aioxyData?.countries?.[countryCode] || { 
-    electricityCO2: 480, 
-    name: "Unknown" 
-};
+const country = window.aioxyData?.countries?.[countryCode] || { electricityCO2: 480, name: "Unknown" };
 
-const energySource = document.getElementById('energySource')?.value || 'grid';
+// 🛡️ REGULATOR FIX: Ensure the Industry Baseline never "steals" the user's renewable energy
+let energySource = 'grid';
+if (!isBaseline) {
+    energySource = document.getElementById('energySource')?.value || 'grid';
+}
+
 let gridIntensity;
 let energyNote;
 
 if (energySource === 'renewable') {
-    gridIntensity = 20; // IPCC AR6 Life Cycle - Verified EAC/GO
-    energyNote = `100% Renewable (Verified EAC/GO) - ${country.name}`;
+    gridIntensity = 20; 
+    energyNote = "100% Renewable (Verified EAC/GO)";
 } else if (energySource === 'natural_gas') {
-    gridIntensity = 490; // IPCC AR6 Life Cycle Gas
-    energyNote = `Natural Gas (Direct) - ${country.name}`;
+    gridIntensity = 490;
+    energyNote = "Natural Gas (Direct)";
 } else if (energySource === 'coal') {
-    gridIntensity = 980; // IPCC AR6 Life Cycle Coal
-    energyNote = `Coal (Direct) - ${country.name}`;
+    gridIntensity = 980;
+    energyNote = "Coal (Direct)";
 } else {
     gridIntensity = country.electricityCO2 || 480;
-    energyNote = `Grid Mix - ${country.name}`;
-}
+    energyNote = `Grid Mix (${countryCode})`;
+    }
 
 const manufacturingCO2 = electricityKWh * (gridIntensity / 1000); // g CO₂e/kWh
     
