@@ -3900,27 +3900,48 @@ function calculateManufacturingImpact(massInputKg, massOutputKg, processingMetho
         console.log(`⚠️ [Audit] Using JRC benchmark: ${benchmarkKwhPerKg.toFixed(3)} kWh/kg for ${processingMethod}`);
     }
 
-    // 4. APPLY LOCAL GRID INTENSITY
-    // Uses real-world Ember/IEA grid intensity data from your Data.txt
-    const country = window.aioxyData?.countries?.[countryCode] || { electricityCO2: 480, name: "Unknown" };
-    const gridIntensity = country.electricityCO2 || 480; // g CO₂e/kWh
-    const manufacturingCO2 = electricityKWh * (gridIntensity / 1000);
+    // 4. APPLY LOCAL GRID INTENSITY OR PRIMARY ENERGY SOURCE
+const country = window.aioxyData?.countries?.[countryCode] || { 
+    electricityCO2: 480, 
+    name: "Unknown" 
+};
 
+const energySource = document.getElementById('energySource')?.value || 'grid';
+let gridIntensity;
+let energyNote;
+
+if (energySource === 'renewable') {
+    gridIntensity = 20; // IPCC AR6 Life Cycle - Verified EAC/GO
+    energyNote = `100% Renewable (Verified EAC/GO) - ${country.name}`;
+} else if (energySource === 'natural_gas') {
+    gridIntensity = 490; // IPCC AR6 Life Cycle Gas
+    energyNote = `Natural Gas (Direct) - ${country.name}`;
+} else if (energySource === 'coal') {
+    gridIntensity = 980; // IPCC AR6 Life Cycle Coal
+    energyNote = `Coal (Direct) - ${country.name}`;
+} else {
+    gridIntensity = country.electricityCO2 || 480;
+    energyNote = `Grid Mix - ${country.name}`;
+}
+
+const manufacturingCO2 = electricityKWh * (gridIntensity / 1000); // g CO₂e/kWh
+    
     // 5. WATER EVAPORATION (Keep for mass balance, but NOT for energy calculation)
     const waterEvaporated = Math.max(0, massInputKg - massOutputKg);
 
     console.log(`   └─ Result: ${electricityKWh.toFixed(3)} kWh = ${manufacturingCO2.toFixed(4)} kg CO₂e (${countryCode} grid: ${gridIntensity}g/kWh)`);
 
     return {
-        co2: manufacturingCO2,
-        kwh: electricityKWh,
-        method: methodUsed,
-        confidence: confidenceLevel,
-        physics_data: physicsData,
-        water_evaporated_kg: waterEvaporated,
-        grid_intensity_g_per_kwh: gridIntensity,
-        country: countryCode
-    };
+    co2: manufacturingCO2,
+    kwh: electricityKWh,
+    method: methodUsed,
+    confidence: confidenceLevel,
+    physics_data: physicsData,
+    water_evaporated_kg: waterEvaporated,
+    grid_intensity_g_per_kwh: gridIntensity,
+    energy_source: energyNote, 
+    country: countryCode
+};
     }
     
 // ================== AIOXY COMPLIANCE ENGINE: EF 3.1 (UI COMPATIBLE) ==================
