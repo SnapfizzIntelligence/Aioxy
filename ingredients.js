@@ -42,6 +42,40 @@ window.aioxyData = {
                 }
             }
         },
+        "raspberry-raw-agribalyse-3-2": {
+    "name": "Raspberry, raw",
+    "loss": 0.05,
+    "processing_yield": 0.95,
+    "data": {
+        "pef": {
+            "Climate Change": 1.55,
+            "Ozone Depletion": 4.2e-08,
+            "Human Toxicity, non-cancer": 6.53e-08,
+            "Human Toxicity, cancer": 2.93e-09,
+            "Particulate Matter": 3.03e-07,
+            "Ionizing Radiation": 0.0434,
+            "Photochemical Ozone Formation": 0.0106,
+            "Acidification": 0.042,
+            "Eutrophication, terrestrial": 0.182,
+            "Eutrophication, freshwater": 0.000395,
+            "Eutrophication, marine": 0.0152,
+            "Ecotoxicity, freshwater": 81.0,
+            "Land Use": 118.0,
+            "Water Use/Scarcity (AWARE)": 2.35,
+            "Resource Use, minerals/metals": 8.44e-06,
+            "Resource Use, fossils": 15.2
+        },
+        "metadata": {
+            "source_dataset": "AGRIBALYSE 3.2",
+            "source_activity": "Raspberry, raw",
+            "source_uuid": "agb-3.2-13015-raspberry-raw",
+            "agribalyse_code": "13015",
+            "allocation_method": "Economic Allocation",
+            "dqr_overall": 4.05,
+            "biogenic_net": 0.00184
+        }
+    }
+        }, 
 
         "sunflower-oil-agribalyse-3-2": {
             "name": "Sunflower oil",
