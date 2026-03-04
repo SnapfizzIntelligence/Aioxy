@@ -4742,12 +4742,13 @@ if (massBalanceData.productMass > 0) {
     
     // Add detailed component for audit trail
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
-        name: `Processing (${processingMethod || 'none'})`,
-        subtotal: mfgResult.co2,
-        details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh`,
-        confidence: mfgResult.confidence,
-        grid_intensity: mfgResult.grid_intensity_g_per_kwh
-    });
+    name: `Processing (${processingMethod || 'none'})`,
+    subtotal: mfgResult.co2,
+    details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh`,
+    confidence: mfgResult.confidence,
+    grid_intensity: mfgResult.grid_intensity_g_per_kwh,
+    energy_source: mfgResult.energy_source 
+});
     
     // Add to Fossil Resources (kWh to MJ conversion: 1 kWh = 3.6 MJ)
     const fossilMJ = mfgResult.kwh * 3.6;
