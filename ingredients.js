@@ -71,6 +71,13 @@ window.aioxyData = {
             "source_uuid": "agb-3.2-13015-raspberry-raw",
             "agribalyse_code": "13015",
             "allocation_method": "Economic Allocation",
+            "dqr": {
+                "TeR": 4.0,
+                "GR": 4.0,
+                "TiR": 4.0,
+                "C": 4.0,
+                "P": 4.25
+            },
             "dqr_overall": 4.05,
             "biogenic_net": 0.00184
         }
