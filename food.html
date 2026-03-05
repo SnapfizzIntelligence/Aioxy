@@ -6083,7 +6083,77 @@ if (totalRemovals > 0) {
     if (co2Label) {
         co2Label.textContent = "Climate Change (GWP100)";
     }
-   
+
+    // =====================================================================
+// 🚀 WEAPON 1: NUTRITIONAL LCA ENGINE (Impact per 100g of Protein)
+// =====================================================================
+const userProteinPer100g = parseFloat(document.getElementById('proteinContent')?.value) || 0;
+let nutritionalDiv = document.getElementById('nutritionalLCACard');
+
+if (userProteinPer100g > 0 && currentComparisonBaseline) {
+    // Industry Standard Protein Anchors (g per 100g)
+    const anchorProteinDB = {
+        'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
+        'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
+        'plant-milk': 1.0, 'default': 10.0
+    };
+    
+    // Find what we are comparing against
+    const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
+        currentComparisonBaseline.name.includes(ANCHOR_DATASETS[key].name)) || 'default';
+    const baselineProteinPer100g = anchorProteinDB[baselineKey] || 10.0;
+
+    // Math: How many kg of product do you need to eat to get 100g of protein?
+    const userKgNeededFor100gProtein = 100 / (userProteinPer100g * 10);
+    const baseKgNeededFor100gProtein = 100 / (baselineProteinPer100g * 10);
+
+    // Calculate CO2 per 100g of Protein
+    const userCo2PerProtein = unifiedCO2 * userKgNeededFor100gProtein;
+    const baseCo2PerProtein = safeBaseCO2 * baseKgNeededFor100gProtein;
+    const proteinSavingsPct = Math.max(0, ((baseCo2PerProtein - userCo2PerProtein) / baseCo2PerProtein) * 100);
+
+    if (!nutritionalDiv) {
+        nutritionalDiv = document.createElement('div');
+        nutritionalDiv.id = 'nutritionalLCACard';
+        nutritionalDiv.className = 'card';
+        nutritionalDiv.style.borderLeft = '4px solid #8E44AD';
+        nutritionalDiv.style.backgroundColor = '#FDFEFE';
+        // Insert above the Results Grid
+        const resultsGrid = document.querySelector('.results-grid');
+        resultsGrid.parentNode.insertBefore(nutritionalDiv, resultsGrid);
+    }
+
+    nutritionalDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <div style="background: #8E44AD; color: white; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <h3 style="color: #4A235A; margin: 0; font-size: 1.1rem;">Nutritional LCA Advantage</h3>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--gray);">Impact measured per <strong>100g of delivered protein</strong> (Defeats conventional meat industry counter-arguments).</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 2rem; font-weight: 900; color: #8E44AD;">-${proteinSavingsPct.toFixed(0)}%</div>
+                <div style="font-size: 0.75rem; font-weight: bold; color: var(--gray); text-transform: uppercase;">Emissions vs Baseline</div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+            <div>
+                <div style="font-size: 0.75rem; color: var(--gray);">Your Product (${userProteinPer100g}g protein/100g)</div>
+                <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${userCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${currentComparisonBaseline.name} (~${baselineProteinPer100g}g protein/100g)</div>
+                <div style="font-size: 1.25rem; font-weight: bold; color: var(--gray);">${baseCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
+            </div>
+        </div>
+    `;
+} else if (nutritionalDiv) {
+    nutritionalDiv.remove();
+    }
     // 4. Calculate Savings Badge Percentage
     const baselineCO2 = results.comparison.baseline.co2PerKg;
     const baselineWater = results.comparison.baseline.waterPerKg;
