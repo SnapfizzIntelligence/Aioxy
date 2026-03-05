@@ -6165,8 +6165,6 @@ if (userProteinPer100g > 0 && currentComparisonBaseline) {
     const co2SavingsPercent = ((safeBaseCO2 - unifiedCO2) / safeBaseCO2 * 100).toFixed(1);
     const waterSavingsPercent = ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater * 100).toFixed(1);
     
-    const baselineName = currentComparisonBaseline ? currentComparisonBaseline.name.replace(' (Cradle-to-Retail)', '') : 'benchmark';
-
     if(document.getElementById('co2Savings')) document.getElementById('co2Savings').textContent = `~${Math.max(co2SavingsPercent, 0)}% lower footprint vs ${baselineName}`;
     if(document.getElementById('waterSavings')) document.getElementById('waterSavings').textContent = `~${Math.max(waterSavingsPercent, 0)}% lower water impact vs ${baselineName}`;
 
