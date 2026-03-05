@@ -5499,19 +5499,6 @@ function displayCompleteAuditTrail() {
                 </div>
             </div>
 
-// 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration
-const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
-const functionalUnitText = userProtein > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of final product";
-
-auditSection.innerHTML = `
-    <div class="card-header">
-        ...
-    </div>
-    
-    <div style="margin: 1.5rem 0;">
-        <!-- INTEGRITY HASH -->
-        ...
-
         <!-- 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration -->
         <h4 style="margin-bottom: 1rem; color: var(--primary);">
             <i class="fas fa-info-circle"></i> Calculation Metadata
