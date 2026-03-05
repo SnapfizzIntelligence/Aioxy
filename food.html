@@ -6191,34 +6191,51 @@ if (userProteinPer100g > 0 && currentComparisonBaseline) {
         resultsGrid.parentNode.insertBefore(nutritionalDiv, resultsGrid);
     }
 
-    nutritionalDiv.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                    <div style="background: #8E44AD; color: white; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-dumbbell"></i>
-                    </div>
-                    <h3 style="color: #4A235A; margin: 0; font-size: 1.1rem;">Nutritional LCA Advantage</h3>
+    // 🛡️ REGULATOR FIX 2: Honest Nutritional LCA Reporting
+const rawProteinPct = baseCo2PerProtein > 0 ? ((baseCo2PerProtein - userCo2PerProtein) / baseCo2PerProtein) * 100 : 0;
+const isProteinBetter = rawProteinPct >= 0;
+const proteinColor = isProteinBetter ? '#8E44AD' : '#E63946';
+const proteinPrefix = isProteinBetter ? '↓ ' : '↑ ';
+const proteinLabel = isProteinBetter ? 'Advantage vs Baseline' : 'Liability vs Baseline';
+
+if (!nutritionalDiv) {
+    nutritionalDiv = document.createElement('div');
+    nutritionalDiv.id = 'nutritionalLCACard';
+    nutritionalDiv.className = 'card';
+    nutritionalDiv.style.borderLeft = `4px solid ${proteinColor}`;
+    nutritionalDiv.style.backgroundColor = '#FDFEFE';
+    const resultsGrid = document.querySelector('.results-grid');
+    resultsGrid.parentNode.insertBefore(nutritionalDiv, resultsGrid);
+}
+
+nutritionalDiv.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <div style="background: ${proteinColor}; color: white; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-dumbbell"></i>
                 </div>
-                <div style="font-size: 0.85rem; color: var(--gray);">Impact measured per <strong>100g of delivered protein</strong> (Defeats conventional meat industry counter-arguments).</div>
+                <h3 style="color: #4A235A; margin: 0; font-size: 1.1rem;">Nutritional LCA Assessment</h3>
             </div>
-            <div style="text-align: right;">
-                <div style="font-size: 2rem; font-weight: 900; color: #8E44AD;">-${proteinSavingsPct.toFixed(0)}%</div>
-                <div style="font-size: 0.75rem; font-weight: bold; color: var(--gray); text-transform: uppercase;">Emissions vs Baseline</div>
-            </div>
+            <div style="font-size: 0.85rem; color: var(--gray);">Impact measured per <strong>100g of delivered protein</strong>.</div>
         </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
-            <div>
-                <div style="font-size: 0.75rem; color: var(--gray);">Your Product (${userProteinPer100g}g protein/100g)</div>
-                <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${userCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
-            </div>
-            <div>
-                <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${currentComparisonBaseline.name} (~${baselineProteinPer100g}g protein/100g)</div>
-                <div style="font-size: 1.25rem; font-weight: bold; color: var(--gray);">${baseCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
-            </div>
+        <div style="text-align: right;">
+            <div style="font-size: 2rem; font-weight: 900; color: ${proteinColor};">${proteinPrefix}${Math.abs(rawProteinPct).toFixed(0)}%</div>
+            <div style="font-size: 0.75rem; font-weight: bold; color: ${proteinColor}; text-transform: uppercase;">${proteinLabel}</div>
         </div>
-    `;
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+        <div>
+            <div style="font-size: 0.75rem; color: var(--gray);">Your Product (${userProteinPer100g}g protein/100g)</div>
+            <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${userCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
+        </div>
+        <div>
+            <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${currentComparisonBaseline.name} (~${baselineProteinPer100g}g protein/100g)</div>
+            <div style="font-size: 1.25rem; font-weight: bold; color: var(--gray);">${baseCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
+        </div>
+    </div>
+`;
 } else if (nutritionalDiv) {
     nutritionalDiv.remove();
     }
