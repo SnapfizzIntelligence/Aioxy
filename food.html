@@ -1314,9 +1314,18 @@
                             <option>Electronics</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Product Weight (kg)</label>
-                        <input type="number" id="productWeight" class="form-control" value="0.200" step="0.001" min="0">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="form-group">
+        <label class="form-label">Product Weight (kg)</label>
+        <input type="number" id="productWeight" class="form-control" value="0.200" step="0.001" min="0" onchange="calculateImpact()">
+    </div>
+    <div class="form-group">
+        <label class="form-label" style="color: var(--primary);">
+            <i class="fas fa-dumbbell"></i> Protein (g/100g)
+        </label>
+        <input type="number" id="proteinContent" class="form-control" value="15" step="0.1" min="0" onchange="calculateImpact()">
+        <small style="color: var(--secondary-dark); font-size: 0.7rem; font-weight: bold;">Unlocks Nutritional LCA</small>
+    </div>
                     </div>
                 </div>
 
@@ -1489,6 +1498,15 @@
                             <option value="extrusion">Extrusion</option>
                             <option value="oat-processing">Oat Enzyming/Heat Treatment</option>
                         </select>
+                    </div>
+                    <div class="form-group" style="background: #F8FAFC; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--secondary);">
+    <label class="form-label" style="margin-bottom: 0.5rem;"><i class="fas fa-bolt" style="color: #F6AD55;"></i> Factory Energy Source</label>
+    <select id="energySource" class="form-control" onchange="calculateImpact()">
+        <option value="grid">Regional Grid Mix (Default)</option>
+        <option value="renewable">100% Renewable Energy (Verified EAC/GO)</option>
+        <option value="natural_gas">Natural Gas Direct</option>
+        <option value="coal">Coal Direct</option>
+    </select>
                     </div>
                     <div style="background: #F0F9FF; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 1px solid #BDE0FE;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
