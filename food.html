@@ -4926,9 +4926,12 @@ if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIng
 }, 
     
 detectProductCategory(productName, ingredients, selectedCategory) {
+    // 🛡️ REGULATOR FIX: Explicit user selection ALWAYS overrides auto-detection.
+    if (selectedCategory && selectedCategory !== 'auto') {
+        return selectedCategory;
+    }
+
     const name = productName.toLowerCase();
-    const category = selectedCategory.toLowerCase();
-    
     // 1. Identify if the product is plant-based / vegan via modifiers
     const isPlantBased = name.includes('plant') || name.includes('vegan') || name.includes('veggie') || 
                          name.includes('hemp') || name.includes('soy') || name.includes('oat') || 
@@ -4938,23 +4941,18 @@ detectProductCategory(productName, ingredients, selectedCategory) {
     if (name.includes('spread') || name.includes('choco') || name.includes('hazelnut') || name.includes('nut butter')) {
         return 'chocolate-spread-conventional';
     }
-    
     if ((name.includes('milk') || name.includes('drink') || name.includes('latte')) && !name.includes('burger')) {
         return isPlantBased ? 'plant-milk' : 'milk-product';
     }
-    
     if (name.includes('pasta') || name.includes('spaghetti') || name.includes('macaroni') || name.includes('noodle')) {
         return 'pasta-product';
     }
-    
     if (name.includes('burger') || name.includes('patty') || name.includes('sausage') || name.includes('mince') || name.includes('meatball')) {
-        // Intelligent Routing: Apples to Apples
         if (isPlantBased) return 'plant-burger';
         if (name.includes('chicken') || name.includes('poultry')) return 'chicken-product';
         if (name.includes('pork') || name.includes('swine')) return 'pork-product';
-        return 'beef-product'; // Default conventional meat
+        return 'beef-product';
     }
-    
     if (name.includes('pizza')) return 'cheese-product';
     if (name.includes('coffee') || name.includes('espresso')) return 'coffee-product';
     if (name.includes('chocolate') || name.includes('cocoa') || name.includes('candy')) return 'chocolate-product';
@@ -4962,7 +4960,7 @@ detectProductCategory(productName, ingredients, selectedCategory) {
     
     // Default fallback
     return 'beef-product';
-}
+    }
 
     };
    
