@@ -6027,6 +6027,16 @@ if (totalBenefit) {
 
 // ================== UPDATE RESULTS UI (FIXED) ==================
 function updateResultsUI(results) {
+    // 1. Force Consistency: Pull the UNIFIED metric directly
+    const unifiedCO2 = results.co2PerKg;
+    
+    // 🛡️ CRASH FIX: Define baseline variables at the absolute TOP before anything else runs
+    const baselineCO2 = results.comparison?.baseline?.co2PerKg || 0;
+    const baselineWater = results.comparison?.baseline?.waterPerKg || 0;
+    const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
+    const safeBaseWater = baselineWater > 0 ? baselineWater : 1;
+    const baselineName = currentComparisonBaseline ? currentComparisonBaseline.name.replace(' (Cradle-to-Retail)', '') : 'benchmark';
+
     // REGULATOR FIX: Custom Baseline Warning
     const resultsContent = document.getElementById('resultsContent');
     let customWarningDiv = document.getElementById('gcdCustomWarning');
@@ -6053,9 +6063,6 @@ function updateResultsUI(results) {
         customWarningDiv.remove();
     }
 
-    // 1. Force Consistency: Pull the UNIFIED metric directly
-    const unifiedCO2 = results.co2PerKg; 
-    
     updateMassBalanceDisplay();
     updateDataQualityDisplay(results);
     updateEnvironmentalStory(results);
@@ -6064,7 +6071,6 @@ function updateResultsUI(results) {
     renderUniversalComparisons(unifiedCO2, currentComparisonBaseline);
 
     // 3. Update Metric Cards with the UNIFIED numbers
-    // Added safety checks (if) to prevent crashes if elements are missing
     if(document.getElementById('co2Value')) document.getElementById('co2Value').textContent = unifiedCO2.toFixed(2) + ' kg';
     if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(4) + ' m³';
     if(document.getElementById('landValue')) document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
@@ -6164,12 +6170,7 @@ if (userProteinPer100g > 0 && currentComparisonBaseline) {
     nutritionalDiv.remove();
     }
     // 4. Calculate Savings Badge Percentage
-    const baselineCO2 = results.comparison.baseline.co2PerKg;
-    const baselineWater = results.comparison.baseline.waterPerKg;
     
-    const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
-    const safeBaseWater = baselineWater > 0 ? baselineWater : 1;
-
     const co2SavingsPercent = ((safeBaseCO2 - unifiedCO2) / safeBaseCO2 * 100).toFixed(1);
     const waterSavingsPercent = ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater * 100).toFixed(1);
     
