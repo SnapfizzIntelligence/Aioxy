@@ -2228,6 +2228,15 @@
                     </p>
                     
                     <div class="export-options">
+                        <div class="export-card" onclick="exportCSRDMatrix()" style="border-color: #27AE60; background: #F0FFF4;">
+    <div class="export-icon" style="background: #27AE60;">
+        <i class="fas fa-file-excel"></i>
+    </div>
+    <div class="export-title" style="color: #27AE60;">CSRD Scope 3 Matrix (.csv)</div>
+    <div class="export-desc">
+        Flat-file supply chain data strictly mapped for Retailer Procurement & GHG Protocol Cat 1 compliance. Includes EUDR flags.
+    </div>
+                        </div>
                         <div class="export-card" onclick="generatePDFReport('marketing')">
                             <div class="export-icon">
                                 <i class="fas fa-chart-line"></i>
@@ -7527,6 +7536,72 @@ metricsData.push(
     function exportAuditData() {
         downloadRawData();
     }
+    // =====================================================================
+// 🚀 WEAPON 2: CSRD SCOPE 3 MATRIX EXPORTER
+// =====================================================================
+function exportCSRDMatrix() {
+    if (!auditTrailData || !auditTrailData.pefCategories) {
+        alert('Please calculate the environmental impact first.');
+        return;
+    }
+
+    const pName = document.getElementById('productName')?.value || 'Product';
+    const ccTree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
+    
+    // GHG Protocol Column Headers
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "GHG_Scope_Category,Process_Name,Material_Type,Origin_Country,Mass_Input_Kg,Gross_CO2e_Kg,Biogenic_Removals_Kg,EUDR_Risk_Flag,Primary_Data_Verified\n";
+
+    // 1. Ingredients (Scope 3 Category 1: Purchased Goods)
+    ccTree.Ingredients.components.forEach(ing => {
+        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "0%";
+        const primary = ing.primary_data_used ? "YES" : "NO";
+        
+        // We allocate the biogenic removals to the specific ingredient if it has primary data
+        let removals = 0;
+        if (primary === "YES" && auditTrailData.pefCategories["Climate Change"].biogenic_removals > 0) {
+            removals = (auditTrailData.pefCategories["Climate Change"].biogenic_removals / ccTree.Ingredients.components.length).toFixed(4);
+        }
+
+        // CSV Sanitize
+        const cleanName = ing.name.replace(/,/g, '');
+        const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
+        
+        csvContent += `Scope 3 Cat 1,${cleanName},Raw Material,${origin},${ing.quantity_kg.toFixed(3)},${ing.subtotal.toFixed(4)},${removals},${isHighRisk},${primary}\n`;
+    });
+
+    // 2. Packaging (Scope 3 Cat 1)
+    if (ccTree.Packaging.total > 0) {
+        const pkgWeight = massBalanceData.packaging_weight_kg || 0;
+        const mat = document.getElementById('packagingMaterial')?.value || 'Packaging';
+        csvContent += `Scope 3 Cat 1,${mat}_Packaging,Packaging,Local,${pkgWeight.toFixed(3)},${ccTree.Packaging.total.toFixed(4)},0,0%,NO\n`;
+    }
+
+    // 3. Logistics (Scope 3 Cat 4: Upstream Transport)
+    if (ccTree.Transport.total > 0) {
+        const dist = document.getElementById('transportDistance')?.value || 0;
+        const mode = document.getElementById('transportMode')?.value || 'transport';
+        csvContent += `Scope 3 Cat 4,Outbound_Logistics_${mode},Service,N/A,${dist}km,${ccTree.Transport.total.toFixed(4)},0,0%,NO\n`;
+    }
+
+    // 4. Manufacturing (Scope 1/2 depending on ownership, mapped as Scope 3 Cat 1 for the retailer)
+    if (ccTree.Manufacturing.total > 0) {
+        const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'Unknown';
+        const isPrimary = document.getElementById('usePrimaryFactoryData')?.checked ? "YES" : "NO";
+        csvContent += `Scope 3 Cat 1,Factory_Operations,Energy,${mfgCountry},${massBalanceData.final_content_weight_kg.toFixed(3)},${ccTree.Manufacturing.total.toFixed(4)},0,0%,${isPrimary}\n`;
+    }
+
+    // Encode and Download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `CSRD_Scope3_Matrix_${pName.replace(/\s/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log("✅ CSRD Retailer Matrix Exported Successfully");
+            }
 
     function downloadMethodology() {
         const methodology = `AIOXY Methodology Document
