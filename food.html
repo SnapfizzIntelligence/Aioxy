@@ -5495,29 +5495,48 @@ function displayCompleteAuditTrail() {
                 </div>
             </div>
             
-            <!-- CALCULATION METADATA -->
-<h4 style="margin-bottom: 1rem; color: var(--primary);">
-    <i class="fas fa-info-circle"></i> Calculation Metadata
-</h4>
-<div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-        <div>
-            <div style="font-weight: 600; color: var(--primary);">Product Name</div>
-            <div>${audit.productName || 'Unnamed Product'}</div>
-        </div>
-        <div>
-            <div style="font-weight: 600; color: var(--primary);">Calculation Timestamp</div>
-            <div>${new Date(audit.calculationTimestamp).toLocaleString()}</div>
-        </div>
-        <div>
-            <div style="font-weight: 600; color: var(--primary);">Data Quality Rating</div>
-            <div class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
-                ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
+            const audit = auditTrailData;
+
+// 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration
+const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
+const functionalUnitText = userProtein > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of final product";
+
+auditSection.innerHTML = `
+    <div class="card-header">
+        ...
+    </div>
+    
+    <div style="margin: 1.5rem 0;">
+        <!-- INTEGRITY HASH -->
+        ...
+
+        <!-- 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration -->
+        <h4 style="margin-bottom: 1rem; color: var(--primary);">
+            <i class="fas fa-info-circle"></i> Calculation Metadata
+        </h4>
+        <div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem;">
+                <div>
+                    <div style="font-weight: 600; color: var(--primary);">Product Name</div>
+                    <div>${audit.productName || 'Unnamed Product'}</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--primary);">Functional Unit (ISO 14044)</div>
+                    <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700;">${functionalUnitText}</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--primary);">Calculation Timestamp</div>
+                    <div>${new Date(audit.calculationTimestamp).toLocaleString()}</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; color: var(--primary);">Data Quality Rating</div>
+                    <div class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
+                        ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-            
+
             <!-- DATA SOURCES -->
             <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
                 <i class="fas fa-database"></i> Data Sources & Methodology
