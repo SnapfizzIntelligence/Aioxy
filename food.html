@@ -4574,8 +4574,11 @@ else {
     // 3. MASS BALANCE
     let massBalanceData = calculateMassBalance(finalIngredients, processingMethod, packagingWeight);
 
-    // 4. AUDIT TRAIL INIT & PARAMETRIC TWIN GENERATION
-const comparisonKey = this.detectProductCategory(productName, selectedIngredients, productCategory);
+// 4. AUDIT TRAIL INIT & PARAMETRIC TWIN GENERATION
+const comparisonDropdown = document.getElementById('comparisonBaseline')?.value || 'auto';
+const comparisonKey = comparisonDropdown !== 'auto' 
+    ? comparisonDropdown 
+    : this.detectProductCategory(productName, selectedIngredients, productCategory);
 
 // REGULATOR FIX: Custom Baseline Enforcement
 const customBaselineInput = parseFloat(document.getElementById('customBaseline').value);
@@ -5506,27 +5509,30 @@ function displayCompleteAuditTrail() {
                 <i class="fas fa-info-circle"></i> Calculation Metadata
             </h4>
             <div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Product Name</div>
-                        <div>${audit.productName || 'Unnamed Product'}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Functional Unit (ISO 14044)</div>
-                        <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700;">${functionalUnitText}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Calculation Timestamp</div>
-                        <div>${new Date(audit.calculationTimestamp).toLocaleString()}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Data Quality Rating</div>
-                        <div class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
-                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
-                        </div>
-                    </div>
-                </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+        <div>
+            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Product Name</div>
+            <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
+        </div>
+        <div>
+            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
+            <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
+        </div>
+        <div>
+            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
+            <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: ${audit.pef_single_score?.singleScore < 150 ? '#2A9D8F' : audit.pef_single_score?.singleScore < 250 ? '#8AB17D' : audit.pef_single_score?.singleScore < 400 ? '#E9C46A' : audit.pef_single_score?.singleScore < 600 ? '#F4A261' : '#E63946'};">
+                Grade ${audit.pef_single_score?.singleScore < 150 ? 'A' : audit.pef_single_score?.singleScore < 250 ? 'B' : audit.pef_single_score?.singleScore < 400 ? 'C' : audit.pef_single_score?.singleScore < 600 ? 'D' : 'E'} 
+                <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${audit.pef_single_score?.singleScore?.toFixed(1) || 0} mPt)</span>
             </div>
+        </div>
+        <div>
+            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Data Quality Rating</div>
+            <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
+                ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
+            </div>
+        </div>
+    </div>
+</div>
     
             <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
                 <i class="fas fa-database"></i> Data Sources & Methodology
