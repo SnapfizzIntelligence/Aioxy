@@ -7407,6 +7407,51 @@ metricsData.push(
             });
             currentY = doc.lastAutoTable.finalY + 15;
         }
+        // ========== 🛡️ REGULATOR FIX: INJECT WEAPONS INTO OFFICIAL PDF ==========
+checkPageBreak(50);
+setPrimaryColor();
+doc.setFontSize(14);
+doc.text("CONSUMER LABELING & NUTRITIONAL LCA", 15, currentY);
+currentY += 8;
+
+const pWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+const singleScorePDF = calculatePEFSingleScore(window.finalPefResults, pWeightKg);
+const mPt = singleScorePDF.singleScore;
+
+let ecoGradePDF = 'E';
+if (mPt < 150) ecoGradePDF = 'A';
+else if (mPt < 250) ecoGradePDF = 'B';
+else if (mPt < 400) ecoGradePDF = 'C';
+else if (mPt < 600) ecoGradePDF = 'D';
+
+const consumerData = [
+    ['Front-of-Pack Eco-Score', `Grade ${ecoGradePDF} (${mPt.toFixed(1)} mPt)`, 'Strict alignment with ADEME / PEF 3.1 thresholds']
+];
+
+// Safely pull the user's protein input from the DOM
+const userProteinPDF = parseFloat(document.getElementById('proteinContent')?.value) || 0;
+if (userProteinPDF > 0 && window.finalPefResults && window.finalPefResults["Climate Change"]) {
+    const unifiedCO2 = window.finalPefResults["Climate Change"].total / pWeightKg;
+    const kgNeeded = 100 / (userProteinPDF * 10);
+    const co2Per100gProtein = unifiedCO2 * kgNeeded;
+    consumerData.push([
+        'Nutritional Impact (ISO 14044)', 
+        `${co2Per100gProtein.toFixed(2)} kg CO₂e / 100g protein`, 
+        'Functional unit scaled to nutritional delivery (Dual Reporting)'
+    ]);
+}
+
+doc.autoTable({
+    startY: currentY,
+    body: consumerData,
+    theme: 'plain',
+    styles: { fontSize: 10, cellPadding: 3 },
+    columnStyles: { 
+        0: { fontStyle: 'bold', textColor: [10, 37, 64] },
+        1: { fontStyle: 'bold', textColor: [0, 212, 170] }
+    }
+});
+currentY = doc.lastAutoTable.finalY + 15;
 
         // ========== TAB-SPECIFIC CONTENT ==========
         checkPageBreak(100);
