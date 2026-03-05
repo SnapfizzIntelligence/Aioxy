@@ -7554,22 +7554,24 @@ function exportCSRDMatrix() {
     csvContent += "GHG_Scope_Category,Process_Name,Material_Type,Origin_Country,Mass_Input_Kg,Gross_CO2e_Kg,Biogenic_Removals_Kg,EUDR_Risk_Flag,Primary_Data_Verified\n";
 
     // 1. Ingredients (Scope 3 Category 1: Purchased Goods)
-    ccTree.Ingredients.components.forEach(ing => {
-        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "0%";
-        const primary = ing.primary_data_used ? "YES" : "NO";
-        
-        // We allocate the biogenic removals to the specific ingredient if it has primary data
-        let removals = 0;
-        if (primary === "YES" && auditTrailData.pefCategories["Climate Change"].biogenic_removals > 0) {
-            removals = (auditTrailData.pefCategories["Climate Change"].biogenic_removals / ccTree.Ingredients.components.length).toFixed(4);
-        }
+ccTree.Ingredients.components.forEach(ing => {
+    const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "0%";
+    const primary = ing.primary_data_used ? "YES" : "NO";
+    
+    // 🛡️ REGULATOR FIX: Gross emissions only. No illegal spreading of biogenic removals here.
+    const removals = 0; 
 
-        // CSV Sanitize
-        const cleanName = ing.name.replace(/,/g, '');
-        const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
-        
-        csvContent += `Scope 3 Cat 1,${cleanName},Raw Material,${origin},${ing.quantity_kg.toFixed(3)},${ing.subtotal.toFixed(4)},${removals},${isHighRisk},${primary}\n`;
-    });
+    // CSV Sanitize
+    const cleanName = ing.name.replace(/,/g, '');
+    const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
+    
+    csvContent += `Scope 3 Cat 1,${cleanName},Raw Material,${origin},${ing.quantity_kg.toFixed(3)},${ing.subtotal.toFixed(4)},${removals},${isHighRisk},${primary}\n`;
+});
+
+// 🛡️ REGULATOR FIX: Dedicated FLAG Removals Row (GHG Protocol Compliant)
+if (auditTrailData.pefCategories["Climate Change"].biogenic_removals > 0) {
+    csvContent += `Scope 3 Cat 1 (FLAG),Verified_Soil_Carbon_Sequestration,Biogenic_Removals,Primary_Farm,0,0,-${auditTrailData.pefCategories["Climate Change"].biogenic_removals.toFixed(4)},0%,YES\n`;
+}
 
     // 2. Packaging (Scope 3 Cat 1)
     if (ccTree.Packaging.total > 0) {
