@@ -6222,14 +6222,25 @@ if (userProteinPer100g > 0 && currentComparisonBaseline) {
 } else if (nutritionalDiv) {
     nutritionalDiv.remove();
     }
-    // 4. Calculate Savings Badge Percentage
-    
-    const co2SavingsPercent = ((safeBaseCO2 - unifiedCO2) / safeBaseCO2 * 100).toFixed(1);
-    const waterSavingsPercent = ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater * 100).toFixed(1);
-    
-    if(document.getElementById('co2Savings')) document.getElementById('co2Savings').textContent = `~${Math.max(co2SavingsPercent, 0)}% lower footprint vs ${baselineName}`;
-    if(document.getElementById('waterSavings')) document.getElementById('waterSavings').textContent = `~${Math.max(waterSavingsPercent, 0)}% lower water impact vs ${baselineName}`;
+// 🛡️ REGULATOR FIX 1: Dynamic Honesty Badges (Removing Zero-Floor Masking)
+const rawCo2Pct = safeBaseCO2 > 0 ? ((safeBaseCO2 - unifiedCO2) / safeBaseCO2) * 100 : 0;
+const rawWaterPct = safeBaseWater > 0 ? ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater) * 100 : 0;
 
+const formatHonestyBadge = (pct, elemId) => {
+    const el = document.getElementById(elemId);
+    if (!el) return;
+    if (pct >= 0) {
+        el.innerHTML = `<i class="fas fa-arrow-down"></i> ${pct.toFixed(1)}% lower vs ${baselineName}`;
+        el.style.background = 'var(--gradient-secondary)';
+    } else {
+        el.innerHTML = `<i class="fas fa-arrow-up"></i> ${Math.abs(pct).toFixed(1)}% higher vs ${baselineName}`;
+        el.style.background = '#E63946'; // Strict Compliance Red
+    }
+};
+
+formatHonestyBadge(rawCo2Pct, 'co2Savings');
+formatHonestyBadge(rawWaterPct, 'waterSavings');
+    
     // === STEP 5: ZERO DATA SAFETY VALVE ===
     if (unifiedCO2 <= 0.001) {
         if(document.getElementById('co2Savings')) {
