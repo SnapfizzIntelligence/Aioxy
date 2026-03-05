@@ -4924,11 +4924,14 @@ if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIng
     console.log(`✅ [AIOXY UNIFIED] Calc Complete. CO2: ${unified.co2PerKg.toFixed(2)} kg/kg`);
     return results;
 }, 
-    
-detectProductCategory(productName, ingredients, selectedCategory) {
+
+    detectProductCategory(productName, ingredients, selectedCategory) {
+    // 🛡️ REGULATOR FIX: Explicit user selection ALWAYS overrides auto-detection.
+    if (selectedCategory && selectedCategory !== 'auto') {
+        return selectedCategory;
+    }
+
     const name = productName.toLowerCase();
-    const category = selectedCategory.toLowerCase();
-    
     // 1. Identify if the product is plant-based / vegan via modifiers
     const isPlantBased = name.includes('plant') || name.includes('vegan') || name.includes('veggie') || 
                          name.includes('hemp') || name.includes('soy') || name.includes('oat') || 
@@ -4962,8 +4965,7 @@ detectProductCategory(productName, ingredients, selectedCategory) {
     
     // Default fallback
     return 'beef-product';
-}
-
+    }
     };
    
 // ================== UNIVERSAL COMPARISON ENGINE (PARAMETRIC) ==================
