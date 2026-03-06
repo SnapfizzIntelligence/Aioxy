@@ -6088,14 +6088,14 @@ const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
 const singleScoreData = calculatePEFSingleScore(results.finalPefResults, productWeightKg);
 const mPtScore = singleScoreData.singleScore; 
 
-// Strictly aligned with ADEME / PEF 3.1 Eco-Score thresholds
+// Strictly aligned with ADEME / PEF 3.1 Eco-Score thresholds (µPt per kg)
 let ecoGrade = 'E';
 let ecoColor = '#E63946'; // Red
 if (mPtScore < 150) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
 else if (mPtScore < 250) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
 else if (mPtScore < 400) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
 else if (mPtScore < 600) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
-
+    
 let ecoScoreDiv = document.getElementById('fopEcoScoreCard');
 if (!ecoScoreDiv && resultsContent) {
     ecoScoreDiv = document.createElement('div');
@@ -6116,8 +6116,8 @@ if (ecoScoreDiv) {
                     <h3 style="margin: 0; color: var(--primary); font-size: 1.25rem;">Front-of-Pack (FOP) Eco-Score</h3>
                 </div>
                 <div style="font-size: 0.9rem; color: var(--gray); max-width: 450px;">
-                    Consumer-facing environmental grade based on ADEME & PEF 3.1 thresholds (${mPtScore.toFixed(1)} mPt). <strong>Ready for packaging integration.</strong>
-                </div>
+    Consumer-facing environmental grade based on ADEME & PEF 3.1 thresholds (${mPtScore.toFixed(1)} µPt). <strong>Ready for packaging integration.</strong>
+</div>
             </div>
             <div style="display: flex; gap: 4px; align-items: flex-end;">
                 <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'A' ? '50px' : '35px'}; background: ${ecoGrade === 'A' ? '#2A9D8F' : '#e0e0e0'}; color: ${ecoGrade === 'A' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">A</div>
