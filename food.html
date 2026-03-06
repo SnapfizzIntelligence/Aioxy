@@ -6235,7 +6235,7 @@ nutritionalDiv.innerHTML = `
             <div style="font-size: 0.85rem; color: var(--gray);">Impact measured per <strong>100g of delivered protein</strong>.</div>
         </div>
         <div style="text-align: right;">
-            <div style="font-size: 2rem; font-weight: 900; color: ${proteinColor};">${proteinPrefix}${Math.abs(rawProteinPct).toFixed(0)}%</div>
+            <div style="font-size: 2rem; font-weight: 900; color: ${proteinColor};">${proteinPrefix}${Math.abs(rawProteinPct).toFixed(1)}%</div>
             <div style="font-size: 0.75rem; font-weight: bold; color: ${proteinColor}; text-transform: uppercase;">${proteinLabel}</div>
         </div>
     </div>
@@ -6376,10 +6376,11 @@ const conservativeReduction = isBetterEnv
     ? Math.max(0, co2SavedPerKg * (1 - (uncertainty/100))) 
     : 0; // We don't report "conservative increases"
     
+// 🛡️ REGULATOR FIX: Decimal Unification for Narrative Trust
 const envActionText = isBetterEnv 
-    ? `<strong style="color: #2C7A7B; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px;">↓ ${Math.abs(rawCo2Pct).toFixed(0)}% lower</strong>` 
-    : `<strong style="color: #C0392B; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px;">↑ ${Math.abs(rawCo2Pct).toFixed(0)}% higher</strong>`;
-
+    ? `<strong style="color: #2C7A7B; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px;">↓ ${Math.abs(rawCo2Pct).toFixed(1)}% lower</strong>` 
+    : `<strong style="color: #C0392B; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px;">↑ ${Math.abs(rawCo2Pct).toFixed(1)}% higher</strong>`;
+    
 storyContent.innerHTML = `
     <div style="font-family: 'Inter', sans-serif; color: #2D3748;">
         <div style="background: linear-gradient(135deg, #F0FFF4 0%, #E6FFFA 100%); padding: 1.5rem; border-radius: 12px; border: 1px solid #B2F5EA; margin-bottom: 1.5rem;">
