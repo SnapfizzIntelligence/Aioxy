@@ -5464,9 +5464,26 @@ function displayCompleteAuditTrail() {
 
     const audit = auditTrailData;
 
-    // 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration
+    // 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration AND Nutritional Result
     const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
-    const functionalUnitText = userProtein > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of final product";
+    let functionalUnitText = "1 kg of final product";
+    let nutritionalLCA_HTML = "";
+
+    if (userProtein > 0 && audit.pefCategories["Climate Change"]) {
+        functionalUnitText = "1 kg Mass / 100g Delivered Protein";
+        const pWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
+        const unifiedCO2 = audit.pefCategories["Climate Change"].total / pWeightKg;
+        const kgNeeded = 100 / (userProtein * 10);
+        const co2Per100gProtein = unifiedCO2 * kgNeeded;
+
+        nutritionalLCA_HTML = `
+        <div>
+            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Nutritional LCA Impact</div>
+            <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: #8E44AD;">
+                ${co2Per100gProtein.toFixed(2)} kg CO₂e <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(per 100g protein)</span>
+            </div>
+        </div>`;
+    }
 
     auditSection.innerHTML = `
         <div class="card-header">
@@ -5509,30 +5526,31 @@ function displayCompleteAuditTrail() {
                 <i class="fas fa-info-circle"></i> Calculation Metadata
             </h4>
             <div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-        <div>
-            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Product Name</div>
-            <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
-        </div>
-        <div>
-            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
-            <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
-        </div>
-        <div>
-            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
-            <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: ${audit.pef_single_score?.singleScore < 150 ? '#2A9D8F' : audit.pef_single_score?.singleScore < 250 ? '#8AB17D' : audit.pef_single_score?.singleScore < 400 ? '#E9C46A' : audit.pef_single_score?.singleScore < 600 ? '#F4A261' : '#E63946'};">
-                Grade ${audit.pef_single_score?.singleScore < 150 ? 'A' : audit.pef_single_score?.singleScore < 250 ? 'B' : audit.pef_single_score?.singleScore < 400 ? 'C' : audit.pef_single_score?.singleScore < 600 ? 'D' : 'E'} 
-                <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${audit.pef_single_score?.singleScore?.toFixed(1) || 0} mPt)</span>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Product Name</div>
+                        <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
+                        <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
+                        <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: ${audit.pef_single_score?.singleScore < 150 ? '#2A9D8F' : audit.pef_single_score?.singleScore < 250 ? '#8AB17D' : audit.pef_single_score?.singleScore < 400 ? '#E9C46A' : audit.pef_single_score?.singleScore < 600 ? '#F4A261' : '#E63946'};">
+                            Grade ${audit.pef_single_score?.singleScore < 150 ? 'A' : audit.pef_single_score?.singleScore < 250 ? 'B' : audit.pef_single_score?.singleScore < 400 ? 'C' : audit.pef_single_score?.singleScore < 600 ? 'D' : 'E'} 
+                            <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${audit.pef_single_score?.singleScore?.toFixed(1) || 0} mPt)</span>
+                        </div>
+                    </div>
+                    ${nutritionalLCA_HTML}
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Data Quality Rating</div>
+                        <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
+                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div>
-            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Data Quality Rating</div>
-            <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
-                ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})
-            </div>
-        </div>
-    </div>
-</div>
     
             <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
                 <i class="fas fa-database"></i> Data Sources & Methodology
@@ -5558,7 +5576,7 @@ function displayCompleteAuditTrail() {
         </div>
     `;
     }
-
+    
 // ================== FINANCIAL ROI ENGINE (AUDIT-SAFE) ==================
 function calculateHardFinancialMath(results, volume, scenarios) {
     console.log("💰 [Financial Engine] Starting ROI Audit for volume:", volume);
