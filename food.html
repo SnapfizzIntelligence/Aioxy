@@ -4018,12 +4018,12 @@ singleScoreBreakdown[category] = {
     });
 
     return {
-        singleScore: weightedScore * 1000, 
-        normalizedScore: normalizedScore,
-        weightedScore: weightedScore,
-        breakdown: singleScoreBreakdown, // REQUIRED FOR UI
-        unit: 'mPt'
-    };
+    singleScore: weightedScore * 1000000, // 🛡️ REGULATOR FIX: Standardized to microPoints (µPt)
+    normalizedScore: normalizedScore,
+    weightedScore: weightedScore,
+    breakdown: singleScoreBreakdown, // REQUIRED FOR UI
+    unit: 'µPt'
+};
 }
 
 // ================== AIOXY UNCERTAINTY ENGINE (ISO 14044 / PEF COMPLIANT) ==================
