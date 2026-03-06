@@ -5031,48 +5031,48 @@ function displayPEFSingleScore() {
             resultsContent.insertBefore(singleScoreSection, resultsContent.firstChild);
         }
     }
+    
+// 🛡️ REGULATOR FIX: Engine now outputs µPt natively. No double multiplication.
+const score = singleScoreResult.singleScore; 
+let rating = 'Excellent';
+let ratingColor = '#48BB78';
 
-    // Determine rating
-    const score = singleScoreResult.singleScore * 1000; // Convert to mPt
-    let rating = 'Excellent';
-    let ratingColor = '#48BB78';
-    if (score > 200) { rating = 'Good'; ratingColor = '#ECC94B'; }
-    if (score > 500) { rating = 'Fair'; ratingColor = '#ED8936'; }
-    if (score > 1000) { rating = 'Poor'; ratingColor = '#FC8181'; }
+if (score > 150) { rating = 'Good'; ratingColor = '#ECC94B'; }
+if (score > 250) { rating = 'Fair'; ratingColor = '#ED8936'; }
+if (score > 400) { rating = 'Poor'; ratingColor = '#FC8181'; }
 
-    singleScoreSection.innerHTML = `
-        <div class="card-header">
-            <div class="card-title">
-                <div class="card-icon" style="background: var(--gradient-primary);">
-                    <i class="fas fa-star"></i>
-                </div>
-                PEF 3.1 Single Score & Sensitivity Analysis
+singleScoreSection.innerHTML = `
+    <div class="card-header">
+        <div class="card-title">
+            <div class="card-icon" style="background: var(--gradient-primary);">
+                <i class="fas fa-star"></i>
             </div>
-            <div class="badge">
-                <i class="fas fa-calculator"></i>
-                Science-Based • Normalized & Weighted
+            PEF 3.1 Single Score & Sensitivity Analysis
+        </div>
+        <div class="badge">
+            <i class="fas fa-calculator"></i>
+            Science-Based • Normalized & Weighted
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+        <div style="background: ${ratingColor}15; border-radius: 12px; padding: 1.5rem; border: 2px solid ${ratingColor}40;">
+            <h4 style="margin-bottom: 0.5rem; color: var(--primary);">
+                <i class="fas fa-chart-line"></i> PEF Single Score
+            </h4>
+            <div style="font-size: 2.5rem; font-weight: 800; color: ${ratingColor}; margin: 0.5rem 0;">
+                ${score.toFixed(1)} µPt
+            </div>
+            <div class="dqr-badge" style="background: ${ratingColor}; color: white;">
+                ${rating} • Person Equivalent Impact
+            </div>
+            <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
+                <div><strong>Normalized Score:</strong> ${singleScoreResult.normalizedScore.toExponential(3)}</div>
+                <div><strong>Weighted Score:</strong> ${singleScoreResult.weightedScore.toExponential(3)}</div>
+                <div><strong>Unit:</strong> microPerson equivalents (µPt)</div>
             </div>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
-            <!-- SINGLE SCORE CARD -->
-            <div style="background: ${ratingColor}15; border-radius: 12px; padding: 1.5rem; border: 2px solid ${ratingColor}40;">
-                <h4 style="margin-bottom: 0.5rem; color: var(--primary);">
-                    <i class="fas fa-chart-line"></i> PEF Single Score
-                </h4>
-                <div style="font-size: 2.5rem; font-weight: 800; color: ${ratingColor}; margin: 0.5rem 0;">
-                    ${score.toFixed(1)} mPt
-                </div>
-                <div class="dqr-badge" style="background: ${ratingColor}; color: white;">
-                    ${rating} • Person Equivalent Impact
-                </div>
-                <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
-                    <div><strong>Normalized Score:</strong> ${singleScoreResult.normalizedScore.toExponential(3)}</div>
-                    <div><strong>Weighted Score:</strong> ${singleScoreResult.weightedScore.toExponential(3)}</div>
-                    <div><strong>Unit:</strong> milliPerson equivalents (mPt)</div>
-                </div>
-            </div>
-
             <!-- UNCERTAINTY ANALYSIS CARD -->
             <div style="background: white; border-radius: 12px; padding: 1.5rem; border: 2px solid var(--border);">
                 <h4 style="margin-bottom: 1rem; color: var(--primary);">
