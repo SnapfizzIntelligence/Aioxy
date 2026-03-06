@@ -4572,8 +4572,15 @@ else {
     // Manufacturing country no longer overrides ingredient origin
 
     // 3. MASS BALANCE
-    let massBalanceData = calculateMassBalance(finalIngredients, processingMethod, packagingWeight);
+// 🛡️ REGULATOR FIX: Removed 'let' to update global memory (Fixes the Shadowing Bug)
+massBalanceData = calculateMassBalance(finalIngredients, processingMethod, packagingWeight);
 
+// 🛡️ REGULATOR FIX: Force the UI Product Weight box to strictly match physical thermodynamics
+const weightInput = document.getElementById('productWeight');
+if (weightInput) {
+    weightInput.value = massBalanceData.final_content_weight_kg.toFixed(3);
+    }
+    
 // 4. AUDIT TRAIL INIT & PARAMETRIC TWIN GENERATION
 const comparisonDropdown = document.getElementById('comparisonBaseline')?.value || 'auto';
 const comparisonKey = comparisonDropdown !== 'auto' 
