@@ -83,6 +83,58 @@ window.aioxyData = {
         }
     }
         }, 
+                "broccoli-raw-agribalyse-3-2": {
+            "name": "Broccoli, raw",
+            "loss": 0.05,
+            "processing_yield": 0.95,
+            "data": {
+                "pef": {
+                    "Climate Change": 0.951,
+                    "Ozone Depletion": 2.3e-08,
+                    "Human Toxicity, non-cancer": 2.16e-08,
+                    "Human Toxicity, cancer": 4.09e-10,
+                    "Particulate Matter": 4.54e-08,
+                    "Ionizing Radiation": 0.108,
+                    "Photochemical Ozone Formation": 0.00387,
+                    "Acidification": 0.00486,
+                    "Eutrophication, terrestrial": 0.0182,
+                    "Eutrophication, freshwater": 0.000124,
+                    "Eutrophication, marine": 0.0062,
+                    "Ecotoxicity, freshwater": 8.45,
+                    "Land Use": 10.5,
+                    "Water Use/Scarcity (AWARE)": 1.01,
+                    "Resource Use, minerals/metals": 4.57e-06,
+                    "Resource Use, fossils": 10.9
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2",
+                    "source_activity": "Brocoli, cru / Broccoli, raw",
+                    "source_uuid": "agb-3.2-20057-broccoli-raw",
+                    "agribalyse_code": "20057",
+                    "allocation_method": "Economic Allocation",
+                    "dqr": {
+                        "TeR": 3.0,
+                        "GR": 3.0,
+                        "TiR": 3.0,
+                        "C": 3.5,
+                        "P": 3.85
+                    },
+                    "dqr_overall": 3.27,
+                    "single_score_mpt": 0.0944,
+                    "biogenic_net": 0.0768,
+                    "co2_luc_net": 0.0794,
+                    "co2_fossil": 0.795,
+                    "seasonality_code": 2,
+                    "air_freight": 0,
+                    "storage_type": "Ambiant (moyen)",
+                    "packaging_approach": "PACK AGB",
+                    "preparation": "Pas de préparation",
+                    "food_group": "fruits, légumes, légumineuses et oléagineux",
+                    "food_subgroup": "légumes"
+                }
+            }
+        },
+
 
         "sunflower-oil-agribalyse-3-2": {
             "name": "Sunflower oil",
