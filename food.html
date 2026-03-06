@@ -6607,14 +6607,17 @@ const reductionPercentage = baselineCO2PerKg > 0 ? (co2Reduction / baselineCO2Pe
     }
     
     const totalCarbonReduction = co2Reduction * annualVolume;
-    const carbonSavings = (totalCarbonReduction * carbonPrice) / 1000;
+const carbonSavings = (totalCarbonReduction * carbonPrice) / 1000;
 
-    const basePricePerKg = 10;
-    const premiumRevenue = (premiumPotential / 100) * (annualVolume * basePricePerKg);
+// 🛡️ REGULATOR FIX: Pull actual wholesale price from UI (or default to 10 if missing)
+const priceInput = document.getElementById('wholesalePrice');
+const basePricePerKg = priceInput ? parseFloat(priceInput.value) || 10 : 10;
+
+const premiumRevenue = (premiumPotential / 100) * (annualVolume * basePricePerKg);
+
+const totalMarketSize = annualVolume * 10; // Assuming addressable market is 10x their volume
+const marketShareValue = (marketGrowth / 100) * totalMarketSize * basePricePerKg * 0.1;
     
-    const totalMarketSize = annualVolume * 10;
-    const marketShareValue = (marketGrowth / 100) * totalMarketSize * basePricePerKg * 0.1;
-
     const totalAnnualBenefit = carbonSavings + premiumRevenue + marketShareValue;
     
     const roi = annualVolume > 0 ? ((totalAnnualBenefit * 3) - implementationCost) / implementationCost * 100 : 0;
