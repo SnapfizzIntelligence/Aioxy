@@ -1821,41 +1821,50 @@
                 <div class="business-case">
                     <!-- VOLUME SELECTOR SYSTEM -->
                     <div class="form-group" style="background: white; padding: 2rem; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 2rem;">
-                        <label class="form-label" style="font-size: 1.1rem; margin-bottom: 1.5rem;">
-                            <i class="fas fa-boxes"></i>
-                            Annual Production Volume
-                        </label>
-                        
-                        <!-- Quick Select Buttons -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
-                            <button class="btn btn-outline" onclick="setVolume(100)">100 units</button>
-                            <button class="btn btn-outline" onclick="setVolume(1000)">1,000 units</button>
-                            <button class="btn btn-outline" onclick="setVolume(10000)">10,000 units</button>
-                            <button class="btn btn-outline" onclick="setVolume(100000)">100,000 units</button>
-                            <button class="btn btn-outline" onclick="setVolume(1000000)">1 Million</button>
-                            <button class="btn btn-outline" onclick="setVolume(10000000)">10 Million</button>
-                            <button class="btn btn-outline" onclick="setVolume(100000000)">100 Million</button>
-                            <button class="btn btn-outline" onclick="setVolume(1000000000)">1 Billion</button>
-                        </div>
-                        
-                        <!-- Precision Slider -->
-                        <div style="margin-bottom: 1rem;">
-                            <input type="range" id="salesVolume" min="1" max="1000000000" value="10000" 
-                                   step="1" style="width: 100%; height: 8px; border-radius: 4px;"
-                                   oninput="updateVolumeDisplay(this.value); updateBusinessCase();">
-                        </div>
-                        
-                        <!-- Volume Display -->
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
-                                <span id="volumeDisplay">10,000</span>
-                            </div>
-                            <div style="font-size: 1rem; color: var(--gray);">
-                                <span id="businessScaleDisplay">Growing Business</span>
-                                • Tier: <span id="volumeTierDisplay">10K-100K</span>
-                            </div>
-                        </div>
-                    </div>
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 1.5rem; align-items: end;">
+        <div>
+            <label class="form-label" style="font-size: 1.1rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-boxes"></i> Annual Production Volume
+            </label>
+        </div>
+        <div>
+            <label class="form-label" style="font-size: 0.85rem; color: var(--primary);">
+                <i class="fas fa-tag"></i> Wholesale Price (€/kg)
+            </label>
+            <input type="number" id="wholesalePrice" class="form-control" value="10.00" step="0.10" min="0.10" onchange="updateBusinessCase()" style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">
+        </div>
+    </div>
+    
+    <!-- Quick Select Buttons -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
+        <button class="btn btn-outline" onclick="setVolume(100)">100 units</button>
+        <button class="btn btn-outline" onclick="setVolume(1000)">1,000 units</button>
+        <button class="btn btn-outline" onclick="setVolume(10000)">10,000 units</button>
+        <button class="btn btn-outline" onclick="setVolume(100000)">100,000 units</button>
+        <button class="btn btn-outline" onclick="setVolume(1000000)">1 Million</button>
+        <button class="btn btn-outline" onclick="setVolume(10000000)">10 Million</button>
+        <button class="btn btn-outline" onclick="setVolume(100000000)">100 Million</button>
+        <button class="btn btn-outline" onclick="setVolume(1000000000)">1 Billion</button>
+    </div>
+    
+    <!-- Precision Slider -->
+    <div style="margin-bottom: 1rem;">
+        <input type="range" id="salesVolume" min="1" max="1000000000" value="10000" 
+               step="1" style="width: 100%; height: 8px; border-radius: 4px;"
+               oninput="updateVolumeDisplay(this.value); updateBusinessCase();">
+    </div>
+    
+    <!-- Volume Display -->
+    <div style="text-align: center;">
+        <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
+            <span id="volumeDisplay">10,000</span>
+        </div>
+        <div style="font-size: 1rem; color: var(--gray);">
+            <span id="businessScaleDisplay">Growing Business</span>
+            • Tier: <span id="volumeTierDisplay">10K-100K</span>
+        </div>
+    </div>
+            </div>
 
                     <!-- Physics-Based What-If Simulator -->
                     <h3 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">What-If Scenarios (Physics-Based)</h3>
