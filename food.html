@@ -5536,11 +5536,12 @@ function displayCompleteAuditTrail() {
                         <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
-                        <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: ${audit.pef_single_score?.singleScore < 150 ? '#2A9D8F' : audit.pef_single_score?.singleScore < 250 ? '#8AB17D' : audit.pef_single_score?.singleScore < 400 ? '#E9C46A' : audit.pef_single_score?.singleScore < 600 ? '#F4A261' : '#E63946'};">
-                            Grade ${audit.pef_single_score?.singleScore < 150 ? 'A' : audit.pef_single_score?.singleScore < 250 ? 'B' : audit.pef_single_score?.singleScore < 400 ? 'C' : audit.pef_single_score?.singleScore < 600 ? 'D' : 'E'} 
-                            <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${audit.pef_single_score?.singleScore?.toFixed(1) || 0} mPt)</span>
-                        </div>
+    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
+    <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: ${audit.pef_single_score?.singleScore < 150 ? '#2A9D8F' : audit.pef_single_score?.singleScore < 250 ? '#8AB17D' : audit.pef_single_score?.singleScore < 400 ? '#E9C46A' : audit.pef_single_score?.singleScore < 600 ? '#F4A261' : '#E63946'};">
+        Grade ${audit.pef_single_score?.singleScore < 150 ? 'A' : audit.pef_single_score?.singleScore < 250 ? 'B' : audit.pef_single_score?.singleScore < 400 ? 'C' : audit.pef_single_score?.singleScore < 600 ? 'D' : 'E'} 
+        <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${audit.pef_single_score?.singleScore?.toFixed(1) || 0} µPt)</span>
+    </div>
+</div>
                     </div>
                     ${nutritionalLCA_HTML}
                     <div>
