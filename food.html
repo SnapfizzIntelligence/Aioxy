@@ -5562,9 +5562,13 @@ function displayCompleteAuditTrail() {
                         <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
-                        <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
-                    </div>
+    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
+    <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
+</div>
+<div>
+    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
+    <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
+</div>
                     <div>
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
                         
@@ -7034,7 +7038,7 @@ if (ing.name.toLowerCase().includes('animal feed')) {
                         <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
                         <td style="padding: 8px;">AGRIBALYSE 3.2</td>
                         <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
-                        <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg</td>
+                        <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
                     </tr>`;
     });
 
@@ -7117,7 +7121,7 @@ if (upstream.length > 0) {
                 <tr>
                     <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
                     <td style="padding: 8px;" colspan="3">${u.name}: ${u.notes || 'Cross-border transport calculated'}</td>
-                    <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg</td>
+                    <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
                 </tr>`;
     });
 } else {
@@ -7143,7 +7147,7 @@ html += `
                         <td style="padding: 8px; font-weight: bold; color: #0A2540;">${displayMode}</td>
                         <td style="padding: 8px; text-align:right;">${dist} km</td>
                         <td style="padding: 8px; text-align:right;">85%</td>
-                        <td style="padding: 8px; text-align:right;">${outbound.toFixed(4)} kg</td>
+                        <td style="padding: 8px; text-align:right;">${outbound.toFixed(4)} kg CO₂e</td>
                     </tr>
                 </tbody>
             </table>
@@ -7447,11 +7451,12 @@ currentY += 8;
         doc.setTextColor(0, 0, 0);
         
         const productData = [
-            ['Product Name:', document.getElementById('productName')?.value || 'Unnamed'],
-            ['Manufacturing Country:', document.getElementById('manufacturingCountry')?.options[document.getElementById('manufacturingCountry')?.selectedIndex]?.text || 'Not selected'],
-            ['Processing Method:', document.getElementById('processingMethod')?.options[document.getElementById('processingMethod')?.selectedIndex]?.text || 'None'],
-            ['Annual Volume:', document.getElementById('volumeDisplay')?.textContent || '0 units']
-        ];
+    ['Product Name:', document.getElementById('productName')?.value || 'Unnamed'],
+    ['Comparison Baseline:', currentComparisonBaseline?.name || 'Not specified'],
+    ['Manufacturing Country:', document.getElementById('manufacturingCountry')?.options[document.getElementById('manufacturingCountry')?.selectedIndex]?.text || 'Not selected'],
+    ['Processing Method:', document.getElementById('processingMethod')?.options[document.getElementById('processingMethod')?.selectedIndex]?.text || 'None'],
+    ['Annual Volume:', document.getElementById('volumeDisplay')?.textContent || '0 units']
+];
 
         doc.autoTable({
             startY: currentY,
