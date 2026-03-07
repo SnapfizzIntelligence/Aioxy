@@ -7742,8 +7742,9 @@ currentY = doc.lastAutoTable.finalY + 15;
     function exportAuditData() {
         downloadRawData();
     }
+    
     // =====================================================================
-// 🚀 WEAPON 2: CSRD SCOPE 3 MATRIX EXPORTER
+// 🚀 WEAPON 2: CSRD SCOPE 3 MATRIX EXPORTER (ENTERPRISE GRADE)
 // =====================================================================
 function exportCSRDMatrix() {
     if (!auditTrailData || !auditTrailData.pefCategories) {
@@ -7753,63 +7754,72 @@ function exportCSRDMatrix() {
 
     const pName = document.getElementById('productName')?.value || 'Product';
     const ccTree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
-    
-    // GHG Protocol Column Headers
+    const mb = auditTrailData.mass_balance;
+    const dppId = auditTrailData.dppId || 'N/A';
+    const totalCo2 = auditTrailData.pefCategories["Climate Change"].total.toFixed(4);
+
+    // 1. ENTERPRISE METADATA HEADER (Links CSV to the cryptographically hashed PDF)
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "GHG_Scope_Category,Process_Name,Material_Type,Origin_Country,Mass_Input_Kg,Gross_CO2e_Kg,Biogenic_Removals_Kg,EUDR_Risk_Flag,Primary_Data_Verified\n";
+    csvContent += `"""AIOXY ENTERPRISE CSRD EXPORT"""\n`;
+    csvContent += `Product Name,${pName.replace(/,/g, '')}\n`;
+    csvContent += `Assessment ID (DPP),${dppId}\n`;
+    csvContent += `Timestamp,${new Date().toISOString()}\n`;
+    csvContent += `Functional Unit,1 kg of product\n`;
+    csvContent += `Total Cradle-to-Retail (kg CO2e),${totalCo2}\n`;
+    csvContent += `Methodology,PEF 3.1 / GHG Protocol Product Standard\n\n`;
 
-    // 1. Ingredients (Scope 3 Category 1: Purchased Goods)
-ccTree.Ingredients.components.forEach(ing => {
-    const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "0%";
-    const primary = ing.primary_data_used ? "YES" : "NO";
-    
-    // 🛡️ REGULATOR FIX: Gross emissions only. No illegal spreading of biogenic removals here.
-    const removals = 0; 
+    // 2. STRICT GHG PROTOCOL COLUMNS (Units separated for Excel SUM compatibility)
+    csvContent += "GHG_Scope_Category,Process_Name,Material_Type,Origin_Country,Activity_Data_Value,Activity_Data_Unit,Gross_CO2e_Kg,Biogenic_Removals_Kg,EUDR_Risk_Status,Primary_Data_Verified\n";
 
-    // CSV Sanitize
-    const cleanName = ing.name.replace(/,/g, '');
-    const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
-    
-    csvContent += `Scope 3 Cat 1,${cleanName},Raw Material,${origin},${ing.quantity_kg.toFixed(3)},${ing.subtotal.toFixed(4)},${removals},${isHighRisk},${primary}\n`;
-});
+    // 3. INGREDIENTS (Scope 3 Cat 1: Purchased Goods)
+    ccTree.Ingredients.components.forEach(ing => {
+        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "COMPLIANT";
+        const primary = ing.primary_data_used ? "TRUE" : "FALSE";
+        const cleanName = ing.name.replace(/,/g, '');
+        const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
+        
+        csvContent += `Scope 3 Cat 1 (Purchased Goods),${cleanName},Raw Material,${origin},${ing.quantity_kg.toFixed(3)},kg,${ing.subtotal.toFixed(4)},0,${isHighRisk},${primary}\n`;
+    });
 
-// 🛡️ REGULATOR FIX: Dedicated FLAG Removals Row (GHG Protocol Compliant)
-if (auditTrailData.pefCategories["Climate Change"].biogenic_removals > 0) {
-    csvContent += `Scope 3 Cat 1 (FLAG),Verified_Soil_Carbon_Sequestration,Biogenic_Removals,Primary_Farm,0,0,-${auditTrailData.pefCategories["Climate Change"].biogenic_removals.toFixed(4)},0%,YES\n`;
-}
+    // 4. FLAG REMOVALS (Strictly separated per GHG Protocol)
+    if (auditTrailData.pefCategories["Climate Change"].biogenic_removals > 0) {
+        csvContent += `Scope 3 Cat 1 (FLAG),Verified_Soil_Carbon_Sequestration,Biogenic_Removals,Primary_Farm,1.0,system,0,-${auditTrailData.pefCategories["Climate Change"].biogenic_removals.toFixed(4)},COMPLIANT,TRUE\n`;
+    }
 
-    // 2. Packaging (Scope 3 Cat 1)
+    // 5. PACKAGING
     if (ccTree.Packaging.total > 0) {
-        const pkgWeight = massBalanceData.packaging_weight_kg || 0;
+        const pkgWeight = mb.packaging_weight_kg || 0;
         const mat = document.getElementById('packagingMaterial')?.value || 'Packaging';
-        csvContent += `Scope 3 Cat 1,${mat}_Packaging,Packaging,Local,${pkgWeight.toFixed(3)},${ccTree.Packaging.total.toFixed(4)},0,0%,NO\n`;
+        csvContent += `Scope 3 Cat 1 (Purchased Goods),${mat}_Packaging,Packaging,Local,${pkgWeight.toFixed(3)},kg,${ccTree.Packaging.total.toFixed(4)},0,COMPLIANT,FALSE\n`;
     }
 
-    // 3. Logistics (Scope 3 Cat 4: Upstream Transport)
+    // 6. LOGISTICS (Scope 3 Cat 4)
     if (ccTree.Transport.total > 0) {
-        const dist = document.getElementById('transportDistance')?.value || 0;
+        // Strip the text 'km' so the value is pure math
+        const dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
         const mode = document.getElementById('transportMode')?.value || 'transport';
-        csvContent += `Scope 3 Cat 4,Outbound_Logistics_${mode},Service,N/A,${dist}km,${ccTree.Transport.total.toFixed(4)},0,0%,NO\n`;
+        csvContent += `Scope 3 Cat 4 (Upstream Transport),Outbound_Logistics_${mode},Service,N/A,${dist},km,${ccTree.Transport.total.toFixed(4)},0,COMPLIANT,FALSE\n`;
     }
 
-    // 4. Manufacturing (Scope 1/2 depending on ownership, mapped as Scope 3 Cat 1 for the retailer)
+    // 7. MANUFACTURING
     if (ccTree.Manufacturing.total > 0) {
         const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'Unknown';
-        const isPrimary = document.getElementById('usePrimaryFactoryData')?.checked ? "YES" : "NO";
-        csvContent += `Scope 3 Cat 1,Factory_Operations,Energy,${mfgCountry},${massBalanceData.final_content_weight_kg.toFixed(3)},${ccTree.Manufacturing.total.toFixed(4)},0,0%,${isPrimary}\n`;
+        const isPrimary = document.getElementById('usePrimaryFactoryData')?.checked ? "TRUE" : "FALSE";
+        csvContent += `Scope 3 Cat 1 (Processing),Factory_Operations,Energy,${mfgCountry},${mb.final_content_weight_kg.toFixed(3)},kg,${ccTree.Manufacturing.total.toFixed(4)},0,COMPLIANT,${isPrimary}\n`;
     }
 
     // Encode and Download
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `CSRD_Scope3_Matrix_${pName.replace(/\s/g, '_')}.csv`);
+    // Append the Audit ID directly into the filename for perfect traceability
+    link.setAttribute("download", `CSRD_Scope3_${pName.replace(/\s/g, '_')}_${dppId}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
     console.log("✅ CSRD Retailer Matrix Exported Successfully");
-            }
+                                          }
 
     function downloadMethodology() {
         const methodology = `AIOXY Methodology Document
