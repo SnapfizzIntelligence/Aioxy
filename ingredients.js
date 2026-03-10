@@ -83,6 +83,58 @@ window.aioxyData = {
         }
     }
         }, 
+                "syrup-agave-agribalyse-3-2": {
+            "name": "Syrup, agave",
+            "loss": 0.02,
+            "processing_yield": 0.98,
+            "data": {
+                "pef": {
+                    "Climate Change": 5.63,
+                    "Ozone Depletion": 2.1e-06,
+                    "Human Toxicity, non-cancer": 1.56e-07,
+                    "Human Toxicity, cancer": 6.51e-09,
+                    "Particulate Matter": 2.8e-07,
+                    "Ionizing Radiation": 2.83,
+                    "Photochemical Ozone Formation": 0.0481,
+                    "Acidification": 0.0434,
+                    "Eutrophication, terrestrial": 0.172,
+                    "Eutrophication, freshwater": 0.00126,
+                    "Eutrophication, marine": 0.0167,
+                    "Ecotoxicity, freshwater": 65.6,
+                    "Land Use": 156.0,
+                    "Water Use/Scarcity (AWARE)": 0.676,
+                    "Resource Use, minerals/metals": 8.19e-05,
+                    "Resource Use, fossils": 127.0
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2",
+                    "source_activity": "Sirop d'agave / Syrup, agave",
+                    "source_uuid": "agb-3.2-31089-syrup-agave",
+                    "agribalyse_code": "31089",
+                    "allocation_method": "Economic Allocation",
+                    "dqr": {
+                        "TeR": 2.5,
+                        "GR": 3.5,
+                        "TiR": 2.5,
+                        "C": 3.0,
+                        "P": 3.35
+                    },
+                    "dqr_overall": 2.97,
+                    "single_score_mpt": 0.755,
+                    "biogenic_net": 0.0778,
+                    "co2_luc_net": 0.00358,
+                    "co2_fossil": 5.55,
+                    "seasonality_code": 2,
+                    "air_freight": 0,
+                    "storage_type": "Ambiant (long)",
+                    "packaging_approach": "PACK PROXY",
+                    "preparation": "Pas de préparation",
+                    "food_group": "aides culinaires et ingrédients divers",
+                    "food_subgroup": "ingrédients divers"
+                }
+            }
+        },
+
                 "broccoli-raw-agribalyse-3-2": {
             "name": "Broccoli, raw",
             "loss": 0.05,
