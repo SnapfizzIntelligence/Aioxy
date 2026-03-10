@@ -3347,10 +3347,13 @@ window.aioxyData = {
         "extrusion": { co2_impact: 0.45, water_impact: 0.25, yield: 0.95, loss: 0.050, temp: 150, kwh_per_kg: 0.85 },
         "oat-processing": { co2_impact: 0.35, water_impact: 0.35, yield: 0.98, loss: 0.02, temp: 85, kwh_per_kg: 0.30 },
         "cleaning": { co2_impact: 0.02, water_impact: 2.0, yield: 0.98, loss: 0.02, temp: 25, kwh_per_kg: 0.05 },
-        "wet_milling": { co2_impact: 0.25, water_impact: 8.0, yield: 0.65, loss: 0.35, temp: 50, kwh_per_kg: 0.60 },
-        "canning": { co2_impact: 0.30, water_impact: 3.5, yield: 0.95, loss: 0.05, temp: 110, kwh_per_kg: 0.60 },
-        "crushing": { co2_impact: 0.12, water_impact: 1.0, yield: 0.40, loss: 0.60, temp: 40, kwh_per_kg: 0.30 }
-    },
+            "wet_milling": { co2_impact: 0.25, water_impact: 8.0, yield: 0.65, loss: 0.35, temp: 50, kwh_per_kg: 0.60 },
+    "canning": { co2_impact: 0.30, water_impact: 3.5, yield: 0.95, loss: 0.05, temp: 110, kwh_per_kg: 0.60 },
+    "crushing": { co2_impact: 0.12, water_impact: 1.0, yield: 0.40, loss: 0.60, temp: 40, kwh_per_kg: 0.30 },
+    "uht_processing": { co2_impact: 0.15, water_impact: 0.40, yield: 0.98, loss: 0.02, temp: 140, kwh_per_kg: 0.22 },
+    "emulsification": { co2_impact: 0.03, water_impact: 0.10, yield: 0.99, loss: 0.01, temp: 55, kwh_per_kg: 0.07 },
+    "roasting": { co2_impact: 0.65, water_impact: 0.05, yield: 0.82, loss: 0.18, temp: 200, kwh_per_kg: 0.75 }
+},
 
     // 6. TRANSPORTATION (GLEC v3.2) - UPDATED WITH 2024/2025 DATA & AIR POLLUTANTS (Module 6)
     transportation: {
