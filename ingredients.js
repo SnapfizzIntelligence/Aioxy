@@ -83,6 +83,58 @@ window.aioxyData = {
         }
     }
         }, 
+                "cranberry-raw-agribalyse-3-2": {
+            "name": "Cranberry, raw",
+            "loss": 0.05,
+            "processing_yield": 0.95,
+            "data": {
+                "pef": {
+                    "Climate Change": 1.63,
+                    "Ozone Depletion": 3.78e-07,
+                    "Human Toxicity, non-cancer": 1.11e-07,
+                    "Human Toxicity, cancer": 1.03e-08,
+                    "Particulate Matter": 1.56e-07,
+                    "Ionizing Radiation": 0.103,
+                    "Photochemical Ozone Formation": 0.0124,
+                    "Acidification": 0.0238,
+                    "Eutrophication, terrestrial": 0.0674,
+                    "Eutrophication, freshwater": 0.00507,
+                    "Eutrophication, marine": 0.0134,
+                    "Ecotoxicity, freshwater": 297.0,
+                    "Land Use": 118.0,
+                    "Water Use/Scarcity (AWARE)": 27.9,
+                    "Resource Use, minerals/metals": 2.79e-05,
+                    "Resource Use, fossils": 20.3
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2",
+                    "source_activity": "Canneberge ou cranberry, crue / Cranberry, raw",
+                    "source_uuid": "agb-3.2-13113-cranberry-raw",
+                    "agribalyse_code": "13113",
+                    "allocation_method": "Economic Allocation",
+                    "dqr": {
+                        "TeR": 4.0,
+                        "GR": 4.0,
+                        "TiR": 4.0,
+                        "C": 4.0,
+                        "P": 4.55
+                    },
+                    "dqr_overall": 4.11,
+                    "single_score_mpt": 0.641,
+                    "biogenic_net": 0.0788,
+                    "co2_luc_net": 0.00201,
+                    "co2_fossil": 1.55,
+                    "seasonality_code": 2,
+                    "air_freight": 0,
+                    "storage_type": "Ambiant (moyen)",
+                    "packaging_approach": "PACK AGB",
+                    "preparation": "Pas de préparation",
+                    "food_group": "fruits, légumes, légumineuses et oléagineux",
+                    "food_subgroup": "fruits"
+                }
+            }
+        },
+
                 "salt-white-iodized-agribalyse-3-2": {
             "name": "Salt, white, iodized",
             "loss": 0.01,
