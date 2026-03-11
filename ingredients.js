@@ -83,6 +83,58 @@ window.aioxyData = {
         }
     }
         }, 
+                "vinegar-cider-agribalyse-3-2": {
+            "name": "Vinegar, cider",
+            "loss": 0.02,
+            "processing_yield": 0.98,
+            "data": {
+                "pef": {
+                    "Climate Change": 0.841,
+                    "Ozone Depletion": 5.37e-08,
+                    "Human Toxicity, non-cancer": 1.23e-08,
+                    "Human Toxicity, cancer": 5.4e-10,
+                    "Particulate Matter": 4.6e-08,
+                    "Ionizing Radiation": 0.209,
+                    "Photochemical Ozone Formation": 0.00309,
+                    "Acidification": 0.00375,
+                    "Eutrophication, terrestrial": 0.0108,
+                    "Eutrophication, freshwater": 9.37e-05,
+                    "Eutrophication, marine": 0.00134,
+                    "Ecotoxicity, freshwater": 17.6,
+                    "Land Use": 20.6,
+                    "Water Use/Scarcity (AWARE)": 0.69,
+                    "Resource Use, minerals/metals": 3.17e-06,
+                    "Resource Use, fossils": 13.6
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2",
+                    "source_activity": "Vinaigre de cidre / Vinegar, cider",
+                    "source_uuid": "agb-3.2-11090-vinegar-cider",
+                    "agribalyse_code": "11090",
+                    "allocation_method": "Economic Allocation",
+                    "dqr": {
+                        "TeR": 2.0,
+                        "GR": 2.0,
+                        "TiR": 2.0,
+                        "C": 3.0,
+                        "P": 3.5
+                    },
+                    "dqr_overall": 2.50,
+                    "single_score_mpt": 0.0833,
+                    "biogenic_net": 0.0636,
+                    "co2_luc_net": 0.000276,
+                    "co2_fossil": 0.777,
+                    "seasonality_code": 2,
+                    "air_freight": 0,
+                    "storage_type": "Ambiant (long)",
+                    "packaging_approach": "PACK PROXY",
+                    "preparation": "Pas de préparation",
+                    "food_group": "aides culinaires et ingrédients divers",
+                    "food_subgroup": "condiments"
+                }
+            }
+        },
+
                 "cranberry-raw-agribalyse-3-2": {
             "name": "Cranberry, raw",
             "loss": 0.05,
