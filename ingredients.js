@@ -83,6 +83,58 @@ window.aioxyData = {
         }
     }
         }, 
+                "salt-white-iodized-agribalyse-3-2": {
+            "name": "Salt, white, iodized",
+            "loss": 0.01,
+            "processing_yield": 0.99,
+            "data": {
+                "pef": {
+                    "Climate Change": 0.632,
+                    "Ozone Depletion": 1.09e-08,
+                    "Human Toxicity, non-cancer": 1.3e-08,
+                    "Human Toxicity, cancer": 4.62e-10,
+                    "Particulate Matter": 4.7e-08,
+                    "Ionizing Radiation": 0.109,
+                    "Photochemical Ozone Formation": 0.00253,
+                    "Acidification": 0.00321,
+                    "Eutrophication, terrestrial": 0.00764,
+                    "Eutrophication, freshwater": 0.000267,
+                    "Eutrophication, marine": 0.000945,
+                    "Ecotoxicity, freshwater": 5.57,
+                    "Land Use": 14.3,
+                    "Water Use/Scarcity (AWARE)": 0.0776,
+                    "Resource Use, minerals/metals": 1.07e-05,
+                    "Resource Use, fossils": 9.05
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2",
+                    "source_activity": "Sel blanc alimentaire, iodé, non fluoré (marin, ignigène ou gemme) / Salt, white",
+                    "source_uuid": "agb-3.2-11058-salt-white-iodized",
+                    "agribalyse_code": "11058",
+                    "allocation_method": "Economic Allocation",
+                    "dqr": {
+                        "TeR": 2.0,
+                        "GR": 2.0,
+                        "TiR": 2.0,
+                        "C": 3.0,
+                        "P": 3.75
+                    },
+                    "dqr_overall": 2.55,
+                    "single_score_mpt": 0.0708,
+                    "biogenic_net": 0.037,
+                    "co2_luc_net": 0.00214,
+                    "co2_fossil": 0.593,
+                    "seasonality_code": 2,
+                    "air_freight": 0,
+                    "storage_type": "Ambiant (long)",
+                    "packaging_approach": "PACK PROXY",
+                    "preparation": "Pas de préparation",
+                    "food_group": "aides culinaires et ingrédients divers",
+                    "food_subgroup": "sels"
+                }
+            }
+        },
+
                 "syrup-agave-agribalyse-3-2": {
             "name": "Syrup, agave",
             "loss": 0.02,
