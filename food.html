@@ -4020,7 +4020,8 @@ const manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + fugitiveCO2
     water_evaporated_kg: waterEvaporated,
     grid_intensity_g_per_kwh: gridIntensity,
     energy_source: energyNote, 
-    country: countryCode
+    country: countryCode,
+    fugitive_co2: fugitiveCO2 // Pass this out for the audit log
 };
     }
     
@@ -4842,7 +4843,7 @@ if (massBalanceData.productMass > 0) {
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
     name: `Processing (${processingMethod || 'none'})`,
     subtotal: mfgResult.co2,
-    details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh`,
+    details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh${mfgResult.fugitive_co2 > 0 ? ` | Includes ${mfgResult.fugitive_co2.toFixed(4)}kg Fugitive Refrigerant` : ''}`,
     confidence: mfgResult.confidence,
     grid_intensity: mfgResult.grid_intensity_g_per_kwh,
     energy_source: mfgResult.energy_source 
@@ -7216,22 +7217,34 @@ html += `
             </table>
         </div>
 
-        <div style="margin-bottom: 25px;">
+                <div style="margin-bottom: 25px;">
             <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
     D. PACKAGING (GHG Protocol: Scope 3 Cat 1)
 </h4>
-            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem; display:flex; justify-content:space-between;">
-                <div>
-                    <strong>Material:</strong> ${document.getElementById('packagingMaterial')?.value} <br>
-                    <strong>Weight:</strong> ${mb.packaging_weight_kg.toFixed(3)} kg
+            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
+                <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;">
+                    <div>
+                        <strong style="color:var(--primary);">PRIMARY PACKAGING (User Input)</strong><br>
+                        <strong>Material:</strong> ${document.getElementById('packagingMaterial')?.options[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A'} <br>
+                        <strong>Weight:</strong> ${mb.packaging_weight_kg.toFixed(3)} kg
+                    </div>
+                    <div>
+                        <strong>Recycled Content:</strong> ${document.getElementById('recycledContent')?.value || 0}% <br>
+                        <strong>End-of-Life:</strong> ${document.getElementById('packagingEoL')?.options[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Avg'}
+                    </div>
                 </div>
-                <div>
-                    <strong>Recycled Content:</strong> ${document.getElementById('recycledContent')?.value}% <br>
-                    <strong>End-of-Life:</strong> EU Avg (Incineration/Recycling Mix)
+                <div style="padding-top: 5px;">
+                    <strong style="color:var(--primary);">TERTIARY LOGISTICS PACKAGING (PEF Proxy)</strong><br>
+                    ${catCC.contribution_tree.Packaging.components.map(p => `
+                        <div style="display:flex; justify-content:space-between; color: #555;">
+                            <span>• ${p.name}</span>
+                            <span>${p.subtotal.toFixed(4)} kg CO₂e</span>
+                        </div>
+                    `).join('')}
                 </div>
-                <div style="text-align:right;">
-                    <strong>Total Impact:</strong> <br>
-                    <span style="font-weight:bold; font-size:1rem;">${catCC.contribution_tree.Packaging.total.toFixed(4)} kg CO₂e</span>
+                <div style="text-align:right; border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px;">
+                    <strong>Total Packaging Impact:</strong> <br>
+                    <span style="font-weight:bold; font-size:1rem; color: #C0392B;">${catCC.contribution_tree.Packaging.total.toFixed(4)} kg CO₂e</span>
                 </div>
             </div>
         </div>
