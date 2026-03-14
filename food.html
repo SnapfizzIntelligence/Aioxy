@@ -3996,7 +3996,15 @@ if (energySource === 'renewable') {
     energyNote = `Grid Mix (${countryCode})`;
     }
 
-const manufacturingCO2 = electricityKWh * (gridIntensity / 1000); // g CO₂e/kWh
+// 🛡️ PEF 3.1 FUGITIVE EMISSIONS MANDATE
+let fugitiveCO2 = 0;
+if (processingMethod === 'freezing') {
+    // Industry average leakage allowance: ~15g CO2e per kg of frozen product
+    fugitiveCO2 = massOutputKg * 0.015; 
+    if (physicsData) physicsData.note = "Includes standard PEF refrigerant leakage allowance";
+}
+
+const manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + fugitiveCO2; // Added fugitive
     
     // 5. WATER EVAPORATION (Keep for mass balance, but NOT for energy calculation)
     const waterEvaporated = Math.max(0, massInputKg - massOutputKg);
@@ -4756,6 +4764,18 @@ if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.originCountry ||
                 console.log(`📝 [Audit] ${ing.name}:`, impactResult.logs.join(' | '));
             }
         } 
+            // 🛡️ PEF 3.1 TERTIARY PACKAGING PROXY
+if (cat === "Climate Change") {
+    // Standard B2B assumption: 1kg of raw material requires ~20g of CO2e in pallets/IBCs/sacks
+    const inboundPkgCO2 = grownMass * 0.02; 
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.components.push({
+        name: `Inbound bulk transport packaging (${ing.name})`,
+        subtotal: inboundPkgCO2,
+        note: "PEF Tertiary Packaging Proxy (Pallets/Wraps)"
+    });
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.total += inboundPkgCO2;
+    auditTrail.pefCategories["Climate Change"].total += inboundPkgCO2;
+    }
         else if (cat === "Land Use") {
             baseImpactPerKg = impactResult.perKgLand;
             impactTotal = impactResult.totalLand;
