@@ -1619,6 +1619,16 @@
                             <div class="progress-fill" style="width: 30%;"></div>
                         </div>
                     </div>
+                        <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label">End-of-Life Destination (PPWR Compliance)</label>
+        <select id="packagingEoL" class="form-control">
+            <option value="eu_average">EU Average Mix (Default)</option>
+            <option value="recycled">100% Recycled (Closed Loop)</option>
+            <option value="incinerated">100% Incinerated (Energy Recovery)</option>
+            <option value="landfill">100% Landfill</option>
+        </select>
+    </div>
+                </div>
                 </div>
 
                 <button class="btn btn-success" onclick="calculateImpact()" style="width: 100%; padding: 1.25rem; font-size: 1.1rem;">
@@ -3721,8 +3731,22 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     const Qp = 1.0; 
     const qualityRatio = Qs_in / Qp;
 
-    // R2 Calculation
-    const R2 = (p.r1_max || 0.8) * (p.r2 || 0.7); 
+   // R2 Calculation (End-of-Life Destination)
+const eolTarget = document.getElementById('packagingEoL')?.value || 'eu_average';
+let R2 = 0;
+
+if (eolTarget === 'recycled') {
+    R2 = p.r1_max || 0.90; // Maximum possible recycling rate for the material
+} else if (eolTarget === 'incinerated' || eolTarget === 'landfill') {
+    R2 = 0.0; // Complete loss of material, zero recycling credit
+} else {
+    R2 = (p.r1_max || 0.8) * (p.r2 || 0.7); // EU Average default
+}
+
+// Adjust disposal burden based on landfill vs incineration
+let currentEd = Ed;
+if (eolTarget === 'landfill') currentEd = Ed * 1.5; // Landfill carries higher CH4 penalty for organics
+if (eolTarget === 'incinerated') currentEd = Ed * 0.8; // Minor credit for energy recovery
 
     // 4. OFFICIAL CFF MATH (No 0.5 discount on virgin!)
     const burdenVirgin = (1 - R1) * Ev;
