@@ -7878,10 +7878,26 @@ function exportCSRDMatrix() {
     }
 
     // 5. PACKAGING
-    if (ccTree.Packaging.total > 0) {
+if (ccTree.Packaging.total > 0) {
+    // 5A. Calculate exact split between Primary and Tertiary
+    const tertiaryTotal = ccTree.Packaging.components.reduce((sum, p) => sum + p.subtotal, 0);
+    const primaryTotal = Math.max(0, ccTree.Packaging.total - tertiaryTotal);
+    
+    // 5B. Export Primary Packaging
+    if (primaryTotal > 0) {
         const pkgWeight = mb.packaging_weight_kg || 0;
         const mat = document.getElementById('packagingMaterial')?.value || 'Packaging';
-        csvContent += `Scope 3 Cat 1 (Purchased Goods),${mat}_Packaging,Packaging,Local,${pkgWeight.toFixed(3)},kg,${ccTree.Packaging.total.toFixed(4)},0,COMPLIANT,FALSE\n`;
+        csvContent += `Scope 3 Cat 1 (Purchased Goods),Primary_Packaging_${mat},Packaging,Local,${pkgWeight.toFixed(3)},kg,${primaryTotal.toFixed(4)},0,COMPLIANT,FALSE\n`;
+    }
+
+    // 5C. Export Tertiary Logistics Packaging (Pallets/Wraps)
+    if (ccTree.Packaging.components && ccTree.Packaging.components.length > 0) {
+        ccTree.Packaging.components.forEach(pkg => {
+            const cleanName = pkg.name.replace(/,/g, '');
+            // We use '1.0 system' as the unit because this is a proxy estimation
+            csvContent += `Scope 3 Cat 1 (Purchased Goods),${cleanName},Tertiary_Packaging,Origin,1.0,system,${pkg.subtotal.toFixed(4)},0,COMPLIANT,FALSE\n`;
+        });
+    }
     }
 
     // 6. LOGISTICS (Scope 3 Cat 4)
