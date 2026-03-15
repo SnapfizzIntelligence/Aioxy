@@ -3754,7 +3754,7 @@ if (eolTarget === 'incinerated') currentEd = Ed * 0.8; // Minor credit for energ
     
     // Credits & Disposal
     const recyclingCreditVal = R2 * (A_factor * Ecredit); 
-    const disposalBurdenVal = (1 - R2) * Ed;
+    const disposalBurdenVal = (1 - R2) * currentEd;
 
     // 5. TOTAL
     const impactPerKg = (burdenVirgin + burdenRecycledInput + disposalBurdenVal) - recyclingCreditVal;
@@ -7192,8 +7192,11 @@ if (ing.name.toLowerCase().includes('animal feed')) {
                 </thead>
                 <tbody>`;
     
-    // Inbound (Upstream)
-const upstream = catCC.contribution_tree.Upstream.components;
+        // Inbound (Upstream) - Filter out the End-of-Life proxies
+const allUpstream = catCC.contribution_tree.Upstream.components;
+const upstream = allUpstream.filter(c => !c.name.includes('End-of-Life'));
+const eolComponents = allUpstream.filter(c => c.name.includes('End-of-Life'));
+
 if (upstream.length > 0) {
     upstream.forEach(u => {
         html += `
@@ -7260,11 +7263,32 @@ html += `
                 <div style="text-align:right; border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px;">
                     <strong>Total Packaging Impact:</strong> <br>
                     <span style="font-weight:bold; font-size:1rem; color: #C0392B;">${catCC.contribution_tree.Packaging.total.toFixed(4)} kg CO₂e</span>
+                        </div>
+    </div>
+</div>
+
+${eolComponents.length > 0 ? `
+<div style="margin-bottom: 25px;">
+    <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+        E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
+    </h4>
+    <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
+        ${eolComponents.map(e => `
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                <div>
+                    <strong style="color:var(--primary);">${e.name}</strong><br>
+                    <span style="color:var(--gray);">${e.notes}</span>
+                </div>
+                <div style="font-weight:bold; color: #C0392B;">
+                    ${e.subtotal.toFixed(4)} kg CO₂e
                 </div>
             </div>
-        </div>
+        `).join('')}
+    </div>
+</div>
+` : ''}
 
-        <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
+<div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <strong>TOTAL CRADLE-TO-RETAIL IMPACT:</strong>
             </div>
