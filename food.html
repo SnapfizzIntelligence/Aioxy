@@ -4964,6 +4964,21 @@ if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIng
     }
     }
 
+    // 🛡️ PEF 3.1 / SCOPE 3 CAT 12: FOOD WASTE END-OF-LIFE
+// Standard baseline: 5% of final product weight is wasted at retail/consumer level.
+// Organic matter to landfill/incineration emits approx 0.8 kg CO2e per kg of wet mass.
+const foodWasteKg = (massBalanceData.final_content_weight_kg || 0.2) * 0.05;
+const foodWasteCO2 = foodWasteKg * 0.8; 
+
+// Log the end-of-life impact under the Upstream/End-of-Life branch
+auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+    name: `End-of-Life: Food Spoilage/Waste (5% PEF Proxy)`,
+    subtotal: foodWasteCO2,
+    notes: "Scope 3 Category 12 (Organic Waste to Municipal Treatment)"
+});
+auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += foodWasteCO2;
+auditTrail.pefCategories["Climate Change"].total += foodWasteCO2;
+
     // 9. FINAL AGGREGATION & SAVING
     const functionalUnitWeight = massBalanceData.final_content_weight_kg || 0.2;
     const totalClimate = auditTrail.pefCategories["Climate Change"].total;
@@ -7899,6 +7914,11 @@ if (ccTree.Packaging.total > 0) {
         });
     }
     }
+
+    // 5D. Export Scope 3 Category 12 (End of Life Food Waste)
+const foodWasteKg = (mb.final_content_weight_kg || 0.2) * 0.05;
+const foodWasteCO2 = foodWasteKg * 0.8;
+csvContent += `Scope 3 Cat 12 (End-of-Life Treatment),Product_Food_Waste,Organic_Waste,Local,${foodWasteKg.toFixed(3)},kg,${foodWasteCO2.toFixed(4)},0,COMPLIANT,FALSE\n`;
 
     // 6. LOGISTICS (Scope 3 Cat 4)
     if (ccTree.Transport.total > 0) {
