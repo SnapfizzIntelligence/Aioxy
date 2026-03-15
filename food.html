@@ -8199,6 +8199,14 @@ function calculateImpactEnhanced() {
             
             // 2. Feed the strict results to the UI and DPP generators
             updateResultsUI(finalResults);
+
+// 💾 PITCH-SAFE STATE PERSISTENCE
+localStorage.setItem('aioxy_pitch_state', JSON.stringify({
+    ingredients: selectedIngredients,
+    productName: document.getElementById('productName').value,
+    volume: currentAnnualVolume,
+    timestamp: Date.now()
+}));
             
             // 3. Let the Business Case handle its own hypothetical scenario math internally
             const businessTab = document.getElementById('business-case-tab');
@@ -8654,10 +8662,29 @@ document.head.appendChild(style);
     setupDemoData();
     
     // Initialize UI
-    updateTabIndicator();
-    
-    // Validate data
-    validateDataIntegrity();
+updateTabIndicator();
+
+// 💾 RECOVER PREVIOUS PITCH STATE
+try {
+    const savedState = localStorage.getItem('aioxy_pitch_state');
+    if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        // Only restore if the data is less than 12 hours old
+        if (Date.now() - parsedState.timestamp < 43200000) {
+            selectedIngredients = parsedState.ingredients || [];
+            if (parsedState.productName) document.getElementById('productName').value = parsedState.productName;
+            if (parsedState.volume) setVolume(parsedState.volume);
+            
+            updateIngredientList();
+            console.log('✅ Recovered previous pitch state');
+        }
+    }
+} catch (e) {
+    console.warn('Could not restore session state', e);
+}
+
+// Validate data
+validateDataIntegrity();
     
     console.log('✅ [AIOXY] Initialization complete!');
     
