@@ -7253,8 +7253,17 @@ if (upstream.length > 0) {
 
     // Outbound (Transport)
 const outbound = catCC.contribution_tree.Transport.total;
-const dist = document.getElementById('transportDistance')?.value || 300;
+let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
 const rawMode = document.getElementById('transportMode')?.value || 'road';
+const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
+
+// 🛡️ REGULATOR FIX: Sync visual distance with Crisis Rerouting math
+let crisisNote = "";
+if (isCrisisActiveUI && (rawMode === 'sea' || rawMode === 'road')) {
+    const originalDist = dist;
+    dist = dist * 1.40;
+    crisisNote = `<br><span style="color:#C0392B; font-size:0.85em; font-weight:bold;">[⚠️ CRISIS REROUTE: ${originalDist}km → ${dist.toFixed(0)}km]</span>`;
+}
 
 // UI FIX: Detect if refrigeration physics were applied
 const isFrozenUI = document.getElementById('processingMethod')?.value === 'freezing';
@@ -7265,13 +7274,13 @@ if (isFrozenUI) displayMode += " (FROZEN REEFER)";
 else if (isChilledUI) displayMode += " (CHILLED REEFER)";
 
 html += `
-                    <tr>
+                     <tr>
                         <td style="padding: 8px;"><span style="background:#FFF3E0; padding:2px 5px; border-radius:3px;">OUTBOUND</span> Mfg → Retail</td>
-                        <td style="padding: 8px; font-weight: bold; color: #0A2540;">${displayMode}</td>
-                        <td style="padding: 8px; text-align:right;">${dist} km</td>
+                        <td style="padding: 8px; font-weight: bold; color: #0A2540;">${displayMode}${crisisNote}</td>
+                        <td style="padding: 8px; text-align:right;">${dist.toFixed(0)} km</td>
                         <td style="padding: 8px; text-align:right;">85%</td>
                         <td style="padding: 8px; text-align:right;">${outbound.toFixed(4)} kg CO₂e</td>
-                    </tr>
+                     </tr>
                 </tbody>
             </table>
         </div>
@@ -7986,11 +7995,17 @@ const foodWasteCO2 = foodWasteKg * 0.8;
 csvContent += `Scope 3 Cat 12 (End-of-Life Treatment),Product_Food_Waste,Organic_Waste,Local,${foodWasteKg.toFixed(3)},kg,${foodWasteCO2.toFixed(4)},0,COMPLIANT,FALSE\n`;
 
     // 6. LOGISTICS (Scope 3 Cat 4)
-    if (ccTree.Transport.total > 0) {
-        // Strip the text 'km' so the value is pure math
-        const dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
-        const mode = document.getElementById('transportMode')?.value || 'transport';
-        csvContent += `Scope 3 Cat 4 (Upstream Transport),Outbound_Logistics_${mode},Service,N/A,${dist},km,${ccTree.Transport.total.toFixed(4)},0,COMPLIANT,FALSE\n`;
+if (ccTree.Transport.total > 0) {
+    let dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
+    const mode = document.getElementById('transportMode')?.value || 'transport';
+    const isCrisisActiveCSV = document.getElementById('crisisRoutingToggle')?.checked;
+    
+    // 🛡️ REGULATOR FIX: Sync CSV distance with Crisis math to prevent Emission Factor mismatch
+    if (isCrisisActiveCSV && (mode === 'sea' || mode === 'road')) {
+        dist = dist * 1.40;
+    }
+    
+    csvContent += `Scope 3 Cat 4 (Upstream Transport),Outbound_Logistics_${mode},Service,N/A,${dist.toFixed(0)},km,${ccTree.Transport.total.toFixed(4)},0,COMPLIANT,FALSE\n`;
     }
 
     // 7. MANUFACTURING
