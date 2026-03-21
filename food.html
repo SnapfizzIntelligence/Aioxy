@@ -7963,19 +7963,24 @@ function exportCSRDMatrix() {
     // Build CSV lines array
     const csvLines = [];
     
-    // =============================================================
-    // SECTION 1: METADATA (Key-Value pairs, easy to read)
-    // =============================================================
-    csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
-    csvLines.push(`Assessment ID (DPP),${dppId}`);
-    csvLines.push(`Reporting Standard,ESRS E1 / PEF 3.1 / GHG Protocol`);
-    csvLines.push(`System Boundary,Cradle-to-Retail`);
-    csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
-    csvLines.push(`Functional Unit,1 kg of product`);
-    csvLines.push(`Annual Volume (kg),${volume}`);
-    csvLines.push(`Total Impact (kg CO2e),${totalCo2}`);
-    csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
-    csvLines.push(``); // Empty row as separator
+// =============================================================
+// SECTION 1: METADATA (Key-Value pairs, easy to read)
+// =============================================================
+csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
+csvLines.push(`Assessment ID (DPP),${dppId}`);
+csvLines.push(`Reporting Standard,ESRS E1 / PEF 3.1 / GHG Protocol`);
+csvLines.push(`System Boundary,Cradle-to-Retail`);
+csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
+csvLines.push(`Functional Unit,1 kg of product`);
+
+// 🛡️ REGULATOR FIX: Handle missing volume by defaulting to Functional Unit
+let volumeInput = document.getElementById('annualVolume')?.value;
+let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
+csvLines.push(`Volume Assessed,${volumeText}`);
+
+csvLines.push(`Total Impact (kg CO2e),${totalCo2}`);
+csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
+csvLines.push(``); // Empty row as separator
     
     // =============================================================
     // SECTION 2: COLUMN HEADERS (11 columns)
