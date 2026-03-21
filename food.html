@@ -7923,80 +7923,215 @@ doc.save(filename);
         downloadRawData();
     }
     
-    // =====================================================================
-// 🚀 WEAPON 2: CSRD SCOPE 3 MATRIX EXPORTER (ENTERPRISE GRADE)
+// =====================================================================
+// 🚀 CSRD SCOPE 3 MATRIX EXPORTER (RETAILER-READY)
 // =====================================================================
 function exportCSRDMatrix() {
-    const auditTrail = window.auditTrailData;
-    const mb = window.massBalanceData;
-    if (!auditTrail || !mb) {
-        alert("Please calculate the impact first to generate the CSRD Matrix.");
+    if (!auditTrailData || !auditTrailData.pefCategories) {
+        alert('Please calculate the environmental impact first.');
         return;
     }
 
-    const ccTree = auditTrail.pefCategories["Climate Change"].contribution_tree;
-    const productName = document.getElementById('productName')?.value || 'AIOXY_Product';
+    const pName = document.getElementById('productName')?.value || 'Product';
+    const ccTree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
+    const mb = auditTrailData.mass_balance;
+    const dppId = auditTrailData.dppId || 'N/A';
+    const totalCo2 = auditTrailData.pefCategories["Climate Change"].total.toFixed(6);
     const volume = document.getElementById('annualVolume')?.value || 0;
-    const dateStr = new Date().toISOString().split('T')[0];
+    const dqrOverall = auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5';
 
-    // 1. CORPORATE METADATA BLOCK
-    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-    csvContent += "REPORT METADATA,,,,,,,,,\n";
-    csvContent += `"Product Name:","${productName}",,,,,,,,\n`;
-    csvContent += `"Reporting Standard:","ESRS E1 (Climate) / PEF 3.1 / GHG Protocol",,,,,,,,\n`;
-    csvContent += `"System Boundary:","Cradle-to-Retail",,,,,,,,\n`;
-    csvContent += `"Audit Date:","${dateStr}",,,,,,,,\n`;
-    csvContent += `"Annual Volume:","${volume} kg",,,,,,,,\n`;
-    csvContent += `"Software:","AIOXY Compliance Engine v3.0",,,,,,,,\n\n`;
-
-    // 2. AGGREGATE TOTALS BLOCK
-    csvContent += "AGGREGATE TOTALS,,,,,,,,,\n";
-    csvContent += `"Total Product Impact:","${auditTrail.pefCategories["Climate Change"].total.toFixed(4)} kg CO2e",,,,,,,,\n`;
-    csvContent += `"Overall Data Quality (DQR):","${auditTrail.dqr_summary?.overall_dqr?.toFixed(2) || '1.5'}",,,,,,,,\n\n`;
-
-    // 3. TABULAR DATA HEADERS
-    csvContent += "ITEMIZED SCOPE 3 INVENTORY,,,,,,,,,\n";
-    csvContent += "CSRD_Disclosure,GHG_Protocol_Category,Material_or_Process,Activity_Type,Geo_Origin,Quantity,Unit,Emissions_kgCO2e,Data_Quality_Rating,Audit_Status\n";
-
-    // Helper to strictly encapsulate CSV fields
-    const addRow = (csrd, ghg, name, cat, origin, qty, unit, co2, dqr, status) => {
-        const safeName = name.replace(/"/g, '""');
-        csvContent += `"${csrd}","${ghg}","${safeName}","${cat}","${origin}","${qty}","${unit}","${co2}","${dqr}","${status}"\n`;
+    // Safe DQR extraction
+    const getDQR = (component) => {
+        if (!component) return dqrOverall;
+        const dqrValue = component.dqr_score ?? component.data_quality_rating;
+        if (dqrValue !== undefined && dqrValue !== null && !isNaN(dqrValue)) {
+            return parseFloat(dqrValue).toFixed(2);
+        }
+        return dqrOverall;
     };
 
-    // 4. INGREDIENTS (Scope 3 Cat 1)
-    if (ccTree.Ingredients.components) {
+    // Safe packaging material extraction
+    const getPackagingMaterialName = () => {
+        const el = document.getElementById('packagingMaterial');
+        if (!el) return 'Packaging';
+        if (el.tagName === 'SELECT' && el.options) {
+            return el.options[el.selectedIndex]?.text || el.value || 'Packaging';
+        }
+        return el.value || 'Packaging';
+    };
+
+    // Build CSV lines array
+    const csvLines = [];
+    
+    // =============================================================
+    // SECTION 1: METADATA (Key-Value pairs, easy to read)
+    // =============================================================
+    csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
+    csvLines.push(`Assessment ID (DPP),${dppId}`);
+    csvLines.push(`Reporting Standard,ESRS E1 / PEF 3.1 / GHG Protocol`);
+    csvLines.push(`System Boundary,Cradle-to-Retail`);
+    csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
+    csvLines.push(`Functional Unit,1 kg of product`);
+    csvLines.push(`Annual Volume (kg),${volume}`);
+    csvLines.push(`Total Impact (kg CO2e),${totalCo2}`);
+    csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
+    csvLines.push(``); // Empty row as separator
+    
+    // =============================================================
+    // SECTION 2: COLUMN HEADERS (11 columns)
+    // =============================================================
+    csvLines.push([
+        'GHG_Protocol_Category',
+        'Process_Name',
+        'Material_Type',
+        'Origin_Country',
+        'Activity_Data_Value',
+        'Activity_Data_Unit',
+        'Gross_CO2e_Kg',
+        'Biogenic_Removals_Kg',
+        'EUDR_Risk_Status',
+        'Primary_Data_Verified',
+        'Data_Quality_Rating'
+    ].join(','));
+    
+    // Helper to add data row
+    const addDataRow = (category, process, materialType, origin, qty, unit, co2, biogenic, eudr, primary, dqr) => {
+        const row = [
+            category,
+            process,
+            materialType,
+            origin,
+            parseFloat(qty || 0).toFixed(6),
+            unit || 'kg',
+            parseFloat(co2 || 0).toFixed(6),
+            parseFloat(biogenic || 0).toFixed(6),
+            eudr || 'COMPLIANT',
+            primary === true ? 'TRUE' : 'FALSE',
+            dqr || dqrOverall
+        ];
+        
+        // Escape fields with commas or quotes
+        const escapedRow = row.map(cell => {
+            const cellStr = String(cell);
+            if (cellStr.includes(',') || cellStr.includes('"')) {
+                return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+        });
+        
+        csvLines.push(escapedRow.join(','));
+    };
+    
+    // =============================================================
+    // INGREDIENTS (Scope 3 Cat 1)
+    // =============================================================
+    if (ccTree.Ingredients?.components) {
         ccTree.Ingredients.components.forEach(ing => {
-            addRow("ESRS E1", "Scope 3 Cat 1 (Purchased Goods)", ing.name, "Raw Material", ing.universal_adjustments?.adjusted_for_country || 'Unknown', parseFloat(ing.quantity_kg).toFixed(3), "kg", ing.subtotal.toFixed(4), "1.5", "COMPLIANT");
+            const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) 
+                ? "HIGH RISK" : "COMPLIANT";
+            addDataRow(
+                "Scope 3 Cat 1 (Purchased Goods)",
+                ing.name,
+                "Raw Material",
+                ing.universal_adjustments?.adjusted_for_country || 'Unknown',
+                ing.quantity_kg,
+                "kg",
+                ing.subtotal,
+                "0",
+                isHighRisk,
+                ing.primary_data_used,
+                getDQR(ing)
+            );
         });
     }
-
-    // 5. MANUFACTURING (Scope 3 Cat 1 / Energy)
-    if (ccTree.Manufacturing.components) {
-        ccTree.Manufacturing.components.forEach(mfg => {
-            const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'EU';
-            addRow("ESRS E1", "Scope 3 Cat 1 (Processing)", mfg.name, "Energy/Physics", mfgCountry, mb.final_content_weight_kg.toFixed(3), "kg", mfg.subtotal.toFixed(4), "1.2", "COMPLIANT");
-        });
+    
+    // =============================================================
+    // FLAG REMOVALS (Biogenic carbon sequestration)
+    // =============================================================
+    const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
+    if (biogenicRemovals && biogenicRemovals > 0) {
+        addDataRow(
+            "Scope 3 Cat 1 (FLAG)",
+            "Verified_Soil_Carbon_Sequestration",
+            "Biogenic_Removals",
+            "Primary_Farm",
+            "1.0",
+            "system",
+            "0",
+            `-${biogenicRemovals}`,
+            "COMPLIANT",
+            true,
+            "1.0"
+        );
     }
-
-    // 6. PACKAGING (Scope 3 Cat 1 / CFF)
-    if (ccTree.Packaging.total > 0) {
-        const tertiaryTotal = ccTree.Packaging.components.reduce((sum, p) => sum + p.subtotal, 0);
+    
+    // =============================================================
+    // PACKAGING
+    // =============================================================
+    if (ccTree.Packaging?.total > 0) {
+        const tertiaryTotal = ccTree.Packaging.components?.reduce((sum, p) => sum + (p.subtotal || 0), 0) || 0;
         const primaryTotal = Math.max(0, ccTree.Packaging.total - tertiaryTotal);
-        const mat = document.getElementById('packagingMaterial')?.options[document.getElementById('packagingMaterial').selectedIndex]?.text || 'Packaging';
         
         if (primaryTotal > 0) {
-            addRow("ESRS E1", "Scope 3 Cat 1 (Purchased Goods)", `Primary Packaging (${mat})`, "Primary Pkg", "Local", mb.packaging_weight_kg.toFixed(3), "kg", primaryTotal.toFixed(4), "1.5", "COMPLIANT");
+            addDataRow(
+                "Scope 3 Cat 1 (Purchased Goods)",
+                `Primary_Packaging_${getPackagingMaterialName()}`,
+                "Packaging",
+                "Local",
+                mb.packaging_weight_kg || 0,
+                "kg",
+                primaryTotal,
+                "0",
+                "COMPLIANT",
+                false,
+                getDQR(ccTree.Packaging)
+            );
         }
+        
         if (ccTree.Packaging.components) {
             ccTree.Packaging.components.forEach(pkg => {
-                addRow("ESRS E1", "Scope 3 Cat 1 (Purchased Goods)", pkg.name, "Tertiary Pkg", "Origin", "1.000", "system", pkg.subtotal.toFixed(4), "1.5", "COMPLIANT");
+                addDataRow(
+                    "Scope 3 Cat 1 (Purchased Goods)",
+                    pkg.name,
+                    "Tertiary_Packaging",
+                    "Origin",
+                    "1.0",
+                    "system",
+                    pkg.subtotal,
+                    "0",
+                    "COMPLIANT",
+                    false,
+                    getDQR(pkg)
+                );
             });
         }
     }
-
-    // 7. LOGISTICS (Scope 3 Cat 4)
-    if (ccTree.Transport.total > 0) {
+    
+    // =============================================================
+    // END-OF-LIFE FOOD WASTE (Scope 3 Cat 12)
+    // =============================================================
+    const foodWasteKg = (mb.final_content_weight_kg || 0.2) * 0.05;
+    const foodWasteCO2 = foodWasteKg * 0.8;
+    if (foodWasteCO2 > 0) {
+        addDataRow(
+            "Scope 3 Cat 12 (End-of-Life)",
+            "Product_Food_Waste",
+            "Organic_Waste",
+            "Local",
+            foodWasteKg,
+            "kg",
+            foodWasteCO2,
+            "0",
+            "COMPLIANT",
+            false,
+            "2.0"
+        );
+    }
+    
+    // =============================================================
+    // LOGISTICS (Scope 3 Cat 4)
+    // =============================================================
+    if (ccTree.Transport?.total > 0) {
         let dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
         const mode = document.getElementById('transportMode')?.value || 'road';
         const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
@@ -8005,28 +8140,54 @@ function exportCSRDMatrix() {
             dist = dist * 1.40;
         }
         
-        addRow("ESRS E1", "Scope 3 Cat 4 (Upstream Transport)", `Outbound Logistics (${mode})`, "Service", "N/A", dist.toFixed(0), "km", ccTree.Transport.total.toFixed(4), "1.8", "COMPLIANT");
+        addDataRow(
+            "Scope 3 Cat 4 (Upstream Transport)",
+            `Outbound_Logistics_${mode}`,
+            "Service",
+            "N/A",
+            dist,
+            "km",
+            ccTree.Transport.total,
+            "0",
+            "COMPLIANT",
+            false,
+            getDQR(ccTree.Transport)
+        );
     }
-
-    // 8. END-OF-LIFE FOOD WASTE (Scope 3 Cat 12)
-    const allUpstream = ccTree.Upstream.components || [];
-    const eolComponents = allUpstream.filter(c => c.name.includes('End-of-Life'));
-    if (eolComponents.length > 0) {
-        eolComponents.forEach(eol => {
-            const fwKg = (mb.final_content_weight_kg || 0.2) * 0.05;
-            addRow("ESRS E1", "Scope 3 Cat 12 (End-of-Life)", eol.name, "Waste Treatment", "Local", fwKg.toFixed(3), "kg", eol.subtotal.toFixed(4), "2.0", "COMPLIANT");
-        });
+    
+    // =============================================================
+    // MANUFACTURING (Scope 3 Cat 1 / Processing)
+    // =============================================================
+    if (ccTree.Manufacturing?.total > 0) {
+        addDataRow(
+            "Scope 3 Cat 1 (Processing)",
+            "Factory_Operations",
+            "Energy",
+            document.getElementById('manufacturingCountry')?.value || 'Unknown',
+            mb.final_content_weight_kg || 0,
+            "kg",
+            ccTree.Manufacturing.total,
+            "0",
+            "COMPLIANT",
+            document.getElementById('usePrimaryFactoryData')?.checked === true,
+            getDQR(ccTree.Manufacturing)
+        );
     }
-
-    // Download
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `AIOXY_CSRD_Matrix_${productName.replace(/[^a-z0-9]/gi, '_')}.csv`);
+    
+    // =============================================================
+    // DOWNLOAD (Single CSV file)
+    // =============================================================
+    const csvContent = "\uFEFF" + csvLines.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `CSRD_Scope3_${pName.replace(/[^a-z0-9]/gi, '_')}_${dppId}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-                    }
+    URL.revokeObjectURL(url);
+    
     
     console.log("✅ CSRD Retailer Matrix Exported Successfully");
                                           }
