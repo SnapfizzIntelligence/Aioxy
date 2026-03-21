@@ -4916,13 +4916,25 @@ if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIng
         const originRegion = getRegion(originCountry);
         const mfgRegion = getRegion(manufacturingCountryCode);
 
-        if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
-            ingredientTransportCO2 = calculateGLECTransport(ing.quantity, 1200, 'road', inboundRefType);
-            transportNote = `Regional cross-border transport (${originCountry} → ${manufacturingCountryCode})`;
-        } else {
-            ingredientTransportCO2 = calculateGLECTransport(ing.quantity, 15000, 'sea', inboundRefType);
-            transportNote = `Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode})`;
-        }
+        const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
+let inboundDistance = 0;
+
+if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
+    inboundDistance = 1200;
+    ingredientTransportCO2 = calculateGLECTransport(ing.quantity, inboundDistance, 'road', inboundRefType);
+    transportNote = `Regional cross-border road transport (${originCountry} → ${manufacturingCountryCode} | ${inboundDistance} km)`;
+} else {
+    inboundDistance = 15000;
+    // 🛡️ APPLY GEOPOLITICAL CRISIS ROUTING TO IMPORTS
+    if (isCrisisActive) {
+        inboundDistance = 15000 * 1.40; // 21,000 km Cape of Good Hope reroute
+        transportNote = `[⚠️ CRISIS REROUTE] Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode} | 15,000 km → ${inboundDistance} km)`;
+    } else {
+        transportNote = `Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode} | ${inboundDistance} km)`;
+    }
+    ingredientTransportCO2 = calculateGLECTransport(ing.quantity, inboundDistance, 'sea', inboundRefType);
+    }
+    
     } else {
         console.log(`🚚 Logistics: Local sourcing ${ing.name} within ${manufacturingCountryCode}`);
         ingredientTransportCO2 = calculateGLECTransport(ing.quantity, 200, 'road', inboundRefType);
