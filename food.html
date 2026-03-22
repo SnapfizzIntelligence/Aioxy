@@ -13,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
  
     <!-- INGREDIENTS DATA -->
     <script src="ingredients.js"></script>
@@ -7080,77 +7081,76 @@ function displayAuditTrail() {
     const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'FR';
     
     // Helper: Country Name Resolver
-    const getCtry = (code) => (window.aioxyData.countries[code]?.name || code);
+    const getCtry = (code) => (window.aioxyData?.countries?.[code]?.name || code);
 
-        // 2. BUILD HTML STRUCTURE
     const productName = document.getElementById('productName')?.value || 'Assessed Product';
     const dateStr = new Date().toISOString().split('T')[0];
     const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
     const totalImpact = catCC.total;
-    
-    // Create QR code payload
-    const qrTextPayload = `AIOXY VERIFIED AUDIT
--------------------------
-DPP ID: ${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
-Product: ${productName}
-Impact: ${totalImpact.toFixed(4)} kg CO₂e/kg
-Method: PEF 3.1 / CSRD
-Date: ${dateStr}
-Status: EUDR Screened`;
 
-    // We'll generate QR code after building HTML
+    // Build HTML with QR placeholder
     let html = `
-    <div style="font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto 30px auto; border: 2px solid #0A2540; padding: 20px; background: #ffffff;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0A2540; padding-bottom: 15px; margin-bottom: 20px;">
-            <div>
-                <h2 style="margin: 0; color: #0A2540; font-size: 1.5rem; text-transform: uppercase;">AIOXY Compliance Audit Trail</h2>
-                <div style="color: #555; font-size: 0.85rem; margin-top: 5px;">ISO 14044 • PEF 3.1 • GHG Protocol • ESRS E1 Ready</div>
+    <div style="font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto 30px auto; border: 2px solid #0A2540; padding: 20px; background: #ffffff; display: flex; justify-content: space-between;">
+        
+        <div style="flex: 1; padding-right: 20px;">
+            <div style="border-bottom: 2px solid #0A2540; padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 style="margin: 0; color: #0A2540; font-size: 1.4rem; text-transform: uppercase;">AIOXY Compliance Audit Trail</h2>
+                <div style="color: #555; font-size: 0.8rem; margin-top: 3px;">ISO 14044 • PEF 3.1 • GHG Protocol • ESRS E1 Ready</div>
             </div>
-            <div id="qrPlaceholder" style="text-align: right;"></div>
-        </div>
-        
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-            <tr>
-                <td style="padding: 8px 0; width: 30%; font-weight: bold; color: #555;">ASSESSMENT ID:</td>
-                <td style="padding: 8px 0; width: 70%; font-family: monospace; font-size: 1rem;">${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px 0; font-weight: bold; color: #555;">PRODUCT:</td>
-                <td style="padding: 8px 0;">${productName}</td>
-            </tr>
-            <tr>
-                <td style="padding: 8px 0; font-weight: bold; color: #555;">DATE:</td>
-                <td style="padding: 8px 0;">${dateStr}</td>
-            </tr>
-        </table>
-
-        <div style="margin-top: 20px; border: 1px solid #ccc; background: #f8f9fa; padding: 15px;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <td style="padding: 5px 0; font-weight: bold; font-size: 1.1rem;">TOTAL CLIMATE IMPACT:</td>
-                    <td style="padding: 5px 0; text-align: right; font-weight: bold; font-size: 1.2rem; color: #0A2540;">${totalImpact.toFixed(4)} kg CO₂e / kg</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px 0; font-weight: bold;">OVERALL DATA QUALITY (DQR):</td>
-                    <td style="padding: 5px 0; text-align: right;">${auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5'} (PEF Compliant)</td>
-                </tr>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                  <tr>
+                    <td style="padding: 4px 0; width: 35%; font-weight: bold; color: #555;">ASSESSMENT ID:</td>
+                    <td style="padding: 4px 0; font-family: monospace; font-size: 0.95rem;">${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; font-weight: bold; color: #555;">PRODUCT:</td>
+                    <td style="padding: 4px 0;">${productName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; font-weight: bold; color: #555;">DATE:</td>
+                    <td style="padding: 4px 0;">${dateStr}</td>
+                  </tr>
             </table>
+
+            <div style="margin-top: 15px; border: 1px solid #ccc; background: #f8f9fa; padding: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                     <tr>
+                        <td style="padding: 3px 0; font-weight: bold; font-size: 1rem;">TOTAL CLIMATE IMPACT:</td>
+                        <td style="padding: 3px 0; text-align: right; font-weight: bold; font-size: 1.1rem; color: #0A2540;">${totalImpact.toFixed(4)} kg CO₂e / kg</td>
+                     </tr>
+                     <tr>
+                        <td style="padding: 3px 0; font-weight: bold;">OVERALL DATA QUALITY (DQR):</td>
+                        <td style="padding: 3px 0; text-align: right;">${auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5'} (PEF Compliant)</td>
+                     </tr>
+                </table>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 0.8rem; color: #333;">
+                <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
+                <div>✓ EU Deforestation Regulation (EUDR) Screened</div>
+                <div>✓ Primary & Tertiary Logistics Accounted</div>
+                ${isCrisisActiveUI ? '<div style="color: #C0392B;">✓ Crisis Routing Applied (Cape of Good Hope Penalty)</div>' : ''}
+            </div>
         </div>
-        
-        <div style="margin-top: 15px; font-size: 0.85rem; color: #333;">
-            <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
-            <div>✓ EU Deforestation Regulation (EUDR) Screened</div>
-            <div>✓ Primary & Tertiary Logistics Accounted</div>
-            ${isCrisisActiveUI ? '<div style="color: #C0392B;">✓ Crisis Routing Applied (Cape of Good Hope Penalty)</div>' : ''}
+
+        <div style="width: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #eee; padding-left: 15px;">
+            <div id="dpp-qr-code" style="background: #fff; padding: 5px; border: 1px solid #ccc;"></div>
+            <div style="font-size: 0.65rem; color: #0A2540; font-weight: bold; margin-top: 8px; text-align: center;">
+                SCAN FOR OFFLINE<br>VERIFICATION
+            </div>
         </div>
     </div>
     
     <h3 style="border-bottom: 2px solid #0A2540; padding-bottom: 10px; color: #0A2540;">DETAILED SCOPE 3 INVENTORY</h3>
     `;
 
+    // ========== A. INGREDIENT LCI & PROXY ADJUSTMENTS ==========
+    html += `
+        <div style="margin-bottom: 25px;">
             <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-    A. INGREDIENT LCI & PROXY ADJUSTMENTS (GHG Protocol: Scope 3 Cat 1)
-</h4>
+                A. INGREDIENT LCI & PROXY ADJUSTMENTS (GHG Protocol: Scope 3 Cat 1)
+            </h4>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ccc;">
                 <thead style="background: #eee;">
                     <tr>
@@ -7175,30 +7175,25 @@ Status: EUDR Screened`;
 
         let bridgeHTML = '';
 
-// 🛡️ REGULATOR FIX: EUDR penalty takes absolute precedence
-if (adj.method === "eudr_dluc_penalty") {
-    bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
-} else if (isPrimary) {
-    bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
-} else if (isProxy) {
-    let factors = [];
-    if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
-    
-    if (factors.length > 0) {
-        bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
-    } else {
-        bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
-    }
-} else {
-    bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
-}
+        if (adj.method === "eudr_dluc_penalty") {
+            bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
+        } else if (isPrimary) {
+            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
+        } else if (isProxy) {
+            let factors = [];
+            if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
+            if (factors.length > 0) {
+                bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
+            } else {
+                bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
+            }
+        } else {
+            bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
+        }
 
-// =========================================================
-// 🛡️ THE NEW SMART FIX: Dynamic Auditor Flag
-// =========================================================
-if (ing.name.toLowerCase().includes('animal feed')) {
-    bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
-}
+        if (ing.name.toLowerCase().includes('animal feed')) {
+            bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
+        }
 
         html += `
                     <tr style="border-bottom: 1px solid #ddd;">
@@ -7214,14 +7209,15 @@ if (ing.name.toLowerCase().includes('animal feed')) {
     html += `
                 </tbody>
             </table>
-        </div>
+        </div>`;
 
+    // ========== B. MANUFACTURING & ENERGY BALANCE ==========
+    html += `
         <div style="margin-bottom: 25px;">
             <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-    B. MANUFACTURING & ENERGY BALANCE (Scope 1, 2, or 3)
-</h4>
+                B. MANUFACTURING & ENERGY BALANCE (Scope 1, 2, or 3)
+            </h4>
             <div style="display:grid; grid-template-columns: 1fr 1fr; border: 1px solid #ccc;">
-                
                 <div style="padding: 10px; border-right: 1px solid #ccc;">
                     <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">MASS BALANCE (Input/Output)</div>
                     <div style="display:flex; justify-content:space-between;">
@@ -7237,7 +7233,6 @@ if (ing.name.toLowerCase().includes('animal feed')) {
                         <span>${mb.final_content_weight_kg.toFixed(3)} kg</span>
                     </div>
                 </div>
-
                 <div style="padding: 10px;">
                     <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
                     ${catCC.contribution_tree.Manufacturing.components.map(m => `
@@ -7250,13 +7245,13 @@ if (ing.name.toLowerCase().includes('animal feed')) {
                             <span>${m.details}</span>
                         </div>
                         <div style="display:flex; justify-content:space-between;">
-    <span>Energy Source:</span>
-    <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
-</div>
-<div style="display:flex; justify-content:space-between;">
-    <span>Carbon Intensity:</span>
-    <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
-</div>
+                            <span>Energy Source:</span>
+                            <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Carbon Intensity:</span>
+                            <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
+                        </div>
                         <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
                             <span>Impact:</span>
                             <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
@@ -7264,12 +7259,14 @@ if (ing.name.toLowerCase().includes('animal feed')) {
                     `).join('')}
                 </div>
             </div>
-        </div>
+        </div>`;
 
+    // ========== C. LOGISTICS CHAIN ==========
+    html += `
         <div style="margin-bottom: 25px;">
             <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-    C. LOGISTICS CHAIN (GHG Protocol: Scope 3 Cat 4)
-</h4>
+                C. LOGISTICS CHAIN (GHG Protocol: Scope 3 Cat 4)
+            </h4>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ccc;">
                 <thead style="background: #eee;">
                     <tr>
@@ -7281,63 +7278,61 @@ if (ing.name.toLowerCase().includes('animal feed')) {
                     </tr>
                 </thead>
                 <tbody>`;
-    
-        // Inbound (Upstream) - Filter out the End-of-Life proxies
-const allUpstream = catCC.contribution_tree.Upstream.components;
-const upstream = allUpstream.filter(c => !c.name.includes('End-of-Life'));
-const eolComponents = allUpstream.filter(c => c.name.includes('End-of-Life'));
 
-if (upstream.length > 0) {
-    upstream.forEach(u => {
-        html += `
-                <tr>
-                    <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
-                    <td style="padding: 8px;" colspan="3">${u.name}: ${u.notes || 'Cross-border transport calculated'}</td>
-                    <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
-                </tr>`;
-    });
-} else {
-    html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
+    const allUpstream = catCC.contribution_tree.Upstream.components;
+    const upstream = allUpstream.filter(c => !c.name.includes('End-of-Life'));
+    const eolComponents = allUpstream.filter(c => c.name.includes('End-of-Life'));
+
+    if (upstream.length > 0) {
+        upstream.forEach(u => {
+            html += `
+                    <tr>
+                        <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
+                        <td style="padding: 8px;" colspan="3">${u.name}: ${u.notes || 'Cross-border transport calculated'}</td>
+                        <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
+                    </tr>`;
+        });
+    } else {
+        html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
     }
 
-    // Outbound (Transport)
-const outbound = catCC.contribution_tree.Transport.total;
-let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
-const rawMode = document.getElementById('transportMode')?.value || 'road';
-const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
+    const outbound = catCC.contribution_tree.Transport.total;
+    let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
+    const rawMode = document.getElementById('transportMode')?.value || 'road';
+    const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
 
-// 🛡️ REGULATOR FIX: Sync visual distance with Crisis Rerouting math
-let crisisNote = "";
-if (isCrisisActiveUI && (rawMode === 'sea' || rawMode === 'road')) {
-    const originalDist = dist;
-    dist = dist * 1.40;
-    crisisNote = `<br><span style="color:#C0392B; font-size:0.85em; font-weight:bold;">[⚠️ CRISIS REROUTE: ${originalDist}km → ${dist.toFixed(0)}km]</span>`;
-}
+    let crisisNote = "";
+    if (isCrisisActive && (rawMode === 'sea' || rawMode === 'road')) {
+        const originalDist = dist;
+        dist = dist * 1.40;
+        crisisNote = `<br><span style="color:#C0392B; font-size:0.85em; font-weight:bold;">[⚠️ CRISIS REROUTE: ${originalDist}km → ${dist.toFixed(0)}km]</span>`;
+    }
 
-// UI FIX: Detect if refrigeration physics were applied
-const isFrozenUI = document.getElementById('processingMethod')?.value === 'freezing';
-const isChilledUI = document.getElementById('refrigeratedTransport')?.value === 'yes';
+    const isFrozenUI = document.getElementById('processingMethod')?.value === 'freezing';
+    const isChilledUI = document.getElementById('refrigeratedTransport')?.value === 'yes';
 
-let displayMode = rawMode.toUpperCase();
-if (isFrozenUI) displayMode += " (FROZEN REEFER)";
-else if (isChilledUI) displayMode += " (CHILLED REEFER)";
+    let displayMode = rawMode.toUpperCase();
+    if (isFrozenUI) displayMode += " (FROZEN REEFER)";
+    else if (isChilledUI) displayMode += " (CHILLED REEFER)";
 
-html += `
-                     <tr>
+    html += `
+                    <tr>
                         <td style="padding: 8px;"><span style="background:#FFF3E0; padding:2px 5px; border-radius:3px;">OUTBOUND</span> Mfg → Retail</td>
                         <td style="padding: 8px; font-weight: bold; color: #0A2540;">${displayMode}${crisisNote}</td>
                         <td style="padding: 8px; text-align:right;">${dist.toFixed(0)} km</td>
                         <td style="padding: 8px; text-align:right;">85%</td>
                         <td style="padding: 8px; text-align:right;">${outbound.toFixed(4)} kg CO₂e</td>
-                     </tr>
+                    </tr>
                 </tbody>
             </table>
-        </div>
+        </div>`;
 
-                <div style="margin-bottom: 25px;">
+    // ========== D. PACKAGING ==========
+    html += `
+        <div style="margin-bottom: 25px;">
             <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-    D. PACKAGING (GHG Protocol: Scope 3 Cat 1)
-</h4>
+                D. PACKAGING (GHG Protocol: Scope 3 Cat 1)
+            </h4>
             <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
                 <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;">
                     <div>
@@ -7362,32 +7357,36 @@ html += `
                 <div style="text-align:right; border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px;">
                     <strong>Total Packaging Impact:</strong> <br>
                     <span style="font-weight:bold; font-size:1rem; color: #C0392B;">${catCC.contribution_tree.Packaging.total.toFixed(4)} kg CO₂e</span>
-                        </div>
-    </div>
-</div>
-
-${eolComponents.length > 0 ? `
-<div style="margin-bottom: 25px;">
-    <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-        E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
-    </h4>
-    <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
-        ${eolComponents.map(e => `
-            <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                <div>
-                    <strong style="color:var(--primary);">${e.name}</strong><br>
-                    <span style="color:var(--gray);">${e.notes}</span>
-                </div>
-                <div style="font-weight:bold; color: #C0392B;">
-                    ${e.subtotal.toFixed(4)} kg CO₂e
                 </div>
             </div>
-        `).join('')}
-    </div>
-</div>
-` : ''}
+        </div>`;
 
-<div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
+    // ========== E. END-OF-LIFE TREATMENT ==========
+    if (eolComponents.length > 0) {
+        html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
+            </h4>
+            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
+                ${eolComponents.map(e => `
+                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                        <div>
+                            <strong style="color:var(--primary);">${e.name}</strong><br>
+                            <span style="color:var(--gray);">${e.notes}</span>
+                        </div>
+                        <div style="font-weight:bold; color: #C0392B;">
+                            ${e.subtotal.toFixed(4)} kg CO₂e
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>`;
+    }
+
+    // ========== TOTAL IMPACT FOOTER ==========
+    html += `
+        <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
             <div>
                 <strong>TOTAL CRADLE-TO-RETAIL IMPACT:</strong>
             </div>
@@ -7395,42 +7394,34 @@ ${eolComponents.length > 0 ? `
                 <div style="font-size: 1.5rem; font-weight:bold;">${catCC.total.toFixed(3)} kg CO₂e</div>
                 <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)</div>
             </div>
-        </div>
+        </div>`;
 
-    </div>`;
-
+    // Render HTML to page
     auditContent.innerHTML = html;
 
-// Generate QR Code and add to placeholder
-const qrPlaceholder = document.getElementById('qrPlaceholder');
-if (qrPlaceholder && typeof QRCode !== 'undefined') {
-    const qrContainer = document.createElement('div');
-    qrContainer.style.marginTop = "10px";
-    qrContainer.style.padding = "5px";
-    qrContainer.style.border = "2px solid #0A2540";
-    qrContainer.style.display = "inline-block";
-    qrContainer.style.textAlign = "center";
-    qrContainer.style.background = "#fff";
-    
-    new QRCode(qrContainer, {
-        text: qrTextPayload,
-        width: 100,
-        height: 100,
-        colorDark: "#0A2540",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
-    });
-    
-    const qrLabel = document.createElement('div');
-    qrLabel.style.fontSize = "0.7rem";
-    qrLabel.style.color = "#0A2540";
-    qrLabel.style.fontWeight = "bold";
-    qrLabel.style.marginTop = "5px";
-    qrLabel.innerHTML = "SCAN FOR OFFLINE<br>VERIFICATION";
-    qrContainer.appendChild(qrLabel);
-    
-    qrPlaceholder.appendChild(qrContainer);
-}
+    // Generate QR Code and add to placeholder
+    const qrBox = document.getElementById('dpp-qr-code');
+    if (qrBox && typeof QRCode !== 'undefined') {
+        qrBox.innerHTML = '';
+        const qrTextPayload = `AIOXY VERIFIED AUDIT
+-------------------------
+DPP ID: ${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
+Product: ${productName}
+Impact: ${totalImpact.toFixed(4)} kg CO₂e/kg
+Method: PEF 3.1 / CSRD
+Date: ${dateStr}
+Status: EUDR Screened`;
+
+        new QRCode(qrBox, {
+            text: qrTextPayload,
+            width: 120,
+            height: 120,
+            colorDark: "#0A2540",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+    }
 
 // ================== DIGITAL TRANSPARENCY CARD ==================
 function generateDPP() {
