@@ -7571,8 +7571,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
     const loadingOverlay = document.getElementById('pdf-loading-overlay');
     if (loadingOverlay) loadingOverlay.style.display = 'flex';
     
-    // 1. PULL EXISTING PRE-CALCULATED DATA (No Recalculation Needed)
-    if (!window.finalPefResults || !window.auditTrailData || !window.auditTrailData.pefCategories) {
+    // 1. PULL EXISTING PRE-CALCULATED DATA (CRASH FIX: Removed 'window.' scope)
+    if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !auditTrailData || !auditTrailData.pefCategories) {
         alert("⚠️ Please run the AIOXY calculation first before exporting the PDF.");
         if (loadingOverlay) loadingOverlay.style.display = 'none';
         return;
@@ -7590,8 +7590,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const setH2 = () => { doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(10, 37, 64); };
         const setNormal = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(50, 50, 50); };
 
-        // 2. MAP ACTUAL AIOXY VARIABLES
-        const audit = window.auditTrailData;
+        // 2. MAP ACTUAL AIOXY VARIABLES (CRASH FIX: Removed 'window.' scope)
+        const audit = auditTrailData;
         const pName = document.getElementById('productName')?.value || "Assessed Product";
         const dateStr = new Date(audit.calculationTimestamp || Date.now()).toISOString().split('T')[0];
         const mfgCountry = document.getElementById('manufacturingCountry')?.options[document.getElementById('manufacturingCountry')?.selectedIndex]?.text || 'Not selected';
@@ -7606,8 +7606,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const isCustomBaseline = audit.comparison_baseline?.is_custom;
 
         // Recalculate dynamic metrics natively for PDF
-        const pWeightKg = window.massBalanceData?.final_content_weight_kg || 0.2;
-        const singleScorePDF = calculatePEFSingleScore(window.finalPefResults, pWeightKg);
+        const pWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+        const singleScorePDF = calculatePEFSingleScore(finalPefResults, pWeightKg);
         const mPt = singleScorePDF.singleScore;
         let ecoGrade = mPt < 150 ? 'A' : mPt < 250 ? 'B' : mPt < 400 ? 'C' : mPt < 600 ? 'D' : 'E';
 
@@ -7808,10 +7808,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
 
         setH2(); doc.text("COMPLETE PEF 3.1 SCORECARD (16 IMPACTS)", 15, doc.lastAutoTable.finalY + 15);
-        const pefTableBody = Object.keys(window.finalPefResults).map(cat => [
+        const pefTableBody = Object.keys(finalPefResults).map(cat => [
             cat, 
-            window.finalPefResults[cat].total.toExponential(3), 
-            window.finalPefResults[cat].unit
+            finalPefResults[cat].total.toExponential(3), 
+            finalPefResults[cat].unit
         ]);
 
         doc.autoTable({
@@ -7822,7 +7822,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
 
         // ==========================================
-        // PAGE 6: QR CODE & SIGN-OFF (SILENT GENERATOR)
+        // PAGE 6: QR CODE & SIGN-OFF (RENDER FIX)
         // ==========================================
         doc.addPage();
         setH1(); doc.text("AUDIT CERTIFICATION & VERIFICATION", 15, 20);
@@ -7842,9 +7842,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         currentY = doc.lastAutoTable.finalY + 20;
 
-        // 🔏 THE SILENT QR GENERATOR
+        // 🔏 THE SILENT QR GENERATOR (RENDER TRICK APPLIED)
         const hiddenQrDiv = document.createElement('div');
-        hiddenQrDiv.style.display = 'none';
+        hiddenQrDiv.style.position = 'absolute';
+        hiddenQrDiv.style.left = '-9999px'; // Render off-screen, NOT display: none
         document.body.appendChild(hiddenQrDiv);
 
         const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${totalCo2.toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR COMPLIANT\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
@@ -7856,43 +7857,43 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
 
         // Wait 150ms for browser to render canvas, extract, and save PDF
-setTimeout(() => {
-    try {
-        // Defensive check: Look for canvas first, fallback to image tag
-        const qrCanvas = hiddenQrDiv.querySelector('canvas');
-        const qrImage = hiddenQrDiv.querySelector('img');
-        let qrDataUrl = null;
+        setTimeout(() => {
+            try {
+                // Defensive check: Look for canvas first, fallback to image tag
+                const qrCanvas = hiddenQrDiv.querySelector('canvas');
+                const qrImage = hiddenQrDiv.querySelector('img');
+                let qrDataUrl = null;
 
-        if (qrCanvas && qrCanvas.width > 0) {
-            qrDataUrl = qrCanvas.toDataURL('image/png');
-        } else if (qrImage && qrImage.src && qrImage.src.length > 100) {
-            qrDataUrl = qrImage.src; // Fallback if browser rendered as image
-        }
+                if (qrCanvas && qrCanvas.width > 0) {
+                    qrDataUrl = qrCanvas.toDataURL('image/png');
+                } else if (qrImage && qrImage.src && qrImage.src.length > 100) {
+                    qrDataUrl = qrImage.src; 
+                }
 
-        if (qrDataUrl) {
-            doc.addImage(qrDataUrl, 'PNG', 15, currentY, 40, 40);
-            setH2(); doc.text("SCAN FOR OFFLINE VERIFICATION", 60, currentY + 15);
-            setNormal(); doc.text("No internet required. Data embedded directly in QR.", 60, currentY + 22);
-            doc.text("Scan with any smartphone camera to verify instantly.", 60, currentY + 28);
-        } else {
-            doc.setTextColor(192, 57, 43);
-            doc.text("⚠️ QR Code generation delayed by browser constraints.", 15, currentY + 20);
-        }
+                if (qrDataUrl) {
+                    doc.addImage(qrDataUrl, 'PNG', 15, currentY, 40, 40);
+                    setH2(); doc.text("SCAN FOR OFFLINE VERIFICATION", 60, currentY + 15);
+                    setNormal(); doc.text("No internet required. Data embedded directly in QR.", 60, currentY + 22);
+                    doc.text("Scan with any smartphone camera to verify instantly.", 60, currentY + 28);
+                } else {
+                    doc.setTextColor(192, 57, 43);
+                    doc.text("⚠️ QR Code generation delayed by browser constraints.", 15, currentY + 20);
+                }
 
-        currentY += 60;
-        setH2(); doc.text("DIGITAL SIGNATURE", 15, currentY);
-        setNormal(); doc.text("This document is cryptographically sealed.", 15, currentY + 8);
-        doc.text("Any modification invalidates the audit trail.", 15, currentY + 14);
-        
-        doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
-    } catch (qrErr) {
-        console.warn("Non-fatal QR Error:", qrErr);
-        doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
-    } finally {
-        document.body.removeChild(hiddenQrDiv); // Clean up the DOM
-        if (loadingOverlay) loadingOverlay.style.display = 'none';
-    }
-}, 150);
+                currentY += 60;
+                setH2(); doc.text("DIGITAL SIGNATURE", 15, currentY);
+                setNormal(); doc.text("This document is cryptographically sealed.", 15, currentY + 8);
+                doc.text("Any modification invalidates the audit trail.", 15, currentY + 14);
+                
+                doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
+            } catch (qrErr) {
+                console.warn("Non-fatal QR Error:", qrErr);
+                doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
+            } finally {
+                document.body.removeChild(hiddenQrDiv); // Clean up the DOM
+                if (loadingOverlay) loadingOverlay.style.display = 'none';
+            }
+        }, 150);
 
     } catch (error) {
         console.error("🔥 PDF GENERATION FAILED:", error);
@@ -7900,6 +7901,7 @@ setTimeout(() => {
         if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
 }
+
 
     function downloadRawData() {
         if (!auditTrailData) {
