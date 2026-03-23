@@ -4990,11 +4990,25 @@ const distributionCO2 = calculateGLECTransport(
     if (packagingData) {
         const cffResult = calculateCFF(packagingData, packagingWeight, recycledContentPercent);
         
-        // 🛡️ REGULATOR FIX: Propagate Packaging impacts across mandatory PEF categories
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.total += cffResult.totalImpact;
-        auditTrail.pefCategories["Climate Change"].total += cffResult.totalImpact;
+        // 🛡️ REGULATOR FIX: Split Procurement (Scope 3 Cat 1) from Disposal (Scope 3 Cat 12)
+        const packagingProcurementCO2 = cffResult.virginBurden + cffResult.recycledBurden - cffResult.recyclingCredit;
+        const packagingDisposalCO2 = cffResult.disposalBurden;
+
+        // Log Procurement under Packaging (Cat 1)
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.total += packagingProcurementCO2;
         
-        // Empirical LCI Proxy: 1 kg CO2e from packaging ≈ 15 MJ Fossil & 0.05 m3 Water Scarcity
+        // Log Disposal under Upstream / End-of-Life (Cat 12)
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components = auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components || [];
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+            name: `End-of-Life: Packaging Disposal`,
+            subtotal: packagingDisposalCO2,
+            notes: `Scope 3 Category 12 (Disposal of ${packagingWeight.toFixed(3)}kg packaging)`
+        });
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += packagingDisposalCO2;
+        
+        auditTrail.pefCategories["Climate Change"].total += cffResult.totalImpact;
+
+        // Empirical LCI Proxy: Propagate to other PEF categories
         const fossilPkg = cffResult.totalImpact * 15.0;
         const waterPkg = cffResult.totalImpact * 0.05;
         
@@ -7855,46 +7869,61 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             width: 150, height: 150,
             correctLevel: QRCode.CorrectLevel.M
         });
+        
 
-        // Wait 150ms for browser to render canvas, extract, and save PDF
-        setTimeout(() => {
-            try {
-                // Defensive check: Look for canvas first, fallback to image tag
-                const qrCanvas = hiddenQrDiv.querySelector('canvas');
-                const qrImage = hiddenQrDiv.querySelector('img');
-                let qrDataUrl = null;
+        // 🔏 THE SILENT QR GENERATOR (INTELLIGENT POLLING FIX)
+let attempts = 0;
 
-                if (qrCanvas && qrCanvas.width > 0) {
-                    qrDataUrl = qrCanvas.toDataURL('image/png');
-                } else if (qrImage && qrImage.src && qrImage.src.length > 100) {
-                    qrDataUrl = qrImage.src; 
-                }
+function checkAndSaveQR() {
+    attempts++;
+    const qrCanvas = hiddenQrDiv.querySelector('canvas');
+    const qrImage = hiddenQrDiv.querySelector('img');
+    let qrDataUrl = null;
 
-                if (qrDataUrl) {
-                    doc.addImage(qrDataUrl, 'PNG', 15, currentY, 40, 40);
-                    setH2(); doc.text("SCAN FOR OFFLINE VERIFICATION", 60, currentY + 15);
-                    setNormal(); doc.text("No internet required. Data embedded directly in QR.", 60, currentY + 22);
-                    doc.text("Scan with any smartphone camera to verify instantly.", 60, currentY + 28);
-                } else {
-                    doc.setTextColor(192, 57, 43);
-                    doc.text("⚠️ QR Code generation delayed by browser constraints.", 15, currentY + 20);
-                }
+    // Check if the browser has finished physically drawing the pixels
+    if (qrCanvas && qrCanvas.width > 0) {
+        qrDataUrl = qrCanvas.toDataURL('image/png');
+    } else if (qrImage && qrImage.src && qrImage.src.length > 100) {
+        qrDataUrl = qrImage.src; 
+    }
 
-                currentY += 60;
-                setH2(); doc.text("DIGITAL SIGNATURE", 15, currentY);
-                setNormal(); doc.text("This document is cryptographically sealed.", 15, currentY + 8);
-                doc.text("Any modification invalidates the audit trail.", 15, currentY + 14);
-                
-                doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
-            } catch (qrErr) {
-                console.warn("Non-fatal QR Error:", qrErr);
-                doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
-            } finally {
-                document.body.removeChild(hiddenQrDiv); // Clean up the DOM
-                if (loadingOverlay) loadingOverlay.style.display = 'none';
-            }
-        }, 150);
+    if (qrDataUrl) {
+        // Success! The image is ready. Stamp it.
+        try {
+            doc.addImage(qrDataUrl, 'PNG', 15, currentY, 40, 40);
+            setH2(); doc.text("SCAN FOR OFFLINE VERIFICATION", 60, currentY + 15);
+            setNormal(); doc.text("No internet required. Data embedded directly in QR.", 60, currentY + 22);
+            doc.text("Scan with any smartphone camera to verify instantly.", 60, currentY + 28);
+            
+            currentY += 60;
+            setH2(); doc.text("DIGITAL SIGNATURE", 15, currentY);
+            setNormal(); doc.text("This document is cryptographically sealed.", 15, currentY + 8);
+            doc.text("Any modification invalidates the audit trail.", 15, currentY + 14);
+            
+            doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
+        } catch (qrErr) {
+            console.warn("Non-fatal QR Error:", qrErr);
+            doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
+        } finally {
+            document.body.removeChild(hiddenQrDiv); // Clean up the DOM
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }
+    } else if (attempts < 20) {
+        // Not ready yet. Check again in 50ms (Will try for up to 1 full second)
+        setTimeout(checkAndSaveQR, 50);
+    } else {
+        // Total timeout fallback (Extremely slow computer)
+        doc.setTextColor(192, 57, 43);
+        doc.text("⚠️ QR Code generation timed out. Browser constrained.", 15, currentY + 20);
+        doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
+        document.body.removeChild(hiddenQrDiv);
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
+    }
+}
 
+// Start the intelligent polling loop
+setTimeout(checkAndSaveQR, 50);
+        
     } catch (error) {
         console.error("🔥 PDF GENERATION FAILED:", error);
         alert(`PDF Error: ${error.message}`);
@@ -8032,7 +8061,7 @@ function exportCSRDMatrix() {
 // =============================================================
 csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
 csvLines.push(`Assessment ID (DPP),${dppId}`);
-csvLines.push(`Reporting Standard,ESRS E1 / PEF 3.1 / GHG Protocol`);
+csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E5 (Resources)`);
 csvLines.push(`System Boundary,Cradle-to-Retail`);
 csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
 csvLines.push(`Functional Unit,1 kg of product`);
@@ -8042,7 +8071,10 @@ let volumeInput = document.getElementById('annualVolume')?.value;
 let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
 csvLines.push(`Volume Assessed,${volumeText}`);
 
-csvLines.push(`Total Impact (kg CO2e),${totalCo2}`);
+// 🛡️ REGULATOR FIX: Inject the missing ESRS Categories for 100% Screening Compliance
+csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
+csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${(auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0).toFixed(6)}`);
+csvLines.push(`ESRS E5: Fossil Resources (MJ),${(auditTrailData.pefCategories["Resource Use, fossils"]?.total || 0).toFixed(6)}`);
 csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
 csvLines.push(``); // Empty row as separator
     
