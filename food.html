@@ -5028,8 +5028,12 @@ auditTrail.pefCategories["Climate Change"].total += foodWasteCO2;
     
     // Save Global State
     const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories, dqrComponents);
-    const uncertaintyResults = calculateMonteCarloUncertainty(selectedIngredients, 500);
-    
+    const uncertaintyResults = calculateMonteCarloUncertainty(
+    selectedIngredients, 
+    auditTrail.pefCategories["Climate Change"].contribution_tree, 
+    auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree, 
+    500
+);
     auditTrail.mass_balance = massBalanceData;
     auditTrail.dqr_summary = { overall_dqr: foregroundBackground.overall_dqr, component_dqrs: dqrComponents, dqr_level: this.getDQRQualityLevel(foregroundBackground.overall_dqr).level };
     auditTrail.uncertainty_analysis = { monte_carlo: uncertaintyResults, overall_uncertainty: this.calculateUncertainty(foregroundBackground.overall_dqr) };
