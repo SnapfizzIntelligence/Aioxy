@@ -4102,15 +4102,14 @@ singleScoreBreakdown[category] = {
 };
 }
 
-// ================== AIOXY UNCERTAINTY ENGINE (ISO 14044 / PEF COMPLIANT) ==================
-function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
+// ================== AIOXY UNCERTAINTY ENGINE (FIXED: DYNAMIC AWARENESS) ==================
+function calculateMonteCarloUncertainty(ingredients, currentCC_Tree, currentWater_Tree, iterations = 5000) {
     console.log("🔬 [Physics Engine] Initiating Monte Carlo Simulation (n=" + iterations + ")...");
-
-    if (!ingredients || ingredients.length === 0 || !window.aioxyData) {
-        console.warn("⚠️ [Audit Warning] Monte Carlo skipped: Missing ingredients or global data.");
-        return {
-            co2: { mean: 0, p5: 0, p95: 0, range: 0, sigma: 0 },
-            water: { mean: 0, p5: 0, p95: 0, range: 0, sigma: 0 }
+    
+    if (!ingredients || ingredients.length === 0 || !currentCC_Tree) {
+        return { 
+            co2: { mean: 0, p5: 0, p95: 0, range: 0, sigma: 0 }, 
+            water: { mean: 0, p5: 0, p95: 0, range: 0, sigma: 0 } 
         };
     }
     
@@ -4121,31 +4120,25 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
         let totalWater = 0;
         
         ingredients.forEach(ing => {
-            const ingredient = window.aioxyData.ingredients[ing.id];
-            if (!ingredient) return;
+            const ingredientDB = window.aioxyData.ingredients[ing.id];
+            if (!ingredientDB) return;
+
+            // 🛡️ PULL ACTUAL ADJUSTED VALUES FROM LIVE CONTRIBUTION TREE
+            const activeCCNode = currentCC_Tree.Ingredients?.components?.find(c => c.id === ing.id);
+            const activeWaterNode = currentWater_Tree?.Ingredients?.components?.find(c => c.id === ing.id);
             
-            // A. STATISTICAL PHYSICS: EXACT LOGNORMAL CONVERSION
-            const P_unc = ingredient.data.metadata?.dqr?.P || 15;
+            const co2Base = activeCCNode ? activeCCNode.subtotal : (ingredientDB.data.pef["Climate Change"] * ing.quantity || 0);
+            const waterBase = activeWaterNode ? activeWaterNode.subtotal : (ingredientDB.data.pef["Water Use/Scarcity (AWARE)"] * ing.quantity || 0);
+            
+            const P_unc = ingredientDB.data.metadata?.dqr?.P || 15;
             const cv = P_unc / 100;
-            
-            // COMPLIANCE FIX 1: Exact Lognormal Sigma
             const sigmaSq = Math.log(1 + Math.pow(cv, 2));
             const sigma = Math.sqrt(sigmaSq);
-            
             const Z = randomNormal();
             
-            const co2Base = ingredient.data.pef["Climate Change"] || 0;
-            const waterBase = ingredient.data.pef["Water Use/Scarcity (AWARE)"] || 0;
-
-            // COMPLIANCE FIX 2: Preserve Arithmetic Mean (Location Parameter Shift)
-            // Lognormal multiplier = exp(Z * sigma - sigmaSq / 2)
             const lognormalMultiplier = Math.exp((Z * sigma) - (sigmaSq / 2));
-            
-            const co2Random = co2Base * lognormalMultiplier;
-            const waterRandom = waterBase * lognormalMultiplier; 
-            
-            totalCO2 += co2Random * ing.quantity;
-            totalWater += waterRandom * ing.quantity;
+            totalCO2 += co2Base * lognormalMultiplier;
+            totalWater += waterBase * lognormalMultiplier;
         });
         
         results.co2.push(totalCO2);
@@ -4154,39 +4147,33 @@ function calculateMonteCarloUncertainty(ingredients, iterations = 5000) {
     
     const stats = (values) => {
         values.sort((a, b) => a - b);
-        const mean = values.reduce((a, b) => a + b, 0) / iterations;
         return {
-            mean: mean,
+            mean: values.reduce((a, b) => a + b, 0) / iterations,
             median: values[Math.floor(iterations * 0.5)],
-            p5: values[Math.floor(iterations * 0.05)],    // 90% CI Lower
-            p95: values[Math.floor(iterations * 0.95)],   // 90% CI Upper
+            p5: values[Math.floor(iterations * 0.05)],
+            p95: values[Math.floor(iterations * 0.95)],
             range: values[iterations - 1] - values[0]
         };
     };
 
-    const co2Stats = stats(results.co2);
-    const waterStats = stats(results.water);
-
     return {
-        co2: co2Stats,
-        water: waterStats,
-        metadata: {
-            methodology: "Monte Carlo Lognormal (Mean-Preserving)",
-            iterations: iterations,
-            compliance: "ISO 14044:2006 Annex A / PEF Guide 6.3",
-            timestamp: new Date().toISOString()
+        co2: stats(results.co2),
+        water: stats(results.water),
+        metadata: { 
+            methodology: "Monte Carlo Lognormal (Adjusted Base)", 
+            iterations: iterations, 
+            timestamp: new Date().toISOString() 
         }
     };
 }
 
-    
 // HELPER: Box-Muller Transform (High-Performance Normal Distribution)
 function randomNormal() {
     let u = 0, v = 0;
     while (u === 0) u = Math.random();
     while (v === 0) v = Math.random();
     return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-}
+    }
             
 // ================== FIX 6: FOREGROUND/BACKGROUND ANALYSIS (ISO 14044 COMPLIANT) ==================
 function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategories, dqrComponentsList) {
