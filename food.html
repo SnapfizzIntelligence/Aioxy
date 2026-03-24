@@ -8008,7 +8008,7 @@ setTimeout(checkAndSaveQR, 50);
     }
     
 // =====================================================================
-// 🚀 CSRD SCOPE 3 MATRIX EXPORTER (RETAILER-READY)
+// 🚀 CSRD SCOPE 3 MATRIX EXPORTER (ESRS E1, E3, E5 RETAILER-READY)
 // =====================================================================
 function exportCSRDMatrix() {
     if (!auditTrailData || !auditTrailData.pefCategories) {
@@ -8018,9 +8018,14 @@ function exportCSRDMatrix() {
 
     const pName = document.getElementById('productName')?.value || 'Product';
     const ccTree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
+    const waterTree = auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree;
+    const fossilTree = auditTrailData.pefCategories["Resource Use, fossils"].contribution_tree;
+    
     const mb = auditTrailData.mass_balance;
     const dppId = auditTrailData.dppId || 'N/A';
     const totalCo2 = auditTrailData.pefCategories["Climate Change"].total.toFixed(6);
+    const totalWater = (auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0).toFixed(6);
+    const totalFossil = (auditTrailData.pefCategories["Resource Use, fossils"]?.total || 0).toFixed(6);
     const volume = document.getElementById('annualVolume')?.value || 0;
     const dqrOverall = auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5';
 
@@ -8047,30 +8052,27 @@ function exportCSRDMatrix() {
     // Build CSV lines array
     const csvLines = [];
     
-// =============================================================
-// SECTION 1: METADATA (Key-Value pairs, easy to read)
-// =============================================================
-csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
-csvLines.push(`Assessment ID (DPP),${dppId}`);
-csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E5 (Resources)`);
-csvLines.push(`System Boundary,Cradle-to-Retail`);
-csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
-csvLines.push(`Functional Unit,1 kg of product`);
+    // =============================================================
+    // SECTION 1: METADATA (Key-Value pairs, easy to read)
+    // =============================================================
+    csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
+    csvLines.push(`Assessment ID (DPP),${dppId}`);
+    csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E5 (Resources)`);
+    csvLines.push(`System Boundary,Cradle-to-Retail`);
+    csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
+    csvLines.push(`Functional Unit,1 kg of product`);
 
-// 🛡️ REGULATOR FIX: Handle missing volume by defaulting to Functional Unit
-let volumeInput = document.getElementById('annualVolume')?.value;
-let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
-csvLines.push(`Volume Assessed,${volumeText}`);
-
-// 🛡️ REGULATOR FIX: Inject the missing ESRS Categories for 100% Screening Compliance
-csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
-csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${(auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0).toFixed(6)}`);
-csvLines.push(`ESRS E5: Fossil Resources (MJ),${(auditTrailData.pefCategories["Resource Use, fossils"]?.total || 0).toFixed(6)}`);
-csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
-csvLines.push(``); // Empty row as separator
+    let volumeInput = document.getElementById('annualVolume')?.value;
+    let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
+    csvLines.push(`Volume Assessed,${volumeText}`);
+    csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
+    csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${totalWater}`);
+    csvLines.push(`ESRS E5: Fossil Resources (MJ),${totalFossil}`);
+    csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
+    csvLines.push(``); // Empty row as separator
     
     // =============================================================
-    // SECTION 2: COLUMN HEADERS (11 columns)
+    // SECTION 2: COLUMN HEADERS (13 columns - ESRS E1, E3, E5 compliant)
     // =============================================================
     csvLines.push([
         'GHG_Protocol_Category',
@@ -8080,14 +8082,16 @@ csvLines.push(``); // Empty row as separator
         'Activity_Data_Value',
         'Activity_Data_Unit',
         'Gross_CO2e_Kg',
+        'Water_Scarcity_m3_eq',
+        'Fossil_Resource_MJ',
         'Biogenic_Removals_Kg',
         'EUDR_Risk_Status',
         'Primary_Data_Verified',
         'Data_Quality_Rating'
     ].join(','));
     
-    // Helper to add data row
-    const addDataRow = (category, process, materialType, origin, qty, unit, co2, biogenic, eudr, primary, dqr) => {
+    // Helper to add data row (13 columns)
+    const addDataRow = (category, process, materialType, origin, qty, unit, co2, water, fossil, biogenic, eudr, primary, dqr) => {
         const row = [
             category,
             process,
@@ -8096,6 +8100,8 @@ csvLines.push(``); // Empty row as separator
             parseFloat(qty || 0).toFixed(6),
             unit || 'kg',
             parseFloat(co2 || 0).toFixed(6),
+            parseFloat(water || 0).toFixed(6),
+            parseFloat(fossil || 0).toFixed(6),
             parseFloat(biogenic || 0).toFixed(6),
             eudr || 'COMPLIANT',
             primary === true ? 'TRUE' : 'FALSE',
@@ -8115,12 +8121,17 @@ csvLines.push(``); // Empty row as separator
     };
     
     // =============================================================
-    // INGREDIENTS (Scope 3 Cat 1)
+    // INGREDIENTS (Scope 3 Cat 1) - WITH Water & Fossil per ingredient
     // =============================================================
     if (ccTree.Ingredients?.components) {
         ccTree.Ingredients.components.forEach(ing => {
+            // Find matching water and fossil components
+            const waterComp = waterTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+            const fossilComp = fossilTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+            
             const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) 
                 ? "HIGH RISK" : "COMPLIANT";
+            
             addDataRow(
                 "Scope 3 Cat 1 (Purchased Goods)",
                 ing.name,
@@ -8129,6 +8140,8 @@ csvLines.push(``); // Empty row as separator
                 ing.quantity_kg,
                 "kg",
                 ing.subtotal,
+                waterComp?.subtotal || 0,
+                fossilComp?.subtotal || 0,
                 "0",
                 isHighRisk,
                 ing.primary_data_used,
@@ -8149,6 +8162,8 @@ csvLines.push(``); // Empty row as separator
             "Primary_Farm",
             "1.0",
             "system",
+            "0",
+            "0",
             "0",
             `-${biogenicRemovals}`,
             "COMPLIANT",
@@ -8173,6 +8188,8 @@ csvLines.push(``); // Empty row as separator
                 mb.packaging_weight_kg || 0,
                 "kg",
                 primaryTotal,
+                waterTree.Packaging?.total || 0,
+                fossilTree.Packaging?.total || 0,
                 "0",
                 "COMPLIANT",
                 false,
@@ -8190,6 +8207,8 @@ csvLines.push(``); // Empty row as separator
                     "1.0",
                     "system",
                     pkg.subtotal,
+                    "0",
+                    "0",
                     "0",
                     "COMPLIANT",
                     false,
@@ -8213,6 +8232,8 @@ csvLines.push(``); // Empty row as separator
             foodWasteKg,
             "kg",
             foodWasteCO2,
+            "0",
+            "0",
             "0",
             "COMPLIANT",
             false,
@@ -8241,6 +8262,8 @@ csvLines.push(``); // Empty row as separator
             "km",
             ccTree.Transport.total,
             "0",
+            "0",
+            "0",
             "COMPLIANT",
             false,
             getDQR(ccTree.Transport)
@@ -8251,6 +8274,9 @@ csvLines.push(``); // Empty row as separator
     // MANUFACTURING (Scope 3 Cat 1 / Processing)
     // =============================================================
     if (ccTree.Manufacturing?.total > 0) {
+        // Get fossil impact for manufacturing
+        const fossilMfg = fossilTree.Manufacturing?.total || 0;
+        
         addDataRow(
             "Scope 3 Cat 1 (Processing)",
             "Factory_Operations",
@@ -8259,6 +8285,8 @@ csvLines.push(``); // Empty row as separator
             mb.final_content_weight_kg || 0,
             "kg",
             ccTree.Manufacturing.total,
+            "0",
+            fossilMfg,
             "0",
             "COMPLIANT",
             document.getElementById('usePrimaryFactoryData')?.checked === true,
@@ -8280,10 +8308,9 @@ csvLines.push(``); // Empty row as separator
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    
     console.log("✅ CSRD Retailer Matrix Exported Successfully");
-                                          }
-
+    }
+        
     function downloadMethodology() {
         const methodology = `AIOXY Methodology Document
 ===========================
