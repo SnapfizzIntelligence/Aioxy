@@ -4197,32 +4197,36 @@ function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategor
     };
 
     // 1. Analyze Ingredients 
-ingredients.forEach(item => {
-    const ingredient = aioxyData.ingredients[item.id];
-    if (!ingredient) return;
-    const impact = item.quantity * (ingredient.data.pef["Climate Change"] || 0);
-    
-    // REGULATORY FIX: Pull the PENALIZED DQR from the array, not the raw database
-    const dqrObj = dqrComponentsList ? dqrComponentsList.find(d => d.name === ingredient.name) : null;
-    const rawDqr = dqrObj ? dqrObj.dqr : ingredient.data.metadata.dqr_overall;
-    
-    // REGULATOR CLAMP: PEF DQR must remain strictly between 1.0 (Excellent) and 5.0 (Poor)
-    const finalDqr = Math.max(1.0, Math.min(5.0, rawDqr));
+    ingredients.forEach(item => {
+        const ingredient = aioxyData.ingredients[item.id];
+        if (!ingredient) return;
+        const impact = item.quantity * (ingredient.data.pef["Climate Change"] || 0);
+        
+        const dqrObj = dqrComponentsList ? dqrComponentsList.find(d => d.name === ingredient.name) : null;
+        const rawDqr = dqrObj ? dqrObj.dqr : ingredient.data.metadata.dqr_overall;
+        const finalDqr = Math.max(1.0, Math.min(5.0, rawDqr));
 
-    processComponent(ingredient.name, impact, finalDqr);
-});
+        processComponent(ingredient.name, impact, finalDqr);
+    });
 
-    // 2. Analyze Non-Ingredient Stages (Using current state)
+    // 2. Analyze Non-Ingredient Stages (DYNAMIC DQR FIX)
     if (currentPefCategories && currentPefCategories["Climate Change"]) {
         const tree = currentPefCategories["Climate Change"].contribution_tree;
-        if (tree.Manufacturing.total > 0) processComponent("Manufacturing & Energy", tree.Manufacturing.total, 2.0);
+        
+        // 🛡️ REGULATOR FIX: Dynamic Manufacturing DQR based on Primary Data Override
+        if (tree.Manufacturing.total > 0) {
+            const hasPrimaryMfg = tree.Manufacturing.components.some(c => c.confidence === "High (Audit-Ready)");
+            const mfgDQR = hasPrimaryMfg ? 1.0 : 2.5;
+            processComponent("Manufacturing & Energy", tree.Manufacturing.total, mfgDQR);
+        }
+        
         if (tree.Packaging.total > 0) processComponent("Packaging", tree.Packaging.total, 1.5);
         if (tree.Transport.total > 0) processComponent("Logistics", tree.Transport.total, 2.5);
     }
 
     // 3. Calculate Weighted DQRs
     const calcWeightedDQR = (components) => {
-        if (components.length === 0) return 2.0; 
+        if (components.length === 0) return 2.0;
         const totalWeight = components.reduce((sum, c) => sum + c.contribution, 0);
         if (totalWeight === 0) return 2.0;
         return components.reduce((sum, c) => sum + (c.dqr * c.contribution), 0) / totalWeight;
