@@ -8583,11 +8583,16 @@ function calculateImpactEnhanced() {
             // 2. Feed the strict results to the UI and DPP generators
             updateResultsUI(finalResults);
 
-// 💾 PITCH-SAFE STATE PERSISTENCE
+// 💾 PITCH-SAFE STATE PERSISTENCE (Full DOM capture)
 localStorage.setItem('aioxy_pitch_state', JSON.stringify({
     ingredients: selectedIngredients,
-    productName: document.getElementById('productName').value,
+    productName: document.getElementById('productName')?.value,
     volume: currentAnnualVolume,
+    manufacturingCountry: document.getElementById('manufacturingCountry')?.value,
+    processingMethod: document.getElementById('processingMethod')?.value,
+    transportMode: document.getElementById('transportMode')?.value,
+    transportDistance: document.getElementById('transportDistance')?.value,
+    packagingMaterial: document.getElementById('packagingMaterial')?.value,
     timestamp: Date.now()
 }));
             
@@ -9052,19 +9057,23 @@ try {
     const savedState = localStorage.getItem('aioxy_pitch_state');
     if (savedState) {
         const parsedState = JSON.parse(savedState);
-        // Only restore if the data is less than 12 hours old
         if (Date.now() - parsedState.timestamp < 43200000) {
             selectedIngredients = parsedState.ingredients || [];
             if (parsedState.productName) document.getElementById('productName').value = parsedState.productName;
+            if (parsedState.manufacturingCountry) document.getElementById('manufacturingCountry').value = parsedState.manufacturingCountry;
+            if (parsedState.processingMethod) document.getElementById('processingMethod').value = parsedState.processingMethod;
+            if (parsedState.transportMode) document.getElementById('transportMode').value = parsedState.transportMode;
+            if (parsedState.transportDistance) document.getElementById('transportDistance').value = parsedState.transportDistance;
+            if (parsedState.packagingMaterial) document.getElementById('packagingMaterial').value = parsedState.packagingMaterial;
             if (parsedState.volume) setVolume(parsedState.volume);
             
             updateIngredientList();
-            console.log('✅ Recovered previous pitch state');
+            console.log('✅ Recovered full previous pitch state');
         }
     }
 } catch (e) {
     console.warn('Could not restore session state', e);
-}
+                }
 
 // Validate data
 validateDataIntegrity();
