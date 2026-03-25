@@ -4099,7 +4099,7 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
 
     let weightedScore = 0;
     let normalizedScore = 0;
-    const singleScoreBreakdown = {}; // THIS FIXED THE CRASH
+    const singleScoreBreakdown = {};
 
     Object.keys(pefResults).forEach(category => {
         const impact = pefResults[category].total || 0;
@@ -4113,25 +4113,34 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
         weightedScore += weighted;
         normalizedScore += normalized;
 
-        // POPULATE BREAKDOWN FOR UI
-singleScoreBreakdown[category] = { 
-    raw: perKg, 
-    normalized: normalized, 
-    weighted: weighted,
-    normalizationFactor: normFactor,
-    weightingFactor: weightFactor,
-    unit: pefCategories[category]?.unit || '' // 🛡️ REGULATOR FIX: Add scientific unit
-};
+        singleScoreBreakdown[category] = { 
+            raw: perKg, 
+            normalized: normalized, 
+            weighted: weighted,
+            normalizationFactor: normFactor,
+            weightingFactor: weightFactor,
+            unit: pefCategories[category]?.unit || ''
+        };
     });
 
+    // 🛡️ REGULATOR FIX: ADEME FOP Eco-Score "Organic Farming" Biodiversity Bonus
+    // Under ADEME rules, EU Organic certification grants a 15 µPt deduction to account for avoided pesticide toxicity.
+    const hasOrganic = window.selectedIngredients?.some(i => i.primaryData?.farmingPractice === 'organic');
+    const organicBonus = hasOrganic ? 15.0 : 0;
+    
+    // Standardize to microPoints (µPt) and apply the bonus (floor at 0)
+    let finalMicroPoints = (weightedScore * 1000000) - organicBonus;
+    finalMicroPoints = Math.max(0, finalMicroPoints);
+
     return {
-    singleScore: weightedScore * 1000000, // 🛡️ REGULATOR FIX: Standardized to microPoints (µPt)
-    normalizedScore: normalizedScore,
-    weightedScore: weightedScore,
-    breakdown: singleScoreBreakdown, // REQUIRED FOR UI
-    unit: 'µPt'
-};
-}
+        singleScore: finalMicroPoints,
+        normalizedScore: normalizedScore,
+        weightedScore: weightedScore,
+        breakdown: singleScoreBreakdown,
+        unit: 'µPt',
+        organic_bonus_applied: hasOrganic
+    };
+    }
 
 // ================== AIOXY UNCERTAINTY ENGINE (FIXED: DYNAMIC AWARENESS) ==================
 function calculateMonteCarloUncertainty(ingredients, currentCC_Tree, currentWater_Tree, iterations = 5000) {
@@ -4241,18 +4250,23 @@ function analyzeForegroundBackground(ingredients, totalImpact, currentPefCategor
     });
 
     // 2. Analyze Non-Ingredient Stages (DYNAMIC DQR FIX)
-    if (currentPefCategories && currentPefCategories["Climate Change"]) {
-        const tree = currentPefCategories["Climate Change"].contribution_tree;
-        
-        // 🛡️ REGULATOR FIX: Dynamic Manufacturing DQR based on Primary Data Override
-        if (tree.Manufacturing.total > 0) {
-            const hasPrimaryMfg = tree.Manufacturing.components.some(c => c.confidence === "High (Audit-Ready)");
-            const mfgDQR = hasPrimaryMfg ? 1.0 : 2.5;
-            processComponent("Manufacturing & Energy", tree.Manufacturing.total, mfgDQR);
-        }
-        
-        if (tree.Packaging.total > 0) processComponent("Packaging", tree.Packaging.total, 1.5);
-        if (tree.Transport.total > 0) processComponent("Logistics", tree.Transport.total, 2.5);
+if (currentPefCategories && currentPefCategories["Climate Change"]) {
+    const tree = currentPefCategories["Climate Change"].contribution_tree;
+    
+    // 🛡️ REGULATOR FIX: Dynamic Manufacturing DQR based on Primary Data Override
+    if (tree.Manufacturing.total > 0) {
+        const hasPrimaryMfg = tree.Manufacturing.components.some(c => c.confidence === "High (Audit-Ready)");
+        const mfgDQR = hasPrimaryMfg ? 1.0 : 2.5;
+        processComponent("Manufacturing & Energy", tree.Manufacturing.total, mfgDQR);
+    }
+    
+    // 🛡️ REGULATOR FIX: Dynamic Packaging DQR based on CFF Incineration penalty
+    if (tree.Packaging.total > 0) {
+        const pkgDQR = tree.Packaging.dqr_score || 1.5;
+        processComponent("Packaging", tree.Packaging.total, pkgDQR);
+    }
+    
+    if (tree.Transport.total > 0) processComponent("Logistics", tree.Transport.total, 2.5);
     }
 
     // 3. Calculate Weighted DQRs
@@ -5252,23 +5266,27 @@ singleScoreSection.innerHTML = `
         </div>
     </div>
     
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
-        <div style="background: ${ratingColor}15; border-radius: 12px; padding: 1.5rem; border: 2px solid ${ratingColor}40;">
-            <h4 style="margin-bottom: 0.5rem; color: var(--primary);">
-                <i class="fas fa-chart-line"></i> PEF Single Score
-            </h4>
-            <div style="font-size: 2.5rem; font-weight: 800; color: ${ratingColor}; margin: 0.5rem 0;">
-                ${score.toFixed(1)} µPt
-            </div>
-            <div class="dqr-badge" style="background: ${ratingColor}; color: white;">
-                ${rating} • Person Equivalent Impact
-            </div>
-            <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
-                <div><strong>Normalized Score:</strong> ${singleScoreResult.normalizedScore.toExponential(3)}</div>
-                <div><strong>Weighted Score:</strong> ${singleScoreResult.weightedScore.toExponential(3)}</div>
-                <div><strong>Unit:</strong> microPerson equivalents (µPt)</div>
-            </div>
-        </div>
+    <div style="background: ${ratingColor}15; border-radius: 12px; padding: 1.5rem; border: 2px solid ${ratingColor}40;">
+    <h4 style="margin-bottom: 0.5rem; color: var(--primary);">
+        <i class="fas fa-chart-line"></i> PEF Single Score
+    </h4>
+    <div style="font-size: 2.5rem; font-weight: 800; color: ${ratingColor}; margin: 0.5rem 0;">
+        ${score.toFixed(1)} µPt
+    </div>
+    <div class="dqr-badge" style="background: ${ratingColor}; color: white;">
+        ${rating} • Person Equivalent Impact
+    </div>
+    ${singleScoreResult.organic_bonus_applied ? `
+    <div style="margin-top: 0.75rem; display: inline-block; background: #E6FFFA; color: #2C7A7B; border: 1px solid #81E6D9; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">
+        <i class="fas fa-seedling"></i> ADEME Organic Bonus Applied (-15 µPt)
+    </div>
+    ` : ''}
+    <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
+        <div><strong>Normalized Score:</strong> ${singleScoreResult.normalizedScore.toExponential(3)}</div>
+        <div><strong>Weighted Score:</strong> ${singleScoreResult.weightedScore.toExponential(3)}</div>
+        <div><strong>Unit:</strong> microPerson equivalents (µPt)</div>
+    </div>
+</div>
         
             <!-- UNCERTAINTY ANALYSIS CARD -->
             <div style="background: white; border-radius: 12px; padding: 1.5rem; border: 2px solid var(--border);">
@@ -7925,8 +7943,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         hiddenQrDiv.style.left = '-9999px'; 
         document.body.appendChild(hiddenQrDiv);
 
-        const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${totalCo2.toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR COMPLIANT\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
-
+        // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
+const eudrStatusText = eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
+const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${totalCo2.toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
+        
         new QRCode(hiddenQrDiv, {
             text: qrTextPayload,
             width: 150, height: 150,
