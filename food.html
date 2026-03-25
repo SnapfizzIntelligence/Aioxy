@@ -8181,23 +8181,61 @@ function exportCSRDMatrix() {
     }
     
     // =============================================================
-    // END-OF-LIFE FOOD WASTE (Scope 3 Cat 12)
-    // =============================================================
-    const foodWasteKg = (mb.final_content_weight_kg || 0.2) * 0.05;
-    const foodWasteCO2 = foodWasteKg * 0.8;
-    if (foodWasteCO2 > 0) {
-        addDataRow("Scope 3 Cat 12 (End-of-Life)", "Product_Food_Waste", "Organic_Waste", "Local", foodWasteKg, "kg", foodWasteCO2, "0", "0", "0", "0", "COMPLIANT", false, "2.0");
-    }
-    
-    // =============================================================
-    // LOGISTICS (Scope 3 Cat 4)
-    // =============================================================
-    if (ccTree.Transport?.total > 0) {
-        let dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
-        const mode = document.getElementById('transportMode')?.value || 'road';
-        if (document.getElementById('crisisRoutingToggle')?.checked && (mode === 'sea' || mode === 'road')) dist *= 1.40;
+// UPSTREAM & OUTBOUND LOGISTICS (Captures All Cat 4 & Cat 12)
+// =============================================================
+if (ccTree.Upstream?.components) {
+    ccTree.Upstream.components.forEach(upst => {
+        const isEoL = upst.name.includes('End-of-Life');
+        const catName = isEoL ? "Scope 3 Cat 12 (End-of-Life)" : "Scope 3 Cat 4 (Upstream Transport)";
+        const matType = isEoL ? "Waste_Treatment" : "Service";
         
-        addDataRow("Scope 3 Cat 4 (Upstream Transport)", `Outbound_Logistics_${mode}`, "Service", "N/A", dist, "km", ccTree.Transport.total, "0", "0", "0", "0", "COMPLIANT", false, getDQR(ccTree.Transport));
+        const waterComp = waterTree.Upstream?.components?.find(c => c.name === upst.name);
+        const fossilComp = fossilTree.Upstream?.components?.find(c => c.name === upst.name);
+        const landComp = landTree.Upstream?.components?.find(c => c.name === upst.name);
+
+        addDataRow(
+            catName, 
+            upst.name.replace(/,/g, ''), 
+            matType, 
+            "N/A", 
+            "1.0", 
+            "system", 
+            upst.subtotal, 
+            waterComp?.subtotal || 0, 
+            landComp?.subtotal || 0, 
+            fossilComp?.subtotal || 0, 
+            "0", 
+            "COMPLIANT", 
+            false, 
+            getDQR(ccTree.Upstream)
+        );
+    });
+}
+
+// =============================================================
+// OUTBOUND LOGISTICS (Scope 3 Cat 4)
+// =============================================================
+if (ccTree.Transport?.total > 0) {
+    let dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
+    const mode = document.getElementById('transportMode')?.value || 'road';
+    if (document.getElementById('crisisRoutingToggle')?.checked && (mode === 'sea' || mode === 'road')) dist *= 1.40;
+    
+    addDataRow(
+        "Scope 3 Cat 4 (Outbound Transport)", 
+        `Outbound_Logistics_${mode}`, 
+        "Service", 
+        "N/A", 
+        dist, 
+        "km", 
+        ccTree.Transport.total, 
+        "0", 
+        "0", 
+        fossilTree.Transport?.total || 0, 
+        "0", 
+        "COMPLIANT", 
+        false, 
+        getDQR(ccTree.Transport)
+    );
     }
     
     // =============================================================
@@ -8497,7 +8535,7 @@ function calculateImpactEnhanced() {
             const finalResults = foodCalculationEngine.calculateFoodImpact();
             
             // 2. Feed the strict results to the UI and DPP generators
-            updateResultsUI(finalResults);
+updateResultsUI(finalResults);
 
 // 💾 PITCH-SAFE STATE PERSISTENCE (Full DOM capture)
 localStorage.setItem('aioxy_pitch_state', JSON.stringify({
@@ -8509,14 +8547,22 @@ localStorage.setItem('aioxy_pitch_state', JSON.stringify({
     transportMode: document.getElementById('transportMode')?.value,
     transportDistance: document.getElementById('transportDistance')?.value,
     packagingMaterial: document.getElementById('packagingMaterial')?.value,
+    // 🛡️ FIX: Save all compliance toggles
+    energySource: document.getElementById('energySource')?.value,
+    usePrimaryFactoryData: document.getElementById('usePrimaryFactoryData')?.checked,
+    factoryTotalKWh: document.getElementById('factoryTotalKWh')?.value,
+    factoryTotalOutput: document.getElementById('factoryTotalOutput')?.value,
+    recycledContent: document.getElementById('recycledContent')?.value,
+    packagingEoL: document.getElementById('packagingEoL')?.value,
+    crisisRoutingToggle: document.getElementById('crisisRoutingToggle')?.checked,
     timestamp: Date.now()
 }));
-            
-            // 3. Let the Business Case handle its own hypothetical scenario math internally
-            const businessTab = document.getElementById('business-case-tab');
-            if (businessTab && !businessTab.classList.contains('hidden')) {
-                updateBusinessCase();
-            }
+
+// 3. Let the Business Case handle its own hypothetical scenario math internally
+const businessTab = document.getElementById('business-case-tab');
+if (businessTab && !businessTab.classList.contains('hidden')) {
+    updateBusinessCase();
+        }
             
         } catch (error) {
             console.error('💥 Calculation error:', error);
@@ -8983,13 +9029,31 @@ try {
             if (parsedState.packagingMaterial) document.getElementById('packagingMaterial').value = parsedState.packagingMaterial;
             if (parsedState.volume) setVolume(parsedState.volume);
             
+            // 🛡️ FIX: Restore all compliance toggles
+            if (parsedState.energySource) document.getElementById('energySource').value = parsedState.energySource;
+            if (parsedState.usePrimaryFactoryData !== undefined) {
+                const primaryToggle = document.getElementById('usePrimaryFactoryData');
+                if (primaryToggle) {
+                    primaryToggle.checked = parsedState.usePrimaryFactoryData;
+                    if (typeof toggleFactoryInputs === 'function') toggleFactoryInputs();
+                }
+            }
+            if (parsedState.factoryTotalKWh) document.getElementById('factoryTotalKWh').value = parsedState.factoryTotalKWh;
+            if (parsedState.factoryTotalOutput) document.getElementById('factoryTotalOutput').value = parsedState.factoryTotalOutput;
+            if (parsedState.recycledContent) document.getElementById('recycledContent').value = parsedState.recycledContent;
+            if (parsedState.packagingEoL) document.getElementById('packagingEoL').value = parsedState.packagingEoL;
+            if (parsedState.crisisRoutingToggle !== undefined) {
+                const crisisToggle = document.getElementById('crisisRoutingToggle');
+                if (crisisToggle) crisisToggle.checked = parsedState.crisisRoutingToggle;
+            }
+            
             updateIngredientList();
             console.log('✅ Recovered full previous pitch state');
         }
     }
 } catch (e) {
     console.warn('Could not restore session state', e);
-                }
+    }
 
 // Validate data
 validateDataIntegrity();
