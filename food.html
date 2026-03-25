@@ -3684,29 +3684,29 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
     }
     
     // =========================================================
-    // 🛡️ MANDATORY EUDR OVERLAY - Applies to EVERYONE regardless of data source
-    // =========================================================
-    if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
-        finalCO2 *= 1.50;
-        finalLand *= 1.50;
-        finalFossil *= 1.50; // 🛡️ FIX: Apply EUDR penalty to fossil use
-        log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied. Product cannot legally enter EU market.`);
-        qualityPenalty = 4.0;
-        
-        if (!universal_adjustments) {
-            universal_adjustments = {
-                adjusted_from_country: "FR",
-                adjusted_for_country: originCountry,
-                multipliers: { co2: 1.50, land: 1.50, water: 1.0, fossil: 1.50 },
-                adder: 0,
-                method: "eudr_dluc_penalty"
-            };
-        } else {
-            universal_adjustments.method = "eudr_dluc_penalty";
-            universal_adjustments.multipliers.co2 *= 1.50;
-            universal_adjustments.multipliers.land *= 1.50;
-            universal_adjustments.multipliers.fossil = (universal_adjustments.multipliers.fossil || 1.0) * 1.50;
-        }
+// 🛡️ MANDATORY EUDR OVERLAY - Applies to EVERYONE regardless of data source
+// =========================================================
+if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
+    finalCO2 *= 1.50;
+    finalLand *= 1.50;
+    // 🛡️ REGULATOR FIX: Removed finalFossil *= 1.50. Deforestation does not alter tractor fuel thermodynamics.
+    log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied. Product cannot legally enter EU market.`);
+    qualityPenalty = 4.0;
+    
+    if (!universal_adjustments) {
+        universal_adjustments = {
+            adjusted_from_country: "FR",
+            adjusted_for_country: originCountry,
+            multipliers: { co2: 1.50, land: 1.50, water: 1.0, fossil: 1.0 }, // Fossil remains 1.0
+            adder: 0,
+            method: "eudr_dluc_penalty"
+        };
+    } else {
+        universal_adjustments.method = "eudr_dluc_penalty";
+        universal_adjustments.multipliers.co2 *= 1.50;
+        universal_adjustments.multipliers.land *= 1.50;
+        // Fossil multiplier remains untouched
+    }
     }
 
     // Calculate final totals
@@ -4956,13 +4956,19 @@ if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
     }
 
     if (ingredientTransportCO2 > 0) {
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
-            name: `Inbound: ${ing.name}`,
-            subtotal: ingredientTransportCO2,
-            notes: transportNote
-        });
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += ingredientTransportCO2;
-        auditTrail.pefCategories["Climate Change"].total += ingredientTransportCO2;
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+        name: `Inbound: ${ing.name}`,
+        subtotal: ingredientTransportCO2,
+        notes: transportNote
+    });
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += ingredientTransportCO2;
+    auditTrail.pefCategories["Climate Change"].total += ingredientTransportCO2;
+    
+    // 🛡️ REGULATOR FIX: Correlate Inbound Transport to Fossil Resources (1 kg CO2e ≈ 14.0 MJ fossil)
+    const inboundFossilMJ = ingredientTransportCO2 * 14.0;
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components || [];
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total || 0) + inboundFossilMJ;
+    auditTrail.pefCategories["Resource Use, fossils"].total += inboundFossilMJ;
     }
 });
 
@@ -4996,8 +5002,14 @@ const distributionCO2 = calculateGLECTransport(
 );
 
     auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total += distributionCO2;
-    auditTrail.pefCategories["Climate Change"].total += distributionCO2;
+auditTrail.pefCategories["Climate Change"].total += distributionCO2;
 
+// 🛡️ REGULATOR FIX: Correlate Outbound Transport to Fossil Resources (1 kg CO2e ≈ 14.0 MJ fossil)
+const outboundFossilMJ = distributionCO2 * 14.0;
+auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components || [];
+auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total || 0) + outboundFossilMJ;
+auditTrail.pefCategories["Resource Use, fossils"].total += outboundFossilMJ;
+    
     if (packagingWeight > 0) {
     const packagingData = aioxyData.packaging[packagingMaterial];
     if (packagingData) {
