@@ -3763,22 +3763,36 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     const Qp = 1.0; 
     const qualityRatio = Qs_in / Qp;
 
-   // R2 Calculation (End-of-Life Destination)
-const eolTarget = document.getElementById('packagingEoL')?.value || 'eu_average';
-let R2 = 0;
+    // R2 Calculation (End-of-Life Destination)
+    const eolTarget = document.getElementById('packagingEoL')?.value || 'eu_average';
+    let R2 = 0;
+    let dqrPenalty = 0.0; // 🛡️ NEW: Incineration DQR Penalty
 
-if (eolTarget === 'recycled') {
-    R2 = p.r1_max || 0.90; // Maximum possible recycling rate for the material
-} else if (eolTarget === 'incinerated' || eolTarget === 'landfill') {
-    R2 = 0.0; // Complete loss of material, zero recycling credit
-} else {
-    R2 = (p.r1_max || 0.8) * (p.r2 || 0.7); // EU Average default
-}
+    // 🛡️ REGULATOR FIX 1: Material Compatibility Lock (AGEC Law / Green Claims Directive)
+    const nonRecyclableMaterials = ['pla', 'mycelium'];
+    const isNonRecyclable = nonRecyclableMaterials.some(m => matName.includes(m));
 
-// Adjust disposal burden based on landfill vs incineration
-let currentEd = Ed;
-if (eolTarget === 'landfill') currentEd = Ed * 1.5; // Landfill carries higher CH4 penalty for organics
-if (eolTarget === 'incinerated') currentEd = Ed * 0.8; // Minor credit for energy recovery
+    if (isNonRecyclable) {
+        R2 = 0.0; // Force zero recycling credit
+        if (eolTarget === 'recycled') {
+            console.warn(`🛑 REGULATORY BLOCK: ${matName} cannot be claimed as 'Closed Loop Recycled' under EU guidelines. R2 forced to 0.`);
+        }
+    } else if (eolTarget === 'recycled') {
+        R2 = p.r1_max || 0.90; // Maximum possible recycling rate for the material
+    } else if (eolTarget === 'incinerated' || eolTarget === 'landfill') {
+        R2 = 0.0; // Complete loss of material, zero recycling credit
+    } else {
+        R2 = (p.r1_max || 0.8) * (p.r2 || 0.7); // EU Average default
+    }
+
+    // Adjust disposal burden based on landfill vs incineration
+    let currentEd = Ed;
+    if (eolTarget === 'landfill') {
+        currentEd = Ed * 1.5; // Landfill carries higher CH4 penalty for organics
+    } else if (eolTarget === 'incinerated') {
+        currentEd = Ed * 0.8; // Minor credit for energy recovery
+        dqrPenalty = 0.5; // 🛡️ REGULATOR FIX 2: PEF mandate penalty for relying on generic municipal incineration data
+    }
 
     // 4. OFFICIAL CFF MATH (No 0.5 discount on virgin!)
     const burdenVirgin = (1 - R1) * Ev;
@@ -3794,15 +3808,15 @@ if (eolTarget === 'incinerated') currentEd = Ed * 0.8; // Minor credit for energ
 
     return {
         totalImpact: totalImpact,
-        // THESE KEYS FIXED THE CRASH:
         virginBurden: burdenVirgin * weightKg,
         recycledBurden: burdenRecycledInput * weightKg,
         disposalBurden: disposalBurdenVal * weightKg,
         recyclingCredit: recyclingCreditVal * weightKg, 
         effectiveRecyclingRate: R2,
+        dqr_penalty: dqrPenalty, // 🛡️ NEW: Pass the penalty out
         cff_parameters: { A: A_factor, Methodology: "PEF 3.1" }
     };
-}
+    }
 
     // ================== AUDIT-GRADE AWARE ENGINE (ISO 14046 / PEF 3.1) ==================
 function calculateAWARE(waterUse, countryCode, watershed = 'NationalAvg', month = null) {
@@ -5014,6 +5028,9 @@ auditTrail.pefCategories["Resource Use, fossils"].total += outboundFossilMJ;
     const packagingData = aioxyData.packaging[packagingMaterial];
     if (packagingData) {
         const cffResult = calculateCFF(packagingData, packagingWeight, recycledContentPercent);
+        
+        // 🛡️ REGULATOR FIX: Route the CFF DQR Penalty into the main tree memory
+        auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.dqr_score = 1.5 + (cffResult.dqr_penalty || 0);
         
         // 🛡️ REGULATOR FIX: Split Procurement (Scope 3 Cat 1) from Disposal (Scope 3 Cat 12)
         const packagingProcurementCO2 = cffResult.virginBurden + cffResult.recycledBurden - cffResult.recyclingCredit;
