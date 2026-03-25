@@ -7484,6 +7484,11 @@ function displayAuditTrail() {
     const qrBox = document.getElementById('dpp-qr-code');
     if (qrBox && typeof QRCode !== 'undefined') {
         qrBox.innerHTML = '';
+        
+        // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
+        const isEudrViolation = auditTrailData.pefCategories["Climate Change"].contribution_tree.Ingredients?.components?.some(c => c.universal_adjustments?.method === "eudr_dluc_penalty");
+        const eudrStatusText = isEudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
+        
         const qrTextPayload = `AIOXY VERIFIED AUDIT
 -------------------------
 DPP ID: ${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
@@ -7491,7 +7496,7 @@ Product: ${productName}
 Impact: ${totalImpact.toFixed(4)} kg CO₂e/kg
 Method: PEF 3.1 / CSRD
 Date: ${dateStr}
-Status: EUDR Screened`;
+Status: EUDR ${eudrStatusText}`;
 
         new QRCode(qrBox, {
             text: qrTextPayload,
