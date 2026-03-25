@@ -3572,23 +3572,32 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
         console.warn("⚠️ Missing ingredient data");
         return {
             totalCO2: 0,
+            totalWater: 0,
+            totalLand: 0,
+            totalFossil: 0,
             perKgCO2: 0,
+            perKgWater: 0,
+            perKgLand: 0,
+            perKgFossil: 0,
             logs: ["ERROR: Missing ingredient data"],
             qualityPenalty: 2.0,
             universal_adjustments: null,
-            is_primary: false
+            is_primary: false,
+            biogenicRemovals: 0
         };
     }
     
     let co2Base = ingredientData.data.pef["Climate Change"] || 0;
     let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
     let landBase = ingredientData.data.pef["Land Use"] || 0;
+    let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0; // 🛡️ NEW: Fossil tracking
     
     let log = [];
     let qualityPenalty = 0.0;
     let finalCO2 = co2Base;
     let finalWater = waterBase;
     let finalLand = landBase;
+    let finalFossil = fossilBase; // 🛡️ NEW
     let universal_adjustments = null;
 
     // 1. PRIMARY DATA OVERRIDE (The brand proves they are better)
@@ -3609,20 +3618,20 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
         const co2Adjustment = (0.6 * yieldAdjustment) + (0.4 * nAdjustment);
         const landAdjustment = yieldAdjustment; // Land use scales inversely with yield
 
-// AUDIT FIX: Connect Supplier Water Source to AWARE Math
-let waterAdjustment = 1.0;
-if (primaryData.waterSource === 'rainfed') {
-    // Rainfed = green water (not blue water). Massive reduction in AWARE scarcity impact.
-    waterAdjustment = 0.05; 
-    log.push(`💧 Verified Rainfed: -95% Water Scarcity Impact`);
-} else if (primaryData.waterSource === 'groundwater') {
-    // Groundwater depletion carries a higher penalty in PEF
-    waterAdjustment = 1.25;
-    log.push(`💧 Groundwater source identified: +25% Scarcity Penalty`);
-    }
+        // AUDIT FIX: Connect Supplier Water Source to AWARE Math
+        let waterAdjustment = 1.0;
+        if (primaryData.waterSource === 'rainfed') {
+            waterAdjustment = 0.05; 
+            log.push(`💧 Verified Rainfed: -95% Water Scarcity Impact`);
+        } else if (primaryData.waterSource === 'groundwater') {
+            waterAdjustment = 1.25;
+            log.push(`💧 Groundwater source identified: +25% Scarcity Penalty`);
+        }
+        
         finalCO2 *= co2Adjustment;
         finalLand *= landAdjustment;
         finalWater *= waterAdjustment;
+        finalFossil *= co2Adjustment; // 🛡️ FIX: Fossil energy tracks yield/fertilizer efficiency
         
         const practiceStr = primaryData.farmingPractice ? `[${primaryData.farmingPractice.toUpperCase()}]` : '';
         log.push(`✅ PRIMARY DATA VERIFIED ${practiceStr}: Yield adj: ${yieldAdjustment.toFixed(2)}x | N adj: ${nAdjustment.toFixed(2)}x`);
@@ -3631,95 +3640,99 @@ if (primaryData.waterSource === 'rainfed') {
         universal_adjustments = {
             adjusted_from_country: "Agribalyse Default",
             adjusted_for_country: primaryData.farmRegion || originCountry,
-            multipliers: { co2: co2Adjustment, land: landAdjustment, water: waterAdjustment },
+            multipliers: { co2: co2Adjustment, land: landAdjustment, water: waterAdjustment, fossil: co2Adjustment },
             adder: 0,
             method: "primary_data_override"
         };
     } 
-// 2. CONSERVATIVE DEFAULT (No primary data provided)
-else {
-    // If they select a country outside the EU but provide no proof, apply ISO Uncertainty Penalty
-    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
-    const eudrHighRisk = ['BR', 'ID', 'MY', 'AR']; 
+    // 2. CONSERVATIVE DEFAULT (No primary data provided)
+    else {
+        const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+        const eudrHighRisk = ['BR', 'ID', 'MY', 'AR']; 
 
-    // 🛡️ REGULATOR FIX: Prevent penalty double-stacking
-    if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
-        if (!eudrHighRisk.includes(originCountry)) {
-            qualityPenalty = 1.0; 
-            finalCO2 *= 1.15;
-            finalWater *= 1.15;
-            finalLand *= 1.15;
-            log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
-            
+        if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
+            if (!eudrHighRisk.includes(originCountry)) {
+                qualityPenalty = 1.0; 
+                finalCO2 *= 1.15;
+                finalWater *= 1.15;
+                finalLand *= 1.15;
+                finalFossil *= 1.15; // 🛡️ FIX: Apply uncertainty buffer to fossil use
+                log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
+                
+                universal_adjustments = {
+                    adjusted_from_country: "FR",
+                    adjusted_for_country: originCountry,
+                    multipliers: { co2: 1.15, land: 1.15, water: 1.15, fossil: 1.15 },
+                    adder: 0,
+                    method: "proxy_with_penalty"
+                };
+            }
+        } else {
+            log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
+            universal_adjustments = {
+                adjusted_from_country: "FR",
+                adjusted_for_country: originCountry || "FR",
+                multipliers: { co2: 1.0, land: 1.0, water: 1.0, fossil: 1.0 },
+                adder: 0,
+                method: "direct_agribalyse"
+            };
+        }
+    }
+    
+    // =========================================================
+    // 🛡️ MANDATORY EUDR OVERLAY - Applies to EVERYONE regardless of data source
+    // =========================================================
+    if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
+        finalCO2 *= 1.50;
+        finalLand *= 1.50;
+        finalFossil *= 1.50; // 🛡️ FIX: Apply EUDR penalty to fossil use
+        log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied. Product cannot legally enter EU market.`);
+        qualityPenalty = 4.0;
+        
+        if (!universal_adjustments) {
             universal_adjustments = {
                 adjusted_from_country: "FR",
                 adjusted_for_country: originCountry,
-                multipliers: { co2: 1.15, land: 1.15, water: 1.15 },
+                multipliers: { co2: 1.50, land: 1.50, water: 1.0, fossil: 1.50 },
                 adder: 0,
-                method: "proxy_with_penalty"
+                method: "eudr_dluc_penalty"
             };
+        } else {
+            universal_adjustments.method = "eudr_dluc_penalty";
+            universal_adjustments.multipliers.co2 *= 1.50;
+            universal_adjustments.multipliers.land *= 1.50;
+            universal_adjustments.multipliers.fossil = (universal_adjustments.multipliers.fossil || 1.0) * 1.50;
         }
-        // If it's EUDR high-risk, we skip the 15% penalty - they'll get the 50% later
-    } else {
-        log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
-        universal_adjustments = {
-            adjusted_from_country: "FR",
-            adjusted_for_country: originCountry || "FR",
-            multipliers: { co2: 1.0, land: 1.0, water: 1.0 },
-            adder: 0,
-            method: "direct_agribalyse"
-        };
-    }
-}
-// =========================================================
-// 🛡️ MANDATORY EUDR OVERLAY - Applies to EVERYONE regardless of data source
-// =========================================================
-if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
-    finalCO2 *= 1.50;
-    finalLand *= 1.50; 
-    log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied. Product cannot legally enter EU market.`);
-    qualityPenalty = 4.0;
-    
-    if (!universal_adjustments) {
-    universal_adjustments = {
-        adjusted_from_country: "FR",
-        adjusted_for_country: originCountry,
-        multipliers: { co2: 1.50, land: 1.50, water: 1.0 },
-        adder: 0,
-        method: "eudr_dluc_penalty"
-    };
-} else {
-    universal_adjustments.method = "eudr_dluc_penalty";
-universal_adjustments.multipliers.co2 *= 1.50; // 🛡️ REGULATOR FIX: Multiply, do not overwrite
-universal_adjustments.multipliers.land *= 1.50;
-    }
     }
 
     // Calculate final totals
-const totalCO2 = finalCO2 * quantityKg;
-const totalWater = finalWater * quantityKg;
-const totalLand = finalLand * quantityKg;
+    const totalCO2 = finalCO2 * quantityKg;
+    const totalWater = finalWater * quantityKg;
+    const totalLand = finalLand * quantityKg;
+    const totalFossil = finalFossil * quantityKg; // 🛡️ NEW
 
-// 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
-let biogenicRemovals = 0;
-if (primaryData && primaryData.farmingPractice === 'regen') {
-    biogenicRemovals = (co2Base * 0.20) * quantityKg; // 20% of base footprint sequestered
-    log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
-}
+    // 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
+    let biogenicRemovals = 0;
+    if (primaryData && primaryData.farmingPractice === 'regen') {
+        biogenicRemovals = (co2Base * 0.20) * quantityKg;
+        log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
+    }
 
-return {
-    totalCO2: totalCO2,
-    totalWater: totalWater,
-    totalLand: totalLand,
-    perKgCO2: finalCO2,
-    perKgWater: finalWater,
-    perKgLand: finalLand,
-    logs: log,
-    qualityPenalty: qualityPenalty,
-    universal_adjustments: universal_adjustments,
-    is_primary: !!primaryData,
-    biogenicRemovals: biogenicRemovals // <-- Expose this to the main engine
-};
+    return {
+        totalCO2: totalCO2,
+        totalWater: totalWater,
+        totalLand: totalLand,
+        totalFossil: totalFossil, // 🛡️ NEW
+        perKgCO2: finalCO2,
+        perKgWater: finalWater,
+        perKgLand: finalLand,
+        perKgFossil: finalFossil, // 🛡️ NEW
+        logs: log,
+        qualityPenalty: qualityPenalty,
+        universal_adjustments: universal_adjustments,
+        is_primary: !!primaryData,
+        biogenicRemovals: biogenicRemovals
+    };
     }
      
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
