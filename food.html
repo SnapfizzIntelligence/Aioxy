@@ -4795,18 +4795,23 @@ if (cat === "Climate Change") {
     });
     auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.total += inboundPkgCO2;
     auditTrail.pefCategories["Climate Change"].total += inboundPkgCO2;
-    }
-        else if (cat === "Land Use") {
-            baseImpactPerKg = impactResult.perKgLand;
-            impactTotal = impactResult.totalLand;
-        } 
-        else if (cat === "Water Use/Scarcity (AWARE)") {
-            baseImpactPerKg = impactResult.perKgWater;
-            impactTotal = impactResult.totalWater;
-        }
-        else {
-            impactTotal = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
-        }
+}
+else if (cat === "Land Use") {
+    baseImpactPerKg = impactResult.perKgLand;
+    impactTotal = impactResult.totalLand;
+} 
+else if (cat === "Water Use/Scarcity (AWARE)") {
+    baseImpactPerKg = impactResult.perKgWater;
+    impactTotal = impactResult.totalWater;
+}
+// 🛡️ REGULATOR FIX: Intercept Fossil scaling (ESRS E5)
+else if (cat === "Resource Use, fossils") {
+    baseImpactPerKg = impactResult.perKgFossil;
+    impactTotal = impactResult.totalFossil;
+}
+else {
+    impactTotal = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
+}
         
         // Note: The old window.tempQualityPenalties block has been intentionally deleted here as it is no longer needed.
 
