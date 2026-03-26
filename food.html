@@ -8966,6 +8966,55 @@ function saveSupplierData() {
     
     console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex].name}`);
     }
+    
+    // ================== SUPPLIER DATA BRIDGE ENGINE (STATELESS) ==================
+function generateSupplierLink() {
+    if (currentIngredientIndex === null) {
+        alert("Please select an ingredient first.");
+        return;
+    }
+    const ingredient = selectedIngredients[currentIngredientIndex];
+    // ⚠️ CHANGE THIS URL TO YOUR ACTUAL GITHUB URL
+    const baseUrl = "https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPO_NAME/supplier.html";
+    const url = `${baseUrl}?ing=${encodeURIComponent(ingredient.name)}`;
+    
+    navigator.clipboard.writeText(url).then(() => {
+        alert(`Link copied to clipboard!\n\nEmail this URL to your farmer/supplier:\n${url}`);
+    }).catch(err => {
+        alert(`Copy this URL and send it to your supplier:\n\n${url}`);
+    });
+}
+
+function decodeSupplierToken() {
+    const tokenInput = document.getElementById('supplierTokenInput').value.trim();
+    if (!tokenInput) {
+        alert("Please paste the token received from your supplier.");
+        return;
+    }
+    if (!tokenInput.startsWith('AIOXY-')) {
+        alert("Invalid token format. It must start with 'AIOXY-'.");
+        return;
+    }
+
+    try {
+        const base64Data = tokenInput.replace('AIOXY-', '');
+        const jsonStr = decodeURIComponent(escape(atob(base64Data)));
+        const data = JSON.parse(jsonStr);
+
+        document.getElementById('supplierFarmRegion').value = data.r || '';
+        document.getElementById('primaryNitrogen').value = data.n || '';
+        document.getElementById('primaryYield').value = data.y || '';
+        document.getElementById('supplierWaterSource').value = data.w || '';
+        document.getElementById('supplierPractice').value = data.p || '';
+        
+        document.getElementById('supplierTokenInput').value = ''; 
+        alert('✅ Supplier data successfully decoded and imported!\n\nReview the inputs, then click "Save Primary Data" to lock it into the audit trail.');
+    } catch (e) {
+        console.error("Token Decode Error:", e);
+        alert('Failed to decode the token. Ensure you copied the entire string including the AIOXY- prefix.');
+    }
+        }
+    
 // Add CSS for the modal
 const style = document.createElement('style');
 style.textContent = `
