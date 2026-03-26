@@ -2434,9 +2434,9 @@
                         <div class="metric-value">AWARE 2.0</div>
                         <div class="metric-label">Water Scarcity</div>
                         <p style="margin-top: 0.75rem; font-size: 0.85rem;">
-                            Regionalized water impact assessment with watershed-specific characterization factors
+    Water scarcity impacts are derived from AGRIBALYSE 3.2 regional averages, with dynamic 95% reductions applied for verified rainfed primary data.
                         </p>
-                    </div>
+                    </div> 
                     
                     <div class="metric-card">
                         <div class="metric-icon">
@@ -3183,45 +3183,7 @@ function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
     return emissions;
     }
 
-// ================== ISO 14046 AWARE WATER ENGINE (CRASH PROOF) ==================
-function calculateWatershedAWARE(waterVolumeM3, countryCode, watershed = 'NationalAvg') {
-    // 1. EMBEDDED COMPLIANCE DATA (Prevents "PHYSICS_DB is not defined" crash)
-    // Source: WULCA AWARE 1.2 (Annual Average)
-    const AWARE_FACTORS = {
-        "FR": 0.8,   // France (Low/Med)
-        "ES": 28.3,  // Spain (High)
-        "IT": 8.5,   // Italy
-        "DE": 0.9,   // Germany
-        "NL": 1.2,   // Netherlands
-        "BE": 1.4,   // Belgium
-        "UK": 0.6,   // UK
-        "IE": 0.4,   // Ireland
-        "PL": 2.1,   // Poland
-        "MA": 48.6,  // Morocco (Severe)
-        "EG": 96.2,  // Egypt (Extreme)
-        "TR": 22.4,  // Turkey
-        "US": 16.5,  // USA (Avg)
-        "CN": 21.3,  // China
-        "BR": 0.3,   // Brazil (Abundant)
-        "WORLD": 42.9 // Global Default
-    };
 
-    // 2. SAFE LOOKUP
-    // If country is missing, default to World Average (Conservative approach)
-    const factor = AWARE_FACTORS[countryCode] || AWARE_FACTORS["WORLD"];
-    
-    // 3. REGULATOR NOTE ON SEASONALITY
-    // We intentionally REMOVED the "Month" logic.
-    // ISO 14067 requires "Representative Annual Average" for static product labels.
-
-    const awareImpact = waterVolumeM3 * factor;
-    
-    return {
-        impact: awareImpact,
-        cf_used: factor,
-        watershed: "National Average (ISO Standard)"
-    };
-}
 
 
 // ================== SAFE HELPERS (NO CRASH) ==================
@@ -4146,23 +4108,36 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
         };
     });
 
-    // 🛡️ REGULATOR FIX: ADEME FOP Eco-Score "Organic Farming" Biodiversity Bonus
-    // Under ADEME rules, EU Organic certification grants a 15 µPt deduction to account for avoided pesticide toxicity.
-    const hasOrganic = window.selectedIngredients?.some(i => i.primaryData?.farmingPractice === 'organic');
-    const organicBonus = hasOrganic ? 15.0 : 0;
-    
-    // Standardize to microPoints (µPt) and apply the bonus (floor at 0)
-    let finalMicroPoints = (weightedScore * 1000000) - organicBonus;
-    finalMicroPoints = Math.max(0, finalMicroPoints);
+// 🛡️ REGULATOR FIX: ADEME FOP Eco-Score "Organic Farming" Proportionality
+// The 15 µPt deduction MUST be prorated by the physical mass percentage of organic ingredients.
+let organicMass = 0;
+let totalIngredientMass = 0;
 
-    return {
-        singleScore: finalMicroPoints,
-        normalizedScore: normalizedScore,
-        weightedScore: weightedScore,
-        breakdown: singleScoreBreakdown,
-        unit: 'µPt',
-        organic_bonus_applied: hasOrganic
-    };
+if (window.selectedIngredients && window.selectedIngredients.length > 0) {
+    window.selectedIngredients.forEach(i => {
+        totalIngredientMass += i.quantity;
+        if (i.primaryData?.farmingPractice === 'organic') {
+            organicMass += i.quantity;
+        }
+    });
+}
+
+const organicRatio = totalIngredientMass > 0 ? (organicMass / totalIngredientMass) : 0;
+const organicBonus = 15.0 * organicRatio; // Prorated deduction
+
+// Standardize to microPoints (µPt) and apply the prorated bonus (floor at 0)
+let finalMicroPoints = (weightedScore * 1000000) - organicBonus;
+finalMicroPoints = Math.max(0, finalMicroPoints);
+
+return {
+    singleScore: finalMicroPoints,
+    normalizedScore: normalizedScore,
+    weightedScore: weightedScore,
+    breakdown: singleScoreBreakdown,
+    unit: 'µPt',
+    organic_bonus_applied: organicRatio > 0,
+    organic_ratio: organicRatio // Passed for transparency
+};
     }
 
 // ================== AIOXY UNCERTAINTY ENGINE (FIXED: DYNAMIC AWARENESS) ==================
@@ -5281,10 +5256,10 @@ singleScoreSection.innerHTML = `
         ${rating} • Person Equivalent Impact
     </div>
     ${singleScoreResult.organic_bonus_applied ? `
-    <div style="margin-top: 0.75rem; display: inline-block; background: #E6FFFA; color: #2C7A7B; border: 1px solid #81E6D9; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">
-        <i class="fas fa-seedling"></i> ADEME Organic Bonus Applied (-15 µPt)
-    </div>
-    ` : ''}
+<div style="margin-top: 0.75rem; display: inline-block; background: #E6FFFA; color: #2C7A7B; border: 1px solid #81E6D9; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">
+    <i class="fas fa-seedling"></i> ADEME Organic Bonus: -${(15.0 * singleScoreResult.organic_ratio).toFixed(1)} µPt (${(singleScoreResult.organic_ratio * 100).toFixed(0)}% formulation)
+</div>
+` : ''}
     <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
         <div><strong>Normalized Score:</strong> ${singleScoreResult.normalizedScore.toExponential(3)}</div>
         <div><strong>Weighted Score:</strong> ${singleScoreResult.weightedScore.toExponential(3)}</div>
