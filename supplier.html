@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOXY | Supplier Data Request</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        body { background: #F8FAFC; color: #2D3748; line-height: 1.6; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; max-width: 500px; width: 100%; border-radius: 16px; padding: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: #0A2540; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; color: #1A365D; }
+        input, select { width: 100%; padding: 0.75rem; border: 2px solid #E2E8F0; border-radius: 8px; font-size: 1rem; }
+        input:focus, select:focus { outline: none; border-color: #0A2540; }
+        .btn { width: 100%; background: #00D4AA; color: white; border: none; padding: 1rem; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: #00B894; }
+        .notice { background: #E3F2FD; color: #084B82; padding: 1rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1.5rem; }
+        #resultBox { display: none; margin-top: 1.5rem; border-top: 2px solid #E2E8F0; padding-top: 1.5rem; text-align: center; }
+        .token-display { background: #F1F5F9; border: 1px solid #CBD5E1; padding: 1rem; font-family: monospace; word-break: break-all; border-radius: 6px; font-size: 0.9rem; color: #0A2540; margin: 1rem 0; user-select: all; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <div class="logo"><i class="fas fa-leaf" style="color: #00D4AA;"></i> AIOXY Bridge</div>
+        <h2 style="font-size: 1.2rem;">Primary Data Request</h2>
+        <div id="ingredientNameDisplay" style="color: #FF6B6B; font-weight: 700; margin-top: 0.5rem;">Ingredient</div>
+    </div>
+
+    <div class="notice">
+        <i class="fas fa-lock"></i> <strong>Zero-Knowledge Protocol:</strong> Your client is requesting primary agronomic data for Life Cycle Assessment (LCA) compliance. This portal is stateless. Your data is encoded into a text token. No data is stored on our servers.
+    </div>
+
+    <div id="inputForm">
+        <div class="form-group">
+            <label>Farm Region/Country</label>
+            <input type="text" id="r" placeholder="e.g., Normandy, France">
+        </div>
+        <div class="form-group">
+            <label>Nitrogen Fertilizer Applied (kg per ton of crop)</label>
+            <input type="number" id="n" placeholder="e.g., 15">
+        </div>
+        <div class="form-group">
+            <label>Crop Yield (kg per hectare)</label>
+            <input type="number" id="y" placeholder="e.g., 5000">
+        </div>
+        <div class="form-group">
+            <label>Irrigation Water Source</label>
+            <select id="w">
+                <option value="rainfed">Rainfed (no irrigation)</option>
+                <option value="surface">Surface water (river, lake)</option>
+                <option value="groundwater">Groundwater (well)</option>
+                <option value="mixed">Mixed irrigation</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Farming Practice</label>
+            <select id="p">
+                <option value="conventional">Conventional</option>
+                <option value="organic">Organic Certified</option>
+                <option value="regen">Regenerative Agriculture</option>
+                <option value="precision">Precision Farming</option>
+            </select>
+        </div>
+
+        <button class="btn" onclick="sealData()"><i class="fas fa-lock"></i> Seal & Generate Token</button>
+    </div>
+
+    <div id="resultBox">
+        <h3 style="color: #0A2540;"><i class="fas fa-check-circle" style="color: #48BB78;"></i> Data Sealed</h3>
+        <p style="font-size: 0.85rem; color: #718096; margin-top: 0.5rem;">Copy the secure token below and email it back to your client.</p>
+        
+        <div class="token-display" id="tokenDisplay"></div>
+        
+        <button class="btn" style="background: #0A2540;" onclick="copyToken()">
+            <i class="fas fa-copy"></i> Copy Token to Clipboard
+        </button>
+    </div>
+</div>
+
+<script>
+    // Extract the requested ingredient from the URL bar (e.g., ?ing=Tomato)
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedIng = urlParams.get('ing');
+    if (requestedIng) {
+        document.getElementById('ingredientNameDisplay').textContent = "For: " + requestedIng;
+    }
+
+    function sealData() {
+        const data = {
+            r: document.getElementById('r').value.trim(),
+            n: document.getElementById('n').value,
+            y: document.getElementById('y').value,
+            w: document.getElementById('w').value,
+            p: document.getElementById('p').value
+        };
+
+        if (!data.r || !data.n || !data.y) {
+            alert("Please fill in Region, Nitrogen, and Yield.");
+            return;
+        }
+
+        // 🛡️ UTF-8 Safe Encoding to support international characters (like é, ñ, etc.)
+        const jsonString = JSON.stringify(data);
+        const encodedString = btoa(unescape(encodeURIComponent(jsonString)));
+        const secureToken = "AIOXY-" + encodedString;
+
+        // Hide form, show result
+        document.getElementById('inputForm').style.display = 'none';
+        document.getElementById('resultBox').style.display = 'block';
+        document.getElementById('tokenDisplay').textContent = secureToken;
+    }
+
+    function copyToken() {
+        const tokenText = document.getElementById('tokenDisplay').textContent;
+        navigator.clipboard.writeText(tokenText).then(() => {
+            alert("Token copied! Paste this into an email to your client.");
+        });
+    }
+</script>
+</body>
+  </html>
