@@ -2657,7 +2657,24 @@
                 Replace Agribalyse averages with your <strong>specific farm data</strong> for accurate calculations.
                 Required for "Carbon Neutral" or comparative claims.
             </p>
-            
+
+            <!-- 🛡️ SUPPLIER DATA BRIDGE (STATELESS) -->
+<div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <div style="font-weight: 700; color: var(--primary); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+        <i class="fas fa-link"></i> Supplier Data Bridge (No Login Required)
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <button class="btn btn-outline" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 0.5rem;" onclick="generateSupplierLink()">
+            1. Copy Request Link for Farmer
+        </button>
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="supplierTokenInput" class="form-control" style="font-size: 0.85rem; padding: 0.5rem;" placeholder="2. Paste Farmer's 'AIOXY-' Token Here">
+            <button class="btn btn-success" style="font-size: 0.85rem; padding: 0.5rem; flex-shrink: 0;" onclick="decodeSupplierToken()">
+                3. Import
+            </button>
+        </div>
+    </div>
+</div>
             <div class="form-group">
                 <label class="form-label">Farm Region/Country</label>
                 <input type="text" id="supplierFarmRegion" class="form-control" placeholder="e.g., Normandy, France">
