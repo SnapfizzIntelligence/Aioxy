@@ -4414,9 +4414,9 @@ function validateAndApplyScenarios(baseResults, scenarios) {
     return applyScenarioPhysics(baseResults, scenarios);
 }
 
-// ================== FIX: PHYSICS-BASED SCENARIO ENGINE ==================
+// ================== FIX: PHYSICS-BASED SCENARIO ENGINE (MULTI-CATEGORY) ==================
 function applyScenarioPhysics(baseResults, scenarios) {
-    console.log("🔧 [Physics Fix] Applying scenarios with real physics...");
+    console.log("🔧 [Physics Fix] Applying scenarios across all environmental categories...");
     
     // Safety check
     if (!baseResults || !baseResults.finalPefResults) return {};
@@ -4425,42 +4425,40 @@ function applyScenarioPhysics(baseResults, scenarios) {
     let modifiedResults = JSON.parse(JSON.stringify(baseResults.finalPefResults));
     let scenarioLog = [];
     
-    // Get country data for dynamic calculations
-    const country = document.getElementById('manufacturingCountry')?.value || 'FR';
-    const countryData = aioxyData.countries && aioxyData.countries[country];
+    // 🛡️ REGULATOR FIX: Helper to apply physics across ALL mandatory ESRS categories simultaneously
+    const applyToAll = (treeNode, multiplier) => {
+        ["Climate Change", "Water Use/Scarcity (AWARE)", "Land Use", "Resource Use, fossils"].forEach(cat => {
+            if (modifiedResults[cat]?.contribution_tree?.[treeNode]) {
+                modifiedResults[cat].contribution_tree[treeNode].total *= multiplier;
+            }
+        });
+    };
     
-// 1. RENEWABLE ENERGY (Physics: Actual grid mix reduction)
-const currentEnergy = document.getElementById('energySource')?.value;
-
-// 🛡️ REGULATOR FIX: Prevent double-counting if they already use renewables
-if (scenarios.renewables && currentEnergy !== 'renewable') {
-    if (modifiedResults["Climate Change"]?.contribution_tree?.Manufacturing) {
-        // REAL DATA: Country renewable electricity mix (IEA 2023)
-        const renewableMix = {
-            "FR": 0.33, "DE": 0.46, "ES": 0.42, "IT": 0.36,
-            "NL": 0.27, "SE": 0.63, "DK": 0.50, "default": 0.30
-        };
-        
-        const country = document.getElementById('manufacturingCountry')?.value || 'FR';
-        const renewablePct = renewableMix[country] || renewableMix.default;
-        
-        const reductionFactor = Math.max(0.05, 1 - renewablePct);
-        modifiedResults["Climate Change"].contribution_tree.Manufacturing.total *= reductionFactor;
-        
-        scenarioLog.push(`Renewables: -${((1-reductionFactor)*100).toFixed(0)}% (${(renewablePct*100).toFixed(0)}% renewable grid)`);
-    }
+    // 1. RENEWABLE ENERGY (Physics: Actual grid mix reduction)
+    const currentEnergy = document.getElementById('energySource')?.value;
+    if (scenarios.renewables && currentEnergy !== 'renewable') {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Manufacturing) {
+            const renewableMix = {
+                "FR": 0.33, "DE": 0.46, "ES": 0.42, "IT": 0.36,
+                "NL": 0.27, "SE": 0.63, "DK": 0.50, "default": 0.30
+            };
+            const country = document.getElementById('manufacturingCountry')?.value || 'FR';
+            const renewablePct = renewableMix[country] || renewableMix.default;
+            const reductionFactor = Math.max(0.05, 1 - renewablePct);
+            
+            applyToAll("Manufacturing", reductionFactor);
+            scenarioLog.push(`Renewables: -${((1-reductionFactor)*100).toFixed(0)}% (${(renewablePct*100).toFixed(0)}% renewable grid)`);
+        }
     }
     
     // 2. LOCAL SOURCING (Physics: Distance ratio reduction)
     if (scenarios.local) {
         if (modifiedResults["Climate Change"]?.contribution_tree?.Transport) {
             const originalDist = parseFloat(document.getElementById('transportDistance').value) || 300;
-            const optimizedDist = 50; // Local supply chain target
-            
-            // PHYSICS: Transport emissions scale linearly with distance (kg CO₂ = distance × factor)
+            const optimizedDist = 50;
             const distanceRatio = Math.min(1, optimizedDist / Math.max(originalDist, 1));
-            modifiedResults["Climate Change"].contribution_tree.Transport.total *= distanceRatio;
             
+            applyToAll("Transport", distanceRatio);
             scenarioLog.push(`Local: ${originalDist}km → ${optimizedDist}km (${(distanceRatio*100).toFixed(0)}% transport)`);
         }
     }
@@ -4468,36 +4466,30 @@ if (scenarios.renewables && currentEnergy !== 'renewable') {
     // 3. LIGHTWEIGHT PACKAGING (Physics: Mass reduction)
     if (scenarios.lightweight) {
         if (modifiedResults["Climate Change"]?.contribution_tree?.Packaging) {
-            // MATERIAL SCIENCE: Typical weight reduction through design optimization
-            const weightReduction = 0.80; // -20% mass (achievable through material choice/design)
-            modifiedResults["Climate Change"].contribution_tree.Packaging.total *= weightReduction;
+            const weightReduction = 0.80; // -20% mass
+            applyToAll("Packaging", weightReduction);
             scenarioLog.push(`Lightweight: -20% packaging mass (material optimization)`);
         }
     }
     
     // 4. REGENERATIVE AGRICULTURE (Physics: Soil carbon sequestration)
-// REGULATOR FIX: GCD explicitly bans netting out removals from gross emissions.
-if (scenarios.regen_ag) {
-    if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
-        const currentTotal = modifiedResults["Climate Change"].contribution_tree.Ingredients.total;
-        const potentialRemovals = currentTotal * 0.20; // 20% estimated potential
-        const existingRemovals = modifiedResults["Climate Change"].biogenic_removals || 0;
-        
-        // 🛡️ REGULATOR FIX: Prevent "Double-Dipping". Only add the difference if they haven't already verified it.
-        const newRemovals = Math.max(0, potentialRemovals - existingRemovals);
-        
-        modifiedResults["Climate Change"].biogenic_removals = existingRemovals + newRemovals;
-        
-        scenarioLog.push(`Regen Ag: ${newRemovals.toFixed(4)} kg CO₂e hypothetical sequestration added (No Double Counting)`);
-    }
+    if (scenarios.regen_ag) {
+        if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
+            const currentTotal = modifiedResults["Climate Change"].contribution_tree.Ingredients.total;
+            const potentialRemovals = currentTotal * 0.20;
+            const existingRemovals = modifiedResults["Climate Change"].biogenic_removals || 0;
+            const newRemovals = Math.max(0, potentialRemovals - existingRemovals);
+            
+            modifiedResults["Climate Change"].biogenic_removals = existingRemovals + newRemovals;
+            scenarioLog.push(`Regen Ag: ${newRemovals.toFixed(4)} kg CO₂e hypothetical sequestration added (No Double Counting)`);
+        }
     }
     
     // 5. ZERO WASTE MANUFACTURING (Physics: Yield efficiency)
     if (scenarios.no_waste) {
         if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
-            // PROCESS ENGINEERING: Waste reduction = less raw material needed
             const yieldImprovement = 0.90; // 10% less waste = 10% less input needed
-            modifiedResults["Climate Change"].contribution_tree.Ingredients.total *= yieldImprovement;
+            applyToAll("Ingredients", yieldImprovement);
             scenarioLog.push(`Zero Waste: +10% yield efficiency (process optimization)`);
         }
     }
@@ -4505,23 +4497,14 @@ if (scenarios.regen_ag) {
     // 6. BULK SHIPPING (Physics: Modal shift efficiency)
     if (scenarios.bulk) {
         if (modifiedResults["Climate Change"]?.contribution_tree?.Transport) {
-            // GLEC 2023 FACTORS: 
-            // Road (diesel HGV): 0.071 kg CO₂e/ton-km
-            // Rail (electric): 0.023 kg CO₂e/ton-km (3.1× more efficient)
-            // Sea (container): 0.005 kg CO₂e/ton-km (14.2× more efficient)
-            
             const currentMode = document.getElementById('transportMode')?.value || 'road';
             let efficiencyGain = 1.0;
             
-            if (currentMode === 'road') efficiencyGain = 0.071; // Base
-            if (scenarios.bulk && currentMode === 'road') {
-                efficiencyGain = 0.005; // Road → Sea: 14.2× improvement
-            }
+            if (currentMode === 'road') efficiencyGain = 0.071;
+            if (scenarios.bulk && currentMode === 'road') efficiencyGain = 0.005;
             
-            // Apply efficiency gain (lower number = better)
-            const improvementFactor = efficiencyGain / 0.071; // Normalized to road
-            modifiedResults["Climate Change"].contribution_tree.Transport.total *= improvementFactor;
-            
+            const improvementFactor = efficiencyGain / 0.071;
+            applyToAll("Transport", improvementFactor);
             scenarioLog.push(`Bulk Shipping: Modal shift efficiency (${(improvementFactor*100).toFixed(1)}% of ${currentMode})`);
         }
     }
@@ -4529,9 +4512,8 @@ if (scenarios.regen_ag) {
     // 7. CIRCULAR PACKAGING (Physics: Closed-loop CFF improvement)
     if (scenarios.circular_pkg) {
         if (modifiedResults["Climate Change"]?.contribution_tree?.Packaging) {
-            // CIRCULAR ECONOMY STUDIES: Closed-loop reduces packaging impact by 40-80%
-            const circularReduction = 0.40; // -60% impact (midpoint of range)
-            modifiedResults["Climate Change"].contribution_tree.Packaging.total *= circularReduction;
+            const circularReduction = 0.40; // -60% impact
+            applyToAll("Packaging", circularReduction);
             scenarioLog.push(`Circular Pkg: Closed loop cycle (-60% vs linear)`);
         }
     }
@@ -4546,12 +4528,11 @@ if (scenarios.regen_ag) {
             const pkg = tree.Packaging?.total || 0;
             const upst = tree.Upstream?.total || 0;
             
-            // PHYSICS: Total = sum of all contributions (mass/energy conservation)
             modifiedResults[cat].total = ing + mfg + trans + pkg + upst;
         }
     });
     
-    console.log("✅ [Physics Fix] Scenario Engine Applied:", scenarioLog);
+    console.log("✅ [Physics Fix] Multi-Category Scenario Engine Applied:", scenarioLog);
     return modifiedResults;
     }
 
@@ -8120,10 +8101,16 @@ function exportCSRDMatrix() {
     const dqrOverall = auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5';
 
     const getDQR = (component) => {
-        if (!component) return dqrOverall;
-        const dqrValue = component.dqr_score ?? component.data_quality_rating;
-        return (dqrValue !== undefined && dqrValue !== null && !isNaN(dqrValue)) ? parseFloat(dqrValue).toFixed(2) : dqrOverall;
-    };
+    if (!component) return dqrOverall;
+    
+    // 🛡️ REGULATOR FIX: Actively search the DQR ledger for the exact ingredient's true score
+    const specificDqrObj = auditTrailData.dqr_summary?.component_dqrs?.find(d => d.name === component.name);
+    if (specificDqrObj && specificDqrObj.dqr) return specificDqrObj.dqr.toFixed(2);
+    
+    // Fallback for non-ingredient nodes (Manufacturing, Transport, Packaging)
+    const dqrValue = component.dqr_score ?? component.data_quality_rating;
+    return (dqrValue !== undefined && dqrValue !== null && !isNaN(dqrValue)) ? parseFloat(dqrValue).toFixed(2) : dqrOverall;
+};
 
     const getPackagingMaterialName = () => {
         const el = document.getElementById('packagingMaterial');
