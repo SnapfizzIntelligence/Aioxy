@@ -1646,10 +1646,16 @@
                 </div>
                 </div>
 
-                <button class="btn btn-success" onclick="calculateImpact()" style="width: 100%; padding: 1.25rem; font-size: 1.1rem;">
-                    <i class="fas fa-rocket"></i>
-                    Calculate Environmental Impact
-                </button>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+    <button class="btn btn-outline" onclick="startNewAudit()" style="flex: 1; padding: 1.25rem; border-color: var(--accent); color: var(--accent);">
+        <i class="fas fa-trash-alt"></i>
+        Start New Audit
+    </button>
+    <button class="btn btn-success" onclick="calculateImpact()" style="flex: 3; padding: 1.25rem; font-size: 1.1rem;">
+        <i class="fas fa-rocket"></i>
+        Calculate Environmental Impact
+    </button>
+                </div>
             </div>
 
             <!-- Results Tab -->
@@ -8138,24 +8144,29 @@ function exportCSRDMatrix() {
     const csvLines = [];
 
     // =============================================================
-    // SECTION 1: METADATA
-    // =============================================================
-    csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
-    csvLines.push(`Assessment ID (DPP),${dppId}`);
-    csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E4 (Land) / E5 (Resources)`);
-    csvLines.push(`System Boundary,Cradle-to-Retail`);
-    csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
-    csvLines.push(`Functional Unit,1 kg of product`);
+// SECTION 1: METADATA & TAMPER SEAL
+// =============================================================
+// 🛡️ REGULATOR FIX: Generate an immutable checksum for the final results
+const resultsPayload = `${dppId}|${totalCo2}|${totalWater}|${totalLand}|${totalFossil}`;
+const matrixChecksum = generateAuditHash(resultsPayload).substring(0, 16);
 
-    let volumeInput = document.getElementById('annualVolume')?.value;
-    let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
-    csvLines.push(`Volume Assessed,${volumeText}`);
-    csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
-    csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${totalWater}`);
-    csvLines.push(`ESRS E4: Biodiversity & Land Use (Pt),${totalLand}`); // 🛡️ NEW: E4
-    csvLines.push(`ESRS E5: Fossil Resources (MJ),${totalFossil}`);
-    csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
-    csvLines.push(``); 
+csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
+csvLines.push(`Assessment ID (DPP),${dppId}`);
+csvLines.push(`AIOXY Matrix Checksum,${matrixChecksum} (Tamper-Evident Seal)`); // 🛡️ NEW
+csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E4 (Land) / E5 (Resources)`);
+csvLines.push(`System Boundary,Cradle-to-Retail`);
+csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
+csvLines.push(`Functional Unit,1 kg of product`);
+
+let volumeInput = document.getElementById('annualVolume')?.value;
+let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
+csvLines.push(`Volume Assessed,${volumeText}`);
+csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
+csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${totalWater}`);
+csvLines.push(`ESRS E4: Biodiversity & Land Use (Pt),${totalLand}`);
+csvLines.push(`ESRS E5: Fossil Resources (MJ),${totalFossil}`);
+csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
+csvLines.push(``);
     
     // =============================================================
     // SECTION 2: COLUMN HEADERS (14 Columns)
@@ -9030,6 +9041,70 @@ document.head.appendChild(style);
         const advanced = document.getElementById('advancedOptions');
         if (advanced) advanced.classList.toggle('hidden');
     }
+
+    // ================== WORKFLOW: START NEW AUDIT ==================
+function startNewAudit() {
+    const confirmReset = confirm("Are you sure you want to start a new audit? This will clear all current product data, ingredients, and settings.");
+    if (!confirmReset) return;
+
+    // 1. Purge the sticky state
+    localStorage.removeItem('aioxy_pitch_state');
+    
+    // 2. Reset global variables
+    selectedIngredients = [];
+    currentDPPId = null;
+    finalPefResults = {};
+    massBalanceData = {};
+    auditTrailData = {};
+    
+    // 3. Reset core UI inputs
+    const pName = document.getElementById('productName');
+    if(pName) pName.value = 'New Product';
+    
+    const pWeight = document.getElementById('productWeight');
+    if(pWeight) pWeight.value = '0.200';
+    
+    const protein = document.getElementById('proteinContent');
+    if(protein) protein.value = '';
+    
+    const customBase = document.getElementById('customBaseline');
+    if(customBase) customBase.value = '';
+    
+    // 4. Reset dropdowns and toggles
+    const selects = [
+        {id: 'productCategory', val: 'auto'},
+        {id: 'comparisonBaseline', val: 'auto'},
+        {id: 'manufacturingCountry', val: 'FR'},
+        {id: 'processingMethod', val: 'none'},
+        {id: 'transportMode', val: 'road'},
+        {id: 'transportDistance', val: '300'},
+        {id: 'packagingMaterial', val: 'cardboard'},
+        {id: 'energySource', val: 'grid'},
+        {id: 'packagingEoL', val: 'eu_average'}
+    ];
+    
+    selects.forEach(s => {
+        const el = document.getElementById(s.id);
+        if(el) el.value = s.val;
+    });
+    
+    const primaryToggle = document.getElementById('usePrimaryFactoryData');
+    if (primaryToggle) {
+        primaryToggle.checked = false;
+        if (typeof toggleFactoryInputs === 'function') toggleFactoryInputs();
+    }
+    
+    const crisisToggle = document.getElementById('crisisRoutingToggle');
+    if (crisisToggle) crisisToggle.checked = false;
+
+    // 5. Clear the interface
+    updateIngredientList();
+    clearResults();
+    resetScenarios();
+    showTab('calculator');
+    
+    console.log('✅ [Workflow] System reset for new audit.');
+}
 
     // ================== INITIALIZE APPLICATION ==================
     function initApp() {
