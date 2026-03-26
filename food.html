@@ -8974,8 +8974,7 @@ function generateSupplierLink() {
         return;
     }
     const ingredient = selectedIngredients[currentIngredientIndex];
-    // ⚠️ CHANGE THIS URL TO YOUR ACTUAL GITHUB URL
-    const baseUrl = "https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPO_NAME/supplier.html";
+    const baseUrl = "https://snapfizzintelligence.github.io/Aioxy/supplier.html";
     const url = `${baseUrl}?ing=${encodeURIComponent(ingredient.name)}`;
     
     navigator.clipboard.writeText(url).then(() => {
