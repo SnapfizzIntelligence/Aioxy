@@ -8954,7 +8954,7 @@ function saveSupplierData() {
     if (currentIngredientIndex === null) return;
     
     const farmRegion = document.getElementById('supplierFarmRegion').value.trim();
-    // CORRECTED IDs: primaryNitrogen and primaryYield (match your HTML)
+    const geolocation = document.getElementById('supplierGeolocation').value.trim(); // 🛡️ NEW
     const nitrogen = parseFloat(document.getElementById('primaryNitrogen').value);
     const yieldVal = parseFloat(document.getElementById('primaryYield').value);
     const waterSource = document.getElementById('supplierWaterSource').value;
@@ -8969,6 +8969,7 @@ function saveSupplierData() {
     // Save to ingredient
     selectedIngredients[currentIngredientIndex].primaryData = {
         farmRegion,
+        geolocation, // 🛡️ NEW
         nitrogenKgPerTon: nitrogen,
         yieldKgPerHa: yieldVal,
         waterSource,
@@ -8982,7 +8983,7 @@ function saveSupplierData() {
     closeSupplierModal();
     
     console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex].name}`);
-    }
+        }
     
     // ================== SUPPLIER DATA BRIDGE ENGINE (STATELESS) ==================
 function generateSupplierLink() {
@@ -9018,10 +9019,11 @@ function decodeSupplierToken() {
         const data = JSON.parse(jsonStr);
 
         document.getElementById('supplierFarmRegion').value = data.r || '';
-        document.getElementById('primaryNitrogen').value = data.n || '';
-        document.getElementById('primaryYield').value = data.y || '';
-        document.getElementById('supplierWaterSource').value = data.w || '';
-        document.getElementById('supplierPractice').value = data.p || '';
+document.getElementById('supplierGeolocation').value = data.g || ''; // 🛡️ NEW: EUDR GPS
+document.getElementById('primaryNitrogen').value = data.n || '';
+document.getElementById('primaryYield').value = data.y || '';
+document.getElementById('supplierWaterSource').value = data.w || '';
+document.getElementById('supplierPractice').value = data.p || '';
         
         document.getElementById('supplierTokenInput').value = ''; 
         alert('✅ Supplier data successfully decoded and imported!\n\nReview the inputs, then click "Save Primary Data" to lock it into the audit trail.');
@@ -9033,7 +9035,7 @@ function decodeSupplierToken() {
     
 // Add CSS for the modal
 const style = document.createElement('style');
-style.textContent = `
+style.textContent = a
     .hidden { display: none !important; }
     #supplierModal { transition: opacity 0.3s ease; }
 `;
