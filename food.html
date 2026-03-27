@@ -3669,20 +3669,26 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
     }
     
     // =========================================================
-// 🛡️ MANDATORY EUDR OVERLAY - Applies to EVERYONE regardless of data source
+// 🛡️ MANDATORY EUDR OVERLAY - Commodity & Origin Specific
 // =========================================================
-if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
+// EUDR specifically targets: Cattle (Beef/Dairy), Cocoa, Coffee, Oil Palm, Rubber, Soya, Wood/Paper
+const eudrCommodities = ['beef', 'cattle', 'cow', 'milk', 'cheese', 'cocoa', 'chocolate', 'coffee', 'palm', 'soy', 'soybean', 'rubber', 'wood', 'paper', 'cardboard'];
+const isEudrCommodity = eudrCommodities.some(c => 
+    ingredientData.name.toLowerCase().includes(c) || 
+    ingredientData.id.toLowerCase().includes(c)
+);
+
+if (['BR', 'ID', 'MY', 'AR'].includes(originCountry) && isEudrCommodity) {
     finalCO2 *= 1.50;
     finalLand *= 1.50;
-    // 🛡️ REGULATOR FIX: Removed finalFossil *= 1.50. Deforestation does not alter tractor fuel thermodynamics.
-    log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}). +50% Deforestation Risk Multiplier applied. Product cannot legally enter EU market.`);
+    log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}) for regulated commodity. +50% Deforestation Risk Multiplier applied.`);
     qualityPenalty = 4.0;
     
     if (!universal_adjustments) {
         universal_adjustments = {
             adjusted_from_country: "FR",
             adjusted_for_country: originCountry,
-            multipliers: { co2: 1.50, land: 1.50, water: 1.0, fossil: 1.0 }, // Fossil remains 1.0
+            multipliers: { co2: 1.50, land: 1.50, water: 1.0, fossil: 1.0 }, 
             adder: 0,
             method: "eudr_dluc_penalty"
         };
@@ -3690,9 +3696,8 @@ if (['BR', 'ID', 'MY', 'AR'].includes(originCountry)) {
         universal_adjustments.method = "eudr_dluc_penalty";
         universal_adjustments.multipliers.co2 *= 1.50;
         universal_adjustments.multipliers.land *= 1.50;
-        // Fossil multiplier remains untouched
     }
-    }
+     }
 
     // Calculate final totals
     const totalCO2 = finalCO2 * quantityKg;
@@ -8131,7 +8136,11 @@ csvLines.push(`AIOXY Matrix Checksum,${matrixChecksum} (Tamper-Evident Seal)`); 
 csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E4 (Land) / E5 (Resources)`);
 csvLines.push(`System Boundary,Cradle-to-Retail`);
 csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
-csvLines.push(`Functional Unit,1 kg of product`);
+// 🛡️ REGULATOR FIX: Synchronize Functional Unit across all exports
+const userProteinCSV = parseFloat(document.getElementById('proteinContent')?.value) || 0;
+const functionalUnitCSV = userProteinCSV > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of product";
+
+csvLines.push(`Functional Unit,${functionalUnitCSV}`);
 
 let volumeInput = document.getElementById('annualVolume')?.value;
 let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
