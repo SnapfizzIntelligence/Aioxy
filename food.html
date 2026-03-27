@@ -3683,9 +3683,12 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
 // =========================================================
 // EUDR specifically targets: Cattle (Beef/Dairy), Cocoa, Coffee, Oil Palm, Rubber, Soya, Wood/Paper
 const eudrCommodities = ['beef', 'cattle', 'cow', 'milk', 'cheese', 'cocoa', 'chocolate', 'coffee', 'palm', 'soy', 'soybean', 'rubber', 'wood', 'paper', 'cardboard'];
+// 🛡️ CRASH FIX: Safely fallback if the DB object lacks an internal .id or .name string
+const safeName = (ingredientData.name || "").toLowerCase();
+const safeId = (ingredientData.id || ingredientData.dbId || "").toLowerCase();
+
 const isEudrCommodity = eudrCommodities.some(c => 
-    ingredientData.name.toLowerCase().includes(c) || 
-    ingredientData.id.toLowerCase().includes(c)
+    safeName.includes(c) || safeId.includes(c)
 );
 
 if (['BR', 'ID', 'MY', 'AR'].includes(originCountry) && isEudrCommodity) {
@@ -4917,7 +4920,8 @@ finalIngredients.forEach(ing => {
 // 🛡️ REGULATOR FIX: Always use strict ISO code to prevent intercontinental sea freight errors
 if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIngredientOrigin(ing.id);
 
-    const nLower = ing.name.toLowerCase();
+    
+const nLower = (ing.name || "").toLowerCase();
     const requiresColdChain = nLower.includes('beef') || nLower.includes('chicken') || 
                               nLower.includes('pork') || nLower.includes('milk') || 
                               nLower.includes('cheese') || nLower.includes('salmon') || 
