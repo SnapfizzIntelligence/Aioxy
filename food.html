@@ -7967,7 +7967,14 @@ const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${
                     setNormal(); doc.text("This document is cryptographically sealed.", 15, currentY + 8);
                     doc.text("Any modification invalidates the audit trail.", 15, currentY + 14);
                     
-                    doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
+                    // 🛡️ REGULATOR FIX: PEFCR v3.1 B2C Single Score Warning (Footer)
+doc.setFontSize(7);
+doc.setTextColor(150, 150, 150);
+doc.text("COMPLIANCE NOTE: PEF Single Score (µPt) is restricted to internal B2B eco-design and supply chain diagnostics.", pw/2, ph - 8, { align: "center" });
+doc.text("Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.", pw/2, ph - 5, { align: "center" });
+
+doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
+    
                 } catch (qrErr) {
                     console.warn("Non-fatal QR Error:", qrErr);
                     doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
@@ -8150,6 +8157,11 @@ csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${totalWater}`);
 csvLines.push(`ESRS E4: Biodiversity & Land Use (Pt),${totalLand}`);
 csvLines.push(`ESRS E5: Fossil Resources (MJ),${totalFossil}`);
 csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
+csvLines.push(``); // Empty row as separator
+
+// 🛡️ REGULATOR FIX: PEFCR v3.1 B2C Single Score Warning
+csvLines.push(`# AUDIT WARNING: PEF Single Score (µPt) is restricted to internal B2B eco-design and supply chain diagnostics.`);
+csvLines.push(`# Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.`);
 csvLines.push(``);
     
     // =============================================================
