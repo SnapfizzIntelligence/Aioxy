@@ -2412,16 +2412,15 @@
                 </div>
                 
                 <div class="compliance-notice">
-                    <div class="compliance-icon">
-                        <i class="fas fa-flask"></i>
-                    </div>
-                    <div>
-                        <strong>Science-Based Methodology Statement</strong><br><br>
-                        Environmental estimates made by AIOXY regarding this product are based on a Life Cycle Assessment (LCA) 
-                        conducted using the Product Environmental Footprint (PEF) methodology as defined by the European Commission Joint Research Centre (JRC).<br><br>
-                        The specific methodology, including data sources (AGRIBALYSE 3.2, JRC EF 3.1, GLEC v3.2) and calculation rules (CFF, AWARE, Economic Allocation), 
-                        is fully documented and transparent via the Digital Transparency Card.
-                    </div>
+    <div class="compliance-icon">
+        <i class="fas fa-gavel"></i>
+    </div>
+    <div>
+        <strong>Science-Based Methodology & Regulatory Alignment</strong><br><br>
+        Environmental estimates are based on a Comparative Life Cycle Assessment (LCA) utilizing the <strong>Product Environmental Footprint (PEF) 3.1</strong> methodology.<br><br>
+        <strong>ESRS E2 (Pollution) & PEF 3.1 Alignment:</strong> Material pollution impacts are quantified natively through direct thermodynamic and chemical models rather than qualitative estimation. Specifically tracked via PEF mandatory categories: Freshwater Eutrophication (kg P eq), Marine Eutrophication (kg N eq), and Human Toxicity (CTUh).<br><br>
+        <strong>ISO 14044 Allocation Procedure:</strong> For multi-output agricultural and thermal extrusion processes, impacts are allocated based on physical mass ratio (Mass Allocation) in strict accordance with ISO 14044:2006+A1:2018 hierarchy, prioritizing physical causality.
+    </div>
                 </div>
                 
                 <h3 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">PEF 3.1 Methodology Used</h3>
@@ -2684,6 +2683,17 @@
             <div class="form-group">
                 <label class="form-label">Farm Region/Country</label>
                 <input type="text" id="supplierFarmRegion" class="form-control" placeholder="e.g., Normandy, France">
+            </div>
+            <div class="form-group">
+    <label class="form-label">
+        <i class="fas fa-map-marker-alt"></i> 
+        Primary Origin Geolocation (EUDR Mandate)
+    </label>
+    <input type="text" id="supplierGeolocation" class="form-control" placeholder="e.g., 43.6045, 1.4442">
+    <div style="font-size: 0.7rem; color: #718096; margin-top: 0.25rem;">
+        <i class="fas fa-info-circle"></i> 
+        GPS coordinates required for EUDR-regulated commodities: Soya, Cocoa, Coffee, Palm Oil, Cattle, Rubber, Wood.
+    </div>
             </div>
             
             <div class="form-group">
