@@ -4863,15 +4863,16 @@ if (cat === "Climate Change" && impactResult.biogenicRemovals > 0) {
 }
 
 auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-            name: ing.name,
-            id: item.id,
-            quantity_kg: item.quantity,        
-            farm_mass_kg: grownMass,            
-            subtotal: allocatedTotal,
-            note: noteText,
-            universal_adjustments: universalAdjustments,
-            primary_data_used: !!item.primaryData
-        });
+    name: ing.name,
+    id: item.id,
+    quantity_kg: item.quantity,        
+    farm_mass_kg: grownMass,            
+    subtotal: allocatedTotal,
+    note: noteText,
+    universal_adjustments: universalAdjustments,
+    primary_data_used: !!item.primaryData,
+    primary_data: item.primaryData // 🛡️ REGULATOR FIX: Save payload for auditor visibility
+});
 
         auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
         auditTrail.pefCategories[cat].total += allocatedTotal;
@@ -7256,8 +7257,15 @@ function displayAuditTrail() {
 
         if (adj.method === "eudr_dluc_penalty") {
             bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
-        } else if (isPrimary) {
-            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
+        } else if (isPrimary && ing.primary_data) {
+    // 🛡️ REGULATOR FIX: Expose the primary data to the auditor
+    const pd = ing.primary_data;
+    bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span><br>
+        <span style="font-size:0.85em; color: #555;">Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t<br>
+        GPS: ${pd.geolocation || 'Not provided'}</span>`;
+} else if (isPrimary) {
+    bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
+            
         } else if (isProxy) {
             let factors = [];
             if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
