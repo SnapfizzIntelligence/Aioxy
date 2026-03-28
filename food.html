@@ -7825,19 +7825,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 setH2(); doc.text(ing.name.toUpperCase(), 15, traceY);
                 
                 const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
-                const isPrimary = ing.primary_data_used ? 'TRUE (Primary)' : 'FALSE (Secondary)';
-                const eudrStatus = ['BR', 'ID', 'MY', 'AR'].includes(origin) ? 'HIGH RISK' : 'COMPLIANT';
+const isPrimary = ing.primary_data_used ? 'TRUE (Primary)' : 'FALSE (Secondary)';
+const eudrStatus = ['BR', 'ID', 'MY', 'AR'].includes(origin) ? 'HIGH RISK' : 'COMPLIANT';
+const gpsData = (ing.primary_data_used && ing.primary_data?.geolocation) ? ing.primary_data.geolocation : 'N/A'; // 🛡️ NEW
 
-                doc.autoTable({
-                    startY: traceY + 5,
-                    body: [
-                        ['Quantity:', `${ing.quantity_kg.toFixed(6)} kg`],
-                        ['Origin:', origin],
-                        ['Data Source:', 'AGRIBALYSE 3.2'],
-                        ['EUDR Risk:', eudrStatus],
-                        ['Primary Data:', isPrimary],
-                        ['CO₂e Impact:', `${ing.subtotal.toFixed(6)} kg CO₂e`]
-                    ],
+doc.autoTable({
+    startY: traceY + 5,
+    body: [
+        ['Quantity:', `${ing.quantity_kg.toFixed(6)} kg`],
+        ['Origin:', origin],
+        ['Data Source:', 'AGRIBALYSE 3.2'],
+        ['EUDR Risk:', eudrStatus],
+        ['Primary Data:', isPrimary],
+        ['Geolocation (GPS):', gpsData], // 🛡️ NEW
+        ['CO₂e Impact:', `${ing.subtotal.toFixed(6)} kg CO₂e`]
+    ],
                     theme: 'plain', styles: { cellPadding: 1 },
                     columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: [10, 37, 64] } }
                 });
