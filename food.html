@@ -2695,6 +2695,13 @@
         GPS coordinates required for EUDR-regulated commodities: Soya, Cocoa, Coffee, Palm Oil, Cattle, Rubber, Wood.
     </div>
             </div>
+            <div class="form-group">
+    <label>EUDR Due Diligence Statement (DDS) Reference</label>
+    <input type="text" id="dds" placeholder="e.g., EUDR-2026-ABC12345">
+    <div style="font-size: 0.75rem; color: #718096; margin-top: 0.25rem;">
+        <i class="fas fa-file-contract"></i> Optional. If already submitted to the EU Information System.
+    </div>
+            </div>
             
             <div class="form-group">
     <label>Nitrogen Fertilizer (kg per ton of crop)</label>
@@ -7257,12 +7264,14 @@ function displayAuditTrail() {
 
         if (adj.method === "eudr_dluc_penalty") {
             bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
+    
         } else if (isPrimary && ing.primary_data) {
-    // 🛡️ REGULATOR FIX: Expose the primary data to the auditor
     const pd = ing.primary_data;
+    const ddsText = pd.ddsReference ? ` | DDS: ${pd.ddsReference}` : '';
     bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span><br>
         <span style="font-size:0.85em; color: #555;">Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t<br>
-        GPS: ${pd.geolocation || 'Not provided'}</span>`;
+        GPS: ${pd.geolocation || 'Not provided'}${ddsText}</span>`;
+    
 } else if (isPrimary) {
     bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
             
@@ -7827,7 +7836,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
 const isPrimary = ing.primary_data_used ? 'TRUE (Primary)' : 'FALSE (Secondary)';
 const eudrStatus = ['BR', 'ID', 'MY', 'AR'].includes(origin) ? 'HIGH RISK' : 'COMPLIANT';
-const gpsData = (ing.primary_data_used && ing.primary_data?.geolocation) ? ing.primary_data.geolocation : 'N/A'; // 🛡️ NEW
+const gpsData = (ing.primary_data_used && ing.primary_data?.geolocation) ? ing.primary_data.geolocation : 'N/A';
+const ddsData = (ing.primary_data_used && ing.primary_data?.ddsReference) ? ing.primary_data.ddsReference : 'N/A'; // 🛡️ NEW
 
 doc.autoTable({
     startY: traceY + 5,
@@ -7837,7 +7847,8 @@ doc.autoTable({
         ['Data Source:', 'AGRIBALYSE 3.2'],
         ['EUDR Risk:', eudrStatus],
         ['Primary Data:', isPrimary],
-        ['Geolocation (GPS):', gpsData], // 🛡️ NEW
+        ['Geolocation (GPS):', gpsData],
+        ['DDS Reference:', ddsData], // 🛡️ NEW
         ['CO₂e Impact:', `${ing.subtotal.toFixed(6)} kg CO₂e`]
     ],
                     theme: 'plain', styles: { cellPadding: 1 },
@@ -8946,18 +8957,22 @@ function openSupplierModal(index) {
     
     // Clear fields first to prevent cross-contamination between ingredients
     document.getElementById('supplierFarmRegion').value = '';
-    document.getElementById('primaryNitrogen').value = '';
-    document.getElementById('primaryYield').value = '';
-    document.getElementById('supplierWaterSource').value = '';
-    document.getElementById('supplierPractice').value = '';
+document.getElementById('supplierGeolocation').value = ''; // 🛡️ If you have this
+document.getElementById('supplierDDS').value = ''; // 🛡️ NEW
+document.getElementById('primaryNitrogen').value = '';
+document.getElementById('primaryYield').value = '';
+document.getElementById('supplierWaterSource').value = '';
+document.getElementById('supplierPractice').value = '';
 
     // Populate with existing data if available
     if (ingredient.primaryData) {
-        document.getElementById('supplierFarmRegion').value = ingredient.primaryData.farmRegion || '';
-        document.getElementById('primaryNitrogen').value = ingredient.primaryData.nitrogenKgPerTon || '';
-        document.getElementById('primaryYield').value = ingredient.primaryData.yieldKgPerHa || '';
-        document.getElementById('supplierWaterSource').value = ingredient.primaryData.waterSource || '';
-        document.getElementById('supplierPractice').value = ingredient.primaryData.farmingPractice || '';
+    document.getElementById('supplierFarmRegion').value = ingredient.primaryData.farmRegion || '';
+    document.getElementById('supplierGeolocation').value = ingredient.primaryData.geolocation || '';
+    document.getElementById('supplierDDS').value = ingredient.primaryData.ddsReference || ''; // 🛡️ NEW
+    document.getElementById('primaryNitrogen').value = ingredient.primaryData.nitrogenKgPerTon || '';
+    document.getElementById('primaryYield').value = ingredient.primaryData.yieldKgPerHa || '';
+    document.getElementById('supplierWaterSource').value = ingredient.primaryData.waterSource || '';
+    document.getElementById('supplierPractice').value = ingredient.primaryData.farmingPractice || '';
     }
     
     modal.classList.remove('hidden');
@@ -8986,14 +9001,15 @@ function saveSupplierData() {
     
     // Save to ingredient
     selectedIngredients[currentIngredientIndex].primaryData = {
-        farmRegion,
-        geolocation, // 🛡️ NEW
-        nitrogenKgPerTon: nitrogen,
-        yieldKgPerHa: yieldVal,
-        waterSource,
-        farmingPractice: practice,
-        timestamp: new Date().toISOString()
-    };
+    farmRegion,
+    geolocation,
+    ddsReference: ddsRef, // 🛡️ NEW
+    nitrogenKgPerTon: nitrogen,
+    yieldKgPerHa: yieldVal,
+    waterSource,
+    farmingPractice: practice,
+    timestamp: new Date().toISOString()
+};
 
     // Update display & recalculate
     updateIngredientList();
@@ -9037,7 +9053,8 @@ function decodeSupplierToken() {
         const data = JSON.parse(jsonStr);
 
         document.getElementById('supplierFarmRegion').value = data.r || '';
-document.getElementById('supplierGeolocation').value = data.g || ''; // 🛡️ NEW: EUDR GPS
+document.getElementById('supplierGeolocation').value = data.g || '';
+document.getElementById('supplierDDS').value = data.dds || ''; // 🛡️ NEW
 document.getElementById('primaryNitrogen').value = data.n || '';
 document.getElementById('primaryYield').value = data.y || '';
 document.getElementById('supplierWaterSource').value = data.w || '';
