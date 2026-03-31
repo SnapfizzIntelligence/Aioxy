@@ -1317,10 +1317,17 @@
                             <option>Electronics</option>
                         </select>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
     <div class="form-group">
         <label class="form-label">Product Weight (kg)</label>
         <input type="number" id="productWeight" class="form-control" value="0.200" step="0.001" min="0" onchange="calculateImpact()">
+    </div>
+    <div class="form-group">
+        <label class="form-label" style="color: var(--primary);">
+            <i class="fas fa-compress-arrows-alt"></i> Concentration Ratio
+        </label>
+        <input type="number" id="concentrationRatio" class="form-control" value="1.0" step="0.1" min="1" onchange="calculateImpact()">
+        <small style="color: var(--gray); font-size: 0.7rem;">e.g., 10 for powder replacing 10L liquid</small>
     </div>
     <div class="form-group">
         <label class="form-label" style="color: var(--primary);">
@@ -1329,7 +1336,7 @@
         <input type="number" id="proteinContent" class="form-control" value="15" step="0.1" min="0" onchange="calculateImpact()">
         <small style="color: var(--secondary-dark); font-size: 0.7rem; font-weight: bold;">Unlocks Nutritional LCA</small>
     </div>
-                    </div>
+            </div>
                 </div>
 
                 <div class="card">
@@ -3528,28 +3535,31 @@ function calculateParametricBaseline(baselineCategoryKey, targetCountry) {
     const packagingFossilMJ = packagingCO2 * 20.0;
 
     // 6. Assemble the Final Baseline Profile
-    const totalCO2PerKg = farmGateCO2 + mfgImpact.co2 + totalTransportCO2 + packagingCO2;
-    const totalFossilPerKg = farmGateFossil + (mfgImpact.kwh * 3.6) + transportFossilMJ + packagingFossilMJ;
-    const baseName = anchor.name;
+const ratio = parseFloat(document.getElementById('concentrationRatio')?.value) || 1.0;
 
-    console.log(`   └─ Farm: ${farmGateCO2.toFixed(2)} | Mfg: ${mfgImpact.co2.toFixed(2)} | Log: ${totalTransportCO2.toFixed(2)} | Pkg: ${packagingCO2.toFixed(2)}`);
-    console.log(`   └─ Baseline Total: ${totalCO2PerKg.toFixed(2)} kg CO₂e/kg`);
+const totalCO2PerKg = (farmGateCO2 + mfgImpact.co2 + totalTransportCO2 + packagingCO2) * ratio;
+const totalFossilPerKg = (farmGateFossil + (mfgImpact.kwh * 3.6) + transportFossilMJ + packagingFossilMJ) * ratio;
+const baseName = anchor.name;
 
-    return {
-        name: `Conventional ${baseName} (Parametric Twin)`,
-        co2PerKg: totalCO2PerKg,
-        waterPerKg: farmGateWater,
-        landUsePerKg: farmGateLand,
-        fossilPerKg: totalFossilPerKg, // 🛡️ FIX: Fully mapped Cradle-to-Retail fossil baseline
-        breakdown: {
-            farm: farmGateCO2,
-            manufacturing: mfgImpact.co2,
-            logistics: totalTransportCO2,
-            packaging: packagingCO2
-        },
-        anchor_used: anchor.id,
-        methodology: "Dynamic parametric twin using Agribalyse + JRC benchmarks"
-    };
+console.log(`   └─ Baseline Scaled by Concentration Ratio: ${ratio}x`);
+console.log(`   └─ Baseline Total: ${totalCO2PerKg.toFixed(2)} kg CO₂e/kg equivalent`);
+
+return {
+    name: `Conventional ${baseName} (Parametric Twin)`,
+    co2PerKg: totalCO2PerKg,
+    waterPerKg: farmGateWater * ratio,
+    landUsePerKg: farmGateLand * ratio,
+    fossilPerKg: totalFossilPerKg,
+    concentration_ratio: ratio, // 🛡️ Save for Nutritional LCA
+    breakdown: {
+        farm: farmGateCO2 * ratio,
+        manufacturing: mfgImpact.co2 * ratio,
+        logistics: totalTransportCO2 * ratio,
+        packaging: packagingCO2 * ratio
+    },
+    anchor_used: anchor.id,
+    methodology: "Dynamic parametric twin using Agribalyse + JRC benchmarks (Functional Equivalence Adjusted)"
+};
     }
     
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
@@ -5703,11 +5713,14 @@ function displayCompleteAuditTrail() {
             'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
             'plant-milk': 1.0, 'default': 10.0
         };
+    
         const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-            audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
-        const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
-        const baseCo2PerProtein = (audit.comparison_baseline?.co2PerKg || 1) * (100 / (baselineProtein * 10));
-
+    audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
+const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
+// 🛡️ Divide the scaled CO2 by the ratio so the protein math remains physically accurate
+const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
+const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
+    
         nutritionalLCA_HTML = `
         <div>
             <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Nutritional LCA Impact</div>
@@ -6451,9 +6464,11 @@ if (userProteinPer100g > 0 && currentComparisonBaseline) {
     const baseKgNeededFor100gProtein = 100 / (baselineProteinPer100g * 10);
 
     // Calculate CO2 per 100g of Protein
-    const userCo2PerProtein = unifiedCO2 * userKgNeededFor100gProtein;
-    const baseCo2PerProtein = safeBaseCO2 * baseKgNeededFor100gProtein;
-    const proteinSavingsPct = Math.max(0, ((baseCo2PerProtein - userCo2PerProtein) / baseCo2PerProtein) * 100);
+const userCo2PerProtein = unifiedCO2 * userKgNeededFor100gProtein;
+// 🛡️ Divide the scaled CO2 by the ratio so the protein math remains physically accurate
+const rawBaseCo2 = safeBaseCO2 / (currentComparisonBaseline?.concentration_ratio || 1);
+const baseCo2PerProtein = rawBaseCo2 * baseKgNeededFor100gProtein;
+const proteinSavingsPct = Math.max(0, ((baseCo2PerProtein - userCo2PerProtein) / baseCo2PerProtein) * 100);
 
     if (!nutritionalDiv) {
         nutritionalDiv = document.createElement('div');
