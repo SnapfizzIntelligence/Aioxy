@@ -7222,15 +7222,19 @@ function displayAuditTrail() {
 
             <div style="margin-top: 15px; border: 1px solid #ccc; background: #f8f9fa; padding: 10px;">
                 <table style="width: 100%; border-collapse: collapse;">
-                     <tr>
-                        <td style="padding: 3px 0; font-weight: bold; font-size: 1rem;">TOTAL CLIMATE IMPACT:</td>
-                        <td style="padding: 3px 0; text-align: right; font-weight: bold; font-size: 1.1rem; color: #0A2540;">${totalImpact.toFixed(4)} kg CO₂e / kg</td>
-                     </tr>
-                     <tr>
-                        <td style="padding: 3px 0; font-weight: bold;">OVERALL DATA QUALITY (DQR):</td>
-                        <td style="padding: 3px 0; text-align: right;">${auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5'} (PEF Compliant)</td>
-                     </tr>
-                </table>
+      <tr>
+        <td style="padding: 3px 0; font-weight: bold; font-size: 1rem; color: #555;">TOTAL BATCH IMPACT:</td>
+        <td style="padding: 3px 0; text-align: right; font-weight: bold; font-size: 1rem; color: #555;">${totalImpact.toFixed(4)} kg CO₂e</td>
+      </tr>
+      <tr style="background: #E3F2FD;">
+        <td style="padding: 5px 4px; font-weight: bold; font-size: 1rem; color: #0A2540;">NORMALIZED IMPACT (PER KG):</td>
+        <td style="padding: 5px 4px; text-align: right; font-weight: bold; font-size: 1.1rem; color: #27AE60;">${normalizedImpact.toFixed(4)} kg CO₂e / kg</td>
+      </tr>
+      <tr>
+        <td style="padding: 3px 0; font-weight: bold; margin-top: 5px;">OVERALL DATA QUALITY:</td>
+        <td style="padding: 3px 0; text-align: right;">${auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5'} (PEF Compliant)</td>
+      </tr>
+</table>
             </div>
             
             <div style="margin-top: 10px; font-size: 0.8rem; color: #333;">
