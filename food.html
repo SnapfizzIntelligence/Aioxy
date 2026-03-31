@@ -7993,7 +7993,7 @@ doc.autoTable({
 
         // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
 const eudrStatusText = eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
-const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${totalCo2.toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
+const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
         
         new QRCode(hiddenQrDiv, {
             text: qrTextPayload,
