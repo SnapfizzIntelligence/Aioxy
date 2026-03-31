@@ -7187,8 +7187,12 @@ function displayAuditTrail() {
 
     const productName = document.getElementById('productName')?.value || 'Assessed Product';
     const dateStr = new Date().toISOString().split('T')[0];
-    const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
-    const totalImpact = catCC.total;
+const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
+const totalImpact = catCC.total;
+
+// 🛡️ FIX 1: Calculate normalized per-kg impact
+const pWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+const normalizedImpact = totalImpact / pWeightKg;
 
     // Build HTML with QR placeholder
     let html = `
@@ -7495,17 +7499,21 @@ function displayAuditTrail() {
         </div>`;
     }
 
-    // ========== TOTAL IMPACT FOOTER ==========
-    html += `
-        <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <strong>TOTAL CRADLE-TO-RETAIL IMPACT:</strong>
-            </div>
-            <div style="text-align:right;">
-                <div style="font-size: 1.5rem; font-weight:bold;">${catCC.total.toFixed(3)} kg CO₂e</div>
-                <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)</div>
-            </div>
-        </div>`;
+    // 🛡️ FIX 2: Show both Batch and Normalized impacts
+html += `
+    <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+            <div><strong>TOTAL BATCH IMPACT:</strong></div>
+            <div style="font-size: 1.2rem; font-weight:bold;">${totalImpact.toFixed(4)} kg CO₂e</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; background: #0A2540; padding: 8px; border-radius: 4px;">
+            <div><strong>NORMALIZED IMPACT (PER KG):</strong></div>
+            <div style="font-size: 1.3rem; font-weight:bold;">${normalizedImpact.toFixed(4)} kg CO₂e / kg</div>
+        </div>
+        <div style="font-size: 0.8rem; opacity: 0.8; margin-top: 8px; text-align:center;">
+            Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)
+        </div>
+    </div>`;
 
     // Render HTML to page
     auditContent.innerHTML = html;
@@ -7986,10 +7994,11 @@ doc.autoTable({
         hiddenQrDiv.style.left = '-9999px'; 
         document.body.appendChild(hiddenQrDiv);
 
-        // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
+    // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
 const eudrStatusText = eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
-const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${totalCo2.toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
-        
+const pWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
+    
         new QRCode(hiddenQrDiv, {
             text: qrTextPayload,
             width: 150, height: 150,
