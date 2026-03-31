@@ -7191,7 +7191,7 @@ const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked
 const totalImpact = catCC.total;
 
 // 🛡️ FIX 1: Calculate normalized per-kg impact
-const pWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+const pWeightKg = auditTrailData.mass_balance?.final_content_weight_kg || 0.2;
 const normalizedImpact = totalImpact / pWeightKg;
 
     // Build HTML with QR placeholder
@@ -7996,7 +7996,7 @@ doc.autoTable({
 
     // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
 const eudrStatusText = eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
-const pWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
+const pWeightKg = auditTrailData.mass_balance?.final_content_weight_kg || 0.2;
 const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
     
         new QRCode(hiddenQrDiv, {
