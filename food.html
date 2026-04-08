@@ -7748,18 +7748,28 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             nutritionalText = `${(unifiedCO2 * kgNeeded).toFixed(2)} kg CO₂e / 100g protein`;
         }
 
-        // ==========================================
+                // ==========================================
         // PAGE 1: EXECUTIVE SUMMARY
         // ==========================================
-        doc.setFillColor(10, 37, 64);
-        doc.rect(0, 0, pw, 25, 'F');
-        doc.setTextColor(255, 255, 255);
+        // Minimalist Enterprise Header
+        doc.setFillColor(248, 250, 252); // Very light slate
+        doc.rect(0, 0, pw, 28, 'F');
+        
+        // Subtle bottom border for the header
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.5);
+        doc.line(0, 28, pw, 28);
+
+        doc.setTextColor(10, 37, 64); // Dark Navy text
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.text("AIOXY COMPLIANCE AUDIT TRAIL", 15, 12);
+        doc.setFontSize(18);
+        doc.text("AIOXY COMPLIANCE AUDIT TRAIL", 15, 14);
+        
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
-        doc.text("ISO 14044 • PEF 3.1 • GHG Protocol • ESRS E1 Ready", 15, 18);
+        doc.setTextColor(100, 116, 139); // Slate gray subtitle
+        doc.text("ISO 14044 • PEF 3.1 • GHG Protocol • ESRS E1 Ready", 15, 21);
+
 
         currentY = 35;
         if (eudrViolation) {
@@ -7792,7 +7802,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         
         // 🛡️ REGULATOR FIX 2: Inject ESRS E3 and E5 into the Executive Summary
         setH2(); doc.text("KEY COMPLIANCE METRICS", 15, currentY); currentY += 5;
-        doc.autoTable({
+                doc.autoTable({
             startY: currentY,
             body: [
                 ['TOTAL CLIMATE IMPACT (ESRS E1):', `${(totalCo2 / pWeightKg).toFixed(6)} kg CO₂e / kg`],
@@ -7805,9 +7815,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 ['FRONT-OF-PACK ECO-SCORE:', `Grade ${ecoGrade} (${mPt.toFixed(1)} µPt)`],
                 ['NUTRITIONAL IMPACT:', nutritionalText]
             ],
-            theme: 'grid', headStyles: { fillColor: [10, 37, 64] },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 70, textColor: [10, 37, 64] } }
+            theme: 'plain',
+            styles: { cellPadding: 4, fontSize: 9, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 } },
+            columnStyles: { 
+                0: { fontStyle: 'bold', cellWidth: 75, textColor: [10, 37, 64] },
+                1: { halign: 'right', fontStyle: 'bold' } // Forces numbers to the right margin
+            }
         });
+
 
         currentY = doc.lastAutoTable.finalY + 10;
         setH2(); doc.text("AUDIT CLEARANCE", 15, currentY); currentY += 8;
@@ -7839,12 +7854,19 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             ['End-of-Life Treatment (Cat 12)', endOfLifeCO2.toFixed(4), `${((endOfLifeCO2/totalCo2)*100).toFixed(1)}%`]
         ];
 
-        doc.autoTable({
+                doc.autoTable({
             startY: 25,
             head: [['Scope 3 Category', 'Impact (kg CO₂e)', '% of Total']],
             body: scope3Body,
-            theme: 'grid', headStyles: { fillColor: [10, 37, 64] }
+            theme: 'plain',
+            styles: { cellPadding: 5, fontSize: 9, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 } },
+            headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 }, lineColor: [10, 37, 64] },
+            columnStyles: { 
+                1: { halign: 'right', fontStyle: 'bold' }, 
+                2: { halign: 'right', textColor: [10, 37, 64] } 
+            }
         });
+
 
         // ==========================================
         // PAGE 3: INGREDIENT TRACEABILITY
@@ -7962,12 +7984,20 @@ doc.autoTable({
             finalPefResults[cat].unit
         ]);
 
-        doc.autoTable({
+                doc.autoTable({
             startY: doc.lastAutoTable.finalY + 20,
             head: [['Impact Category', 'Total Footprint', 'Unit']],
             body: pefTableBody,
-            theme: 'grid', headStyles: { fillColor: [10, 37, 64] }, styles: { fontSize: 8 }
+            theme: 'plain',
+            styles: { cellPadding: 4, fontSize: 8, textColor: [70, 70, 70], lineColor: [235, 235, 235], lineWidth: { bottom: 0.5 } },
+            headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1 }, lineColor: [10, 37, 64] },
+            columnStyles: { 
+                0: { fontStyle: 'bold', textColor: [10, 37, 64] },
+                1: { halign: 'right', fontStyle: 'bold' },
+                2: { halign: 'left', textColor: [120, 120, 120] }
+            }
         });
+
 
         // ==========================================
         // PAGE 6: QR CODE & SIGN-OFF 
