@@ -7735,11 +7735,13 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const isCustomBaseline = audit.comparison_baseline?.is_custom;
 
         // Recalculate dynamic metrics natively for PDF
-        const pWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
-        const singleScorePDF = calculatePEFSingleScore(finalPefResults, pWeightKg);
-        const mPt = singleScorePDF.singleScore;
-        let ecoGrade = mPt < 150 ? 'A' : mPt < 250 ? 'B' : mPt < 400 ? 'C' : mPt < 600 ? 'D' : 'E';
-
+// 🛡️ THE FIX: Explicitly define mass balance from audit data
+const mb = audit.mass_balance || {};
+const pWeightKg = mb.final_content_weight_kg || parseFloat(document.getElementById('productWeight')?.value) || 0.2;
+const singleScorePDF = calculatePEFSingleScore(finalPefResults, pWeightKg);
+const mPt = singleScorePDF.singleScore;
+let ecoGrade = mPt < 150 ? 'A' : mPt < 250 ? 'B' : mPt < 400 ? 'C' : mPt < 600 ? 'D' : 'E';
+        
         const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
         let nutritionalText = "N/A (Protein data not provided)";
         if (userProtein > 0) {
