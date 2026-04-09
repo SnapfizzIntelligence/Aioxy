@@ -3511,6 +3511,15 @@ window.aioxyData = {
     "roasting": { co2_impact: 0.65, water_impact: 0.05, yield: 0.82, loss: 0.18, temp: 200, kwh_per_kg: 0.75 }
 },
 
+        // 5.5 INGREDIENT-LEVEL PROCESSING ARCHETYPES
+    processing_archetypes: {
+        "raw": { "yield_factor": 1.00, "energy_kwh_per_kg": 0.00 },
+        "dry_milled": { "yield_factor": 0.90, "energy_kwh_per_kg": 0.15 },
+        "wet_extracted": { "yield_factor": 0.40, "energy_kwh_per_kg": 0.85 },
+        "isolated": { "yield_factor": 0.20, "energy_kwh_per_kg": 2.50 }
+    },
+
+
     // 6. TRANSPORTATION (GLEC v3.2) - UPDATED WITH 2024/2025 DATA & AIR POLLUTANTS (Module 6)
     transportation: {
         "road": { 
