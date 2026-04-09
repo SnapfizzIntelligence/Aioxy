@@ -7762,26 +7762,25 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // ASCII-SAFE STRING HELPERS (Fix Unicode Corruption)
         // ============================================================
         const safeString = (str) => {
-            if (!str) return '';
-            return String(str)
-                .replace(/→/g, 'to')
-                .replace(/←/g, 'from')
-                .replace(/✓/g, '[OK]')
-                .replace(/⚠️/g, '[!]')
-                .replace(/🛡️/g, '')
-                .replace(/🛰️/g, 'GPS:')
-                .replace(/📍/g, 'Farm:')
-                .replace(/🌾/g, 'Yield:')
-                .replace(/💧/g, 'N:')
-                .replace(/💦/g, 'Irrigation:')
-                .replace(/🌱/g, 'Practice:')
-                .replace(/📋/g, 'DDS:')
-                .replace(/⚙️/g, '[Adj]')
-                .replace(/[^\x00-\x7F]/g, '')
-                .replace(/\|/g, '-')
-                .replace(/\s+/g, ' ')
-                .trim();
-        };
+    if (!str) return '';
+    return String(str)
+        .replace(/→/g, 'to')
+        .replace(/←/g, 'from')
+        .replace(/✓/g, '[OK]')
+        .replace(/⚠️/g, '[!]')
+        .replace(/🛡️/g, '')
+        .replace(/🛰️/g, 'GPS:')
+        .replace(/📍/g, 'Farm:')
+        .replace(/🌾/g, 'Yield:')
+        .replace(/💧/g, 'N:')
+        .replace(/💦/g, 'Irrigation:')
+        .replace(/🌱/g, 'Practice:')
+        .replace(/📋/g, 'DDS:')
+        .replace(/⚙️/g, '[Adj]')
+        .replace(/\|/g, '-')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
         
         const truncate = (str, maxLen = 35) => {
             if (!str) return '';
