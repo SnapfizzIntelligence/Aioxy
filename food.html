@@ -7818,9 +7818,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             theme: 'plain',
             styles: { cellPadding: 4, fontSize: 9, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 } },
             columnStyles: { 
-                0: { fontStyle: 'bold', cellWidth: 75, textColor: [10, 37, 64] },
-                1: { halign: 'right', fontStyle: 'bold' } // Forces numbers to the right margin
-            }
+    0: { fontStyle: 'bold', cellWidth: 77, textColor: [10, 37, 64] },
+    1: { halign: 'right', fontStyle: 'bold', cellWidth: 105 }
+} // 77 + 105 = 182mm (Perfect A4 width)
         });
 
 
@@ -7926,16 +7926,21 @@ doc.autoTable({
         });
 
         setH2(); doc.text("OUTBOUND LOGISTICS", 15, doc.lastAutoTable.finalY + 15);
-        doc.autoTable({
-            startY: doc.lastAutoTable.finalY + 20,
-            body: [
-                ['Mode:', document.getElementById('transportMode')?.options[document.getElementById('transportMode').selectedIndex]?.text || 'Road'],
-                ['Distance:', isCrisisActive ? `${(dist * 1.4).toFixed(0)} km` : `${dist} km`],
-                ['Load Factor:', '85%'],
-                ['CO₂e Impact:', `${ccTree.Transport.total.toFixed(4)} kg CO₂e`]
-            ],
-            theme: 'grid', columnStyles: { 0: { fontStyle: 'bold', cellWidth: 45, textColor: [10, 37, 64] } }
-        });
+doc.autoTable({
+    startY: doc.lastAutoTable.finalY + 20,
+    body: [
+        ['Mode:', document.getElementById('transportMode')?.options[document.getElementById('transportMode').selectedIndex]?.text || 'Road'],
+        ['Distance:', isCrisisActive ? `${(dist * 1.4).toFixed(0)} km` : `${dist} km`],
+        ['Load Factor:', '85%'],
+        ['CO₂e Impact:', `${ccTree.Transport.total.toFixed(4)} kg CO₂e`]
+    ],
+    theme: 'plain',
+    styles: { cellPadding: 4, fontSize: 9, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 } },
+    columnStyles: { 
+        0: { fontStyle: 'bold', cellWidth: 45, textColor: [10, 37, 64] },
+        1: { halign: 'right', fontStyle: 'bold', cellWidth: 137 }
+    } // 45 + 137 = 182mm (Perfect A4 width)
+});
 
         // ==========================================
         // PAGE 5: DATA QUALITY & PEF SCORECARD
@@ -7992,10 +7997,10 @@ doc.autoTable({
             styles: { cellPadding: 4, fontSize: 8, textColor: [70, 70, 70], lineColor: [235, 235, 235], lineWidth: { bottom: 0.5 } },
             headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1 }, lineColor: [10, 37, 64] },
             columnStyles: { 
-                0: { fontStyle: 'bold', textColor: [10, 37, 64] },
-                1: { halign: 'right', fontStyle: 'bold' },
-                2: { halign: 'left', textColor: [120, 120, 120] }
-            }
+    0: { fontStyle: 'bold', textColor: [10, 37, 64], cellWidth: 85 }, // Stops categories from breaking into 2 lines
+    1: { halign: 'right', fontStyle: 'bold', cellWidth: 50 },
+    2: { halign: 'left', textColor: [120, 120, 120], cellWidth: 47 }
+} // 85 + 50 + 47 = 182mm (Perfect A4 width)
         });
 
 
