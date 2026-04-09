@@ -4820,9 +4820,16 @@ let ingredientOrigin = effectiveOrigins[item.id];
 // 🛡️ REGULATOR FIX: Always use the strict ISO code for EUDR/Math, never free-text
 if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.originCountry || getIngredientOrigin(item.id);
 
-    // [FEATURE PRESERVED] Farm Loss Logic
-    const farmLoss = ing.loss || 0.0;
-    const grownMass = item.quantity / (1 - farmLoss);
+    // [PHYSICS UPGRADE] Mass Balance & Processing Energy
+const farmLoss = ing.loss || 0.0;
+const processState = item.processingState || 'raw';
+const archetypes = window.aioxyData.processing_archetypes;
+
+const yieldFactor = (archetypes && archetypes[processState]) ? archetypes[processState].yield_factor : 1.0;
+const processEnergy = (archetypes && archetypes[processState]) ? archetypes[processState].energy_kwh_per_kg : 0.0;
+
+// Apply the yield penalty to the agricultural mass
+const grownMass = (item.quantity / (1 - farmLoss)) / yieldFactor;
 
     // 🛡️ REGULATOR FIX 1: Run the math FIRST to extract the EUDR & Primary Data penalties
     const impactResult = calculateIngredientImpact(ing, grownMass, ingredientOrigin, item.primaryData);
