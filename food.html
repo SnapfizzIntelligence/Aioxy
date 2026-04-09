@@ -9764,13 +9764,14 @@ function addIngredient() {
     
     const ingredient = window.aioxyData.ingredients[ingredientId];
     
-    // CRITICAL: Save the origin country WITH the ingredient
-    selectedIngredients.push({
-        id: ingredientId,
-        name: ingredient.name,
-        quantity: quantity,
-        originCountry: originCountry  // <--- THIS IS THE KEY FIX
-    });
+    // CRITICAL: Save the origin country AND processing state
+selectedIngredients.push({
+    id: ingredientId,
+    name: ingredient.name,
+    quantity: quantity,
+    originCountry: originCountry,
+    processingState: 'raw' // Default to raw farm gate
+});
     
     console.log(`🌍 [addIngredient] Added ${ingredient.name} from ${originCountry}`);
     
@@ -9825,13 +9826,25 @@ item.innerHTML = `
             <span class="badge" style="margin-left: 0.5rem;">±${uncertainty}% uncertainty</span>
         </div>
         <div style="margin-top: 0.5rem;">
-            <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
-            
-            <!-- ========== SUPPLIER ASK BUTTON ========== -->
-            <button class="btn btn-outline" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.7rem;" 
-                    onclick="openSupplierModal(${index})">
-                <i class="fas fa-tractor"></i> Supplier Data?
-            </button>
+    <!-- 🛡️ PROCESSING STATE DROPDOWN -->
+    <div style="display: inline-block; margin-right: 0.5rem;">
+        <span style="font-size: 0.7rem; font-weight: bold; color: var(--primary);">Processing:</span>
+        <select style="font-size: 0.7rem; padding: 0.2rem 0.4rem; margin-left: 0.25rem; border-radius: 4px; border: 1px solid var(--border);" 
+                onchange="updateIngredientProcessing(${index}, this.value)">
+            <option value="raw" ${ingredient.processingState === 'raw' ? 'selected' : ''}>Raw (Farm Gate)</option>
+            <option value="dry_milled" ${ingredient.processingState === 'dry_milled' ? 'selected' : ''}>Dry Milled</option>
+            <option value="wet_extracted" ${ingredient.processingState === 'wet_extracted' ? 'selected' : ''}>Wet Extracted</option>
+            <option value="isolated" ${ingredient.processingState === 'isolated' ? 'selected' : ''}>Isolated (Protein/Isolate)</option>
+        </select>
+    </div>
+    
+    <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
+    
+    <!-- ========== SUPPLIER ASK BUTTON ========== -->
+    <button class="btn btn-outline" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.7rem;" 
+            onclick="openSupplierModal(${index})">
+        <i class="fas fa-tractor"></i> Supplier Data?
+    </button>
             
             ${ingredient.primaryData ? `
             <span class="badge" style="background: #48BB78; color: white; margin-left: 0.5rem;">
