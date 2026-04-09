@@ -9999,6 +9999,11 @@ document.head.appendChild(style);
         calculateImpact();
     }
 
+    function updateIngredientProcessing(index, newState) {
+    selectedIngredients[index].processingState = newState;
+    calculateImpact();
+    }
+
     function toggleAdvanced() {
         const advanced = document.getElementById('advancedOptions');
         if (advanced) advanced.classList.toggle('hidden');
