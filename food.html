@@ -4941,6 +4941,29 @@ auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
         auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
         auditTrail.pefCategories[cat].total += allocatedTotal;
     });
+    // [PHYSICS UPGRADE] Add Upstream Processing Energy to Manufacturing Tally
+if (processEnergy > 0) {
+    const extraKwh = item.quantity * processEnergy;
+    const gridIntensity = window.aioxyData?.countries?.[manufacturingCountryCode]?.electricityCO2 || 480;
+    const extraCo2 = extraKwh * (gridIntensity / 1000);
+
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
+        name: `Upstream Processing (${processState}) for ${ing.name}`,
+        subtotal: extraCo2,
+        details: `${extraKwh.toFixed(4)} kWh`,
+        confidence: "High (Archetype Physics)",
+        grid_intensity: gridIntensity,
+        energy_source: `Grid Mix (${manufacturingCountryCode})`
+    });
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += extraCo2;
+    auditTrail.pefCategories["Climate Change"].total += extraCo2;
+
+    const extraFossil = extraKwh * 3.6;
+    if(auditTrail.pefCategories["Resource Use, fossils"]) {
+         auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += extraFossil;
+         auditTrail.pefCategories["Resource Use, fossils"].total += extraFossil;
+    }
+    }
 });
 
     // 6. MANUFACTURING IMPACTS - UPDATED with Audit-Ready Engine
