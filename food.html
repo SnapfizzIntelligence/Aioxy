@@ -3410,6 +3410,30 @@ const ANCHOR_DATASETS = {
         factor: 1.0,
         name: 'Pork'
     },
+    'soy-protein-product': { 
+    id: 'soybean-national-average-animal-feed-at-farm-gate-fr', 
+    processing: 'milling', 
+    factor: 3.1, // PHYSICS: ~3.1kg beans → 1kg Soy Protein Concentrate (70% protein)
+    name: 'Soy Protein Concentrate'
+},
+'wheat-protein-product': { 
+    id: 'soft-wheat-grain-conventional-at-farm-gate-fr', 
+    processing: 'milling', 
+    factor: 4.8, // PHYSICS: ~4.8kg wheat → 1kg Vital Wheat Gluten (after starch allocation)
+    name: 'Wheat Protein Isolate'
+},
+'whey-protein-product': {
+    id: 'cow-milk-conventional-national-average-at-farm-gate-fr',
+    processing: 'ultrafiltration',
+    factor: 32.0, // PHYSICS: ~32kg liquid milk → 1kg Whey Protein Isolate (90% protein, cheese allocation applied)
+    name: 'Whey Protein Isolate'
+},
+'pea-protein-product': {
+    id: 'spring-pea-conventional-national-average-at-farm-gate-fr',
+    processing: 'fractionation',
+    factor: 3.5, // PHYSICS: ~3.5kg peas → 1kg Pea Protein Isolate (80% protein)
+    name: 'Pea Protein Isolate'
+},
     'milk-product': { 
         id: 'cow-milk-conventional-national-average-at-farm-gate-fr', 
         processing: 'pasteurization', 
