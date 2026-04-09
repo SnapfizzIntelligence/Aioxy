@@ -7855,35 +7855,36 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         };
 
         // ============================================================
-        // STANDARD TABLE STYLES (WITH didParseCell FIX)
-        // ============================================================
-        const standardTableStyles = {
-            theme: 'plain',
-            styles: { 
-                fontSize: 8, 
-                cellPadding: 3,
-                halign: 'left',
-                valign: 'middle',
-                overflow: 'linebreak'
-            },
-            headStyles: { 
-                fillColor: COLORS.primary, 
-                textColor: COLORS.white, 
-                fontStyle: 'bold',
-                halign: 'left'
-            },
-            alternateRowStyles: { fillColor: COLORS.lightBg },
-            // CRITICAL FIX: Prevent justification gaps
-            didParseCell: (data) => {
-                if (data.cell && data.column) {
-                    // Only force left align if the column wasn't explicitly set to right
-                    if (data.column.styles.halign !== 'right') {
-                        data.cell.styles.halign = 'left';
-                    }
-                }
+// STANDARD TABLE STYLES (WITH NULL-SAFE didParseCell)
+// ============================================================
+const standardTableStyles = {
+    theme: 'plain',
+    styles: { 
+        fontSize: 8, 
+        cellPadding: 3,
+        halign: 'left',
+        valign: 'middle',
+        overflow: 'linebreak'
+    },
+    headStyles: { 
+        fillColor: COLORS.primary, 
+        textColor: COLORS.white, 
+        fontStyle: 'bold',
+        halign: 'left'
+    },
+    alternateRowStyles: { fillColor: COLORS.lightBg },
+    // NULL-SAFE FIX: Prevent "Cannot read properties of undefined"
+    didParseCell: (data) => {
+        if (data.cell && data.column) {
+            // Use optional chaining to safely access halign
+            const columnHalign = data.column.styles?.halign;
+            // Only force left align if the column wasn't explicitly set to right
+            if (columnHalign !== 'right') {
+                data.cell.styles.halign = 'left';
             }
-        };
-
+        }
+    }
+};
         // ============================================================
         // DATA EXTRACTION (Single Source of Truth)
         // ============================================================
