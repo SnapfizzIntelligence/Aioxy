@@ -7834,39 +7834,81 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text(`✓ ADEME Eco-Score: Grade ${ecoGrade}`, 15, currentY);
 
         // ==========================================
-        // PAGE 2: SCOPE 3 BREAKDOWN
-        // ==========================================
-        doc.addPage();
-        setH1(); doc.text("DETAILED SCOPE 3 INVENTORY", 15, 20);
-        
-        // 🛡️ REGULATOR FIX 1: Segregate Category 4 (Transport) and Category 12 (Disposal)
-        const upstreamComps = ccTree.Upstream?.components || [];
-        const inboundLogisticsCO2 = upstreamComps.filter(c => c.name.includes('Inbound')).reduce((sum, c) => sum + c.subtotal, 0);
-        const endOfLifeCO2 = upstreamComps.filter(c => c.name.includes('End-of-Life')).reduce((sum, c) => sum + c.subtotal, 0);
+// PAGE 2: DETAILED SCOPE 3 INVENTORY
+// ==========================================
+doc.addPage();
+setH1(); doc.text("SCOPE 3 BREAKDOWN & DETAILS", 15, 20);
 
-        const scope3Body = [
-            ['Purchased Goods (Cat 1)', ccTree.Ingredients.total.toFixed(4), `${((ccTree.Ingredients.total/totalCo2)*100).toFixed(1)}%`],
-            ...ccTree.Ingredients.components.map(c => [`  └─ ${c.name}`, c.subtotal.toFixed(4), `${((c.subtotal/totalCo2)*100).toFixed(1)}%`]),
-            ['Packaging Materials (Cat 1)', ccTree.Packaging.total.toFixed(4), `${((ccTree.Packaging.total/totalCo2)*100).toFixed(1)}%`],
-            ['Inbound Transport (Cat 4)', inboundLogisticsCO2.toFixed(4), `${((inboundLogisticsCO2/totalCo2)*100).toFixed(1)}%`],
-            ['Outbound Logistics (Cat 4)', ccTree.Transport.total.toFixed(4), `${((ccTree.Transport.total/totalCo2)*100).toFixed(1)}%`],
-            ['Manufacturing (Scope 1/2)', ccTree.Manufacturing.total.toFixed(4), `${((ccTree.Manufacturing.total/totalCo2)*100).toFixed(1)}%`],
-            ['End-of-Life Treatment (Cat 12)', endOfLifeCO2.toFixed(4), `${((endOfLifeCO2/totalCo2)*100).toFixed(1)}%`]
-        ];
+// 🛡️ SECTION: MANUFACTURING (Scope 1 & 2)
+currentY = 30;
+setH2(); doc.text("B. MANUFACTURING & ENERGY BALANCE (Scope 1 & 2)", 15, currentY);
 
-                doc.autoTable({
-            startY: 25,
-            head: [['Scope 3 Category', 'Impact (kg CO₂e)', '% of Total']],
-            body: scope3Body,
-            theme: 'plain',
-            styles: { cellPadding: 5, fontSize: 9, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 } },
-            headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 }, lineColor: [10, 37, 64] },
-            columnStyles: { 
-                1: { halign: 'right', fontStyle: 'bold' }, 
-                2: { halign: 'right', textColor: [10, 37, 64] } 
-            }
-        });
+const mfgBody = ccTree.Manufacturing.components.map(c => [
+    c.name,
+    c.details || 'Standard Processing',
+    `${c.subtotal.toFixed(4)} kg CO₂e`
+]);
 
+doc.autoTable({
+    startY: currentY + 5,
+    head: [['Manufacturing Process', 'Energy Details', 'Impact']],
+    body: mfgBody,
+    theme: 'plain',
+    styles: { fontSize: 8, cellPadding: 4, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 }, overflow: 'linebreak' },
+    headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 } },
+    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70 }, 2: { halign: 'right', cellWidth: 40, fontStyle: 'bold', textColor: [10, 37, 64] } }
+});
+
+// 🛡️ SECTION: PACKAGING
+currentY = doc.lastAutoTable.finalY + 12;
+if (currentY > 250) { doc.addPage(); currentY = 20; }
+setH2(); doc.text("D. PACKAGING (Scope 3 Cat 1)", 15, currentY);
+
+const pkgMaterial = document.getElementById('packagingMaterial')?.options[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A';
+const pkgWeight = mb.packaging_weight_kg || 0;
+const recycledContent = document.getElementById('recycledContent')?.value || 0;
+
+const pkgBody = [
+    [`Primary Packaging: ${pkgMaterial}`, `${pkgWeight.toFixed(3)} kg`, `${recycledContent}% recycled`, `${ccTree.Packaging.total.toFixed(4)} kg CO₂e`]
+];
+
+doc.autoTable({
+    startY: currentY + 5,
+    head: [['Material', 'Weight', 'Recycled Content', 'Impact']],
+    body: pkgBody,
+    theme: 'plain',
+    styles: { fontSize: 8, cellPadding: 4, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 }, overflow: 'linebreak' },
+    headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 } },
+    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 30, halign: 'right' }, 2: { cellWidth: 40, halign: 'right' }, 3: { halign: 'right', cellWidth: 40, fontStyle: 'bold', textColor: [10, 37, 64] } }
+});
+
+// 🛡️ SECTION: END-OF-LIFE
+currentY = doc.lastAutoTable.finalY + 12;
+if (currentY > 250) { doc.addPage(); currentY = 20; }
+setH2(); doc.text("E. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", 15, currentY);
+
+const upstreamComps = ccTree.Upstream?.components || [];
+const eolComponents = upstreamComps.filter(c => c.name.includes('End-of-Life'));
+
+if (eolComponents.length > 0) {
+    const eolBody = eolComponents.map(e => [
+        e.name,
+        e.notes || 'Waste Treatment',
+        `${e.subtotal.toFixed(4)} kg CO₂e`
+    ]);
+    
+    doc.autoTable({
+        startY: currentY + 5,
+        head: [['Component', 'Treatment Detail', 'Impact']],
+        body: eolBody,
+        theme: 'plain',
+        styles: { fontSize: 8, cellPadding: 4, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 }, overflow: 'linebreak' },
+        headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 } },
+        columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 70 }, 2: { halign: 'right', cellWidth: 40, fontStyle: 'bold', textColor: [192, 57, 43] } }
+    });
+} else {
+    setNormal(); doc.text("No end-of-life treatment data available.", 15, currentY + 10);
+}
 
         // ==========================================
         // PAGE 3: INGREDIENT TRACEABILITY
