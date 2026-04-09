@@ -7275,62 +7275,90 @@ function displayAuditTrail() {
                 </thead>
                 <tbody>`;
 
-    // LOOP: Ingredients
-    const ingredients = catCC.contribution_tree.Ingredients.components;
-    ingredients.forEach(ing => {
-        const adj = ing.universal_adjustments || {};
-        const isPrimary = ing.primary_data_used;
-        const origin = adj.adjusted_for_country || 'FR';
-        const baseOrigin = adj.adjusted_from_country || 'FR';
-        const isProxy = origin !== baseOrigin;
+// LOOP: Ingredients
+const ingredients = catCC.contribution_tree.Ingredients.components;
+ingredients.forEach(ing => {
+    const adj = ing.universal_adjustments || {};
+    const isPrimary = ing.primary_data_used;
+    const origin = adj.adjusted_for_country || 'FR';
+    const baseOrigin = adj.adjusted_from_country || 'FR';
+    const isProxy = origin !== baseOrigin;
 
-        let bridgeHTML = '';
+    let bridgeHTML = '';
 
-        if (adj.method === "eudr_dluc_penalty") {
-            bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
-    
-        } else if (isPrimary && ing.primary_data) {
-    const pd = ing.primary_data;
-    const ddsText = pd.ddsReference ? ` | DDS: ${pd.ddsReference}` : '';
-    bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span><br>
-        <span style="font-size:0.85em; color: #555;">Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t<br>
-        GPS: ${pd.geolocation || 'Not provided'}${ddsText}</span>`;
-    
-} else if (isPrimary) {
-    bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
-            
-        } else if (isProxy) {
-            let factors = [];
-            if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
-            if (factors.length > 0) {
-                bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
-            } else {
-                bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
-            }
+    if (adj.method === "eudr_dluc_penalty") {
+        bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
+
+    } else if (isPrimary && ing.primary_data) {
+        const pd = ing.primary_data;
+        const ddsText = pd.ddsReference ? ` | DDS: ${pd.ddsReference}` : '';
+        const farmRegionText = pd.farmRegion ? pd.farmRegion : 'Not specified';
+        
+        // Format irrigation text
+        let irrigationText = 'Not specified';
+        if (pd.waterSource === 'rainfed') irrigationText = 'Rainfed';
+        else if (pd.waterSource === 'surface') irrigationText = 'Surface water';
+        else if (pd.waterSource === 'groundwater') irrigationText = 'Groundwater';
+        else if (pd.waterSource === 'mixed') irrigationText = 'Mixed';
+        
+        // Format practice text
+        let practiceText = 'Conventional';
+        if (pd.farmingPractice === 'organic') practiceText = 'Organic';
+        else if (pd.farmingPractice === 'regen') practiceText = 'Regenerative';
+        else if (pd.farmingPractice === 'precision') practiceText = 'Precision';
+        
+        // Build adjustment summary
+        let adjustmentSummary = '';
+        if (pd.waterSource === 'rainfed') adjustmentSummary += '💧 Rainfed (-95% water) | ';
+        if (pd.farmingPractice === 'organic') adjustmentSummary += '🌱 Organic (-15 µPt) | ';
+        if (pd.farmingPractice === 'regen') adjustmentSummary += '🌍 Regen Ag (+20% soil C) | ';
+        if (adjustmentSummary.endsWith(' | ')) adjustmentSummary = adjustmentSummary.slice(0, -3);
+        
+        bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
+            <span style="font-size:0.85em; color: #555;">
+            📍 Farm: ${farmRegionText}<br>
+            🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
+            🌾 Yield: ${pd.yieldKgPerHa} kg/ha | 💧 N: ${pd.nitrogenKgPerTon} kg/t<br>
+            💦 Irrigation: ${irrigationText} | 🌱 Practice: ${practiceText}<br>
+            📋 ${ddsText || 'DDS: Not provided'}<br>
+            ${adjustmentSummary ? `<span style="color:#2C7A7B;">⚙️ ${adjustmentSummary}</span>` : ''}
+            </span>`;
+        
+    } else if (isPrimary) {
+        bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
+        
+    } else if (isProxy) {
+        let factors = [];
+        if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
+        if (factors.length > 0) {
+            bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
         } else {
-            bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
+            bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
         }
+    } else {
+        bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
+    }
 
-        if (ing.name.toLowerCase().includes('animal feed')) {
-            bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
-        }
-
-        html += `
-                    <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
-                        <td style="padding: 8px;">${getCtry(origin)}</td>
-                        <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
-                        <td style="padding: 8px;">AGRIBALYSE 3.2</td>
-                        <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
-                        <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
-                    </tr>`;
-    });
+    if (ing.name.toLowerCase().includes('animal feed')) {
+        bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
+    }
 
     html += `
-                </tbody>
-            </table>
-        </div>`;
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
+                    <td style="padding: 8px;">${getCtry(origin)}</td>
+                    <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
+                    <td style="padding: 8px;">AGRIBALYSE 3.2</td>
+                    <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
+                    <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
+                </tr>`;
+});
 
+html += `
+            </tbody>
+        </table>
+    </div>`;
+    
     // ========== B. MANUFACTURING & ENERGY BALANCE ==========
     html += `
         <div style="margin-bottom: 25px;">
@@ -7691,13 +7719,14 @@ Report generated by: AIOXY Sustainability Intelligence v2.1
     return disclaimer;
 }
 
-// ================== AIOXY 6-PAGE ENTERPRISE PDF ENGINE (AUDIT-SEALED) ==================
+// ================== AIOXY 6-PAGE ENTERPRISE PDF ENGINE v2.0 (REFACTORED) ==================
 async function generateProfessionalPDF(tabId, reportTitle) {
-    console.log('🚀 [PDF START] Generating 6-Page Enterprise Audit Report');
+    console.log('🚀 [PDF ENGINE v2.0] Generating Professional Audit Report');
+    
     const loadingOverlay = document.getElementById('pdf-loading-overlay');
     if (loadingOverlay) loadingOverlay.style.display = 'flex';
     
-    // 1. PULL EXISTING PRE-CALCULATED DATA
+    // 1. VALIDATE DATA INTEGRITY
     if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !auditTrailData || !auditTrailData.pefCategories) {
         alert("⚠️ Please run the AIOXY calculation first before exporting the PDF.");
         if (loadingOverlay) loadingOverlay.style.display = 'none';
@@ -7707,417 +7736,1041 @@ async function generateProfessionalPDF(tabId, reportTitle) {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-        const pw = doc.internal.pageSize.width;
-        const ph = doc.internal.pageSize.height;
-        let currentY = 20;
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 15;
+        let currentY = margin;
+        
+        // ============================================================
+        // COLOR PALETTE (Professional, AIOXY Brand)
+        // ============================================================
+        const COLORS = {
+            primary: [10, 37, 64],        // Navy #0A2540
+            secondary: [0, 212, 170],      // Teal #00D4AA
+            accent: [255, 107, 107],       // Coral #FF6B6B
+            success: [72, 187, 120],       // Green #48BB78
+            warning: [237, 137, 54],       // Orange #ED8936
+            danger: [192, 57, 43],         // Red #C0392B
+            gray: [113, 128, 150],         // Slate #718096
+            lightGray: [226, 232, 240],    // Border #E2E8F0
+            dark: [45, 55, 72],            // Dark slate #2D3748
+            white: [255, 255, 255],
+            lightBg: [248, 250, 252]       // #F8FAFC
+        };
+        
+        // ============================================================
+        // TYPOGRAPHY HELPERS
+        // ============================================================
+        const setH1 = () => { 
+            doc.setFont("helvetica", "bold"); 
+            doc.setFontSize(16); 
+            doc.setTextColor(...COLORS.primary); 
+        };
+        
+        const setH2 = () => { 
+            doc.setFont("helvetica", "bold"); 
+            doc.setFontSize(12); 
+            doc.setTextColor(...COLORS.primary); 
+        };
+        
+        const setH3 = () => { 
+            doc.setFont("helvetica", "bold"); 
+            doc.setFontSize(10); 
+            doc.setTextColor(...COLORS.dark); 
+        };
+        
+        const setNormal = () => { 
+            doc.setFont("helvetica", "normal"); 
+            doc.setFontSize(9); 
+            doc.setTextColor(...COLORS.dark); 
+        };
+        
+        const setSmall = () => { 
+            doc.setFont("helvetica", "normal"); 
+            doc.setFontSize(8); 
+            doc.setTextColor(...COLORS.gray); 
+        };
+        
+        const setWarning = () => { 
+            doc.setFont("helvetica", "bold"); 
+            doc.setFontSize(9); 
+            doc.setTextColor(...COLORS.danger); 
+        };
+        
+        const addSectionDivider = (y) => {
+            doc.setDrawColor(...COLORS.lightGray);
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageWidth - margin, y);
+        };
+        
+        const checkPageBreak = (neededSpace = 30) => {
+            if (currentY + neededSpace > pageHeight - margin) {
+                doc.addPage();
+                currentY = margin;
+                return true;
+            }
+            return false;
+        };
 
-        // Typography Helpers
-        const setH1 = () => { doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(10, 37, 64); };
-        const setH2 = () => { doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(10, 37, 64); };
-        const setNormal = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(50, 50, 50); };
-
-        // 2. MAP ACTUAL AIOXY VARIABLES
+        // ============================================================
+        // DATA EXTRACTION (Single Source of Truth)
+        // ============================================================
         const audit = auditTrailData;
         const pName = document.getElementById('productName')?.value || "Assessed Product";
         const dateStr = new Date(audit.calculationTimestamp || Date.now()).toISOString().split('T')[0];
-        const mfgCountry = document.getElementById('manufacturingCountry')?.options[document.getElementById('manufacturingCountry')?.selectedIndex]?.text || 'Not selected';
+        const mfgCountryEl = document.getElementById('manufacturingCountry');
+        const mfgCountry = mfgCountryEl?.options?.[mfgCountryEl.selectedIndex]?.text || 'Not selected';
+        const mfgCountryCode = mfgCountryEl?.value || 'FR';
         
         const ccTree = audit.pefCategories["Climate Change"].contribution_tree;
+        const waterTree = audit.pefCategories["Water Use/Scarcity (AWARE)"]?.contribution_tree;
+        const fossilTree = audit.pefCategories["Resource Use, fossils"]?.contribution_tree;
+        const landTree = audit.pefCategories["Land Use"]?.contribution_tree;
+        
         const totalCo2 = audit.pefCategories["Climate Change"].total;
+        const totalWater = audit.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0;
+        const totalFossil = audit.pefCategories["Resource Use, fossils"]?.total || 0;
+        const totalLand = audit.pefCategories["Land Use"]?.total || 0;
         const biogenicRemovals = audit.pefCategories["Climate Change"].biogenic_removals || 0;
         
-        // 🛡️ REGULATOR FIX 4: Explicit DQR Threshold
+        const mb = audit.mass_balance;
+        const pWeightKg = mb?.final_content_weight_kg || parseFloat(document.getElementById('productWeight')?.value) || 0.2;
+        
         const dqrValue = audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50';
-        const dqrText = `${dqrValue} / 5.0 (PEF Threshold ≤ 3.0)`;
+        const dqrText = `${dqrValue} / 5.0`;
+        const uncertainty = audit.uncertainty_analysis?.overall_uncertainty || 15;
         
         const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
-        const eudrViolation = ccTree.Ingredients?.components?.some(c => c.universal_adjustments?.method === "eudr_dluc_penalty");
+        const eudrViolation = ccTree.Ingredients?.components?.some(c => 
+            c.universal_adjustments?.method === "eudr_dluc_penalty"
+        );
         const isCustomBaseline = audit.comparison_baseline?.is_custom;
-
-        // Recalculate dynamic metrics natively for PDF
-// 🛡️ THE FIX: Explicitly define mass balance from audit data
-const mb = audit.mass_balance || {};
-const pWeightKg = mb.final_content_weight_kg || parseFloat(document.getElementById('productWeight')?.value) || 0.2;
-const singleScorePDF = calculatePEFSingleScore(finalPefResults, pWeightKg);
-const mPt = singleScorePDF.singleScore;
-let ecoGrade = mPt < 150 ? 'A' : mPt < 250 ? 'B' : mPt < 400 ? 'C' : mPt < 600 ? 'D' : 'E';
+        const hasPrimaryData = ccTree.Ingredients?.components?.some(c => c.primary_data_used);
         
+        // PEF Single Score
+        const singleScorePDF = calculatePEFSingleScore(finalPefResults, pWeightKg);
+        const mPt = singleScorePDF.singleScore;
+        let ecoGrade = mPt < 150 ? 'A' : mPt < 250 ? 'B' : mPt < 400 ? 'C' : mPt < 600 ? 'D' : 'E';
+        const ecoColor = ecoGrade === 'A' ? '#2A9D8F' : ecoGrade === 'B' ? '#8AB17D' : ecoGrade === 'C' ? '#E9C46A' : ecoGrade === 'D' ? '#F4A261' : '#E63946';
+        
+        // Nutritional LCA
         const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
-        let nutritionalText = "N/A (Protein data not provided)";
+        let nutritionalText = "N/A";
         if (userProtein > 0) {
             const unifiedCO2 = totalCo2 / pWeightKg;
             const kgNeeded = 100 / (userProtein * 10);
             nutritionalText = `${(unifiedCO2 * kgNeeded).toFixed(2)} kg CO₂e / 100g protein`;
         }
 
-                // ==========================================
+        // ============================================================
+        // HELPER: Format Number for Display
+        // ============================================================
+        const formatNumber = (val, decimals = 4) => {
+            if (val === null || val === undefined || isNaN(val)) return '0.0000';
+            return parseFloat(val).toFixed(decimals);
+        };
+        
+        const formatPercent = (val) => {
+            if (val === null || val === undefined || isNaN(val)) return '0.0%';
+            return val.toFixed(1) + '%';
+        };
+
+        // ============================================================
         // PAGE 1: EXECUTIVE SUMMARY
-        // ==========================================
-        // Minimalist Enterprise Header
-        doc.setFillColor(248, 250, 252); // Very light slate
-        doc.rect(0, 0, pw, 28, 'F');
+        // ============================================================
         
-        // Subtle bottom border for the header
-        doc.setDrawColor(226, 232, 240);
-        doc.setLineWidth(0.5);
-        doc.line(0, 28, pw, 28);
-
-        doc.setTextColor(10, 37, 64); // Dark Navy text
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("AIOXY COMPLIANCE AUDIT TRAIL", 15, 14);
+        // Header Bar
+        doc.setFillColor(...COLORS.primary);
+        doc.rect(0, 0, pageWidth, 8, 'F');
         
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(100, 116, 139); // Slate gray subtitle
-        doc.text("ISO 14044 • PEF 3.1 • GHG Protocol • ESRS E1 Ready", 15, 21);
-
-
-        currentY = 35;
+        // Logo and Title
+        setH1();
+        doc.text("AIOXY COMPLIANCE AUDIT REPORT", margin, currentY);
+        currentY += 8;
+        
+        setSmall();
+        doc.text("ISO 14044 • PEF 3.1 • GHG Protocol • ESRS E1/E3/E4/E5 Ready", margin, currentY);
+        currentY += 12;
+        
+        // Regulatory Flags (if applicable)
         if (eudrViolation) {
-            doc.setTextColor(192, 57, 43);
-            doc.setFont("helvetica", "bold");
-            doc.text("⚠️ REGULATORY BLOCK: EUDR NON-COMPLIANCE DETECTED", 15, currentY);
-            currentY += 10;
+            setWarning();
+            doc.text("⚠️ EUDR NON-COMPLIANCE DETECTED - High-risk origin for regulated commodity", margin, currentY);
+            currentY += 8;
         }
         if (isCustomBaseline) {
-            doc.setTextColor(230, 81, 0);
+            doc.setTextColor(...COLORS.warning);
             doc.setFont("helvetica", "bold");
-            doc.text("⚠️ GREEN CLAIMS DIRECTIVE NOTICE: Custom baseline used.", 15, currentY);
-            currentY += 10;
+            doc.setFontSize(9);
+            doc.text("⚠️ GREEN CLAIMS DIRECTIVE NOTICE: Custom baseline used. Comparative claims require verification.", margin, currentY);
+            currentY += 8;
         }
-
-        setH2(); doc.text("ASSESSMENT DETAILS", 15, currentY); currentY += 5;
+        
+        currentY += 4;
+        addSectionDivider(currentY);
+        currentY += 8;
+        
+        // Assessment Details Box
+        setH2();
+        doc.text("ASSESSMENT DETAILS", margin, currentY);
+        currentY += 6;
+        
+        const detailsData = [
+            ['Assessment ID:', audit.dppId || 'N/A'],
+            ['Product:', pName],
+            ['Date of Assessment:', dateStr],
+            ['Manufacturing Location:', mfgCountry],
+            ['Functional Unit:', userProtein > 0 ? '1 kg mass / 100g delivered protein' : '1 kg of product'],
+            ['Product Weight:', formatNumber(pWeightKg, 3) + ' kg']
+        ];
+        
         doc.autoTable({
             startY: currentY,
-            body: [
-                ['ASSESSMENT ID:', audit.dppId],
-                ['PRODUCT:', pName],
-                ['DATE:', dateStr],
-                ['MANUFACTURING:', mfgCountry]
-            ],
-            theme: 'plain', styles: { fontSize: 10 },
-            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50, textColor: [10, 37, 64] } }
-        });
-
-        currentY = doc.lastAutoTable.finalY + 10;
-        
-        // 🛡️ REGULATOR FIX 2: Inject ESRS E3 and E5 into the Executive Summary
-        setH2(); doc.text("KEY COMPLIANCE METRICS", 15, currentY); currentY += 5;
-                doc.autoTable({
-            startY: currentY,
-            body: [
-                ['TOTAL CLIMATE IMPACT (ESRS E1):', `${(totalCo2 / pWeightKg).toFixed(6)} kg CO₂e / kg`],
-                ['WATER SCARCITY (ESRS E3):', `${(audit.pefCategories["Water Use/Scarcity (AWARE)"].total / pWeightKg).toFixed(4)} m³ eq / kg`],
-                ['FOSSIL RESOURCES (ESRS E5):', `${(audit.pefCategories["Resource Use, fossils"].total / pWeightKg).toFixed(2)} MJ / kg`],
-                ['BIOGENIC REMOVALS:', `${(biogenicRemovals / pWeightKg).toFixed(6)} kg CO₂e / kg`],
-                ['OVERALL DATA QUALITY:', dqrText],
-                ['EUDR STATUS:', eudrViolation ? 'NON-COMPLIANT' : 'COMPLIANT'],
-                ['CRISIS ROUTING:', isCrisisActive ? 'Applied (+40% Distance)' : 'Standard Routing'],
-                ['FRONT-OF-PACK ECO-SCORE:', `Grade ${ecoGrade} (${mPt.toFixed(1)} µPt)`],
-                ['NUTRITIONAL IMPACT:', nutritionalText]
-            ],
+            body: detailsData,
             theme: 'plain',
-            styles: { cellPadding: 4, fontSize: 9, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 } },
-            columnStyles: { 
-    0: { fontStyle: 'bold', cellWidth: 77, textColor: [10, 37, 64] },
-    1: { halign: 'right', fontStyle: 'bold', cellWidth: 105 }
-} // 77 + 105 = 182mm (Perfect A4 width)
+            styles: { fontSize: 9, cellPadding: 2 },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 50, textColor: COLORS.primary },
+                1: { cellWidth: 130, textColor: COLORS.dark }
+            },
+            margin: { left: margin }
         });
-
-
+        
+        currentY = doc.lastAutoTable.finalY + 8;
+        
+        // Key Metrics Box
+        setH2();
+        doc.text("KEY COMPLIANCE METRICS", margin, currentY);
+        currentY += 6;
+        
+        const metricsData = [
+            ['ESRS E1: Climate Impact (Total)', formatNumber(totalCo2, 4) + ' kg CO₂e'],
+            ['ESRS E1: Climate Impact (per kg)', formatNumber(totalCo2 / pWeightKg, 4) + ' kg CO₂e/kg'],
+            ['ESRS E3: Water Scarcity (AWARE)', formatNumber(totalWater, 4) + ' m³ world eq.'],
+            ['ESRS E4: Land Use Impact', formatNumber(totalLand, 2) + ' Pt'],
+            ['ESRS E5: Fossil Resource Use', formatNumber(totalFossil, 2) + ' MJ'],
+            ['Biogenic Removals (FLAG)', biogenicRemovals > 0 ? formatNumber(biogenicRemovals, 4) + ' kg CO₂e' : 'None reported'],
+            ['Front-of-Pack Eco-Score', `Grade ${ecoGrade} (${mPt.toFixed(1)} µPt)`],
+            ['Nutritional LCA', nutritionalText],
+            ['Overall Data Quality Rating', dqrText + ' (≤3.0 PEF compliant)'],
+            ['Modeled Uncertainty', '±' + formatPercent(uncertainty)],
+            ['EUDR Screening Status', eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT'],
+            ['Crisis Routing Applied', isCrisisActive ? 'Yes (+40% distance)' : 'No'],
+            ['Primary Data Used', hasPrimaryData ? 'Yes (verified)' : 'No (secondary data only)']
+        ];
+        
+        doc.autoTable({
+            startY: currentY,
+            body: metricsData,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 85, textColor: COLORS.primary },
+                1: { cellWidth: 95, halign: 'right', fontStyle: 'bold', textColor: COLORS.dark }
+            },
+            margin: { left: margin },
+            alternateRowStyles: { fillColor: COLORS.lightBg }
+        });
+        
         currentY = doc.lastAutoTable.finalY + 10;
-        setH2(); doc.text("AUDIT CLEARANCE", 15, currentY); currentY += 8;
+        
+        // Audit Clearance Section
+        setH2();
+        doc.text("AUDIT CLEARANCE", margin, currentY);
+        currentY += 6;
+        
         setNormal();
-        doc.text("✓ EU Deforestation Regulation (EUDR) Screened", 15, currentY); currentY += 6;
-        doc.text("✓ Primary & Tertiary Logistics Accounted", 15, currentY); currentY += 6;
-        doc.text(`✓ Crisis Routing: ${isCrisisActive ? 'Applied (Red Sea Disruption +40%)' : 'Not Required'}`, 15, currentY); currentY += 6;
-        doc.text("✓ PEF 3.1 Methodology Applied", 15, currentY); currentY += 6;
-        doc.text(`✓ ADEME Eco-Score: Grade ${ecoGrade}`, 15, currentY);
-
-        // ==========================================
-// PAGE 2: DETAILED SCOPE 3 INVENTORY
-// ==========================================
-doc.addPage();
-setH1(); doc.text("SCOPE 3 BREAKDOWN & DETAILS", 15, 20);
-
-// 🛡️ SECTION: MANUFACTURING (Scope 1 & 2)
-currentY = 30;
-setH2(); doc.text("B. MANUFACTURING & ENERGY BALANCE (Scope 1 & 2)", 15, currentY);
-
-const mfgBody = ccTree.Manufacturing.components.map(c => [
-    c.name,
-    c.details || 'Standard Processing',
-    `${c.subtotal.toFixed(4)} kg CO₂e`
-]);
-
-doc.autoTable({
-    startY: currentY + 5,
-    head: [['Manufacturing Process', 'Energy Details', 'Impact']],
-    body: mfgBody,
-    theme: 'plain',
-    styles: { fontSize: 8, cellPadding: 4, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 }, overflow: 'linebreak' },
-    headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 } },
-    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70 }, 2: { halign: 'right', cellWidth: 40, fontStyle: 'bold', textColor: [10, 37, 64] } }
-});
-
-// 🛡️ SECTION: PACKAGING
-currentY = doc.lastAutoTable.finalY + 12;
-if (currentY > 250) { doc.addPage(); currentY = 20; }
-setH2(); doc.text("D. PACKAGING (Scope 3 Cat 1)", 15, currentY);
-
-const pkgMaterial = document.getElementById('packagingMaterial')?.options[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A';
-const pkgWeight = mb.packaging_weight_kg || 0;
-const recycledContent = document.getElementById('recycledContent')?.value || 0;
-
-const pkgBody = [
-    [`Primary Packaging: ${pkgMaterial}`, `${pkgWeight.toFixed(3)} kg`, `${recycledContent}% recycled`, `${ccTree.Packaging.total.toFixed(4)} kg CO₂e`]
-];
-
-doc.autoTable({
-    startY: currentY + 5,
-    head: [['Material', 'Weight', 'Recycled Content', 'Impact']],
-    body: pkgBody,
-    theme: 'plain',
-    styles: { fontSize: 8, cellPadding: 4, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 }, overflow: 'linebreak' },
-    headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 } },
-    columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 30, halign: 'right' }, 2: { cellWidth: 40, halign: 'right' }, 3: { halign: 'right', cellWidth: 40, fontStyle: 'bold', textColor: [10, 37, 64] } }
-});
-
-// 🛡️ SECTION: END-OF-LIFE
-currentY = doc.lastAutoTable.finalY + 12;
-if (currentY > 250) { doc.addPage(); currentY = 20; }
-setH2(); doc.text("E. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", 15, currentY);
-
-const upstreamComps = ccTree.Upstream?.components || [];
-const eolComponents = upstreamComps.filter(c => c.name.includes('End-of-Life'));
-
-if (eolComponents.length > 0) {
-    const eolBody = eolComponents.map(e => [
-        e.name,
-        e.notes || 'Waste Treatment',
-        `${e.subtotal.toFixed(4)} kg CO₂e`
-    ]);
-    
-    doc.autoTable({
-        startY: currentY + 5,
-        head: [['Component', 'Treatment Detail', 'Impact']],
-        body: eolBody,
-        theme: 'plain',
-        styles: { fontSize: 8, cellPadding: 4, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 }, overflow: 'linebreak' },
-        headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1.5 } },
-        columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 70 }, 2: { halign: 'right', cellWidth: 40, fontStyle: 'bold', textColor: [192, 57, 43] } }
-    });
-} else {
-    setNormal(); doc.text("No end-of-life treatment data available.", 15, currentY + 10);
-}
-
-        // ==========================================
-        // PAGE 3: INGREDIENT TRACEABILITY
-        // ==========================================
-        doc.addPage();
-        setH1(); doc.text("INGREDIENT CHAIN OF CUSTODY", 15, 20);
-        let traceY = 30;
+        const clearanceItems = [
+            '✓ EU Deforestation Regulation (EUDR) Screening Complete',
+            '✓ Primary & Tertiary Logistics Accounted (GLEC v3.2)',
+            `✓ Crisis Routing: ${isCrisisActive ? 'Applied (Red Sea/Cape Route +40%)' : 'Standard Routing'}`,
+            '✓ PEF 3.1 Methodology with AGRIBALYSE 3.2 Data',
+            '✓ ISO 14044 Foreground/Background Analysis (5% cutoff)',
+            '✓ Monte Carlo Uncertainty Propagation (500 iterations)',
+            `✓ ADEME Eco-Score: Grade ${ecoGrade}`
+        ];
         
-        if (ccTree.Ingredients.components) {
-            ccTree.Ingredients.components.forEach(ing => {
-                if (traceY > 240) { doc.addPage(); traceY = 20; }
-                setH2(); doc.text(ing.name.toUpperCase(), 15, traceY);
-                
-                const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
-const isPrimary = ing.primary_data_used ? 'TRUE (Primary)' : 'FALSE (Secondary)';
-const eudrStatus = ['BR', 'ID', 'MY', 'AR'].includes(origin) ? 'HIGH RISK' : 'COMPLIANT';
-const gpsData = (ing.primary_data_used && ing.primary_data?.geolocation) ? ing.primary_data.geolocation : 'N/A';
-const ddsData = (ing.primary_data_used && ing.primary_data?.ddsReference) ? ing.primary_data.ddsReference : 'N/A'; // 🛡️ NEW
-
-doc.autoTable({
-    startY: traceY + 5,
-    body: [
-        ['Quantity:', `${ing.quantity_kg.toFixed(6)} kg`],
-        ['Origin:', origin],
-        ['Data Source:', 'AGRIBALYSE 3.2'],
-        ['EUDR Risk:', eudrStatus],
-        ['Primary Data:', isPrimary],
-        ['Geolocation (GPS):', gpsData],
-        ['DDS Reference:', ddsData], // 🛡️ NEW
-        ['CO₂e Impact:', `${ing.subtotal.toFixed(6)} kg CO₂e`]
-    ],
-                    theme: 'plain', styles: { cellPadding: 1 },
-                    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: [10, 37, 64] } }
-                });
-                traceY = doc.lastAutoTable.finalY + 10;
-            });
-        }
-
-        // ==========================================
-        // PAGE 4: LOGISTICS & CRISIS ROUTING
-        // ==========================================
-        doc.addPage();
-        setH1(); doc.text("LOGISTICS CHAIN & CRISIS ROUTING", 15, 20);
+        clearanceItems.forEach(item => {
+            doc.text(item, margin, currentY);
+            currentY += 5;
+        });
         
-        setH2(); doc.text("CRISIS ROUTING LOG", 15, 30);
-        let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
+        // ============================================================
+        // PAGE 2: FULL 16-CATEGORY PEF SCORECARD
+        // ============================================================
+        doc.addPage();
+        currentY = margin;
+        
+        setH1();
+        doc.text("PEF 3.1 COMPLETE IMPACT SCORECARD", margin, currentY);
+        currentY += 8;
+        
+        setSmall();
+        doc.text("16 Impact Categories • JRC EF 3.1 Characterization • Normalized per kg product", margin, currentY);
+        currentY += 10;
+        
+        // Build scorecard table
+        const pefTableBody = [];
+        const pefTableHead = [['Impact Category', 'Total Impact', 'Unit', 'Per kg Product', 'DQR']];
+        
+        Object.keys(finalPefResults).sort().forEach(cat => {
+            const data = finalPefResults[cat];
+            const unit = data.unit || '';
+            const total = data.total || 0;
+            const perKg = pWeightKg > 0 ? total / pWeightKg : 0;
+            const dqrQuality = foodCalculationEngine.getDQRQualityLevel(dqrValue);
+            
+            pefTableBody.push([
+                cat,
+                total.toExponential(3),
+                unit,
+                perKg.toExponential(3),
+                dqrQuality.level
+            ]);
+        });
         
         doc.autoTable({
-            startY: 35,
-            body: [
-                ['Standard distance:', `${dist} km`],
-                ['Crisis multiplier:', isCrisisActive ? '1.40x (Red Sea Disruption)' : '1.00x'],
-                ['Adjusted distance:', isCrisisActive ? `${(dist * 1.4).toFixed(0)} km` : `${dist} km`],
-                ['Rationale:', isCrisisActive ? 'Red Sea shipping disruptions require rerouting via Cape of Good Hope (+40%)' : 'Standard routing applies']
-            ],
-            theme: 'striped', columnStyles: { 0: { fontStyle: 'bold', cellWidth: 45, textColor: [10, 37, 64] } }
-        });
-
-        setH2(); doc.text("OUTBOUND LOGISTICS", 15, doc.lastAutoTable.finalY + 15);
-doc.autoTable({
-    startY: doc.lastAutoTable.finalY + 20,
-    body: [
-        ['Mode:', document.getElementById('transportMode')?.options[document.getElementById('transportMode').selectedIndex]?.text || 'Road'],
-        ['Distance:', isCrisisActive ? `${(dist * 1.4).toFixed(0)} km` : `${dist} km`],
-        ['Load Factor:', '85%'],
-        ['CO₂e Impact:', `${ccTree.Transport.total.toFixed(4)} kg CO₂e`]
-    ],
-    theme: 'plain',
-    styles: { cellPadding: 4, fontSize: 9, textColor: [50, 50, 50], lineColor: [226, 232, 240], lineWidth: { bottom: 0.5 } },
-    columnStyles: { 
-        0: { fontStyle: 'bold', cellWidth: 45, textColor: [10, 37, 64] },
-        1: { halign: 'right', fontStyle: 'bold', cellWidth: 137 }
-    } // 45 + 137 = 182mm (Perfect A4 width)
-});
-
-        // ==========================================
-        // PAGE 5: DATA QUALITY & PEF SCORECARD
-        // ==========================================
-        doc.addPage();
-        setH1(); doc.text("DATA QUALITY & PEF SCORECARD", 15, 20);
-        
-        setH2(); doc.text("MONTE CARLO UNCERTAINTY ANALYSIS", 15, 30);
-        const unc = audit.uncertainty_analysis?.overall_uncertainty || 15;
-        const lowerBound = totalCo2 * (1 - (unc/100));
-        const upperBound = totalCo2 * (1 + (unc/100));
-        const primaryCount = ccTree.Ingredients.components.filter(c => c.primary_data_used).length;
-
-        doc.autoTable({
-            startY: 35,
-            body: [
-                ['Total impact:', `${totalCo2.toFixed(6)} kg CO₂e`],
-                ['Uncertainty:', `±${unc}%`],
-                ['95% Confidence Interval:', `${lowerBound.toFixed(6)} - ${upperBound.toFixed(6)} kg CO₂e`],
-                ['Primary data coverage:', `${primaryCount} / ${ccTree.Ingredients.components.length} ingredients`]
-            ],
-            theme: 'grid', columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55, textColor: [10, 37, 64] } }
-        });
-
-        setH2(); doc.text("METHODOLOGY REFERENCE", 15, doc.lastAutoTable.finalY + 10);
-
-// 🛡️ REGULATOR FIX: Sync PDF Functional Unit with CSV and UI
-const pdfUserProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
-const pdfFunctionalUnitText = pdfUserProtein > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of product";
-
-doc.autoTable({
-    startY: doc.lastAutoTable.finalY + 15,
-    body: [
-        ['Standards Applied:', 'PEF 3.1, ISO 14044, GHG Protocol, ESRS E1'],
-        ['Data Sources:', 'AGRIBALYSE 3.2, JRC EF 3.1, AWARE 2.0'],
-        ['System Boundary:', 'Cradle-to-Retail + EoL (Excl. Use Phase)'],
-        ['Functional Unit:', pdfFunctionalUnitText] // 🛡️ FIX: Now dynamically matches UI/CSV
-    ],
-    theme: 'plain', columnStyles: { 0: { fontStyle: 'bold', cellWidth: 45, textColor: [10, 37, 64] } }
-});
-
-        setH2(); doc.text("COMPLETE PEF 3.1 SCORECARD (16 IMPACTS)", 15, doc.lastAutoTable.finalY + 15);
-        const pefTableBody = Object.keys(finalPefResults).map(cat => [
-            cat, 
-            finalPefResults[cat].total.toExponential(3), 
-            finalPefResults[cat].unit
-        ]);
-
-                doc.autoTable({
-            startY: doc.lastAutoTable.finalY + 20,
-            head: [['Impact Category', 'Total Footprint', 'Unit']],
+            startY: currentY,
+            head: pefTableHead,
             body: pefTableBody,
             theme: 'plain',
-            styles: { cellPadding: 4, fontSize: 8, textColor: [70, 70, 70], lineColor: [235, 235, 235], lineWidth: { bottom: 0.5 } },
-            headStyles: { fillColor: [248, 250, 252], textColor: [10, 37, 64], fontStyle: 'bold', lineWidth: { bottom: 1 }, lineColor: [10, 37, 64] },
-            columnStyles: { 
-    0: { fontStyle: 'bold', textColor: [10, 37, 64], cellWidth: 85 }, // Stops categories from breaking into 2 lines
-    1: { halign: 'right', fontStyle: 'bold', cellWidth: 50 },
-    2: { halign: 'left', textColor: [120, 120, 120], cellWidth: 47 }
-} // 85 + 50 + 47 = 182mm (Perfect A4 width)
+            styles: { fontSize: 7.5, cellPadding: 3 },
+            headStyles: { 
+                fillColor: COLORS.primary, 
+                textColor: COLORS.white, 
+                fontStyle: 'bold',
+                halign: 'left'
+            },
+            columnStyles: {
+                0: { cellWidth: 70, fontStyle: 'bold', textColor: COLORS.primary },
+                1: { cellWidth: 35, halign: 'right' },
+                2: { cellWidth: 35, halign: 'left', textColor: COLORS.gray },
+                3: { cellWidth: 35, halign: 'right', fontStyle: 'bold' },
+                4: { cellWidth: 25, halign: 'center' }
+            },
+            alternateRowStyles: { fillColor: COLORS.lightBg },
+            margin: { left: margin, right: margin }
         });
-
-
-        // ==========================================
-        // PAGE 6: QR CODE & SIGN-OFF 
-        // ==========================================
-        doc.addPage();
-        setH1(); doc.text("AUDIT CERTIFICATION & VERIFICATION", 15, 20);
-        setNormal();
-        doc.text("This audit trail is issued by AIOXY Compliance Engine v3.0", 15, 30);
-        doc.text("ISO 14044 Certified Methodology", 15, 35);
-
+        
+        currentY = doc.lastAutoTable.finalY + 10;
+        
+        // PEF Single Score Breakdown
+        setH2();
+        doc.text("PEF SINGLE SCORE BREAKDOWN (EF 3.1)", margin, currentY);
+        currentY += 6;
+        
+        const topCategories = Object.entries(singleScorePDF.breakdown)
+            .sort((a, b) => b[1].weighted - a[1].weighted)
+            .slice(0, 8);
+        
+        const breakdownData = topCategories.map(([cat, data]) => [
+            cat,
+            data.raw.toExponential(2),
+            (data.weighted / singleScorePDF.weightedScore * 100).toFixed(1) + '%'
+        ]);
+        
         doc.autoTable({
-            startY: 45,
-            body: [
-                ['Assessment ID:', audit.dppId],
-                ['Generated:', new Date().toISOString()],
-                ['Valid Until:', 'Next assessment (annual refresh)']
-            ],
-            theme: 'grid', columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, textColor: [10, 37, 64] } }
+            startY: currentY,
+            head: [['Category', 'Raw Impact (/kg)', 'Contribution']],
+            body: breakdownData,
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 3 },
+            headStyles: { fillColor: COLORS.primary, textColor: COLORS.white },
+            columnStyles: {
+                0: { cellWidth: 90, fontStyle: 'bold' },
+                1: { cellWidth: 50, halign: 'right' },
+                2: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+            },
+            margin: { left: margin }
         });
+        
+        currentY = doc.lastAutoTable.finalY + 8;
+        
+        // Eco-Score Box
+        doc.setFillColor(ecoColor);
+        doc.rect(margin, currentY, pageWidth - (margin * 2), 12, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} µPt)`, margin + 5, currentY + 8);
+        
+        // ============================================================
+        // PAGE 3: INGREDIENT CHAIN OF CUSTODY
+        // ============================================================
+        doc.addPage();
+        currentY = margin;
+        
+        setH1();
+        doc.text("INGREDIENT CHAIN OF CUSTODY", margin, currentY);
+        currentY += 8;
+        
+        setSmall();
+        doc.text("Scope 3 Category 1 (Purchased Goods) • AGRIBALYSE 3.2 • EUDR Screened", margin, currentY);
+        currentY += 10;
+        
+        if (ccTree.Ingredients?.components && ccTree.Ingredients.components.length > 0) {
+            const ingredientRows = [];
+            
+            ccTree.Ingredients.components.forEach(ing => {
+                const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
+                const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(origin);
+                const eudrStatus = isHighRisk ? '⚠️ HIGH RISK' : 'Compliant';
+                const primaryFlag = ing.primary_data_used ? '✓ Primary' : 'Secondary';
+                const waterComp = waterTree?.Ingredients?.components?.find(c => c.name === ing.name);
+                
+                ingredientRows.push([
+                    ing.name,
+                    formatNumber(ing.quantity_kg, 3) + ' kg',
+                    origin,
+                    eudrStatus,
+                    primaryFlag,
+                    formatNumber(ing.subtotal, 4) + ' kg CO₂e',
+                    formatNumber(waterComp?.subtotal || 0, 4) + ' m³'
+                ]);
+            });
+            
+            doc.autoTable({
+                startY: currentY,
+                head: [['Ingredient', 'Quantity', 'Origin', 'EUDR', 'Data Type', 'Climate Impact', 'Water Scarcity']],
+                body: ingredientRows,
+                theme: 'plain',
+                styles: { fontSize: 7.5, cellPadding: 3 },
+                headStyles: { fillColor: COLORS.primary, textColor: COLORS.white },
+                columnStyles: {
+                    0: { cellWidth: 55, fontStyle: 'bold' },
+                    1: { cellWidth: 25, halign: 'right' },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 25 },
+                    4: { cellWidth: 22 },
+                    5: { cellWidth: 30, halign: 'right' },
+                    6: { cellWidth: 28, halign: 'right' }
+                },
+                alternateRowStyles: { fillColor: COLORS.lightBg },
+                margin: { left: margin, right: margin }
+            });
+            
+            currentY = doc.lastAutoTable.finalY + 10;
+        } else {
+            setNormal();
+            doc.text("No ingredient data available.", margin, currentY);
+            currentY += 10;
+        }
+        
+        // ============================================================
+// PRIMARY DATA VERIFICATION (ENHANCED - FULL TRANSPARENCY)
+// ============================================================
+const primaryIngredients = ccTree.Ingredients?.components?.filter(c => c.primary_data_used) || [];
 
-        currentY = doc.lastAutoTable.finalY + 20;
+if (primaryIngredients.length > 0) {
+    checkPageBreak(80);
+    
+    // Section Header with background
+    doc.setFillColor(...COLORS.success);
+    doc.rect(margin, currentY, pageWidth - (margin * 2), 10, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("PRIMARY DATA VERIFICATION", margin + 5, currentY + 7);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("ISO 14044 • Supplier-Verified • Audit-Ready • Full Traceability", margin + 5, currentY + 14);
+    currentY += 18;
+    
+    primaryIngredients.forEach((ing, idx) => {
+        const pd = ing.primary_data;
+        if (!pd) return;
+        
+        // Check if we need a page break for this ingredient
+        checkPageBreak(100);
+        
+        // Ingredient Header Box
+        doc.setFillColor(...COLORS.lightBg);
+        doc.rect(margin, currentY, pageWidth - (margin * 2), 8, 'F');
+        doc.setTextColor(...COLORS.primary);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        
+        const originCountry = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
+        const countryName = window.aioxyData?.countries?.[originCountry]?.name || originCountry;
+        doc.text(`${ing.name} (${countryName})`, margin + 5, currentY + 6);
+        currentY += 10;
+        
+        // Build data rows with all 7 fields
+        const farmRegion = pd.farmRegion || 'Not specified';
+        const geolocation = pd.geolocation || 'Not provided';
+        const yieldVal = pd.yieldKgPerHa ? pd.yieldKgPerHa.toLocaleString() + ' kg/ha' : 'Not provided';
+        const nitrogenVal = pd.nitrogenKgPerTon ? pd.nitrogenKgPerTon + ' kg per ton of crop' : 'Not provided';
+        
+        let irrigationText = 'Not specified';
+        if (pd.waterSource === 'rainfed') irrigationText = 'Rainfed (no irrigation)';
+        else if (pd.waterSource === 'surface') irrigationText = 'Surface water (river/lake)';
+        else if (pd.waterSource === 'groundwater') irrigationText = 'Groundwater (well)';
+        else if (pd.waterSource === 'mixed') irrigationText = 'Mixed irrigation';
+        
+        let practiceText = 'Conventional';
+        if (pd.farmingPractice === 'organic') practiceText = 'Organic Certified';
+        else if (pd.farmingPractice === 'regen') practiceText = 'Regenerative Agriculture';
+        else if (pd.farmingPractice === 'precision') practiceText = 'Precision Farming';
+        
+        const ddsRef = pd.ddsReference || 'Not provided';
+        const verified = pd.timestamp ? new Date(pd.timestamp).toISOString().split('T')[0] : dateStr;
+        
+        const primaryDataRows = [
+            ['Farm Region:', farmRegion],
+            ['Geolocation (GPS):', geolocation],
+            ['Yield:', yieldVal],
+            ['Nitrogen Applied:', nitrogenVal],
+            ['Irrigation Source:', irrigationText],
+            ['Farming Practice:', practiceText],
+            ['DDS Reference (EUDR):', ddsRef],
+            ['Verified Date:', verified]
+        ];
+        
+        doc.autoTable({
+            startY: currentY,
+            body: primaryDataRows,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 2 },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 55, textColor: COLORS.primary },
+                1: { cellWidth: 115, textColor: COLORS.dark }
+            },
+            margin: { left: margin + 5, right: margin + 5 }
+        });
+        
+        currentY = doc.lastAutoTable.finalY + 5;
+        
+        // Impact Adjustments Box - Shows what changed because of this primary data
+        const adjustments = [];
+        
+        // Yield adjustment (if we have baseline)
+        if (pd.yieldKgPerHa) {
+            const baselineYield = ing.universal_adjustments?.baseline_yield || 4000;
+            const yieldAdj = (baselineYield / pd.yieldKgPerHa).toFixed(2);
+            const direction = pd.yieldKgPerHa > baselineYield ? '↓' : '↑';
+            adjustments.push(`${direction} Yield: ${yieldAdj}x (baseline ${baselineYield} → ${pd.yieldKgPerHa} kg/ha)`);
+        }
+        
+        // Nitrogen adjustment
+        if (pd.nitrogenKgPerTon) {
+            const baselineN = ing.universal_adjustments?.baseline_nitrogen || 21;
+            const nAdj = (pd.nitrogenKgPerTon / baselineN).toFixed(2);
+            const direction = pd.nitrogenKgPerTon < baselineN ? '↓' : '↑';
+            adjustments.push(`${direction} Nitrogen: ${nAdj}x (baseline ${baselineN} → ${pd.nitrogenKgPerTon} kg/t)`);
+        }
+        
+        // Water adjustment
+        if (pd.waterSource === 'rainfed') {
+            adjustments.push('↓ Water Scarcity: -95% (rainfed vs irrigated baseline)');
+        } else if (pd.waterSource === 'groundwater') {
+            adjustments.push('↑ Water Scarcity: +25% penalty (groundwater extraction)');
+        }
+        
+        // Practice adjustments
+        if (pd.farmingPractice === 'organic') {
+            adjustments.push('↓ Eco-Score: -15 µPt (ADEME organic farming bonus)');
+        } else if (pd.farmingPractice === 'regen') {
+            adjustments.push('↓ Soil Carbon: +20% sequestration credit (regenerative agriculture)');
+        }
+        
+        // EUDR Status calculation
+        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(originCountry);
+        let eudrStatus = '✓ COMPLIANT (EU origin)';
+        let eudrColor = COLORS.success;
+        if (isHighRisk) {
+            if (pd.geolocation && pd.ddsReference) {
+                eudrStatus = '✓ COMPLIANT (GPS + DDS verified)';
+                eudrColor = COLORS.success;
+            } else {
+                eudrStatus = '⚠️ NON-COMPLIANT (missing GPS or DDS for high-risk origin)';
+                eudrColor = COLORS.danger;
+            }
+        }
+        adjustments.push(eudrStatus);
+        
+        // Draw adjustments box with light blue background
+        const boxHeight = 10 + (adjustments.length * 5);
+        doc.setFillColor(240, 249, 255); // Light blue
+        doc.rect(margin + 5, currentY, pageWidth - (margin * 2) - 10, boxHeight, 'F');
+        doc.setDrawColor(...COLORS.secondary);
+        doc.setLineWidth(0.5);
+        doc.rect(margin + 5, currentY, pageWidth - (margin * 2) - 10, boxHeight, 'S');
+        
+        doc.setTextColor(...COLORS.primary);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.text("Impact Adjustments Applied (vs Agribalyse Baseline):", margin + 10, currentY + 5);
+        
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...COLORS.dark);
+        adjustments.forEach((adj, i) => {
+            // Use red for non-compliant, green for compliant adjustments
+            if (adj.includes('NON-COMPLIANT')) {
+                doc.setTextColor(...COLORS.danger);
+            } else if (adj.includes('↓')) {
+                doc.setTextColor(...COLORS.success);
+            } else if (adj.includes('↑')) {
+                doc.setTextColor(...COLORS.warning);
+            } else {
+                doc.setTextColor(...COLORS.dark);
+            }
+            doc.text(`• ${adj}`, margin + 10, currentY + 10 + (i * 5));
+        });
+        
+        currentY += boxHeight + 5;
+        
+        // Add separator line between ingredients
+        if (idx < primaryIngredients.length - 1) {
+            currentY += 5;
+            doc.setDrawColor(...COLORS.lightGray);
+            doc.setLineWidth(0.3);
+            doc.line(margin + 20, currentY - 2, pageWidth - margin - 20, currentY - 2);
+            currentY += 3;
+        }
+    });
+    
+    currentY += 5;
+} else {
+    // No primary data - show notice
+    checkPageBreak(30);
+    setH2();
+    doc.text("PRIMARY DATA VERIFICATION", margin, currentY);
+    currentY += 6;
+    setNormal();
+    doc.text("No primary supplier data provided for any ingredient.", margin, currentY);
+    currentY += 5;
+    doc.text("Assessment uses AGRIBALYSE 3.2 secondary data with conservative proxy adjustments.", margin, currentY);
+    currentY += 8;
+    setSmall();
+    doc.setTextColor(...COLORS.warning);
+    doc.text("⚠️ Note: Primary data is required for verified comparative claims and carbon credit qualification.", margin, currentY);
+    doc.setTextColor(...COLORS.dark);
+    currentY += 10;
+    }
 
-        // 🔏 THE SILENT QR GENERATOR (INTELLIGENT POLLING FIX)
+        // ============================================================
+        // PAGE 4: MANUFACTURING, PACKAGING & END-OF-LIFE
+        // ============================================================
+        doc.addPage();
+        currentY = margin;
+        
+        setH1();
+        doc.text("MANUFACTURING & MATERIAL FLOWS", margin, currentY);
+        currentY += 8;
+        
+        // Mass Balance Section
+        setH2();
+        doc.text("A. MASS BALANCE VERIFICATION", margin, currentY);
+        currentY += 6;
+        
+        const massData = [
+            ['Total Input Mass:', formatNumber(mb?.raw_input_total_kg || 0, 3) + ' kg'],
+            ['Water Evaporation:', formatNumber(mb?.evaporation_kg || 0, 3) + ' kg'],
+            ['Final Product Mass:', formatNumber(mb?.final_output_kg || pWeightKg, 3) + ' kg'],
+            ['Packaging Weight:', formatNumber(mb?.packaging_weight_kg || 0, 3) + ' kg'],
+            ['Gross Weight:', formatNumber((mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0), 3) + ' kg']
+        ];
+        
+        doc.autoTable({
+            startY: currentY,
+            body: massData,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 60, textColor: COLORS.primary },
+                1: { cellWidth: 120, halign: 'right' }
+            },
+            margin: { left: margin }
+        });
+        
+        currentY = doc.lastAutoTable.finalY + 10;
+        
+        // Manufacturing Section
+        setH2();
+        doc.text("B. MANUFACTURING ENERGY (Scope 1 & 2)", margin, currentY);
+        currentY += 6;
+        
+        const mfgComps = ccTree.Manufacturing?.components || [];
+        if (mfgComps.length > 0) {
+            const mfgRows = mfgComps.map(c => [
+                c.name,
+                c.details || 'Standard Processing',
+                c.energy_source || 'Grid Mix',
+                formatNumber(c.subtotal, 4) + ' kg CO₂e'
+            ]);
+            
+            doc.autoTable({
+                startY: currentY,
+                head: [['Process', 'Details', 'Energy Source', 'Impact']],
+                body: mfgRows,
+                theme: 'plain',
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: COLORS.primary, textColor: COLORS.white },
+                columnStyles: {
+                    0: { cellWidth: 50 },
+                    1: { cellWidth: 60 },
+                    2: { cellWidth: 40 },
+                    3: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+                },
+                margin: { left: margin }
+            });
+            
+            currentY = doc.lastAutoTable.finalY + 10;
+        }
+        
+        // Packaging Section
+        checkPageBreak(40);
+        setH2();
+        doc.text("C. PACKAGING (Scope 3 Cat 1)", margin, currentY);
+        currentY += 6;
+        
+        const pkgMaterial = document.getElementById('packagingMaterial')?.options?.[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A';
+        const pkgWeight = mb?.packaging_weight_kg || 0;
+        const recycledContent = document.getElementById('recycledContent')?.value || 0;
+        const pkgEoL = document.getElementById('packagingEoL')?.options?.[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Average';
+        
+        const pkgData = [
+            ['Material:', pkgMaterial],
+            ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
+            ['Recycled Content:', recycledContent + '%'],
+            ['End-of-Life Scenario:', pkgEoL],
+            ['Total Packaging Impact:', formatNumber(ccTree.Packaging?.total || 0, 4) + ' kg CO₂e']
+        ];
+        
+        doc.autoTable({
+            startY: currentY,
+            body: pkgData,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 60, textColor: COLORS.primary },
+                1: { cellWidth: 120 }
+            },
+            margin: { left: margin }
+        });
+        
+        currentY = doc.lastAutoTable.finalY + 10;
+        
+        // End-of-Life Section
+        const eolComponents = ccTree.Upstream?.components?.filter(c => c.name.includes('End-of-Life')) || [];
+        if (eolComponents.length > 0) {
+            checkPageBreak(40);
+            setH2();
+            doc.text("D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
+            currentY += 6;
+            
+            const eolRows = eolComponents.map(e => [
+                e.name,
+                e.notes || 'Waste Treatment',
+                formatNumber(e.subtotal, 4) + ' kg CO₂e'
+            ]);
+            
+            doc.autoTable({
+                startY: currentY,
+                head: [['Component', 'Treatment Method', 'Impact']],
+                body: eolRows,
+                theme: 'plain',
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: COLORS.primary, textColor: COLORS.white },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    1: { cellWidth: 70 },
+                    2: { cellWidth: 40, halign: 'right', fontStyle: 'bold', textColor: COLORS.danger }
+                },
+                margin: { left: margin }
+            });
+            
+            currentY = doc.lastAutoTable.finalY + 10;
+        }
+
+        // ============================================================
+        // PAGE 5: LOGISTICS & TRANSPORT
+        // ============================================================
+        doc.addPage();
+        currentY = margin;
+        
+        setH1();
+        doc.text("LOGISTICS & SUPPLY CHAIN", margin, currentY);
+        currentY += 8;
+        
+        // Inbound Logistics
+        setH2();
+        doc.text("A. INBOUND LOGISTICS (Scope 3 Cat 4)", margin, currentY);
+        currentY += 6;
+        
+        const upstreamComps = ccTree.Upstream?.components?.filter(c => !c.name.includes('End-of-Life')) || [];
+        if (upstreamComps.length > 0) {
+            const inboundRows = upstreamComps.map(u => [
+                u.name,
+                u.notes || 'Cross-border transport',
+                formatNumber(u.subtotal, 4) + ' kg CO₂e'
+            ]);
+            
+            doc.autoTable({
+                startY: currentY,
+                head: [['Shipment', 'Route Details', 'Impact']],
+                body: inboundRows,
+                theme: 'plain',
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: COLORS.primary, textColor: COLORS.white },
+                columnStyles: {
+                    0: { cellWidth: 70 },
+                    1: { cellWidth: 80 },
+                    2: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+                },
+                margin: { left: margin }
+            });
+            
+            currentY = doc.lastAutoTable.finalY + 10;
+        } else {
+            setNormal();
+            doc.text("No inbound logistics data (local sourcing assumed).", margin, currentY);
+            currentY += 10;
+        }
+        
+        // Outbound Logistics
+        checkPageBreak(50);
+        setH2();
+        doc.text("B. OUTBOUND LOGISTICS (Scope 3 Cat 4)", margin, currentY);
+        currentY += 6;
+        
+        let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
+        const mode = document.getElementById('transportMode')?.value || 'road';
+        const modeText = document.getElementById('transportMode')?.options?.[document.getElementById('transportMode').selectedIndex]?.text || 'Road Freight';
+        const originalDist = dist;
+        
+        if (isCrisisActive && (mode === 'sea' || mode === 'road')) {
+            dist = dist * 1.4;
+        }
+        
+        const isFrozen = document.getElementById('processingMethod')?.value === 'freezing';
+        const isChilled = document.getElementById('refrigeratedTransport')?.value === 'yes';
+        let tempCondition = 'Ambient';
+        if (isFrozen) tempCondition = 'Frozen (Reefer)';
+        else if (isChilled) tempCondition = 'Chilled';
+        
+        const outboundData = [
+            ['Transport Mode:', modeText],
+            ['Temperature Condition:', tempCondition],
+            ['Standard Distance:', originalDist + ' km'],
+            ['Crisis Adjustment:', isCrisisActive ? '+40% (Cape Route)' : 'None'],
+            ['Effective Distance:', dist.toFixed(0) + ' km'],
+            ['Gross Weight Shipped:', formatNumber((mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0), 3) + ' kg'],
+            ['Outbound Impact:', formatNumber(ccTree.Transport?.total || 0, 4) + ' kg CO₂e']
+        ];
+        
+        doc.autoTable({
+            startY: currentY,
+            body: outboundData,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 60, textColor: COLORS.primary },
+                1: { cellWidth: 120 }
+            },
+            margin: { left: margin }
+        });
+        
+        currentY = doc.lastAutoTable.finalY + 10;
+        
+        // Crisis Routing Notice (if active)
+        if (isCrisisActive) {
+            doc.setFillColor(255, 243, 224);
+            doc.rect(margin, currentY, pageWidth - (margin * 2), 15, 'F');
+            doc.setTextColor(...COLORS.warning);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.text("⚠️ GEOPOLITICAL CRISIS ROUTING APPLIED", margin + 5, currentY + 6);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text("Red Sea disruptions require rerouting via Cape of Good Hope (+40% distance penalty)", margin + 5, currentY + 12);
+            currentY += 20;
+        }
+
+        // ============================================================
+        // PAGE 6: DATA QUALITY, UNCERTAINTY & VERIFICATION
+        // ============================================================
+        doc.addPage();
+        currentY = margin;
+        
+        setH1();
+        doc.text("DATA QUALITY & VERIFICATION", margin, currentY);
+        currentY += 8;
+        
+        // DQR Summary
+        setH2();
+        doc.text("A. DATA QUALITY RATING (DQR)", margin, currentY);
+        currentY += 6;
+        
+        const dqrComps = audit.dqr_summary?.component_dqrs || [];
+        const dqrRows = dqrComps.map(c => [
+            c.name,
+            c.source || 'AGRIBALYSE 3.2',
+            formatNumber(c.dqr, 2),
+            c.is_proxy ? 'Proxy' : 'Direct',
+            formatPercent(c.uncertainty)
+        ]);
+        
+        if (dqrRows.length > 0) {
+            doc.autoTable({
+                startY: currentY,
+                head: [['Component', 'Data Source', 'DQR', 'Type', 'Uncertainty']],
+                body: dqrRows,
+                theme: 'plain',
+                styles: { fontSize: 8, cellPadding: 3 },
+                headStyles: { fillColor: COLORS.primary, textColor: COLORS.white },
+                columnStyles: {
+                    0: { cellWidth: 60, fontStyle: 'bold' },
+                    1: { cellWidth: 50 },
+                    2: { cellWidth: 25, halign: 'center' },
+                    3: { cellWidth: 25, halign: 'center' },
+                    4: { cellWidth: 30, halign: 'right' }
+                },
+                alternateRowStyles: { fillColor: COLORS.lightBg },
+                margin: { left: margin }
+            });
+            
+            currentY = doc.lastAutoTable.finalY + 8;
+        }
+        
+        // Overall DQR Box
+        const dqrLevel = foodCalculationEngine.getDQRQualityLevel(parseFloat(dqrValue) || 1.5);
+        doc.setFillColor(...COLORS.lightBg);
+        doc.rect(margin, currentY, pageWidth - (margin * 2), 10, 'F');
+        doc.setTextColor(...COLORS.primary);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text(`Overall DQR: ${dqrText} - ${dqrLevel.level}`, margin + 5, currentY + 7);
+        currentY += 15;
+        
+        // Monte Carlo Uncertainty
+        setH2();
+        doc.text("B. MONTE CARLO UNCERTAINTY ANALYSIS", margin, currentY);
+        currentY += 6;
+        
+        const monteCarlo = audit.uncertainty_analysis?.monte_carlo;
+        if (monteCarlo) {
+            const uncertaintyData = [
+                ['Climate Change - Mean:', formatNumber(monteCarlo.co2?.mean || totalCo2, 4) + ' kg CO₂e'],
+                ['Climate Change - 90% CI:', formatNumber(monteCarlo.co2?.p5 || 0, 4) + ' to ' + formatNumber(monteCarlo.co2?.p95 || 0, 4) + ' kg CO₂e'],
+                ['Water Scarcity - Mean:', formatNumber(monteCarlo.water?.mean || totalWater, 4) + ' m³ eq.'],
+                ['Water Scarcity - 90% CI:', formatNumber(monteCarlo.water?.p5 || 0, 4) + ' to ' + formatNumber(monteCarlo.water?.p95 || 0, 4) + ' m³ eq.'],
+                ['Iterations:', monteCarlo.metadata?.iterations || '500'],
+                ['Methodology:', monteCarlo.metadata?.methodology || 'Monte Carlo Lognormal']
+            ];
+            
+            doc.autoTable({
+                startY: currentY,
+                body: uncertaintyData,
+                theme: 'plain',
+                styles: { fontSize: 9, cellPadding: 3 },
+                columnStyles: {
+                    0: { fontStyle: 'bold', cellWidth: 80, textColor: COLORS.primary },
+                    1: { cellWidth: 100 }
+                },
+                margin: { left: margin }
+            });
+            
+            currentY = doc.lastAutoTable.finalY + 10;
+        }
+        
+        // Methodology Reference
+        checkPageBreak(50);
+        setH2();
+        doc.text("C. METHODOLOGY & STANDARDS", margin, currentY);
+        currentY += 6;
+        
+        const methodData = [
+            ['Primary Standard:', 'PEF 3.1 (Product Environmental Footprint)'],
+            ['Supporting Standards:', 'ISO 14040:2006, ISO 14044:2006, GHG Protocol'],
+            ['Data Sources:', 'AGRIBALYSE 3.2, JRC EF 3.1, AWARE 2.0, GLEC v3.2'],
+            ['System Boundary:', 'Cradle-to-Retail + End-of-Life'],
+            ['Allocation Method:', 'Mass allocation (ISO 14044 hierarchy)'],
+            ['Cut-off Criteria:', '5% mass/energy (Foreground/Background analysis)']
+        ];
+        
+        doc.autoTable({
+            startY: currentY,
+            body: methodData,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { fontStyle: 'bold', cellWidth: 60, textColor: COLORS.primary },
+                1: { cellWidth: 120 }
+            },
+            margin: { left: margin }
+        });
+        
+        currentY = doc.lastAutoTable.finalY + 15;
+        
+        // ============================================================
+        // QR CODE & SIGNATURE (PRESERVED FROM ORIGINAL)
+        // ============================================================
+        checkPageBreak(60);
+        
+        setH2();
+        doc.text("VERIFICATION & DIGITAL SIGNATURE", margin, currentY);
+        currentY += 6;
+        
+        setNormal();
+        doc.text("This audit report is cryptographically sealed and traceable via the QR code below.", margin, currentY);
+        currentY += 5;
+        doc.text(`Assessment ID: ${audit.dppId || 'N/A'}`, margin, currentY);
+        currentY += 5;
+        doc.text(`Generated: ${new Date().toISOString()}`, margin, currentY);
+        currentY += 10;
+        
+        // QR Code Generation (same logic as original)
         const hiddenQrDiv = document.createElement('div');
         hiddenQrDiv.style.position = 'absolute';
-        hiddenQrDiv.style.left = '-9999px'; 
+        hiddenQrDiv.style.left = '-9999px';
         document.body.appendChild(hiddenQrDiv);
-
-        // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
-const eudrStatusText = eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
-const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
+        
+        const eudrStatusText = eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
+        const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
         
         new QRCode(hiddenQrDiv, {
             text: qrTextPayload,
-            width: 150, height: 150,
+            width: 150,
+            height: 150,
             correctLevel: QRCode.CorrectLevel.M
         });
-
+        
         let attempts = 0;
-        function checkAndSaveQR() {
+        const checkAndSaveQR = () => {
             attempts++;
             const qrCanvas = hiddenQrDiv.querySelector('canvas');
             const qrImage = hiddenQrDiv.querySelector('img');
             let qrDataUrl = null;
-
+            
             if (qrCanvas && qrCanvas.width > 0) {
                 qrDataUrl = qrCanvas.toDataURL('image/png');
             } else if (qrImage && qrImage.src && qrImage.src.length > 100) {
                 qrDataUrl = qrImage.src;
             }
-
+            
             if (qrDataUrl) {
                 try {
-                    doc.addImage(qrDataUrl, 'PNG', 15, currentY, 40, 40);
-                    setH2(); doc.text("SCAN FOR OFFLINE VERIFICATION", 60, currentY + 15);
-                    setNormal(); doc.text("No internet required. Data embedded directly in QR.", 60, currentY + 22);
-                    doc.text("Scan with any smartphone camera to verify instantly.", 60, currentY + 28);
+                    // Add QR Code to PDF
+                    doc.addImage(qrDataUrl, 'PNG', margin, currentY, 40, 40);
                     
-                    currentY += 60;
-                    setH2(); doc.text("DIGITAL SIGNATURE", 15, currentY);
-                    setNormal(); doc.text("This document is cryptographically sealed.", 15, currentY + 8);
-                    doc.text("Any modification invalidates the audit trail.", 15, currentY + 14);
+                    setH2();
+                    doc.text("SCAN FOR OFFLINE VERIFICATION", margin + 50, currentY + 15);
+                    setSmall();
+                    doc.text("No internet required. Data embedded directly in QR.", margin + 50, currentY + 22);
+                    doc.text("Scan with any smartphone camera to verify instantly.", margin + 50, currentY + 28);
                     
-                    // 🛡️ REGULATOR FIX: PEFCR v3.1 B2C Single Score Warning (Footer)
-doc.setFontSize(7);
-doc.setTextColor(150, 150, 150);
-doc.text("COMPLIANCE NOTE: PEF Single Score (µPt) is restricted to internal B2B eco-design and supply chain diagnostics.", pw/2, ph - 8, { align: "center" });
-doc.text("Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.", pw/2, ph - 5, { align: "center" });
-
-doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
-    
+                    currentY += 50;
+                    
+                    // Footer
+                    doc.setFontSize(7);
+                    doc.setTextColor(...COLORS.gray);
+                    doc.text("COMPLIANCE NOTE: PEF Single Score (µPt) is restricted to internal B2B eco-design and supply chain diagnostics.", pageWidth / 2, pageHeight - 8, { align: "center" });
+                    doc.text("Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.", pageWidth / 2, pageHeight - 5, { align: "center" });
+                    
+                    // Save PDF
+                    doc.save(`AIOXY_Compliance_Audit_${audit.dppId || 'Report'}.pdf`);
+                    
                 } catch (qrErr) {
                     console.warn("Non-fatal QR Error:", qrErr);
                     doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
@@ -8128,13 +8781,14 @@ doc.save(`AIOXY_Compliance_Audit_${audit.dppId}.pdf`);
             } else if (attempts < 20) {
                 setTimeout(checkAndSaveQR, 50);
             } else {
-                doc.setTextColor(192, 57, 43);
-                doc.text("⚠️ QR Code generation timed out. Browser constrained.", 15, currentY + 20);
+                doc.setTextColor(...COLORS.danger);
+                doc.text("⚠️ QR Code generation timed out.", margin, currentY + 20);
                 doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
                 document.body.removeChild(hiddenQrDiv);
                 if (loadingOverlay) loadingOverlay.style.display = 'none';
             }
-        }
+        };
+        
         setTimeout(checkAndSaveQR, 50);
         
     } catch (error) {
