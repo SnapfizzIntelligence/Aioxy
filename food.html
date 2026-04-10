@@ -8679,66 +8679,118 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             currentY = doc.lastAutoTable.finalY + 10;
         }
         
-        checkPageBreak(40);
-        setH2();
-        doc.text("C. PACKAGING (Scope 3 Cat 1)", margin, currentY);
-        currentY += 6;
-        
-        const pkgMaterial = safeString(document.getElementById('packagingMaterial')?.options?.[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A');
-        const pkgWeight = mb?.packaging_weight_kg || 0;
-        const recycledContent = document.getElementById('recycledContent')?.value || 0;
-        const pkgEoL = safeString(document.getElementById('packagingEoL')?.options?.[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Average');
-        
-        const pkgData = [
-            ['Material:', pkgMaterial],
-            ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
-            ['Recycled Content:', recycledContent + '%'],
-            ['End-of-Life Scenario:', pkgEoL],
-            ['Total Packaging Impact:', formatNumber(ccTree.Packaging?.total || 0, 4) + ' kg CO2e']
-        ];
-        
-        doc.autoTable({
-            ...standardTableStyles,
-            startY: currentY,
-            body: pkgData,
-            styles: { fontSize: 9, cellPadding: 3 },
-            columnStyles: {
-                0: { fontStyle: 'bold', cellWidth: 60, textColor: COLORS.primary },
-                1: { cellWidth: 120 }
-            },
-            margin: { left: margin }
-        });
-        
-        currentY = doc.lastAutoTable.finalY + 10;
-        
-        const eolComponents = ccTree.Upstream?.components?.filter(c => c.name.includes('End-of-Life')) || [];
-        if (eolComponents.length > 0) {
-            checkPageBreak(40);
-            setH2();
-            doc.text("D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
-            currentY += 6;
-            
-            const eolRows = eolComponents.map(e => [
-                truncate(e.name, 35),
-                safeString(e.notes || 'Waste Treatment'),
-                formatNumber(e.subtotal, 4) + ' kg CO2e'
-            ]);
-            
-            doc.autoTable({
-                ...standardTableStyles,
-                startY: currentY,
-                head: [['Component', 'Treatment Method', 'Impact']],
-                body: eolRows,
-                columnStyles: {
-                    0: { cellWidth: 70 },
-                    1: { cellWidth: 70 },
-                    2: { cellWidth: 40, halign: 'right', fontStyle: 'bold', textColor: COLORS.danger }
-                },
-                margin: { left: margin }
-            });
-            
-            currentY = doc.lastAutoTable.finalY + 10;
-        }
+        // ============================================================
+// C. PACKAGING (Scope 3 Cat 1)
+// ============================================================
+checkPageBreak(40);
+setH2();
+doc.text("C. PACKAGING (Scope 3 Cat 1)", margin, currentY);
+currentY += 6;
+
+const pkgMaterial = safeString(document.getElementById('packagingMaterial')?.options?.[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A');
+const pkgWeight = mb?.packaging_weight_kg || 0;
+const recycledContent = document.getElementById('recycledContent')?.value || 0;
+const pkgEoL = safeString(document.getElementById('packagingEoL')?.options?.[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Average');
+
+// Primary Packaging
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.setTextColor(...COLORS.primary);
+doc.text("PRIMARY PACKAGING (User Input)", margin, currentY);
+currentY += 5;
+
+const pkgData = [
+    ['Material:', pkgMaterial],
+    ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
+    ['Recycled Content:', recycledContent + '%'],
+    ['End-of-Life:', pkgEoL]
+];
+
+doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    body: pkgData,
+    styles: { fontSize: 9, cellPadding: 2 },
+    columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 50, textColor: COLORS.primary },
+        1: { cellWidth: 130 }
+    },
+    margin: { left: margin }
+});
+
+currentY = doc.lastAutoTable.finalY + 5;
+
+// Tertiary Packaging (PEF Proxy)
+const tertiaryComps = ccTree.Packaging?.components || [];
+if (tertiaryComps.length > 0) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.primary);
+    doc.text("TERTIARY LOGISTICS PACKAGING (PEF Proxy)", margin, currentY);
+    currentY += 5;
+    
+    const tertiaryRows = tertiaryComps.map(p => [
+        safeString(p.name),
+        formatNumber(p.subtotal, 4) + ' kg CO2e'
+    ]);
+    
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        body: tertiaryRows,
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: {
+            0: { cellWidth: 140 },
+            1: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 5;
+}
+
+// Total Packaging Impact
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.setTextColor(...COLORS.primary);
+doc.text("Total Packaging Impact:", margin, currentY);
+doc.setTextColor(...COLORS.dark);
+doc.text(`${formatNumber(ccTree.Packaging?.total || 0, 4)} kg CO2e`, margin + 80, currentY);
+
+currentY += 10;
+
+// ============================================================
+// D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)
+// ============================================================
+const eolComponents = ccTree.Upstream?.components?.filter(c => c.name.includes('End-of-Life')) || [];
+if (eolComponents.length > 0) {
+    checkPageBreak(40);
+    setH2();
+    doc.text("D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
+    currentY += 6;
+    
+    const eolRows = eolComponents.map(e => [
+        truncate(e.name, 35),
+        safeString(e.notes || 'Waste Treatment'),
+        formatNumber(e.subtotal, 4) + ' kg CO2e'
+    ]);
+    
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        head: [['Component', 'Treatment Method', 'Impact']],
+        body: eolRows,
+        columnStyles: {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 70 },
+            2: { cellWidth: 40, halign: 'right', fontStyle: 'bold', textColor: COLORS.danger }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 10;
+}
+       
 
         // ============================================================
         // PAGE 5: LOGISTICS & TRANSPORT (ASCII-SAFE FIXES)
