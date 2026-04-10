@@ -8381,25 +8381,35 @@ if (adj.method === "eudr_dluc_penalty") {
     } else {
         adjustmentText = `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
     }
+} else {
+    adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
+}
+
+// 🔧 CRITICAL FIX: Add Physics Flag and Energy details (same as web)
+if (archetype && processState !== 'raw') {
+    adjustmentText += `\n⚙️ [Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)`;
+    if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+        adjustmentText += `\n🔋 Energy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | 🔥 Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg`;
     }
-    
-    // BUILD NAME WITH QUALITY FLAG
-    let nameText = safeString(ing.name);
-    if (ing.name.toLowerCase().includes('animal feed')) {
-        nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
-    }
-    
-    ingredientRows.push([
-        nameText,                                           // Column 0: Ingredient
-        formatNumber(ing.quantity_kg, 3) + ' kg',          // Column 1: Qty
-        origin,                                             // Column 2: Origin
-        processingDisplay,                                  // Column 3: Processing (NEW)
-        eudrStatus,                                         // Column 4: EUDR
-        primaryFlag,                                        // Column 5: Data
-        adjustmentText,                                     // Column 6: Physics Adjustments
-        formatNumber(ing.subtotal, 4) + ' kg',             // Column 7: CO2e
-        formatNumber(waterComp?.subtotal || 0, 4) + ' m3'  // Column 8: Water
-    ]);
+}
+
+// BUILD NAME WITH QUALITY FLAG
+let nameText = safeString(ing.name);
+if (ing.name.toLowerCase().includes('animal feed')) {
+    nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
+}
+
+ingredientRows.push([
+    nameText,                                           // Column 0: Ingredient
+    formatNumber(ing.quantity_kg, 3) + ' kg',          // Column 1: Qty
+    origin,                                             // Column 2: Origin
+    processingDisplay,                                  // Column 3: Processing
+    eudrStatus,                                         // Column 4: EUDR
+    primaryFlag,                                        // Column 5: Data
+    adjustmentText,                                     // Column 6: Physics Adjustments
+    formatNumber(ing.subtotal, 4) + ' kg',             // Column 7: CO2e
+    formatNumber(waterComp?.subtotal || 0, 4) + ' m3'  // Column 8: Water
+]);
 });
 
 doc.autoTable({
