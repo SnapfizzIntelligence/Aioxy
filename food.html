@@ -8356,24 +8356,28 @@ ccTree.Ingredients.components.forEach(ing => {
     
     // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
 let adjustmentText = '';
-const adj = ing.universal_adjustments || {};
 
 // 📝 ADD PHYSICS NOTE FIRST (if exists - verbal only, no calculation impact)
 if (ing.physics_note) {
+    // Clean the note of any emojis or special characters
     const cleanNote = safeString(ing.physics_note);
     adjustmentText += `[NOTE] ${cleanNote}\n`;
 }
+
+const adj = ing.universal_adjustments || {};
 
 if (adj.method === "eudr_dluc_penalty") {
     adjustmentText += '[!] EUDR MARKET BLOCK - +50% dLUC applied';
 } else if (ing.primary_data_used && ing.primary_data) {
     const pd = ing.primary_data;
     adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
+
+  
 } else if (origin !== baseOrigin) {
     adjustmentText += `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
 } else {
     adjustmentText += `[DIRECT: ${origin}] No adjustment needed`;
-}
+    }
     
     // BUILD NAME WITH QUALITY FLAG
     let nameText = safeString(ing.name);
@@ -8948,14 +8952,13 @@ currentY += 15;
         doc.text("A. DATA QUALITY RATING (DQR)", margin, currentY);
         currentY += 6;
         
-        const dqrComps = audit.dqr_summary?.component_dqrs || [];
         const dqrRows = dqrComps.map(c => [
-            truncate(c.name, 30),
-            safeString(c.source || 'AGRIBALYSE 3.2'),
-            formatNumber(c.dqr, 2)
-            c.is_proxy ? 'Proxy' : 'Direct',
-            formatPercent(c.uncertainty)
-        ]);
+    truncate(c.name, 30),
+    safeString(c.source || 'AGRIBALYSE 3.2'),
+    formatNumber(c.dqr, 1),   // ← ADD THE COMMA
+    c.is_proxy ? 'Proxy' : 'Direct',
+    formatPercent(c.uncertainty)
+]);
         
         if (dqrRows.length > 0) {
             doc.autoTable({
