@@ -3511,13 +3511,15 @@ window.aioxyData = {
     "roasting": { co2_impact: 0.65, water_impact: 0.05, yield: 0.82, loss: 0.18, temp: 200, kwh_per_kg: 0.75 }
 },
 
-        // 5.5 INGREDIENT-LEVEL PROCESSING ARCHETYPES
+            // 5.5 INGREDIENT-LEVEL PROCESSING ARCHETYPES (ISO 14044 Mass Balance)
     processing_archetypes: {
-        "raw": { "yield_factor": 1.00, "energy_kwh_per_kg": 0.00 },
-        "dry_milled": { "yield_factor": 0.90, "energy_kwh_per_kg": 0.15 },
-        "wet_extracted": { "yield_factor": 0.40, "energy_kwh_per_kg": 0.85 },
-        "isolated": { "yield_factor": 0.20, "energy_kwh_per_kg": 2.50 }
+        "raw": { "name": "Raw / Farm Gate", "yield_factor": 1.00, "energy_kwh": 0.00, "gas_mj": 0.00, "dqr_reward": 0 },
+        "dry_milled": { "name": "Dry Milled (Flour)", "yield_factor": 0.90, "energy_kwh": 0.15, "gas_mj": 0.00, "dqr_reward": 0.1 },
+        "wet_extracted": { "name": "Wet Extracted", "yield_factor": 0.55, "energy_kwh": 0.80, "gas_mj": 2.50, "dqr_reward": 0.2 },
+        "isolated": { "name": "Isolated (Protein Isolate)", "yield_factor": 0.22, "energy_kwh": 2.50, "gas_mj": 6.00, "dqr_reward": 0.3 },
+        "fermentation": { "name": "Precision Fermentation", "yield_factor": 0.12, "energy_kwh": 5.50, "gas_mj": 0.00, "dqr_reward": 0.5 }
     },
+
 
 
     // 6. TRANSPORTATION (GLEC v3.2) - UPDATED WITH 2024/2025 DATA & AIR POLLUTANTS (Module 6)
