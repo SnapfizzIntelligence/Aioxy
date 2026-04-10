@@ -8359,7 +8359,9 @@ let adjustmentText = '';
 
 // 📝 ADD PHYSICS NOTE FIRST (if exists - verbal only, no calculation impact)
 if (ing.physics_note) {
-    adjustmentText += `📝 ${ing.physics_note}\n`;
+    // Clean the note of any emojis or special characters
+    const cleanNote = safeString(ing.physics_note);
+    adjustmentText += `[NOTE] ${cleanNote}\n`;
 }
 
 const adj = ing.universal_adjustments || {};
@@ -8647,7 +8649,7 @@ if (usePrimary && (totalKWh > 0 || totalGasM3 > 0) && totalProd > 0) {
     doc.setTextColor(...COLORS.primary);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("⭐⭐⭐ TIER 1 PRIMARY FACILITY DATA VERIFIED (ESRS E1 Compliant)", margin + 5, currentY + 5);
+    doc.text("*** TIER 1 PRIMARY FACILITY DATA VERIFIED (ESRS E1 Compliant)", margin + 5, currentY + 5);
     currentY += 12;
 }
 
