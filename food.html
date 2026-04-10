@@ -4971,8 +4971,9 @@ auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
     universal_adjustments: universalAdjustments,
     primary_data_used: !!item.primaryData,
     primary_data: item.primaryData,
-    processingState: item.processingState || 'raw',  // ← ADD THIS
-    yieldFactor: yieldFactor                         // ← ADD THIS
+    processingState: item.processingState || 'raw',
+    yieldFactor: yieldFactor,
+    physics_note: item.physics_note || ''  // ← ADD THIS LINE
 });
 
         auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
