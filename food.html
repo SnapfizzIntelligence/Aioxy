@@ -8354,7 +8354,7 @@ ccTree.Ingredients.components.forEach(ing => {
         processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
     }
     
-    // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
+       // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
 let adjustmentText = '';
 
 // 📝 ADD PHYSICS NOTE FIRST (if exists - verbal only, no calculation impact)
@@ -8385,12 +8385,8 @@ if (adj.method === "eudr_dluc_penalty") {
     adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
 }
 
-// Add Physics Flag for processed ingredients
-const procState = ing.processingState || 'raw';
-const archetypes = window.aioxyData?.processing_archetypes || {};
-const archetype = archetypes[procState];
-
-if (archetype && procState !== 'raw') {
+// Add Physics Flag for processed ingredients (using existing archetype variable)
+if (archetype && processState !== 'raw') {
     adjustmentText += `\n[Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)`;
     if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
         adjustmentText += `\nEnergy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg`;
