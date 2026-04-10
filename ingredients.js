@@ -42,6 +42,58 @@ window.aioxyData = {
                 }
             }
         },
+                "maize-corn-starch-agribalyse-3-2": {
+            "name": "Maize/corn starch",
+            "loss": 0.02,
+            "processing_yield": 0.98,
+            "data": {
+                "pef": {
+                    "Climate Change": 1.55,
+                    "Ozone Depletion": 2.75e-08,
+                    "Human Toxicity, non-cancer": 2.35e-08,
+                    "Human Toxicity, cancer": 9.68e-10,
+                    "Particulate Matter": 1.22e-07,
+                    "Ionizing Radiation": 0.184,
+                    "Photochemical Ozone Formation": 0.00632,
+                    "Acidification": 0.0131,
+                    "Eutrophication, terrestrial": 0.0468,
+                    "Eutrophication, freshwater": 0.000515,
+                    "Eutrophication, marine": 0.00593,
+                    "Ecotoxicity, freshwater": 43.8,
+                    "Land Use": 33.1,
+                    "Water Use/Scarcity (AWARE)": 3.99,
+                    "Resource Use, minerals/metals": 1.47e-05,
+                    "Resource Use, fossils": 18.5
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2",
+                    "source_activity": "Amidon de maïs ou fécule de maïs / Maize/corn starch",
+                    "source_uuid": "agb-3.2-9510-maize-corn-starch",
+                    "agribalyse_code": "9510",
+                    "allocation_method": "Economic Allocation",
+                    "dqr": {
+                        "TeR": 3.0,
+                        "GR": 3.5,
+                        "TiR": 3.0,
+                        "C": 3.5,
+                        "P": 4.4
+                    },
+                    "dqr_overall": 3.48,
+                    "single_score_mpt": 0.207,
+                    "biogenic_net": 0.0344,
+                    "co2_luc_net": 0.0991,
+                    "co2_fossil": 1.42,
+                    "seasonality_code": 2,
+                    "air_freight": 0,
+                    "storage_type": "Ambiant (long)",
+                    "packaging_approach": "PACK PROXY",
+                    "preparation": "Pas de préparation",
+                    "food_group": "produits céréaliers",
+                    "food_subgroup": "farines et pâtes à tarte"
+                }
+            }
+        },
+
         "raspberry-raw-agribalyse-3-2": {
     "name": "Raspberry, raw",
     "loss": 0.05,
