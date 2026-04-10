@@ -7458,11 +7458,16 @@ ingredients.forEach(ing => {
     bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
 }
 
-// [PHYSICS FLAG] Show processing archetype in audit trail
-// Get the processing state from the ingredient
+// [PHYSICS FLAG] Show processing archetype in audit trail (adds to bridgeHTML)
 const processState = ing.processingState || 'raw';
 const archetypes = window.aioxyData?.processing_archetypes || {};
 const archetype = archetypes[processState];
+
+// Build the PROCESSING column display
+let processingDisplay = 'Raw (1.00x)';
+if (archetype && processState !== 'raw') {
+    processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
+}
 
 if (archetype && processState !== 'raw') {
     bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">
@@ -7480,12 +7485,13 @@ if (archetype && processState !== 'raw') {
 html += `
             <tr style="border-bottom: 1px solid #ddd;">
                 <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
-                    <td style="padding: 8px;">${getCtry(origin)}</td>
-                    <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
-                    <td style="padding: 8px;">AGRIBALYSE 3.2</td>
-                    <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
-                    <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
-                </tr>`;
+                <td style="padding: 8px;">${getCtry(origin)}</td>
+                <td style="padding: 8px;">${processingDisplay}</td>
+                <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
+                <td style="padding: 8px;">AGRIBALYSE 3.2</td>
+                <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
+                <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
+            </tr>`;
 });
 
 html += `
@@ -8842,7 +8848,7 @@ doc.setTextColor(...COLORS.primary);
 doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
 
 // Total Value (right-aligned, slightly smaller to fit in the box)
-doc.setFontSize(13);
+doc.setFontSize(12.5);
 doc.text(`${totalCo2.toFixed(4)} kg CO₂e`, pageWidth - margin - 2, currentY, { align: 'right' });
 
 // Normalized per kg
