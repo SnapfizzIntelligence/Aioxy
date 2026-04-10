@@ -7896,6 +7896,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
     return String(str)
         .replace(/→/g, 'to')
         .replace(/←/g, 'from')
+        .replace(/₂/g, '2')         // FIX: Converts subscript 2 to normal 2
+        .replace(/\u2082/g, '2')    // FIX: Catches unicode versions
         .replace(/✓/g, '[OK]')
         .replace(/⚠️/g, '[!]')
         .replace(/🛡️/g, '')
@@ -8382,21 +8384,21 @@ ccTree.Ingredients.components.forEach(ing => {
 
 doc.autoTable({
     ...standardTableStyles,
-    startY: currentY,
-    head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO\u2082e', 'Water']],
-    body: ingredientRows,
-    styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
+startY: currentY,
+head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
+body: ingredientRows,
+styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
 headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
-    columnStyles: {
-    0: { cellWidth: 30, fontStyle: 'bold' },       // Ingredient (reduced)
-    1: { cellWidth: 16, halign: 'right' },         // Qty (reduced)
-    2: { cellWidth: 14 },                          // Origin (reduced)
-    3: { cellWidth: 26 },                          // Processing (reduced)
-    4: { cellWidth: 18 },                          // EUDR (reduced)
-    5: { cellWidth: 14 },                          // Data (reduced)
-    6: { cellWidth: 36 },                          // Physics Adjustments (reduced)
-    7: { cellWidth: 18, halign: 'right' },         // CO2e (reduced)
-    8: { cellWidth: 20, halign: 'right' }          // Water (same)
+columnStyles: {
+    0: { cellWidth: 27, fontStyle: 'bold' },       // Ingredient
+    1: { cellWidth: 12, halign: 'right' },         // Qty
+    2: { cellWidth: 12 },                          // Origin
+    3: { cellWidth: 18 },                          // Processing
+    4: { cellWidth: 15 },                          // EUDR
+    5: { cellWidth: 12 },                          // Data
+    6: { cellWidth: 48 },                          // Physics Adjustments
+    7: { cellWidth: 18, halign: 'right' },         // CO2e
+    8: { cellWidth: 18, halign: 'right' }          // Water
 },
     margin: { left: margin, right: margin }
 });
@@ -8643,7 +8645,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
                 safeString(c.name),
                 safeString(c.details || 'Standard Processing'),
                 safeString(c.energy_source || 'Grid Mix'),
-                formatNumber(c.subtotal, 4) + ' kg CO\u2082e'
+                formatNumber(c.subtotal, 4) + ' kg CO2e'
             ]);
             
             doc.autoTable({
@@ -8678,7 +8680,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
             ['Recycled Content:', recycledContent + '%'],
             ['End-of-Life Scenario:', pkgEoL],
-            ['Total Packaging Impact:', formatNumber(ccTree.Packaging?.total || 0, 4) + ' kg CO\u2082e']
+            ['Total Packaging Impact:', formatNumber(ccTree.Packaging?.total || 0, 4) + ' kg CO2e']
         ];
         
         doc.autoTable({
@@ -8705,7 +8707,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             const eolRows = eolComponents.map(e => [
                 truncate(e.name, 35),
                 safeString(e.notes || 'Waste Treatment'),
-                formatNumber(e.subtotal, 4) + ' kg CO\u2082e'
+                formatNumber(e.subtotal, 4) + ' kg CO2e'
             ]);
             
             doc.autoTable({
@@ -8851,14 +8853,14 @@ doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
 
 // Total Value (right-aligned)
 doc.setFontSize(12);
-doc.text(`${totalCo2.toFixed(4)} kg CO\u2082e`, pageWidth - margin - 2, currentY, { align: 'right' });
+doc.text(`${totalCo2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
 
 // Normalized per kg
 currentY += 8;
 doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
 doc.setTextColor(...COLORS.dark);
-doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO\u2082e per kg product`, margin, currentY);
+doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
 
 // Uncertainty
 currentY += 6;
