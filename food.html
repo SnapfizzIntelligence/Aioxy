@@ -4970,7 +4970,9 @@ auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
     note: noteText,
     universal_adjustments: universalAdjustments,
     primary_data_used: !!item.primaryData,
-    primary_data: item.primaryData // 🛡️ REGULATOR FIX: Save payload for auditor visibility
+    primary_data: item.primaryData,
+    processingState: item.processingState || 'raw',  // ← ADD THIS
+    yieldFactor: yieldFactor                         // ← ADD THIS
 });
 
         auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
