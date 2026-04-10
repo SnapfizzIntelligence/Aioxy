@@ -8753,7 +8753,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
                 return [
                     truncate(u.name, 35),
                     truncate(cleanNote, 50),
-                    formatNumber(u.subtotal, 4) + ' kg CO\u2082e'
+                    formatNumber(u.subtotal, 4) + ' kg CO2e'
                 ];
             });
             
@@ -8804,7 +8804,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             ['Crisis Adjustment:', isCrisisActive ? '+40% (Cape Route)' : 'None'],
             ['Effective Distance:', formatInteger(dist) + ' km'],
             ['Gross Weight Shipped:', formatNumber((mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0), 3) + ' kg'],
-            ['Outbound Impact:', formatNumber(ccTree.Transport?.total || 0, 4) + ' kg CO\u2082e']
+            ['Outbound Impact:', formatNumber(ccTree.Transport?.total || 0, 4) + ' kg CO2e']
         ];
         
         doc.autoTable({
