@@ -4040,7 +4040,7 @@ if (usePrimary && (totalKWh > 0 || totalGasM3 > 0) && totalProd > 0) {
     electricityKWh = kwhPerKg * massOutputKg; 
     naturalGasMj = gasMjPerKg * massOutputKg;
     
-    methodUsed = "⭐⭐⭐ TIER 1 PRIMARY DATA (Verified Utility Bills)";
+    methodUsed = "PRIMARY DATA (Verified Utility Bills)";
 confidenceLevel = "Audit-Ready / ESRS E1 Compliant";
     physicsData = {
         source: "primary_utility_bills",
@@ -4971,8 +4971,9 @@ auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
     universal_adjustments: universalAdjustments,
     primary_data_used: !!item.primaryData,
     primary_data: item.primaryData,
-    processingState: item.processingState || 'raw',  // ← ADD THIS
-    yieldFactor: yieldFactor                         // ← ADD THIS
+    processingState: item.processingState || 'raw',
+    yieldFactor: yieldFactor,
+    physics_note: item.physics_note || ''  // ← ADD THIS LINE
 });
 
         auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
@@ -7460,6 +7461,11 @@ ingredients.forEach(ing => {
     bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
 }
 
+// 📝 ADD PHYSICS NOTE (if exists)
+if (ing.physics_note) {
+    bridgeHTML += `<br><span style="color:#D35400; font-size:0.85em; font-style:italic;">📝 ${ing.physics_note}</span>`;
+}
+
 // [PHYSICS FLAG] Show processing archetype in audit trail (adds to bridgeHTML)
 const processState = ing.processingState || 'raw';
 const archetypes = window.aioxyData?.processing_archetypes || {};
@@ -7896,6 +7902,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
     return String(str)
         .replace(/→/g, 'to')
         .replace(/←/g, 'from')
+        .replace(/₂/g, '2')         // FIX: Converts subscript 2 to normal 2
+        .replace(/\u2082/g, '2')    // FIX: Catches unicode versions
         .replace(/✓/g, '[OK]')
         .replace(/⚠️/g, '[!]')
         .replace(/🛡️/g, '')
@@ -8347,19 +8355,25 @@ ccTree.Ingredients.components.forEach(ing => {
     }
     
     // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
-    let adjustmentText = '';
-    const adj = ing.universal_adjustments || {};
-    
-    if (adj.method === "eudr_dluc_penalty") {
-        adjustmentText = '[!] EUDR MARKET BLOCK - +50% dLUC applied';
-    } else if (ing.primary_data_used && ing.primary_data) {
-        const pd = ing.primary_data;
-        adjustmentText = `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
-    } else if (origin !== baseOrigin) {
-        adjustmentText = `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
-    } else {
-        adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
-    }
+let adjustmentText = '';
+const adj = ing.universal_adjustments || {};
+
+// 📝 ADD PHYSICS NOTE FIRST (if exists - verbal only, no calculation impact)
+if (ing.physics_note) {
+    const cleanNote = safeString(ing.physics_note);
+    adjustmentText += `[NOTE] ${cleanNote}\n`;
+}
+
+if (adj.method === "eudr_dluc_penalty") {
+    adjustmentText += '[!] EUDR MARKET BLOCK - +50% dLUC applied';
+} else if (ing.primary_data_used && ing.primary_data) {
+    const pd = ing.primary_data;
+    adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
+} else if (origin !== baseOrigin) {
+    adjustmentText += `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+} else {
+    adjustmentText += `[DIRECT: ${origin}] No adjustment needed`;
+}
     
     // BUILD NAME WITH QUALITY FLAG
     let nameText = safeString(ing.name);
@@ -8382,21 +8396,21 @@ ccTree.Ingredients.components.forEach(ing => {
 
 doc.autoTable({
     ...standardTableStyles,
-    startY: currentY,
-    head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO\u2082e', 'Water']],
-    body: ingredientRows,
-    styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
+startY: currentY,
+head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
+body: ingredientRows,
+styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
 headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
-    columnStyles: {
-    0: { cellWidth: 30, fontStyle: 'bold' },       // Ingredient (reduced)
-    1: { cellWidth: 16, halign: 'right' },         // Qty (reduced)
-    2: { cellWidth: 14 },                          // Origin (reduced)
-    3: { cellWidth: 26 },                          // Processing (reduced)
-    4: { cellWidth: 18 },                          // EUDR (reduced)
-    5: { cellWidth: 14 },                          // Data (reduced)
-    6: { cellWidth: 36 },                          // Physics Adjustments (reduced)
-    7: { cellWidth: 18, halign: 'right' },         // CO2e (reduced)
-    8: { cellWidth: 20, halign: 'right' }          // Water (same)
+columnStyles: {
+    0: { cellWidth: 27, fontStyle: 'bold' },       // Ingredient
+    1: { cellWidth: 12, halign: 'right' },         // Qty
+    2: { cellWidth: 12 },                          // Origin
+    3: { cellWidth: 18 },                          // Processing
+    4: { cellWidth: 15 },                          // EUDR
+    5: { cellWidth: 12 },                          // Data
+    6: { cellWidth: 48 },                          // Physics Adjustments
+    7: { cellWidth: 18, halign: 'right' },         // CO2e
+    8: { cellWidth: 18, halign: 'right' }          // Water
 },
     margin: { left: margin, right: margin }
 });
@@ -8633,7 +8647,7 @@ if (usePrimary && (totalKWh > 0 || totalGasM3 > 0) && totalProd > 0) {
     doc.setTextColor(...COLORS.primary);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("⭐⭐⭐ TIER 1 PRIMARY FACILITY DATA VERIFIED (ESRS E1 Compliant)", margin + 5, currentY + 5);
+    doc.text("*** TIER 1 PRIMARY FACILITY DATA VERIFIED (ESRS E1 Compliant)", margin + 5, currentY + 5);
     currentY += 12;
 }
 
@@ -8643,7 +8657,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
                 safeString(c.name),
                 safeString(c.details || 'Standard Processing'),
                 safeString(c.energy_source || 'Grid Mix'),
-                formatNumber(c.subtotal, 4) + ' kg CO\u2082e'
+                formatNumber(c.subtotal, 4) + ' kg CO2e'
             ]);
             
             doc.autoTable({
@@ -8663,66 +8677,118 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             currentY = doc.lastAutoTable.finalY + 10;
         }
         
-        checkPageBreak(40);
-        setH2();
-        doc.text("C. PACKAGING (Scope 3 Cat 1)", margin, currentY);
-        currentY += 6;
-        
-        const pkgMaterial = safeString(document.getElementById('packagingMaterial')?.options?.[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A');
-        const pkgWeight = mb?.packaging_weight_kg || 0;
-        const recycledContent = document.getElementById('recycledContent')?.value || 0;
-        const pkgEoL = safeString(document.getElementById('packagingEoL')?.options?.[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Average');
-        
-        const pkgData = [
-            ['Material:', pkgMaterial],
-            ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
-            ['Recycled Content:', recycledContent + '%'],
-            ['End-of-Life Scenario:', pkgEoL],
-            ['Total Packaging Impact:', formatNumber(ccTree.Packaging?.total || 0, 4) + ' kg CO\u2082e']
-        ];
-        
-        doc.autoTable({
-            ...standardTableStyles,
-            startY: currentY,
-            body: pkgData,
-            styles: { fontSize: 9, cellPadding: 3 },
-            columnStyles: {
-                0: { fontStyle: 'bold', cellWidth: 60, textColor: COLORS.primary },
-                1: { cellWidth: 120 }
-            },
-            margin: { left: margin }
-        });
-        
-        currentY = doc.lastAutoTable.finalY + 10;
-        
-        const eolComponents = ccTree.Upstream?.components?.filter(c => c.name.includes('End-of-Life')) || [];
-        if (eolComponents.length > 0) {
-            checkPageBreak(40);
-            setH2();
-            doc.text("D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
-            currentY += 6;
-            
-            const eolRows = eolComponents.map(e => [
-                truncate(e.name, 35),
-                safeString(e.notes || 'Waste Treatment'),
-                formatNumber(e.subtotal, 4) + ' kg CO\u2082e'
-            ]);
-            
-            doc.autoTable({
-                ...standardTableStyles,
-                startY: currentY,
-                head: [['Component', 'Treatment Method', 'Impact']],
-                body: eolRows,
-                columnStyles: {
-                    0: { cellWidth: 70 },
-                    1: { cellWidth: 70 },
-                    2: { cellWidth: 40, halign: 'right', fontStyle: 'bold', textColor: COLORS.danger }
-                },
-                margin: { left: margin }
-            });
-            
-            currentY = doc.lastAutoTable.finalY + 10;
-        }
+        // ============================================================
+// C. PACKAGING (Scope 3 Cat 1)
+// ============================================================
+checkPageBreak(40);
+setH2();
+doc.text("C. PACKAGING (Scope 3 Cat 1)", margin, currentY);
+currentY += 6;
+
+const pkgMaterial = safeString(document.getElementById('packagingMaterial')?.options?.[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A');
+const pkgWeight = mb?.packaging_weight_kg || 0;
+const recycledContent = document.getElementById('recycledContent')?.value || 0;
+const pkgEoL = safeString(document.getElementById('packagingEoL')?.options?.[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Average');
+
+// Primary Packaging
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.setTextColor(...COLORS.primary);
+doc.text("PRIMARY PACKAGING (User Input)", margin, currentY);
+currentY += 5;
+
+const pkgData = [
+    ['Material:', pkgMaterial],
+    ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
+    ['Recycled Content:', recycledContent + '%'],
+    ['End-of-Life:', pkgEoL]
+];
+
+doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    body: pkgData,
+    styles: { fontSize: 9, cellPadding: 2 },
+    columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 50, textColor: COLORS.primary },
+        1: { cellWidth: 130 }
+    },
+    margin: { left: margin }
+});
+
+currentY = doc.lastAutoTable.finalY + 5;
+
+// Tertiary Packaging (PEF Proxy)
+const tertiaryComps = ccTree.Packaging?.components || [];
+if (tertiaryComps.length > 0) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.primary);
+    doc.text("TERTIARY LOGISTICS PACKAGING (PEF Proxy)", margin, currentY);
+    currentY += 5;
+    
+    const tertiaryRows = tertiaryComps.map(p => [
+        safeString(p.name),
+        formatNumber(p.subtotal, 4) + ' kg CO2e'
+    ]);
+    
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        body: tertiaryRows,
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: {
+            0: { cellWidth: 140 },
+            1: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 5;
+}
+
+// Total Packaging Impact
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.setTextColor(...COLORS.primary);
+doc.text("Total Packaging Impact:", margin, currentY);
+doc.setTextColor(...COLORS.dark);
+doc.text(`${formatNumber(ccTree.Packaging?.total || 0, 4)} kg CO2e`, margin + 80, currentY);
+
+currentY += 10;
+
+// ============================================================
+// D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)
+// ============================================================
+const eolComponents = ccTree.Upstream?.components?.filter(c => c.name.includes('End-of-Life')) || [];
+if (eolComponents.length > 0) {
+    checkPageBreak(40);
+    setH2();
+    doc.text("D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
+    currentY += 6;
+    
+    const eolRows = eolComponents.map(e => [
+        truncate(e.name, 35),
+        safeString(e.notes || 'Waste Treatment'),
+        formatNumber(e.subtotal, 4) + ' kg CO2e'
+    ]);
+    
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        head: [['Component', 'Treatment Method', 'Impact']],
+        body: eolRows,
+        columnStyles: {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 70 },
+            2: { cellWidth: 40, halign: 'right', fontStyle: 'bold', textColor: COLORS.danger }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 10;
+}
+       
 
         // ============================================================
         // PAGE 5: LOGISTICS & TRANSPORT (ASCII-SAFE FIXES)
@@ -8751,7 +8817,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
                 return [
                     truncate(u.name, 35),
                     truncate(cleanNote, 50),
-                    formatNumber(u.subtotal, 4) + ' kg CO\u2082e'
+                    formatNumber(u.subtotal, 4) + ' kg CO2e'
                 ];
             });
             
@@ -8802,7 +8868,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             ['Crisis Adjustment:', isCrisisActive ? '+40% (Cape Route)' : 'None'],
             ['Effective Distance:', formatInteger(dist) + ' km'],
             ['Gross Weight Shipped:', formatNumber((mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0), 3) + ' kg'],
-            ['Outbound Impact:', formatNumber(ccTree.Transport?.total || 0, 4) + ' kg CO\u2082e']
+            ['Outbound Impact:', formatNumber(ccTree.Transport?.total || 0, 4) + ' kg CO2e']
         ];
         
         doc.autoTable({
@@ -8851,14 +8917,14 @@ doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
 
 // Total Value (right-aligned)
 doc.setFontSize(12);
-doc.text(`${totalCo2.toFixed(4)} kg CO\u2082e`, pageWidth - margin - 2, currentY, { align: 'right' });
+doc.text(`${totalCo2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
 
 // Normalized per kg
 currentY += 8;
 doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
 doc.setTextColor(...COLORS.dark);
-doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO\u2082e per kg product`, margin, currentY);
+doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
 
 // Uncertainty
 currentY += 6;
@@ -8886,7 +8952,7 @@ currentY += 15;
         const dqrRows = dqrComps.map(c => [
             truncate(c.name, 30),
             safeString(c.source || 'AGRIBALYSE 3.2'),
-            formatNumber(c.dqr, 2),
+            formatNumber(c.dqr, 2)
             c.is_proxy ? 'Proxy' : 'Direct',
             formatPercent(c.uncertainty)
         ]);
@@ -9919,6 +9985,23 @@ selectedIngredients.push({
         updateIngredientList();
         calculateImpact();
     }
+    // Update ingredient processing state
+window.updateIngredientProcessing = function(index, value) {
+    if (selectedIngredients[index]) {
+        selectedIngredients[index].processingState = value;
+    }
+    calculateImpact();
+    console.log(`⚙️ Processing state updated to: ${value}`);
+};
+
+// Update physics note (verbal only - no recalculation)
+window.updatePhysicsNote = function(index, value) {
+    if (selectedIngredients[index]) {
+        selectedIngredients[index].physics_note = value;
+    }
+    console.log(`📝 Physics note saved: ${value}`);
+    // No calculateImpact() - verbal only
+};
 
     function updateIngredientList() {
         const list = document.getElementById('ingredientList');
@@ -9966,8 +10049,24 @@ item.innerHTML = `
     <option value="wet_extracted" ${ingredient.processingState === 'wet_extracted' ? 'selected' : ''}>Wet Extracted</option>
     <option value="isolated" ${ingredient.processingState === 'isolated' ? 'selected' : ''}>Isolated (Protein Isolate)</option>
     <option value="fermentation" ${ingredient.processingState === 'fermentation' ? 'selected' : ''}>Precision Fermentation</option>
-</select>
-    </div>
+    </select>
+</div>
+
+<!-- 📝 EDITABLE PHYSICS NOTE FIELD -->
+<div style="margin-top: 8px; width: 100%;">
+    <input type="text" 
+           id="physics-note-${index}" 
+           class="form-control" 
+           style="font-size: 0.75rem; padding: 4px 8px; width: 100%; border-radius: 6px; border: 1px solid var(--border); background: #fffdf9;" 
+           placeholder="📝 Add physics justification (e.g., +30% fermentation penalty)..."
+           value="${ingredient.physics_note || ''}"
+           onchange="updatePhysicsNote(${index}, this.value)">
+    <small style="color: var(--gray); font-size: 0.65rem; display: block; margin-top: 2px;">
+        <i class="fas fa-info-circle"></i> Verbal note only - does not affect calculations
+    </small>
+</div>
+<!-- END EDITABLE FIELD -->
+    
     
     <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
     
