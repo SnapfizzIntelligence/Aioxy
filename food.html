@@ -7380,11 +7380,12 @@ function displayAuditTrail() {
                 <thead style="background: #eee;">
                     <tr>
                         <th style="text-align:left; padding: 8px;">INPUT COMPONENT</th>
-                        <th style="text-align:left; padding: 8px;">ORIGIN</th>
-                        <th style="text-align:right; padding: 8px;">NET MASS</th>
-                        <th style="text-align:left; padding: 8px;">DATA SOURCE</th>
-                        <th style="text-align:left; padding: 8px;">PHYSICS ADJUSTMENTS (The Bridge)</th>
-                        <th style="text-align:right; padding: 8px;">TOTAL CO₂e</th>
+<th style="text-align:left; padding: 8px;">ORIGIN</th>
+<th style="text-align:left; padding: 8px;">PROCESSING</th>
+<th style="text-align:right; padding: 8px;">NET MASS</th>
+<th style="text-align:left; padding: 8px;">DATA SOURCE</th>
+<th style="text-align:left; padding: 8px;">PHYSICS ADJUSTMENTS</th>
+<th style="text-align:right; padding: 8px;">TOTAL CO₂e</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -8376,19 +8377,19 @@ doc.autoTable({
     startY: currentY,
     head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
     body: ingredientRows,
-    styles: { fontSize: 6.5, cellPadding: 2, overflow: 'linebreak' },
-    headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 6 },
+    styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
+headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
     columnStyles: {
-        0: { cellWidth: 32, fontStyle: 'bold' },       // Ingredient
-        1: { cellWidth: 18, halign: 'right' },         // Qty
-        2: { cellWidth: 16 },                          // Origin
-        3: { cellWidth: 28 },                          // Processing (NEW)
-        4: { cellWidth: 20 },                          // EUDR
-        5: { cellWidth: 16 },                          // Data
-        6: { cellWidth: 38 },                          // Physics Adjustments
-        7: { cellWidth: 20, halign: 'right' },         // CO2e
-        8: { cellWidth: 20, halign: 'right' }          // Water
-    },
+    0: { cellWidth: 30, fontStyle: 'bold' },       // Ingredient (reduced)
+    1: { cellWidth: 16, halign: 'right' },         // Qty (reduced)
+    2: { cellWidth: 14 },                          // Origin (reduced)
+    3: { cellWidth: 26 },                          // Processing (reduced)
+    4: { cellWidth: 18 },                          // EUDR (reduced)
+    5: { cellWidth: 14 },                          // Data (reduced)
+    6: { cellWidth: 36 },                          // Physics Adjustments (reduced)
+    7: { cellWidth: 18, halign: 'right' },         // CO2e (reduced)
+    8: { cellWidth: 20, halign: 'right' }          // Water (same)
+},
     margin: { left: margin, right: margin }
 });
     
@@ -8840,9 +8841,9 @@ doc.setFont("helvetica", "bold");
 doc.setTextColor(...COLORS.primary);
 doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
 
-// Total Value (right-aligned, bold, large)
-doc.setFontSize(15);
-doc.text(`${totalCo2.toFixed(4)} kg CO₂e`, pageWidth - margin, currentY, { align: 'right' });
+// Total Value (right-aligned, slightly smaller to fit in the box)
+doc.setFontSize(13);
+doc.text(`${totalCo2.toFixed(4)} kg CO₂e`, pageWidth - margin - 2, currentY, { align: 'right' });
 
 // Normalized per kg
 currentY += 8;
