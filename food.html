@@ -7454,12 +7454,31 @@ ingredients.forEach(ing => {
     }
 
     if (ing.name.toLowerCase().includes('animal feed')) {
-        bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
-    }
+    bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
+}
 
-    html += `
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
+// [PHYSICS FLAG] Show processing archetype in audit trail
+// Get the processing state from the ingredient
+const processState = ing.processingState || 'raw';
+const archetypes = window.aioxyData?.processing_archetypes || {};
+const archetype = archetypes[processState];
+
+if (archetype && processState !== 'raw') {
+    bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">
+        ⚙️ [Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)
+    </span>`;
+    
+    // Add energy details if significant
+    if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+        bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">
+            🔋 Energy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | 🔥 Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg
+        </span>`;
+    }
+}
+
+html += `
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
                     <td style="padding: 8px;">${getCtry(origin)}</td>
                     <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
                     <td style="padding: 8px;">AGRIBALYSE 3.2</td>
@@ -8300,67 +8319,78 @@ currentY += 10;
 
 if (ccTree.Ingredients?.components && ccTree.Ingredients.components.length > 0) {
     const ingredientRows = [];
+
+ccTree.Ingredients.components.forEach(ing => {
+    const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
+    const baseOrigin = ing.universal_adjustments?.adjusted_from_country || 'FR';
+    const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(origin);
+    const eudrStatus = isHighRisk ? '[!] HIGH RISK' : '[OK] Compliant';
+    const primaryFlag = ing.primary_data_used ? '[OK] Primary' : 'Secondary';
+    const waterComp = waterTree?.Ingredients?.components?.find(c => c.name === ing.name);
     
-    ccTree.Ingredients.components.forEach(ing => {
-        const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
-        const baseOrigin = ing.universal_adjustments?.adjusted_from_country || 'FR';
-        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(origin);
-        const eudrStatus = isHighRisk ? '[!] HIGH RISK' : '[OK] Compliant';
-        const primaryFlag = ing.primary_data_used ? '[OK] Primary' : 'Secondary';
-        const waterComp = waterTree?.Ingredients?.components?.find(c => c.name === ing.name);
-        
-        // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
-        let adjustmentText = '';
-        const adj = ing.universal_adjustments || {};
-        
-        if (adj.method === "eudr_dluc_penalty") {
-            adjustmentText = '[!] EUDR MARKET BLOCK - +50% dLUC applied';
-        } else if (ing.primary_data_used && ing.primary_data) {
-            const pd = ing.primary_data;
-            adjustmentText = `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
-        } else if (origin !== baseOrigin) {
-            adjustmentText = `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
-        } else {
-            adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
-        }
-        
-        // BUILD NAME WITH QUALITY FLAG
-        let nameText = safeString(ing.name);
-        if (ing.name.toLowerCase().includes('animal feed')) {
-            nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
-        }
-        
-        ingredientRows.push([
-    nameText,                                           // Column 0
-    formatNumber(ing.quantity_kg, 3) + ' kg',          // Column 1
-    origin,                                             // Column 2
-    eudrStatus,                                         // Column 3
-    primaryFlag,                                        // Column 4
-    adjustmentText,                                     // Column 5
-    formatNumber(ing.subtotal, 4) + ' kg',             // Column 6 ← 4 decimals
-    formatNumber(waterComp?.subtotal || 0, 4) + ' m3'  // Column 7 ← 4 decimals
-]);
-    });
+    // [PHYSICS FLAG] Get processing archetype for display
+    const processState = ing.processingState || 'raw';
+    const archetypes = window.aioxyData?.processing_archetypes || {};
+    const archetype = archetypes[processState];
+    let processingDisplay = 'Raw (1.00x)';
+    if (archetype && processState !== 'raw') {
+        processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
+    }
     
-    doc.autoTable({
-        ...standardTableStyles,
-        startY: currentY,
-        head: [['Ingredient', 'Qty', 'Origin', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
-        body: ingredientRows,
-        styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
-        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 6.5 },
-        columnStyles: {
-            0: { cellWidth: 38, fontStyle: 'bold' },
-            1: { cellWidth: 20, halign: 'right' },
-            2: { cellWidth: 18 },
-            3: { cellWidth: 22 },
-            4: { cellWidth: 18 },
-            5: { cellWidth: 42 },  // Physics Adjustments column
-            6: { cellWidth: 22, halign: 'right' },
-            7: { cellWidth: 20, halign: 'right' }
-        },
-        margin: { left: margin, right: margin }
-    });
+    // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
+    let adjustmentText = '';
+    const adj = ing.universal_adjustments || {};
+    
+    if (adj.method === "eudr_dluc_penalty") {
+        adjustmentText = '[!] EUDR MARKET BLOCK - +50% dLUC applied';
+    } else if (ing.primary_data_used && ing.primary_data) {
+        const pd = ing.primary_data;
+        adjustmentText = `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
+    } else if (origin !== baseOrigin) {
+        adjustmentText = `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+    } else {
+        adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
+    }
+    
+    // BUILD NAME WITH QUALITY FLAG
+    let nameText = safeString(ing.name);
+    if (ing.name.toLowerCase().includes('animal feed')) {
+        nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
+    }
+    
+    ingredientRows.push([
+        nameText,                                           // Column 0: Ingredient
+        formatNumber(ing.quantity_kg, 3) + ' kg',          // Column 1: Qty
+        origin,                                             // Column 2: Origin
+        processingDisplay,                                  // Column 3: Processing (NEW)
+        eudrStatus,                                         // Column 4: EUDR
+        primaryFlag,                                        // Column 5: Data
+        adjustmentText,                                     // Column 6: Physics Adjustments
+        formatNumber(ing.subtotal, 4) + ' kg',             // Column 7: CO2e
+        formatNumber(waterComp?.subtotal || 0, 4) + ' m3'  // Column 8: Water
+    ]);
+});
+
+doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
+    body: ingredientRows,
+    styles: { fontSize: 6.5, cellPadding: 2, overflow: 'linebreak' },
+    headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 6 },
+    columnStyles: {
+        0: { cellWidth: 32, fontStyle: 'bold' },       // Ingredient
+        1: { cellWidth: 18, halign: 'right' },         // Qty
+        2: { cellWidth: 16 },                          // Origin
+        3: { cellWidth: 28 },                          // Processing (NEW)
+        4: { cellWidth: 20 },                          // EUDR
+        5: { cellWidth: 16 },                          // Data
+        6: { cellWidth: 38 },                          // Physics Adjustments
+        7: { cellWidth: 20, halign: 'right' },         // CO2e
+        8: { cellWidth: 20, halign: 'right' }          // Water
+    },
+    margin: { left: margin, right: margin }
+});
     
     currentY = doc.lastAutoTable.finalY + 10;
 } else {
@@ -8578,10 +8608,27 @@ if (ccTree.Ingredients?.components && ccTree.Ingredients.components.length > 0) 
         currentY = doc.lastAutoTable.finalY + 10;
         
         setH2();
-        doc.text("B. MANUFACTURING ENERGY (Scope 1 & 2)", margin, currentY);
-        currentY += 6;
-        
-        const mfgComps = ccTree.Manufacturing?.components || [];
+doc.text("B. MANUFACTURING ENERGY (Scope 1 & 2)", margin, currentY);
+currentY += 6;
+
+// [TIER 1 GOLD SEAL] Show if primary facility data was used
+const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
+const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+const totalGasM3 = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+
+if (usePrimary && (totalKWh > 0 || totalGasM3 > 0) && totalProd > 0) {
+    // Add TIER 1 badge
+    doc.setFillColor(255, 243, 224);  // Light gold background
+    doc.rect(margin, currentY - 2, pageWidth - (margin * 2), 10, 'F');
+    doc.setTextColor(...COLORS.primary);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("⭐⭐⭐ TIER 1 PRIMARY FACILITY DATA VERIFIED (ESRS E1 Compliant)", margin + 5, currentY + 5);
+    currentY += 12;
+}
+
+const mfgComps = ccTree.Manufacturing?.components || [];
         if (mfgComps.length > 0) {
             const mfgRows = mfgComps.map(c => [
                 safeString(c.name),
