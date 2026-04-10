@@ -4830,11 +4830,13 @@ const processState = item.processingState || 'raw';
 const archetypes = window.aioxyData.processing_archetypes;
 
 const yieldFactor = (archetypes && archetypes[processState]) ? archetypes[processState].yield_factor : 1.0;
-const processEnergy = (archetypes && archetypes[processState]) ? archetypes[processState].energy_kwh_per_kg : 0.0;
+const processEnergyKwh = (archetypes && archetypes[processState]) ? archetypes[processState].energy_kwh : 0.0;
+const processGasMj = (archetypes && archetypes[processState]) ? archetypes[processState].gas_mj : 0.0;
+const dqrReward = (archetypes && archetypes[processState]) ? archetypes[processState].dqr_reward : 0.0;
 
 // Apply the yield penalty to the agricultural mass
 const grownMass = (item.quantity / (1 - farmLoss)) / yieldFactor;
-
+    
     // 🛡️ REGULATOR FIX 1: Run the math FIRST to extract the EUDR & Primary Data penalties
     const impactResult = calculateIngredientImpact(ing, grownMass, ingredientOrigin, item.primaryData);
 
@@ -4846,9 +4848,10 @@ const grownMass = (item.quantity / (1 - farmLoss)) / yieldFactor;
         dqrPenalty += 0.5; 
     }
 
-    // 🛡️ REGULATOR FIX 2: Inject the engine's dynamic penalty (EUDR = 4.0, Primary = -0.5)
-    dqrPenalty += impactResult.qualityPenalty;
-
+    // 🛡️ REGULATOR FIX 2: Inject the engine's dynamic penalty AND reward
+dqrPenalty += impactResult.qualityPenalty;
+dqrPenalty -= dqrReward; // 🏆 Reward them for specifying processing!
+    
     // Build the official DQR component WITH the merged penalties
     if (ing.data?.metadata?.dqr_overall) {
         dqrComponents.push({
