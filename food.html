@@ -4019,31 +4019,40 @@ console.log(`✅ Mass Balance: ${totalInputMass.toFixed(3)}kg in → ${finalProd
 function calculateManufacturingImpact(massInputKg, massOutputKg, processingMethod, countryCode, isBaseline = false) {
     console.log("🏭 [Audit Engine] Calculating Manufacturing Impact...");
     
-    // 1. DOM SAFETY & INPUTS
-    const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
-    const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
-    const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+// 1. DOM SAFETY & INPUTS
+const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
+const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+const totalGasM3 = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
 
-    let electricityKWh = 0;
-    let methodUsed = "";
-    let physicsData = null;
-    let confidenceLevel = "Low (Secondary Data)";
+let electricityKWh = 0;
+let naturalGasMj = 0;
+let methodUsed = "";
+let physicsData = null;
+let confidenceLevel = "Low (Secondary Data)";
 
-    // 2. PRIMARY DATA OVERRIDE (The "Truth" Pathway - Utility Bills Don't Lie)
-    if (usePrimary && totalKWh > 0 && totalProd > 0) {
-        const kwhPerKg = totalKWh / totalProd;
-        electricityKWh = kwhPerKg * massOutputKg; 
-        methodUsed = "PRIMARY DATA (Verified Utility Bills)";
-        confidenceLevel = "High (Audit-Ready)";
-        physicsData = {
-            source: "primary_utility_bills",
-            kwh_per_kg: kwhPerKg,
-            annual_electricity_kwh: totalKWh,
-            annual_production_kg: totalProd,
-            verification: "User-submitted utility data"
-        };
-        console.log(`✅ [Audit] PRIMARY DATA: ${kwhPerKg.toFixed(3)} kWh/kg from actual bills`);
-    } 
+// 2. PRIMARY DATA OVERRIDE (The "Truth" Pathway - Utility Bills Don't Lie)
+if (usePrimary && (totalKWh > 0 || totalGasM3 > 0) && totalProd > 0) {
+    const kwhPerKg = totalKWh / totalProd;
+    const gasM3PerKg = totalGasM3 / totalProd;
+    const gasMjPerKg = gasM3PerKg * 39; // ~39 MJ per m3 of natural gas
+    
+    electricityKWh = kwhPerKg * massOutputKg; 
+    naturalGasMj = gasMjPerKg * massOutputKg;
+    
+    methodUsed = "PRIMARY DATA (Verified Utility Bills)";
+    confidenceLevel = "High (Audit-Ready)";
+    physicsData = {
+        source: "primary_utility_bills",
+        kwh_per_kg: kwhPerKg,
+        gas_m3_per_kg: gasM3PerKg,
+        annual_electricity_kwh: totalKWh,
+        annual_gas_m3: totalGasM3,
+        annual_production_kg: totalProd,
+        verification: "User-submitted utility data"
+    };
+    console.log(`✅ [Audit] PRIMARY DATA: ${kwhPerKg.toFixed(3)} kWh/kg & ${gasM3PerKg.toFixed(3)} m³/kg from actual bills`);
+} 
     // 3. CONSERVATIVE DEFAULT (The "Benchmark" Pathway)
     else {
         // Source: European Commission JRC / Industrial Energy Efficiency Benchmarks
@@ -4114,7 +4123,9 @@ if (processingMethod === 'freezing') {
     if (physicsData) physicsData.note = "Includes standard PEF refrigerant leakage allowance";
 }
 
-const manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + fugitiveCO2; // Added fugitive
+// Natural Gas emits ~202g CO2e per MJ
+const gasCO2 = (naturalGasMj * 202) / 1000;
+const manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + gasCO2 + fugitiveCO2;
     
     // 5. WATER EVAPORATION (Keep for mass balance, but NOT for energy calculation)
     const waterEvaporated = Math.max(0, massInputKg - massOutputKg);
@@ -4124,6 +4135,7 @@ const manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + fugitiveCO2
     return {
     co2: manufacturingCO2,
     kwh: electricityKWh,
+    gas_mj: naturalGasMj,
     method: methodUsed,
     confidence: confidenceLevel,
     physics_data: physicsData,
@@ -4948,24 +4960,28 @@ auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
         auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
         auditTrail.pefCategories[cat].total += allocatedTotal;
     });
-    // [PHYSICS UPGRADE] Add Upstream Processing Energy to Manufacturing Tally
-if (processEnergy > 0) {
-    const extraKwh = item.quantity * processEnergy;
+    // [PHYSICS UPGRADE] Add Upstream Processing Energy & Gas to Manufacturing Tally
+if (processEnergyKwh > 0 || processGasMj > 0) {
+    const extraKwh = item.quantity * processEnergyKwh;
+    const extraGasMj = item.quantity * processGasMj;
+    
     const gridIntensity = window.aioxyData?.countries?.[manufacturingCountryCode]?.electricityCO2 || 480;
-    const extraCo2 = extraKwh * (gridIntensity / 1000);
+    const gasIntensity = 202; // g CO2e per MJ of natural gas
+    
+    const extraCo2 = (extraKwh * (gridIntensity / 1000)) + (extraGasMj * (gasIntensity / 1000));
 
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
         name: `Upstream Processing (${processState}) for ${ing.name}`,
         subtotal: extraCo2,
-        details: `${extraKwh.toFixed(4)} kWh`,
+        details: `${extraKwh.toFixed(2)} kWh & ${extraGasMj.toFixed(2)} MJ Gas`,
         confidence: "High (Archetype Physics)",
         grid_intensity: gridIntensity,
-        energy_source: `Grid Mix (${manufacturingCountryCode})`
+        energy_source: `Grid Mix + Natural Gas`
     });
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += extraCo2;
     auditTrail.pefCategories["Climate Change"].total += extraCo2;
 
-    const extraFossil = extraKwh * 3.6;
+    const extraFossil = (extraKwh * 3.6) + extraGasMj;
     if(auditTrail.pefCategories["Resource Use, fossils"]) {
          auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += extraFossil;
          auditTrail.pefCategories["Resource Use, fossils"].total += extraFossil;
