@@ -4863,6 +4863,22 @@ const grownMass = (item.quantity / (1 - farmLoss)) / yieldFactor;
     // 🛡️ REGULATOR FIX 2: Inject the engine's dynamic penalty AND reward
 dqrPenalty += impactResult.qualityPenalty;
 dqrPenalty -= dqrReward; // 🏆 Reward them for specifying processing!
+
+// [QUALITY FLAG] Log the reward for transparency in audit trail
+if (dqrReward > 0) {
+    const archetypes = window.aioxyData?.processing_archetypes || {};
+    const archetypeName = archetypes[processState]?.name || processState;
+    console.log(`🏆 [DQR Reward] -${dqrReward.toFixed(1)} applied for: ${archetypeName}`);
+    
+    // Also add to audit trail for PDF/CSV visibility
+    if (!auditTrail.dqr_rewards) auditTrail.dqr_rewards = [];
+    auditTrail.dqr_rewards.push({
+        ingredient: ing.name,
+        process: archetypeName,
+        reward: dqrReward,
+        note: `Processing state specified (${archetypeName})`
+    });
+    }
     
     // Build the official DQR component WITH the merged penalties
     if (ing.data?.metadata?.dqr_overall) {
