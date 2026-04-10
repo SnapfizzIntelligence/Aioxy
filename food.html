@@ -8349,18 +8349,24 @@ ccTree.Ingredients.components.forEach(ing => {
     }
     
     // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
-    let adjustmentText = '';
-    const adj = ing.universal_adjustments || {};
-    
-    if (adj.method === "eudr_dluc_penalty") {
-        adjustmentText = '[!] EUDR MARKET BLOCK - +50% dLUC applied';
-    } else if (ing.primary_data_used && ing.primary_data) {
-        const pd = ing.primary_data;
-        adjustmentText = `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
-    } else if (origin !== baseOrigin) {
-        adjustmentText = `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
-    } else {
-        adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
+let adjustmentText = '';
+
+// 📝 ADD PHYSICS NOTE FIRST (if exists - verbal only, no calculation impact)
+if (ing.physics_note) {
+    adjustmentText += `📝 ${ing.physics_note}\n`;
+}
+
+const adj = ing.universal_adjustments || {};
+
+if (adj.method === "eudr_dluc_penalty") {
+    adjustmentText += '[!] EUDR MARKET BLOCK - +50% dLUC applied';
+} else if (ing.primary_data_used && ing.primary_data) {
+    const pd = ing.primary_data;
+    adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
+} else if (origin !== baseOrigin) {
+    adjustmentText += `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+} else {
+    adjustmentText += `[DIRECT: ${origin}] No adjustment needed`;
     }
     
     // BUILD NAME WITH QUALITY FLAG
@@ -9921,6 +9927,23 @@ selectedIngredients.push({
         updateIngredientList();
         calculateImpact();
     }
+    // Update ingredient processing state
+window.updateIngredientProcessing = function(index, value) {
+    if (selectedIngredients[index]) {
+        selectedIngredients[index].processingState = value;
+    }
+    calculateImpact();
+    console.log(`⚙️ Processing state updated to: ${value}`);
+};
+
+// Update physics note (verbal only - no recalculation)
+window.updatePhysicsNote = function(index, value) {
+    if (selectedIngredients[index]) {
+        selectedIngredients[index].physics_note = value;
+    }
+    console.log(`📝 Physics note saved: ${value}`);
+    // No calculateImpact() - verbal only
+};
 
     function updateIngredientList() {
         const list = document.getElementById('ingredientList');
@@ -9968,8 +9991,24 @@ item.innerHTML = `
     <option value="wet_extracted" ${ingredient.processingState === 'wet_extracted' ? 'selected' : ''}>Wet Extracted</option>
     <option value="isolated" ${ingredient.processingState === 'isolated' ? 'selected' : ''}>Isolated (Protein Isolate)</option>
     <option value="fermentation" ${ingredient.processingState === 'fermentation' ? 'selected' : ''}>Precision Fermentation</option>
-</select>
-    </div>
+    </select>
+</div>
+
+<!-- 📝 EDITABLE PHYSICS NOTE FIELD -->
+<div style="margin-top: 8px; width: 100%;">
+    <input type="text" 
+           id="physics-note-${index}" 
+           class="form-control" 
+           style="font-size: 0.75rem; padding: 4px 8px; width: 100%; border-radius: 6px; border: 1px solid var(--border); background: #fffdf9;" 
+           placeholder="📝 Add physics justification (e.g., +30% fermentation penalty)..."
+           value="${ingredient.physics_note || ''}"
+           onchange="updatePhysicsNote(${index}, this.value)">
+    <small style="color: var(--gray); font-size: 0.65rem; display: block; margin-top: 2px;">
+        <i class="fas fa-info-circle"></i> Verbal note only - does not affect calculations
+    </small>
+</div>
+<!-- END EDITABLE FIELD -->
+    
     
     <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
     
