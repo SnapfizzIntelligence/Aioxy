@@ -8374,11 +8374,29 @@ if (adj.method === "eudr_dluc_penalty") {
 
   
 } else if (origin !== baseOrigin) {
-        adjustmentText = `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+    // Check if it's an EU regional match (no penalty)
+    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+    if (euCountries.includes(origin) && euCountries.includes(baseOrigin)) {
+        adjustmentText = `[EU REGIONAL MATCH: ${origin}]\nAccepted without penalty`;
     } else {
-        adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
+        adjustmentText = `[PROXY: ${baseOrigin}->${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
     }
-    
+} else {
+    adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
+}
+
+// Add Physics Flag for processed ingredients
+const procState = ing.processingState || 'raw';
+const archetypes = window.aioxyData?.processing_archetypes || {};
+const archetype = archetypes[procState];
+
+if (archetype && procState !== 'raw') {
+    adjustmentText += `\n[Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)`;
+    if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+        adjustmentText += `\nEnergy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg`;
+    }
+}
+
     // BUILD NAME WITH QUALITY FLAG
     let nameText = safeString(ing.name);
     if (ing.name.toLowerCase().includes('animal feed')) {
