@@ -8956,10 +8956,11 @@ currentY += 15;
         doc.text("A. DATA QUALITY RATING (DQR)", margin, currentY);
         currentY += 6;
         
-        const dqrRows = dqrComps.map(c => [
+const dqrComps = audit.dqr_summary?.component_dqrs || [];
+const dqrRows = dqrComps.map(c => [
     truncate(c.name, 30),
     safeString(c.source || 'AGRIBALYSE 3.2'),
-    formatNumber(c.dqr, 1),   // ← ADD THE COMMA
+    formatNumber(c.dqr, 1),
     c.is_proxy ? 'Proxy' : 'Direct',
     formatPercent(c.uncertainty)
 ]);
