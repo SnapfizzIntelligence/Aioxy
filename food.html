@@ -8956,7 +8956,7 @@ currentY += 15;
         const dqrRows = dqrComps.map(c => [
             truncate(c.name, 30),
             safeString(c.source || 'AGRIBALYSE 3.2'),
-            formatNumber(c.dqr, 1)
+            formatNumber(c.dqr, 2)
             c.is_proxy ? 'Proxy' : 'Direct',
             formatPercent(c.uncertainty)
         ]);
