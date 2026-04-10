@@ -4960,24 +4960,29 @@ auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
         auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
         auditTrail.pefCategories[cat].total += allocatedTotal;
     });
-    // [PHYSICS UPGRADE] Add Upstream Processing Energy & Gas to Manufacturing Tally
+// [PHYSICS FLAG] Visible Audit Receipt for Mass Balance & Energy
 if (processEnergyKwh > 0 || processGasMj > 0) {
     const extraKwh = item.quantity * processEnergyKwh;
     const extraGasMj = item.quantity * processGasMj;
     
     const gridIntensity = window.aioxyData?.countries?.[manufacturingCountryCode]?.electricityCO2 || 480;
-    const gasIntensity = 202; // g CO2e per MJ of natural gas
+    const gasIntensity = 202; // g CO2e per MJ of natural gas (IPCC)
     
     const extraCo2 = (extraKwh * (gridIntensity / 1000)) + (extraGasMj * (gasIntensity / 1000));
 
+    // Get the archetype name for display
+    const archetypes = window.aioxyData?.processing_archetypes || {};
+    const archetypeName = archetypes[processState]?.name || processState;
+
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
-        name: `Upstream Processing (${processState}) for ${ing.name}`,
+        name: `[Physics Flag] Mass Balance & Upstream ${processState.toUpperCase()}`,
         subtotal: extraCo2,
-        details: `${extraKwh.toFixed(2)} kWh & ${extraGasMj.toFixed(2)} MJ Gas`,
-        confidence: "High (Archetype Physics)",
+        details: `Yield: ${yieldFactor.toFixed(2)}x | Input: ${item.quantity.toFixed(3)}kg -> Grown: ${grownMass.toFixed(2)}kg | Energy: ${extraKwh.toFixed(2)}kWh | Gas: ${extraGasMj.toFixed(2)}MJ`,
+        confidence: "Tier 2 (Industry Archetype)",
         grid_intensity: gridIntensity,
-        energy_source: `Grid Mix + Natural Gas`
+        energy_source: `Process-Specific Thermal + Grid Mix (${archetypeName})`
     });
+    
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += extraCo2;
     auditTrail.pefCategories["Climate Change"].total += extraCo2;
 
