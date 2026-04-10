@@ -8374,11 +8374,29 @@ if (adj.method === "eudr_dluc_penalty") {
 
   
 } else if (origin !== baseOrigin) {
-        adjustmentText = `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+    // Check if it's an EU regional match (no penalty)
+    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+    if (euCountries.includes(origin) && euCountries.includes(baseOrigin)) {
+        adjustmentText = `[EU REGIONAL MATCH: ${origin}]\nAccepted without penalty`;
     } else {
-        adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
+        adjustmentText = `[PROXY: ${baseOrigin}->${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
     }
-    
+} else {
+    adjustmentText = `[DIRECT: ${origin}] No adjustment needed`;
+}
+
+// 🔧 CRITICAL: Add Physics Flag and Energy details (ASCII ONLY)
+const processState = ing.processingState || 'raw';
+const archetypes = window.aioxyData?.processing_archetypes || {};
+const archetype = archetypes[processState];
+
+if (archetype && processState !== 'raw') {
+    adjustmentText += `\n[Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)`;
+    if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+        adjustmentText += `\nEnergy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg`;
+    }
+}
+
     // BUILD NAME WITH QUALITY FLAG
     let nameText = safeString(ing.name);
     if (ing.name.toLowerCase().includes('animal feed')) {
@@ -8406,15 +8424,15 @@ body: ingredientRows,
 styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
 headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
 columnStyles: {
-    0: { cellWidth: 27, fontStyle: 'bold' },       // Ingredient
+    0: { cellWidth: 26, fontStyle: 'bold' },       // Ingredient
     1: { cellWidth: 12, halign: 'right' },         // Qty
     2: { cellWidth: 12 },                          // Origin
-    3: { cellWidth: 18 },                          // Processing
-    4: { cellWidth: 15 },                          // EUDR
+    3: { cellWidth: 20 },                          // Processing
+    4: { cellWidth: 14 },                          // EUDR
     5: { cellWidth: 12 },                          // Data
-    6: { cellWidth: 48 },                          // Physics Adjustments
-    7: { cellWidth: 18, halign: 'right' },         // CO2e
-    8: { cellWidth: 18, halign: 'right' }          // Water
+    6: { cellWidth: 50 },                          // Physics Adjustments
+    7: { cellWidth: 17, halign: 'right' },         // CO2e
+    8: { cellWidth: 17, halign: 'right' }          // Water
 },
     margin: { left: margin, right: margin }
 });
