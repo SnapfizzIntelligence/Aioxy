@@ -8371,10 +8371,11 @@ if (adj.method === "eudr_dluc_penalty") {
 } else if (ing.primary_data_used && ing.primary_data) {
     const pd = ing.primary_data;
     adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
+
 } else if (origin !== baseOrigin) {
     // Check if it's an EU regional match (no penalty)
-    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
-    if (euCountries.includes(origin) && euCountries.includes(baseOrigin)) {
+    if (['FR','DE','IT','ES','NL','BE','AT','SE','DK','FI','PT','IE','LU','GR','PL','CZ','HU','SK','SI','EE','LV','LT','HR','RO','BG','CY','MT'].includes(origin) && 
+        ['FR','DE','IT','ES','NL','BE','AT','SE','DK','FI','PT','IE','LU','GR','PL','CZ','HU','SK','SI','EE','LV','LT','HR','RO','BG','CY','MT'].includes(baseOrigin)) {
         adjustmentText += `[EU REGIONAL MATCH: ${origin}]\nAccepted without penalty`;
     } else {
         adjustmentText += `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
