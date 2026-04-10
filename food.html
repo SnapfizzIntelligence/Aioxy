@@ -8383,7 +8383,7 @@ ccTree.Ingredients.components.forEach(ing => {
 doc.autoTable({
     ...standardTableStyles,
     startY: currentY,
-    head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
+    head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO\u2082e', 'Water']],
     body: ingredientRows,
     styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
 headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
@@ -8643,7 +8643,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
                 safeString(c.name),
                 safeString(c.details || 'Standard Processing'),
                 safeString(c.energy_source || 'Grid Mix'),
-                formatNumber(c.subtotal, 4) + ' kg CO2e'
+                formatNumber(c.subtotal, 4) + ' kg CO\u2082e'
             ]);
             
             doc.autoTable({
@@ -8678,7 +8678,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
             ['Recycled Content:', recycledContent + '%'],
             ['End-of-Life Scenario:', pkgEoL],
-            ['Total Packaging Impact:', formatNumber(ccTree.Packaging?.total || 0, 4) + ' kg CO2e']
+            ['Total Packaging Impact:', formatNumber(ccTree.Packaging?.total || 0, 4) + ' kg CO\u2082e']
         ];
         
         doc.autoTable({
@@ -8705,7 +8705,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             const eolRows = eolComponents.map(e => [
                 truncate(e.name, 35),
                 safeString(e.notes || 'Waste Treatment'),
-                formatNumber(e.subtotal, 4) + ' kg CO2e'
+                formatNumber(e.subtotal, 4) + ' kg CO\u2082e'
             ]);
             
             doc.autoTable({
@@ -8751,7 +8751,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
                 return [
                     truncate(u.name, 35),
                     truncate(cleanNote, 50),
-                    formatNumber(u.subtotal, 4) + ' kg CO2e'
+                    formatNumber(u.subtotal, 4) + ' kg CO\u2082e'
                 ];
             });
             
@@ -8802,7 +8802,7 @@ const mfgComps = ccTree.Manufacturing?.components || [];
             ['Crisis Adjustment:', isCrisisActive ? '+40% (Cape Route)' : 'None'],
             ['Effective Distance:', formatInteger(dist) + ' km'],
             ['Gross Weight Shipped:', formatNumber((mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0), 3) + ' kg'],
-            ['Outbound Impact:', formatNumber(ccTree.Transport?.total || 0, 4) + ' kg CO2e']
+            ['Outbound Impact:', formatNumber(ccTree.Transport?.total || 0, 4) + ' kg CO\u2082e']
         ];
         
         doc.autoTable({
@@ -8833,9 +8833,9 @@ const mfgComps = ccTree.Manufacturing?.components || [];
         }
 
     // ============================================================
-// TOTAL CRADLE-TO-RETAIL IMPACT FOOTER 
+// TOTAL CRADLE-TO-RETAIL IMPACT FOOTER
 // ============================================================
-checkPageBreak(50);  // Ensure enough space, or push to new page
+checkPageBreak(50);
 
 // Draw heavy top border
 doc.setDrawColor(...COLORS.primary);
@@ -8844,27 +8844,27 @@ doc.line(margin, currentY, pageWidth - margin, currentY);
 currentY += 10;
 
 // Total Impact Label
-doc.setFontSize(13);
+doc.setFontSize(12);
 doc.setFont("helvetica", "bold");
 doc.setTextColor(...COLORS.primary);
 doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
 
-// Total Value (right-aligned, slightly smaller to fit in the box)
-doc.setFontSize(12.5);
-doc.text(`${totalCo2.toFixed(4)} kg CO₂e`, pageWidth - margin - 2, currentY, { align: 'right' });
+// Total Value (right-aligned)
+doc.setFontSize(12);
+doc.text(`${totalCo2.toFixed(4)} kg CO\u2082e`, pageWidth - margin - 2, currentY, { align: 'right' });
 
 // Normalized per kg
 currentY += 8;
-doc.setFontSize(10);
+doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
 doc.setTextColor(...COLORS.dark);
-doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO₂e / kg product`, margin, currentY);
+doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO\u2082e per kg product`, margin, currentY);
 
-// Uncertainty with proper ± symbol
+// Uncertainty
 currentY += 6;
-doc.setFontSize(9);
+doc.setFontSize(8);
 doc.setTextColor(...COLORS.gray);
-doc.text(`Uncertainty: ±${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`, margin, currentY);
+doc.text(`Uncertainty: \u00B1${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`, margin, currentY);
 
 currentY += 15;
 
