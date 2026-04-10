@@ -7461,6 +7461,11 @@ ingredients.forEach(ing => {
     bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
 }
 
+// 📝 ADD PHYSICS NOTE (if exists)
+if (ing.physics_note) {
+    bridgeHTML += `<br><span style="color:#D35400; font-size:0.85em; font-style:italic;">📝 ${ing.physics_note}</span>`;
+}
+
 // [PHYSICS FLAG] Show processing archetype in audit trail (adds to bridgeHTML)
 const processState = ing.processingState || 'raw';
 const archetypes = window.aioxyData?.processing_archetypes || {};
