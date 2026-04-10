@@ -8372,10 +8372,16 @@ if (adj.method === "eudr_dluc_penalty") {
     const pd = ing.primary_data;
     adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
 } else if (origin !== baseOrigin) {
-    adjustmentText += `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+    // Check if it's an EU regional match (no penalty)
+    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+    if (euCountries.includes(origin) && euCountries.includes(baseOrigin)) {
+        adjustmentText += `[EU REGIONAL MATCH: ${origin}]\nAccepted without penalty`;
+    } else {
+        adjustmentText += `[PROXY: ${baseOrigin}→${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+    }
 } else {
     adjustmentText += `[DIRECT: ${origin}] No adjustment needed`;
-    }
+}
     
     // BUILD NAME WITH QUALITY FLAG
     let nameText = safeString(ing.name);
