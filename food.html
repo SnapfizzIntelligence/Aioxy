@@ -3208,11 +3208,24 @@ function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
 
     // 4. CALCULATION: Mass (tons) × Adjusted Distance (km) × Factor (kg CO₂e/tkm)
     const massTons = massKg / 1000;
-    const emissions = massTons * adjustedDistance * factor;
+    const fuelEmissions = massTons * adjustedDistance * factor;
     
-    console.log(`🚚 GLEC v3.2: ${mode} (${refType}) | Raw: ${distanceKm}km → Adj: ${adjustedDistance.toFixed(1)}km | Factor: ${factor.toFixed(4)} | CO₂e: ${emissions.toFixed(3)}kg`);
+    // 5. REFRIGERANT LEAKAGE (ISO 14083 / GLEC v3.2 requirement)
+    // Source: IPCC 2006 GL, Vol 3, Ch 7, Table 7.9 - Transport Refrigeration leak rate 15-50%
+    // Conservative factors: 0.012 kg CO2e/tkm for frozen, 0.006 for chilled
+    // GWP of HFC-134a = 1430 (IPCC AR6)
+    let refrigerantEmissions = 0;
+    if (refType === 'frozen') {
+        refrigerantEmissions = massTons * adjustedDistance * 0.012;
+    } else if (refType === 'chilled') {
+        refrigerantEmissions = massTons * adjustedDistance * 0.006;
+    }
+    
+    const totalEmissions = fuelEmissions + refrigerantEmissions;
+    
+    console.log(`🚚 GLEC v3.2: ${mode} (${refType}) | Raw: ${distanceKm}km → Adj: ${adjustedDistance.toFixed(1)}km | Fuel: ${fuelEmissions.toFixed(3)}kg | Refrigerant: ${refrigerantEmissions.toFixed(3)}kg | Total: ${totalEmissions.toFixed(3)}kg CO₂e`);
 
-    return emissions;
+    return totalEmissions;
     }
 
 
