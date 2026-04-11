@@ -8163,38 +8163,38 @@ const standardTableStyles = {
         currentY = doc.lastAutoTable.finalY + 8;
         
         // Key Metrics Box
-        setH2();
-        doc.text("KEY COMPLIANCE METRICS", margin, currentY);
-        currentY += 6;
-        
-        const metricsData = [
-            ['ESRS E1: Climate Impact (Total)', formatNumber(totalCo2, 4) + ' kg CO2e'],
-            ['ESRS E1: Climate Impact (per kg)', formatNumber(totalCo2 / pWeightKg, 4) + ' kg CO2e/kg'],
-            ['ESRS E3: Water Scarcity (AWARE)', formatNumber(totalWater, 4) + ' m3 world eq.'],
-            ['ESRS E4: Land Use Impact', formatNumber(totalLand, 2) + ' Pt'],
-            ['ESRS E5: Fossil Resource Use', formatNumber(totalFossil, 2) + ' MJ'],
-            ['Biogenic Removals (FLAG)', biogenicRemovals > 0 ? formatNumber(biogenicRemovals, 4) + ' kg CO2e' : 'None reported'],
-            ['Front-of-Pack Eco-Score', `Grade ${ecoGrade} (${mPt.toFixed(1)} uPt)`],
-            ['Nutritional LCA', safeString(nutritionalText)],
-            ['Overall Data Quality Rating', dqrText + ' (PEF compliant)'],
-            ['Modeled Uncertainty', '+-' + formatPercent(uncertainty)],
-            ['EUDR Screening Status', eudrViolation ? '[!] NON-COMPLIANT (HIGH RISK)' : '[OK] COMPLIANT'],
-            ['Crisis Routing Applied', isCrisisActive ? 'Yes (+40% distance)' : 'No'],
-            ['Primary Data Used', hasPrimaryData ? '[OK] Yes (verified)' : 'No (secondary data only)']
-        ];
-        
-        // Check if enough space for ALL 12 rows of Key Metrics
+const metricsData = [
+    ['ESRS E1: Climate Impact (Total)', formatNumber(totalCo2, 4) + ' kg CO2e'],
+    ['ESRS E1: Climate Impact (per kg)', formatNumber(totalCo2 / pWeightKg, 4) + ' kg CO2e/kg'],
+    ['ESRS E3: Water Scarcity (AWARE)', formatNumber(totalWater, 4) + ' m3 world eq.'],
+    ['ESRS E4: Land Use Impact', formatNumber(totalLand, 2) + ' Pt'],
+    ['ESRS E5: Fossil Resource Use', formatNumber(totalFossil, 2) + ' MJ'],
+    ['Biogenic Removals (FLAG)', biogenicRemovals > 0 ? formatNumber(biogenicRemovals, 4) + ' kg CO2e' : 'None reported'],
+    ['Front-of-Pack Eco-Score', `Grade ${ecoGrade} (${mPt.toFixed(1)} uPt)`],
+    ['Nutritional LCA', safeString(nutritionalText)],
+    ['Overall Data Quality Rating', dqrText + ' (PEF compliant)'],
+    ['Modeled Uncertainty', '+-' + formatPercent(uncertainty)],
+    ['EUDR Screening Status', eudrViolation ? '[!] NON-COMPLIANT (HIGH RISK)' : '[OK] COMPLIANT'],
+    ['Crisis Routing Applied', isCrisisActive ? 'Yes (+40% distance)' : 'No'],
+    ['Primary Data Used', hasPrimaryData ? '[OK] Yes (verified)' : 'No (secondary data only)']
+];
+
+// Check if BOTH header AND table fit on current page
 const metricsRowHeight = 7; // mm per row
-const metricsTotalHeight = metricsData.length * metricsRowHeight;
+const metricsTotalHeight = (metricsData.length * metricsRowHeight) + 15; // +15 for header
 if (currentY + metricsTotalHeight > pageHeight - margin) {
     doc.addPage();
     currentY = margin;
 }
 
+setH2();
+doc.text("KEY COMPLIANCE METRICS", margin, currentY);
+currentY += 6;
+
 doc.autoTable({
     startY: currentY,
     body: metricsData,
-    pageBreak: 'avoid',  // ← ADD THIS LINE
+    pageBreak: 'avoid',
     theme: 'plain',
     styles: { fontSize: 9, cellPadding: 4, overflow: 'linebreak' },
     columnStyles: {
@@ -8204,29 +8204,29 @@ doc.autoTable({
     margin: { left: margin },
     alternateRowStyles: { fillColor: COLORS.lightBg }
 });
-        
-        currentY = doc.lastAutoTable.finalY + 10;
-        
-        // Audit Clearance Section
-        setH2();
-        doc.text("AUDIT CLEARANCE", margin, currentY);
-        currentY += 6;
-        
-        setNormal();
-        const clearanceItems = [
-            '[OK] EU Deforestation Regulation (EUDR) Screening Complete',
-            '[OK] Primary & Tertiary Logistics Accounted (GLEC v3.2)',
-            `[OK] Crisis Routing: ${isCrisisActive ? 'Applied (Red Sea/Cape Route +40%)' : 'Standard Routing'}`,
-            '[OK] PEF 3.1 Methodology with AGRIBALYSE 3.2 Data',
-            '[OK] ISO 14044 Foreground/Background Analysis (5% cutoff)',
-            '[OK] Monte Carlo Uncertainty Propagation (500 iterations)',
-            `[OK] ADEME Eco-Score: Grade ${ecoGrade}`
-        ];
-        
-        clearanceItems.forEach(item => {
-            doc.text(safeString(item), margin, currentY);
-            currentY += 5;
-        });
+
+currentY = doc.lastAutoTable.finalY + 10;
+
+// Audit Clearance Section
+setH2();
+doc.text("AUDIT CLEARANCE", margin, currentY);
+currentY += 6;
+
+setNormal();
+const clearanceItems = [
+    '[OK] EU Deforestation Regulation (EUDR) Screening Complete',
+    '[OK] Primary & Tertiary Logistics Accounted (GLEC v3.2)',
+    `[OK] Crisis Routing: ${isCrisisActive ? 'Applied (Red Sea/Cape Route +40%)' : 'Standard Routing'}`,
+    '[OK] PEF 3.1 Methodology with AGRIBALYSE 3.2 Data',
+    '[OK] ISO 14044 Foreground/Background Analysis (5% cutoff)',
+    '[OK] Monte Carlo Uncertainty Propagation (500 iterations)',
+    `[OK] ADEME Eco-Score: Grade ${ecoGrade}`
+];
+
+clearanceItems.forEach(item => {
+    doc.text(safeString(item), margin, currentY);
+    currentY += 5;
+});
 
         // ============================================================
         // PAGE 2: FULL 16-CATEGORY PEF SCORECARD
@@ -8292,34 +8292,34 @@ doc.autoTable({
         currentY = doc.lastAutoTable.finalY + 10;
         
         // PEF Single Score Breakdown
-        setH2();
-        doc.text("PEF SINGLE SCORE BREAKDOWN (EF 3.1)", margin, currentY);
-        currentY += 6;
-        
-        const topCategories = Object.entries(singleScorePDF.breakdown)
-            .sort((a, b) => b[1].weighted - a[1].weighted)
-            .slice(0, 8);
-        
-        const breakdownData = topCategories.map(([cat, data]) => [
-            safeString(cat),
-            data.raw.toExponential(2),
-            (data.weighted / singleScorePDF.weightedScore * 100).toFixed(1) + '%'
-        ]);
-        
-        // Check if enough space for ALL rows of Single Score Breakdown
+const topCategories = Object.entries(singleScorePDF.breakdown)
+    .sort((a, b) => b[1].weighted - a[1].weighted)
+    .slice(0, 8);
+
+const breakdownData = topCategories.map(([cat, data]) => [
+    safeString(cat),
+    data.raw.toExponential(2),
+    (data.weighted / singleScorePDF.weightedScore * 100).toFixed(1) + '%'
+]);
+
+// Check if BOTH header AND table fit on current page
 const breakdownRowHeight = 8; // mm per row
-const breakdownTotalHeight = breakdownData.length * breakdownRowHeight;
+const breakdownTotalHeight = (breakdownData.length * breakdownRowHeight) + 15; // +15 for header
 if (currentY + breakdownTotalHeight > pageHeight - margin) {
     doc.addPage();
     currentY = margin;
 }
+
+setH2();
+doc.text("PEF SINGLE SCORE BREAKDOWN (EF 3.1)", margin, currentY);
+currentY += 6;
 
 doc.autoTable({
     ...standardTableStyles,
     startY: currentY,
     head: [['Category', 'Raw Impact (/kg)', 'Contribution']],
     body: breakdownData,
-    pageBreak: 'avoid',  // ← ADD THIS LINE
+    pageBreak: 'avoid',
     columnStyles: {
         0: { cellWidth: 90, fontStyle: 'bold' },
         1: { cellWidth: 45, halign: 'right' },
@@ -8327,17 +8327,17 @@ doc.autoTable({
     },
     margin: { left: margin }
 });
-        
-        currentY = doc.lastAutoTable.finalY + 8;
-        
-        // Eco-Score Box
-        doc.setFillColor(ecoColor);
-        doc.rect(margin, currentY, pageWidth - (margin * 2), 12, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} uPt)`, margin + 5, currentY + 8);
 
+currentY = doc.lastAutoTable.finalY + 8;
+
+// Eco-Score Box
+doc.setFillColor(ecoColor);
+doc.rect(margin, currentY, pageWidth - (margin * 2), 12, 'F');
+doc.setTextColor(255, 255, 255);
+doc.setFont("helvetica", "bold");
+doc.setFontSize(11);
+doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} uPt)`, margin + 5, currentY + 8);
+        
         // ============================================================
 // PAGE 3: INGREDIENT CHAIN OF CUSTODY (WITH QUALITY FLAGS & PHYSICS)
 // ============================================================
