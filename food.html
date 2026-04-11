@@ -4904,18 +4904,19 @@ const auditTrail = {
     };
 
     Object.keys(pefCategories).forEach(cat => {
-        auditTrail.pefCategories[cat] = {
-            total: 0,
-            unit: pefCategories[cat].unit,
-            contribution_tree: {
-                Ingredients: { total: 0, components: [] },
-                Manufacturing: { total: 0, components: [] },
-                Transport: { total: 0, components: [] },
-                Packaging: { total: 0, components: [] },
-                Upstream: { total: 0, components: [] }
-            }
-        };
-    });
+    auditTrail.pefCategories[cat] = {
+        total: 0,
+        unit: pefCategories[cat].unit,
+        contribution_tree: {
+            Ingredients: { total: 0, components: [] },
+            Manufacturing: { total: 0, components: [] },
+            Transport: { total: 0, components: [] },
+            Packaging: { total: 0, components: [] },
+            Upstream: { total: 0, components: [] },
+            Waste: { total: 0, components: [] }  // ← ADD THIS
+        }
+    };
+});
 
     // 5. CALCULATE INGREDIENT IMPACTS
 let dqrComponents = [];
@@ -4956,7 +4957,7 @@ if (processingLoss > 0.001 && processState !== 'raw') {
     };
     const wasteSplit = archetype.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
     
-    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Waste.components.push({
         name: `Processing Waste: ${ing.name} (${archetype?.name || processState})`,
         subtotal: wasteEoLImpact,
         notes: `Loss: ${processingLoss.toFixed(3)}kg | Organic to feed: ${(processingLoss * wasteSplit.organic).toFixed(3)}kg | Inert to landfill: ${(processingLoss * wasteSplit.inert).toFixed(3)}kg | Wastewater: ${(processingLoss * wasteSplit.wastewater).toFixed(3)}kg`,
@@ -4964,8 +4965,8 @@ if (processingLoss > 0.001 && processState !== 'raw') {
         methodology: wasteEoL.methodology
     });
     
-    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += wasteEoLImpact;
-    auditTrail.pefCategories["Climate Change"].total += wasteEoLImpact;
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Waste.total += wasteEoLImpact;
+auditTrail.pefCategories["Climate Change"].total += wasteEoLImpact;
     
     console.log(`🗑️ Waste tracked for ${ing.name}: ${processingLoss.toFixed(3)}kg loss → ${wasteEoLImpact.toFixed(4)} kg CO2e`);
 }
@@ -7796,26 +7797,30 @@ html += `
         </div>`;
 
     // ========== E. END-OF-LIFE TREATMENT ==========
-    if (eolComponents.length > 0) {
-        html += `
-        <div style="margin-bottom: 25px;">
-            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-                E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
-            </h4>
-            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
-                ${eolComponents.map(e => `
-                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                        <div>
-                            <strong style="color:var(--primary);">${e.name}</strong><br>
-                            <span style="color:var(--gray);">${e.notes}</span>
-                        </div>
-                        <div style="font-weight:bold; color: #C0392B;">
-                            ${e.subtotal.toFixed(4)} kg CO₂e
-                        </div>
+// Combine Processing Waste + traditional End-of-Life components
+const wasteComponents = catCC.contribution_tree.Waste?.components || [];
+const allEoL = [...wasteComponents, ...eolComponents];
+
+if (allEoL.length > 0) {
+    html += `
+    <div style="margin-bottom: 25px;">
+        <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+            E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
+        </h4>
+        <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
+            ${allEoL.map(e => `
+                <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    <div>
+                        <strong style="color:var(--primary);">${e.name}</strong><br>
+                        <span style="color:var(--gray);">${e.notes || ''}</span>
                     </div>
-                `).join('')}
-            </div>
-        </div>`;
+                    <div style="font-weight:bold; color: #C0392B;">
+                        ${e.subtotal.toFixed(4)} kg CO₂e
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
     }
 
     // ========== TOTAL IMPACT FOOTER ==========
