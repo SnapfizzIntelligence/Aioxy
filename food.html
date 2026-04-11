@@ -8342,7 +8342,16 @@ doc.setTextColor(255, 255, 255);
 doc.setFont("helvetica", "bold");
 doc.setFontSize(11);
 doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} uPt)`, margin + 5, currentY + 8);
-        
+
+currentY += 14;
+
+// FOP Eco-Score Disclaimer (Green Claims Directive)
+setSmall();
+doc.setTextColor(...COLORS.warning);
+doc.text("* Screening LCA only. Third-party verification required for consumer-facing claims per Green Claims Directive.", margin, currentY);
+doc.setTextColor(...COLORS.dark);
+currentY += 6;
+    
         // ============================================================
 // PAGE 3: INGREDIENT CHAIN OF CUSTODY (WITH QUALITY FLAGS & PHYSICS)
 // ============================================================
