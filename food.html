@@ -8466,9 +8466,25 @@ doc.autoTable({
 currentY = doc.lastAutoTable.finalY + 8;
 
 // Eco-Score Box
-doc.setFillColor(ecoColor);
+let bgColor = ecoColor;
+if (ecoGrade === 'C') {
+    bgColor = '#F9E79F';  // Lighter yellow for better contrast
+} else if (ecoGrade === 'D') {
+    bgColor = '#FAD7A1';  // Lighter orange
+} else if (ecoGrade === 'E') {
+    bgColor = '#F5B7B1';  // Lighter red
+}
+
+doc.setFillColor(bgColor);
 doc.rect(margin, currentY, pageWidth - (margin * 2), 12, 'F');
-doc.setTextColor(255, 255, 255);
+
+// Use dark text for Grade C/D/E (white for A/B)
+if (ecoGrade === 'C' || ecoGrade === 'D' || ecoGrade === 'E') {
+    doc.setTextColor(60, 40, 0);  // Dark brown - high contrast on yellow
+} else {
+    doc.setTextColor(255, 255, 255);  // White for green backgrounds
+}
+
 doc.setFont("helvetica", "bold");
 doc.setFontSize(11);
 doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} uPt)`, margin + 5, currentY + 8);
@@ -8477,9 +8493,9 @@ currentY += 14;
 
 // FOP Eco-Score Disclaimer (Green Claims Directive)
 setSmall();
-doc.setTextColor(...COLORS.warning);
+doc.setTextColor(160, 70, 0);  // Dark amber - high contrast
 doc.text("* Screening LCA only. Third-party verification required for consumer-facing claims per Green Claims Directive.", margin, currentY);
-doc.setTextColor(...COLORS.dark);
+doc.setTextColor(...COLORS.dark);  // Reset to default dark text
 currentY += 6;
     
         // ============================================================
