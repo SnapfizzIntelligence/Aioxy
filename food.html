@@ -9670,22 +9670,25 @@ if (biogenicRemovals && biogenicRemovals > 0) {
         "Verified_Soil_Carbon_Sequestration", 
         "Biogenic_Removals", 
         "Primary_Farm", 
-        "Biogenic Sequestration",   // ← ADDED
-        "1.00",                      // ← ADDED
+        "Biogenic Sequestration",
+        "1.00",
         "1.0", 
-        "system", 
-        "0", 
-        "0", 
-        "0", 
-        "0", 
-        `-${biogenicRemovals}`, 
+        "system",
+        // All 16 PEF categories (12 zeros + 4 values)
+        "0",        // Climate
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros (ozone through eco)
+        0,          // Land
+        0,          // Water
+        0,          // Minerals
+        0,          // Fossil
+        `-${biogenicRemovals}`,  // Biogenic (negative = removal)
         "COMPLIANT", 
         true, 
         "1.0"
     );
     }
     
-    // =============================================================
+   // =============================================================
 // PACKAGING
 // =============================================================
 if (ccTree.Packaging?.total > 0) {
@@ -9698,18 +9701,20 @@ if (ccTree.Packaging?.total > 0) {
             `Primary_Packaging_${getPackagingMaterialName()}`, 
             "Packaging", 
             "Local", 
-            "Primary Packaging",     // ← ADDED
-            "1.00",                  // ← ADDED
+            "Primary Packaging",
+            "1.00",
             mb.packaging_weight_kg || 0, 
             "kg", 
-            primaryTotal, 
-            waterTree.Packaging?.total || 0, 
-            landTree.Packaging?.total || 0, 
-            fossilTree.Packaging?.total || 0, 
-            "0", 
-            "COMPLIANT", 
-            false, 
-            getDQR(ccTree.Packaging)
+            primaryTotal,                           // Climate (9)
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,        // 11 zeros (10-20)
+            landTree.Packaging?.total || 0,         // Land (21)
+            waterTree.Packaging?.total || 0,        // Water (22)
+            0,                                       // Minerals (23)
+            fossilTree.Packaging?.total || 0,       // Fossil (24)
+            "0",                                     // Biogenic (25)
+            "COMPLIANT",                             // EUDR (26)
+            false,                                   // Primary (27)
+            getDQR(ccTree.Packaging)                 // DQR (28)
         );
     }
     
@@ -9720,18 +9725,17 @@ if (ccTree.Packaging?.total > 0) {
                 pkg.name, 
                 "Tertiary_Packaging", 
                 "Origin", 
-                "Tertiary Packaging",  // ← ADDED
-                "1.00",                // ← ADDED
+                "Tertiary Packaging",
+                "1.00",
                 "1.0", 
                 "system", 
-                pkg.subtotal, 
-                "0", 
-                "0", 
-                "0", 
-                "0", 
-                "COMPLIANT", 
-                false, 
-                getDQR(pkg)
+                pkg.subtotal,                        // Climate (9)
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     // 11 zeros (10-20)
+                0, 0, 0, 0,                          // Land, Water, Minerals, Fossil (21-24)
+                "0",                                 // Biogenic (25)
+                "COMPLIANT",                         // EUDR (26)
+                false,                               // Primary (27)
+                getDQR(pkg)                          // DQR (28)
             );
         });
     }
@@ -9758,21 +9762,23 @@ if (ccTree.Upstream?.components) {
             upst.name.replace(/,/g, ''), 
             matType, 
             "N/A", 
-            transportProcessing,     // ← ADDED
-            "1.00",                  // ← ADDED
+            transportProcessing,
+            "1.00",
             "1.0", 
             "system", 
-            upst.subtotal, 
-            waterComp?.subtotal || 0, 
-            landComp?.subtotal || 0, 
-            fossilComp?.subtotal || 0, 
-            "0", 
-            "COMPLIANT", 
-            false, 
-            getDQR(ccTree.Upstream)
+            upst.subtotal,                           // Climate (9)
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          // 11 zeros (10-20)
+            landComp?.subtotal || 0,                  // Land (21)
+            waterComp?.subtotal || 0,                 // Water (22)
+            0,                                        // Minerals (23)
+            fossilComp?.subtotal || 0,                // Fossil (24)
+            "0",                                      // Biogenic (25)
+            "COMPLIANT",                              // EUDR (26)
+            false,                                    // Primary (27)
+            getDQR(ccTree.Upstream)                   // DQR (28)
         );
     });
-}
+                   }
 
     // =============================================================
 // PROCESSING WASTE (Scope 3 Cat 12 - Formulation Loss)
@@ -9832,14 +9838,35 @@ if (ccTree.Transport?.total > 0) {
     }
     
     // =============================================================
-    // MANUFACTURING (Scope 3 Cat 1 / Processing)
-    // =============================================================
-    if (ccTree.Manufacturing?.total > 0) {
-        const fossilMfg = fossilTree.Manufacturing?.total || 0;
-        const landMfg = landTree.Manufacturing?.total || 0;
-        
-        addDataRow("Scope 3 Cat 1 (Processing)", "Factory_Operations", "Energy", mfgCountry, "Factory Operations", "1.00", mb.final_content_weight_kg || 0, "kg", ccTree.Manufacturing.total, 0,0,0,0,0,0,0,0,0,0,0, landMfg, "0", 0, fossilMfg, "0", "COMPLIANT", primaryFlag, getDQR(ccTree.Manufacturing));
-    }
+// MANUFACTURING (Scope 3 Cat 1 / Processing)
+// =============================================================
+if (ccTree.Manufacturing?.total > 0) {
+    const fossilMfg = fossilTree.Manufacturing?.total || 0;
+    const landMfg = landTree.Manufacturing?.total || 0;
+    const mfgCountryCode = document.getElementById('manufacturingCountry')?.value || 'Unknown';
+    const usePrimaryData = document.getElementById('usePrimaryFactoryData')?.checked || false;
+    
+    addDataRow(
+        "Scope 3 Cat 1 (Processing)", 
+        "Factory_Operations", 
+        "Energy", 
+        mfgCountryCode, 
+        "Factory Operations", 
+        "1.00", 
+        mb.final_content_weight_kg || 0, 
+        "kg", 
+        ccTree.Manufacturing.total, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros
+        landMfg,                              // Land Use
+        "0",                                  // Water Scarcity
+        0,                                    // Minerals
+        fossilMfg,                            // Fossil
+        "0",                                  // Biogenic
+        "COMPLIANT",                          // EUDR
+        usePrimaryData,                       // Primary Data
+        getDQR(ccTree.Manufacturing)          // DQR
+    );
+}
     
     // =============================================================
     // DOWNLOAD (Single CSV file)
