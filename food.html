@@ -9400,13 +9400,29 @@ if (ccTree.Ingredients?.components) {
         );
     });
                     }
-    
     // =============================================================
-    // FLAG REMOVALS (Biogenic carbon sequestration)
-    // =============================================================
-    const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
-    if (biogenicRemovals && biogenicRemovals > 0) {
-        addDataRow("Scope 3 Cat 1 (FLAG)", "Verified_Soil_Carbon_Sequestration", "Biogenic_Removals", "Primary_Farm", "1.0", "system", "0", "0", "0", "0", `-${biogenicRemovals}`, "COMPLIANT", true, "1.0");
+// FLAG REMOVALS (Biogenic carbon sequestration)
+// =============================================================
+const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
+if (biogenicRemovals && biogenicRemovals > 0) {
+    addDataRow(
+        "Scope 3 Cat 1 (FLAG)", 
+        "Verified_Soil_Carbon_Sequestration", 
+        "Biogenic_Removals", 
+        "Primary_Farm", 
+        "Biogenic Sequestration",   // ← ADDED
+        "1.00",                      // ← ADDED
+        "1.0", 
+        "system", 
+        "0", 
+        "0", 
+        "0", 
+        "0", 
+        `-${biogenicRemovals}`, 
+        "COMPLIANT", 
+        true, 
+        "1.0"
+    );
     }
     
     // =============================================================
@@ -9473,12 +9489,17 @@ if (ccTree.Upstream?.components) {
         const waterComp = waterTree.Upstream?.components?.find(c => c.name === upst.name);
         const fossilComp = fossilTree.Upstream?.components?.find(c => c.name === upst.name);
         const landComp = landTree.Upstream?.components?.find(c => c.name === upst.name);
+        
+        // Determine processing name
+        const transportProcessing = isEoL ? "Waste Treatment" : "Inbound Transport";
 
         addDataRow(
             catName, 
             upst.name.replace(/,/g, ''), 
             matType, 
             "N/A", 
+            transportProcessing,     // ← ADDED
+            "1.00",                  // ← ADDED
             "1.0", 
             "system", 
             upst.subtotal, 
@@ -9506,6 +9527,8 @@ if (ccTree.Transport?.total > 0) {
         `Outbound_Logistics_${mode}`, 
         "Service", 
         "N/A", 
+        "Outbound Transport",    // ← ADDED
+        "1.00",                  // ← ADDED
         dist, 
         "km", 
         ccTree.Transport.total, 
