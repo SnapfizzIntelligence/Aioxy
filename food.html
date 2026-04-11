@@ -8183,18 +8183,27 @@ const standardTableStyles = {
             ['Primary Data Used', hasPrimaryData ? '[OK] Yes (verified)' : 'No (secondary data only)']
         ];
         
-        doc.autoTable({
-            startY: currentY,
-            body: metricsData,
-            theme: 'plain',
-            styles: { fontSize: 9, cellPadding: 4, overflow: 'linebreak' },
-            columnStyles: {
-                0: { fontStyle: 'bold', cellWidth: 105, textColor: COLORS.primary },
-                1: { cellWidth: 75, halign: 'right', fontStyle: 'bold', textColor: COLORS.dark }
-            },
-            margin: { left: margin },
-            alternateRowStyles: { fillColor: COLORS.lightBg }
-        });
+        // Check if enough space for ALL 12 rows of Key Metrics
+const metricsRowHeight = 7; // mm per row
+const metricsTotalHeight = metricsData.length * metricsRowHeight;
+if (currentY + metricsTotalHeight > pageHeight - margin) {
+    doc.addPage();
+    currentY = margin;
+}
+
+doc.autoTable({
+    startY: currentY,
+    body: metricsData,
+    pageBreak: 'avoid',  // ← ADD THIS LINE
+    theme: 'plain',
+    styles: { fontSize: 9, cellPadding: 4, overflow: 'linebreak' },
+    columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 105, textColor: COLORS.primary },
+        1: { cellWidth: 75, halign: 'right', fontStyle: 'bold', textColor: COLORS.dark }
+    },
+    margin: { left: margin },
+    alternateRowStyles: { fillColor: COLORS.lightBg }
+});
         
         currentY = doc.lastAutoTable.finalY + 10;
         
@@ -8297,18 +8306,27 @@ const standardTableStyles = {
             (data.weighted / singleScorePDF.weightedScore * 100).toFixed(1) + '%'
         ]);
         
-        doc.autoTable({
-            ...standardTableStyles,
-            startY: currentY,
-            head: [['Category', 'Raw Impact (/kg)', 'Contribution']],
-            body: breakdownData,
-            columnStyles: {
-                0: { cellWidth: 90, fontStyle: 'bold' },
-                1: { cellWidth: 45, halign: 'right' },
-                2: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
-            },
-            margin: { left: margin }
-        });
+        // Check if enough space for ALL rows of Single Score Breakdown
+const breakdownRowHeight = 8; // mm per row
+const breakdownTotalHeight = breakdownData.length * breakdownRowHeight;
+if (currentY + breakdownTotalHeight > pageHeight - margin) {
+    doc.addPage();
+    currentY = margin;
+}
+
+doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    head: [['Category', 'Raw Impact (/kg)', 'Contribution']],
+    body: breakdownData,
+    pageBreak: 'avoid',  // ← ADD THIS LINE
+    columnStyles: {
+        0: { cellWidth: 90, fontStyle: 'bold' },
+        1: { cellWidth: 45, halign: 'right' },
+        2: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+    },
+    margin: { left: margin }
+});
         
         currentY = doc.lastAutoTable.finalY + 8;
         
