@@ -46,7 +46,7 @@ window.aioxyData = {
         }, 
 
 
-                "maize-corn-starch-agribalyse-3-2": {
+                        "maize-corn-starch-agribalyse-3-2": {
             "name": "Maize/corn starch",
             "loss": 0.02,
             "processing_yield": 0.98,
@@ -79,7 +79,6 @@ window.aioxyData = {
                         "TeR": 3.0,
                         "GR": 3.5,
                         "TiR": 3.0,
-                        "C": 3.5,
                         "P": 4.4
                     },
                     "dqr_overall": 3.48,
@@ -96,7 +95,8 @@ window.aioxyData = {
                     "food_subgroup": "farines et pâtes à tarte"
                 }
             }
-        },
+        }
+
 
         "raspberry-raw-agribalyse-3-2": {
     "name": "Raspberry, raw",
@@ -536,7 +536,7 @@ window.aioxyData = {
             }
         },
 
-        "rapeseed-oil-agribalyse-3-2": {
+                        "rapeseed-oil-agribalyse-3-2": {
             "name": "Rapeseed oil",
             "loss": 0.02,
             "processing_yield": 0.99,
@@ -575,7 +575,9 @@ window.aioxyData = {
                     "biogenic_net": 0.0573
                 }
             }
-        },
+        }
+
+
 
         "white-sugar-refined-agribalyse-3-2": {
             "name": "White sugar, refined",
