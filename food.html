@@ -8179,13 +8179,8 @@ const metricsData = [
     ['Primary Data Used', hasPrimaryData ? '[OK] Yes (verified)' : 'No (secondary data only)']
 ];
 
-// Check if BOTH header AND table fit on current page
-const metricsRowHeight = 7; // mm per row
-const metricsTotalHeight = (metricsData.length * metricsRowHeight) + 15; // +15 for header
-if (currentY + metricsTotalHeight > pageHeight - margin) {
-    doc.addPage();
-    currentY = margin;
-}
+// Force enough space for header + 12-row table
+checkPageBreak(120);
 
 setH2();
 doc.text("KEY COMPLIANCE METRICS", margin, currentY);
@@ -8302,13 +8297,8 @@ const breakdownData = topCategories.map(([cat, data]) => [
     (data.weighted / singleScorePDF.weightedScore * 100).toFixed(1) + '%'
 ]);
 
-// Check if BOTH header AND table fit on current page
-const breakdownRowHeight = 8; // mm per row
-const breakdownTotalHeight = (breakdownData.length * breakdownRowHeight) + 15; // +15 for header
-if (currentY + breakdownTotalHeight > pageHeight - margin) {
-    doc.addPage();
-    currentY = margin;
-}
+// Force enough space for header + 8-row table
+checkPageBreak(100);
 
 setH2();
 doc.text("PEF SINGLE SCORE BREAKDOWN (EF 3.1)", margin, currentY);
