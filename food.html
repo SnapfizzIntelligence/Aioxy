@@ -10003,7 +10003,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
                     terSum += ingredient.data.metadata.dqr.TeR;
                     grSum += ingredient.data.metadata.dqr.GR;
                     tirSum += ingredient.data.metadata.dqr.TiR;
-                    cSum += ingredient.data.metadata.dqr.C;
+
                     pSum += ingredient.data.metadata.dqr.P;
                     count++;
                 }
@@ -10013,7 +10013,6 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
                 TeR: (terSum / count).toFixed(1),
                 GR: (grSum / count).toFixed(1),
                 TiR: (tirSum / count).toFixed(1),
-                C: (cSum / count).toFixed(1),
                 P: (pSum / count).toFixed(1)
             };
             
