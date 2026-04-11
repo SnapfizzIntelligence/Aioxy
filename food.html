@@ -2508,11 +2508,6 @@
                             <div style="font-size: 0.7rem; margin-top: 0.5rem;">Time Representativeness</div>
                         </div>
                         <div class="dqr-factor">
-                            <div class="dqr-factor-value">1.4</div>
-                            <div class="dqr-factor-label">C</div>
-                            <div style="font-size: 0.7rem; margin-top: 0.5rem;">Completeness</div>
-                        </div>
-                        <div class="dqr-factor">
                             <div class="dqr-factor-value">1.0</div>
                             <div class="dqr-factor-label">P</div>
                             <div style="font-size: 0.7rem; margin-top: 0.5rem;">Parameter Uncertainty</div>
@@ -9999,7 +9994,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
         if (auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs.length > 0) {
             dataQualitySection.classList.remove('hidden');
             
-            let terSum = 0, grSum = 0, tirSum = 0, cSum = 0, pSum = 0;
+            let terSum = 0, grSum = 0, tirSum = 0, pSum = 0;
             let count = 0;
             
             auditTrailData.dqr_summary.component_dqrs.forEach(score => {
@@ -10037,11 +10032,6 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
                     <div class="dqr-factor-value">${avgFactors.TiR}</div>
                     <div class="dqr-factor-label">TiR</div>
                     <div style="font-size: 0.7rem; margin-top: 0.5rem;">Time Representativeness</div>
-                </div>
-                <div class="dqr-factor">
-                    <div class="dqr-factor-value">${avgFactors.C}</div>
-                    <div class="dqr-factor-label">C</div>
-                    <div style="font-size: 0.7rem; margin-top: 0.5rem;">Completeness</div>
                 </div>
                 <div class="dqr-factor">
                     <div class="dqr-factor-value">${avgFactors.P}</div>
