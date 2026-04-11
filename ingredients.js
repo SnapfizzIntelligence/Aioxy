@@ -2,7 +2,7 @@
 window.aioxyData = {
     // COMPLETE 50 INGREDIENTS DATABASE WITH UPSTREAM
     ingredients: {
-                "beef-cattle-conventional-national-average-at-farm-gate-fr": {
+                        "beef-cattle-conventional-national-average-at-farm-gate-fr": {
             "name": "Beef cattle, conventional, national average, at farm gate",
             "loss": 0.05,
             "processing_yield": 0.55,
@@ -34,17 +34,17 @@ window.aioxyData = {
                         "TeR": 1.5,
                         "GR": 2.0,
                         "TiR": 1.0,
-                        "C": 1.5,
                         "P": 2.0
                     },
-                    "dqr_overall": 1.6,
+                    "dqr_overall": 1.625,
                     "single_score_mpt": 1.35,
                     "biogenic_net": 10.9,
                     "co2_luc_net": -0.0277,
                     "co2_fossil": 3.62
                 }
             }
-        },
+        }, 
+
 
                 "maize-corn-starch-agribalyse-3-2": {
             "name": "Maize/corn starch",
@@ -992,10 +992,10 @@ window.aioxyData = {
             }
         },
 
-                "oat-grain-national-average-animal-feed-at-farm-gate-fr": {
+                        "oat-grain-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Oat grain, national average, animal feed, at farm gate",
             "loss": 0.02,
-            "processing_yield": 0.98,
+            "processing_yield": 1.0,
             "data": {
                 "pef": {
                     "Climate Change": 0.555,
@@ -1005,7 +1005,7 @@ window.aioxyData = {
                     "Particulate Matter": 5.51e-08,
                     "Ionizing Radiation": 0.00863,
                     "Photochemical Ozone Formation": 0.00174,
-                    "Acidification": 0.0087,
+                    "Acidification": 0.00870,
                     "Eutrophication, terrestrial": 0.0387,
                     "Eutrophication, freshwater": 0.000173,
                     "Eutrophication, marine": 0.00707,
@@ -1013,29 +1013,28 @@ window.aioxyData = {
                     "Land Use": 106.0,
                     "Water Use/Scarcity (AWARE)": 0.124,
                     "Resource Use, minerals/metals": 1.57e-06,
-                    "Resource Use, fossils": 2.3
+                    "Resource Use, fossils": 2.30
                 },
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Oat grain, national average, animal feed, at farm gate {FR} U",
-                    "source_uuid": "agb-3.2-10-oat-grain-fr",
-                    "agribalyse_code": "10",
-                    "allocation_method": "Economic Allocation",
+                    "source_uuid": "agb-3.2-oat-grain-fr",
+                    "allocation_method": "Mass Allocation",
                     "dqr": {
                         "TeR": 1.5,
                         "GR": 2.0,
                         "TiR": 1.0,
-                        "C": 1.5,
-                        "P": 1.5
+                        "P": 2.0
                     },
-                    "dqr_overall": 1.5,
+                    "dqr_overall": 1.63,
                     "single_score_mpt": 0.0796,
-                    "biogenic_net": 0.0000922,
+                    "biogenic_net": 9.22e-05,
                     "co2_luc_net": 0.125,
-                    "co2_fossil": 0.43
+                    "co2_fossil": 0.430
                 }
             }
-        },
+        }, 
+
 
 
         "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr": {
@@ -1079,10 +1078,10 @@ window.aioxyData = {
             }
         },
 
-                "spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr": {
+                        "spring-pea-conventional-15-moisture-at-farm-gate-fr": {
             "name": "Spring pea, conventional, 15% moisture, animal feed, at farm gate",
-            "loss": 0.03,
-            "processing_yield": 0.95,
+            "loss": 0.02,
+            "processing_yield": 1.0,
             "data": {
                 "pef": {
                     "Climate Change": 0.344,
@@ -1105,23 +1104,23 @@ window.aioxyData = {
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Spring pea, conventional, 15% moisture, animal feed, at farm gate, production {FR} U",
-                    "source_uuid": "agb-3.2-spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr",
-                    "allocation_method": "Economic Allocation",
+                    "source_uuid": "agb-3.2-spring-pea-fr",
+                    "allocation_method": "Mass Allocation",
                     "dqr": {
-                        "TeR": 1.4,
-                        "GR": 1.9,
+                        "TeR": 1.0,
+                        "GR": 1.0,
                         "TiR": 1.0,
-                        "C": 1.4,
-                        "P": 1.0
+                        "P": 2.0
                     },
-                    "dqr_overall": 1.3,
+                    "dqr_overall": 1.25,
                     "single_score_mpt": 0.0551,
-                    "biogenic_net": 0.0000601,
+                    "biogenic_net": 6.01e-05,
                     "co2_luc_net": 0.143,
                     "co2_fossil": 0.201
                 }
             }
-        },
+        }, 
+
 
 
         "soybean-national-average-animal-feed-at-farm-gate-fr": {
