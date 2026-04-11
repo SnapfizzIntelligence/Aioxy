@@ -95,7 +95,7 @@ window.aioxyData = {
                     "food_subgroup": "farines et pâtes à tarte"
                 }
             }
-        }
+        }, 
 
 
         "raspberry-raw-agribalyse-3-2": {
@@ -575,7 +575,7 @@ window.aioxyData = {
                     "biogenic_net": 0.0573
                 }
             }
-        }
+        }, 
 
 
 
