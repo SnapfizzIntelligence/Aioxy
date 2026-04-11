@@ -9336,47 +9336,70 @@ csvLines.push(`# Not authorized for B2C public communication without disaggregat
 csvLines.push(``);
     
     // =============================================================
-    // SECTION 2: COLUMN HEADERS (14 Columns)
-    // =============================================================
-    csvLines.push([
-        'GHG_Protocol_Category', 'Process_Name', 'Material_Type', 'Origin_Country',
-        'Activity_Data_Value', 'Activity_Data_Unit', 'Gross_CO2e_Kg', 'Water_Scarcity_m3_eq', 
-        'Land_Use_Pt', 'Fossil_Resource_MJ', 'Biogenic_Removals_Kg', 'EUDR_Risk_Status', 
-        'Primary_Data_Verified', 'Data_Quality_Rating'
-    ].join(','));
+// SECTION 2: COLUMN HEADERS (16 Columns - Added Processing)
+// =============================================================
+csvLines.push([
+    'GHG_Protocol_Category', 'Process_Name', 'Material_Type', 'Origin_Country',
+    'Processing_Archetype', 'Yield_Factor',  // ← ADDED THESE TWO
+    'Activity_Data_Value', 'Activity_Data_Unit', 'Gross_CO2e_Kg', 'Water_Scarcity_m3_eq', 
+    'Land_Use_Pt', 'Fossil_Resource_MJ', 'Biogenic_Removals_Kg', 'EUDR_Risk_Status', 
+    'Primary_Data_Verified', 'Data_Quality_Rating'
+].join(','));
 
-    // Helper to add data row (14 columns)
-    const addDataRow = (category, process, materialType, origin, qty, unit, co2, water, land, fossil, biogenic, eudr, primary, dqr) => {
-        const row = [
-            category, process, materialType, origin, parseFloat(qty || 0).toFixed(6), unit || 'kg',
-            parseFloat(co2 || 0).toFixed(6), parseFloat(water || 0).toFixed(6), parseFloat(land || 0).toFixed(6), 
-            parseFloat(fossil || 0).toFixed(6), parseFloat(biogenic || 0).toFixed(6), eudr || 'COMPLIANT', 
-            primary === true ? 'TRUE' : 'FALSE', dqr || dqrOverall
-        ];
-        const escapedRow = row.map(cell => {
-            const cellStr = String(cell);
-            return (cellStr.includes(',') || cellStr.includes('"')) ? `"${cellStr.replace(/"/g, '""')}"` : cellStr;
-        });
-        csvLines.push(escapedRow.join(','));
-    };
+// Helper to add data row (16 columns - Added processing)
+const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, co2, water, land, fossil, biogenic, eudr, primary, dqr) => {
+    const row = [
+        category, process, materialType, origin, 
+        processing || 'Raw (Farm Gate)', yieldFactor || '1.00',  // ← ADDED THESE TWO
+        parseFloat(qty || 0).toFixed(6), unit || 'kg',
+        parseFloat(co2 || 0).toFixed(6), parseFloat(water || 0).toFixed(6), parseFloat(land || 0).toFixed(6), 
+        parseFloat(fossil || 0).toFixed(6), parseFloat(biogenic || 0).toFixed(6), eudr || 'COMPLIANT', 
+        primary === true ? 'TRUE' : 'FALSE', dqr || dqrOverall
+    ];
+    const escapedRow = row.map(cell => {
+        const cellStr = String(cell);
+        return (cellStr.includes(',') || cellStr.includes('"')) ? `"${cellStr.replace(/"/g, '""')}"` : cellStr;
+    });
+    csvLines.push(escapedRow.join(','));
+};
 
-    // =============================================================
-    // INGREDIENTS (Scope 3 Cat 1) - WITH Water, Land, Fossil per ingredient
-    // =============================================================
-    if (ccTree.Ingredients?.components) {
-        ccTree.Ingredients.components.forEach(ing => {
-            const waterComp = waterTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
-            const fossilComp = fossilTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
-            const landComp = landTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
-            const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "COMPLIANT";
-            
-            addDataRow(
-                "Scope 3 Cat 1 (Purchased Goods)", ing.name, "Raw Material", ing.universal_adjustments?.adjusted_for_country || 'Unknown',
-                ing.quantity_kg, "kg", ing.subtotal, waterComp?.subtotal || 0, landComp?.subtotal || 0, fossilComp?.subtotal || 0,
-                "0", isHighRisk, ing.primary_data_used, getDQR(ing)
-            );
-        });
-    }
+// =============================================================
+// INGREDIENTS (Scope 3 Cat 1) - WITH Water, Land, Fossil per ingredient
+// =============================================================
+if (ccTree.Ingredients?.components) {
+    ccTree.Ingredients.components.forEach(ing => {
+        const waterComp = waterTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+        const fossilComp = fossilTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+        const landComp = landTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "COMPLIANT";
+        
+        // Get processing info for CSV
+        const procState = ing.processingState || 'raw';
+        const archetypes = window.aioxyData?.processing_archetypes || {};
+        const archetype = archetypes[procState];
+        const processingName = archetype?.name || 'Raw (Farm Gate)';
+        const yieldFactor = (ing.yieldFactor || archetype?.yield_factor || 1.0).toFixed(2);
+        
+        addDataRow(
+            "Scope 3 Cat 1 (Purchased Goods)", 
+            ing.name, 
+            "Raw Material", 
+            ing.universal_adjustments?.adjusted_for_country || 'Unknown',
+            processingName,           // ← ADDED
+            yieldFactor,              // ← ADDED
+            ing.quantity_kg, 
+            "kg", 
+            ing.subtotal, 
+            waterComp?.subtotal || 0, 
+            landComp?.subtotal || 0, 
+            fossilComp?.subtotal || 0,
+            "0", 
+            isHighRisk, 
+            ing.primary_data_used, 
+            getDQR(ing)
+        );
+    });
+                    }
     
     // =============================================================
     // FLAG REMOVALS (Biogenic carbon sequestration)
@@ -9387,21 +9410,55 @@ csvLines.push(``);
     }
     
     // =============================================================
-    // PACKAGING
-    // =============================================================
-    if (ccTree.Packaging?.total > 0) {
-        const tertiaryTotal = ccTree.Packaging.components?.reduce((sum, p) => sum + (p.subtotal || 0), 0) || 0;
-        const primaryTotal = Math.max(0, ccTree.Packaging.total - tertiaryTotal);
-        
-        if (primaryTotal > 0) {
-            addDataRow("Scope 3 Cat 1 (Purchased Goods)", `Primary_Packaging_${getPackagingMaterialName()}`, "Packaging", "Local", mb.packaging_weight_kg || 0, "kg", primaryTotal, waterTree.Packaging?.total || 0, landTree.Packaging?.total || 0, fossilTree.Packaging?.total || 0, "0", "COMPLIANT", false, getDQR(ccTree.Packaging));
-        }
-        
-        if (ccTree.Packaging.components) {
-            ccTree.Packaging.components.forEach(pkg => {
-                addDataRow("Scope 3 Cat 1 (Purchased Goods)", pkg.name, "Tertiary_Packaging", "Origin", "1.0", "system", pkg.subtotal, "0", "0", "0", "0", "COMPLIANT", false, getDQR(pkg));
-            });
-        }
+// PACKAGING
+// =============================================================
+if (ccTree.Packaging?.total > 0) {
+    const tertiaryTotal = ccTree.Packaging.components?.reduce((sum, p) => sum + (p.subtotal || 0), 0) || 0;
+    const primaryTotal = Math.max(0, ccTree.Packaging.total - tertiaryTotal);
+    
+    if (primaryTotal > 0) {
+        addDataRow(
+            "Scope 3 Cat 1 (Purchased Goods)", 
+            `Primary_Packaging_${getPackagingMaterialName()}`, 
+            "Packaging", 
+            "Local", 
+            "Primary Packaging",     // ← ADDED
+            "1.00",                  // ← ADDED
+            mb.packaging_weight_kg || 0, 
+            "kg", 
+            primaryTotal, 
+            waterTree.Packaging?.total || 0, 
+            landTree.Packaging?.total || 0, 
+            fossilTree.Packaging?.total || 0, 
+            "0", 
+            "COMPLIANT", 
+            false, 
+            getDQR(ccTree.Packaging)
+        );
+    }
+    
+    if (ccTree.Packaging.components) {
+        ccTree.Packaging.components.forEach(pkg => {
+            addDataRow(
+                "Scope 3 Cat 1 (Purchased Goods)", 
+                pkg.name, 
+                "Tertiary_Packaging", 
+                "Origin", 
+                "Tertiary Packaging",  // ← ADDED
+                "1.00",                // ← ADDED
+                "1.0", 
+                "system", 
+                pkg.subtotal, 
+                "0", 
+                "0", 
+                "0", 
+                "0", 
+                "COMPLIANT", 
+                false, 
+                getDQR(pkg)
+            );
+        });
+    }
     }
     
     // =============================================================
@@ -9469,7 +9526,7 @@ if (ccTree.Transport?.total > 0) {
         const fossilMfg = fossilTree.Manufacturing?.total || 0;
         const landMfg = landTree.Manufacturing?.total || 0;
         
-        addDataRow("Scope 3 Cat 1 (Processing)", "Factory_Operations", "Energy", document.getElementById('manufacturingCountry')?.value || 'Unknown', mb.final_content_weight_kg || 0, "kg", ccTree.Manufacturing.total, "0", landMfg, fossilMfg, "0", "COMPLIANT", document.getElementById('usePrimaryFactoryData')?.checked === true, getDQR(ccTree.Manufacturing));
+        addDataRow("Scope 3 Cat 1 (Processing)", "Factory_Operations", "Energy", document.getElementById('manufacturingCountry')?.value || 'Unknown', "Factory Operations", "1.00", mb.final_content_weight_kg || 0, "kg", ccTree.Manufacturing.total, "0", landMfg, fossilMfg, "0", "COMPLIANT", document.getElementById('usePrimaryFactoryData')?.checked === true, getDQR(ccTree.Manufacturing));
     }
     
     // =============================================================
