@@ -8179,23 +8179,26 @@ const metricsData = [
     ['Primary Data Used', hasPrimaryData ? '[OK] Yes (verified)' : 'No (secondary data only)']
 ];
 
-// ✅ CHECK SPACE BEFORE DRAWING HEADER
-// Table is ~100mm tall. If less than 120mm remains, start fresh page.
+// Force enough space for the ENTIRE table including the header row
+// 13 rows × 8mm per row + 10mm for title ≈ 114mm
 if (currentY + 120 > pageHeight - margin) {
     doc.addPage();
     currentY = margin;
 }
 
-// ✅ NOW draw header and table TOGETHER on whatever page we're on
-setH2();
-doc.text("KEY COMPLIANCE METRICS", margin, currentY);
-currentY += 6;
-
+// Draw the table with a header row (this keeps everything together)
 doc.autoTable({
     startY: currentY,
+    head: [['KEY COMPLIANCE METRICS', '']],  // ← Header becomes part of the table!
     body: metricsData,
-    pageBreak: 'avoid',  // ← ADD THIS LINE BACK!
     theme: 'plain',
+    headStyles: { 
+        fillColor: COLORS.white, 
+        textColor: COLORS.primary, 
+        fontStyle: 'bold', 
+        fontSize: 12,
+        halign: 'left'
+    },
     styles: { fontSize: 9, cellPadding: 4, overflow: 'linebreak' },
     columnStyles: {
         0: { fontStyle: 'bold', cellWidth: 105, textColor: COLORS.primary },
