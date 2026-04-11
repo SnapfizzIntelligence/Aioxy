@@ -2,46 +2,50 @@
 window.aioxyData = {
     // COMPLETE 50 INGREDIENTS DATABASE WITH UPSTREAM
     ingredients: {
-        "beef-cattle-conventional-national-average-at-farm-gate-fr": {
+                "beef-cattle-conventional-national-average-at-farm-gate-fr": {
             "name": "Beef cattle, conventional, national average, at farm gate",
-            "loss": 0.03,
-            "processing_yield": 0.99,
+            "loss": 0.05,
+            "processing_yield": 0.55,
             "data": {
                 "pef": {
-                    "Climate Change": 14.474184,
-                    "Ozone Depletion": 5.4273208e-08,
-                    "Human Toxicity, non-cancer": 2.1237667e-07,
-                    "Human Toxicity, cancer": 5.7423135e-09,
-                    "Particulate Matter": 1.3817053e-06,
-                    "Ionizing Radiation": 0.30685289,
-                    "Photochemical Ozone Formation": 0.020942186,
-                    "Acidification": 0.2055071,
-                    "Eutrophication, terrestrial": 0.91130068,
-                    "Eutrophication, freshwater": 0.00057342882,
-                    "Eutrophication, marine": 0.043273688,
-                    "Ecotoxicity, freshwater": 72.969244,
-                    "Land Use": 965.59624,
-                    "Water Use/Scarcity (AWARE)": 1.1559368,
-                    "Resource Use, minerals/metals": 1.7488165e-05,
-                    "Resource Use, fossils": 24.202021
+                    "Climate Change": 14.5,
+                    "Ozone Depletion": 5.43e-08,
+                    "Human Toxicity, non-cancer": 2.12e-07,
+                    "Human Toxicity, cancer": 5.74e-09,
+                    "Particulate Matter": 1.38e-06,
+                    "Ionizing Radiation": 0.307,
+                    "Photochemical Ozone Formation": 0.0209,
+                    "Acidification": 0.206,
+                    "Eutrophication, terrestrial": 0.911,
+                    "Eutrophication, freshwater": 0.000573,
+                    "Eutrophication, marine": 0.0433,
+                    "Ecotoxicity, freshwater": 73.0,
+                    "Land Use": 966.0,
+                    "Water Use/Scarcity (AWARE)": 1.16,
+                    "Resource Use, minerals/metals": 1.75e-05,
+                    "Resource Use, fossils": 24.2
                 },
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Beef cattle, conventional, national average, at farm gate {FR} U",
-                    "source_uuid": "agb-3.2-beef-cattle-conventional-national-average-at-farm-gate-fr",
+                    "source_uuid": "agb-3.2-22-beef-cattle-fr",
                     "allocation_method": "Economic Allocation",
                     "dqr": {
-                        "TeR": 1.4,
-                        "GR": 1.9,
+                        "TeR": 1.5,
+                        "GR": 2.0,
                         "TiR": 1.0,
-                        "C": 1.4,
-                        "P": 1.0
+                        "C": 1.5,
+                        "P": 2.0
                     },
-                    "dqr_overall": 1.3,
-                    "biogenic_net": -0.027686679
+                    "dqr_overall": 1.6,
+                    "single_score_mpt": 1.35,
+                    "biogenic_net": 10.9,
+                    "co2_luc_net": -0.0277,
+                    "co2_fossil": 3.62
                 }
             }
         },
+
                 "maize-corn-starch-agribalyse-3-2": {
             "name": "Maize/corn starch",
             "loss": 0.02,
