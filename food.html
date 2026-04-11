@@ -9337,21 +9337,57 @@ csvLines.push(``);
 // =============================================================
 csvLines.push([
     'GHG_Protocol_Category', 'Process_Name', 'Material_Type', 'Origin_Country',
-    'Processing_Archetype', 'Yield_Factor',  // ← ADDED THESE TWO
-    'Activity_Data_Value', 'Activity_Data_Unit', 'Gross_CO2e_Kg', 'Water_Scarcity_m3_eq', 
-    'Land_Use_Pt', 'Fossil_Resource_MJ', 'Biogenic_Removals_Kg', 'EUDR_Risk_Status', 
-    'Primary_Data_Verified', 'Data_Quality_Rating'
+    'Processing_Archetype', 'Yield_Factor',
+    'Activity_Data_Value', 'Activity_Data_Unit',
+    // All 16 PEF Impact Categories
+    'Climate_Change_kg_CO2e',
+    'Ozone_Depletion_kg_CFC11e',
+    'Human_Toxicity_cancer_CTUh',
+    'Human_Toxicity_non_cancer_CTUh',
+    'Particulate_Matter_disease_inc',
+    'Ionizing_Radiation_kBq_U235e',
+    'Photochemical_Ozone_kg_NMVOCe',
+    'Acidification_mol_H_e',
+    'Eutrophication_terrestrial_mol_N_e',
+    'Eutrophication_freshwater_kg_P_e',
+    'Eutrophication_marine_kg_N_e',
+    'Ecotoxicity_freshwater_CTUe',
+    'Land_Use_Pt',
+    'Water_Scarcity_m3_eq',
+    'Resource_Use_minerals_kg_Sb_e',
+    'Resource_Use_fossils_MJ',
+    'Biogenic_Removals_Kg',
+    'EUDR_Risk_Status',
+    'Primary_Data_Verified',
+    'Data_Quality_Rating'
 ].join(','));
 
-// Helper to add data row (16 columns - Added processing)
-const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, co2, water, land, fossil, biogenic, eudr, primary, dqr) => {
+const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, 
+    co2, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, dqr) => {
     const row = [
         category, process, materialType, origin, 
-        processing || 'Raw (Farm Gate)', yieldFactor || '1.00',  // ← ADDED THESE TWO
+        processing || 'Raw (Farm Gate)', yieldFactor || '1.00',
         parseFloat(qty || 0).toFixed(6), unit || 'kg',
-        parseFloat(co2 || 0).toFixed(6), parseFloat(water || 0).toFixed(6), parseFloat(land || 0).toFixed(6), 
-        parseFloat(fossil || 0).toFixed(6), parseFloat(biogenic || 0).toFixed(6), eudr || 'COMPLIANT', 
-        primary === true ? 'TRUE' : 'FALSE', dqr || dqrOverall
+        parseFloat(co2 || 0).toFixed(6),
+        parseFloat(ozone || 0).toExponential(3),
+        parseFloat(htc || 0).toExponential(3),
+        parseFloat(htnc || 0).toExponential(3),
+        parseFloat(pm || 0).toExponential(3),
+        parseFloat(ir || 0).toFixed(6),
+        parseFloat(pof || 0).toFixed(6),
+        parseFloat(acid || 0).toFixed(6),
+        parseFloat(eut_t || 0).toFixed(6),
+        parseFloat(eut_f || 0).toFixed(6),
+        parseFloat(eut_m || 0).toFixed(6),
+        parseFloat(eco || 0).toFixed(6),
+        parseFloat(land || 0).toFixed(6),
+        parseFloat(water || 0).toFixed(6),
+        parseFloat(mineral || 0).toExponential(3),
+        parseFloat(fossil || 0).toFixed(6),
+        parseFloat(biogenic || 0).toFixed(6), 
+        eudr || 'COMPLIANT', 
+        primary === true ? 'TRUE' : 'FALSE', 
+        dqr || dqrOverall
     ];
     const escapedRow = row.map(cell => {
         const cellStr = String(cell);
@@ -9378,23 +9414,25 @@ if (ccTree.Ingredients?.components) {
         const yieldFactor = (ing.yieldFactor || archetype?.yield_factor || 1.0).toFixed(2);
         
         addDataRow(
-            "Scope 3 Cat 1 (Purchased Goods)", 
-            ing.name, 
-            "Raw Material", 
-            ing.universal_adjustments?.adjusted_for_country || 'Unknown',
-            processingName,           // ← ADDED
-            yieldFactor,              // ← ADDED
-            ing.quantity_kg, 
-            "kg", 
-            ing.subtotal, 
-            waterComp?.subtotal || 0, 
-            landComp?.subtotal || 0, 
-            fossilComp?.subtotal || 0,
-            "0", 
-            isHighRisk, 
-            ing.primary_data_used, 
-            getDQR(ing)
-        );
+    "Scope 3 Cat 1 (Purchased Goods)", 
+    ing.name, 
+    "Raw Material", 
+    ing.universal_adjustments?.adjusted_for_country || 'Unknown',
+    processingName,
+    yieldFactor,
+    ing.quantity_kg, 
+    "kg", 
+    ing.subtotal,                    // Climate Change
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // Other impacts (0 for now - can enhance later)
+    landComp?.subtotal || 0,         // Land Use
+    waterComp?.subtotal || 0,        // Water Scarcity
+    0,                               // Resource minerals
+    fossilComp?.subtotal || 0,       // Resource fossils
+    "0", 
+    isHighRisk, 
+    ing.primary_data_used, 
+    getDQR(ing)
+);
     });
                     }
     // =============================================================
@@ -9546,7 +9584,7 @@ if (ccTree.Transport?.total > 0) {
         const fossilMfg = fossilTree.Manufacturing?.total || 0;
         const landMfg = landTree.Manufacturing?.total || 0;
         
-        addDataRow("Scope 3 Cat 1 (Processing)", "Factory_Operations", "Energy", document.getElementById('manufacturingCountry')?.value || 'Unknown', "Factory Operations", "1.00", mb.final_content_weight_kg || 0, "kg", ccTree.Manufacturing.total, "0", landMfg, fossilMfg, "0", "COMPLIANT", document.getElementById('usePrimaryFactoryData')?.checked === true, getDQR(ccTree.Manufacturing));
+        addDataRow("Scope 3 Cat 1 (Processing)", "Factory_Operations", "Energy", mfgCountry, "Factory Operations", "1.00", mb.final_content_weight_kg || 0, "kg", ccTree.Manufacturing.total, 0,0,0,0,0,0,0,0,0,0,0, landMfg, "0", 0, fossilMfg, "0", "COMPLIANT", primaryFlag, getDQR(ccTree.Manufacturing));
     }
     
     // =============================================================
