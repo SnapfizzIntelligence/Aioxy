@@ -8179,9 +8179,14 @@ const metricsData = [
     ['Primary Data Used', hasPrimaryData ? '[OK] Yes (verified)' : 'No (secondary data only)']
 ];
 
-// Force enough space for header + 12-row table
-checkPageBreak(120);
+// ✅ CHECK SPACE BEFORE DRAWING HEADER
+// Table is ~100mm tall. If less than 120mm remains, start fresh page.
+if (currentY + 120 > pageHeight - margin) {
+    doc.addPage();
+    currentY = margin;
+}
 
+// ✅ NOW draw header and table TOGETHER on whatever page we're on
 setH2();
 doc.text("KEY COMPLIANCE METRICS", margin, currentY);
 currentY += 6;
