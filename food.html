@@ -4674,6 +4674,83 @@ const foodCalculationEngine = {
     return parseFloat(uncertainty.toFixed(1));
 },
 
+
+    // ================== WASTE END-OF-LIFE CALCULATOR (IPCC 2006 / JRC BAT) ==================
+function calculateWasteEndOfLife(wasteKg, wasteType, processingType = 'isolated') {
+    // Official constants from IPCC 2006 Guidelines
+    const CONSTANTS = {
+        // Animal Feed Credit (EU RED II Annex V + Agribalyse 3.2)
+        FEED_DISPLACEMENT: 0.7,        // 1 kg organic waste displaces 0.7 kg soybean meal
+        SOYBEAN_MEAL_CO2: 0.46,        // kg CO2e/kg soybean meal (Agribalyse 3.2)
+        
+        // Anaerobic Digestion (IPCC 2006 GL, Vol 5, Ch 4)
+        BIOGAS_YIELD: 0.40,            // m³ biogas per kg VS (organic waste)
+        CH4_FRACTION: 0.60,            // 60% methane in biogas
+        CH4_ENERGY: 35.9,              // MJ per m³ CH4
+        NG_DISPLACEMENT: 0.202,        // kg CO2e per MJ natural gas (IPCC)
+        
+        // Landfill (IPCC 2006 GL, Vol 5, Ch 3, Table 3.4)
+        DOC_FOOD_WASTE: 0.15,          // Degradable Organic Carbon
+        CH4_C_RATIO: 1.33,             // CH4 to C conversion
+        LANDFILL_CAPTURE: 0.60,        // EU Landfill Directive: 60% capture rate
+        
+        // Composting (IPCC 2006 GL, Vol 5, Ch 4, Table 4.1)
+        COMPOST_CH4: 0.08,             // g CH4 per kg waste
+        COMPOST_N2O: 0.30,             // g N2O per kg waste
+        
+        // Wastewater (IPCC 2006 GL, Vol 5, Ch 6)
+        COD_PER_KG: 10,                // kg COD per ton processed (JRC BAT average)
+        CH4_PER_COD: 0.25,             // kg CH4 per kg COD
+        MCF_AEROBIC: 0.30,             // Methane Correction Factor
+        
+        // GWP (IPCC AR6, 2021)
+        GWP_CH4: 27.9,
+        GWP_N2O: 273
+    };
+    
+    let totalCO2 = 0;
+    const breakdown = {};
+    
+    // Get waste split from archetype
+    const archetypes = window.aioxyData?.processing_archetypes || {};
+    const archetype = archetypes[processingType] || archetypes['isolated'];
+    const wasteSplit = archetype.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
+    
+    const totalLoss = wasteKg;
+    const organicWaste = totalLoss * wasteSplit.organic;
+    const inertWaste = totalLoss * wasteSplit.inert;
+    const wastewater = totalLoss * wasteSplit.wastewater;
+    
+    // 1. ORGANIC WASTE TO ANIMAL FEED (Avoided Burden Credit)
+    // Source: EU RED II Annex V + Agribalyse 3.2
+    const feedCredit = organicWaste * CONSTANTS.FEED_DISPLACEMENT * CONSTANTS.SOYBEAN_MEAL_CO2;
+    breakdown.feedCredit = -feedCredit;  // Negative = credit
+    
+    // 2. INERT WASTE TO LANDFILL
+    // Source: IPCC 2006 GL, Vol 5, Ch 3
+    const landfillCH4 = inertWaste * CONSTANTS.DOC_FOOD_WASTE * 0.5 * CONSTANTS.CH4_C_RATIO * (1 - CONSTANTS.LANDFILL_CAPTURE);
+    const landfillCO2 = landfillCH4 * CONSTANTS.GWP_CH4;
+    breakdown.landfill = landfillCO2;
+    
+    // 3. WASTEWATER TREATMENT
+    // Source: IPCC 2006 GL, Vol 5, Ch 6
+    const wastewaterCH4 = wastewater * (CONSTANTS.COD_PER_KG / 1000) * CONSTANTS.CH4_PER_COD * CONSTANTS.MCF_AEROBIC;
+    const wastewaterCO2 = wastewaterCH4 * CONSTANTS.GWP_CH4;
+    breakdown.wastewater = wastewaterCO2;
+    
+    // Total EoL impact
+    totalCO2 = landfillCO2 + wastewaterCO2 - feedCredit;
+    
+    console.log(`🗑️ Waste EoL: ${wasteKg.toFixed(3)}kg loss | Feed Credit: -${feedCredit.toFixed(4)} | Landfill: +${landfillCO2.toFixed(4)} | Wastewater: +${wastewaterCO2.toFixed(4)} | Net: ${totalCO2.toFixed(4)} kg CO2e`);
+    
+    return {
+        total: totalCO2,
+        breakdown: breakdown,
+        wasteSplit: wasteSplit,
+        methodology: "IPCC 2006 GL Vol 5 + JRC BAT 2019 + EU RED II"
+    };
+}
+
     calculateFoodImpact() {
     console.log('🔧 Starting AIOXY "Single Source of Truth" Calculation...');
     let suggestedWater = 0;
