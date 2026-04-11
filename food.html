@@ -4926,7 +4926,7 @@ let ingredientOrigin = effectiveOrigins[item.id];
 // 🛡️ REGULATOR FIX: Always use the strict ISO code for EUDR/Math, never free-text
 if (ingredientOrigin === 'PrimaryData') ingredientOrigin = item.originCountry || getIngredientOrigin(item.id);
 
-    // [PHYSICS UPGRADE] Mass Balance & Processing Energy
+        // [PHYSICS UPGRADE] Mass Balance & Processing Energy
 const farmLoss = ing.loss || 0.0;
 const processState = item.processingState || 'raw';
 const archetypes = window.aioxyData.processing_archetypes;
@@ -4938,6 +4938,32 @@ const dqrReward = (archetypes && archetypes[processState]) ? archetypes[processS
 
 // Apply the yield penalty to the agricultural mass
 const grownMass = (item.quantity / (1 - farmLoss)) / yieldFactor;
+
+// 🗑️ STEP 3: Calculate processing waste End-of-Life impact
+const processingLoss = grownMass - item.quantity;
+let wasteEoLImpact = 0;
+
+if (processingLoss > 0.001 && processState !== 'raw') {
+    const wasteEoL = calculateWasteEndOfLife(processingLoss, processState);
+    wasteEoLImpact = wasteEoL.total;
+    
+    // Add to Upstream/End-of-Life category in audit trail
+    const archetype = archetypes[processState];
+    const wasteSplit = archetype?.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
+    
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+        name: `Processing Waste: ${ing.name} (${archetype?.name || processState})`,
+        subtotal: wasteEoLImpact,
+        notes: `Loss: ${processingLoss.toFixed(3)}kg | Organic to feed: ${(processingLoss * wasteSplit.organic).toFixed(3)}kg | Inert to landfill: ${(processingLoss * wasteSplit.inert).toFixed(3)}kg | Wastewater: ${(processingLoss * wasteSplit.wastewater).toFixed(3)}kg`,
+        confidence: "Tier 2 (IPCC 2006 / JRC BAT)",
+        methodology: wasteEoL.methodology
+    });
+    
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += wasteEoLImpact;
+    auditTrail.pefCategories["Climate Change"].total += wasteEoLImpact;
+    
+    console.log(`🗑️ Waste tracked for ${ing.name}: ${processingLoss.toFixed(3)}kg loss → ${wasteEoLImpact.toFixed(4)} kg CO2e`);
+}
     
     // 🛡️ REGULATOR FIX 1: Run the math FIRST to extract the EUDR & Primary Data penalties
     const impactResult = calculateIngredientImpact(ing, grownMass, ingredientOrigin, item.primaryData);
