@@ -7594,13 +7594,30 @@ html += `
 
     if (upstream.length > 0) {
         upstream.forEach(u => {
-            html += `
-                    <tr>
-                        <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
-                        <td style="padding: 8px;" colspan="3">${u.name}: ${u.notes || 'Cross-border transport calculated'}</td>
-                        <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
-                    </tr>`;
-        });
+    // Check if this transport leg used cold chain (refrigerant applied)
+    const notes = u.notes || '';
+    const isColdChain = notes.toLowerCase().includes('chilled') || 
+                       notes.toLowerCase().includes('frozen') || 
+                       notes.toLowerCase().includes('reefer');
+    
+    // Calculate approximate refrigerant portion (~15% of total for frozen, ~8% for chilled)
+    let refrigerantNote = '';
+    if (isColdChain) {
+        const refrigerantPct = notes.toLowerCase().includes('frozen') ? 0.15 : 0.08;
+        const refrigerantKg = (u.subtotal * refrigerantPct).toFixed(6);
+        refrigerantNote = `<br><span style="color: #718096; font-size: 0.7rem;">🧊 Includes refrigerant leakage: ${refrigerantKg} kg CO₂e (IPCC Tier 1)</span>`;
+    }
+    
+    html += `
+            <tr>
+                <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
+                <td style="padding: 8px;" colspan="3">
+                    ${u.name}: ${notes || 'Cross-border transport calculated'}
+                    ${refrigerantNote}
+                </td>
+                <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
+            </tr>`;
+});
     } else {
         html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
     }
@@ -8922,31 +8939,46 @@ if (eolComponents.length > 0) {
         ];
         
         doc.autoTable({
-            ...standardTableStyles,
-            startY: currentY,
-            body: outboundData,
-            styles: { fontSize: 9, cellPadding: 3 },
-            columnStyles: {
-                0: { fontStyle: 'bold', cellWidth: 70, textColor: COLORS.primary },
-                1: { cellWidth: 110, halign: 'right' }
-            },
-            margin: { left: margin }
-        });
-        
-        currentY = doc.lastAutoTable.finalY + 10;
-        
-        if (isCrisisActive) {
-            doc.setFillColor(255, 243, 224);
-            doc.rect(margin, currentY, pageWidth - (margin * 2), 15, 'F');
-            doc.setTextColor(...COLORS.warning);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
-            doc.text("[!] GEOPOLITICAL CRISIS ROUTING APPLIED", margin + 5, currentY + 6);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            doc.text("Red Sea disruptions require rerouting via Cape of Good Hope (+40% distance penalty)", margin + 5, currentY + 12);
-            currentY += 20;
-        }
+    ...standardTableStyles,
+    startY: currentY,
+    body: outboundData,
+    styles: { fontSize: 9, cellPadding: 3 },
+    columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 70, textColor: COLORS.primary },
+        1: { cellWidth: 110, halign: 'right' }
+    },
+    margin: { left: margin }
+});
+
+currentY = doc.lastAutoTable.finalY + 4;  // ← CHANGED FROM 10 TO 4
+
+// Add refrigerant note with ACTUAL calculated value
+if (tempCondition === 'Frozen (Reefer)' || tempCondition === 'Chilled') {
+    const transportTotal = ccTree.Transport?.total || 0;
+    const refrigerantPct = tempCondition === 'Frozen (Reefer)' ? 0.15 : 0.08;
+    const refrigerantKg = (transportTotal * refrigerantPct).toFixed(6);
+    
+    setSmall();
+    doc.setTextColor(...COLORS.gray);
+    doc.text(`Note: Includes refrigerant leakage: ${refrigerantKg} kg CO₂e (IPCC Tier 1, ${tempCondition})`, margin, currentY);
+    doc.setTextColor(...COLORS.dark);
+    currentY += 6;
+}
+
+currentY += 4;  // ← ADD THIS LINE for spacing before crisis warning
+
+if (isCrisisActive) {
+    doc.setFillColor(255, 243, 224);
+    doc.rect(margin, currentY, pageWidth - (margin * 2), 15, 'F');
+    doc.setTextColor(...COLORS.warning);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("[!] GEOPOLITICAL CRISIS ROUTING APPLIED", margin + 5, currentY + 6);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("Red Sea disruptions require rerouting via Cape of Good Hope (+40% distance penalty)", margin + 5, currentY + 12);
+    currentY += 20;
+}
 
     // ============================================================
 // TOTAL CRADLE-TO-RETAIL IMPACT FOOTER
