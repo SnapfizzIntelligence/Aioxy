@@ -4676,7 +4676,7 @@ const foodCalculationEngine = {
 
 
     // ================== WASTE END-OF-LIFE CALCULATOR (IPCC 2006 / JRC BAT) ==================
-function calculateWasteEndOfLife(wasteKg, wasteType, processingType = 'isolated') {
+calculateWasteEndOfLife(wasteKg, wasteType, processingType = 'isolated') {
     // Official constants from IPCC 2006 Guidelines
     const CONSTANTS = {
         // Animal Feed Credit (EU RED II Annex V + Agribalyse 3.2)
@@ -4946,7 +4946,7 @@ const processingLoss = grownMass - item.quantity;
 let wasteEoLImpact = 0;
 
 if (processingLoss > 0.001 && processState !== 'raw') {
-    const wasteEoL = calculateWasteEndOfLife(processingLoss, processState);
+    const wasteEoL = this.calculateWasteEndOfLife(processingLoss, 'organic', processState);
     wasteEoLImpact = wasteEoL.total;
     
     // Add to Upstream/End-of-Life category in audit trail
