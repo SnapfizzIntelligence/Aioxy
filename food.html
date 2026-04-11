@@ -8940,14 +8940,17 @@ currentY += 10;
 // ============================================================
 // D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)
 // ============================================================
+const wasteComponents = ccTree.Waste?.components || [];
 const eolComponents = ccTree.Upstream?.components?.filter(c => c.name.includes('End-of-Life')) || [];
-if (eolComponents.length > 0) {
+const allEoLComponents = [...wasteComponents, ...eolComponents];
+
+if (allEoLComponents.length > 0) {
     checkPageBreak(40);
     setH2();
     doc.text("D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
     currentY += 6;
     
-    const eolRows = eolComponents.map(e => [
+    const eolRows = allEoLComponents.map(e => [
         truncate(e.name, 35),
         safeString(e.notes || 'Waste Treatment'),
         formatNumber(e.subtotal, 4) + ' kg CO2e'
@@ -8967,7 +8970,7 @@ if (eolComponents.length > 0) {
     });
     
     currentY = doc.lastAutoTable.finalY + 10;
-}
+    }
        
 
         // ============================================================
@@ -9751,6 +9754,35 @@ if (ccTree.Upstream?.components) {
             "COMPLIANT", 
             false, 
             getDQR(ccTree.Upstream)
+        );
+    });
+}
+
+    // =============================================================
+// PROCESSING WASTE (Scope 3 Cat 12 - Formulation Loss)
+// =============================================================
+const wasteComponents = ccTree.Waste?.components || [];
+if (wasteComponents.length > 0) {
+    wasteComponents.forEach(waste => {
+        addDataRow(
+            "Scope 3 Cat 12 (End-of-Life)",           // GHG Protocol Category
+            waste.name,                               // Process_Name
+            "Processing_Waste",                       // Material_Type
+            "N/A",                                    // Origin_Country
+            "Waste Treatment",                        // Processing_Archetype
+            "1.00",                                   // Yield_Factor
+            "1.0",                                    // Activity_Data_Value
+            "system",                                 // Activity_Data_Unit
+            waste.subtotal,                           // Climate Change
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,         // Other 11 PEF categories
+            0,                                        // Land Use
+            0,                                        // Water Scarcity
+            0,                                        // Minerals
+            0,                                        // Fossil
+            "0",                                      // Biogenic
+            "COMPLIANT",                              // EUDR
+            false,                                    // Primary Data
+            getDQR(ccTree.Waste)                      // DQR
         );
     });
 }
