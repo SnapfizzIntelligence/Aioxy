@@ -3564,13 +3564,49 @@ window.aioxyData = {
 },
 
             // 5.5 INGREDIENT-LEVEL PROCESSING ARCHETYPES (ISO 14044 Mass Balance)
-    processing_archetypes: {
-        "raw": { "name": "Raw / Farm Gate", "yield_factor": 1.00, "energy_kwh": 0.00, "gas_mj": 0.00, "dqr_reward": 0 },
-        "dry_milled": { "name": "Dry Milled (Flour)", "yield_factor": 0.90, "energy_kwh": 0.15, "gas_mj": 0.00, "dqr_reward": 0.1 },
-        "wet_extracted": { "name": "Wet Extracted", "yield_factor": 0.55, "energy_kwh": 0.80, "gas_mj": 2.50, "dqr_reward": 0.2 },
-        "isolated": { "name": "Isolated (Protein Isolate)", "yield_factor": 0.22, "energy_kwh": 2.50, "gas_mj": 6.00, "dqr_reward": 0.3 },
-        "fermentation": { "name": "Precision Fermentation", "yield_factor": 0.12, "energy_kwh": 5.50, "gas_mj": 0.00, "dqr_reward": 0.5 }
+// Waste splits sourced from JRC Best Available Techniques - Food Industry (2019)
+processing_archetypes: {
+    "raw": { 
+        "name": "Raw / Farm Gate", 
+        "yield_factor": 1.00, 
+        "energy_kwh": 0.00, 
+        "gas_mj": 0.00, 
+        "dqr_reward": 0,
+        "waste_split": { "water": 1.00, "organic": 0.00, "inert": 0.00, "wastewater": 0.00 }
     },
+    "dry_milled": { 
+        "name": "Dry Milled (Flour)", 
+        "yield_factor": 0.90, 
+        "energy_kwh": 0.15, 
+        "gas_mj": 0.00, 
+        "dqr_reward": 0.1,
+        "waste_split": { "water": 0.50, "organic": 0.50, "inert": 0.00, "wastewater": 0.00 }
+    },
+    "wet_extracted": { 
+        "name": "Wet Extracted", 
+        "yield_factor": 0.55, 
+        "energy_kwh": 0.80, 
+        "gas_mj": 2.50, 
+        "dqr_reward": 0.2,
+        "waste_split": { "water": 0.67, "organic": 0.33, "inert": 0.00, "wastewater": 0.00 }
+    },
+    "isolated": { 
+        "name": "Isolated (Protein Isolate)", 
+        "yield_factor": 0.22, 
+        "energy_kwh": 2.50, 
+        "gas_mj": 6.00, 
+        "dqr_reward": 0.3,
+        "waste_split": { "water": 0.60, "organic": 0.20, "inert": 0.02, "wastewater": 0.18 }
+    },
+    "fermentation": { 
+        "name": "Precision Fermentation", 
+        "yield_factor": 0.12, 
+        "energy_kwh": 5.50, 
+        "gas_mj": 0.00, 
+        "dqr_reward": 0.5,
+        "waste_split": { "water": 0.70, "organic": 0.15, "inert": 0.02, "wastewater": 0.13 }
+    }
+},
 
 
 
