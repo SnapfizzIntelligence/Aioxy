@@ -4711,10 +4711,12 @@ function calculateWasteEndOfLife(wasteKg, wasteType, processingType = 'isolated'
     let totalCO2 = 0;
     const breakdown = {};
     
-    // Get waste split from archetype
-    const archetypes = window.aioxyData?.processing_archetypes || {};
-    const archetype = archetypes[processingType] || archetypes['isolated'];
-    const wasteSplit = archetype.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
+    // Get waste split from archetype (with null-safety)
+const archetypes = window.aioxyData?.processing_archetypes || {};
+const archetype = archetypes[processingType] || archetypes['isolated'] || { 
+    waste_split: { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 } 
+};
+const wasteSplit = archetype.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
     
     const totalLoss = wasteKg;
     const organicWaste = totalLoss * wasteSplit.organic;
@@ -4948,8 +4950,11 @@ if (processingLoss > 0.001 && processState !== 'raw') {
     wasteEoLImpact = wasteEoL.total;
     
     // Add to Upstream/End-of-Life category in audit trail
-    const archetype = archetypes[processState];
-    const wasteSplit = archetype?.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
+    const archetype = archetypes[processState] || { 
+        name: processState, 
+        waste_split: { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 } 
+    };
+    const wasteSplit = archetype.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
     
     auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
         name: `Processing Waste: ${ing.name} (${archetype?.name || processState})`,
