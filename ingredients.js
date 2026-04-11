@@ -2,51 +2,47 @@
 window.aioxyData = {
     // COMPLETE 50 INGREDIENTS DATABASE WITH UPSTREAM
     ingredients: {
-                        "beef-cattle-conventional-national-average-at-farm-gate-fr": {
+        "beef-cattle-conventional-national-average-at-farm-gate-fr": {
             "name": "Beef cattle, conventional, national average, at farm gate",
-            "loss": 0.05,
-            "processing_yield": 0.55,
+            "loss": 0.03,
+            "processing_yield": 0.99,
             "data": {
                 "pef": {
-                    "Climate Change": 14.5,
-                    "Ozone Depletion": 5.43e-08,
-                    "Human Toxicity, non-cancer": 2.12e-07,
-                    "Human Toxicity, cancer": 5.74e-09,
-                    "Particulate Matter": 1.38e-06,
-                    "Ionizing Radiation": 0.307,
-                    "Photochemical Ozone Formation": 0.0209,
-                    "Acidification": 0.206,
-                    "Eutrophication, terrestrial": 0.911,
-                    "Eutrophication, freshwater": 0.000573,
-                    "Eutrophication, marine": 0.0433,
-                    "Ecotoxicity, freshwater": 73.0,
-                    "Land Use": 966.0,
-                    "Water Use/Scarcity (AWARE)": 1.16,
-                    "Resource Use, minerals/metals": 1.75e-05,
-                    "Resource Use, fossils": 24.2
+                    "Climate Change": 14.474184,
+                    "Ozone Depletion": 5.4273208e-08,
+                    "Human Toxicity, non-cancer": 2.1237667e-07,
+                    "Human Toxicity, cancer": 5.7423135e-09,
+                    "Particulate Matter": 1.3817053e-06,
+                    "Ionizing Radiation": 0.30685289,
+                    "Photochemical Ozone Formation": 0.020942186,
+                    "Acidification": 0.2055071,
+                    "Eutrophication, terrestrial": 0.91130068,
+                    "Eutrophication, freshwater": 0.00057342882,
+                    "Eutrophication, marine": 0.043273688,
+                    "Ecotoxicity, freshwater": 72.969244,
+                    "Land Use": 965.59624,
+                    "Water Use/Scarcity (AWARE)": 1.1559368,
+                    "Resource Use, minerals/metals": 1.7488165e-05,
+                    "Resource Use, fossils": 24.202021
                 },
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Beef cattle, conventional, national average, at farm gate {FR} U",
-                    "source_uuid": "agb-3.2-22-beef-cattle-fr",
+                    "source_uuid": "agb-3.2-beef-cattle-conventional-national-average-at-farm-gate-fr",
                     "allocation_method": "Economic Allocation",
                     "dqr": {
-                        "TeR": 1.5,
-                        "GR": 2.0,
+                        "TeR": 1.4,
+                        "GR": 1.9,
                         "TiR": 1.0,
-                        "P": 2.0
+                        "C": 1.4,
+                        "P": 1.0
                     },
-                    "dqr_overall": 1.625,
-                    "single_score_mpt": 1.35,
-                    "biogenic_net": 10.9,
-                    "co2_luc_net": -0.0277,
-                    "co2_fossil": 3.62
+                    "dqr_overall": 1.3,
+                    "biogenic_net": -0.027686679
                 }
             }
-        }, 
-
-
-                        "maize-corn-starch-agribalyse-3-2": {
+        },
+                "maize-corn-starch-agribalyse-3-2": {
             "name": "Maize/corn starch",
             "loss": 0.02,
             "processing_yield": 0.98,
@@ -79,6 +75,7 @@ window.aioxyData = {
                         "TeR": 3.0,
                         "GR": 3.5,
                         "TiR": 3.0,
+                        "C": 3.5,
                         "P": 4.4
                     },
                     "dqr_overall": 3.48,
@@ -95,8 +92,7 @@ window.aioxyData = {
                     "food_subgroup": "farines et pâtes à tarte"
                 }
             }
-        }, 
-
+        },
 
         "raspberry-raw-agribalyse-3-2": {
     "name": "Raspberry, raw",
@@ -536,7 +532,7 @@ window.aioxyData = {
             }
         },
 
-                        "rapeseed-oil-agribalyse-3-2": {
+        "rapeseed-oil-agribalyse-3-2": {
             "name": "Rapeseed oil",
             "loss": 0.02,
             "processing_yield": 0.99,
@@ -575,9 +571,7 @@ window.aioxyData = {
                     "biogenic_net": 0.0573
                 }
             }
-        }, 
-
-
+        },
 
         "white-sugar-refined-agribalyse-3-2": {
             "name": "White sugar, refined",
@@ -994,50 +988,46 @@ window.aioxyData = {
             }
         },
 
-                        "oat-grain-national-average-animal-feed-at-farm-gate-fr": {
+        "oat-grain-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Oat grain, national average, animal feed, at farm gate",
-            "loss": 0.02,
-            "processing_yield": 1.0,
+            "loss": 0.03,
+            "processing_yield": 0.85,
             "data": {
                 "pef": {
-                    "Climate Change": 0.555,
-                    "Ozone Depletion": 6.65e-09,
-                    "Human Toxicity, non-cancer": 1.48e-08,
-                    "Human Toxicity, cancer": 1.04e-09,
-                    "Particulate Matter": 5.51e-08,
-                    "Ionizing Radiation": 0.00863,
-                    "Photochemical Ozone Formation": 0.00174,
-                    "Acidification": 0.00870,
-                    "Eutrophication, terrestrial": 0.0387,
-                    "Eutrophication, freshwater": 0.000173,
-                    "Eutrophication, marine": 0.00707,
-                    "Ecotoxicity, freshwater": 8.0,
-                    "Land Use": 106.0,
-                    "Water Use/Scarcity (AWARE)": 0.124,
-                    "Resource Use, minerals/metals": 1.57e-06,
-                    "Resource Use, fossils": 2.30
+                    "Climate Change": 0.55512354,
+                    "Ozone Depletion": 6.653186e-09,
+                    "Human Toxicity, non-cancer": 1.4805134e-08,
+                    "Human Toxicity, cancer": 1.0422817e-09,
+                    "Particulate Matter": 5.5130877e-08,
+                    "Ionizing Radiation": 0.0086291617,
+                    "Photochemical Ozone Formation": 0.0017374887,
+                    "Acidification": 0.0087047911,
+                    "Eutrophication, terrestrial": 0.038715775,
+                    "Eutrophication, freshwater": 0.00017285429,
+                    "Eutrophication, marine": 0.007073108,
+                    "Ecotoxicity, freshwater": 7.9976134,
+                    "Land Use": 106.18051,
+                    "Water Use/Scarcity (AWARE)": 0.12413737,
+                    "Resource Use, minerals/metals": 1.5671997e-06,
+                    "Resource Use, fossils": 2.2993856
                 },
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Oat grain, national average, animal feed, at farm gate {FR} U",
-                    "source_uuid": "agb-3.2-oat-grain-fr",
-                    "allocation_method": "Mass Allocation",
+                    "source_uuid": "agb-3.2-oat-grain-national-average-animal-feed-at-farm-gate-fr",
+                    "allocation_method": "Economic Allocation",
                     "dqr": {
-                        "TeR": 1.5,
-                        "GR": 2.0,
+                        "TeR": 1.4,
+                        "GR": 1.9,
                         "TiR": 1.0,
-                        "P": 2.0
+                        "C": 1.4,
+                        "P": 1.0
                     },
-                    "dqr_overall": 1.63,
-                    "single_score_mpt": 0.0796,
-                    "biogenic_net": 9.22e-05,
-                    "co2_luc_net": 0.125,
-                    "co2_fossil": 0.430
+                    "dqr_overall": 1.3,
+                    "biogenic_net": 0.12457798
                 }
             }
-        }, 
-
-
+        },
 
         "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Barley, feed grain, conventional, national average, animal feed, at farm gate",
@@ -1080,50 +1070,46 @@ window.aioxyData = {
             }
         },
 
-                        "spring-pea-conventional-15-moisture-at-farm-gate-fr": {
+        "spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr": {
             "name": "Spring pea, conventional, 15% moisture, animal feed, at farm gate",
-            "loss": 0.02,
-            "processing_yield": 1.0,
+            "loss": 0.03,
+            "processing_yield": 0.95,
             "data": {
                 "pef": {
-                    "Climate Change": 0.344,
-                    "Ozone Depletion": 2.03e-08,
-                    "Human Toxicity, non-cancer": 5.63e-09,
-                    "Human Toxicity, cancer": 8.81e-10,
-                    "Particulate Matter": 9.64e-09,
-                    "Ionizing Radiation": 0.0182,
-                    "Photochemical Ozone Formation": 0.000603,
-                    "Acidification": 0.00139,
-                    "Eutrophication, terrestrial": 0.00492,
-                    "Eutrophication, freshwater": 0.000169,
-                    "Eutrophication, marine": 0.00788,
-                    "Ecotoxicity, freshwater": 19.8,
-                    "Land Use": 122.0,
-                    "Water Use/Scarcity (AWARE)": 0.173,
-                    "Resource Use, minerals/metals": 1.33e-06,
-                    "Resource Use, fossils": 1.87
+                    "Climate Change": 0.3436466,
+                    "Ozone Depletion": 2.0308176e-08,
+                    "Human Toxicity, non-cancer": 5.6305244e-09,
+                    "Human Toxicity, cancer": 8.8088743e-10,
+                    "Particulate Matter": 9.6391976e-09,
+                    "Ionizing Radiation": 0.018245395,
+                    "Photochemical Ozone Formation": 0.00060326206,
+                    "Acidification": 0.0013890059,
+                    "Eutrophication, terrestrial": 0.0049213169,
+                    "Eutrophication, freshwater": 0.00016875603,
+                    "Eutrophication, marine": 0.0078756913,
+                    "Ecotoxicity, freshwater": 19.834745499999997,
+                    "Land Use": 121.51531,
+                    "Water Use/Scarcity (AWARE)": 0.17259938,
+                    "Resource Use, minerals/metals": 1.3293865e-06,
+                    "Resource Use, fossils": 1.8749027
                 },
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Spring pea, conventional, 15% moisture, animal feed, at farm gate, production {FR} U",
-                    "source_uuid": "agb-3.2-spring-pea-fr",
-                    "allocation_method": "Mass Allocation",
+                    "source_uuid": "agb-3.2-spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr",
+                    "allocation_method": "Economic Allocation",
                     "dqr": {
-                        "TeR": 1.0,
-                        "GR": 1.0,
+                        "TeR": 1.4,
+                        "GR": 1.9,
                         "TiR": 1.0,
-                        "P": 2.0
+                        "C": 1.4,
+                        "P": 1.0
                     },
-                    "dqr_overall": 1.25,
-                    "single_score_mpt": 0.0551,
-                    "biogenic_net": 6.01e-05,
-                    "co2_luc_net": 0.143,
-                    "co2_fossil": 0.201
+                    "dqr_overall": 1.3,
+                    "biogenic_net": 0.14265562
                 }
             }
-        }, 
-
-
+        },
 
         "soybean-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Soybean, national average, animal feed, at farm gate",
@@ -3577,7 +3563,7 @@ window.aioxyData = {
     "roasting": { co2_impact: 0.65, water_impact: 0.05, yield: 0.82, loss: 0.18, temp: 200, kwh_per_kg: 0.75 }
 },
 
-            // 5.5 INGREDIENT-LEVEL PROCESSING ARCHETYPES (ISO 14044 Mass Balance)
+         // 5.5 INGREDIENT-LEVEL PROCESSING ARCHETYPES (ISO 14044 Mass Balance)
 // Waste splits sourced from JRC Best Available Techniques - Food Industry (2019)
 processing_archetypes: {
     "raw": { 
@@ -3621,8 +3607,6 @@ processing_archetypes: {
         "waste_split": { "water": 0.70, "organic": 0.15, "inert": 0.02, "wastewater": 0.13 }
     }
 },
-
-
 
     // 6. TRANSPORTATION (GLEC v3.2) - UPDATED WITH 2024/2025 DATA & AIR POLLUTANTS (Module 6)
     transportation: {
