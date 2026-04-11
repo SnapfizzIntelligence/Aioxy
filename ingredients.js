@@ -532,7 +532,7 @@ window.aioxyData = {
             }
         },
 
-        "rapeseed-oil-agribalyse-3-2": {
+                "rapeseed-oil-agribalyse-3-2": {
             "name": "Rapeseed oil",
             "loss": 0.02,
             "processing_yield": 0.99,
@@ -550,7 +550,7 @@ window.aioxyData = {
                     "Eutrophication, freshwater": 0.000525,
                     "Eutrophication, marine": 0.0211,
                     "Ecotoxicity, freshwater": 47.2,
-                    "Land Use": 287,
+                    "Land Use": 287.0,
                     "Water Use/Scarcity (AWARE)": 0.602,
                     "Resource Use, minerals/metals": 1.3e-05,
                     "Resource Use, fossils": 20.1
@@ -559,19 +559,25 @@ window.aioxyData = {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Huile de colza / Rapeseed oil",
                     "source_uuid": "agb-3.2-17130-rapeseed-oil",
+                    "agribalyse_code": "17130",
                     "allocation_method": "Economic Allocation",
                     "dqr": {
                         "TeR": 2.0,
-                        "GR": 1.0,
+                        "GR": 2.0,
                         "TiR": 2.0,
-                        "C": 2.5,
-                        "P": 1.9
+                        "P": 1.96
                     },
                     "dqr_overall": 1.99,
-                    "biogenic_net": 0.0573
+                    "single_score_mpt": 0.323,
+                    "biogenic_net": 0.0573,
+                    "co2_luc_net": 0.332,
+                    "co2_fossil": 2.11,
+                    "storage_type": "Ambiant (long)",
+                    "packaging_approach": "PACK AGB",
+                    "preparation": "Pas de préparation"
                 }
             }
-        },
+        }, 
 
         "white-sugar-refined-agribalyse-3-2": {
             "name": "White sugar, refined",
