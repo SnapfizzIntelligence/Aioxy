@@ -9625,55 +9625,79 @@ if (audit.comparison_baseline?.sensitivity_analysis) {
     const sa = audit.comparison_baseline.sensitivity_analysis;
     
     checkPageBreak(50);
-    setH2();
-    doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
-    currentY += 6;
-    
-    // Safely handle parameters whether it's an array or a string
-    const paramsString = Array.isArray(sa.parameters_tested) 
-        ? sa.parameters_tested.join('; ') 
-        : sa.parameters_tested;
+setH2();
+doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
+currentY += 8;
 
-    const sensitivityData = [
-        ['Parameters Tested:', paramsString],
-        ['Key Finding:', sa.key_finding],
-        ['Recommendation:', sa.recommendation],
-        ['ISO Compliance:', sa.iso_compliance]
-    ];
+// Safely handle whether it's an array or a string
+const paramsString = Array.isArray(sa.parameters_tested) 
+    ? sa.parameters_tested.join('; ') 
+    : sa.parameters_tested;
+
+// 🆕 MANUALLY WRAP LONG TEXT with explicit line breaks
+const wrapText = (text, maxLen) => {
+    if (!text) return '';
+    if (text.length <= maxLen) return text;
     
-        doc.autoTable({
-        ...standardTableStyles,
-        startY: currentY,
-        body: sensitivityData,
-        // 1. Ensure overflow is set to linebreak
-        styles: { 
-            fontSize: 8, 
-            cellPadding: 3, 
-            overflow: 'linebreak', 
-            valign: 'middle' // Helps keep text centered in the row box
-        },
-        // 2. Control the columns precisely
-        columnStyles: {
-            0: { 
-                fontStyle: 'bold', 
-                cellWidth: 45, // Fixed width for the labels
-                textColor: COLORS.primary 
-            },
-            1: { 
-                cellWidth: 'auto' // This tells the box to fill the rest of the page width
-            }
-        },
-        // 3. Define the total table width to match your page margins
-        margin: { left: margin, right: margin },
-        tableWidth: 'auto', 
-        // 4. Ensure the row can grow vertically as much as needed
-        rowPageBreak: 'auto' 
+    // Find break points (after semicolons or commas)
+    const parts = text.split('; ');
+    if (parts.length > 1) {
+        return parts.join(';\n');
+    }
+    
+    // If no semicolons, wrap at spaces
+    const words = text.split(' ');
+    let lines = [];
+    let current = '';
+    words.forEach(word => {
+        if ((current + ' ' + word).length <= maxLen) {
+            current += (current ? ' ' : '') + word;
+        } else {
+            lines.push(current);
+            current = word;
+        }
     });
+    if (current) lines.push(current);
+    return lines.join('\n');
+};
 
-    
-    currentY = doc.lastAutoTable.finalY + 8;
-}
+const paramsWrapped = wrapText(paramsString, 55);
+const findingWrapped = wrapText(sa.key_finding, 55);
+const recWrapped = wrapText(sa.recommendation, 55);
+const isoWrapped = wrapText(sa.iso_compliance, 55);
 
+const sensitivityData = [
+    ['Parameters Tested:', paramsWrapped],
+    ['Key Finding:', findingWrapped],
+    ['Recommendation:', recWrapped],
+    ['ISO Compliance:', isoWrapped]
+];
+
+doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    body: sensitivityData,
+    styles: { 
+        fontSize: 8, 
+        cellPadding: 4,
+        overflow: 'linebreak',
+        valign: 'middle'
+    },
+    columnStyles: {
+        0: { 
+            fontStyle: 'bold', 
+            cellWidth: 45,
+            textColor: COLORS.primary 
+        },
+        1: { 
+            cellWidth: 120  // Fixed width instead of 'auto'
+        }
+    },
+    margin: { left: margin, right: margin },
+    rowPageBreak: 'auto'
+});
+
+currentY = doc.lastAutoTable.finalY + 8;
         
         // ============================================================
         // QR CODE & SIGNATURE
