@@ -9624,7 +9624,7 @@ currentY = doc.lastAutoTable.finalY + 8;
 if (audit.comparison_baseline && audit.comparison_baseline.sensitivity_analysis) {
     const sa = audit.comparison_baseline.sensitivity_analysis;
     
-    checkPageBreak(50);
+    checkPageBreak(45);
     setH2();
     doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
     currentY += 8;
@@ -9633,46 +9633,44 @@ if (audit.comparison_baseline && audit.comparison_baseline.sensitivity_analysis)
         ? sa.parameters_tested.join('; ') 
         : String(sa.parameters_tested || '');
     
-    // Split parameters into multiple lines for readability
-    const paramsList = paramsString.split('; ');
-    
-    // Parameters Tested
+    // Parameters Tested - Split into 3 separate lines (NO BULLETS)
     setH3();
     doc.text("Parameters Tested:", margin, currentY);
     currentY += 5;
     setNormal();
     doc.setFontSize(9);
+    const paramsList = paramsString.split('; ');
     paramsList.forEach(param => {
-        doc.text("  " + param.trim(), margin, currentY);
+        doc.text(param.trim(), margin, currentY);
         currentY += 5;
     });
     currentY += 3;
     
-    // Key Finding
+    // Key Finding - Single line
     setH3();
     doc.text("Key Finding:", margin, currentY);
     currentY += 5;
     setNormal();
     doc.setFontSize(9);
-    doc.text("  " + (sa.key_finding || ''), margin, currentY);
+    doc.text(sa.key_finding || '', margin, currentY);
     currentY += 8;
     
-    // Recommendation
+    // Recommendation - Single line
     setH3();
     doc.text("Recommendation:", margin, currentY);
     currentY += 5;
     setNormal();
     doc.setFontSize(9);
-    doc.text("  " + (sa.recommendation || ''), margin, currentY);
+    doc.text(sa.recommendation || '', margin, currentY);
     currentY += 8;
     
-    // ISO Compliance
+    // ISO Compliance - Single line
     setH3();
     doc.text("ISO Compliance:", margin, currentY);
     currentY += 5;
     setNormal();
     doc.setFontSize(9);
-    doc.text("  " + (sa.iso_compliance || ''), margin, currentY);
+    doc.text(sa.iso_compliance || '', margin, currentY);
     currentY += 12;
     }
     
