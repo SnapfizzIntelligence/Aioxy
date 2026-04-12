@@ -9624,38 +9624,38 @@ currentY = doc.lastAutoTable.finalY + 8;
 if (audit.comparison_baseline?.sensitivity_analysis) {
     const sa = audit.comparison_baseline.sensitivity_analysis;
     
-    checkPageBreak(60);  // More space
+    checkPageBreak(50);
     setH2();
     doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
-    currentY += 8;
+    currentY += 6;
     
-    setNormal();
-    doc.setFontSize(8);  // Smaller font
+    // Safely handle parameters whether it's an array or a string
+    const paramsString = Array.isArray(sa.parameters_tested) 
+        ? sa.parameters_tested.join('; ') 
+        : sa.parameters_tested;
+
+    const sensitivityData = [
+        ['Parameters Tested:', paramsString],
+        ['Key Finding:', sa.key_finding],
+        ['Recommendation:', sa.recommendation],
+        ['ISO Compliance:', sa.iso_compliance]
+    ];
     
-    // Parameters Tested - with text wrapping
-    const paramsText = `Parameters Tested: ${sa.parameters_tested.join('; ')}`;
-    const wrappedParams = doc.splitTextToSize(paramsText, pageWidth - (margin * 2));
-    doc.text(wrappedParams, margin, currentY);
-    currentY += (wrappedParams.length * 5) + 3;
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        body: sensitivityData,
+        styles: { fontSize: 8, cellPadding: 3, valign: 'top' }, // Smaller font, top-aligned text
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 40, textColor: COLORS.primary },
+            1: { cellWidth: 'wrap' } // Forces text to wrap perfectly within the margin boundaries
+        },
+        margin: { left: margin, right: margin }
+    });
     
-    // Key Finding - with text wrapping
-    const findingText = `Key Finding: ${sa.key_finding}`;
-    const wrappedFinding = doc.splitTextToSize(findingText, pageWidth - (margin * 2));
-    doc.text(wrappedFinding, margin, currentY);
-    currentY += (wrappedFinding.length * 5) + 3;
-    
-    // Recommendation - with text wrapping
-    const recText = `Recommendation: ${sa.recommendation}`;
-    const wrappedRec = doc.splitTextToSize(recText, pageWidth - (margin * 2));
-    doc.text(wrappedRec, margin, currentY);
-    currentY += (wrappedRec.length * 5) + 3;
-    
-    // ISO Compliance - with text wrapping
-    const isoText = `ISO Compliance: ${sa.iso_compliance}`;
-    const wrappedIso = doc.splitTextToSize(isoText, pageWidth - (margin * 2));
-    doc.text(wrappedIso, margin, currentY);
-    currentY += (wrappedIso.length * 5) + 8;
-    }
+    currentY = doc.lastAutoTable.finalY + 8;
+}
+
         
         // ============================================================
         // QR CODE & SIGNATURE
