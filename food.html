@@ -9624,31 +9624,38 @@ currentY = doc.lastAutoTable.finalY + 8;
 if (audit.comparison_baseline?.sensitivity_analysis) {
     const sa = audit.comparison_baseline.sensitivity_analysis;
     
-    checkPageBreak(50);
+    checkPageBreak(60);  // More space
     setH2();
     doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
     currentY += 8;
     
-    // Use doc.text() instead of autoTable to avoid overflow
     setNormal();
-    doc.setFontSize(9);
+    doc.setFontSize(8);  // Smaller font
     
-    doc.text("Parameters Tested:", margin, currentY);
-    doc.text(`${sa.parameters_tested.join('; ')}`, margin + 60, currentY);
-    currentY += 7;
+    // Parameters Tested - with text wrapping
+    const paramsText = `Parameters Tested: ${sa.parameters_tested.join('; ')}`;
+    const wrappedParams = doc.splitTextToSize(paramsText, pageWidth - (margin * 2));
+    doc.text(wrappedParams, margin, currentY);
+    currentY += (wrappedParams.length * 5) + 3;
     
-    doc.text("Key Finding:", margin, currentY);
-    doc.text(`${sa.key_finding}`, margin + 60, currentY);
-    currentY += 7;
+    // Key Finding - with text wrapping
+    const findingText = `Key Finding: ${sa.key_finding}`;
+    const wrappedFinding = doc.splitTextToSize(findingText, pageWidth - (margin * 2));
+    doc.text(wrappedFinding, margin, currentY);
+    currentY += (wrappedFinding.length * 5) + 3;
     
-    doc.text("Recommendation:", margin, currentY);
-    doc.text(`${sa.recommendation}`, margin + 60, currentY);
-    currentY += 7;
+    // Recommendation - with text wrapping
+    const recText = `Recommendation: ${sa.recommendation}`;
+    const wrappedRec = doc.splitTextToSize(recText, pageWidth - (margin * 2));
+    doc.text(wrappedRec, margin, currentY);
+    currentY += (wrappedRec.length * 5) + 3;
     
-    doc.text("ISO Compliance:", margin, currentY);
-    doc.text(`${sa.iso_compliance}`, margin + 60, currentY);
-    currentY += 12;
-}
+    // ISO Compliance - with text wrapping
+    const isoText = `ISO Compliance: ${sa.iso_compliance}`;
+    const wrappedIso = doc.splitTextToSize(isoText, pageWidth - (margin * 2));
+    doc.text(wrappedIso, margin, currentY);
+    currentY += (wrappedIso.length * 5) + 8;
+    }
         
         // ============================================================
         // QR CODE & SIGNATURE
