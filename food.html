@@ -3812,6 +3812,7 @@ if (['BR', 'ID', 'MY', 'AR'].includes(originCountry) && isEudrCommodity) {
     }
      
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
+
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     // 1. DATA VALIDATION
     const p = packagingData || {};
@@ -3828,9 +3829,8 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     const Ev = p.co2_virgin || 2.5;
     const Erecycled = p.co2_recycled || 1.2;
     const Ed = p.co2_disposal || 0.3;
-    const Ecredit = p.co2_avoided_credit || Ev; 
 
-    // Quality Ratios
+    // Quality Ratios (downcycling)
     const Qs_in = p.q || 0.9; 
     const Qp = 1.0; 
     const qualityRatio = Qs_in / Qp;
@@ -3838,58 +3838,59 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     // R2 Calculation (End-of-Life Destination)
     const eolTarget = document.getElementById('packagingEoL')?.value || 'eu_average';
     let R2 = 0;
-    let dqrPenalty = 0.0; // 🛡️ NEW: Incineration DQR Penalty
+    let dqrPenalty = 0.0;
 
-    // 🛡️ REGULATOR FIX 1: Material Compatibility Lock (AGEC Law / Green Claims Directive)
+    // 🛡️ REGULATOR FIX: Material Compatibility Lock (AGEC Law)
     const nonRecyclableMaterials = ['pla', 'mycelium'];
     const isNonRecyclable = nonRecyclableMaterials.some(m => matName.includes(m));
 
     if (isNonRecyclable) {
-        R2 = 0.0; // Force zero recycling credit
+        R2 = 0.0;
         if (eolTarget === 'recycled') {
-            console.warn(`🛑 REGULATORY BLOCK: ${matName} cannot be claimed as 'Closed Loop Recycled' under EU guidelines. R2 forced to 0.`);
+            console.warn(`🛑 REGULATORY BLOCK: ${matName} cannot claim 'Closed Loop Recycled'. R2 forced to 0.`);
         }
     } else if (eolTarget === 'recycled') {
-        R2 = p.r1_max || 0.90; // Maximum possible recycling rate for the material
+        R2 = p.r1_max || 0.90;
     } else if (eolTarget === 'incinerated' || eolTarget === 'landfill') {
-        R2 = 0.0; // Complete loss of material, zero recycling credit
+        R2 = 0.0;
     } else {
-        R2 = (p.r1_max || 0.8) * (p.r2 || 0.7); // EU Average default
+        R2 = (p.r1_max || 0.8) * (p.r2 || 0.7);
     }
 
     // Adjust disposal burden based on landfill vs incineration
     let currentEd = Ed;
     if (eolTarget === 'landfill') {
-        currentEd = Ed * 1.5; // Landfill carries higher CH4 penalty for organics
+        currentEd = Ed * 1.5;
     } else if (eolTarget === 'incinerated') {
-        currentEd = Ed * 0.8; // Minor credit for energy recovery
-        dqrPenalty = 0.5; // 🛡️ REGULATOR FIX 2: PEF mandate penalty for relying on generic municipal incineration data
+        currentEd = Ed * 0.8;
+        dqrPenalty = 0.5;
     }
 
-    // 4. OFFICIAL CFF MATH (No 0.5 discount on virgin!)
-    const burdenVirgin = (1 - R1) * Ev;
-    const burdenRecycledInput = R1 * ((A_factor * Erecycled) + ((1 - A_factor) * Ev * qualityRatio));
+    // 🛡️ OFFICIAL CFF MATH (PEF 3.1 COMPLIANT)
+    // Input Side: Virgin vs Recycled
+    const burdenAcquisition = (1 - R1) * Ev + R1 * (A_factor * Erecycled + (1 - A_factor) * Ev * qualityRatio);
     
-    // Credits & Disposal
-    const recyclingCreditVal = R2 * (A_factor * Ecredit); 
-    const disposalBurdenVal = (1 - R2) * currentEd;
+    // Output Side: Recycling Credit (THIS USES 1-A — THE FIX)
+    const creditEoL = R2 * (1 - A_factor) * (Erecycled - Ev * qualityRatio);
+    
+    // Disposal Side
+    const burdenDisposal = (1 - R2) * currentEd;
 
-    // 5. TOTAL
-    const impactPerKg = (burdenVirgin + burdenRecycledInput + disposalBurdenVal) - recyclingCreditVal;
+    // Final Calculation
+    const impactPerKg = burdenAcquisition + creditEoL + burdenDisposal;
     const totalImpact = Math.max(0, impactPerKg * weightKg);
 
     return {
         totalImpact: totalImpact,
-        virginBurden: burdenVirgin * weightKg,
-        recycledBurden: burdenRecycledInput * weightKg,
-        disposalBurden: disposalBurdenVal * weightKg,
-        recyclingCredit: recyclingCreditVal * weightKg, 
+        virginBurden: (1 - R1) * Ev * weightKg,
+        recycledBurden: R1 * (A_factor * Erecycled + (1 - A_factor) * Ev * qualityRatio) * weightKg,
+        disposalBurden: burdenDisposal * weightKg,
+        recyclingCredit: creditEoL * weightKg,  // Now correctly using (1-A)
         effectiveRecyclingRate: R2,
-        dqr_penalty: dqrPenalty, // 🛡️ NEW: Pass the penalty out
+        dqr_penalty: dqrPenalty,
         cff_parameters: { A: A_factor, Methodology: "PEF 3.1" }
     };
     }
-
     // ================== AUDIT-GRADE AWARE ENGINE (ISO 14046 / PEF 3.1) ==================
 function calculateAWARE(waterUse, countryCode, watershed = 'NationalAvg', month = null) {
     // 1. INPUT DEFINITION & TYPE SAFETY (Crash Prevention)
