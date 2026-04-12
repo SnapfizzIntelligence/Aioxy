@@ -9641,17 +9641,35 @@ if (audit.comparison_baseline?.sensitivity_analysis) {
         ['ISO Compliance:', sa.iso_compliance]
     ];
     
-    doc.autoTable({
+        doc.autoTable({
         ...standardTableStyles,
         startY: currentY,
         body: sensitivityData,
-        styles: { fontSize: 8, cellPadding: 3, valign: 'top' }, // Smaller font, top-aligned text
-        columnStyles: {
-            0: { fontStyle: 'bold', cellWidth: 40, textColor: COLORS.primary },
-            1: { cellWidth: 'wrap' } // Forces text to wrap perfectly within the margin boundaries
+        // 1. Ensure overflow is set to linebreak
+        styles: { 
+            fontSize: 8, 
+            cellPadding: 3, 
+            overflow: 'linebreak', 
+            valign: 'middle' // Helps keep text centered in the row box
         },
-        margin: { left: margin, right: margin }
+        // 2. Control the columns precisely
+        columnStyles: {
+            0: { 
+                fontStyle: 'bold', 
+                cellWidth: 45, // Fixed width for the labels
+                textColor: COLORS.primary 
+            },
+            1: { 
+                cellWidth: 'auto' // This tells the box to fill the rest of the page width
+            }
+        },
+        // 3. Define the total table width to match your page margins
+        margin: { left: margin, right: margin },
+        tableWidth: 'auto', 
+        // 4. Ensure the row can grow vertically as much as needed
+        rowPageBreak: 'auto' 
     });
+
     
     currentY = doc.lastAutoTable.finalY + 8;
 }
