@@ -6325,6 +6325,9 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
                         <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
                             ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
                         </div>
+                        <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">
+    <i class="fas fa-balance-scale"></i> Impact-weighted per PEF 3.1 §6.5
+</div>
                     </div>
                 </div>
             </div>
@@ -9538,45 +9541,65 @@ currentY += 15;
         currentY += 8;
         
         setH2();
-        doc.text("A. DATA QUALITY RATING (DQR)", margin, currentY);
-        currentY += 6;
-        
+doc.text("A. DATA QUALITY RATING (DQR)", margin, currentY);
+currentY += 6;
+
 const dqrComps = audit.dqr_summary?.component_dqrs || [];
-const dqrRows = dqrComps.map(c => [
-    truncate(c.name, 30),
-    safeString(c.source || 'AGRIBALYSE 3.2'),
-    formatNumber(c.dqr, 1),
-    c.is_proxy ? 'Proxy' : 'Direct',
-    formatPercent(c.uncertainty)
-]);
-        
-        if (dqrRows.length > 0) {
-            doc.autoTable({
-                ...standardTableStyles,
-                startY: currentY,
-                head: [['Component', 'Data Source', 'DQR', 'Type', 'Uncertainty']],
-                body: dqrRows,
-                columnStyles: {
-                    0: { cellWidth: 55, fontStyle: 'bold' },
-                    1: { cellWidth: 50 },
-                    2: { cellWidth: 25, halign: 'center' },
-                    3: { cellWidth: 25, halign: 'center' },
-                    4: { cellWidth: 30, halign: 'right' }
-                },
-                margin: { left: margin }
-            });
-            
-            currentY = doc.lastAutoTable.finalY + 8;
-        }
-        
-        const dqrLevel = foodCalculationEngine.getDQRQualityLevel(parseFloat(dqrValue) || 1.5);
-        doc.setFillColor(...COLORS.lightBg);
-        doc.rect(margin, currentY, pageWidth - (margin * 2), 10, 'F');
-        doc.setTextColor(...COLORS.primary);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        doc.text(`Overall DQR: ${dqrText} - ${dqrLevel.level}`, margin + 5, currentY + 7);
-        currentY += 15;
+const totalCO2 = audit.pefCategories["Climate Change"].total;
+
+// Helper to find component CO₂e impact
+const getComponentCO2 = (componentName) => {
+    const ingredients = audit.pefCategories["Climate Change"].contribution_tree?.Ingredients?.components || [];
+    const manufacturing = audit.pefCategories["Climate Change"].contribution_tree?.Manufacturing?.components || [];
+    const allComps = [...ingredients, ...manufacturing];
+    
+    const found = allComps.find(c => c.name === componentName);
+    return found?.subtotal || 0;
+};
+
+const dqrRows = dqrComps.map(c => {
+    const co2Impact = getComponentCO2(c.name);
+    const weightPct = totalCO2 > 0 ? ((co2Impact / totalCO2) * 100).toFixed(1) : '0.0';
+    const impactDisplay = `${co2Impact.toFixed(3)} kg (${weightPct}%)`;
+    
+    return [
+        truncate(c.name, 25),
+        safeString(c.source || 'AGRIBALYSE 3.2'),
+        formatNumber(c.dqr, 1),
+        impactDisplay,                                    // 🆕 IMPACT + WEIGHT %
+        c.is_proxy ? 'Proxy' : 'Direct',
+        formatPercent(c.uncertainty)
+    ];
+});
+
+if (dqrRows.length > 0) {
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        head: [['Component', 'Data Source', 'DQR', 'Impact-Weighted', 'Type', 'Uncertainty']],
+        body: dqrRows,
+        columnStyles: {
+            0: { cellWidth: 45, fontStyle: 'bold' },
+            1: { cellWidth: 40 },
+            2: { cellWidth: 20, halign: 'center' },
+            3: { cellWidth: 45, halign: 'right' },        // 🆕 WIDER FOR IMPACT
+            4: { cellWidth: 20, halign: 'center' },
+            5: { cellWidth: 25, halign: 'right' }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 8;
+}
+
+const dqrLevel = foodCalculationEngine.getDQRQualityLevel(parseFloat(dqrValue) || 1.5);
+doc.setFillColor(...COLORS.lightBg);
+doc.rect(margin, currentY, pageWidth - (margin * 2), 10, 'F');
+doc.setTextColor(...COLORS.primary);
+doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+doc.text(`Overall DQR: ${dqrText} - ${dqrLevel.level} (impact-weighted per PEF 3.1 §6.5)`, margin + 5, currentY + 7);
+currentY += 15;
         
         setH2();
         doc.text("B. MONTE CARLO UNCERTAINTY ANALYSIS", margin, currentY);
@@ -9903,7 +9926,7 @@ function exportCSRDMatrix() {
     
     // 🛡️ REGULATOR FIX: Actively search the DQR ledger for the exact ingredient's true score
     const specificDqrObj = auditTrailData.dqr_summary?.component_dqrs?.find(d => d.name === component.name);
-    if (specificDqrObj && specificDqrObj.dqr) return specificDqrObj.dqr.toFixed(2);
+    if (specificDqrObj && specificDqrObj.dqr) return specificDqrObj.dqr.toFixed(1);
     
     // Fallback for non-ingredient nodes (Manufacturing, Transport, Packaging)
     const dqrValue = component.dqr_score ?? component.data_quality_rating;
@@ -10066,36 +10089,38 @@ if (ccTree.Ingredients?.components) {
         const fossil = (pef["Resource Use, fossils"] || 0) * fossilMultiplier * ing.quantity_kg;
         
         addDataRow(
-            "Scope 3 Cat 1 (Purchased Goods)", 
-            ing.name, 
-            "Raw Material", 
-            ing.universal_adjustments?.adjusted_for_country || 'Unknown',
-            processingName,
-            yieldFactor,
-            ing.quantity_kg, 
-            "kg",
-            // All 16 PEF categories with multipliers applied
-            climate,
-            ozone,
-            htc,
-            htnc,
-            pm,
-            ir,
-            pof,
-            acid,
-            eut_t,
-            eut_f,
-            eut_m,
-            eco,
-            land,
-            water,
-            mineral,
-            fossil,
-            "0", 
-            isHighRisk, 
-            ing.primary_data_used, 
-            getDQR(ing)
-        );
+    "Scope 3 Cat 1 (Purchased Goods)", 
+    ing.name, 
+    "Raw Material", 
+    ing.universal_adjustments?.adjusted_for_country || 'Unknown',
+    processingName,
+    yieldFactor,
+    ing.quantity_kg, 
+    "kg",
+    // All 16 PEF categories with multipliers applied
+    climate,
+    ozone,
+    htc,
+    htnc,
+    pm,
+    ir,
+    pof,
+    acid,
+    eut_t,
+    eut_f,
+    eut_m,
+    eco,
+    land,
+    water,
+    mineral,
+    fossil,
+    "0", 
+    isHighRisk, 
+    ing.primary_data_used,
+    "",            // 🆕 ADD THIS - Verified_Electricity_kWh_per_kg
+    "",            // 🆕 ADD THIS - Verified_Gas_m3_per_kg
+    getDQR(ing)    // ✅ Now in correct 30th position
+);
     });
     }
     // =============================================================
