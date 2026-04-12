@@ -3563,40 +3563,60 @@ window.aioxyData = {
         "cocoa":    { "CI": 600,  "GH": 550,  "ID": 700,  "EC": 900,  "BR": 500, "Global": 510 }
     },
 
-    // 3. ELECTRICITY GRID INTENSITY (g CO2e/kWh) - Source: IEA / Ember Climate (2024 Report)
+    // 3. ELECTRICITY GRID INTENSITY (g CO2e/kWh) - Source: IEA / Ember Climate (2025 Report Data)
     grid_intensity: {
-        "NO": 24, "SE": 22, "IS": 18, "CH": 32, "FR": 56,
-        "FI": 78, "DK": 125, "BR": 135, "ES": 155, "PT": 175, "BE": 165,
-        "UK": 235, "NL": 325, "DE": 365, "US": 368, "IT": 295, "JP": 435,
-        "CN": 580, "IN": 632, "PL": 637, "VN": 482,
-        "Global": 480
-    },
+        "IS": 18, "NO": 28.1, "SE": 35.3, "CH": 39.2, "FR": 41.4, "FI": 57.5, "SK": 94.8,
+        "DK": 114.4, "AT": 116.9, "CA": 120, "LU": 123.4, "PT": 127.9, "BR": 135, "LT": 138.4,
+        "LV": 138.8, "BE": 149.8, "ES": 153.6, "HR": 158.5, "HU": 163.0, "SI": 183.3, "UK": 217.4,
+        "RO": 250.8, "NL": 253.6, "IE": 256.5, "ME": 264.2, "BG": 275.6, "IT": 284.8, "GR": 315.1,
+        "EE": 319.1, "DE": 329.6, "US": 368, "AU": 380, "CZ": 401.5, "JP": 435, "MK": 441.4,
+        "TR": 474.7, "Global": 480, "VN": 482, "MT": 484.0, "CY": 489.0, "BA": 570.6, "CN": 580,
+        "PL": 588.6, "IN": 632, "RS": 695.8, "XK": 900.9
+    }, 
+
+
 
     // 4. COUNTRY FACTORS - UPDATED WITH EMBER 2024 & AWARE v2.0
     countries: {
-        "DE": { name: "Germany", electricityCO2: 365, awareFactor: 24.5 },
-        "FR": { name: "France", electricityCO2: 56, awareFactor: 17.1, renewable_mix: 0.33 },
-        "IT": { name: "Italy", electricityCO2: 295, awareFactor: 49.8 },
-        "ES": { name: "Spain", electricityCO2: 155, awareFactor: 65.4 },
-        "NL": { name: "Netherlands", electricityCO2: 325, awareFactor: 33.6 },
-        "PL": { name: "Poland", electricityCO2: 637, awareFactor: 19.8 },
-        "SE": { name: "Sweden", electricityCO2: 22, awareFactor: 1.3 },
-        "DK": { name: "Denmark", electricityCO2: 125, awareFactor: 14.5 },
-        "BE": { name: "Belgium", electricityCO2: 165, awareFactor: 42.1 },
-        "UK": { name: "United Kingdom", electricityCO2: 235, awareFactor: 22.9 },
-        "IE": { name: "Ireland", electricityCO2: 380, awareFactor: 1.8 },
-        "AT": { name: "Austria", electricityCO2: 120, awareFactor: 2.5 },
-        "FI": { name: "Finland", electricityCO2: 78, awareFactor: 0.5 },
-        "PT": { name: "Portugal", electricityCO2: 175, awareFactor: 43.1 },
-        "GR": { name: "Greece", electricityCO2: 280, awareFactor: 61.2 },
-        "US": { name: "United States", electricityCO2: 368, awareFactor: 33.4 },
-        "CA": { name: "Canada", electricityCO2: 120, awareFactor: 2.2 },
-        "AU": { name: "Australia", electricityCO2: 380, awareFactor: 60.1 },
-        "JP": { name: "Japan", electricityCO2: 435, awareFactor: 36.5 },
-        "CN": { name: "China", electricityCO2: 580, awareFactor: 41.2 },
-        "IN": { name: "India", electricityCO2: 632, awareFactor: 70.1 },
-        "BR": { name: "Brazil", electricityCO2: 135, awareFactor: 3.1 }
-    },
+    "AU": { "name": "Australia", "electricityCO2": 380, "awareFactor": 60.1 },
+    "AT": { "name": "Austria", "electricityCO2": 116.9, "awareFactor": 2.5 },
+    "BE": { "name": "Belgium", "electricityCO2": 149.8, "awareFactor": 42.1 },
+    "BR": { "name": "Brazil", "electricityCO2": 110, "awareFactor": 3.1 },
+    "BG": { "name": "Bulgaria", "electricityCO2": 275.6, "awareFactor": null },
+    "CA": { "name": "Canada", "electricityCO2": 120, "awareFactor": 2.2 },
+    "CN": { "name": "China", "electricityCO2": 492, "awareFactor": 41.2 },
+    "HR": { "name": "Croatia", "electricityCO2": 158.5, "awareFactor": null },
+    "CY": { "name": "Cyprus", "electricityCO2": 489.0, "awareFactor": null },
+    "CZ": { "name": "Czechia", "electricityCO2": 401.5, "awareFactor": null },
+    "DK": { "name": "Denmark", "electricityCO2": 114.4, "awareFactor": 14.5 },
+    "EE": { "name": "Estonia", "electricityCO2": 319.1, "awareFactor": null },
+    "FI": { "name": "Finland", "electricityCO2": 57.5, "awareFactor": 0.5 },
+    "FR": { "name": "France", "electricityCO2": 41.4, "awareFactor": 17.1, "renewable_mix": 0.33 },
+    "DE": { "name": "Germany", "electricityCO2": 329.6, "awareFactor": 24.5 },
+    "GR": { "name": "Greece", "electricityCO2": 315.1, "awareFactor": 61.2 },
+    "HU": { "name": "Hungary", "electricityCO2": 163.0, "awareFactor": null },
+    "IN": { "name": "India", "electricityCO2": 480, "awareFactor": 70.1 },
+    "IE": { "name": "Ireland", "electricityCO2": 256.5, "awareFactor": 1.8 },
+    "IT": { "name": "Italy", "electricityCO2": 284.8, "awareFactor": 49.8 },
+    "JP": { "name": "Japan", "electricityCO2": 470, "awareFactor": 36.5 },
+    "LV": { "name": "Latvia", "electricityCO2": 138.8, "awareFactor": null },
+    "LT": { "name": "Lithuania", "electricityCO2": 138.4, "awareFactor": null },
+    "LU": { "name": "Luxembourg", "electricityCO2": 123.4, "awareFactor": null },
+    "NL": { "name": "Netherlands", "electricityCO2": 253.6, "awareFactor": 33.6 },
+    "NO": { "name": "Norway", "electricityCO2": 28.1, "awareFactor": null },
+    "PL": { "name": "Poland", "electricityCO2": 588.6, "awareFactor": 19.8 },
+    "PT": { "name": "Portugal", "electricityCO2": 127.9, "awareFactor": 43.1 },
+    "RO": { "name": "Romania", "electricityCO2": 250.8, "awareFactor": null },
+    "SK": { "name": "Slovakia", "electricityCO2": 94.8, "awareFactor": null },
+    "SI": { "name": "Slovenia", "electricityCO2": 183.3, "awareFactor": null },
+    "ES": { "name": "Spain", "electricityCO2": 153.6, "awareFactor": 65.4 },
+    "SE": { "name": "Sweden", "electricityCO2": 35.3, "awareFactor": 1.3 },
+    "CH": { "name": "Switzerland", "electricityCO2": 39.2, "awareFactor": null },
+    "TR": { "name": "Türkiye", "electricityCO2": 474.7, "awareFactor": null },
+    "UK": { "name": "United Kingdom", "electricityCO2": 217.4, "awareFactor": 22.9 },
+    "US": { "name": "United States", "electricityCO2": 383, "awareFactor": 33.4 }
+}, 
+
 
     // 5. PROCESSING METHODS - NOW WITH PHYSICS (kWh) BUT SAME FORMAT
     processing: {
