@@ -6285,6 +6285,13 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
 <div>
     <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
     <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
+    ${audit.comparison_baseline?.bat_processing_note ? `
+    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #F8FAFC; border-left: 3px solid #0A2540; font-size: 0.75rem; color: var(--gray);">
+        <strong>Baseline Processing:</strong> ${audit.comparison_baseline.bat_processing_note}<br>
+        <strong>Source:</strong> ${audit.comparison_baseline.bat_source || 'JRC BAT (EU) 2019/2031'}<br>
+        <strong>Allocation:</strong> ${audit.comparison_baseline.allocation_note || 'Mass allocation (ISO 14044)'}
+    </div>
+    ` : ''}
 </div>
                     <div>
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
@@ -8606,14 +8613,24 @@ const standardTableStyles = {
         currentY += 6;
         
         const detailsData = [
-            ['Assessment ID:', audit.dppId || 'N/A'],
-            ['Product:', pName],
-            ['Date of Assessment:', dateStr],
-            ['Manufacturing Location:', mfgCountry],
-            ['Comparison Baseline:', safeString(audit.comparison_baseline?.name || 'None')],
-            ['Functional Unit:', userProtein > 0 ? '1 kg mass / 100g delivered protein' : '1 kg of product'],
-            ['Product Weight:', formatNumber(pWeightKg, 3) + ' kg']
-        ];
+    ['Assessment ID:', audit.dppId || 'N/A'],
+    ['Product:', pName],
+    ['Date of Assessment:', dateStr],
+    ['Manufacturing Location:', mfgCountry],
+    ['Comparison Baseline:', safeString(audit.comparison_baseline?.name || 'None')]
+];
+
+// 🆕 Add baseline processing details if BAT energy was used
+if (audit.comparison_baseline?.bat_processing_note) {
+    detailsData.push(['Baseline Processing:', safeString(audit.comparison_baseline.bat_processing_note)]);
+    detailsData.push(['Baseline Source:', safeString(audit.comparison_baseline.bat_source || 'JRC BAT (EU) 2019/2031')]);
+    detailsData.push(['Allocation:', safeString(audit.comparison_baseline.allocation_note || 'Mass allocation (ISO 14044)')]);
+}
+
+detailsData.push(
+    ['Functional Unit:', userProtein > 0 ? '1 kg mass / 100g delivered protein' : '1 kg of product'],
+    ['Product Weight:', formatNumber(pWeightKg, 3) + ' kg']
+);
         
         doc.autoTable({
             startY: currentY,
