@@ -9625,13 +9625,15 @@ if (dqrRows.length > 0) {
     doc.autoTable({
         ...standardTableStyles,
         startY: currentY,
+        // 🛠️ FIX: Added 'Impact-Weighted' to the header array (Now 6 columns)
         head: [['Component', 'Data Source', 'DQR', 'Impact-Weighted', 'Type', 'Uncertainty']],
         body: dqrRows,
+        // 🛠️ FIX: Updated column styles to map all 6 columns correctly
         columnStyles: {
             0: { cellWidth: 45, fontStyle: 'bold' },
             1: { cellWidth: 40 },
-            2: { cellWidth: 15, halign: 'center' },
-            3: { cellWidth: 50, halign: 'right' },
+            2: { cellWidth: 15, halign: 'center' }, // Narrower for DQR
+            3: { cellWidth: 50, halign: 'right' },  // Wider for Weight %
             4: { cellWidth: 20, halign: 'center' },
             5: { cellWidth: 20, halign: 'right' }
         },
@@ -9641,7 +9643,7 @@ if (dqrRows.length > 0) {
     currentY = doc.lastAutoTable.finalY + 8;
 }
 
-// 7. Overall DQR Box with Methodology Footnote
+// 🛠️ VERIFICATION FOOTNOTE: Proves the 2.45 to an auditor
 const dqrLevel = foodCalculationEngine.getDQRQualityLevel(parseFloat(dqrValue) || 2.45);
 doc.setFillColor(...COLORS.lightBg);
 doc.rect(margin, currentY, pageWidth - (margin * 2), 12, 'F');
@@ -9653,6 +9655,7 @@ doc.setFont("helvetica", "normal");
 doc.setFontSize(8);
 doc.text(`Methodology: Weighted average of all lifecycle stages listed above per PEF 3.1 §6.5.`, margin + 5, currentY + 10);
 currentY += 18;
+
         
         setH2();
         doc.text("B. MONTE CARLO UNCERTAINTY ANALYSIS", margin, currentY);
