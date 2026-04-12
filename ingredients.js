@@ -42,6 +42,49 @@ window.aioxyData = {
                 }
             }
         },
+                "winter-pea-conventional-15-moisture-at-farm-gate-fr": {
+            "name": "Winter pea, conventional, 15% moisture, at farm gate",
+            "loss": 0.02,
+            "processing_yield": 1.0,
+            "data": {
+                "pef": {
+                    "Climate Change": 0.392,
+                    "Ozone Depletion": 2.16e-08,
+                    "Human Toxicity, non-cancer": 5.34e-09,
+                    "Human Toxicity, cancer": 1.34e-09,
+                    "Particulate Matter": 1.12e-08,
+                    "Ionizing Radiation": 0.0168,
+                    "Photochemical Ozone Formation": 0.000685,
+                    "Acidification": 0.00163,
+                    "Eutrophication, terrestrial": 0.00585,
+                    "Eutrophication, freshwater": 0.000274,
+                    "Eutrophication, marine": 0.00937,
+                    "Ecotoxicity, freshwater": 19.4,
+                    "Land Use": 145.0,
+                    "Water Use/Scarcity (AWARE)": 0.148,
+                    "Resource Use, minerals/metals": 1.44e-06,
+                    "Resource Use, fossils": 1.97
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2",
+                    "source_activity": "Winter pea, conventional, 15% moisture, at farm gate {FR} U",
+                    "source_uuid": "agb-3.2-winter-pea-fr",
+                    "allocation_method": "Mass Allocation",
+                    "dqr": {
+                        "TeR": 1.0,
+                        "GR": 1.0,
+                        "TiR": 1.0,
+                        "P": 2.0
+                    },
+                    "dqr_overall": 1.25,
+                    "single_score_mpt": 0.0640,
+                    "biogenic_net": 6.45e-05,
+                    "co2_luc_net": 0.170,
+                    "co2_fossil": 0.222
+                }
+            }
+        }, 
+
                         "maize-corn-starch-agribalyse-3-2": {
             "name": "Maize/corn starch",
             "loss": 0.02,
@@ -2640,46 +2683,49 @@ window.aioxyData = {
             }
         },
 
-        "spring-faba-bean-conventional-national-average-at-farm-gate-fr": {
+                "spring-faba-bean-conventional-national-average-at-farm-gate-fr": {
             "name": "Spring faba bean, conventional, national average, at farm gate",
-            "loss": 0.03,
-            "processing_yield": 0.95,
+            "loss": 0.02,
+            "processing_yield": 1.0,
             "data": {
                 "pef": {
-                    "Climate Change": 0.30254122,
-                    "Ozone Depletion": 4.6306863e-09,
-                    "Human Toxicity, non-cancer": 2.7111973e-09,
-                    "Human Toxicity, cancer": 6.7509128e-10,
-                    "Particulate Matter": 7.9746452e-09,
-                    "Ionizing Radiation": 0.0061331975,
-                    "Photochemical Ozone Formation": 0.00048153119,
-                    "Acidification": 0.0011322489,
-                    "Eutrophication, terrestrial": 0.0040425717,
-                    "Eutrophication, freshwater": 0.00011976699,
-                    "Eutrophication, marine": 0.0071988704,
-                    "Ecotoxicity, freshwater": 18.131459,
-                    "Land Use": 108.31998,
-                    "Water Use/Scarcity (AWARE)": 0.030150258,
-                    "Resource Use, minerals/metals": 9.3744708e-07,
-                    "Resource Use, fossils": 1.28463
+                    "Climate Change": 0.303,
+                    "Ozone Depletion": 4.63e-09,
+                    "Human Toxicity, non-cancer": 2.71e-09,
+                    "Human Toxicity, cancer": 6.75e-10,
+                    "Particulate Matter": 7.97e-09,
+                    "Ionizing Radiation": 0.00613,
+                    "Photochemical Ozone Formation": 0.000482,
+                    "Acidification": 0.00113,
+                    "Eutrophication, terrestrial": 0.00404,
+                    "Eutrophication, freshwater": 0.000120,
+                    "Eutrophication, marine": 0.00720,
+                    "Ecotoxicity, freshwater": 18.1,
+                    "Land Use": 108.0,
+                    "Water Use/Scarcity (AWARE)": 0.0302,
+                    "Resource Use, minerals/metals": 9.37e-07,
+                    "Resource Use, fossils": 1.28
                 },
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
                     "source_activity": "Spring faba bean, conventional, national average, at farm gate {FR} U",
-                    "source_uuid": "agb-3.2-spring-faba-bean-conventional-national-average-at-farm-gate-fr",
-                    "allocation_method": "Economic Allocation",
+                    "source_uuid": "agb-3.2-spring-faba-bean-fr",
+                    "allocation_method": "Mass Allocation",
                     "dqr": {
-                        "TeR": 1.4,
-                        "GR": 1.9,
+                        "TeR": 1.5,
+                        "GR": 2.0,
                         "TiR": 1.0,
-                        "C": 1.4,
-                        "P": 1.0
+                        "P": 2.0
                     },
-                    "dqr_overall": 1.3,
-                    "biogenic_net": 0.12715146
+                    "dqr_overall": 1.63,
+                    "single_score_mpt": 0.0462,
+                    "biogenic_net": 4.39e-05,
+                    "co2_luc_net": 0.127,
+                    "co2_fossil": 0.175
                 }
             }
-        },
+        }, 
+
 
         "lupin-conventional-national-average-at-farm-gate-production-fr": {
             "name": "Lupin, conventional, national average, at farm gate",
