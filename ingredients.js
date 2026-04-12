@@ -42,6 +42,56 @@ window.aioxyData = {
                 }
             }
         },
+                "rice-flour-ciqual-9520": {
+            "name": "Rice flour",
+            "loss": 0.02,
+            "processing_yield": 0.98,
+            "data": {
+                "pef": {
+                    "Climate Change": 2.48,
+                    "Ozone Depletion": 3.89e-08,
+                    "Human Toxicity, non-cancer": 8.15e-07,
+                    "Human Toxicity, cancer": 6.78e-10,
+                    "Particulate Matter": 2.0e-07,
+                    "Ionizing Radiation": 0.198,
+                    "Photochemical Ozone Formation": 0.00965,
+                    "Acidification": 0.0304,
+                    "Eutrophication, terrestrial": 0.123,
+                    "Eutrophication, freshwater": 0.000301,
+                    "Eutrophication, marine": 0.0252,
+                    "Ecotoxicity, freshwater": 71.4,
+                    "Land Use": 75.8,
+                    "Water Use/Scarcity (AWARE)": 17.0,
+                    "Resource Use, minerals/metals": 6.78e-06,
+                    "Resource Use, fossils": 15.9
+                },
+                "metadata": {
+                    "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                    "source_activity": "Farine de riz",
+                    "source_uuid": "ciqual-9520",
+                    "allocation_method": "Economic Allocation",
+                    "dqr": {
+                        "P": 3.53,
+                        "TiR": 2.51,
+                        "TeR": 3.53,
+                        "GR": 4.19
+                    },
+                    "dqr_overall": 3.44,
+                    "single_score_mpt": 0.519,
+                    "biogenic_net": 1.21,
+                    "co2_luc_net": 0.0211,
+                    "co2_fossil": 1.24,
+                    "ciqual_category": "produits céréaliers",
+                    "ciqual_sub_category": "farines et pâtes à tarte",
+                    "season_code": 2,
+                    "flight_code": 0,
+                    "delivery_type": "Ambiant (long)",
+                    "packaging": "PACK PROXY",
+                    "preparation": "Pas de préparation"
+                }
+            }
+        }, 
+
                 "winter-pea-conventional-15-moisture-at-farm-gate-fr": {
             "name": "Winter pea, conventional, 15% moisture, at farm gate",
             "loss": 0.02,
