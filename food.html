@@ -7626,54 +7626,87 @@ html += `
     </div>`;
     
     // ========== B. MANUFACTURING & ENERGY BALANCE ==========
-    html += `
-        <div style="margin-bottom: 25px;">
-            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-                B. MANUFACTURING & ENERGY BALANCE (Scope 1, 2, or 3)
-            </h4>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; border: 1px solid #ccc;">
-                <div style="padding: 10px; border-right: 1px solid #ccc;">
-                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">MASS BALANCE (Input/Output)</div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Σ Input Mass:</span>
-                        <span>${mb.inputMass.toFixed(3)} kg</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; color:#C0392B;">
-                        <span>- Water Evaporation:</span>
-                        <span>${mb.evaporation.toFixed(3)} kg</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
-                        <span>= Final Product:</span>
-                        <span>${mb.final_content_weight_kg.toFixed(3)} kg</span>
-                    </div>
-                </div>
-                <div style="padding: 10px;">
-                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
-                    ${catCC.contribution_tree.Manufacturing.components.map(m => `
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Process:</span>
-                            <span>${m.name}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Energy Intensity:</span>
-                            <span>${m.details}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Energy Source:</span>
-                            <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Carbon Intensity:</span>
-                            <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
-                            <span>Impact:</span>
-                            <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
-                        </div>
-                    `).join('')}
+// Check for primary factory data
+const usePrimaryMfg = document.getElementById('usePrimaryFactoryData')?.checked || false;
+const factoryKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+const factoryGas = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+const hasPrimaryMfgData = usePrimaryMfg && (factoryKWh > 0 || factoryGas > 0) && factoryOutput > 0;
+
+let primaryMfgHTML = '';
+if (hasPrimaryMfgData) {
+    const kwhPerKg = factoryKWh / factoryOutput;
+    const gasPerKg = factoryGas / factoryOutput;
+    primaryMfgHTML = `
+        <div style="margin-top: 10px; padding: 10px; background: #E8F8F5; border-left: 4px solid #27AE60; border-radius: 4px;">
+            <div style="font-weight:bold; color: #27AE60; margin-bottom: 8px;">
+                ✅ TIER 1 PRIMARY FACILITY DATA VERIFIED
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8rem;">
+                <div><strong>Annual Electricity:</strong></div>
+                <div style="text-align:right;">${factoryKWh.toLocaleString()} kWh</div>
+                <div><strong>Annual Natural Gas:</strong></div>
+                <div style="text-align:right;">${factoryGas.toLocaleString()} m³</div>
+                <div><strong>Annual Production:</strong></div>
+                <div style="text-align:right;">${factoryOutput.toLocaleString()} kg</div>
+                <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px;"><strong>Verified Intensity:</strong></div>
+                <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px; text-align:right;">
+                    ${kwhPerKg.toFixed(3)} kWh/kg | ${gasPerKg.toFixed(3)} m³ gas/kg
                 </div>
             </div>
-        </div>`;
+        </div>
+    `;
+}
+
+html += `
+    <div style="margin-bottom: 25px;">
+        <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+            B. MANUFACTURING & ENERGY BALANCE (Scope 1, 2, or 3)
+        </h4>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; border: 1px solid #ccc;">
+            <div style="padding: 10px; border-right: 1px solid #ccc;">
+                <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">MASS BALANCE (Input/Output)</div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Σ Input Mass:</span>
+                    <span>${mb.inputMass.toFixed(3)} kg</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; color:#C0392B;">
+                    <span>- Water Evaporation:</span>
+                    <span>${mb.evaporation.toFixed(3)} kg</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
+                    <span>= Final Product:</span>
+                    <span>${mb.final_content_weight_kg.toFixed(3)} kg</span>
+                </div>
+            </div>
+            <div style="padding: 10px;">
+                <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
+                ${catCC.contribution_tree.Manufacturing.components.map(m => `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Process:</span>
+                        <span>${m.name}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Energy Intensity:</span>
+                        <span>${m.details}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Energy Source:</span>
+                        <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Carbon Intensity:</span>
+                        <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
+                        <span>Impact:</span>
+                        <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
+                    </div>
+                `).join('')}
+                ${primaryMfgHTML}
+            </div>
+        </div>
+    </div>`;
 
     // ========== C. LOGISTICS CHAIN ==========
     html += `
@@ -8831,43 +8864,81 @@ const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
 const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
 const totalGasM3 = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
 const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+const hasPrimaryMfg = usePrimary && (totalKWh > 0 || totalGasM3 > 0) && totalProd > 0;
 
-if (usePrimary && (totalKWh > 0 || totalGasM3 > 0) && totalProd > 0) {
-    // Add TIER 1 badge
-    doc.setFillColor(255, 243, 224);  // Light gold background
+if (hasPrimaryMfg) {
+    const kwhPerKg = totalKWh / totalProd;
+    const gasPerKg = totalGasM3 / totalProd;
+    
+    // Gold seal header
+    doc.setFillColor(255, 243, 224);
     doc.rect(margin, currentY - 2, pageWidth - (margin * 2), 10, 'F');
     doc.setTextColor(...COLORS.primary);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("*** TIER 1 PRIMARY FACILITY DATA VERIFIED (ESRS E1 Compliant)", margin + 5, currentY + 5);
     currentY += 12;
+    
+    // Primary data evidence box
+    const boxHeight = 55;
+    doc.setFillColor(232, 248, 245);
+    doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'F');
+    doc.setDrawColor(39, 174, 96);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'S');
+    
+    doc.setTextColor(39, 174, 96);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("VERIFIED UTILITY DATA (Audit-Ready)", margin + 5, currentY + 7);
+    
+    doc.setTextColor(...COLORS.dark);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    
+    const evidenceRows = [
+        ['Annual Electricity:', `${totalKWh.toLocaleString()} kWh`],
+        ['Annual Natural Gas:', `${totalGasM3.toLocaleString()} m³`],
+        ['Annual Production:', `${totalProd.toLocaleString()} kg`],
+        ['Verified Intensity:', `${kwhPerKg.toFixed(3)} kWh/kg | ${gasPerKg.toFixed(3)} m³ gas/kg`],
+        ['Verification Source:', 'User-submitted utility bills']
+    ];
+    
+    let rowY = currentY + 17;
+    evidenceRows.forEach(row => {
+        doc.text(row[0], margin + 10, rowY);
+        doc.text(row[1], margin + 120, rowY);
+        rowY += 7;
+    });
+    
+    currentY += boxHeight + 5;
 }
 
 const mfgComps = ccTree.Manufacturing?.components || [];
-        if (mfgComps.length > 0) {
-            const mfgRows = mfgComps.map(c => [
-                safeString(c.name),
-                safeString(c.details || 'Standard Processing'),
-                safeString(c.energy_source || 'Grid Mix'),
-                formatNumber(c.subtotal, 4) + ' kg CO2e'
-            ]);
-            
-            doc.autoTable({
-                ...standardTableStyles,
-                startY: currentY,
-                head: [['Process', 'Details', 'Energy Source', 'Impact']],
-                body: mfgRows,
-                columnStyles: {
-                    0: { cellWidth: 45 },
-                    1: { cellWidth: 55 },
-                    2: { cellWidth: 40 },
-                    3: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
-                },
-                margin: { left: margin }
-            });
-            
-            currentY = doc.lastAutoTable.finalY + 10;
-        }
+if (mfgComps.length > 0) {
+    const mfgRows = mfgComps.map(c => [
+        safeString(c.name),
+        safeString(c.details || 'Standard Processing'),
+        safeString(c.energy_source || 'Grid Mix'),
+        formatNumber(c.subtotal, 4) + ' kg CO2e'
+    ]);
+    
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        head: [['Process', 'Details', 'Energy Source', 'Impact']],
+        body: mfgRows,
+        columnStyles: {
+            0: { cellWidth: 45 },
+            1: { cellWidth: 55 },
+            2: { cellWidth: 40 },
+            3: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 10;
+    }
         
         // ============================================================
 // C. PACKAGING (Scope 3 Cat 1)
@@ -9545,7 +9616,7 @@ csvLines.push([
 ].join(','));
 
 const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, 
-    co2, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, dqr) => {
+    co2, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, verifiedKwh, verifiedGas, dqr) => {
     const row = [
         category, process, materialType, origin, 
         processing || 'Raw (Farm Gate)', yieldFactor || '1.00',
@@ -9568,7 +9639,9 @@ const addDataRow = (category, process, materialType, origin, processing, yieldFa
         parseFloat(fossil || 0).toFixed(6),
         parseFloat(biogenic || 0).toFixed(6), 
         eudr || 'COMPLIANT', 
-        primary === true ? 'TRUE' : 'FALSE', 
+        primary === true ? 'TRUE' : 'FALSE',
+        verifiedKwh || '',      // 🆕 ADD THIS LINE
+        verifiedGas || '',      // 🆕 ADD THIS LINE
         dqr || dqrOverall
     ];
     const escapedRow = row.map(cell => {
@@ -9842,6 +9915,17 @@ if (ccTree.Manufacturing?.total > 0) {
     const mfgCountryCode = document.getElementById('manufacturingCountry')?.value || 'Unknown';
     const usePrimaryData = document.getElementById('usePrimaryFactoryData')?.checked || false;
     
+    // 🆕 Get verified intensity values
+    let verifiedKwh = '';
+    let verifiedGas = '';
+    if (usePrimaryData) {
+        const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+        const totalGasM3 = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+        const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+        if (totalKWh > 0) verifiedKwh = (totalKWh / totalProd).toFixed(4);
+        if (totalGasM3 > 0) verifiedGas = (totalGasM3 / totalProd).toFixed(4);
+    }
+    
     addDataRow(
         "Scope 3 Cat 1 (Processing)", 
         "Factory_Operations", 
@@ -9860,9 +9944,11 @@ if (ccTree.Manufacturing?.total > 0) {
         "0",                                  // Biogenic
         "COMPLIANT",                          // EUDR
         usePrimaryData,                       // Primary Data
+        verifiedKwh,                          // 🆕 Verified Electricity
+        verifiedGas,                          // 🆕 Verified Gas
         getDQR(ccTree.Manufacturing)          // DQR
     );
-}
+    }
     
     // =============================================================
     // DOWNLOAD (Single CSV file)
