@@ -3792,14 +3792,15 @@ processing_archetypes: {
         "temperate": ["FR", "DE", "UK", "BE", "NL", "PL", "IT", "PT", "AT", "CH", "CZ", "HU", "DK", "US"]
     },
 
-    // 10. WULCA AWARE FACTORS - UPDATED
+    // 10. WULCA AWARE FACTORS - UPDATED (PEF 3.1 / JRC COMPLIANT)
     aware_factors: {
         "EG": 98.2, "SA": 95.5, "ES": 65.4, "IN": 70.1, "PK": 85.0, "CN": 41.2, "TR": 62.0,
         "US": 33.4, "IT": 49.8, "BE": 42.1, "JP": 36.5, "MX": 42.0,
         "FR": 17.1, "DE": 24.5, "UK": 22.9, "NL": 33.6, "BR": 3.1,
-        "NO": 0.8, "SE": 1.3, "FI": 0.5, "CA": 2.2, "IE": 1.8,
-        "Global": 42.0
+        "GR": 61.2, "PT": 43.1, "AT": 2.5, "IE": 1.8, "NO": 0.8, 
+        "SE": 1.3, "FI": 0.5, "CA": 2.2, "Global": 42.0
     }
+
 };
 
 // ================== REGULATOR-PROOF LCI COMPATIBILITY LAYER ==================
