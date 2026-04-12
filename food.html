@@ -5610,72 +5610,43 @@ auditTrail.pefCategories["Climate Change"].total += foodWasteCO2;
     const functionalUnitWeight = massBalanceData.final_content_weight_kg || 0.2;
     const totalClimate = auditTrail.pefCategories["Climate Change"].total;
 
-
-    // --- REGULATORY DATA ROUTING: NON-INGREDIENT STAGES ---
+// --- REGULATORY DATA ROUTING FIX ---
+// This pulls the actual physics results into the Audit Table
 const contributionTree = auditTrail.pefCategories["Climate Change"].contribution_tree;
 
-// 1. Capture Manufacturing & Processing - DYNAMIC DQR FROM ENGINE
+// 1. Route Manufacturing Data
 if (contributionTree.Manufacturing && contributionTree.Manufacturing.total > 0) {
-    // Check if primary data was used from the actual manufacturing result
-    const isPrimaryMfg = window.lastManufacturingResult?.method?.includes('PRIMARY') || 
-                        document.getElementById('usePrimaryFactoryData')?.checked || false;
-    
     dqrComponents.push({
         name: "Manufacturing & Energy Use",
-        impact: contributionTree.Manufacturing.total,
-        dqr: isPrimaryMfg ? 1.5 : 2.5,  // ← DYNAMIC based on actual data!
-        source: isPrimaryMfg ? "Primary Utility Data" : "JRC EF 3.1 Benchmark",
-        is_proxy: !isPrimaryMfg,
-        uncertainty: isPrimaryMfg ? 10 : 20
+        impact: contributionTree.Manufacturing.total, // This grabs the 0.6531 kg from your physics
+        dqr: 2.5, 
+        source: "JRC EF 3.1 Benchmark",
+        uncertainty: 20
     });
 }
 
-// 2. Capture Packaging Materials - DYNAMIC based on material type
+// 2. Route Packaging Data
 if (contributionTree.Packaging && contributionTree.Packaging.total > 0) {
-    const pkgMaterial = document.getElementById('packagingMaterial')?.value || 'cardboard';
-    const isRecycled = pkgMaterial.includes('rPET') || pkgMaterial.includes('recycled');
-    
     dqrComponents.push({
         name: "Packaging Lifecycle",
-        impact: contributionTree.Packaging.total,
-        dqr: isRecycled ? 2.0 : 2.5,  // ← DYNAMIC based on material!
-        source: isRecycled ? "PEF 3.1 / Recycled Content" : "PEF 3.1 / CFF Virgin",
-        is_proxy: true,
-        uncertainty: isRecycled ? 15 : 20
-    });
-}
-
-// 3. Capture Logistics & Transport - DYNAMIC based on mode
-if (contributionTree.Transport && contributionTree.Transport.total > 0) {
-    const transportMode = document.getElementById('transportMode')?.value || 'road';
-    const isSea = transportMode === 'sea';
-    const isRail = transportMode === 'rail';
-    
-    let transportDQR = 2.5;
-    if (isSea) transportDQR = 3.0;
-    if (isRail) transportDQR = 2.0;
-    
-    dqrComponents.push({
-        name: "Inbound/Outbound Logistics",
-        impact: contributionTree.Transport.total,
-        dqr: transportDQR,  // ← DYNAMIC based on transport mode!
-        source: `GLEC v3.2 (${transportMode})`,
-        is_proxy: true,
-        uncertainty: isSea ? 30 : (isRail ? 15 : 20)
-    });
-}
-
-// 4. Capture Waste/End-of-Life
-if (contributionTree.Waste && contributionTree.Waste.total > 0) {
-    dqrComponents.push({
-        name: "End-of-Life Treatment",
-        impact: contributionTree.Waste.total,
-        dqr: 2.5,
-        source: "IPCC 2006 / JRC BAT",
-        is_proxy: true,
+        impact: contributionTree.Packaging.total, // This grabs the 0.0964 kg from your physics
+        dqr: 3.0, 
+        source: "Agribalyse 3.2",
         uncertainty: 25
     });
 }
+
+// 3. Route Logistics Data (Inbound + Outbound)
+if (contributionTree.Transport && contributionTree.Transport.total > 0) {
+    dqrComponents.push({
+        name: "Inbound/Outbound Logistics",
+        impact: contributionTree.Transport.total, // This grabs the sum of all trucks/ships
+        dqr: 3.0, 
+        source: "GLEC v3.2 / Agribalyse",
+        uncertainty: 30
+    });
+}
+// --- END FIX ---
 
     
     // Save Global State
