@@ -9621,83 +9621,51 @@ const dqrRows = dqrComps.map(c => [
 currentY = doc.lastAutoTable.finalY + 8;
 
 // 🆕 SENSITIVITY ANALYSIS SECTION
-if (audit.comparison_baseline?.sensitivity_analysis) {
+if (audit.comparison_baseline && audit.comparison_baseline.sensitivity_analysis) {
     const sa = audit.comparison_baseline.sensitivity_analysis;
     
-    checkPageBreak(50);
-setH2();
-doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
-currentY += 8;
-
-// Safely handle whether it's an array or a string
-const paramsString = Array.isArray(sa.parameters_tested) 
-    ? sa.parameters_tested.join('; ') 
-    : sa.parameters_tested;
-
-// 🆕 MANUALLY WRAP LONG TEXT with explicit line breaks
-const wrapText = (text, maxLen) => {
-    if (!text) return '';
-    if (text.length <= maxLen) return text;
+    checkPageBreak(60);
+    setH2();
+    doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
+    currentY += 10;
     
-    // Find break points (after semicolons or commas)
-    const parts = text.split('; ');
-    if (parts.length > 1) {
-        return parts.join(';\n');
-    }
+    setNormal();
+    doc.setFontSize(8);
     
-    // If no semicolons, wrap at spaces
-    const words = text.split(' ');
-    let lines = [];
-    let current = '';
-    words.forEach(word => {
-        if ((current + ' ' + word).length <= maxLen) {
-            current += (current ? ' ' : '') + word;
-        } else {
-            lines.push(current);
-            current = word;
-        }
+    // Parameters Tested - manually split
+    const paramsString = Array.isArray(sa.parameters_tested) 
+        ? sa.parameters_tested.join('; ') 
+        : String(sa.parameters_tested || '');
+    
+    doc.text("Parameters Tested:", margin, currentY);
+    currentY += 5;
+    
+    // Split and print each parameter on new line
+    const paramsList = paramsString.split('; ');
+    paramsList.forEach(param => {
+        doc.text("  • " + param.trim(), margin + 5, currentY);
+        currentY += 5;
     });
-    if (current) lines.push(current);
-    return lines.join('\n');
-};
-
-const paramsWrapped = wrapText(paramsString, 55);
-const findingWrapped = wrapText(sa.key_finding, 55);
-const recWrapped = wrapText(sa.recommendation, 55);
-const isoWrapped = wrapText(sa.iso_compliance, 55);
-
-const sensitivityData = [
-    ['Parameters Tested:', paramsWrapped],
-    ['Key Finding:', findingWrapped],
-    ['Recommendation:', recWrapped],
-    ['ISO Compliance:', isoWrapped]
-];
-
-doc.autoTable({
-    ...standardTableStyles,
-    startY: currentY,
-    body: sensitivityData,
-    styles: { 
-        fontSize: 8, 
-        cellPadding: 4,
-        overflow: 'linebreak',
-        valign: 'middle'
-    },
-    columnStyles: {
-        0: { 
-            fontStyle: 'bold', 
-            cellWidth: 45,
-            textColor: COLORS.primary 
-        },
-        1: { 
-            cellWidth: 120  // Fixed width instead of 'auto'
+    currentY += 3;
+    
+    // Key Finding
+    doc.text("Key Finding:", margin, currentY);
+    currentY += 5;
+    doc.text("  " + (sa.key_finding || ''), margin + 5, currentY);
+    currentY += 8;
+    
+    // Recommendation
+    doc.text("Recommendation:", margin, currentY);
+    currentY += 5;
+    doc.text("  " + (sa.recommendation || ''), margin + 5, currentY);
+    currentY += 8;
+    
+    // ISO Compliance
+    doc.text("ISO Compliance:", margin, currentY);
+    currentY += 5;
+    doc.text("  " + (sa.iso_compliance || ''), margin + 5, currentY);
+    currentY += 12;
         }
-    },
-    margin: { left: margin, right: margin },
-    rowPageBreak: 'auto'
-});
-
-currentY = doc.lastAutoTable.finalY + 8;
         
         // ============================================================
         // QR CODE & SIGNATURE
