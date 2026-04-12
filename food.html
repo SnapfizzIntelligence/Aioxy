@@ -9624,43 +9624,58 @@ currentY = doc.lastAutoTable.finalY + 8;
 if (audit.comparison_baseline && audit.comparison_baseline.sensitivity_analysis) {
     const sa = audit.comparison_baseline.sensitivity_analysis;
     
-    checkPageBreak(45);
+    checkPageBreak(50);
     setH2();
     doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
     currentY += 8;
     
-    // Parameters Tested - BOLD heading, normal content on SAME LINE
-    setH3();
-    doc.text("Parameters Tested: ", margin, currentY);
-    setNormal();
-    doc.setFontSize(9);
     const paramsString = Array.isArray(sa.parameters_tested) 
         ? sa.parameters_tested.join('; ') 
         : String(sa.parameters_tested || '');
-    doc.text(paramsString, margin + 50, currentY);
-    currentY += 7;
     
-    // Key Finding - BOLD heading, normal content on SAME LINE
-    setH3();
-    doc.text("Key Finding: ", margin, currentY);
-    setNormal();
-    doc.text(sa.key_finding || '', margin + 40, currentY);
-    currentY += 7;
+    // Split parameters into multiple lines for readability
+    const paramsList = paramsString.split('; ');
     
-    // Recommendation - BOLD heading, normal content on SAME LINE
+    // Parameters Tested
     setH3();
-    doc.text("Recommendation: ", margin, currentY);
+    doc.text("Parameters Tested:", margin, currentY);
+    currentY += 5;
     setNormal();
-    doc.text(sa.recommendation || '', margin + 45, currentY);
-    currentY += 7;
+    doc.setFontSize(9);
+    paramsList.forEach(param => {
+        doc.text("  " + param.trim(), margin, currentY);
+        currentY += 5;
+    });
+    currentY += 3;
     
-    // ISO Compliance - BOLD heading, normal content on SAME LINE
+    // Key Finding
     setH3();
-    doc.text("ISO Compliance: ", margin, currentY);
+    doc.text("Key Finding:", margin, currentY);
+    currentY += 5;
     setNormal();
-    doc.text(sa.iso_compliance || '', margin + 42, currentY);
+    doc.setFontSize(9);
+    doc.text("  " + (sa.key_finding || ''), margin, currentY);
+    currentY += 8;
+    
+    // Recommendation
+    setH3();
+    doc.text("Recommendation:", margin, currentY);
+    currentY += 5;
+    setNormal();
+    doc.setFontSize(9);
+    doc.text("  " + (sa.recommendation || ''), margin, currentY);
+    currentY += 8;
+    
+    // ISO Compliance
+    setH3();
+    doc.text("ISO Compliance:", margin, currentY);
+    currentY += 5;
+    setNormal();
+    doc.setFontSize(9);
+    doc.text("  " + (sa.iso_compliance || ''), margin, currentY);
     currentY += 12;
-}
+    }
+    
         // ============================================================
         // QR CODE & SIGNATURE
         // ============================================================
