@@ -6343,8 +6343,39 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
                     <div>AWARE 2.0</div>
                 </div>
             </div>
+                </div>
+        
+        <!-- 🆕 SENSITIVITY ANALYSIS CARD -->
+        <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
+            <i class="fas fa-chart-line"></i> Sensitivity Analysis (ISO 14044 §6.3)
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            ${audit.comparison_baseline?.sensitivity_analysis ? `
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Parameters Tested</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.parameters_tested.join(', ')}</div>
+            </div>
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Key Finding</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.key_finding}</div>
+            </div>
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Recommendation</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.recommendation}</div>
+            </div>
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Compliance</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.iso_compliance}</div>
+            </div>
+            ` : `
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem; grid-column: 1/-1;">
+                <div style="font-weight: 600; color: var(--primary);">Sensitivity Analysis</div>
+                <div style="font-size: 0.85rem;">Run calculation to generate sensitivity analysis. Parameters include transport distance, grid intensity, and concentration ratio.</div>
+            </div>
+            `}
         </div>
-    `;
+    </div>
+`;
     }
     
 // ================== FINANCIAL ROI ENGINE (AUDIT-SAFE) ==================
@@ -9574,19 +9605,55 @@ const dqrRows = dqrComps.map(c => [
             ['Cut-off Criteria:', '5% mass/energy (Foreground/Background analysis)']
         ];
         
-        doc.autoTable({
-            ...standardTableStyles,
-            startY: currentY,
-            body: methodData,
-            styles: { fontSize: 9, cellPadding: 3 },
-            columnStyles: {
-                0: { fontStyle: 'bold', cellWidth: 70, textColor: COLORS.primary },
-                1: { cellWidth: 110 }
-            },
-            margin: { left: margin }
-        });
         
-        currentY = doc.lastAutoTable.finalY + 15;
+        doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    body: methodData,
+    styles: { fontSize: 9, cellPadding: 3 },
+    columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 70, textColor: COLORS.primary },
+        1: { cellWidth: 110 }
+    },
+    margin: { left: margin }
+});
+
+currentY = doc.lastAutoTable.finalY + 8;
+
+// 🆕 SENSITIVITY ANALYSIS SECTION
+if (audit.comparison_baseline?.sensitivity_analysis) {
+    const sa = audit.comparison_baseline.sensitivity_analysis;
+    
+    checkPageBreak(40);
+    setH2();
+    doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
+    currentY += 6;
+    
+    const sensitivityData = [
+        ['Parameters Tested:', sa.parameters_tested.join(', ')],
+        ['Key Finding:', sa.key_finding],
+        ['Recommendation:', sa.recommendation],
+        ['ISO Compliance:', sa.iso_compliance]
+    ];
+    
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        body: sensitivityData,
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+            0: { fontStyle: 'bold', cellWidth: 70, textColor: COLORS.primary },
+            1: { cellWidth: 110 }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 10;
+}
+
+currentY = currentY + 5;  // Add extra spacing
+
+
         
         // ============================================================
         // QR CODE & SIGNATURE
