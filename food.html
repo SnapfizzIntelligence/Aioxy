@@ -9605,7 +9605,8 @@ const getComponentCO2 = (componentName) => {
 
 // 🛠️ CALCULATE ROWS: Ensure all items (including Energy & Logistics) are mapped
 const dqrRows = dqrComps.map(c => {
-    const co2Impact = getComponentCO2(c.name);
+    // 🛠️ FIX: Use pre-calculated impact if available (for summary rows), otherwise lookup by name
+    const co2Impact = (c.impact !== undefined) ? c.impact : getComponentCO2(c.name);
     
     // Calculate weight against TOTAL product impact
     const weightPct = totalCO2 > 0 ? ((co2Impact / totalCO2) * 100).toFixed(1) : '0.0';
@@ -9613,14 +9614,14 @@ const dqrRows = dqrComps.map(c => {
     
     return [
         truncate(c.name, 25),
-        safeString(c.source || 'AGRIBALYSE 3.2'),
+        c.source || 'AGRIBALYSE 3.2',  // Simple fallback instead of safeString
         formatNumber(c.dqr, 1),
         impactDisplay, 
         c.is_proxy ? 'Proxy' : 'Direct',
         formatPercent(c.uncertainty)
     ];
 });
-
+        
 // 🛠️ RENDER TABLE
 if (dqrRows.length > 0) {
     doc.autoTable({
