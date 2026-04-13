@@ -9402,6 +9402,9 @@ doc.setTextColor(...COLORS.primary);
 doc.text("PRIMARY PACKAGING (User Input)", margin, currentY);
 currentY += 5;
 
+// 🛡️ FIX: Declare tertiaryComps BEFORE using it in cffMathTrace
+const tertiaryComps = ccTree.Packaging?.components || [];
+
 // Build CFF math trace
 const r1Value = recycledContent;
 const r2Value = pkgEoL.toLowerCase().includes('recycled') ? 90 : 
@@ -9442,7 +9445,6 @@ doc.autoTable({
 currentY = doc.lastAutoTable.finalY + 5;
 
 // Tertiary Packaging (PEF Proxy)
-const tertiaryComps = ccTree.Packaging?.components || [];
 if (tertiaryComps.length > 0) {
     const neededSpace = 15 + (tertiaryComps.length * 15); // Increased for math trace
     checkPageBreak(neededSpace);
