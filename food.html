@@ -8938,141 +8938,142 @@ currentY += 10;
 if (ccTree.Ingredients?.components && ccTree.Ingredients.components.length > 0) {
     const ingredientRows = [];
 
-ccTree.Ingredients.components.forEach(ing => {
-    const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
-    const baseOrigin = ing.universal_adjustments?.adjusted_from_country || 'FR';
-    const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(origin);
-    const eudrStatus = isHighRisk ? '[!] HIGH RISK' : '[OK] Compliant';
-    const primaryFlag = ing.primary_data_used ? '[OK] Primary' : 'Secondary';
-    const waterComp = waterTree?.Ingredients?.components?.find(c => c.name === ing.name);
-    
-    // [PHYSICS FLAG] Get processing archetype for display
-    const processState = ing.processingState || 'raw';
-    const archetypes = window.aioxyData?.processing_archetypes || {};
-    const archetype = archetypes[processState];
-    let processingDisplay = 'Raw (1.00x)';
-    if (archetype && processState !== 'raw') {
-        processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
-    }
-    
-       // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
-let adjustmentText = '';
-let mathTrace = '\n\n--- CALCULATION NODE ---';
+    ccTree.Ingredients.components.forEach(ing => {
+        const origin = ing.universal_adjustments?.adjusted_for_country || 'Unknown';
+        const baseOrigin = ing.universal_adjustments?.adjusted_from_country || 'FR';
+        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(origin);
+        const eudrStatus = isHighRisk ? '[!] HIGH RISK' : '[OK] Compliant';
+        const primaryFlag = ing.primary_data_used ? '[OK] Primary' : 'Secondary';
+        const waterComp = waterTree?.Ingredients?.components?.find(c => c.name === ing.name);
 
-// 📝 ADD PHYSICS NOTE FIRST (if exists - verbal only, no calculation impact)
-if (ing.physics_note) {
-    const cleanNote = safeString(ing.physics_note);
-    adjustmentText += `[NOTE] ${cleanNote}\n`;
-}
+        // [PHYSICS FLAG] Get processing archetype for display
+        const processState = ing.processingState || 'raw';
+        const archetypes = window.aioxyData?.processing_archetypes || {};
+        const archetype = archetypes[processState];
+        let processingDisplay = 'Raw (1.00x)';
+        if (archetype && processState !== 'raw') {
+            processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
+        }
 
-const adj = ing.universal_adjustments || {};
+        // BUILD PHYSICS ADJUSTMENT TEXT (Same as web audit trail)
+        let adjustmentText = '';
+        let mathTrace = '\n\n--- CALCULATION NODE ---';
 
-if (adj.method === "eudr_dluc_penalty") {
-    adjustmentText += '[!] EUDR MARKET BLOCK - +50% dLUC applied';
-    
-    const baseEF = (ing.subtotal / 1.50 / ing.quantity_kg).toFixed(4);
-    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
-    mathTrace += `\n2. EUDR High-Risk Penalty: ×1.50 (Deforestation Risk)`;
-    mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} × 1.50 = ${ing.subtotal.toFixed(4)} kg CO₂e`;
-    
-} else if (ing.primary_data_used && ing.primary_data) {
-    const pd = ing.primary_data;
-    adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
-    
-    const baseEF = (ing.subtotal / (adj.multipliers?.co2 || 1) / ing.quantity_kg).toFixed(4);
-    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
-    mathTrace += `\n2. Yield Adjustment: ×${(adj.multipliers?.land || 1).toFixed(2)} (${pd.yieldKgPerHa} vs ${adj.baseline_yield || 5000} kg/ha)`;
-    mathTrace += `\n3. Fertilizer Adjustment: ×${(adj.multipliers?.co2 / (adj.multipliers?.land || 1)).toFixed(2)} (${pd.nitrogenKgPerTon} vs ${adj.baseline_nitrogen || 15} kg/t)`;
-    mathTrace += `\n4. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} × ${(adj.multipliers?.co2 || 1).toFixed(2)} = ${ing.subtotal.toFixed(4)} kg CO₂e`;
-  
-} else if (origin !== baseOrigin) {
-    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
-    if (euCountries.includes(origin) && euCountries.includes(baseOrigin)) {
-        adjustmentText += `[EU REGIONAL MATCH: ${origin}]\nAccepted without penalty`;
-    } else {
-        adjustmentText += `[PROXY: ${baseOrigin}->${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
-    }
-    
-    const baseEF = (ing.subtotal / (adj.multipliers?.co2 || 1) / ing.quantity_kg).toFixed(4);
-    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
-    mathTrace += `\n2. Regional Adjustment: ×${(adj.multipliers?.co2 || 1).toFixed(2)}`;
-    mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} × ${(adj.multipliers?.co2 || 1).toFixed(2)} = ${ing.subtotal.toFixed(4)} kg CO₂e`;
-    
-} else {
-    adjustmentText += `[DIRECT: ${origin}] No adjustment needed`;
-    
-    const baseEF = (ing.subtotal / ing.quantity_kg).toFixed(4);
-    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
-    mathTrace += `\n2. No regional adjustment applied`;
-    mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} = ${ing.subtotal.toFixed(4)} kg CO₂e`;
-}
+        // 📝 ADD PHYSICS NOTE FIRST (if exists - verbal only, no calculation impact)
+        if (ing.physics_note) {
+            const cleanNote = safeString(ing.physics_note);
+            adjustmentText += `[NOTE] ${cleanNote}\n`;
+        }
 
-// Add Physics Flag for processed ingredients
-if (archetype && processState !== 'raw') {
-    adjustmentText += `\n[Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)`;
-    if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
-        adjustmentText += `\nEnergy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg`;
-    }
-    mathTrace += `\n4. Processing Yield: ×${archetype.yield_factor.toFixed(2)} (${archetype.name})`;
-}
+        const adj = ing.universal_adjustments || {};
 
-// Combine adjustment text with math trace
-adjustmentText += mathTrace;
+        if (adj.method === "eudr_dluc_penalty") {
+            adjustmentText += '[!] EUDR MARKET BLOCK - +50% dLUC applied';
 
-    // BUILD NAME WITH QUALITY FLAG
-    let nameText = safeString(ing.name);
-    if (ing.name.toLowerCase().includes('animal feed')) {
-        nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
-    }
-    
-    ingredientRows.push([
-        nameText,                                           // Column 0: Ingredient
-        formatNumber(ing.quantity_kg, 3) + ' kg',          // Column 1: Qty
-        origin,                                             // Column 2: Origin
-        processingDisplay,                                  // Column 3: Processing (NEW)
-        eudrStatus,                                         // Column 4: EUDR
-        primaryFlag,                                        // Column 5: Data
-        adjustmentText,                                     // Column 6: Physics Adjustments
-        formatNumber(ing.subtotal, 4) + ' kg',             // Column 7: CO2e
-        formatNumber(waterComp?.subtotal || 0, 4) + ' m3'  // Column 8: Water
-    ]);
-});
-});
-    
-// BEFORE the ingredients table
-const ingredientRowCount = ccTree.Ingredients?.components?.length || 0;
-const estimatedRowHeight = 35; // mm per row (increased due to math trace)
-const tableHeight = 20 + (ingredientRowCount * estimatedRowHeight);
-checkPageBreak(tableHeight);
-    
-doc.autoTable({
-    ...standardTableStyles,
-startY: currentY,
-head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
-body: ingredientRows,
-styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
-headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
-columnStyles: {
-    0: { cellWidth: 26, fontStyle: 'bold' },       // Ingredient
-    1: { cellWidth: 12, halign: 'right' },         // Qty
-    2: { cellWidth: 12 },                          // Origin
-    3: { cellWidth: 20 },                          // Processing
-    4: { cellWidth: 14 },                          // EUDR
-    5: { cellWidth: 12 },                          // Data
-    6: { cellWidth: 50 },                          // Physics Adjustments
-    7: { cellWidth: 17, halign: 'right' },         // CO2e
-    8: { cellWidth: 17, halign: 'right' }          // Water
-},
-    margin: { left: margin, right: margin }
-});
-    
+            const baseEF = (ing.subtotal / 1.50 / ing.quantity_kg).toFixed(4);
+            mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
+            mathTrace += `\n2. EUDR High-Risk Penalty: ×1.50 (Deforestation Risk)`;
+            mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} × 1.50 = ${ing.subtotal.toFixed(4)} kg CO₂e`;
+
+        } else if (ing.primary_data_used && ing.primary_data) {
+            const pd = ing.primary_data;
+            adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
+
+            const baseEF = (ing.subtotal / (adj.multipliers?.co2 || 1) / ing.quantity_kg).toFixed(4);
+            mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
+            mathTrace += `\n2. Yield Adjustment: ×${(adj.multipliers?.land || 1).toFixed(2)} (${pd.yieldKgPerHa} vs ${adj.baseline_yield || 5000} kg/ha)`;
+            mathTrace += `\n3. Fertilizer Adjustment: ×${(adj.multipliers?.co2 / (adj.multipliers?.land || 1)).toFixed(2)} (${pd.nitrogenKgPerTon} vs ${adj.baseline_nitrogen || 15} kg/t)`;
+            mathTrace += `\n4. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} × ${(adj.multipliers?.co2 || 1).toFixed(2)} = ${ing.subtotal.toFixed(4)} kg CO₂e`;
+
+        } else if (origin !== baseOrigin) {
+            const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+            if (euCountries.includes(origin) && euCountries.includes(baseOrigin)) {
+                adjustmentText += `[EU REGIONAL MATCH: ${origin}]\nAccepted without penalty`;
+            } else {
+                adjustmentText += `[PROXY: ${baseOrigin}->${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
+            }
+
+            const baseEF = (ing.subtotal / (adj.multipliers?.co2 || 1) / ing.quantity_kg).toFixed(4);
+            mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
+            mathTrace += `\n2. Regional Adjustment: ×${(adj.multipliers?.co2 || 1).toFixed(2)}`;
+            mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} × ${(adj.multipliers?.co2 || 1).toFixed(2)} = ${ing.subtotal.toFixed(4)} kg CO₂e`;
+
+        } else {
+            adjustmentText += `[DIRECT: ${origin}] No adjustment needed`;
+
+            const baseEF = (ing.subtotal / ing.quantity_kg).toFixed(4);
+            mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO₂e/kg`;
+            mathTrace += `\n2. No regional adjustment applied`;
+            mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg × ${baseEF} = ${ing.subtotal.toFixed(4)} kg CO₂e`;
+        }
+
+        // Add Physics Flag for processed ingredients
+        if (archetype && processState !== 'raw') {
+            adjustmentText += `\n[Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)`;
+            if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+                adjustmentText += `\nEnergy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg`;
+            }
+            mathTrace += `\n4. Processing Yield: ×${archetype.yield_factor.toFixed(2)} (${archetype.name})`;
+        }
+
+        // Combine adjustment text with math trace
+        adjustmentText += mathTrace;
+
+        // BUILD NAME WITH QUALITY FLAG
+        let nameText = safeString(ing.name);
+        if (ing.name.toLowerCase().includes('animal feed')) {
+            nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
+        }
+
+        ingredientRows.push([
+            nameText,                                           // Column 0: Ingredient
+            formatNumber(ing.quantity_kg, 3) + ' kg',          // Column 1: Qty
+            origin,                                             // Column 2: Origin
+            processingDisplay,                                  // Column 3: Processing (NEW)
+            eudrStatus,                                         // Column 4: EUDR
+            primaryFlag,                                        // Column 5: Data
+            adjustmentText,                                     // Column 6: Physics Adjustments
+            formatNumber(ing.subtotal, 4) + ' kg',             // Column 7: CO2e
+            formatNumber(waterComp?.subtotal || 0, 4) + ' m3'  // Column 8: Water
+        ]);
+    });
+    }, 
+
+    // BEFORE the ingredients table
+    const ingredientRowCount = ccTree.Ingredients?.components?.length || 0;
+    const estimatedRowHeight = 35; // mm per row (increased due to math trace)
+    const tableHeight = 20 + (ingredientRowCount * estimatedRowHeight);
+    checkPageBreak(tableHeight);
+
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
+        body: ingredientRows,
+        styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
+        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
+        columnStyles: {
+            0: { cellWidth: 26, fontStyle: 'bold' },       // Ingredient
+            1: { cellWidth: 12, halign: 'right' },         // Qty
+            2: { cellWidth: 12 },                          // Origin
+            3: { cellWidth: 20 },                          // Processing
+            4: { cellWidth: 14 },                          // EUDR
+            5: { cellWidth: 12 },                          // Data
+            6: { cellWidth: 50 },                          // Physics Adjustments
+            7: { cellWidth: 17, halign: 'right' },         // CO2e
+            8: { cellWidth: 17, halign: 'right' }          // Water
+        },
+        margin: { left: margin, right: margin }
+    });
+
     currentY = doc.lastAutoTable.finalY + 10;
 } else {
     setNormal();
     doc.text("No ingredient data available.", margin, currentY);
     currentY += 10;
 }
-        
+
+
         // ============================================================
         // PRIMARY DATA VERIFICATION
         // ============================================================
@@ -9840,7 +9841,7 @@ const getComponentCO2 = (componentName) => {
 // 🛠️ CALCULATE ROWS: Ensure all items (including Energy & Logistics) are mapped
 const dqrRows = (audit.dqr_summary?.component_dqrs || []).map(c => {
     const co2Impact = (c.impact !== undefined) ? c.impact : (getComponentCO2(c.name) || 0);
-    const weightPct = ((co2Impact / totalCO2) * 100).toFixed(1);
+    const weightPct = totalCO2 > 0 ? ((co2Impact / totalCO2) * 100).toFixed(1) : '0.0';
     const impactDisplay = `${safeFix(co2Impact, 3)} kg (${weightPct}%)`;
     
     const baseDQR = safeFix(c.base_dqr || c.dqr);
