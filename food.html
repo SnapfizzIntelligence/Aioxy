@@ -8418,8 +8418,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
     return String(str)
         .replace(/→/g, 'to')
         .replace(/←/g, 'from')
-        .replace(/₂/g, '2')         // FIX: Converts subscript 2 to normal 2
-        .replace(/\u2082/g, '2')    // FIX: Catches unicode versions
+        .replace(/₂/g, '2')
+        .replace(/\u2082/g, '2')
         .replace(/✓/g, '[OK]')
         .replace(/⚠️/g, '[!]')
         .replace(/🛡️/g, '')
@@ -8432,6 +8432,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         .replace(/📋/g, 'DDS:')
         .replace(/⚙️/g, '[Adj]')
         .replace(/\|/g, '-')
+        .replace(/Σ/g, 'Sum')       // NEW: Sigma → Sum
+        .replace(/×/g, 'x')         // NEW: Multiply → x
+        .replace(/µ/g, 'u')         // NEW: Micro → u
         .replace(/\s+/g, ' ')
         .trim();
 };
@@ -8829,11 +8832,11 @@ doc.addPage();
             const weight = data.weightingFactor.toFixed(4);
             
             const pefMathTrace = `\n--- CALCULATION NODE ---
-1. Raw Impact: ${data.raw.toExponential(2)} ${data.unit || ''}
-2. × Normalization: ${norm}
-3. × Weighting: ${weight}
-4. = Weighted Impact: ${data.weighted.toExponential(3)} µPt`;
-            
+1. Raw Impact: ${data.raw.toExponential(2)} ${safeString(data.unit)}
+2. x Normalization: ${norm}
+3. x Weighting: ${weight}
+4. = Weighted Impact: ${data.weighted.toExponential(3)} uPt`;
+    
             return [
                 safeString(cat) + pefMathTrace,
                 data.raw.toExponential(2),
@@ -8885,13 +8888,12 @@ doc.addPage();
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} µPt)`, margin + 5, currentY + 8);
-        
-        // Add small math note for Eco-Score
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        doc.text(`Calculation: Σ(Weighted Impact) - Organic Bonus = ${mPt.toFixed(1)} µPt`, margin + 5, currentY + 13);
+        doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} uPt)`, margin + 5, currentY + 8);
 
+// Add small math note for Eco-Score
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+doc.text(`Calculation: Sum(Weighted Impact) - Organic Bonus = ${mPt.toFixed(1)} uPt`, margin + 5, currentY + 13);
         currentY += 18;
 
         // FOP Eco-Score Disclaimer (Green Claims Directive)
