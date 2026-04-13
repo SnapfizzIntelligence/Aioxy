@@ -9711,22 +9711,25 @@ const uncertaintyData = [
             currentY = doc.lastAutoTable.finalY + 10;
         }
         
-        checkPageBreak(50);
-        setH2();
-        doc.text("C. METHODOLOGY & STANDARDS", margin, currentY);
-        currentY += 6;
-        
-        const methodData = [
-            ['Primary Standard:', 'PEF 3.1 (Product Environmental Footprint)'],
-            ['Supporting Standards:', 'ISO 14040:2006, ISO 14044:2006, GHG Protocol'],
-            ['Data Sources:', 'AGRIBALYSE 3.2, JRC EF 3.1, AWARE 2.0, GLEC v3.2'],
-            ['System Boundary:', 'Cradle-to-Retail + End-of-Life'],
-            ['Allocation Method:', 'Mass allocation (ISO 14044 hierarchy)'],
-            ['Cut-off Criteria:', '5% mass/energy (Foreground/Background analysis)']
-        ];
-        
-        
-        doc.autoTable({
+        // FIX: Check if we need a new page BEFORE rendering the table
+// The table is 6 rows × ~7mm per row = ~42mm total height
+const tableHeight = 50; // mm - conservative estimate
+checkPageBreak(tableHeight);
+
+setH2();
+doc.text("C. METHODOLOGY & STANDARDS", margin, currentY);
+currentY += 6;
+
+const methodData = [
+    ['Primary Standard:', 'PEF 3.1 (Product Environmental Footprint)'],
+    ['Supporting Standards:', 'ISO 14040:2006, ISO 14044:2006, GHG Protocol'],
+    ['Data Sources:', 'AGRIBALYSE 3.2, JRC EF 3.1, AWARE 2.0, GLEC v3.2'],
+    ['System Boundary:', 'Cradle-to-Retail + End-of-Life'],
+    ['Allocation Method:', 'Mass allocation (ISO 14044 hierarchy)'],
+    ['Cut-off Criteria:', '5% mass/energy (Foreground/Background analysis)']
+];
+
+doc.autoTable({
     ...standardTableStyles,
     startY: currentY,
     body: methodData,
@@ -9735,7 +9738,8 @@ const uncertaintyData = [
         0: { fontStyle: 'bold', cellWidth: 70, textColor: COLORS.primary },
         1: { cellWidth: 110 }
     },
-    margin: { left: margin }
+    margin: { left: margin },
+    pageBreak: 'avoid'  // ← THIS IS THE FIX: Prevents row splitting
 });
 
 currentY = doc.lastAutoTable.finalY + 8;
