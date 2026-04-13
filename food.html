@@ -8775,50 +8775,47 @@ clearanceItems.forEach(item => {
         // ============================================================
         // PAGE 2: FULL 16-CATEGORY PEF SCORECARD
         // ============================================================
-doc.addPage();
+        // Start Page 2
+        doc.addPage();
         currentY = margin;
         
         setH1();
-        doc.text("PEF 3.1 COMPLETE IMPACT SCORECARD", margin, currentY);
+        doc.text(safeString("PEF 3.1 COMPLETE IMPACT SCORECARD"), margin, currentY);
         currentY += 8;
         
         setSmall();
-        doc.text("16 Impact Categories - JRC EF 3.1 Characterization - Normalized per kg product", margin, currentY);
+        doc.text(safeString("16 Impact Categories - JRC EF 3.1 Characterization - Normalized per kg product"), margin, currentY);
         currentY += 10;
         
         const pefTableBody = [];
         const pefTableHead = [['Impact Category', 'Total Impact', 'Unit', 'Per kg Product', 'DQR', 'Uncertainty']];
         
         Object.keys(finalPefResults).sort().forEach(cat => {
-    const data = finalPefResults[cat];
-    const unit = safeString(data.unit || '');
-    const total = data.total || 0;
-    const perKg = pWeightKg > 0 ? total / pWeightKg : 0;
-    const dqrQuality = foodCalculationEngine.getDQRQualityLevel(dqrValue);
-    const catUncertainty = audit.uncertainty_analysis?.overall_uncertainty || 15;
-    
-    // Format based on magnitude - use fixed decimal for readability
-    const formatPefValue = (val) => {
-        if (val === 0) return '0.00000';
-        if (Math.abs(val) >= 1000) return val.toFixed(2);
-        if (Math.abs(val) >= 1) return val.toFixed(4);
-        if (Math.abs(val) >= 0.001) return val.toFixed(5);
-        if (Math.abs(val) >= 0.00001) return val.toFixed(6);
-        return val.toExponential(3);
-    };
-    
-    pefTableBody.push([
-        safeString(cat),
-        formatPefValue(total),
-        unit,
-        formatPefValue(perKg),
-        dqrQuality.level,
-        '±' + catUncertainty + '%'
-    ]);
-});
-        
-        // Check page break before 16-category table
-        checkPageBreak(200); // Full table needs significant space
+            const data = finalPefResults[cat];
+            const unit = safeString(data.unit || '');
+            const total = data.total || 0;
+            const perKg = pWeightKg > 0 ? total / pWeightKg : 0;
+            const dqrQuality = foodCalculationEngine.getDQRQualityLevel(dqrValue);
+            const catUncertainty = audit.uncertainty_analysis?.overall_uncertainty || 15;
+            
+            const formatPefValue = (val) => {
+                if (val === 0) return '0.00000';
+                if (Math.abs(val) >= 1000) return val.toFixed(2);
+                if (Math.abs(val) >= 1) return val.toFixed(4);
+                if (Math.abs(val) >= 0.001) return val.toFixed(5);
+                if (Math.abs(val) >= 0.00001) return val.toFixed(6);
+                return val.toExponential(3);
+            };
+            
+            pefTableBody.push([
+                safeString(cat),
+                formatPefValue(total),
+                unit,
+                formatPefValue(perKg),
+                dqrQuality.level,
+                '+/- ' + catUncertainty + '%'  // ← FIXED: ASCII safe
+            ]);
+        });
         
         doc.autoTable({
             ...standardTableStyles,
@@ -8854,19 +8851,22 @@ doc.addPage();
 2. x Normalization: ${norm}
 3. x Weighting: ${weight}
 4. = Weighted Impact: ${data.weighted.toExponential(3)} uPt`;
-    
+            
+            // Safe division check
+            const contributionPct = singleScorePDF.weightedScore > 0 ? 
+                (data.weighted / singleScorePDF.weightedScore * 100).toFixed(1) : '0.0';
+
             return [
                 safeString(cat) + pefMathTrace,
                 data.raw.toExponential(2),
-                (data.weighted / singleScorePDF.weightedScore * 100).toFixed(1) + '%'
+                contributionPct + '%'
             ];
         });
 
-        // Force enough space for header + 8-row table (with math trace, rows are taller)
         checkPageBreak(150);
 
         setH2();
-        doc.text("PEF SINGLE SCORE BREAKDOWN (EF 3.1)", margin, currentY);
+        doc.text(safeString("PEF SINGLE SCORE BREAKDOWN (EF 3.1)"), margin, currentY);
         currentY += 6;
 
         doc.autoTable({
@@ -8885,7 +8885,7 @@ doc.addPage();
 
         currentY = doc.lastAutoTable.finalY + 8;
 
-        // Eco-Score Box with math trace
+        // Eco-Score Box
         let bgColor = ecoColor;
         if (ecoGrade === 'C') {
             bgColor = '#F9E79F';
@@ -8906,18 +8906,17 @@ doc.addPage();
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.text(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} uPt)`, margin + 5, currentY + 8);
-
-// Add small math note for Eco-Score
-doc.setFont("helvetica", "normal");
-doc.setFontSize(7);
-doc.text(`Calculation: Sum(Weighted Impact) - Organic Bonus = ${mPt.toFixed(1)} uPt`, margin + 5, currentY + 13);
+        doc.text(safeString(`Front-of-Pack Eco-Score: GRADE ${ecoGrade} (${mPt.toFixed(1)} uPt)`), margin + 5, currentY + 8);
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.text(safeString(`Calculation: Sum(Weighted Impact) - Organic Bonus = ${mPt.toFixed(1)} uPt`), margin + 5, currentY + 13);
+        
         currentY += 18;
 
-        // FOP Eco-Score Disclaimer (Green Claims Directive)
         setSmall();
         doc.setTextColor(160, 70, 0);
-        doc.text("* Screening LCA only. Third-party verification required for consumer-facing claims per Green Claims Directive.", margin, currentY);
+        doc.text(safeString("* Screening LCA only. Third-party verification required for consumer-facing claims per Green Claims Directive."), margin, currentY);
         doc.setTextColor(...COLORS.dark);
         currentY += 6;
         
