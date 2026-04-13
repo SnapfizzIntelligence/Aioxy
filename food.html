@@ -8574,12 +8574,12 @@ const standardTableStyles = {
         const fossilTree = audit.pefCategories["Resource Use, fossils"]?.contribution_tree;
         const landTree = audit.pefCategories["Land Use"]?.contribution_tree;
         
-        const totalCo2 = audit.pefCategories["Climate Change"].total;
-        const totalWater = audit.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0;
-        const totalFossil = audit.pefCategories["Resource Use, fossils"]?.total || 0;
-        const totalLand = audit.pefCategories["Land Use"]?.total || 0;
-        const biogenicRemovals = audit.pefCategories["Climate Change"].biogenic_removals || 0;
-        
+        const totalCo2 = audit.pefCategories?.["Climate Change"]?.total || 0;
+const totalWater = audit.pefCategories?.["Water Use/Scarcity (AWARE)"]?.total || 0;
+const totalFossil = audit.pefCategories?.["Resource Use, fossils"]?.total || 0;
+const totalLand = audit.pefCategories?.["Land Use"]?.total || 0;
+const biogenicRemovals = audit.pefCategories?.["Climate Change"]?.biogenic_removals || 0;
+    
         const mb = audit.mass_balance;
         const pWeightKg = mb?.final_content_weight_kg || parseFloat(document.getElementById('productWeight')?.value) || 0.2;
         
@@ -9817,11 +9817,11 @@ doc.text("A. DATA QUALITY RATING (DQR)", margin, currentY);
 currentY += 6;
 
 const dqrComps = audit.dqr_summary?.component_dqrs || [];
-const totalCO2 = audit.pefCategories["Climate Change"].total;
-
+const totalCO2 = audit.pefCategories?.["Climate Change"]?.total || 0;
+    
 // 🛠️ FIXED HELPER: Crawls all lifecycle stages to find impact
 const getComponentCO2 = (componentName) => {
-    const tree = audit.pefCategories["Climate Change"].contribution_tree || {};
+    const tree = audit.pefCategories?.["Climate Change"]?.contribution_tree || {};
     
     // Search across ALL PEF lifecycle stages
     const stages = ['Ingredients', 'Manufacturing', 'Packaging', 'Transport', 'Waste'];
@@ -9837,21 +9837,16 @@ const getComponentCO2 = (componentName) => {
 };
 
 // 🛠️ CALCULATE ROWS: Ensure all items (including Energy & Logistics) are mapped
-const dqrRows = dqrComps.map(c => {
-    // 🛠️ FIX: Use pre-calculated impact if available, otherwise lookup by name
-    const co2Impact = (c.impact !== undefined) ? c.impact : getComponentCO2(c.name);
+const dqrRows = (audit.dqr_summary?.component_dqrs || []).map(c => {
+    const co2Impact = (c.impact !== undefined) ? c.impact : (getComponentCO2(c.name) || 0);
+    const weightPct = ((co2Impact / totalCO2) * 100).toFixed(1);
+    const impactDisplay = `${safeFix(co2Impact, 3)} kg (${weightPct}%)`;
     
-    // Calculate weight against TOTAL product impact
-    const weightPct = totalCO2 > 0 ? ((co2Impact / totalCO2) * 100).toFixed(1) : '0.0';
-    const impactDisplay = `${co2Impact.toFixed(3)} kg (${weightPct}%)`;
-    
-    // ✅ NULL-SAFE DQR values using safeFix()
-    const baseDQR = c.base_dqr ? safeFix(c.base_dqr) : safeFix(c.dqr);
-    const penalty = c.dqr_penalty ? c.dqr_penalty : 0;
+    const baseDQR = safeFix(c.base_dqr || c.dqr);
+    const penalty = c.dqr_penalty || 0;
     const penaltySign = penalty >= 0 ? '+' : '';
     const penaltyDisplay = `${penaltySign}${safeFix(penalty)}`;
     
-    // ✅ PROPER BRACKETS - NO SYNTAX ERROR
     let penaltyReason = '';
     if (c.is_proxy) {
         penaltyReason = ' (Proxy Data)';
@@ -9861,16 +9856,15 @@ const dqrRows = dqrComps.map(c => {
         penaltyReason = ' (Regional Adjustment)';
     }
     
-    // ✅ NULL-SAFE in template literal
     const dqrMathTrace = `\n--- CALCULATION NODE ---\n1. Base DQR: ${baseDQR}\n2. Adjustment: ${penaltyDisplay}${penaltyReason}\n3. Final DQR: ${safeFix(c.dqr)}`;
     
     return [
-        truncate(c.name, 25) + dqrMathTrace,
-        c.source || 'AGRIBALYSE 3.2',
-        safeFix(c.dqr, 2),
-        impactDisplay, 
-        c.is_proxy ? 'Proxy' : 'Direct',
-        formatPercent(c.uncertainty)
+        safeString(truncate(c.name, 25) + dqrMathTrace),  // 0: Component
+        safeString(c.source || 'AGRIBALYSE 3.2'),         // 1: Data Source
+        safeFix(c.dqr, 2),                                 // 2: DQR
+        safeString(impactDisplay),                         // 3: Impact-Weighted
+        c.is_proxy ? 'Proxy' : 'Direct',                   // 4: Type
+        formatPercent(c.uncertainty || 15)                 // 5: Uncertainty
     ];
 });
     // BEFORE the DQR table
