@@ -8420,6 +8420,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         .replace(/←/g, 'from')
         .replace(/₂/g, '2')
         .replace(/\u2082/g, '2')
+        .replace(/₄/g, '4')         // ← ADD: CH₄ → CH4
+        .replace(/\u2084/g, '4')    // ← ADD: Unicode CH₄
         .replace(/✓/g, '[OK]')
         .replace(/⚠️/g, '[!]')
         .replace(/🛡️/g, '')
@@ -8432,13 +8434,22 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         .replace(/📋/g, 'DDS:')
         .replace(/⚙️/g, '[Adj]')
         .replace(/\|/g, '-')
-        .replace(/Σ/g, 'Sum')       // NEW: Sigma → Sum
-        .replace(/×/g, 'x')         // NEW: Multiply → x
-        .replace(/µ/g, 'u')         // NEW: Micro → u
+        .replace(/Σ/g, 'Sum')
+        .replace(/×/g, 'x')
+        .replace(/µ/g, 'u')
+        .replace(/±/g, '+/-')       // ← ADD: Plus-minus symbol
+        .replace(/\u00B1/g, '+/-')  // ← ADD: Unicode plus-minus
+        .replace(/[^\x00-\x7F]/g, '') // ← ADD: Ultimate safety net
         .replace(/\s+/g, ' ')
         .trim();
 };
-        
+    
+        const safeFix = (val, decimals = 2) => {
+    if (typeof val === 'number' && !isNaN(val) && isFinite(val)) {
+        return val.toFixed(decimals);
+    }
+    return '0.' + '0'.repeat(decimals);
+};
         const truncate = (str, maxLen = 35) => {
             if (!str) return '';
             const safe = safeString(str);
@@ -8511,7 +8522,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         };
 
         // ============================================================
-// STANDARD TABLE STYLES (WITH NULL-SAFE didParseCell)
+// STANDARD TABLE STYLES (WITH MASTER SANITIZATION HOOK)
 // ============================================================
 const standardTableStyles = {
     theme: 'plain',
@@ -8529,12 +8540,19 @@ const standardTableStyles = {
         halign: 'left'
     },
     alternateRowStyles: { fillColor: COLORS.lightBg },
-    // NULL-SAFE FIX: Prevent "Cannot read properties of undefined"
     didParseCell: (data) => {
+        // 🛡️ THE SILVER BULLET: Sanitize EVERY cell before rendering
+        if (data.cell && data.cell.text) {
+            if (Array.isArray(data.cell.text)) {
+                data.cell.text = data.cell.text.map(t => safeString(t));
+            } else {
+                data.cell.text = safeString(data.cell.text);
+            }
+        }
+        
+        // Alignment Fix
         if (data.cell && data.column) {
-            // Use optional chaining to safely access halign
             const columnHalign = data.column.styles?.halign;
-            // Only force left align if the column wasn't explicitly set to right
             if (columnHalign !== 'right') {
                 data.cell.styles.halign = 'left';
             }
@@ -9765,21 +9783,21 @@ if (allEoLComponents.length > 0) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...COLORS.primary);
-    doc.text("GRAND TOTAL:", margin, currentY);
-    doc.text(`${totalCo2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
-    
-    // Normalized per kg
-    currentY += 8;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...COLORS.dark);
-    doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
-    
-    // Uncertainty
-    currentY += 6;
-    doc.setFontSize(8);
-    doc.setTextColor(...COLORS.gray);
-    doc.text(`Uncertainty: \u00B1${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`, margin, currentY);
+    doc.text(safeString("GRAND TOTAL:"), margin, currentY);
+doc.text(safeString(`${safeFix(totalCo2, 4)} kg CO2e`), pageWidth - margin - 2, currentY, { align: 'right' });
+
+// Normalized per kg
+currentY += 8;
+doc.setFontSize(9);
+doc.setFont("helvetica", "normal");
+doc.setTextColor(...COLORS.dark);
+doc.text(safeString(`Normalized Impact: ${safeFix(totalCo2 / pWeightKg, 4)} kg CO2e per kg product`), margin, currentY);
+
+// Uncertainty
+currentY += 6;
+doc.setFontSize(8);
+doc.setTextColor(...COLORS.gray);
+doc.text(safeString(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`), margin, currentY);
     
     currentY += 15;
 
@@ -9820,30 +9838,36 @@ const getComponentCO2 = (componentName) => {
 
 // 🛠️ CALCULATE ROWS: Ensure all items (including Energy & Logistics) are mapped
 const dqrRows = dqrComps.map(c => {
-    // 🛠️ FIX: Use pre-calculated impact if available (for summary rows), otherwise lookup by name
+    // 🛠️ FIX: Use pre-calculated impact if available, otherwise lookup by name
     const co2Impact = (c.impact !== undefined) ? c.impact : getComponentCO2(c.name);
     
     // Calculate weight against TOTAL product impact
     const weightPct = totalCO2 > 0 ? ((co2Impact / totalCO2) * 100).toFixed(1) : '0.0';
     const impactDisplay = `${co2Impact.toFixed(3)} kg (${weightPct}%)`;
     
-    // 🆕 DYNAMIC DQR MATH TRACE
-    const baseDQR = c.base_dqr ? c.base_dqr.toFixed(2) : c.dqr.toFixed(2);
+    // ✅ NULL-SAFE DQR values using safeFix()
+    const baseDQR = c.base_dqr ? safeFix(c.base_dqr) : safeFix(c.dqr);
     const penalty = c.dqr_penalty ? c.dqr_penalty : 0;
     const penaltySign = penalty >= 0 ? '+' : '';
-    const penaltyDisplay = `${penaltySign}${penalty.toFixed(2)}`;
+    const penaltyDisplay = `${penaltySign}${safeFix(penalty)}`;
     
+    // ✅ PROPER BRACKETS - NO SYNTAX ERROR
     let penaltyReason = '';
-    if (c.is_proxy) penaltyReason = ' (Proxy Data)';
-    else if (c.hasPrimaryData) penaltyReason = ' (Primary Data Reward)';
-    else if (c.dqr_penalty > 0) penaltyReason = ' (Regional Adjustment)';
+    if (c.is_proxy) {
+        penaltyReason = ' (Proxy Data)';
+    } else if (c.hasPrimaryData) {
+        penaltyReason = ' (Primary Data Reward)';
+    } else if (c.dqr_penalty > 0) {
+        penaltyReason = ' (Regional Adjustment)';
+    }
     
-    const dqrMathTrace = `\n--- CALCULATION NODE ---\n1. Base DQR: ${baseDQR}\n2. Adjustment: ${penaltyDisplay}${penaltyReason}\n3. Final DQR: ${c.dqr.toFixed(2)}`;
+    // ✅ NULL-SAFE in template literal
+    const dqrMathTrace = `\n--- CALCULATION NODE ---\n1. Base DQR: ${baseDQR}\n2. Adjustment: ${penaltyDisplay}${penaltyReason}\n3. Final DQR: ${safeFix(c.dqr)}`;
     
     return [
         truncate(c.name, 25) + dqrMathTrace,
         c.source || 'AGRIBALYSE 3.2',
-        formatNumber(c.dqr, 2), // Changed to 2 decimals
+        safeFix(c.dqr, 2),
         impactDisplay, 
         c.is_proxy ? 'Proxy' : 'Direct',
         formatPercent(c.uncertainty)
