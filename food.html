@@ -9711,10 +9711,15 @@ const uncertaintyData = [
             currentY = doc.lastAutoTable.finalY + 10;
         }
         
-        // FIX: Check if heading + table fit together
-// Heading = ~10mm, Table = ~42mm, Total = ~52mm
-const sectionHeight = 55; // mm - conservative estimate
-checkPageBreak(sectionHeight);
+        // NUCLEAR FIX: Force heading and table to stay together
+// Calculate exact space needed: Heading (10mm) + 6 rows table (42mm) + padding (8mm) = 60mm
+const sectionHeight = 60;
+
+// Check if we need a new page BEFORE drawing anything
+if (currentY + sectionHeight > pageHeight - margin) {
+    doc.addPage();
+    currentY = margin;
+}
 
 setH2();
 doc.text("C. METHODOLOGY & STANDARDS", margin, currentY);
