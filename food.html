@@ -8659,7 +8659,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             doc.setTextColor(...COLORS.warning);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9);
-            doc.text("[!] GREEN CLAIMS DIRECTIVE NOTICE: Comparative assertion requires third-party verification per ISO 14044.", margin, currentY);
+            doc.text("[!] ISO 14044 §6.1 NOTICE: This assessment contains a comparative assertion. Third-party critical review is mandatory for any public or B2B comparative claims.", margin, currentY);
             currentY += 8;
         }
         
@@ -8675,12 +8675,13 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         currentY += 6;
         
         const detailsData = [
-            ['Assessment ID:', audit.dppId || 'N/A'],
-            ['Product:', pName],
-            ['Date of Assessment:', dateStr],
-            ['Manufacturing Location:', mfgCountry],
-            ['Comparison Baseline:', safeString(audit.comparison_baseline?.name || 'None')]
-        ];
+    ['Assessment ID:', audit.dppId || 'N/A'],
+    ['Product:', pName],
+    ['Date of Assessment:', dateStr],
+    ['Manufacturing Location:', mfgCountry],
+    ['Comparison Baseline:', safeString(audit.comparison_baseline?.name || 'None')],
+    ['', '[Screening-level parametric twin for internal eco-design only. Not a verified comparative claim.]']
+]; 
 
         if (audit.comparison_baseline?.bat_processing_note) {
             detailsData.push(['Baseline Processing:', safeString(audit.comparison_baseline.bat_processing_note)]);
@@ -9316,37 +9317,39 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         }
 
         const mfgComps = ccTree.Manufacturing?.components || [];
-        if (mfgComps.length > 0) {
-            const mfgRows = mfgComps.map(c => {
-                const gridIntensity = c.grid_intensity || 475;
-                const energySource = c.energy_source || 'Grid Mix';
-                
-                const mfgMathTrace = `\n\n--- CALCULATION NODE ---\n1. Energy Load: ${safeString(c.details || 'Standard Processing')}\n2. Grid Intensity: ${gridIntensity} g CO2e/kWh (${energySource})\n3. Calculation: Energy (kWh) x Grid EF = ${c.subtotal.toFixed(4)} kg CO2e`;
+if (mfgComps.length > 0) {
+    const mfgRows = mfgComps.map(c => {
+        const gridIntensity = c.grid_intensity || 475;
+        const energySource = c.energy_source || 'Grid Mix';
+        
+        // Build a clean, single-line details string
+        const detailsText = safeString(c.details || 'Standard Processing');
+        const mathTraceCompact = ` [CALC: ${safeString(c.details || 'Standard Processing')} | Grid: ${gridIntensity} g CO₂e/kWh (${energySource}) | = ${c.subtotal.toFixed(4)} kg CO₂e]`;
 
-                return [
-                    safeString(c.name),
-                    safeString(c.details || 'Standard Processing') + mfgMathTrace,
-                    safeString(energySource),
-                    formatNumber(c.subtotal, 4) + ' kg CO2e'
-                ];
-            });
-            
-            doc.autoTable({
-                ...standardTableStyles,
-                startY: currentY,
-                head: [['Process', 'Details', 'Energy Source', 'Impact']],
-                body: mfgRows,
-                columnStyles: {
-                    0: { cellWidth: 45 },
-                    1: { cellWidth: 55 },
-                    2: { cellWidth: 40 },
-                    3: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
-                },
-                margin: { left: margin }
-            });
-            
-            currentY = doc.lastAutoTable.finalY + 10;
-        }
+        return [
+            safeString(c.name),
+            detailsText + mathTraceCompact,
+            safeString(energySource),
+            formatNumber(c.subtotal, 4) + ' kg CO2e'
+        ];
+    });
+    
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        head: [['Process', 'Details', 'Energy Source', 'Impact']],
+        body: mfgRows,
+        columnStyles: {
+            0: { cellWidth: 45 },
+            1: { cellWidth: 55 },
+            2: { cellWidth: 40 },
+            3: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 10;
+    }
         
         // ============================================================
         // C. PACKAGING (Scope 3 Cat 1)
