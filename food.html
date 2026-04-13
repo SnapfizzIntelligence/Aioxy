@@ -9338,6 +9338,10 @@ currentY = doc.lastAutoTable.finalY + 5;
 // Tertiary Packaging (PEF Proxy)
 const tertiaryComps = ccTree.Packaging?.components || [];
 if (tertiaryComps.length > 0) {
+    // 🛠️ FIX: Check if we need a page break BEFORE starting
+    const neededSpace = 15 + (tertiaryComps.length * 8); // Heading + table rows
+    checkPageBreak(neededSpace);
+    
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(...COLORS.primary);
@@ -9358,7 +9362,8 @@ if (tertiaryComps.length > 0) {
             0: { cellWidth: 140 },
             1: { cellWidth: 40, halign: 'right', fontStyle: 'bold' }
         },
-        margin: { left: margin }
+        margin: { left: margin },
+        pageBreak: 'avoid'  // 🆕 THIS KEEPS TABLE WITH HEADING
     });
     
     currentY = doc.lastAutoTable.finalY + 5;
