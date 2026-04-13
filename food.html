@@ -8659,8 +8659,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             doc.setTextColor(...COLORS.warning);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9);
-            doc.text("[!] ISO 14044 §6.1 NOTICE: This assessment contains a comparative assertion. Third-party critical review is mandatory for any public or B2B comparative claims.", margin, currentY);
-            currentY += 8;
+            doc.text("[!] ISO 14044 §6.1 NOTICE: This assessment contains a comparative assertion.", margin, currentY);
+currentY += 5;
+doc.text("Third-party critical review is mandatory for any public or B2B comparative claims.", margin, currentY);
+currentY += 8;
         }
         
         currentY += 4;
