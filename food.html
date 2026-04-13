@@ -9084,11 +9084,19 @@ columnStyles: {
                 const adjustments = [];
                 
                 if (pd.yieldKgPerHa) {
-                    const baselineYield = ing.universal_adjustments?.baseline_yield || 4000;
-                    const yieldAdj = (baselineYield / pd.yieldKgPerHa).toFixed(2);
-                    const direction = pd.yieldKgPerHa > baselineYield ? 'v' : '^';
-                    adjustments.push(`${direction} Yield: ${yieldAdj}x (baseline ${baselineYield} to ${pd.yieldKgPerHa} kg/ha)`);
-                }
+    const baselineYield = ing.universal_adjustments?.baseline_yield || 4000;
+    const yieldAdj = (baselineYield / pd.yieldKgPerHa).toFixed(2);
+    const direction = pd.yieldKgPerHa > baselineYield ? 'v' : '^';
+    
+    // FIXED: Explain the direction clearly
+    if (pd.yieldKgPerHa > baselineYield) {
+        // Better yield = lower impact
+        adjustments.push(`v Yield: ${yieldAdj}x LOWER impact (baseline ${baselineYield} → ${pd.yieldKgPerHa} kg/ha, +${((pd.yieldKgPerHa/baselineYield - 1)*100).toFixed(0)}% better yield)`);
+    } else {
+        // Worse yield = higher impact
+        adjustments.push(`^ Yield: ${yieldAdj}x HIGHER impact (baseline ${baselineYield} → ${pd.yieldKgPerHa} kg/ha, -${((1 - pd.yieldKgPerHa/baselineYield)*100).toFixed(0)}% worse yield)`);
+    }
+                                                                                                                         }
                 
                 if (pd.nitrogenKgPerTon) {
                     const baselineN = ing.universal_adjustments?.baseline_nitrogen || 21;
@@ -9670,14 +9678,23 @@ currentY += 18;
         
         const monteCarlo = audit.uncertainty_analysis?.monte_carlo;
         if (monteCarlo) {
-            const uncertaintyData = [
-                ['Climate Change - Mean:', formatNumber(monteCarlo.co2?.mean || totalCo2, 4) + ' kg CO2e'],
-                ['Climate Change - 90% CI:', formatNumber(monteCarlo.co2?.p5 || 0, 4) + ' to ' + formatNumber(monteCarlo.co2?.p95 || 0, 4) + ' kg CO2e'],
-                ['Water Scarcity - Mean:', formatNumber(monteCarlo.water?.mean || totalWater, 4) + ' m3 eq.'],
-                ['Water Scarcity - 90% CI:', formatNumber(monteCarlo.water?.p5 || 0, 4) + ' to ' + formatNumber(monteCarlo.water?.p95 || 0, 4) + ' m3 eq.'],
-                ['Iterations:', monteCarlo.metadata?.iterations || '500'],
-                ['Methodology:', safeString(monteCarlo.metadata?.methodology || 'Monte Carlo Lognormal')]
-            ];
+            // Calculate CI width percentages for transparency
+const co2CIWidth = monteCarlo.co2?.p95 && monteCarlo.co2?.p5 && monteCarlo.co2?.mean ? 
+    ((monteCarlo.co2.p95 - monteCarlo.co2.p5) / monteCarlo.co2.mean * 100).toFixed(1) : '0.0';
+    
+const waterCIWidth = monteCarlo.water?.p95 && monteCarlo.water?.p5 && monteCarlo.water?.mean ? 
+    ((monteCarlo.water.p95 - monteCarlo.water.p5) / monteCarlo.water.mean * 100).toFixed(1) : '0.0';
+
+const uncertaintyData = [
+    ['Climate Change - Mean:', formatNumber(monteCarlo.co2?.mean || totalCo2, 4) + ' kg CO2e'],
+    ['Climate Change - 90% CI:', formatNumber(monteCarlo.co2?.p5 || 0, 4) + ' to ' + formatNumber(monteCarlo.co2?.p95 || 0, 4) + ' kg CO2e'],
+    ['Climate Change - CI Width:', `±${(co2CIWidth/2).toFixed(1)}% (${co2CIWidth}% total range)`],
+    ['Water Scarcity - Mean:', formatNumber(monteCarlo.water?.mean || totalWater, 4) + ' m3 eq.'],
+    ['Water Scarcity - 90% CI:', formatNumber(monteCarlo.water?.p5 || 0, 4) + ' to ' + formatNumber(monteCarlo.water?.p95 || 0, 4) + ' m3 eq.'],
+    ['Water Scarcity - CI Width:', `±${(waterCIWidth/2).toFixed(1)}% (${waterCIWidth}% total range)`],
+    ['Iterations:', monteCarlo.metadata?.iterations || '500'],
+    ['Methodology:', safeString(monteCarlo.metadata?.methodology || 'Monte Carlo Lognormal')]
+];
             
             doc.autoTable({
                 ...standardTableStyles,
