@@ -9711,10 +9711,10 @@ const uncertaintyData = [
             currentY = doc.lastAutoTable.finalY + 10;
         }
         
-        // FIX: Check if we need a new page BEFORE rendering the table
-// The table is 6 rows × ~7mm per row = ~42mm total height
-const tableHeight = 50; // mm - conservative estimate
-checkPageBreak(tableHeight);
+        // FIX: Check if heading + table fit together
+// Heading = ~10mm, Table = ~42mm, Total = ~52mm
+const sectionHeight = 55; // mm - conservative estimate
+checkPageBreak(sectionHeight);
 
 setH2();
 doc.text("C. METHODOLOGY & STANDARDS", margin, currentY);
@@ -9739,11 +9739,11 @@ doc.autoTable({
         1: { cellWidth: 110 }
     },
     margin: { left: margin },
-    pageBreak: 'avoid'  // ← THIS IS THE FIX: Prevents row splitting
+    pageBreak: 'avoid'
 });
 
 currentY = doc.lastAutoTable.finalY + 8;
-
+        
 // 🆕 SENSITIVITY ANALYSIS SECTION
 if (audit.comparison_baseline && audit.comparison_baseline.sensitivity_analysis) {
     const sa = audit.comparison_baseline.sensitivity_analysis;
