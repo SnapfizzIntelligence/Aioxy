@@ -97,13 +97,14 @@ function displayAuditTrail() {
     const getCtry = (code) => (window.aioxyData?.countries?.[code]?.name || code);
 
     const productName = document.getElementById('productName')?.value || 'Assessed Product';
-    const dateStr = new Date().toISOString().split('T')[0];
+        const dateStr = new Date().toISOString().split('T')[0];
     const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
     
     // 🛡️ REGULATOR FIX: Explicitly calculate the normalized per-kg impact
     const totalImpact = catCC.total;
     const pWeightKg = mb.final_content_weight_kg || 0.2;
     const normalizedImpact = totalImpact / pWeightKg;
+
 
     // Build HTML with QR placeholder
     let html = `
@@ -176,104 +177,114 @@ function displayAuditTrail() {
                 <thead style="background: #eee;">
                     <tr>
                         <th style="text-align:left; padding: 8px;">INPUT COMPONENT</th>
-                        <th style="text-align:left; padding: 8px;">ORIGIN</th>
-                        <th style="text-align:left; padding: 8px;">PROCESSING</th>
-                        <th style="text-align:right; padding: 8px;">NET MASS</th>
-                        <th style="text-align:left; padding: 8px;">DATA SOURCE</th>
-                        <th style="text-align:left; padding: 8px;">PHYSICS ADJUSTMENTS</th>
-                        <th style="text-align:right; padding: 8px;">TOTAL CO₂e</th>
+<th style="text-align:left; padding: 8px;">ORIGIN</th>
+<th style="text-align:left; padding: 8px;">PROCESSING</th>
+<th style="text-align:right; padding: 8px;">NET MASS</th>
+<th style="text-align:left; padding: 8px;">DATA SOURCE</th>
+<th style="text-align:left; padding: 8px;">PHYSICS ADJUSTMENTS</th>
+<th style="text-align:right; padding: 8px;">TOTAL CO₂e</th>
                     </tr>
                 </thead>
                 <tbody>`;
 
-    // LOOP: Ingredients
-    const ingredients = catCC.contribution_tree.Ingredients.components;
-    ingredients.forEach(ing => {
-        const adj = ing.universal_adjustments || {};
-        const isPrimary = ing.primary_data_used;
-        const origin = adj.adjusted_for_country || 'FR';
-        const baseOrigin = adj.adjusted_from_country || 'FR';
-        const isProxy = origin !== baseOrigin;
+// LOOP: Ingredients
+const ingredients = catCC.contribution_tree.Ingredients.components;
+ingredients.forEach(ing => {
+    const adj = ing.universal_adjustments || {};
+    const isPrimary = ing.primary_data_used;
+    const origin = adj.adjusted_for_country || 'FR';
+    const baseOrigin = adj.adjusted_from_country || 'FR';
+    const isProxy = origin !== baseOrigin;
 
-        let bridgeHTML = '';
+    let bridgeHTML = '';
 
-        if (adj.method === "eudr_dluc_penalty") {
-            bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
-        } else if (isPrimary && ing.primary_data) {
-            const pd = ing.primary_data;
-            const ddsText = pd.ddsReference ? ` | DDS: ${pd.ddsReference}` : '';
-            const farmRegionText = pd.farmRegion ? pd.farmRegion : 'Not specified';
-            
-            let irrigationText = 'Not specified';
-            if (pd.waterSource === 'rainfed') irrigationText = 'Rainfed';
-            else if (pd.waterSource === 'surface') irrigationText = 'Surface water';
-            else if (pd.waterSource === 'groundwater') irrigationText = 'Groundwater';
-            else if (pd.waterSource === 'mixed') irrigationText = 'Mixed';
-            
-            let practiceText = 'Conventional';
-            if (pd.farmingPractice === 'organic') practiceText = 'Organic';
-            else if (pd.farmingPractice === 'regen') practiceText = 'Regenerative';
-            else if (pd.farmingPractice === 'precision') practiceText = 'Precision';
-            
-            let adjustmentSummary = '';
-            if (pd.waterSource === 'rainfed') adjustmentSummary += '💧 Rainfed (-95% water) | ';
-            if (pd.farmingPractice === 'organic') adjustmentSummary += '🌱 Organic (-15 µPt) | ';
-            if (pd.farmingPractice === 'regen') adjustmentSummary += '🌍 Regen Ag (+20% soil C) | ';
-            if (adjustmentSummary.endsWith(' | ')) adjustmentSummary = adjustmentSummary.slice(0, -3);
-            
-            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
-                <span style="font-size:0.85em; color: #555;">
-                📍 Farm: ${farmRegionText}<br>
-                🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
-                🌾 Yield: ${pd.yieldKgPerHa} kg/ha | 💧 N: ${pd.nitrogenKgPerTon} kg/t<br>
-                💦 Irrigation: ${irrigationText} | 🌱 Practice: ${practiceText}<br>
-                📋 ${ddsText || 'DDS: Not provided'}<br>
-                ${adjustmentSummary ? `<span style="color:#2C7A7B;">⚙️ ${adjustmentSummary}</span>` : ''}
-                </span>`;
-        } else if (isPrimary) {
-            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
-        } else if (isProxy) {
-            let factors = [];
-            if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
-            if (factors.length > 0) {
-                bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
-            } else {
-                bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
-            }
-        } else {
-            bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
-        }
+    if (adj.method === "eudr_dluc_penalty") {
+        bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
 
-        if (ing.name.toLowerCase().includes('animal feed')) {
-            bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
-        }
-
-        if (ing.physics_note) {
-            bridgeHTML += `<br><span style="color:#D35400; font-size:0.85em; font-style:italic;">📝 ${ing.physics_note}</span>`;
-        }
-
-        const processState = ing.processingState || 'raw';
-        const archetypes = window.aioxyData?.processing_archetypes || {};
-        const archetype = archetypes[processState];
-
-        let processingDisplay = 'Raw (1.00x)';
-        if (archetype && processState !== 'raw') {
-            processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
-        }
-
-        if (archetype && processState !== 'raw') {
-            bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">
-                ⚙️ [Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)
+    } else if (isPrimary && ing.primary_data) {
+        const pd = ing.primary_data;
+        const ddsText = pd.ddsReference ? ` | DDS: ${pd.ddsReference}` : '';
+        const farmRegionText = pd.farmRegion ? pd.farmRegion : 'Not specified';
+        
+        // Format irrigation text
+        let irrigationText = 'Not specified';
+        if (pd.waterSource === 'rainfed') irrigationText = 'Rainfed';
+        else if (pd.waterSource === 'surface') irrigationText = 'Surface water';
+        else if (pd.waterSource === 'groundwater') irrigationText = 'Groundwater';
+        else if (pd.waterSource === 'mixed') irrigationText = 'Mixed';
+        
+        // Format practice text
+        let practiceText = 'Conventional';
+        if (pd.farmingPractice === 'organic') practiceText = 'Organic';
+        else if (pd.farmingPractice === 'regen') practiceText = 'Regenerative';
+        else if (pd.farmingPractice === 'precision') practiceText = 'Precision';
+        
+        // Build adjustment summary
+        let adjustmentSummary = '';
+        if (pd.waterSource === 'rainfed') adjustmentSummary += '💧 Rainfed (-95% water) | ';
+        if (pd.farmingPractice === 'organic') adjustmentSummary += '🌱 Organic (-15 µPt) | ';
+        if (pd.farmingPractice === 'regen') adjustmentSummary += '🌍 Regen Ag (+20% soil C) | ';
+        if (adjustmentSummary.endsWith(' | ')) adjustmentSummary = adjustmentSummary.slice(0, -3);
+        
+        bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
+            <span style="font-size:0.85em; color: #555;">
+            📍 Farm: ${farmRegionText}<br>
+            🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
+            🌾 Yield: ${pd.yieldKgPerHa} kg/ha | 💧 N: ${pd.nitrogenKgPerTon} kg/t<br>
+            💦 Irrigation: ${irrigationText} | 🌱 Practice: ${practiceText}<br>
+            📋 ${ddsText || 'DDS: Not provided'}<br>
+            ${adjustmentSummary ? `<span style="color:#2C7A7B;">⚙️ ${adjustmentSummary}</span>` : ''}
             </span>`;
-            
-            if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
-                bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">
-                    🔋 Energy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | 🔥 Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg
-                </span>`;
-            }
+        
+    } else if (isPrimary) {
+        bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
+        
+    } else if (isProxy) {
+        let factors = [];
+        if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
+        if (factors.length > 0) {
+            bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
+        } else {
+            bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
         }
+    } else {
+        bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
+    }
 
-        html += `
+    if (ing.name.toLowerCase().includes('animal feed')) {
+    bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
+}
+
+// 📝 ADD PHYSICS NOTE (if exists)
+if (ing.physics_note) {
+    bridgeHTML += `<br><span style="color:#D35400; font-size:0.85em; font-style:italic;">📝 ${ing.physics_note}</span>`;
+}
+
+// [PHYSICS FLAG] Show processing archetype in audit trail (adds to bridgeHTML)
+const processState = ing.processingState || 'raw';
+const archetypes = window.aioxyData?.processing_archetypes || {};
+const archetype = archetypes[processState];
+
+// Build the PROCESSING column display
+let processingDisplay = 'Raw (1.00x)';
+if (archetype && processState !== 'raw') {
+    processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
+}
+
+if (archetype && processState !== 'raw') {
+    bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">
+        ⚙️ [Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)
+    </span>`;
+    
+    // Add energy details if significant
+    if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+        bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">
+            🔋 Energy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | 🔥 Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg
+        </span>`;
+    }
+}
+
+html += `
             <tr style="border-bottom: 1px solid #ddd;">
                 <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
                 <td style="padding: 8px;">${getCtry(origin)}</td>
@@ -283,94 +294,95 @@ function displayAuditTrail() {
                 <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
                 <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
             </tr>`;
-    });
+});
 
-    html += `
+html += `
             </tbody>
         </table>
     </div>`;
     
     // ========== B. MANUFACTURING & ENERGY BALANCE ==========
-    const usePrimaryMfg = document.getElementById('usePrimaryFactoryData')?.checked || false;
-    const factoryKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
-    const factoryGas = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
-    const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
-    const hasPrimaryMfgData = usePrimaryMfg && (factoryKWh > 0 || factoryGas > 0) && factoryOutput > 0;
+// Check for primary factory data
+const usePrimaryMfg = document.getElementById('usePrimaryFactoryData')?.checked || false;
+const factoryKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+const factoryGas = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+const hasPrimaryMfgData = usePrimaryMfg && (factoryKWh > 0 || factoryGas > 0) && factoryOutput > 0;
 
-    let primaryMfgHTML = '';
-    if (hasPrimaryMfgData) {
-        const kwhPerKg = factoryKWh / factoryOutput;
-        const gasPerKg = factoryGas / factoryOutput;
-        primaryMfgHTML = `
-            <div style="margin-top: 10px; padding: 10px; background: #E8F8F5; border-left: 4px solid #27AE60; border-radius: 4px;">
-                <div style="font-weight:bold; color: #27AE60; margin-bottom: 8px;">
-                    ✅ TIER 1 PRIMARY FACILITY DATA VERIFIED
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8rem;">
-                    <div><strong>Annual Electricity:</strong></div>
-                    <div style="text-align:right;">${factoryKWh.toLocaleString()} kWh</div>
-                    <div><strong>Annual Natural Gas:</strong></div>
-                    <div style="text-align:right;">${factoryGas.toLocaleString()} m³</div>
-                    <div><strong>Annual Production:</strong></div>
-                    <div style="text-align:right;">${factoryOutput.toLocaleString()} kg</div>
-                    <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px;"><strong>Verified Intensity:</strong></div>
-                    <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px; text-align:right;">
-                        ${kwhPerKg.toFixed(3)} kWh/kg | ${gasPerKg.toFixed(3)} m³ gas/kg
-                    </div>
+let primaryMfgHTML = '';
+if (hasPrimaryMfgData) {
+    const kwhPerKg = factoryKWh / factoryOutput;
+    const gasPerKg = factoryGas / factoryOutput;
+    primaryMfgHTML = `
+        <div style="margin-top: 10px; padding: 10px; background: #E8F8F5; border-left: 4px solid #27AE60; border-radius: 4px;">
+            <div style="font-weight:bold; color: #27AE60; margin-bottom: 8px;">
+                ✅ TIER 1 PRIMARY FACILITY DATA VERIFIED
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8rem;">
+                <div><strong>Annual Electricity:</strong></div>
+                <div style="text-align:right;">${factoryKWh.toLocaleString()} kWh</div>
+                <div><strong>Annual Natural Gas:</strong></div>
+                <div style="text-align:right;">${factoryGas.toLocaleString()} m³</div>
+                <div><strong>Annual Production:</strong></div>
+                <div style="text-align:right;">${factoryOutput.toLocaleString()} kg</div>
+                <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px;"><strong>Verified Intensity:</strong></div>
+                <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px; text-align:right;">
+                    ${kwhPerKg.toFixed(3)} kWh/kg | ${gasPerKg.toFixed(3)} m³ gas/kg
                 </div>
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
-    html += `
-        <div style="margin-bottom: 25px;">
-            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-                B. MANUFACTURING & ENERGY BALANCE (Scope 1, 2, or 3)
-            </h4>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; border: 1px solid #ccc;">
-                <div style="padding: 10px; border-right: 1px solid #ccc;">
-                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">MASS BALANCE (Input/Output)</div>
+html += `
+    <div style="margin-bottom: 25px;">
+        <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+            B. MANUFACTURING & ENERGY BALANCE (Scope 1, 2, or 3)
+        </h4>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; border: 1px solid #ccc;">
+            <div style="padding: 10px; border-right: 1px solid #ccc;">
+                <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">MASS BALANCE (Input/Output)</div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Σ Input Mass:</span>
+                    <span>${mb.inputMass.toFixed(3)} kg</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; color:#C0392B;">
+                    <span>- Water Evaporation:</span>
+                    <span>${mb.evaporation.toFixed(3)} kg</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
+                    <span>= Final Product:</span>
+                    <span>${mb.final_content_weight_kg.toFixed(3)} kg</span>
+                </div>
+            </div>
+            <div style="padding: 10px;">
+                <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
+                ${catCC.contribution_tree.Manufacturing.components.map(m => `
                     <div style="display:flex; justify-content:space-between;">
-                        <span>Σ Input Mass:</span>
-                        <span>${mb.inputMass.toFixed(3)} kg</span>
+                        <span>Process:</span>
+                        <span>${m.name}</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; color:#C0392B;">
-                        <span>- Water Evaporation:</span>
-                        <span>${mb.evaporation.toFixed(3)} kg</span>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Energy Intensity:</span>
+                        <span>${m.details}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Energy Source:</span>
+                        <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Carbon Intensity:</span>
+                        <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
-                        <span>= Final Product:</span>
-                        <span>${mb.final_content_weight_kg.toFixed(3)} kg</span>
+                        <span>Impact:</span>
+                        <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
                     </div>
-                </div>
-                <div style="padding: 10px;">
-                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
-                    ${catCC.contribution_tree.Manufacturing.components.map(m => `
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Process:</span>
-                            <span>${m.name}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Energy Intensity:</span>
-                            <span>${m.details}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Energy Source:</span>
-                            <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Carbon Intensity:</span>
-                            <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
-                            <span>Impact:</span>
-                            <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
-                        </div>
-                    `).join('')}
-                    ${primaryMfgHTML}
-                </div>
+                `).join('')}
+                ${primaryMfgHTML}
             </div>
-        </div>`;
+        </div>
+    </div>`;
 
     // ========== C. LOGISTICS CHAIN ==========
     html += `
@@ -396,28 +408,30 @@ function displayAuditTrail() {
 
     if (upstream.length > 0) {
         upstream.forEach(u => {
-            const notes = u.notes || '';
-            const isColdChain = notes.toLowerCase().includes('chilled') || 
-                               notes.toLowerCase().includes('frozen') || 
-                               notes.toLowerCase().includes('reefer');
-            
-            let refrigerantNote = '';
-            if (isColdChain) {
-                const refrigerantPct = notes.toLowerCase().includes('frozen') ? 0.15 : 0.08;
-                const refrigerantKg = (u.subtotal * refrigerantPct).toFixed(6);
-                refrigerantNote = `<br><span style="color: #718096; font-size: 0.7rem;">🧊 Includes refrigerant leakage: ${refrigerantKg} kg CO₂e (IPCC Tier 1)</span>`;
-            }
-            
-            html += `
-                <tr>
-                    <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
-                    <td style="padding: 8px;" colspan="3">
-                        ${u.name}: ${notes || 'Cross-border transport calculated'}
-                        ${refrigerantNote}
-                    </td>
-                    <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
-                </tr>`;
-        });
+    // Check if this transport leg used cold chain (refrigerant applied)
+    const notes = u.notes || '';
+    const isColdChain = notes.toLowerCase().includes('chilled') || 
+                       notes.toLowerCase().includes('frozen') || 
+                       notes.toLowerCase().includes('reefer');
+    
+    // Calculate approximate refrigerant portion (~15% of total for frozen, ~8% for chilled)
+    let refrigerantNote = '';
+    if (isColdChain) {
+        const refrigerantPct = notes.toLowerCase().includes('frozen') ? 0.15 : 0.08;
+        const refrigerantKg = (u.subtotal * refrigerantPct).toFixed(6);
+        refrigerantNote = `<br><span style="color: #718096; font-size: 0.7rem;">🧊 Includes refrigerant leakage: ${refrigerantKg} kg CO₂e (IPCC Tier 1)</span>`;
+    }
+    
+    html += `
+            <tr>
+                <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
+                <td style="padding: 8px;" colspan="3">
+                    ${u.name}: ${notes || 'Cross-border transport calculated'}
+                    ${refrigerantNote}
+                </td>
+                <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
+            </tr>`;
+});
     } else {
         html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
     }
@@ -488,29 +502,30 @@ function displayAuditTrail() {
         </div>`;
 
     // ========== E. END-OF-LIFE TREATMENT ==========
-    const wasteComponents = catCC.contribution_tree.Waste?.components || [];
-    const allEoL = [...wasteComponents, ...eolComponents];
+// Combine Processing Waste + traditional End-of-Life components
+const wasteComponents = catCC.contribution_tree.Waste?.components || [];
+const allEoL = [...wasteComponents, ...eolComponents];
 
-    if (allEoL.length > 0) {
-        html += `
-        <div style="margin-bottom: 25px;">
-            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
-                E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
-            </h4>
-            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
-                ${allEoL.map(e => `
-                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                        <div>
-                            <strong style="color:var(--primary);">${e.name}</strong><br>
-                            <span style="color:var(--gray);">${e.notes || ''}</span>
-                        </div>
-                        <div style="font-weight:bold; color: #C0392B;">
-                            ${e.subtotal.toFixed(4)} kg CO₂e
-                        </div>
+if (allEoL.length > 0) {
+    html += `
+    <div style="margin-bottom: 25px;">
+        <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+            E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
+        </h4>
+        <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
+            ${allEoL.map(e => `
+                <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    <div>
+                        <strong style="color:var(--primary);">${e.name}</strong><br>
+                        <span style="color:var(--gray);">${e.notes || ''}</span>
                     </div>
-                `).join('')}
-            </div>
-        </div>`;
+                    <div style="font-weight:bold; color: #C0392B;">
+                        ${e.subtotal.toFixed(4)} kg CO₂e
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
     }
 
     // ========== TOTAL IMPACT FOOTER ==========
@@ -521,17 +536,20 @@ function displayAuditTrail() {
             </div>
             <div style="text-align:right;">
                 <div style="font-size: 1.5rem; font-weight:bold;">${catCC.total.toFixed(4)} kg CO₂e</div>
+
                 <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)</div>
             </div>
         </div>`;
 
+    // Render HTML to page
     auditContent.innerHTML = html;
 
-    // Generate QR Code
+    // Generate QR Code and add to placeholder
     const qrBox = document.getElementById('dpp-qr-code');
     if (qrBox && typeof QRCode !== 'undefined') {
         qrBox.innerHTML = '';
         
+        // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
         const isEudrViolation = auditTrailData.pefCategories["Climate Change"].contribution_tree.Ingredients?.components?.some(c => c.universal_adjustments?.method === "eudr_dluc_penalty");
         const eudrStatusText = isEudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
         
@@ -553,7 +571,7 @@ Status: EUDR ${eudrStatusText}`;
             correctLevel: QRCode.CorrectLevel.M
         });
     }
-}
+        }
 
 // ================== DIGITAL TRANSPARENCY CARD ==================
 function generateDPP() {
