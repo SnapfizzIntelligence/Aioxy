@@ -1272,6 +1272,15 @@ function loadBioreactorPreset() {
     alert("🧪 Unit Process Loaded: Bioreactor feedstock and water added. Primary Utility Override activated at 5.0 kWh/kg for fermentation thermodynamics.");
 }
 
+// ================== UTILITY: FORMAT PEF VALUE ==================
+function formatPEFValue(value) {
+    if (value === 0) return "0.00";
+    if (Math.abs(value) < 0.0001) return value.toExponential(3);
+    if (Math.abs(value) < 1) return value.toFixed(5);
+    if (Math.abs(value) < 1000) return value.toFixed(2);
+    return value.toFixed(1);
+}
+
 // ================== UI INTEGRATION: TEMPORAL DISCOUNTING DISPLAY ==================
 function displayTemporalDiscounting() {
     const methodologyTab = document.getElementById('methodology-tab');
