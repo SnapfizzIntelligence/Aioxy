@@ -294,10 +294,10 @@ const co2Multiplier = adj.multipliers?.co2 || 1.0;
 const calculatedCO2 = (pef["Climate Change"] || 0) * co2Multiplier * ing.quantity_kg;
 const actualCO2 = calculatedCO2 > 0 ? calculatedCO2 : (ing.subtotal || 0);
 
-// Calculate split values
-const fossilCO2 = actualCO2 * 0.85;
-const biogenicCO2 = actualCO2 * 0.10;
-const dlucCO2 = actualCO2 * 0.05;
+// READ FROM ENGINE - NO RECALCULATION. ZERO IF MISSING.
+const fossilCO2 = ing.fossilCO2 || 0;
+const biogenicCO2 = ing.biogenicCO2 || 0;
+const dlucCO2 = ing.dlucCO2 || 0;
 
 html += `
             <tr style="border-bottom: 1px solid #ddd;">
@@ -932,12 +932,11 @@ if (ccTree.Ingredients?.components) {
         const mineral = (pef["Resource Use, minerals/metals"] || 0) * co2Multiplier * ing.quantity_kg;
         const fossil = (pef["Resource Use, fossils"] || 0) * fossilMultiplier * ing.quantity_kg;
         
-        // Get the separated values from the impact result if available
-// For now, use climate as total and split proportionally (placeholder until engine data flows through)
-const fossilCO2 = climate * 0.85;  // Placeholder - 85% fossil
-const biogenicCO2 = climate * 0.10; // Placeholder - 10% biogenic
-const dlucCO2 = climate * 0.05;     // Placeholder - 5% dLUC
-
+        // READ FROM ENGINE - NO RECALCULATION. ZERO IF MISSING.
+const fossilCO2 = ing.fossilCO2 || 0;
+const biogenicCO2 = ing.biogenicCO2 || 0;
+const dlucCO2 = ing.dlucCO2 || 0;
+        
 addDataRow(
     "Scope 3 Cat 1 (Purchased Goods)", 
     ing.name, 
