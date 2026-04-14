@@ -861,18 +861,19 @@ const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity} gCO2e/
     console.log(`   └─ Result: ${electricityKWh.toFixed(3)} kWh = ${manufacturingCO2.toFixed(4)} kg CO₂e (${countryCode} grid: ${gridIntensity}g/kWh)`);
 
     return {
-        co2: manufacturingCO2,
-        kwh: electricityKWh,
-        gas_mj: naturalGasMj,
-        method: methodUsed,
-        confidence: confidenceLevel,
-        physics_data: physicsData,
-        water_evaporated_kg: waterEvaporated,
-        grid_intensity_g_per_kwh: gridIntensity,
-        energy_source: energyNote, 
-        country: countryCode,
-        fugitive_co2: fugitiveCO2 // Pass this out for the audit log
-    };
+    co2: manufacturingCO2,
+    kwh: electricityKWh,
+    gas_mj: naturalGasMj,
+    method: methodUsed,
+    confidence: confidenceLevel,
+    physics_data: physicsData,
+    water_evaporated_kg: waterEvaporated,
+    grid_intensity_g_per_kwh: gridIntensity,
+    energy_source: energyNote, 
+    country: countryCode,
+    fugitive_co2: fugitiveCO2,
+    calculation_trace: energyTrace // ⬅️ FIX 1: PASS THE ENERGY TRACE OUT
+};
 }
 
 // ================== AIOXY COMPLIANCE ENGINE: EF 3.1 (UI COMPATIBLE) ==================
@@ -2209,20 +2210,30 @@ return {
                 });
             }
             
-            // Build the official DQR component WITH the merged penalties
-            if (ing.data?.metadata?.dqr_overall) {
-                dqrComponents.push({
-                    name: ing.name,
-                    dqr: ing.data.metadata.dqr_overall + dqrPenalty,
-                    base_dqr: ing.data.metadata.dqr_overall,
-                    dqr_penalty: dqrPenalty,
-                    source: ing.data.metadata.source_dataset,
-                    origin_country: ingredientOrigin,
-                    is_proxy: isProxyData,
-                    uncertainty: foodCalculationEngine.calculateUncertainty(ing.data.metadata.dqr_overall + dqrPenalty),
-                    hasPrimaryData: !!item.primaryData
-                });
-            }
+            // 🛡️ FIX 2: THE DQR COMPLIANCE LOCK
+const TeR = ing.data?.metadata?.dqr?.TeR || 1;
+const TiR = ing.data?.metadata?.dqr?.TiR || 1;
+const GeR = ing.data?.metadata?.dqr?.GeR || 1;
+const P   = ing.data?.metadata?.dqr?.P   || 1;
+
+const finalDQR = (ing.data?.metadata?.dqr_overall || 1.5) + dqrPenalty;
+const dqrTrace = `DQR: ${finalDQR.toFixed(2)} [TeR:${TeR}, TiR:${TiR}, GeR:${GeR}, P:${P} | Penalty/Reward:${dqrPenalty.toFixed(1)}]`;
+
+// Build the official DQR component WITH the merged penalties
+if (ing.data?.metadata?.dqr_overall) {
+    dqrComponents.push({
+        name: ing.name,
+        dqr: finalDQR,
+        base_dqr: ing.data.metadata.dqr_overall,
+        dqr_penalty: dqrPenalty,
+        source: ing.data.metadata.source_dataset,
+        origin_country: ingredientOrigin,
+        is_proxy: isProxyData,
+        uncertainty: foodCalculationEngine.calculateUncertainty(finalDQR),
+        hasPrimaryData: !!item.primaryData,
+        dqr_trace: dqrTrace // ⬅️ ROUTE THE DQR PROOF TO MEMORY
+    });
+                                     }
 
             // PEF Loop
             Object.keys(pefCategories).forEach(cat => {
@@ -2627,14 +2638,19 @@ if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
         // --- END FIX ---
 
         // Save Global State
-        const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories, dqrComponents);
-        const uncertaintyResults = calculateMonteCarloUncertainty(
-            selectedIngredients, 
-            auditTrail.pefCategories["Climate Change"].contribution_tree, 
-            auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree, 
-            500
-        );
-        auditTrail.mass_balance = massBalanceData;
+const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories, dqrComponents);
+const uncertaintyResults = calculateMonteCarloUncertainty(
+    selectedIngredients, 
+    auditTrail.pefCategories["Climate Change"].contribution_tree, 
+    auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree, 
+    500
+);
+
+// 🛡️ FIX 3: THE AGGREGATION GUARD
+const totalCC = auditTrail.pefCategories["Climate Change"].total;
+auditTrail.final_scaling_trace = `[Total Batch Impact (${totalCC.toFixed(4)} kg CO2e) ÷ Final Product Weight (${functionalUnitWeight.toFixed(3)} kg)]`;
+
+auditTrail.mass_balance = massBalanceData;
         auditTrail.dqr_summary = { overall_dqr: foregroundBackground.overall_dqr, component_dqrs: dqrComponents, dqr_level: this.getDQRQualityLevel(foregroundBackground.overall_dqr).level };
         auditTrail.uncertainty_analysis = { monte_carlo: uncertaintyResults, overall_uncertainty: this.calculateUncertainty(foregroundBackground.overall_dqr) };
         auditTrail.ISO_compliance = getISOCompliance();
