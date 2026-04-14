@@ -1346,23 +1346,37 @@ currentY = doc.lastAutoTable.finalY + 5;
 // ============================================================
 // CLIMATE CHANGE BREAKDOWN BOX (PEF 3.1 Compliant)
 // ============================================================
+const boxHeight = 35; // Taller to fit calculation node
 doc.setFillColor(240, 248, 255);
-doc.rect(margin, currentY, pageWidth - (margin * 2), 20, 'F');
+doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'F');
 doc.setDrawColor(...COLORS.primary);
 doc.setLineWidth(0.5);
-doc.rect(margin, currentY, pageWidth - (margin * 2), 20, 'S');
+doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'S');
 
 setH3();
 doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
 
 setNormal();
-const fossilPct = totalCo2 > 0 ? ((totalCo2 * 0.85) / totalCo2 * 100).toFixed(1) : '0.0';
-const biogenicPct = totalCo2 > 0 ? ((totalCo2 * 0.10) / totalCo2 * 100).toFixed(1) : '0.0';
-const dlucPct = totalCo2 > 0 ? ((totalCo2 * 0.05) / totalCo2 * 100).toFixed(1) : '0.0';
+const fossilVal = totalCo2 * 0.85;
+const biogenicVal = totalCo2 * 0.10;
+const dlucVal = totalCo2 * 0.05;
+const fossilPct = totalCo2 > 0 ? ((fossilVal / totalCo2) * 100).toFixed(1) : '0.0';
+const biogenicPct = totalCo2 > 0 ? ((biogenicVal / totalCo2) * 100).toFixed(1) : '0.0';
+const dlucPct = totalCo2 > 0 ? ((dlucVal / totalCo2) * 100).toFixed(1) : '0.0';
 
-doc.text(`Fossil: ${formatNumber(totalCo2 * 0.85, 4)} kg CO2e (${fossilPct}%)  |  Biogenic: ${formatNumber(totalCo2 * 0.10, 4)} kg CO2e (${biogenicPct}%)  |  dLUC: ${formatNumber(totalCo2 * 0.05, 4)} kg CO2e (${dlucPct}%)`, margin + 5, currentY + 14);
+doc.text(`Fossil: ${formatNumber(fossilVal, 4)} kg CO2e (${fossilPct}%)  |  Biogenic: ${formatNumber(biogenicVal, 4)} kg CO2e (${biogenicPct}%)  |  dLUC: ${formatNumber(dlucVal, 4)} kg CO2e (${dlucPct}%)`, margin + 5, currentY + 14);
 
-currentY += 25;
+// Add calculation node explanation
+setSmall();
+doc.setTextColor(...COLORS.gray);
+doc.text("--- CALCULATION NODE ---", margin + 5, currentY + 22);
+doc.text(`1. Total Climate Impact: ${formatNumber(totalCo2, 4)} kg CO2e`, margin + 5, currentY + 28);
+doc.text(`2. Split Ratios (PEF 3.1 Default): Fossil 85% | Biogenic 10% | dLUC 5%`, margin + 5, currentY + 34);
+doc.text(`3. Fossil = ${formatNumber(totalCo2, 4)} × 0.85 = ${formatNumber(fossilVal, 4)} kg CO2e`, margin + 5, currentY + 40);
+doc.text(`4. Note: Placeholder ratios. Full Agribalyse sub-indicator data pending.`, margin + 5, currentY + 46);
+
+doc.setTextColor(...COLORS.dark);
+currentY += boxHeight + 5;
 
 // ============================================================
 // GRAND TOTAL
