@@ -823,19 +823,25 @@ function calculateManufacturingImpact(massInputKg, massOutputKg, processingMetho
     let gridIntensity;
     let energyNote;
 
-    if (energySource === 'renewable') {
-        gridIntensity = 20; 
-        energyNote = "100% Renewable (Verified EAC/GO)";
-    } else if (energySource === 'natural_gas') {
-        gridIntensity = 490;
-        energyNote = "Natural Gas (Direct)";
-    } else if (energySource === 'coal') {
-        gridIntensity = 980;
-        energyNote = "Coal (Direct)";
-    } else {
-        gridIntensity = country.electricityCO2 || 480;
-        energyNote = `Grid Mix (${countryCode})`;
-    }
+    let scenarioNote = "";
+if (energySource === 'renewable') {
+    gridIntensity = 20; 
+    energyNote = "100% Renewable (Verified EAC/GO)";
+    scenarioNote = "Renewable PPA Applied (-95% vs grid)";
+} else if (energySource === 'natural_gas') {
+    gridIntensity = 490;
+    energyNote = "Natural Gas (Direct)";
+} else if (energySource === 'coal') {
+    gridIntensity = 980;
+    energyNote = "Coal (Direct)";
+} else {
+    gridIntensity = country.electricityCO2 || 480;
+    energyNote = `Grid Mix (${countryCode})`;
+}
+
+// 🛡️ THE SCENARIO PROOF: Build complete trace with reasoning
+const scenarioProof = scenarioNote ? ` [Modified: ${scenarioNote}]` : "";
+const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity} gCO2e/kWh EF [${energyNote}]${scenarioProof}`;
 
     // 🛡️ PEF 3.1 FUGITIVE EMISSIONS MANDATE
     let fugitiveCO2 = 0;
@@ -2355,14 +2361,22 @@ return {
             auditTrail.pefCategories["Climate Change"].total += mfgResult.co2;
             
             // Add detailed component for audit trail
-            auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
-                name: `Processing (${processingMethod || 'none'})`,
-                subtotal: mfgResult.co2,
-                details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh${mfgResult.fugitive_co2 > 0 ? ` | Includes ${mfgResult.fugitive_co2.toFixed(4)}kg Fugitive Refrigerant` : ''}`,
-                confidence: mfgResult.confidence,
-                grid_intensity: mfgResult.grid_intensity_g_per_kwh,
-                energy_source: mfgResult.energy_source 
-            });
+            // 🛡️ THE ALLOCATION GUARD
+const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
+const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+const allocationFactor = (massBalanceData.productMass / totalProd) * 100;
+const allocationTrace = usePrimary ? `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : "Industry Benchmark Allocation (JRC Default)";
+
+auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
+    name: `Processing (${processingMethod || 'none'})`,
+    subtotal: mfgResult.co2,
+    details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh${mfgResult.fugitive_co2 > 0 ? ` | Includes ${mfgResult.fugitive_co2.toFixed(4)}kg Fugitive Refrigerant` : ''}`,
+    confidence: mfgResult.confidence,
+    grid_intensity: mfgResult.grid_intensity_g_per_kwh,
+    energy_source: mfgResult.energy_source,
+    calculation_trace: mfgResult.calculation_trace || `${mfgResult.kwh.toFixed(2)} kWh × ${mfgResult.grid_intensity_g_per_kwh} gCO2e/kWh`,
+    allocation_trace: allocationTrace // ⬅️ ROUTE ALLOCATION PROOF TO MEMORY
+});
             
             // Add to Fossil Resources (kWh to MJ conversion: 1 kWh = 3.6 MJ)
             const fossilMJ = mfgResult.kwh * 3.6;
