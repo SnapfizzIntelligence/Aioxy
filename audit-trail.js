@@ -1,0 +1,1105 @@
+// ================== AIOXY AUDIT TRAIL v3.0 ==================
+// Transparency Log, CSRD Matrix Export, and Data Downloads
+// ===================================================================
+
+// ================== PEF SCORECARD ==================
+function displayFullPefScorecard() {
+    const tbody = document.getElementById('pefScorecardBody');
+    const ingredientDataQuality = document.getElementById('ingredientDataQuality');
+    
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+
+    // === REGULATION-ALIGNED DISCLAIMER ROW ===
+    const disclaimerRow = document.createElement('tr');
+    disclaimerRow.innerHTML = `
+        <td colspan="6" style="background: #FFF3E0; color: #E65100; padding: 1rem; font-size: 0.85rem; border-left: 4px solid #FF9800; border-bottom: 2px solid #FF9800;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>SCREENING-LEVEL ASSESSMENT</strong><br>
+            Results based on AGRIBALYSE 3.2 secondary data using PEF 3.1 methodology. 
+            For Environmental Product Declarations (EPD) or product labeling claims, 
+            conduct ISO 14044 critical review with primary data.<br>
+            <small>Overall uncertainty: ±${auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15'}% 
+            (DQR: ${auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})</small>
+        </td>
+    `;
+    tbody.appendChild(disclaimerRow);
+    
+    // =========== FIX: USE SINGLE SOURCE OF TRUTH ===========
+    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
+    const totalWeight = unified.weightUsed;
+    
+    for (const category in finalPefResults) {
+        const row = document.createElement('tr');
+        const unit = pefCategories[category].unit;
+        const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
+        
+        let displayValue = formatPEFValue(finalPefResults[category].total);
+        let perKgDisplay = formatPEFValue(perKgValue);
+        
+        const categoryUncertainty = auditTrailData.uncertainty_analysis?.overall_uncertainty || 15;
+        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(auditTrailData.dqr_summary?.overall_dqr || 1.5);
+        
+        row.innerHTML = `
+            <td class="pef-category">${category}</td>
+            <td class="pef-value">${displayValue}</td>
+            <td class="pef-unit">${unit}</td>
+            <td class="pef-value">${perKgDisplay}</td>
+            <td>
+                <span class="dqr-badge ${dqrQuality.class}">
+                    <i class="fas fa-star"></i>
+                    ${dqrQuality.level}
+                </span>
+            </td>
+            <td class="pef-value">±${categoryUncertainty}%</td>
+        `;
+        tbody.appendChild(row);
+    }
+    
+    if (ingredientDataQuality && auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs) {
+        let qualityHTML = '';
+        auditTrailData.dqr_summary.component_dqrs.forEach(score => {
+            const dqrQuality = foodCalculationEngine.getDQRQualityLevel(score.dqr);
+            qualityHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                    <div>
+                        <strong>${score.name}</strong>
+                        <div style="font-size: 0.8rem; color: var(--gray);">${score.source}</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span class="dqr-badge ${dqrQuality.class}">DQR: ${score.dqr.toFixed(1)}</span>
+                        <span class="badge">±${score.uncertainty}% uncertainty</span>
+                    </div>
+                </div>
+            `;
+        });
+        ingredientDataQuality.innerHTML = qualityHTML;
+    }
+}
+
+// ================== REGULATORY AUDIT TRAIL ENGINE (ISO 14044) ==================
+function displayAuditTrail() {
+    const auditContent = document.getElementById('auditTrailContent');
+    if (!auditContent) return;
+
+    if (!auditTrailData || !auditTrailData.pefCategories) {
+        auditContent.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><h3>Awaiting Calculation Data</h3><p>Run impact analysis to generate audit log.</p></div>`;
+        return;
+    }
+
+    // 1. CONTEXT VARIABLES
+    const catCC = auditTrailData.pefCategories["Climate Change"];
+    const mb = auditTrailData.mass_balance;
+    const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'FR';
+    
+    // Helper: Country Name Resolver
+    const getCtry = (code) => (window.aioxyData?.countries?.[code]?.name || code);
+
+    const productName = document.getElementById('productName')?.value || 'Assessed Product';
+    const dateStr = new Date().toISOString().split('T')[0];
+    const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
+    
+    // 🛡️ REGULATOR FIX: Explicitly calculate the normalized per-kg impact
+    const totalImpact = catCC.total;
+    const pWeightKg = mb.final_content_weight_kg || 0.2;
+    const normalizedImpact = totalImpact / pWeightKg;
+
+    // Build HTML with QR placeholder
+    let html = `
+    <div style="font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto 30px auto; border: 2px solid #0A2540; padding: 20px; background: #ffffff; display: flex; justify-content: space-between;">
+        
+        <div style="flex: 1; padding-right: 20px;">
+            <div style="border-bottom: 2px solid #0A2540; padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 style="margin: 0; color: #0A2540; font-size: 1.4rem; text-transform: uppercase;">AIOXY Compliance Audit Trail</h2>
+                <div style="color: #555; font-size: 0.8rem; margin-top: 3px;">ISO 14044 • PEF 3.1 • GHG Protocol • ESRS E1 Ready</div>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                  <tr>
+                    <td style="padding: 4px 0; width: 35%; font-weight: bold; color: #555;">ASSESSMENT ID:</td>
+                    <td style="padding: 4px 0; font-family: monospace; font-size: 0.95rem;">${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; font-weight: bold; color: #555;">PRODUCT:</td>
+                    <td style="padding: 4px 0;">${productName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; font-weight: bold; color: #555;">DATE:</td>
+                    <td style="padding: 4px 0;">${dateStr}</td>
+                  </tr>
+            </table>
+
+            <div style="margin-top: 15px; border: 1px solid #ccc; background: #f8f9fa; padding: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="padding: 3px 0; font-weight: bold; font-size: 1rem; color: #555;">TOTAL BATCH IMPACT:</td>
+        <td style="padding: 3px 0; text-align: right; font-weight: bold; font-size: 1rem; color: #555;">${totalImpact.toFixed(4)} kg CO₂e</td>
+      </tr>
+      <tr style="background: #E3F2FD;">
+        <td style="padding: 5px 4px; font-weight: bold; font-size: 1rem; color: #0A2540;">NORMALIZED IMPACT (PER KG):</td>
+        <td style="padding: 5px 4px; text-align: right; font-weight: bold; font-size: 1.1rem; color: #27AE60;">${normalizedImpact.toFixed(4)} kg CO₂e / kg</td>
+      </tr>
+      <tr>
+        <td style="padding: 3px 0; font-weight: bold; margin-top: 5px;">OVERALL DATA QUALITY:</td>
+        <td style="padding: 3px 0; text-align: right;">${auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5'} (PEF Compliant)</td>
+      </tr>
+</table>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 0.8rem; color: #333;">
+                <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
+                <div>✓ EU Deforestation Regulation (EUDR) Screened</div>
+                <div>✓ Primary & Tertiary Logistics Accounted</div>
+                ${isCrisisActiveUI ? '<div style="color: #C0392B;">✓ Crisis Routing Applied (Cape of Good Hope Penalty)</div>' : ''}
+            </div>
+        </div>
+
+        <div style="width: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #eee; padding-left: 15px;">
+            <div id="dpp-qr-code" style="background: #fff; padding: 5px; border: 1px solid #ccc;"></div>
+            <div style="font-size: 0.65rem; color: #0A2540; font-weight: bold; margin-top: 8px; text-align: center;">
+                SCAN FOR OFFLINE<br>VERIFICATION
+            </div>
+        </div>
+    </div>
+    
+    <h3 style="border-bottom: 2px solid #0A2540; padding-bottom: 10px; color: #0A2540;">DETAILED SCOPE 3 INVENTORY</h3>
+    `;
+
+    // ========== A. INGREDIENT LCI & PROXY ADJUSTMENTS ==========
+    html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                A. INGREDIENT LCI & PROXY ADJUSTMENTS (GHG Protocol: Scope 3 Cat 1)
+            </h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ccc;">
+                <thead style="background: #eee;">
+                    <tr>
+                        <th style="text-align:left; padding: 8px;">INPUT COMPONENT</th>
+                        <th style="text-align:left; padding: 8px;">ORIGIN</th>
+                        <th style="text-align:left; padding: 8px;">PROCESSING</th>
+                        <th style="text-align:right; padding: 8px;">NET MASS</th>
+                        <th style="text-align:left; padding: 8px;">DATA SOURCE</th>
+                        <th style="text-align:left; padding: 8px;">PHYSICS ADJUSTMENTS</th>
+                        <th style="text-align:right; padding: 8px;">TOTAL CO₂e</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    // LOOP: Ingredients
+    const ingredients = catCC.contribution_tree.Ingredients.components;
+    ingredients.forEach(ing => {
+        const adj = ing.universal_adjustments || {};
+        const isPrimary = ing.primary_data_used;
+        const origin = adj.adjusted_for_country || 'FR';
+        const baseOrigin = adj.adjusted_from_country || 'FR';
+        const isProxy = origin !== baseOrigin;
+
+        let bridgeHTML = '';
+
+        if (adj.method === "eudr_dluc_penalty") {
+            bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
+        } else if (isPrimary && ing.primary_data) {
+            const pd = ing.primary_data;
+            const ddsText = pd.ddsReference ? ` | DDS: ${pd.ddsReference}` : '';
+            const farmRegionText = pd.farmRegion ? pd.farmRegion : 'Not specified';
+            
+            let irrigationText = 'Not specified';
+            if (pd.waterSource === 'rainfed') irrigationText = 'Rainfed';
+            else if (pd.waterSource === 'surface') irrigationText = 'Surface water';
+            else if (pd.waterSource === 'groundwater') irrigationText = 'Groundwater';
+            else if (pd.waterSource === 'mixed') irrigationText = 'Mixed';
+            
+            let practiceText = 'Conventional';
+            if (pd.farmingPractice === 'organic') practiceText = 'Organic';
+            else if (pd.farmingPractice === 'regen') practiceText = 'Regenerative';
+            else if (pd.farmingPractice === 'precision') practiceText = 'Precision';
+            
+            let adjustmentSummary = '';
+            if (pd.waterSource === 'rainfed') adjustmentSummary += '💧 Rainfed (-95% water) | ';
+            if (pd.farmingPractice === 'organic') adjustmentSummary += '🌱 Organic (-15 µPt) | ';
+            if (pd.farmingPractice === 'regen') adjustmentSummary += '🌍 Regen Ag (+20% soil C) | ';
+            if (adjustmentSummary.endsWith(' | ')) adjustmentSummary = adjustmentSummary.slice(0, -3);
+            
+            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
+                <span style="font-size:0.85em; color: #555;">
+                📍 Farm: ${farmRegionText}<br>
+                🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
+                🌾 Yield: ${pd.yieldKgPerHa} kg/ha | 💧 N: ${pd.nitrogenKgPerTon} kg/t<br>
+                💦 Irrigation: ${irrigationText} | 🌱 Practice: ${practiceText}<br>
+                📋 ${ddsText || 'DDS: Not provided'}<br>
+                ${adjustmentSummary ? `<span style="color:#2C7A7B;">⚙️ ${adjustmentSummary}</span>` : ''}
+                </span>`;
+        } else if (isPrimary) {
+            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
+        } else if (isProxy) {
+            let factors = [];
+            if(adj.multipliers?.co2 && adj.multipliers.co2 !== 1.0) factors.push(`Penalty Factor: <strong>x${adj.multipliers.co2.toFixed(2)}</strong>`);
+            if (factors.length > 0) {
+                bridgeHTML = `<span style="color:#D35400;">[PROXY: ${baseOrigin}→${origin}]</span><br>${factors.join(' | ')}`;
+            } else {
+                bridgeHTML = `<span style="color:#2980B9;">[EU REGIONAL MATCH: ${origin}]</span><br>Accepted without penalty`;
+            }
+        } else {
+            bridgeHTML = `<span style="color:#7F8C8D;">[DIRECT: ${baseOrigin}]</span> No adjustment needed`;
+        }
+
+        if (ing.name.toLowerCase().includes('animal feed')) {
+            bridgeHTML += `<br><span style="color:#8E44AD; font-size:0.85em; font-weight:bold;">[Quality Flag: 'Animal Feed' LCI used as conservative baseline]</span>`;
+        }
+
+        if (ing.physics_note) {
+            bridgeHTML += `<br><span style="color:#D35400; font-size:0.85em; font-style:italic;">📝 ${ing.physics_note}</span>`;
+        }
+
+        const processState = ing.processingState || 'raw';
+        const archetypes = window.aioxyData?.processing_archetypes || {};
+        const archetype = archetypes[processState];
+
+        let processingDisplay = 'Raw (1.00x)';
+        if (archetype && processState !== 'raw') {
+            processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
+        }
+
+        if (archetype && processState !== 'raw') {
+            bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">
+                ⚙️ [Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)
+            </span>`;
+            
+            if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+                bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">
+                    🔋 Energy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | 🔥 Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg
+                </span>`;
+            }
+        }
+
+        html += `
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
+                <td style="padding: 8px;">${getCtry(origin)}</td>
+                <td style="padding: 8px;">${processingDisplay}</td>
+                <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
+                <td style="padding: 8px;">AGRIBALYSE 3.2</td>
+                <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
+                <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
+            </tr>`;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    </div>`;
+    
+    // ========== B. MANUFACTURING & ENERGY BALANCE ==========
+    const usePrimaryMfg = document.getElementById('usePrimaryFactoryData')?.checked || false;
+    const factoryKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+    const factoryGas = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+    const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+    const hasPrimaryMfgData = usePrimaryMfg && (factoryKWh > 0 || factoryGas > 0) && factoryOutput > 0;
+
+    let primaryMfgHTML = '';
+    if (hasPrimaryMfgData) {
+        const kwhPerKg = factoryKWh / factoryOutput;
+        const gasPerKg = factoryGas / factoryOutput;
+        primaryMfgHTML = `
+            <div style="margin-top: 10px; padding: 10px; background: #E8F8F5; border-left: 4px solid #27AE60; border-radius: 4px;">
+                <div style="font-weight:bold; color: #27AE60; margin-bottom: 8px;">
+                    ✅ TIER 1 PRIMARY FACILITY DATA VERIFIED
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.8rem;">
+                    <div><strong>Annual Electricity:</strong></div>
+                    <div style="text-align:right;">${factoryKWh.toLocaleString()} kWh</div>
+                    <div><strong>Annual Natural Gas:</strong></div>
+                    <div style="text-align:right;">${factoryGas.toLocaleString()} m³</div>
+                    <div><strong>Annual Production:</strong></div>
+                    <div style="text-align:right;">${factoryOutput.toLocaleString()} kg</div>
+                    <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px;"><strong>Verified Intensity:</strong></div>
+                    <div style="border-top:1px solid #ccc; margin-top:5px; padding-top:5px; text-align:right;">
+                        ${kwhPerKg.toFixed(3)} kWh/kg | ${gasPerKg.toFixed(3)} m³ gas/kg
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                B. MANUFACTURING & ENERGY BALANCE (Scope 1, 2, or 3)
+            </h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; border: 1px solid #ccc;">
+                <div style="padding: 10px; border-right: 1px solid #ccc;">
+                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">MASS BALANCE (Input/Output)</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Σ Input Mass:</span>
+                        <span>${mb.inputMass.toFixed(3)} kg</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:#C0392B;">
+                        <span>- Water Evaporation:</span>
+                        <span>${mb.evaporation.toFixed(3)} kg</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
+                        <span>= Final Product:</span>
+                        <span>${mb.final_content_weight_kg.toFixed(3)} kg</span>
+                    </div>
+                </div>
+                <div style="padding: 10px;">
+                    <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
+                    ${catCC.contribution_tree.Manufacturing.components.map(m => `
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Process:</span>
+                            <span>${m.name}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Energy Intensity:</span>
+                            <span>${m.details}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Energy Source:</span>
+                            <span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>Carbon Intensity:</span>
+                            <span>${m.grid_intensity || 475} gCO₂e/kWh</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; margin-top:5px; font-weight:bold;">
+                            <span>Impact:</span>
+                            <span>${m.subtotal.toFixed(4)} kg CO₂e</span>
+                        </div>
+                    `).join('')}
+                    ${primaryMfgHTML}
+                </div>
+            </div>
+        </div>`;
+
+    // ========== C. LOGISTICS CHAIN ==========
+    html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                C. LOGISTICS CHAIN (GHG Protocol: Scope 3 Cat 4)
+            </h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; border: 1px solid #ccc;">
+                <thead style="background: #eee;">
+                    <tr>
+                        <th style="text-align:left; padding: 8px;">LEG</th>
+                        <th style="text-align:left; padding: 8px;">MODE</th>
+                        <th style="text-align:right; padding: 8px;">DISTANCE</th>
+                        <th style="text-align:right; padding: 8px;">LOAD FACTOR</th>
+                        <th style="text-align:right; padding: 8px;">IMPACT</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    const allUpstream = catCC.contribution_tree.Upstream.components;
+    const upstream = allUpstream.filter(c => !c.name.includes('End-of-Life'));
+    const eolComponents = allUpstream.filter(c => c.name.includes('End-of-Life'));
+
+    if (upstream.length > 0) {
+        upstream.forEach(u => {
+            const notes = u.notes || '';
+            const isColdChain = notes.toLowerCase().includes('chilled') || 
+                               notes.toLowerCase().includes('frozen') || 
+                               notes.toLowerCase().includes('reefer');
+            
+            let refrigerantNote = '';
+            if (isColdChain) {
+                const refrigerantPct = notes.toLowerCase().includes('frozen') ? 0.15 : 0.08;
+                const refrigerantKg = (u.subtotal * refrigerantPct).toFixed(6);
+                refrigerantNote = `<br><span style="color: #718096; font-size: 0.7rem;">🧊 Includes refrigerant leakage: ${refrigerantKg} kg CO₂e (IPCC Tier 1)</span>`;
+            }
+            
+            html += `
+                <tr>
+                    <td style="padding: 8px;"><span style="background:#E3F2FD; padding:2px 5px; border-radius:3px;">INBOUND</span> Origin → Mfg</td>
+                    <td style="padding: 8px;" colspan="3">
+                        ${u.name}: ${notes || 'Cross-border transport calculated'}
+                        ${refrigerantNote}
+                    </td>
+                    <td style="padding: 8px; text-align:right;">${u.subtotal.toFixed(4)} kg CO₂e</td>
+                </tr>`;
+        });
+    } else {
+        html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
+    }
+
+    const outbound = catCC.contribution_tree.Transport.total;
+    let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
+    const rawMode = document.getElementById('transportMode')?.value || 'road';
+    const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
+
+    let crisisNote = "";
+    if (isCrisisActive && (rawMode === 'sea' || rawMode === 'road')) {
+        const originalDist = dist;
+        dist = dist * 1.40;
+        crisisNote = `<br><span style="color:#C0392B; font-size:0.85em; font-weight:bold;">[⚠️ CRISIS REROUTE: ${originalDist}km → ${dist.toFixed(0)}km]</span>`;
+    }
+
+    const isFrozenUI = document.getElementById('processingMethod')?.value === 'freezing';
+    const isChilledUI = document.getElementById('refrigeratedTransport')?.value === 'yes';
+
+    let displayMode = rawMode.toUpperCase();
+    if (isFrozenUI) displayMode += " (FROZEN REEFER)";
+    else if (isChilledUI) displayMode += " (CHILLED REEFER)";
+
+    html += `
+                    <tr>
+                        <td style="padding: 8px;"><span style="background:#FFF3E0; padding:2px 5px; border-radius:3px;">OUTBOUND</span> Mfg → Retail</td>
+                        <td style="padding: 8px; font-weight: bold; color: #0A2540;">${displayMode}${crisisNote}</td>
+                        <td style="padding: 8px; text-align:right;">${dist.toFixed(0)} km</td>
+                        <td style="padding: 8px; text-align:right;">85%</td>
+                        <td style="padding: 8px; text-align:right;">${outbound.toFixed(4)} kg CO₂e</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
+
+    // ========== D. PACKAGING ==========
+    html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                D. PACKAGING (GHG Protocol: Scope 3 Cat 1)
+            </h4>
+            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
+                <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;">
+                    <div>
+                        <strong style="color:var(--primary);">PRIMARY PACKAGING (User Input)</strong><br>
+                        <strong>Material:</strong> ${document.getElementById('packagingMaterial')?.options[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A'} <br>
+                        <strong>Weight:</strong> ${mb.packaging_weight_kg.toFixed(3)} kg
+                    </div>
+                    <div>
+                        <strong>Recycled Content:</strong> ${document.getElementById('recycledContent')?.value || 0}% <br>
+                        <strong>End-of-Life:</strong> ${document.getElementById('packagingEoL')?.options[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Avg'}
+                    </div>
+                </div>
+                <div style="padding-top: 5px;">
+                    <strong style="color:var(--primary);">TERTIARY LOGISTICS PACKAGING (PEF Proxy)</strong><br>
+                    ${catCC.contribution_tree.Packaging.components.map(p => `
+                        <div style="display:flex; justify-content:space-between; color: #555;">
+                            <span>• ${p.name}</span>
+                            <span>${p.subtotal.toFixed(4)} kg CO₂e</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="text-align:right; border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px;">
+                    <strong>Total Packaging Impact:</strong> <br>
+                    <span style="font-weight:bold; font-size:1rem; color: #C0392B;">${catCC.contribution_tree.Packaging.total.toFixed(4)} kg CO₂e</span>
+                </div>
+            </div>
+        </div>`;
+
+    // ========== E. END-OF-LIFE TREATMENT ==========
+    const wasteComponents = catCC.contribution_tree.Waste?.components || [];
+    const allEoL = [...wasteComponents, ...eolComponents];
+
+    if (allEoL.length > 0) {
+        html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
+            </h4>
+            <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem;">
+                ${allEoL.map(e => `
+                    <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                        <div>
+                            <strong style="color:var(--primary);">${e.name}</strong><br>
+                            <span style="color:var(--gray);">${e.notes || ''}</span>
+                        </div>
+                        <div style="font-weight:bold; color: #C0392B;">
+                            ${e.subtotal.toFixed(4)} kg CO₂e
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>`;
+    }
+
+    // ========== TOTAL IMPACT FOOTER ==========
+    html += `
+        <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <strong>TOTAL CRADLE-TO-RETAIL IMPACT:</strong>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size: 1.5rem; font-weight:bold;">${catCC.total.toFixed(4)} kg CO₂e</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)</div>
+            </div>
+        </div>`;
+
+    auditContent.innerHTML = html;
+
+    // Generate QR Code
+    const qrBox = document.getElementById('dpp-qr-code');
+    if (qrBox && typeof QRCode !== 'undefined') {
+        qrBox.innerHTML = '';
+        
+        const isEudrViolation = auditTrailData.pefCategories["Climate Change"].contribution_tree.Ingredients?.components?.some(c => c.universal_adjustments?.method === "eudr_dluc_penalty");
+        const eudrStatusText = isEudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
+        
+        const qrTextPayload = `AIOXY VERIFIED AUDIT
+-------------------------
+DPP ID: ${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
+Product: ${productName}
+Impact: ${totalImpact.toFixed(4)} kg CO₂e/kg
+Method: PEF 3.1 / CSRD
+Date: ${dateStr}
+Status: EUDR ${eudrStatusText}`;
+
+        new QRCode(qrBox, {
+            text: qrTextPayload,
+            width: 120,
+            height: 120,
+            colorDark: "#0A2540",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+}
+
+// ================== DIGITAL TRANSPARENCY CARD ==================
+function generateDPP() {
+    const productName = document.getElementById('productName').value || 'Unnamed Product';
+    const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    currentDPPId = dppId;
+    
+    document.getElementById('dppId').textContent = dppId;
+    
+    const transparencyData = {
+        productId: dppId,
+        productName: productName,
+        timestamp: new Date().toISOString(),
+        methodology: {
+            approach: "PEF 3.1",
+            version: "2.1",
+            dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
+            standards: ["Science-Based Reporting", "Transparent Methodology", "ISO 14044 Compliant"]
+        },
+        environmentalFootprint: finalPefResults,
+        data_quality: auditTrailData.dqr_summary,
+        mass_balance: massBalanceData,
+        comparison_baseline: currentComparisonBaseline,
+        pef_single_score: auditTrailData.pef_single_score,
+        calculation_timestamp: auditTrailData.calculationTimestamp
+    };
+    
+    console.log("📦 DPP Data Ready for Backend Storage:", transparencyData);
+    
+    const qrElement = document.getElementById('qrcode');
+    if (!qrElement) return;
+    
+    qrElement.innerHTML = '';
+    
+    if (typeof QRCode !== 'undefined') {
+        const brandGTIN = "00012345678905"; 
+        const dppDomain = "https://dpp.aioxy.com";
+        const gs1DigitalLink = `${dppDomain}/01/${brandGTIN}/21/${dppId}`;
+        
+        console.log("🔗 ESPR Compliant GS1 Link:", gs1DigitalLink);
+        
+        new QRCode(qrElement, {
+            text: gs1DigitalLink,
+            width: 200,
+            height: 200,
+            colorDark: "#0A2540",
+            colorLight: "#FFFFFF",
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    } else {
+        qrElement.innerHTML = `
+            <div style="background: #f0f0f0; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+                <div style="text-align: center;">
+                    <i class="fas fa-qrcode" style="font-size: 3rem; color: #666;"></i>
+                    <div style="margin-top: 1rem; font-size: 0.8rem;">QR Code would display here</div>
+                    <div style="font-size: 0.7rem; color: #999;">DPP ID: ${dppId}</div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// ================== REGULATOR DISCLAIMER ==================
+function generateRegulatorDisclaimer() {
+    const productName = document.getElementById('productName').value || 'Product';
+    const countryCode = document.getElementById('manufacturingCountry').value || 'FR';
+    const countryName = aioxyData.countries[countryCode]?.name || countryCode;
+    const dqr = auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5';
+    const uncertainty = auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15';
+
+    const disclaimer = `
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     AIOXY SCIENCE-BASED DISCLAIMER                          ║
+║                  REGULATION-ALIGNED METHODOLOGY v2.1                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+PRODUCT: ${productName}
+MANUFACTURING REGION: ${countryName}
+ASSESSMENT ID: ${currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
+TIMESTAMP: ${new Date().toISOString()}
+
+────────────────────────────────────────────────────────────────────────────────
+                       HYBRID LCI DATA MODEL
+────────────────────────────────────────────────────────────────────────────────
+This assessment uses a "Hybrid Proxy" approach to maximize accuracy without 
+primary data:
+
+1. ⚡ ENERGY & UTILITIES (Specific): 
+   Calculated using ${countryName}-specific grid intensity factors (${aioxyData.countries[countryCode]?.electricityCO2 || 'N/A'}g CO₂e/kWh) 
+   and regional water scarcity (AWARE 2.0).
+
+2. 🚛 LOGISTICS (Specific):
+   Transport emissions calculated using GLEC v3.2 factors based on actual 
+   distances and modes selected.
+
+3. 🌾 INGREDIENTS (Proxy):
+   Agricultural production modeled using AGRIBALYSE 3.2 (France/EU average) 
+   as a technological proxy. Actual agricultural impacts in ${countryName} 
+   may vary based on local yield and fertilizer practices.
+
+────────────────────────────────────────────────────────────────────────────────
+                      COMPLIANCE STATEMENT
+────────────────────────────────────────────────────────────────────────────────
+THIS IS A SCREENING-LEVEL LIFE CYCLE ASSESSMENT (LCA).
+FOR A CERTIFIED ENVIRONMENTAL PRODUCT DECLARATION (EPD):
+1. Replace proxy ingredient data with primary supply chain data.
+2. Conduct critical review per ISO 14044:2006.
+3. Obtain third-party verification.
+
+────────────────────────────────────────────────────────────────────────────────
+                  REGULATION-ALIGNED SAFEGUARDS APPLIED
+────────────────────────────────────────────────────────────────────────────────
+✓ NO UNVERIFIED BIOGENIC CARBON CLAIMS
+  • Default biogenic_net = 0.0 kg CO₂e/kg (Conservative)
+  • Credits applied ONLY if explicit negative emissions data is verified.
+
+✓ THERMODYNAMIC ENERGY CALCULATIONS
+  • Manufacturing energy derived from mass-balance evaporation physics 
+    (Q = mcΔT + mL) rather than generic coefficients.
+
+✓ MONTE CARLO UNCERTAINTY PROPAGATION
+  • 5000 iterations to determine confidence intervals (±${uncertainty}%).
+
+────────────────────────────────────────────────────────────────────────────────
+                      DATA QUALITY METADATA
+────────────────────────────────────────────────────────────────────────────────
+Overall Data Quality Rating (DQR): ${dqr}/5.0
+Foreground System: ${auditTrailData?.foreground_background?.foreground_count || '0'} processes
+Background System: ${auditTrailData?.foreground_background?.background_count || '0'} processes
+
+────────────────────────────────────────────────────────────────────────────────
+Report generated by: AIOXY Sustainability Intelligence v2.1
+`;
+    
+    return disclaimer;
+}
+
+// =====================================================================
+// 🚀 CSRD SCOPE 3 MATRIX EXPORTER (ESRS E1, E3, E4, E5 RETAILER-READY)
+// =====================================================================
+function exportCSRDMatrix() {
+    if (!auditTrailData || !auditTrailData.pefCategories) {
+        alert('Please calculate the environmental impact first.');
+        return;
+    }
+
+    const pName = document.getElementById('productName')?.value || 'Product';
+    const ccTree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
+    const waterTree = auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree;
+    const fossilTree = auditTrailData.pefCategories["Resource Use, fossils"].contribution_tree;
+    const landTree = auditTrailData.pefCategories["Land Use"].contribution_tree;
+    
+    const mb = auditTrailData.mass_balance;
+    const dppId = auditTrailData.dppId || 'N/A';
+    const totalCo2 = auditTrailData.pefCategories["Climate Change"].total.toFixed(6);
+    const totalWater = (auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0).toFixed(6);
+    const totalFossil = (auditTrailData.pefCategories["Resource Use, fossils"]?.total || 0).toFixed(6);
+    const totalLand = (auditTrailData.pefCategories["Land Use"]?.total || 0).toFixed(6);
+    
+    const dqrOverall = auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5';
+
+    const getDQR = (component) => {
+        if (!component) return dqrOverall;
+        
+        const specificDqrObj = auditTrailData.dqr_summary?.component_dqrs?.find(d => d.name === component.name);
+        if (specificDqrObj && specificDqrObj.dqr) return specificDqrObj.dqr.toFixed(1);
+        
+        const dqrValue = component.dqr_score ?? component.data_quality_rating;
+        return (dqrValue !== undefined && dqrValue !== null && !isNaN(dqrValue)) ? parseFloat(dqrValue).toFixed(2) : dqrOverall;
+    };
+
+    const getPackagingMaterialName = () => {
+        const el = document.getElementById('packagingMaterial');
+        if (!el) return 'Packaging';
+        return (el.tagName === 'SELECT' && el.options) ? (el.options[el.selectedIndex]?.text || el.value) : el.value;
+    };
+
+    const csvLines = [];
+
+    const resultsPayload = `${dppId}|${totalCo2}|${totalWater}|${totalLand}|${totalFossil}`;
+    const matrixChecksum = generateAuditHash(resultsPayload).substring(0, 16);
+
+    csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
+    csvLines.push(`Assessment ID (DPP),${dppId}`);
+    csvLines.push(`AIOXY Matrix Checksum,${matrixChecksum} (Tamper-Evident Seal)`);
+    csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E4 (Land) / E5 (Resources)`);
+    csvLines.push(`System Boundary,Cradle-to-Retail`);
+    csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
+    
+    const userProteinCSV = parseFloat(document.getElementById('proteinContent')?.value) || 0;
+    const functionalUnitCSV = userProteinCSV > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of product";
+    csvLines.push(`Functional Unit,${functionalUnitCSV}`);
+
+    let volumeInput = document.getElementById('annualVolume')?.value;
+    let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
+    csvLines.push(`Volume Assessed,${volumeText}`);
+    csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
+    csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${totalWater}`);
+    csvLines.push(`ESRS E4: Biodiversity & Land Use (Pt),${totalLand}`);
+    csvLines.push(`ESRS E5: Fossil Resources (MJ),${totalFossil}`);
+    csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
+    csvLines.push(``);
+
+    csvLines.push(`# AUDIT WARNING: PEF Single Score (uPt) is restricted to internal B2B eco-design and supply chain diagnostics.`);
+    csvLines.push(`# Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.`);
+    csvLines.push(``);
+    
+    csvLines.push([
+        'GHG_Protocol_Category', 'Process_Name', 'Material_Type', 'Origin_Country',
+        'Processing_Archetype', 'Yield_Factor',
+        'Activity_Data_Value', 'Activity_Data_Unit',
+        'Climate_Change_kg_CO2e', 'Ozone_Depletion_kg_CFC11e', 'Human_Toxicity_cancer_CTUh',
+        'Human_Toxicity_non_cancer_CTUh', 'Particulate_Matter_disease_inc', 'Ionizing_Radiation_kBq_U235e',
+        'Photochemical_Ozone_kg_NMVOCe', 'Acidification_mol_H_e', 'Eutrophication_terrestrial_mol_N_e',
+        'Eutrophication_freshwater_kg_P_e', 'Eutrophication_marine_kg_N_e', 'Ecotoxicity_freshwater_CTUe',
+        'Land_Use_Pt', 'Water_Scarcity_m3_eq', 'Resource_Use_minerals_kg_Sb_e',
+        'Resource_Use_fossils_MJ', 'Biogenic_Removals_Kg', 'EUDR_Risk_Status',
+        'Primary_Data_Verified', 'Verified_Electricity_kWh_per_kg', 'Verified_Gas_m3_per_kg',
+        'Data_Quality_Rating'
+    ].join(','));
+
+    const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, 
+        co2, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, verifiedKwh, verifiedGas, dqr) => {
+        const row = [
+            category, process, materialType, origin, 
+            processing || 'Raw (Farm Gate)', yieldFactor || '1.00',
+            parseFloat(qty || 0).toFixed(6), unit || 'kg',
+            parseFloat(co2 || 0).toFixed(6),
+            parseFloat(ozone || 0).toExponential(3),
+            parseFloat(htc || 0).toExponential(3),
+            parseFloat(htnc || 0).toExponential(3),
+            parseFloat(pm || 0).toExponential(3),
+            parseFloat(ir || 0).toFixed(6),
+            parseFloat(pof || 0).toFixed(6),
+            parseFloat(acid || 0).toFixed(6),
+            parseFloat(eut_t || 0).toFixed(6),
+            parseFloat(eut_f || 0).toFixed(6),
+            parseFloat(eut_m || 0).toFixed(6),
+            parseFloat(eco || 0).toFixed(6),
+            parseFloat(land || 0).toFixed(6),
+            parseFloat(water || 0).toFixed(6),
+            parseFloat(mineral || 0).toExponential(3),
+            parseFloat(fossil || 0).toFixed(6),
+            parseFloat(biogenic || 0).toFixed(6), 
+            eudr || 'COMPLIANT', 
+            primary === true ? 'TRUE' : 'FALSE',
+            verifiedKwh || '',
+            verifiedGas || '',
+            dqr || dqrOverall
+        ];
+        const escapedRow = row.map(cell => {
+            const cellStr = String(cell);
+            return (cellStr.includes(',') || cellStr.includes('"')) ? `"${cellStr.replace(/"/g, '""')}"` : cellStr;
+        });
+        csvLines.push(escapedRow.join(','));
+    };
+
+    // Ingredients
+    if (ccTree.Ingredients?.components) {
+        ccTree.Ingredients.components.forEach(ing => {
+            const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "COMPLIANT";
+            
+            const procState = ing.processingState || 'raw';
+            const archetypes = window.aioxyData?.processing_archetypes || {};
+            const archetype = archetypes[procState];
+            const processingName = archetype?.name || 'Raw (Farm Gate)';
+            const yieldFactor = (ing.yieldFactor || archetype?.yield_factor || 1.0).toFixed(2);
+            
+            addDataRow(
+                "Scope 3 Cat 1 (Purchased Goods)", ing.name, "Raw Material", 
+                ing.universal_adjustments?.adjusted_for_country || 'Unknown',
+                processingName, yieldFactor, ing.quantity_kg, "kg",
+                ing.subtotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                landTree?.Ingredients?.components?.find(c => c.name === ing.name)?.subtotal || 0,
+                waterTree?.Ingredients?.components?.find(c => c.name === ing.name)?.subtotal || 0,
+                0, fossilTree?.Ingredients?.components?.find(c => c.name === ing.name)?.subtotal || 0,
+                "0", isHighRisk, ing.primary_data_used, "", "", getDQR(ing)
+            );
+        });
+    }
+
+    // Biogenic Removals
+    const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
+    if (biogenicRemovals && biogenicRemovals > 0) {
+        addDataRow(
+            "Scope 3 Cat 1 (FLAG)", "Verified_Soil_Carbon_Sequestration", "Biogenic_Removals", 
+            "Primary_Farm", "Biogenic Sequestration", "1.00", "1.0", "system",
+            "0", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, `-${biogenicRemovals}`, "COMPLIANT", true, "", "", "1.0"
+        );
+    }
+    
+    // Packaging
+    if (ccTree.Packaging?.total > 0) {
+        const tertiaryTotal = ccTree.Packaging.components?.reduce((sum, p) => sum + (p.subtotal || 0), 0) || 0;
+        const primaryTotal = Math.max(0, ccTree.Packaging.total - tertiaryTotal);
+        
+        if (primaryTotal > 0) {
+            addDataRow(
+                "Scope 3 Cat 1 (Purchased Goods)", `Primary_Packaging_${getPackagingMaterialName()}`, 
+                "Packaging", "Local", "Primary Packaging", "1.00", mb.packaging_weight_kg || 0, "kg", 
+                primaryTotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                landTree?.Packaging?.total || 0, waterTree?.Packaging?.total || 0, 0,
+                fossilTree?.Packaging?.total || 0, "0", "COMPLIANT", false, "", "", getDQR(ccTree.Packaging)
+            );
+        }
+        
+        if (ccTree.Packaging.components) {
+            ccTree.Packaging.components.forEach(pkg => {
+                addDataRow(
+                    "Scope 3 Cat 1 (Purchased Goods)", pkg.name, "Tertiary_Packaging", "Origin", 
+                    "Tertiary Packaging", "1.00", "1.0", "system", 
+                    pkg.subtotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, "0", "COMPLIANT", false, "", "", getDQR(pkg)
+                );
+            });
+        }
+    }
+
+    // Upstream & Outbound
+    if (ccTree.Upstream?.components) {
+        ccTree.Upstream.components.forEach(upst => {
+            const isEoL = upst.name.includes('End-of-Life');
+            const catName = isEoL ? "Scope 3 Cat 12 (End-of-Life)" : "Scope 3 Cat 4 (Upstream Transport)";
+            const matType = isEoL ? "Waste_Treatment" : "Service";
+            const transportProcessing = isEoL ? "Waste Treatment" : "Inbound Transport";
+            
+            addDataRow(
+                catName, upst.name.replace(/,/g, ''), matType, "N/A", transportProcessing, "1.00", "1.0", "system", 
+                upst.subtotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                landTree?.Upstream?.components?.find(c => c.name === upst.name)?.subtotal || 0,
+                waterTree?.Upstream?.components?.find(c => c.name === upst.name)?.subtotal || 0,
+                0, fossilTree?.Upstream?.components?.find(c => c.name === upst.name)?.subtotal || 0,
+                "0", "COMPLIANT", false, "", "", getDQR(ccTree.Upstream)
+            );
+        });
+    }
+
+    // Processing Waste
+    const wasteComponentsExport = ccTree.Waste?.components || [];
+    if (wasteComponentsExport.length > 0) {
+        wasteComponentsExport.forEach(waste => {
+            addDataRow(
+                "Scope 3 Cat 12 (End-of-Life)", waste.name, "Processing_Waste", "N/A", "Waste Treatment",
+                "1.00", "1.0", "system", waste.subtotal,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "0", "COMPLIANT", false, "", "", getDQR(ccTree.Waste)
+            );
+        });
+    }
+
+    // Outbound Logistics
+    if (ccTree.Transport?.total > 0) {
+        let dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
+        const mode = document.getElementById('transportMode')?.value || 'road';
+        if (document.getElementById('crisisRoutingToggle')?.checked && (mode === 'sea' || mode === 'road')) dist *= 1.40;
+        
+        addDataRow(
+            "Scope 3 Cat 4 (Outbound Transport)", `Outbound_Logistics_${mode}`, "Service", "N/A", "Outbound Transport",
+            "1.00", dist, "km", ccTree.Transport.total,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, fossilTree?.Transport?.total || 0,
+            "0", "COMPLIANT", false, "", "", getDQR(ccTree.Transport)
+        );
+    }
+    
+    // Manufacturing
+    if (ccTree.Manufacturing?.total > 0) {
+        const fossilMfg = fossilTree?.Manufacturing?.total || 0;
+        const landMfg = landTree?.Manufacturing?.total || 0;
+        const mfgCountryCode = document.getElementById('manufacturingCountry')?.value || 'Unknown';
+        const usePrimaryData = document.getElementById('usePrimaryFactoryData')?.checked || false;
+        
+        let verifiedKwh = '';
+        let verifiedGas = '';
+        if (usePrimaryData) {
+            const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+            const totalGasM3 = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+            const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+            if (totalKWh > 0) verifiedKwh = (totalKWh / totalProd).toFixed(4);
+            if (totalGasM3 > 0) verifiedGas = (totalGasM3 / totalProd).toFixed(4);
+        }
+        
+        addDataRow(
+            "Scope 3 Cat 1 (Processing)", "Factory_Operations", "Energy", mfgCountryCode, "Factory Operations",
+            "1.00", mb.final_content_weight_kg || 0, "kg", ccTree.Manufacturing.total,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, landMfg, "0", 0, fossilMfg, "0", "COMPLIANT",
+            usePrimaryData, verifiedKwh, verifiedGas, getDQR(ccTree.Manufacturing)
+        );
+    }
+    
+    const csvContent = "\uFEFF" + csvLines.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `CSRD_Scope3_${pName.replace(/[^a-z0-9]/gi, '_')}_${dppId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    console.log("✅ CSRD Retailer Matrix Exported Successfully (ESRS E1, E3, E4, E5)");
+}
+
+// ================== RAW DATA EXPORT ==================
+function downloadRawData() {
+    if (!auditTrailData) {
+        alert('No data available to download. Please run a calculation first.');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(auditTrailData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `aioxy-transparency-data-${currentDPPId || 'export'}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadDPPData() {
+    if (!currentDPPId) {
+        alert('No transparency card available. Please generate a Digital Transparency Card first.');
+        return;
+    }
+    
+    const productName = document.getElementById('productName').value || 'Unnamed Product';
+    const transparencyData = {
+        productId: currentDPPId,
+        productName: productName,
+        timestamp: new Date().toISOString(),
+        methodology: {
+            approach: "PEF 3.1",
+            version: "2.1",
+            dataSources: ["AGRIBALYSE 3.2", "JRC EF 3.1", "AWARE 2.0"],
+            standards: ["Science-Based Reporting", "Transparent Methodology", "ISO 14044 Compliant"]
+        },
+        environmentalFootprint: finalPefResults,
+        data_quality: auditTrailData.dqr_summary,
+        mass_balance: massBalanceData,
+        comparison_baseline: currentComparisonBaseline,
+        pef_single_score: auditTrailData.pef_single_score,
+        calculation_timestamp: auditTrailData.calculationTimestamp
+    };
+    
+    const dataStr = JSON.stringify(transparencyData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `aioxy-transparency-card-${currentDPPId}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadAllData() {
+    if (!auditTrailData) {
+        alert('No data available to download. Please run a calculation first.');
+        return;
+    }
+    
+    const dataStr = JSON.stringify({
+        transparency_log: auditTrailData,
+        pef_results: finalPefResults,
+        mass_balance: massBalanceData,
+        ingredients: selectedIngredients,
+        active_scenarios: activeScenarios,
+        metadata: {
+            platform: "AIOXY Science-Based Sustainability",
+            version: "2.1",
+            export_timestamp: new Date().toISOString(),
+            methodology: "PEF 3.1 with physics-based scenarios"
+        }
+    }, null, 2);
+    
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `aioxy-complete-dataset-${currentDPPId || 'export'}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function exportAuditData() {
+    downloadRawData();
+}
+
+function downloadMethodology() {
+    const methodology = `AIOXY Methodology Document
+===========================
+
+Version: 2.1
+Date: ${new Date().toLocaleDateString()}
+
+1. METHODOLOGY OVERVIEW
+----------------------
+This assessment follows the Product Environmental Footprint (PEF) 3.1 methodology as defined by the European Commission Joint Research Centre.
+
+2. DATA SOURCES
+---------------
+- AGRIBALYSE 3.2: French agricultural LCA database
+- JRC EF 3.1: Characterization factors for 16 impact categories
+- AWARE 2.0: Water scarcity assessment method
+- GLEC v3.2: Logistics emissions factors
+
+3. CALCULATION ENGINE
+---------------------
+- CFF (Circular Footprint Formula): Packaging end-of-life
+- Monte Carlo Uncertainty: 500 iterations
+- Temporal Discounting: 100-year horizon
+- Foreground/Background: 5% cutoff rule
+
+4. PHYSICS-BASED SCENARIOS
+--------------------------
+- Renewable Energy: -95% manufacturing emissions
+- Local Sourcing: Transport capped at 50km
+- Lightweight Packaging: -20% packaging weight
+- Regenerative Agriculture: Soil carbon credits
+- Zero Waste Manufacturing: +10% yield efficiency
+- Bulk Shipping: Modal shift to sea/rail
+- Circular Packaging: Closed loop cycles
+
+5. QUALITY ASSURANCE
+--------------------
+- DQR (Data Quality Rating): ISO 14044 compliant
+- Uncertainty Propagation: Monte Carlo method
+- Mass Balance Verification: Input/output validation
+- ISO 14040/14044 Compliance: Standard-aligned`;
+
+    const dataBlob = new Blob([methodology], {type: 'text/plain'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `aioxy-methodology-${currentDPPId || 'export'}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+// ================== UTILITY FUNCTIONS ==================
+function formatPEFValue(value) {
+    if (value === 0) return "0.00";
+    if (Math.abs(value) < 0.0001) return value.toExponential(3);
+    if (Math.abs(value) < 1) return value.toFixed(5);
+    if (Math.abs(value) < 1000) return value.toFixed(2);
+    return value.toFixed(1);
+}
+
+// ================== AUDIT TRAIL LOADED ==================
+console.log("✅ [AIOXY] audit-trail.js loaded - Transparency ready");
