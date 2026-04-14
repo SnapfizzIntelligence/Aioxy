@@ -1575,6 +1575,7 @@ function displayISOCompliance() {
     `;
 }
 
+
 // ================== UI INTEGRATION: COMPLETE AUDIT TRAIL ==================
 function displayCompleteAuditTrail() {
     const transparencyTab = document.getElementById('transparency-tab');
@@ -1586,10 +1587,13 @@ function displayCompleteAuditTrail() {
         auditSection.id = 'completeAuditTrailSection';
         auditSection.className = 'card';
         auditSection.style.marginTop = '1.5rem';
-        transparencyTab.querySelector('.main-content')?.appendChild(auditSection);
+        
+        transparencyTab.querySelector('.main-content').appendChild(auditSection);
     }
 
     const audit = auditTrailData;
+
+    // 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration AND Nutritional Result
     const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
     let functionalUnitText = "1 kg of final product";
     let nutritionalLCA_HTML = "";
@@ -1601,6 +1605,7 @@ function displayCompleteAuditTrail() {
         const kgNeeded = 100 / (userProtein * 10);
         const co2Per100gProtein = unifiedCO2 * kgNeeded;
 
+        // Calculate the Baseline for contrast
         const anchorProteinDB = {
             'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
             'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
@@ -1608,10 +1613,11 @@ function displayCompleteAuditTrail() {
         };
     
         const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-            audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
-        const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
-        const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
-        const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
+    audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
+const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
+// 🛡️ Divide the scaled CO2 by the ratio so the protein math remains physically accurate
+const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
+const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
     
         nutritionalLCA_HTML = `
         <div>
@@ -1672,18 +1678,45 @@ function displayCompleteAuditTrail() {
                         <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
-                        <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
-                        <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
-                    </div>
+    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
+    <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
+</div>
+<div>
+    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
+    <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
+    ${audit.comparison_baseline?.bat_processing_note ? `
+    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #F8FAFC; border-left: 3px solid #0A2540; font-size: 0.75rem; color: var(--gray);">
+        <strong>Baseline Processing:</strong> ${audit.comparison_baseline.bat_processing_note}<br>
+        <strong>Source:</strong> ${audit.comparison_baseline.bat_source || 'JRC BAT (EU) 2019/2031'}<br>
+        <strong>Allocation:</strong> ${audit.comparison_baseline.allocation_note || 'Mass allocation (ISO 14044)'}
+    </div>
+    ` : ''}
+</div>
                     <div>
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
-                        <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
-                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
-                        </div>
+                        
+                        ${(() => {
+                            const score = audit.pef_single_score?.singleScore || 0;
+                            let rating = 'Excellent';
+                            let ratingColor = '#48BB78';
+                            
+                            if (score > 150) { rating = 'Good'; ratingColor = '#ECC94B'; }
+                            if (score > 250) { rating = 'Fair'; ratingColor = '#ED8936'; }
+                            if (score > 400) { rating = 'Poor'; ratingColor = '#FC8181'; }
+                            
+                            return `
+                                <div style="margin-top: 0.25rem;">
+                                    <div class="dqr-badge" style="background: ${ratingColor}; color: white; display: inline-block; margin-bottom: 0.25rem; font-size: 0.7rem; padding: 0.15rem 0.5rem;">
+                                        ${rating} • Person Equivalent Impact
+                                    </div>
+                                    
+                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${audit.pef_single_score?.singleScore < 150 ? '#2A9D8F' : audit.pef_single_score?.singleScore < 250 ? '#8AB17D' : audit.pef_single_score?.singleScore < 400 ? '#E9C46A' : audit.pef_single_score?.singleScore < 600 ? '#F4A261' : '#E63946'};">
+                                        Grade ${audit.pef_single_score?.singleScore < 150 ? 'A' : audit.pef_single_score?.singleScore < 250 ? 'B' : audit.pef_single_score?.singleScore < 400 ? 'C' : audit.pef_single_score?.singleScore < 600 ? 'D' : 'E'} 
+                                        <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${score.toFixed(1)} µPt)</span>
+                                    </div>
+                                </div>
+                            `;
+                        })()}
                     </div>
                     ${nutritionalLCA_HTML}
                     <div>
@@ -1692,8 +1725,8 @@ function displayCompleteAuditTrail() {
                             ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
                         </div>
                         <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">
-                            <i class="fas fa-balance-scale"></i> Impact-weighted per PEF 3.1 §6.5
-                        </div>
+    <i class="fas fa-balance-scale"></i> Impact-weighted per PEF 3.1 §6.5
+</div>
                     </div>
                 </div>
             </div>
@@ -1719,9 +1752,39 @@ function displayCompleteAuditTrail() {
                     <div>AWARE 2.0</div>
                 </div>
             </div>
+                </div>
+        
+        <!-- 🆕 SENSITIVITY ANALYSIS CARD -->
+        <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
+            <i class="fas fa-chart-line"></i> Sensitivity Analysis (ISO 14044 §6.3)
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            ${audit.comparison_baseline?.sensitivity_analysis ? `
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Parameters Tested</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.parameters_tested.join(', ')}</div>
+            </div>
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Key Finding</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.key_finding}</div>
+            </div>
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Recommendation</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.recommendation}</div>
+            </div>
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                <div style="font-weight: 600; color: var(--primary);">Compliance</div>
+                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.iso_compliance}</div>
+            </div>
+            ` : `
+            <div style="background: var(--light); border-radius: 8px; padding: 1rem; grid-column: 1/-1;">
+                <div style="font-weight: 600; color: var(--primary);">Sensitivity Analysis</div>
+                <div style="font-size: 0.85rem;">Run calculation to generate sensitivity analysis. Parameters include transport distance, grid intensity, and concentration ratio.</div>
+            </div>
+            `}
         </div>
-    `;
-                            }
-
+    </div>
+`;
+                                 }
 // ================== UI.JS LOADED ==================
 console.log("✅ [AIOXY] ui.js loaded - Interface ready");
