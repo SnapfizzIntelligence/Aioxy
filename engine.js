@@ -2158,12 +2158,13 @@ return {
                 const wasteSplit = archetype.waste_split || { water: 0.60, organic: 0.20, inert: 0.02, wastewater: 0.18 };
                 
                 auditTrail.pefCategories["Climate Change"].contribution_tree.Waste.components.push({
-                    name: `Processing Waste: ${ing.name} (${archetype?.name || processState})`,
-                    subtotal: wasteEoLImpact,
-                    notes: `Loss: ${processingLoss.toFixed(3)}kg | Organic to feed: ${(processingLoss * wasteSplit.organic).toFixed(3)}kg | Inert to landfill: ${(processingLoss * wasteSplit.inert).toFixed(3)}kg | Wastewater: ${(processingLoss * wasteSplit.wastewater).toFixed(3)}kg`,
-                    confidence: "Tier 2 (IPCC 2006 / JRC BAT)",
-                    methodology: wasteEoL.methodology
-                });
+    name: `Processing Waste: ${ing.name} (${archetype?.name || processState})`,
+    subtotal: wasteEoLImpact,
+    notes: `Loss: ${processingLoss.toFixed(3)}kg | Organic to feed: ${(processingLoss * wasteSplit.organic).toFixed(3)}kg | Inert to landfill: ${(processingLoss * wasteSplit.inert).toFixed(3)}kg | Wastewater: ${(processingLoss * wasteSplit.wastewater).toFixed(3)}kg`,
+    confidence: "Tier 2 (IPCC 2006 / JRC BAT)",
+    methodology: wasteEoL.methodology,
+    calculation_trace: wasteEoL.calculation_trace // ⬅️ Route Waste trace
+});
                 
                 auditTrail.pefCategories["Climate Change"].contribution_tree.Waste.total += wasteEoLImpact;
                 auditTrail.pefCategories["Climate Change"].total += wasteEoLImpact;
@@ -2507,6 +2508,7 @@ if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
             const packagingData = aioxyData.packaging[packagingMaterial];
             if (packagingData) {
                 const cffResult = calculateCFF(packagingData, packagingWeight, recycledContentPercent);
+                auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.calculation_trace = cffResult.calculation_trace; // ⬅️ Route CFF trace
                 
                 // 🛡️ REGULATOR FIX: Route the CFF DQR Penalty into the main tree memory
                 auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.dqr_score = 1.5 + (cffResult.dqr_penalty || 0);
