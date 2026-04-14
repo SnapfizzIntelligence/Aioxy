@@ -2357,6 +2357,7 @@ if (ing.data?.metadata?.dqr_overall) {
             }
         });
 
+        
         // 6. MANUFACTURING IMPACTS - UPDATED with Audit-Ready Engine
         if (massBalanceData.productMass > 0) {
             // Call the new empirical manufacturing engine
@@ -2412,6 +2413,7 @@ const allocationTrace = usePrimary && totalProd > 0 ?
 
 auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.allocation_trace = allocationTrace;
         }
+        
         
         // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
         finalIngredients.forEach(ing => {
