@@ -2265,19 +2265,25 @@ const foodCalculationEngine = {
                 }
 
                 auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
-                    name: ing.name,
-                    id: item.id,
-                    quantity_kg: item.quantity,        
-                    farm_mass_kg: grownMass,            
-                    subtotal: allocatedTotal,
-                    note: noteText,
-                    universal_adjustments: universalAdjustments,
-                    primary_data_used: !!item.primaryData,
-                    primary_data: item.primaryData,
-                    processingState: item.processingState || 'raw',
-                    yieldFactor: yieldFactor,
-                    physics_note: item.physics_note || ''  // ← ADD THIS LINE
-                });
+    name: ing.name,
+    id: item.id,
+    quantity_kg: item.quantity,        
+    farm_mass_kg: grownMass,            
+    subtotal: allocatedTotal,
+    
+    // 🛡️ THE FIX: Save the separated PEF 3.1 climate variables into memory!
+    fossilCO2: (impactResult.fossilCO2 || 0) * specificAllocationFactor,
+    biogenicCO2: (impactResult.biogenicCO2 || 0) * specificAllocationFactor,
+    dlucCO2: (impactResult.dlucCO2 || 0) * specificAllocationFactor,
+    
+    note: noteText,
+    universal_adjustments: universalAdjustments,
+    primary_data_used: !!item.primaryData,
+    primary_data: item.primaryData,
+    processingState: item.processingState || 'raw',
+    yieldFactor: yieldFactor,
+    physics_note: item.physics_note || '' 
+});
 
                 auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
                 auditTrail.pefCategories[cat].total += allocatedTotal;
