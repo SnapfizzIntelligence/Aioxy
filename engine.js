@@ -2372,11 +2372,13 @@ if (massBalanceData.productMass > 0) {
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += mfgResult.co2;
     auditTrail.pefCategories["Climate Change"].total += mfgResult.co2;
     
-    // 🛡️ THE ALLOCATION GUARD
+    // 🛡️ THE ALLOCATION GUARD - Declared ONCE
     const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
     const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
-    const allocationFactor = (massBalanceData.productMass / totalProd) * 100;
-    const allocationTrace = usePrimary ? `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : "Industry Benchmark Allocation (JRC Default)";
+    const allocationFactor = totalProd > 0 ? (massBalanceData.productMass / totalProd) * 100 : 0;
+    const allocationTrace = usePrimary && totalProd > 0 ? 
+        `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : 
+        "Industry Benchmark Allocation (JRC Default)";
 
     // Add detailed component for audit trail
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
@@ -2392,20 +2394,20 @@ if (massBalanceData.productMass > 0) {
     
     // Add to Fossil Resources (kWh to MJ conversion: 1 kWh = 3.6 MJ)
     const fossilMJ = mfgResult.kwh * 3.6;
-    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
-    auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
+    if (auditTrail.pefCategories["Resource Use, fossils"]) {
+        auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
+        auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
+    }
     
     // Store for business case calculations
     window.lastManufacturingResult = mfgResult;
     
     console.log(`✅ [Audit] Manufacturing impact: ${mfgResult.co2.toFixed(4)} kg CO₂e using ${mfgResult.method}`);
 
-    // 🛡️ Route the manufacturing trace to the tree level for PDF access
-    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.calculation_trace = mfgResult.calculation_trace;
-    
-    // 🛡️ Route the allocation trace (already declared above, just assign)
+    // 🛡️ Route traces to tree level for PDF access
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.calculation_trace = mfgResult.calculation_trace || `${mfgResult.kwh.toFixed(2)} kWh × ${mfgResult.grid_intensity_g_per_kwh} gCO2e/kWh`;
     auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.allocation_trace = allocationTrace;
-        }
+                }
         
         // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
         finalIngredients.forEach(ing => {
@@ -2480,60 +2482,71 @@ if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
     transportNote = `Local domestic sourcing (${manufacturingCountryCode})`;
                 }
 
-            if (ingredientTransportCO2 > 0) {
-                auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
-                    name: `Inbound: ${ing.name}`,
-                    subtotal: ingredientTransportCO2,
-                    notes: transportNote
-                });
-                auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += ingredientTransportCO2;
-                auditTrail.pefCategories["Climate Change"].total += ingredientTransportCO2;
-                
-                // 🛡️ REGULATOR FIX: Correlate Inbound Transport to Fossil Resources (1 kg CO2e ≈ 14.0 MJ fossil)
-                const inboundFossilMJ = ingredientTransportCO2 * 14.0;
-                auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components || [];
-                auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total || 0) + inboundFossilMJ;
-                auditTrail.pefCategories["Resource Use, fossils"].total += inboundFossilMJ;
-            }
+            // Inside the finalIngredients.forEach loop - find this section and REPLACE:
+if (ingredientTransportCO2 > 0) {
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+        name: `Inbound: ${ing.name}`,
+        subtotal: ingredientTransportCO2,
+        notes: transportNote,
+        calculation_trace: transportObj?.calculation_trace || "" // ⬅️ ADDED TRACE
+    });
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += ingredientTransportCO2;
+    auditTrail.pefCategories["Climate Change"].total += ingredientTransportCO2;
+    
+    // 🛡️ REGULATOR FIX: Correlate Inbound Transport to Fossil Resources
+    const inboundFossilMJ = ingredientTransportCO2 * 14.0;
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components || [];
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total || 0) + inboundFossilMJ;
+    auditTrail.pefCategories["Resource Use, fossils"].total += inboundFossilMJ;
+    }
         });
 
         // 8. DISTRIBUTION & PACKAGING (Standard)
 
-        const isFrozen = processingMethod === 'freezing';
-        const isChilled = document.getElementById('refrigeratedTransport')?.value === 'yes';
-        let refType = 'ambient';
-        if (isFrozen) refType = 'frozen'; else if (isChilled) refType = 'chilled';
+const isFrozen = processingMethod === 'freezing';
+const isChilled = document.getElementById('refrigeratedTransport')?.value === 'yes';
+let refType = 'ambient';
+if (isFrozen) refType = 'frozen'; else if (isChilled) refType = 'chilled';
 
-        // 🛡️ GEOPOLITICAL CRISIS ROUTING LOGIC
-        let actualDistance = transportDistance;
-        const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
+// 🛡️ GEOPOLITICAL CRISIS ROUTING LOGIC
+let actualDistance = transportDistance;
+const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
 
-        if (isCrisisActive && (transportMode === 'sea' || transportMode === 'road')) {
-            // Apply 1.4x (40%) distance penalty for forced rerouting
-            actualDistance = transportDistance * 1.40;
-            auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components = auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components || [];
-            auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components.push({
-                name: `Geopolitical Reroute Penalty`,
-                subtotal: 0, // Informational note
-                notes: `Distance inflated by 40% (${transportDistance}km → ${actualDistance.toFixed(0)}km) due to active crisis routing.`
-            });
-        }
+if (isCrisisActive && (transportMode === 'sea' || transportMode === 'road')) {
+    actualDistance = transportDistance * 1.40;
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components = auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components || [];
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components.push({
+        name: `Geopolitical Reroute Penalty`,
+        subtotal: 0,
+        notes: `Distance inflated by 40% (${transportDistance}km → ${actualDistance.toFixed(0)}km) due to active crisis routing.`
+    });
+}
 
-        const distributionCO2 = calculateGLECTransport(
-            massBalanceData.grossWeight || 0.2, 
-            actualDistance, 
-            transportMode, 
-            refType
-        );
+// 🛡️ FIXED: Extract .total from the object
+const distributionObj = calculateGLECTransport(
+    massBalanceData.grossWeight || 0.2, 
+    actualDistance, 
+    transportMode, 
+    refType
+);
+const distributionCO2 = distributionObj.total;
 
-        auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total += distributionCO2;
-        auditTrail.pefCategories["Climate Change"].total += distributionCO2;
+auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.total += distributionCO2;
+auditTrail.pefCategories["Climate Change"].total += distributionCO2;
 
-        // 🛡️ REGULATOR FIX: Correlate Outbound Transport to Fossil Resources (1 kg CO2e ≈ 14.0 MJ fossil)
-        const outboundFossilMJ = distributionCO2 * 14.0;
-        auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components || [];
-        auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total || 0) + outboundFossilMJ;
-        auditTrail.pefCategories["Resource Use, fossils"].total += outboundFossilMJ;
+// 🛡️ Route outbound trace to memory
+auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components = auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components || [];
+auditTrail.pefCategories["Climate Change"].contribution_tree.Transport.components.push({
+    name: `Outbound Logistics (${transportMode})`,
+    subtotal: distributionCO2,
+    calculation_trace: distributionObj.calculation_trace || ""
+});
+
+// 🛡️ REGULATOR FIX: Correlate Outbound Transport to Fossil Resources
+const outboundFossilMJ = distributionCO2 * 14.0;
+auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components || [];
+auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total || 0) + outboundFossilMJ;
+auditTrail.pefCategories["Resource Use, fossils"].total += outboundFossilMJ;
         
         if (packagingWeight > 0) {
             const packagingData = aioxyData.packaging[packagingMaterial];
@@ -2629,8 +2642,7 @@ if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
                 uncertainty: 30
             });
         }
-        // --- END FIX ---
-
+        
         // Save Global State
 const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories, dqrComponents);
 const uncertaintyResults = calculateMonteCarloUncertainty(
@@ -2645,39 +2657,46 @@ const totalCC = auditTrail.pefCategories["Climate Change"].total;
 auditTrail.final_scaling_trace = `[Total Batch Impact (${totalCC.toFixed(4)} kg CO2e) ÷ Final Product Weight (${functionalUnitWeight.toFixed(3)} kg)]`;
 
 auditTrail.mass_balance = massBalanceData;
-        auditTrail.dqr_summary = { overall_dqr: foregroundBackground.overall_dqr, component_dqrs: dqrComponents, dqr_level: this.getDQRQualityLevel(foregroundBackground.overall_dqr).level };
-        auditTrail.uncertainty_analysis = { monte_carlo: uncertaintyResults, overall_uncertainty: this.calculateUncertainty(foregroundBackground.overall_dqr) };
-        auditTrail.ISO_compliance = getISOCompliance();
-        auditTrail.pef_single_score = calculatePEFSingleScore(auditTrail.pefCategories, functionalUnitWeight);
-        
-        const unified = getUnifiedMetrics(auditTrail.pefCategories, massBalanceData);
-        
-        finalPefResults = auditTrail.pefCategories;
-        massBalanceData = auditTrail.mass_balance;
-        auditTrailData = auditTrail;
-        currentDPPId = auditTrail.dppId;
+auditTrail.dqr_summary = { 
+    overall_dqr: foregroundBackground.overall_dqr, 
+    component_dqrs: dqrComponents, 
+    dqr_level: this.getDQRQualityLevel(foregroundBackground.overall_dqr).level 
+};
+auditTrail.uncertainty_analysis = { 
+    monte_carlo: uncertaintyResults, 
+    overall_uncertainty: this.calculateUncertainty(foregroundBackground.overall_dqr) 
+};
+auditTrail.ISO_compliance = getISOCompliance();
+auditTrail.pef_single_score = calculatePEFSingleScore(auditTrail.pefCategories, functionalUnitWeight);
 
-        const blCO2 = comparisonBaseline.co2PerKg || unified.co2PerKg;
-        const upliftCO2 = uplift?.co2 || 0;
-        const baselineCO2Total = blCO2 + upliftCO2;
-        
-        const results = {
-            finalPefResults: finalPefResults,
-            co2PerKg: unified.co2PerKg,
-            waterScarcityPerKg: unified.waterPerKg,
-            landUsePerKg: unified.landPerKg,
-            fossilPerKg: unified.fossilPerKg,
-            overallDQR: foregroundBackground.overall_dqr,
-            overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
-            comparison: {
-                baseline: { ...comparisonBaseline, co2PerKg: baselineCO2Total },
-                co2SavedPerKg: Math.max(0, baselineCO2Total - unified.co2PerKg),
-                uplift_applied: uplift // Ensuring uplift is passed
-            }
-        };
+const unified = getUnifiedMetrics(auditTrail.pefCategories, massBalanceData);
 
-        console.log(`✅ [AIOXY UNIFIED] Calc Complete. CO2: ${unified.co2PerKg.toFixed(2)} kg/kg`);
-        return results;
+finalPefResults = auditTrail.pefCategories;
+massBalanceData = auditTrail.mass_balance;
+auditTrailData = auditTrail;
+currentDPPId = auditTrail.dppId;
+
+const blCO2 = comparisonBaseline.co2PerKg || unified.co2PerKg;
+const upliftCO2 = uplift?.co2 || 0;
+const baselineCO2Total = blCO2 + upliftCO2;
+
+const results = {
+    finalPefResults: finalPefResults,
+    co2PerKg: unified.co2PerKg,
+    waterScarcityPerKg: unified.waterPerKg,
+    landUsePerKg: unified.landPerKg,
+    fossilPerKg: unified.fossilPerKg,
+    overallDQR: foregroundBackground.overall_dqr,
+    overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
+    comparison: {
+        baseline: { ...comparisonBaseline, co2PerKg: baselineCO2Total },
+        co2SavedPerKg: Math.max(0, baselineCO2Total - unified.co2PerKg),
+        uplift_applied: uplift
+    }
+};
+
+console.log(`✅ [AIOXY UNIFIED] Calc Complete. CO2: ${unified.co2PerKg.toFixed(2)} kg/kg`);
+return results;
     }, 
 
     detectProductCategory(productName, ingredients, selectedCategory) {
