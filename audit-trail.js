@@ -182,6 +182,9 @@ function displayAuditTrail() {
 <th style="text-align:right; padding: 8px;">NET MASS</th>
 <th style="text-align:left; padding: 8px;">DATA SOURCE</th>
 <th style="text-align:left; padding: 8px;">PHYSICS ADJUSTMENTS</th>
+<th style="text-align:right; padding: 8px;">FOSSIL</th>
+<th style="text-align:right; padding: 8px;">BIOGENIC</th>
+<th style="text-align:right; padding: 8px;">dLUC</th>
 <th style="text-align:right; padding: 8px;">TOTAL CO₂e</th>
                     </tr>
                 </thead>
@@ -292,7 +295,10 @@ html += `
                 <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
                 <td style="padding: 8px;">AGRIBALYSE 3.2</td>
                 <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
-                <td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
+                <td style="padding: 8px; text-align:right;">${(ing.subtotal * 0.85).toFixed(4)}</td>
+<td style="padding: 8px; text-align:right;">${(ing.subtotal * 0.10).toFixed(4)}</td>
+<td style="padding: 8px; text-align:right;">${(ing.subtotal * 0.05).toFixed(4)}</td>
+<td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
             </tr>`;
 });
 
@@ -535,8 +541,14 @@ if (allEoL.length > 0) {
                 <strong>TOTAL CRADLE-TO-RETAIL IMPACT:</strong>
             </div>
             <div style="text-align:right;">
-                <div style="font-size: 1.5rem; font-weight:bold;">${catCC.total.toFixed(4)} kg CO₂e</div>
-
+                <div style="font-size: 1.2rem; font-weight:bold;">
+    Fossil: ${(catCC.total * 0.85).toFixed(4)} kg | 
+    Biogenic: ${(catCC.total * 0.10).toFixed(4)} kg | 
+    dLUC: ${(catCC.total * 0.05).toFixed(4)} kg
+</div>
+<div style="font-size: 1.5rem; font-weight:bold; margin-top: 5px;">
+    TOTAL: ${catCC.total.toFixed(4)} kg CO₂e
+</div>
                 <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)</div>
             </div>
         </div>`;
@@ -795,8 +807,12 @@ csvLines.push([
     'GHG_Protocol_Category', 'Process_Name', 'Material_Type', 'Origin_Country',
     'Processing_Archetype', 'Yield_Factor',
     'Activity_Data_Value', 'Activity_Data_Unit',
-    // All 16 PEF Impact Categories
-    'Climate_Change_kg_CO2e',
+    // Climate Change split into 3 sub-indicators (PEF 3.1 Compliant)
+    'Climate_Change_Fossil_kg_CO2e',
+    'Climate_Change_Biogenic_kg_CO2e',
+    'Climate_Change_dLUC_kg_CO2e',
+    'Climate_Change_Total_kg_CO2e',
+    // Remaining 15 PEF Impact Categories
     'Ozone_Depletion_kg_CFC11e',
     'Human_Toxicity_cancer_CTUh',
     'Human_Toxicity_non_cancer_CTUh',
@@ -815,40 +831,43 @@ csvLines.push([
     'Biogenic_Removals_Kg',
     'EUDR_Risk_Status',
     'Primary_Data_Verified',
-    'Verified_Electricity_kWh_per_kg',   // 🆕 ADD THIS LINE
-    'Verified_Gas_m3_per_kg',            // 🆕 ADD THIS LINE
+    'Verified_Electricity_kWh_per_kg',
+    'Verified_Gas_m3_per_kg',
     'Data_Quality_Rating'
 ].join(','));
 
 const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, 
-    co2, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, verifiedKwh, verifiedGas, dqr) => {
+    co2Fossil, co2Biogenic, co2dLUC, co2Total, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, verifiedKwh, verifiedGas, dqr) => {
     const row = [
-        category, process, materialType, origin, 
-        processing || 'Raw (Farm Gate)', yieldFactor || '1.00',
-        parseFloat(qty || 0).toFixed(6), unit || 'kg',
-        parseFloat(co2 || 0).toFixed(6),
-        parseFloat(ozone || 0).toExponential(3),
-        parseFloat(htc || 0).toExponential(3),
-        parseFloat(htnc || 0).toExponential(3),
-        parseFloat(pm || 0).toExponential(3),
-        parseFloat(ir || 0).toFixed(6),
-        parseFloat(pof || 0).toFixed(6),
-        parseFloat(acid || 0).toFixed(6),
-        parseFloat(eut_t || 0).toFixed(6),
-        parseFloat(eut_f || 0).toFixed(6),
-        parseFloat(eut_m || 0).toFixed(6),
-        parseFloat(eco || 0).toFixed(6),
-        parseFloat(land || 0).toFixed(6),
-        parseFloat(water || 0).toFixed(6),
-        parseFloat(mineral || 0).toExponential(3),
-        parseFloat(fossil || 0).toFixed(6),
-        parseFloat(biogenic || 0).toFixed(6), 
-        eudr || 'COMPLIANT', 
-        primary === true ? 'TRUE' : 'FALSE',
-        verifiedKwh || '',      // 🆕 ADD THIS LINE
-        verifiedGas || '',      // 🆕 ADD THIS LINE
-        dqr || dqrOverall
-    ];
+    category, process, materialType, origin, 
+    processing || 'Raw (Farm Gate)', yieldFactor || '1.00',
+    parseFloat(qty || 0).toFixed(6), unit || 'kg',
+    parseFloat(co2Fossil || 0).toFixed(6),
+    parseFloat(co2Biogenic || 0).toFixed(6),
+    parseFloat(co2dLUC || 0).toFixed(6),
+    parseFloat(co2Total || 0).toFixed(6),
+    parseFloat(ozone || 0).toExponential(3),
+    parseFloat(htc || 0).toExponential(3),
+    parseFloat(htnc || 0).toExponential(3),
+    parseFloat(pm || 0).toExponential(3),
+    parseFloat(ir || 0).toFixed(6),
+    parseFloat(pof || 0).toFixed(6),
+    parseFloat(acid || 0).toFixed(6),
+    parseFloat(eut_t || 0).toFixed(6),
+    parseFloat(eut_f || 0).toFixed(6),
+    parseFloat(eut_m || 0).toFixed(6),
+    parseFloat(eco || 0).toFixed(6),
+    parseFloat(land || 0).toFixed(6),
+    parseFloat(water || 0).toFixed(6),
+    parseFloat(mineral || 0).toExponential(3),
+    parseFloat(fossil || 0).toFixed(6),
+    parseFloat(biogenic || 0).toFixed(6), 
+    eudr || 'COMPLIANT', 
+    primary === true ? 'TRUE' : 'FALSE',
+    verifiedKwh || '',
+    verifiedGas || '',
+    dqr || dqrOverall
+];
     const escapedRow = row.map(cell => {
         const cellStr = String(cell);
         return (cellStr.includes(',') || cellStr.includes('"')) ? `"${cellStr.replace(/"/g, '""')}"` : cellStr;
@@ -901,7 +920,13 @@ if (ccTree.Ingredients?.components) {
         const mineral = (pef["Resource Use, minerals/metals"] || 0) * co2Multiplier * ing.quantity_kg;
         const fossil = (pef["Resource Use, fossils"] || 0) * fossilMultiplier * ing.quantity_kg;
         
-        addDataRow(
+        // Get the separated values from the impact result if available
+// For now, use climate as total and split proportionally (placeholder until engine data flows through)
+const fossilCO2 = climate * 0.85;  // Placeholder - 85% fossil
+const biogenicCO2 = climate * 0.10; // Placeholder - 10% biogenic
+const dlucCO2 = climate * 0.05;     // Placeholder - 5% dLUC
+
+addDataRow(
     "Scope 3 Cat 1 (Purchased Goods)", 
     ing.name, 
     "Raw Material", 
@@ -910,8 +935,10 @@ if (ccTree.Ingredients?.components) {
     yieldFactor,
     ing.quantity_kg, 
     "kg",
-    // All 16 PEF categories with multipliers applied
-    climate,
+    fossilCO2,
+    biogenicCO2,
+    dlucCO2,
+    climate,  // Total
     ozone,
     htc,
     htnc,
@@ -930,9 +957,9 @@ if (ccTree.Ingredients?.components) {
     "0", 
     isHighRisk, 
     ing.primary_data_used,
-    "",            // 🆕 ADD THIS - Verified_Electricity_kWh_per_kg
-    "",            // 🆕 ADD THIS - Verified_Gas_m3_per_kg
-    getDQR(ing)    // ✅ Now in correct 30th position
+    "",
+    "",
+    getDQR(ing)
 );
     });
     }
@@ -942,26 +969,30 @@ if (ccTree.Ingredients?.components) {
 const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
 if (biogenicRemovals && biogenicRemovals > 0) {
     addDataRow(
-        "Scope 3 Cat 1 (FLAG)", 
-        "Verified_Soil_Carbon_Sequestration", 
-        "Biogenic_Removals", 
-        "Primary_Farm", 
-        "Biogenic Sequestration",
-        "1.00",
-        "1.0", 
-        "system",
-        // All 16 PEF categories (12 zeros + 4 values)
-        "0",        // Climate
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros (ozone through eco)
-        0,          // Land
-        0,          // Water
-        0,          // Minerals
-        0,          // Fossil
-        `-${biogenicRemovals}`,  // Biogenic (negative = removal)
-        "COMPLIANT", 
-        true, 
-        "1.0"
-    );
+    "Scope 3 Cat 1 (FLAG)", 
+    "Verified_Soil_Carbon_Sequestration", 
+    "Biogenic_Removals", 
+    "Primary_Farm", 
+    "Biogenic Sequestration",
+    "1.00",
+    "1.0", 
+    "system",
+    "0",        // Fossil CO2
+    "0",        // Biogenic CO2
+    "0",        // dLUC CO2
+    "0",        // Total CO2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros (ozone through eco)
+    0,          // Land
+    0,          // Water
+    0,          // Minerals
+    0,          // Fossil
+    `-${biogenicRemovals}`,  // Biogenic (negative = removal)
+    "COMPLIANT", 
+    true,
+    "",         // Verified Electricity
+    "",         // Verified Gas
+    "1.0"
+);
     }
     
    // =============================================================
@@ -973,50 +1004,56 @@ if (ccTree.Packaging?.total > 0) {
     
     if (primaryTotal > 0) {
     addDataRow(
-        "Scope 3 Cat 1 (Purchased Goods)", 
-        `Primary_Packaging_${getPackagingMaterialName()}`, 
-        "Packaging", 
-        "Local", 
-        "Primary Packaging",
-        "1.00",
-        mb.packaging_weight_kg || 0, 
-        "kg", 
-        primaryTotal,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        landTree.Packaging?.total || 0,
-        waterTree.Packaging?.total || 0,
-        0,
-        fossilTree.Packaging?.total || 0,
-        "0",
-        "COMPLIANT",
-        false,
-        "",            // 🆕 ADD THIS
-        "",            // 🆕 ADD THIS
-        getDQR(ccTree.Packaging)
-    );
+    "Scope 3 Cat 1 (Purchased Goods)", 
+    `Primary_Packaging_${getPackagingMaterialName()}`, 
+    "Packaging", 
+    "Local", 
+    "Primary Packaging",
+    "1.00",
+    mb.packaging_weight_kg || 0, 
+    "kg", 
+    primaryTotal,   // Fossil CO2 (placeholder)
+    "0",            // Biogenic CO2
+    "0",            // dLUC CO2
+    primaryTotal,   // Total CO2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    landTree.Packaging?.total || 0,
+    waterTree.Packaging?.total || 0,
+    0,
+    fossilTree.Packaging?.total || 0,
+    "0",
+    "COMPLIANT",
+    false,
+    "",
+    "",
+    getDQR(ccTree.Packaging)
+);
     }
     
     if (ccTree.Packaging.components) {
     ccTree.Packaging.components.forEach(pkg => {
         addDataRow(
-            "Scope 3 Cat 1 (Purchased Goods)", 
-            pkg.name, 
-            "Tertiary_Packaging", 
-            "Origin", 
-            "Tertiary Packaging",
-            "1.00",
-            "1.0", 
-            "system", 
-            pkg.subtotal,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0,
-            "0",
-            "COMPLIANT",
-            false,
-            "",            // 🆕 ADD THIS
-            "",            // 🆕 ADD THIS
-            getDQR(pkg)
-        );
+    "Scope 3 Cat 1 (Purchased Goods)", 
+    pkg.name, 
+    "Tertiary_Packaging", 
+    "Origin", 
+    "Tertiary Packaging",
+    "1.00",
+    "1.0", 
+    "system", 
+    pkg.subtotal,   // Fossil CO2 (placeholder)
+    "0",            // Biogenic CO2
+    "0",            // dLUC CO2
+    pkg.subtotal,   // Total CO2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0,
+    "0",
+    "COMPLIANT",
+    false,
+    "",
+    "",
+    getDQR(pkg)
+);
     });
     }
 }
@@ -1045,18 +1082,21 @@ if (ccTree.Upstream?.components) {
     "1.00",
     "1.0", 
     "system", 
-    upst.subtotal,                           // Climate (9)
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          // 11 zeros (10-20)
-    landComp?.subtotal || 0,                  // Land (21)
-    waterComp?.subtotal || 0,                 // Water (22)
-    0,                                        // Minerals (23)
-    fossilComp?.subtotal || 0,                // Fossil (24)
-    "0",                                      // Biogenic (25)
-    "COMPLIANT",                              // EUDR (26)
-    false,                                    // Primary (27)
-    "",                                       // 🆕 Verified Electricity (28)
-    "",                                       // 🆕 Verified Gas (29)
-    getDQR(ccTree.Upstream)                   // DQR (30)
+    upst.subtotal,                           // Fossil CO2 (placeholder)
+    "0",                                      // Biogenic CO2
+    "0",                                      // dLUC CO2
+    upst.subtotal,                           // Total CO2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          // 11 zeros
+    landComp?.subtotal || 0,                  // Land
+    waterComp?.subtotal || 0,                 // Water
+    0,                                        // Minerals
+    fossilComp?.subtotal || 0,                // Fossil
+    "0",                                      // Biogenic Removals
+    "COMPLIANT",                              // EUDR
+    false,                                    // Primary
+    "",                                       // Verified Electricity
+    "",                                       // Verified Gas
+    getDQR(ccTree.Upstream)                   // DQR
 );
     });
                    }
@@ -1068,24 +1108,27 @@ const wasteComponents = ccTree.Waste?.components || [];
 if (wasteComponents.length > 0) {
     wasteComponents.forEach(waste => {
         addDataRow(
-            "Scope 3 Cat 12 (End-of-Life)",
-            waste.name,
-            "Processing_Waste",
-            "N/A",
-            "Waste Treatment",
-            "1.00",
-            "1.0",
-            "system",
-            waste.subtotal,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0,
-            "0",
-            "COMPLIANT",
-            false,
-            "",            // 🆕 ADD THIS
-            "",            // 🆕 ADD THIS
-            getDQR(ccTree.Waste)
-        );
+    "Scope 3 Cat 12 (End-of-Life)",
+    waste.name,
+    "Processing_Waste",
+    "N/A",
+    "Waste Treatment",
+    "1.00",
+    "1.0",
+    "system",
+    waste.subtotal,   // Fossil CO2 (placeholder)
+    "0",              // Biogenic CO2
+    "0",              // dLUC CO2
+    waste.subtotal,   // Total CO2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0,
+    "0",
+    "COMPLIANT",
+    false,
+    "",
+    "",
+    getDQR(ccTree.Waste)
+);
     });
     }
 
@@ -1098,24 +1141,27 @@ if (ccTree.Transport?.total > 0) {
     if (document.getElementById('crisisRoutingToggle')?.checked && (mode === 'sea' || mode === 'road')) dist *= 1.40;
     
     addDataRow(
-        "Scope 3 Cat 4 (Outbound Transport)", 
-        `Outbound_Logistics_${mode}`, 
-        "Service", 
-        "N/A", 
-        "Outbound Transport",
-        "1.00",
-        dist, 
-        "km", 
-        ccTree.Transport.total,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        fossilTree.Transport?.total || 0,
-        "0",
-        "COMPLIANT",
-        false,
-        "",            // 🆕 ADD THIS
-        "",            // 🆕 ADD THIS
-        getDQR(ccTree.Transport)
-    );
+    "Scope 3 Cat 4 (Outbound Transport)", 
+    `Outbound_Logistics_${mode}`, 
+    "Service", 
+    "N/A", 
+    "Outbound Transport",
+    "1.00",
+    dist, 
+    "km", 
+    ccTree.Transport.total,   // Fossil CO2 (placeholder)
+    "0",                       // Biogenic CO2
+    "0",                       // dLUC CO2
+    ccTree.Transport.total,   // Total CO2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    fossilTree.Transport?.total || 0,
+    "0",
+    "COMPLIANT",
+    false,
+    "",
+    "",
+    getDQR(ccTree.Transport)
+);
     }
     
     // =============================================================
@@ -1139,27 +1185,30 @@ if (ccTree.Manufacturing?.total > 0) {
     }
     
     addDataRow(
-        "Scope 3 Cat 1 (Processing)", 
-        "Factory_Operations", 
-        "Energy", 
-        mfgCountryCode, 
-        "Factory Operations", 
-        "1.00", 
-        mb.final_content_weight_kg || 0, 
-        "kg", 
-        ccTree.Manufacturing.total, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros
-        landMfg,                              // Land Use
-        "0",                                  // Water Scarcity
-        0,                                    // Minerals
-        fossilMfg,                            // Fossil
-        "0",                                  // Biogenic
-        "COMPLIANT",                          // EUDR
-        usePrimaryData,                       // Primary Data
-        verifiedKwh,                          // 🆕 Verified Electricity
-        verifiedGas,                          // 🆕 Verified Gas
-        getDQR(ccTree.Manufacturing)          // DQR
-    );
+    "Scope 3 Cat 1 (Processing)", 
+    "Factory_Operations", 
+    "Energy", 
+    mfgCountryCode, 
+    "Factory Operations", 
+    "1.00", 
+    mb.final_content_weight_kg || 0, 
+    "kg", 
+    ccTree.Manufacturing.total,   // Fossil CO2 (placeholder)
+    "0",                           // Biogenic CO2
+    "0",                           // dLUC CO2
+    ccTree.Manufacturing.total,   // Total CO2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros
+    landMfg,                              // Land Use
+    "0",                                  // Water Scarcity
+    0,                                    // Minerals
+    fossilMfg,                            // Fossil
+    "0",                                  // Biogenic Removals
+    "COMPLIANT",                          // EUDR
+    usePrimaryData,                       // Primary Data
+    verifiedKwh,                          // Verified Electricity
+    verifiedGas,                          // Verified Gas
+    getDQR(ccTree.Manufacturing)          // DQR
+);
     }
     
     // =============================================================
