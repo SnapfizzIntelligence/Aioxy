@@ -2281,19 +2281,17 @@ return {
                     auditTrail.pefCategories["Climate Change"].biogenic_removals = 
                         (auditTrail.pefCategories["Climate Change"].biogenic_removals || 0) + allocatedRemovals;
                 }
-
+                
                 auditTrail.pefCategories[cat].contribution_tree.Ingredients.components.push({
     name: ing.name,
     id: item.id,
     quantity_kg: item.quantity,        
     farm_mass_kg: grownMass,            
     subtotal: allocatedTotal,
-    
-    // 🛡️ THE FIX: Save the separated PEF 3.1 climate variables into memory!
     fossilCO2: (impactResult.fossilCO2 || 0) * specificAllocationFactor,
     biogenicCO2: (impactResult.biogenicCO2 || 0) * specificAllocationFactor,
     dlucCO2: (impactResult.dlucCO2 || 0) * specificAllocationFactor,
-    
+    calculation_trace: `${item.quantity.toFixed(3)}kg × ${(impactResult.perKgCO2).toFixed(4)} kgCO2e/kg [Agribalyse 3.2${universalAdjustments ? ' + Physics Adjustments' : ''}]`, // ⬅️ UNIVERSAL TRACE
     note: noteText,
     universal_adjustments: universalAdjustments,
     primary_data_used: !!item.primaryData,
@@ -2302,6 +2300,7 @@ return {
     yieldFactor: yieldFactor,
     physics_note: item.physics_note || '' 
 });
+
 
                 auditTrail.pefCategories[cat].contribution_tree.Ingredients.total += allocatedTotal;
                 auditTrail.pefCategories[cat].total += allocatedTotal;
