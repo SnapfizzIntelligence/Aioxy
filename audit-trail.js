@@ -287,6 +287,18 @@ if (archetype && processState !== 'raw') {
     }
 }
 
+// Get the actual calculated CO2 from the original ingredient data
+const ingData = window.aioxyData?.ingredients?.[ing.id];
+const pef = ingData?.data?.pef || {};
+const co2Multiplier = adj.multipliers?.co2 || 1.0;
+const calculatedCO2 = (pef["Climate Change"] || 0) * co2Multiplier * ing.quantity_kg;
+const actualCO2 = calculatedCO2 > 0 ? calculatedCO2 : (ing.subtotal || 0);
+
+// Calculate split values
+const fossilCO2 = actualCO2 * 0.85;
+const biogenicCO2 = actualCO2 * 0.10;
+const dlucCO2 = actualCO2 * 0.05;
+
 html += `
             <tr style="border-bottom: 1px solid #ddd;">
                 <td style="padding: 8px; font-weight:bold;">${ing.name}</td>
@@ -295,10 +307,10 @@ html += `
                 <td style="padding: 8px; text-align:right;">${ing.quantity_kg.toFixed(3)} kg</td>
                 <td style="padding: 8px;">AGRIBALYSE 3.2</td>
                 <td style="padding: 8px; background: #fffdf9;">${bridgeHTML}</td>
-                <td style="padding: 8px; text-align:right;">${(ing.subtotal * 0.85).toFixed(4)}</td>
-<td style="padding: 8px; text-align:right;">${(ing.subtotal * 0.10).toFixed(4)}</td>
-<td style="padding: 8px; text-align:right;">${(ing.subtotal * 0.05).toFixed(4)}</td>
-<td style="padding: 8px; text-align:right; font-weight:bold;">${ing.subtotal.toFixed(4)} kg CO₂e</td>
+                <td style="padding: 8px; text-align:right;">${fossilCO2.toFixed(4)}</td>
+                <td style="padding: 8px; text-align:right;">${biogenicCO2.toFixed(4)}</td>
+                <td style="padding: 8px; text-align:right;">${dlucCO2.toFixed(4)}</td>
+                <td style="padding: 8px; text-align:right; font-weight:bold;">${actualCO2.toFixed(4)} kg CO₂e</td>
             </tr>`;
 });
 
