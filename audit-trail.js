@@ -704,26 +704,29 @@ function exportCSRDMatrix() {
     const ccTree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
     const waterTree = auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree;
     const fossilTree = auditTrailData.pefCategories["Resource Use, fossils"].contribution_tree;
-    const landTree = auditTrailData.pefCategories["Land Use"].contribution_tree;
+    const landTree = auditTrailData.pefCategories["Land Use"].contribution_tree; // 🛡️ NEW: E4
     
     const mb = auditTrailData.mass_balance;
     const dppId = auditTrailData.dppId || 'N/A';
     const totalCo2 = auditTrailData.pefCategories["Climate Change"].total.toFixed(6);
     const totalWater = (auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0).toFixed(6);
     const totalFossil = (auditTrailData.pefCategories["Resource Use, fossils"]?.total || 0).toFixed(6);
-    const totalLand = (auditTrailData.pefCategories["Land Use"]?.total || 0).toFixed(6);
+    const totalLand = (auditTrailData.pefCategories["Land Use"]?.total || 0).toFixed(6); // 🛡️ NEW: E4
     
+    const volume = document.getElementById('annualVolume')?.value || 0;
     const dqrOverall = auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5';
 
     const getDQR = (component) => {
-        if (!component) return dqrOverall;
-        
-        const specificDqrObj = auditTrailData.dqr_summary?.component_dqrs?.find(d => d.name === component.name);
-        if (specificDqrObj && specificDqrObj.dqr) return specificDqrObj.dqr.toFixed(1);
-        
-        const dqrValue = component.dqr_score ?? component.data_quality_rating;
-        return (dqrValue !== undefined && dqrValue !== null && !isNaN(dqrValue)) ? parseFloat(dqrValue).toFixed(2) : dqrOverall;
-    };
+    if (!component) return dqrOverall;
+    
+    // 🛡️ REGULATOR FIX: Actively search the DQR ledger for the exact ingredient's true score
+    const specificDqrObj = auditTrailData.dqr_summary?.component_dqrs?.find(d => d.name === component.name);
+    if (specificDqrObj && specificDqrObj.dqr) return specificDqrObj.dqr.toFixed(1);
+    
+    // Fallback for non-ingredient nodes (Manufacturing, Transport, Packaging)
+    const dqrValue = component.dqr_score ?? component.data_quality_rating;
+    return (dqrValue !== undefined && dqrValue !== null && !isNaN(dqrValue)) ? parseFloat(dqrValue).toFixed(2) : dqrOverall;
+};
 
     const getPackagingMaterialName = () => {
         const el = document.getElementById('packagingMaterial');
@@ -733,215 +736,417 @@ function exportCSRDMatrix() {
 
     const csvLines = [];
 
-    const resultsPayload = `${dppId}|${totalCo2}|${totalWater}|${totalLand}|${totalFossil}`;
-    const matrixChecksum = generateAuditHash(resultsPayload).substring(0, 16);
+    // =============================================================
+// SECTION 1: METADATA & TAMPER SEAL
+// =============================================================
+// 🛡️ REGULATOR FIX: Generate an immutable checksum for the final results
+const resultsPayload = `${dppId}|${totalCo2}|${totalWater}|${totalLand}|${totalFossil}`;
+const matrixChecksum = generateAuditHash(resultsPayload).substring(0, 16);
 
-    csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
-    csvLines.push(`Assessment ID (DPP),${dppId}`);
-    csvLines.push(`AIOXY Matrix Checksum,${matrixChecksum} (Tamper-Evident Seal)`);
-    csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E4 (Land) / E5 (Resources)`);
-    csvLines.push(`System Boundary,Cradle-to-Retail`);
-    csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
+csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
+csvLines.push(`Assessment ID (DPP),${dppId}`);
+csvLines.push(`AIOXY Matrix Checksum,${matrixChecksum} (Tamper-Evident Seal)`); // 🛡️ NEW
+csvLines.push(`Reporting Standard,ESRS E1 (Climate) / E3 (Water) / E4 (Land) / E5 (Resources)`);
+csvLines.push(`System Boundary,Cradle-to-Retail`);
+csvLines.push(`Audit Date,${new Date().toISOString().split('T')[0]}`);
+// 🛡️ REGULATOR FIX: Synchronize Functional Unit across all exports
+const userProteinCSV = parseFloat(document.getElementById('proteinContent')?.value) || 0;
+const functionalUnitCSV = userProteinCSV > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of product";
+
+csvLines.push(`Functional Unit,${functionalUnitCSV}`);
+
+let volumeInput = document.getElementById('annualVolume')?.value;
+let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
+csvLines.push(`Volume Assessed,${volumeText}`);
+csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
+csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${totalWater}`);
+csvLines.push(`ESRS E4: Biodiversity & Land Use (Pt),${totalLand}`);
+csvLines.push(`ESRS E5: Fossil Resources (MJ),${totalFossil}`);
+csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
+csvLines.push(``); // Empty row as separator
+
+// 🛡️ REGULATOR FIX: PEFCR v3.1 B2C Single Score Warning
+csvLines.push(`# AUDIT WARNING: PEF Single Score (µPt) is restricted to internal B2B eco-design and supply chain diagnostics.`);
+csvLines.push(`# Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.`);
+csvLines.push(``);
     
-    const userProteinCSV = parseFloat(document.getElementById('proteinContent')?.value) || 0;
-    const functionalUnitCSV = userProteinCSV > 0 ? "1 kg Mass / 100g Delivered Protein" : "1 kg of product";
-    csvLines.push(`Functional Unit,${functionalUnitCSV}`);
+    // =============================================================
+// SECTION 2: COLUMN HEADERS (16 Columns - Added Processing)
+// =============================================================
+csvLines.push([
+    'GHG_Protocol_Category', 'Process_Name', 'Material_Type', 'Origin_Country',
+    'Processing_Archetype', 'Yield_Factor',
+    'Activity_Data_Value', 'Activity_Data_Unit',
+    // All 16 PEF Impact Categories
+    'Climate_Change_kg_CO2e',
+    'Ozone_Depletion_kg_CFC11e',
+    'Human_Toxicity_cancer_CTUh',
+    'Human_Toxicity_non_cancer_CTUh',
+    'Particulate_Matter_disease_inc',
+    'Ionizing_Radiation_kBq_U235e',
+    'Photochemical_Ozone_kg_NMVOCe',
+    'Acidification_mol_H_e',
+    'Eutrophication_terrestrial_mol_N_e',
+    'Eutrophication_freshwater_kg_P_e',
+    'Eutrophication_marine_kg_N_e',
+    'Ecotoxicity_freshwater_CTUe',
+    'Land_Use_Pt',
+    'Water_Scarcity_m3_eq',
+    'Resource_Use_minerals_kg_Sb_e',
+    'Resource_Use_fossils_MJ',
+    'Biogenic_Removals_Kg',
+    'EUDR_Risk_Status',
+    'Primary_Data_Verified',
+    'Verified_Electricity_kWh_per_kg',   // 🆕 ADD THIS LINE
+    'Verified_Gas_m3_per_kg',            // 🆕 ADD THIS LINE
+    'Data_Quality_Rating'
+].join(','));
 
-    let volumeInput = document.getElementById('annualVolume')?.value;
-    let volumeText = volumeInput ? `${volumeInput} kg` : "1 kg (Functional Unit Base)";
-    csvLines.push(`Volume Assessed,${volumeText}`);
-    csvLines.push(`ESRS E1: Climate Impact (kg CO2e),${totalCo2}`);
-    csvLines.push(`ESRS E3: Water Scarcity AWARE (m3 eq),${totalWater}`);
-    csvLines.push(`ESRS E4: Biodiversity & Land Use (Pt),${totalLand}`);
-    csvLines.push(`ESRS E5: Fossil Resources (MJ),${totalFossil}`);
-    csvLines.push(`Overall Data Quality Rating,${dqrOverall}`);
-    csvLines.push(``);
+const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, 
+    co2, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, verifiedKwh, verifiedGas, dqr) => {
+    const row = [
+        category, process, materialType, origin, 
+        processing || 'Raw (Farm Gate)', yieldFactor || '1.00',
+        parseFloat(qty || 0).toFixed(6), unit || 'kg',
+        parseFloat(co2 || 0).toFixed(6),
+        parseFloat(ozone || 0).toExponential(3),
+        parseFloat(htc || 0).toExponential(3),
+        parseFloat(htnc || 0).toExponential(3),
+        parseFloat(pm || 0).toExponential(3),
+        parseFloat(ir || 0).toFixed(6),
+        parseFloat(pof || 0).toFixed(6),
+        parseFloat(acid || 0).toFixed(6),
+        parseFloat(eut_t || 0).toFixed(6),
+        parseFloat(eut_f || 0).toFixed(6),
+        parseFloat(eut_m || 0).toFixed(6),
+        parseFloat(eco || 0).toFixed(6),
+        parseFloat(land || 0).toFixed(6),
+        parseFloat(water || 0).toFixed(6),
+        parseFloat(mineral || 0).toExponential(3),
+        parseFloat(fossil || 0).toFixed(6),
+        parseFloat(biogenic || 0).toFixed(6), 
+        eudr || 'COMPLIANT', 
+        primary === true ? 'TRUE' : 'FALSE',
+        verifiedKwh || '',      // 🆕 ADD THIS LINE
+        verifiedGas || '',      // 🆕 ADD THIS LINE
+        dqr || dqrOverall
+    ];
+    const escapedRow = row.map(cell => {
+        const cellStr = String(cell);
+        return (cellStr.includes(',') || cellStr.includes('"')) ? `"${cellStr.replace(/"/g, '""')}"` : cellStr;
+    });
+    csvLines.push(escapedRow.join(','));
+};
 
-    csvLines.push(`# AUDIT WARNING: PEF Single Score (uPt) is restricted to internal B2B eco-design and supply chain diagnostics.`);
-    csvLines.push(`# Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.`);
-    csvLines.push(``);
-    
-    csvLines.push([
-        'GHG_Protocol_Category', 'Process_Name', 'Material_Type', 'Origin_Country',
-        'Processing_Archetype', 'Yield_Factor',
-        'Activity_Data_Value', 'Activity_Data_Unit',
-        'Climate_Change_kg_CO2e', 'Ozone_Depletion_kg_CFC11e', 'Human_Toxicity_cancer_CTUh',
-        'Human_Toxicity_non_cancer_CTUh', 'Particulate_Matter_disease_inc', 'Ionizing_Radiation_kBq_U235e',
-        'Photochemical_Ozone_kg_NMVOCe', 'Acidification_mol_H_e', 'Eutrophication_terrestrial_mol_N_e',
-        'Eutrophication_freshwater_kg_P_e', 'Eutrophication_marine_kg_N_e', 'Ecotoxicity_freshwater_CTUe',
-        'Land_Use_Pt', 'Water_Scarcity_m3_eq', 'Resource_Use_minerals_kg_Sb_e',
-        'Resource_Use_fossils_MJ', 'Biogenic_Removals_Kg', 'EUDR_Risk_Status',
-        'Primary_Data_Verified', 'Verified_Electricity_kWh_per_kg', 'Verified_Gas_m3_per_kg',
-        'Data_Quality_Rating'
-    ].join(','));
-
-    const addDataRow = (category, process, materialType, origin, processing, yieldFactor, qty, unit, 
-        co2, ozone, htc, htnc, pm, ir, pof, acid, eut_t, eut_f, eut_m, eco, land, water, mineral, fossil, biogenic, eudr, primary, verifiedKwh, verifiedGas, dqr) => {
-        const row = [
-            category, process, materialType, origin, 
-            processing || 'Raw (Farm Gate)', yieldFactor || '1.00',
-            parseFloat(qty || 0).toFixed(6), unit || 'kg',
-            parseFloat(co2 || 0).toFixed(6),
-            parseFloat(ozone || 0).toExponential(3),
-            parseFloat(htc || 0).toExponential(3),
-            parseFloat(htnc || 0).toExponential(3),
-            parseFloat(pm || 0).toExponential(3),
-            parseFloat(ir || 0).toFixed(6),
-            parseFloat(pof || 0).toFixed(6),
-            parseFloat(acid || 0).toFixed(6),
-            parseFloat(eut_t || 0).toFixed(6),
-            parseFloat(eut_f || 0).toFixed(6),
-            parseFloat(eut_m || 0).toFixed(6),
-            parseFloat(eco || 0).toFixed(6),
-            parseFloat(land || 0).toFixed(6),
-            parseFloat(water || 0).toFixed(6),
-            parseFloat(mineral || 0).toExponential(3),
-            parseFloat(fossil || 0).toFixed(6),
-            parseFloat(biogenic || 0).toFixed(6), 
-            eudr || 'COMPLIANT', 
-            primary === true ? 'TRUE' : 'FALSE',
-            verifiedKwh || '',
-            verifiedGas || '',
-            dqr || dqrOverall
-        ];
-        const escapedRow = row.map(cell => {
-            const cellStr = String(cell);
-            return (cellStr.includes(',') || cellStr.includes('"')) ? `"${cellStr.replace(/"/g, '""')}"` : cellStr;
-        });
-        csvLines.push(escapedRow.join(','));
-    };
-
-    // Ingredients
-    if (ccTree.Ingredients?.components) {
-        ccTree.Ingredients.components.forEach(ing => {
-            const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "COMPLIANT";
-            
-            const procState = ing.processingState || 'raw';
-            const archetypes = window.aioxyData?.processing_archetypes || {};
-            const archetype = archetypes[procState];
-            const processingName = archetype?.name || 'Raw (Farm Gate)';
-            const yieldFactor = (ing.yieldFactor || archetype?.yield_factor || 1.0).toFixed(2);
-            
-            addDataRow(
-                "Scope 3 Cat 1 (Purchased Goods)", ing.name, "Raw Material", 
-                ing.universal_adjustments?.adjusted_for_country || 'Unknown',
-                processingName, yieldFactor, ing.quantity_kg, "kg",
-                ing.subtotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                landTree?.Ingredients?.components?.find(c => c.name === ing.name)?.subtotal || 0,
-                waterTree?.Ingredients?.components?.find(c => c.name === ing.name)?.subtotal || 0,
-                0, fossilTree?.Ingredients?.components?.find(c => c.name === ing.name)?.subtotal || 0,
-                "0", isHighRisk, ing.primary_data_used, "", "", getDQR(ing)
-            );
-        });
-    }
-
-    // Biogenic Removals
-    const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
-    if (biogenicRemovals && biogenicRemovals > 0) {
-        addDataRow(
-            "Scope 3 Cat 1 (FLAG)", "Verified_Soil_Carbon_Sequestration", "Biogenic_Removals", 
-            "Primary_Farm", "Biogenic Sequestration", "1.00", "1.0", "system",
-            "0", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, `-${biogenicRemovals}`, "COMPLIANT", true, "", "", "1.0"
-        );
-    }
-    
-    // Packaging
-    if (ccTree.Packaging?.total > 0) {
-        const tertiaryTotal = ccTree.Packaging.components?.reduce((sum, p) => sum + (p.subtotal || 0), 0) || 0;
-        const primaryTotal = Math.max(0, ccTree.Packaging.total - tertiaryTotal);
+// =============================================================
+// INGREDIENTS (Scope 3 Cat 1) - FULL 16 PEF CATEGORIES
+// =============================================================
+if (ccTree.Ingredients?.components) {
+    ccTree.Ingredients.components.forEach(ing => {
+        const waterComp = waterTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+        const fossilComp = fossilTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+        const landComp = landTree.Ingredients?.components?.find(c => c.id === ing.id || c.name === ing.name);
+        const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(ing.universal_adjustments?.adjusted_for_country) ? "HIGH RISK" : "COMPLIANT";
         
-        if (primaryTotal > 0) {
-            addDataRow(
-                "Scope 3 Cat 1 (Purchased Goods)", `Primary_Packaging_${getPackagingMaterialName()}`, 
-                "Packaging", "Local", "Primary Packaging", "1.00", mb.packaging_weight_kg || 0, "kg", 
-                primaryTotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                landTree?.Packaging?.total || 0, waterTree?.Packaging?.total || 0, 0,
-                fossilTree?.Packaging?.total || 0, "0", "COMPLIANT", false, "", "", getDQR(ccTree.Packaging)
-            );
-        }
+        // Get processing info for CSV
+        const procState = ing.processingState || 'raw';
+        const archetypes = window.aioxyData?.processing_archetypes || {};
+        const archetype = archetypes[procState];
+        const processingName = archetype?.name || 'Raw (Farm Gate)';
+        const yieldFactor = (ing.yieldFactor || archetype?.yield_factor || 1.0).toFixed(2);
         
-        if (ccTree.Packaging.components) {
-            ccTree.Packaging.components.forEach(pkg => {
-                addDataRow(
-                    "Scope 3 Cat 1 (Purchased Goods)", pkg.name, "Tertiary_Packaging", "Origin", 
-                    "Tertiary Packaging", "1.00", "1.0", "system", 
-                    pkg.subtotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, "0", "COMPLIANT", false, "", "", getDQR(pkg)
-                );
-            });
-        }
-    }
-
-    // Upstream & Outbound
-    if (ccTree.Upstream?.components) {
-        ccTree.Upstream.components.forEach(upst => {
-            const isEoL = upst.name.includes('End-of-Life');
-            const catName = isEoL ? "Scope 3 Cat 12 (End-of-Life)" : "Scope 3 Cat 4 (Upstream Transport)";
-            const matType = isEoL ? "Waste_Treatment" : "Service";
-            const transportProcessing = isEoL ? "Waste Treatment" : "Inbound Transport";
-            
-            addDataRow(
-                catName, upst.name.replace(/,/g, ''), matType, "N/A", transportProcessing, "1.00", "1.0", "system", 
-                upst.subtotal, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                landTree?.Upstream?.components?.find(c => c.name === upst.name)?.subtotal || 0,
-                waterTree?.Upstream?.components?.find(c => c.name === upst.name)?.subtotal || 0,
-                0, fossilTree?.Upstream?.components?.find(c => c.name === upst.name)?.subtotal || 0,
-                "0", "COMPLIANT", false, "", "", getDQR(ccTree.Upstream)
-            );
-        });
-    }
-
-    // Processing Waste
-    const wasteComponentsExport = ccTree.Waste?.components || [];
-    if (wasteComponentsExport.length > 0) {
-        wasteComponentsExport.forEach(waste => {
-            addDataRow(
-                "Scope 3 Cat 12 (End-of-Life)", waste.name, "Processing_Waste", "N/A", "Waste Treatment",
-                "1.00", "1.0", "system", waste.subtotal,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "0", "COMPLIANT", false, "", "", getDQR(ccTree.Waste)
-            );
-        });
-    }
-
-    // Outbound Logistics
-    if (ccTree.Transport?.total > 0) {
-        let dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
-        const mode = document.getElementById('transportMode')?.value || 'road';
-        if (document.getElementById('crisisRoutingToggle')?.checked && (mode === 'sea' || mode === 'road')) dist *= 1.40;
+        // Get the FULL PEF data from the original Agribalyse ingredient
+        const ingData = window.aioxyData?.ingredients?.[ing.id];
+        const pef = ingData?.data?.pef || {};
+        
+        // Get multipliers from physics engine (applied when primary data exists)
+        const co2Multiplier = ing.universal_adjustments?.multipliers?.co2 || 1.0;
+        const landMultiplier = ing.universal_adjustments?.multipliers?.land || 1.0;
+        const waterMultiplier = ing.universal_adjustments?.multipliers?.water || 1.0;
+        const fossilMultiplier = ing.universal_adjustments?.multipliers?.fossil || 1.0;
+        
+        // Extract all 16 PEF categories from Agribalyse and apply multipliers
+        const climate = (pef["Climate Change"] || 0) * co2Multiplier * ing.quantity_kg;
+        const ozone = (pef["Ozone Depletion"] || 0) * co2Multiplier * ing.quantity_kg;
+        const htc = (pef["Human Toxicity, cancer"] || 0) * co2Multiplier * ing.quantity_kg;
+        const htnc = (pef["Human Toxicity, non-cancer"] || 0) * co2Multiplier * ing.quantity_kg;
+        const pm = (pef["Particulate Matter"] || 0) * co2Multiplier * ing.quantity_kg;
+        const ir = (pef["Ionizing Radiation"] || 0) * co2Multiplier * ing.quantity_kg;
+        const pof = (pef["Photochemical Ozone Formation"] || 0) * co2Multiplier * ing.quantity_kg;
+        const acid = (pef["Acidification"] || 0) * co2Multiplier * ing.quantity_kg;
+        const eut_t = (pef["Eutrophication, terrestrial"] || 0) * co2Multiplier * ing.quantity_kg;
+        const eut_f = (pef["Eutrophication, freshwater"] || 0) * co2Multiplier * ing.quantity_kg;
+        const eut_m = (pef["Eutrophication, marine"] || 0) * co2Multiplier * ing.quantity_kg;
+        const eco = (pef["Ecotoxicity, freshwater"] || 0) * co2Multiplier * ing.quantity_kg;
+        const land = (pef["Land Use"] || 0) * landMultiplier * ing.quantity_kg;
+        const water = (pef["Water Use/Scarcity (AWARE)"] || 0) * waterMultiplier * ing.quantity_kg;
+        const mineral = (pef["Resource Use, minerals/metals"] || 0) * co2Multiplier * ing.quantity_kg;
+        const fossil = (pef["Resource Use, fossils"] || 0) * fossilMultiplier * ing.quantity_kg;
         
         addDataRow(
-            "Scope 3 Cat 4 (Outbound Transport)", `Outbound_Logistics_${mode}`, "Service", "N/A", "Outbound Transport",
-            "1.00", dist, "km", ccTree.Transport.total,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, fossilTree?.Transport?.total || 0,
-            "0", "COMPLIANT", false, "", "", getDQR(ccTree.Transport)
-        );
+    "Scope 3 Cat 1 (Purchased Goods)", 
+    ing.name, 
+    "Raw Material", 
+    ing.universal_adjustments?.adjusted_for_country || 'Unknown',
+    processingName,
+    yieldFactor,
+    ing.quantity_kg, 
+    "kg",
+    // All 16 PEF categories with multipliers applied
+    climate,
+    ozone,
+    htc,
+    htnc,
+    pm,
+    ir,
+    pof,
+    acid,
+    eut_t,
+    eut_f,
+    eut_m,
+    eco,
+    land,
+    water,
+    mineral,
+    fossil,
+    "0", 
+    isHighRisk, 
+    ing.primary_data_used,
+    "",            // 🆕 ADD THIS - Verified_Electricity_kWh_per_kg
+    "",            // 🆕 ADD THIS - Verified_Gas_m3_per_kg
+    getDQR(ing)    // ✅ Now in correct 30th position
+);
+    });
+    }
+    // =============================================================
+// FLAG REMOVALS (Biogenic carbon sequestration)
+// =============================================================
+const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
+if (biogenicRemovals && biogenicRemovals > 0) {
+    addDataRow(
+        "Scope 3 Cat 1 (FLAG)", 
+        "Verified_Soil_Carbon_Sequestration", 
+        "Biogenic_Removals", 
+        "Primary_Farm", 
+        "Biogenic Sequestration",
+        "1.00",
+        "1.0", 
+        "system",
+        // All 16 PEF categories (12 zeros + 4 values)
+        "0",        // Climate
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros (ozone through eco)
+        0,          // Land
+        0,          // Water
+        0,          // Minerals
+        0,          // Fossil
+        `-${biogenicRemovals}`,  // Biogenic (negative = removal)
+        "COMPLIANT", 
+        true, 
+        "1.0"
+    );
     }
     
-    // Manufacturing
-    if (ccTree.Manufacturing?.total > 0) {
-        const fossilMfg = fossilTree?.Manufacturing?.total || 0;
-        const landMfg = landTree?.Manufacturing?.total || 0;
-        const mfgCountryCode = document.getElementById('manufacturingCountry')?.value || 'Unknown';
-        const usePrimaryData = document.getElementById('usePrimaryFactoryData')?.checked || false;
-        
-        let verifiedKwh = '';
-        let verifiedGas = '';
-        if (usePrimaryData) {
-            const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
-            const totalGasM3 = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
-            const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
-            if (totalKWh > 0) verifiedKwh = (totalKWh / totalProd).toFixed(4);
-            if (totalGasM3 > 0) verifiedGas = (totalGasM3 / totalProd).toFixed(4);
-        }
-        
+   // =============================================================
+// PACKAGING
+// =============================================================
+if (ccTree.Packaging?.total > 0) {
+    const tertiaryTotal = ccTree.Packaging.components?.reduce((sum, p) => sum + (p.subtotal || 0), 0) || 0;
+    const primaryTotal = Math.max(0, ccTree.Packaging.total - tertiaryTotal);
+    
+    if (primaryTotal > 0) {
+    addDataRow(
+        "Scope 3 Cat 1 (Purchased Goods)", 
+        `Primary_Packaging_${getPackagingMaterialName()}`, 
+        "Packaging", 
+        "Local", 
+        "Primary Packaging",
+        "1.00",
+        mb.packaging_weight_kg || 0, 
+        "kg", 
+        primaryTotal,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        landTree.Packaging?.total || 0,
+        waterTree.Packaging?.total || 0,
+        0,
+        fossilTree.Packaging?.total || 0,
+        "0",
+        "COMPLIANT",
+        false,
+        "",            // 🆕 ADD THIS
+        "",            // 🆕 ADD THIS
+        getDQR(ccTree.Packaging)
+    );
+    }
+    
+    if (ccTree.Packaging.components) {
+    ccTree.Packaging.components.forEach(pkg => {
         addDataRow(
-            "Scope 3 Cat 1 (Processing)", "Factory_Operations", "Energy", mfgCountryCode, "Factory Operations",
-            "1.00", mb.final_content_weight_kg || 0, "kg", ccTree.Manufacturing.total,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, landMfg, "0", 0, fossilMfg, "0", "COMPLIANT",
-            usePrimaryData, verifiedKwh, verifiedGas, getDQR(ccTree.Manufacturing)
+            "Scope 3 Cat 1 (Purchased Goods)", 
+            pkg.name, 
+            "Tertiary_Packaging", 
+            "Origin", 
+            "Tertiary Packaging",
+            "1.00",
+            "1.0", 
+            "system", 
+            pkg.subtotal,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0,
+            "0",
+            "COMPLIANT",
+            false,
+            "",            // 🆕 ADD THIS
+            "",            // 🆕 ADD THIS
+            getDQR(pkg)
         );
+    });
+    }
+}
+    // =============================================================
+// UPSTREAM & OUTBOUND LOGISTICS (Captures All Cat 4 & Cat 12)
+// =============================================================
+if (ccTree.Upstream?.components) {
+    ccTree.Upstream.components.forEach(upst => {
+        const isEoL = upst.name.includes('End-of-Life');
+        const catName = isEoL ? "Scope 3 Cat 12 (End-of-Life)" : "Scope 3 Cat 4 (Upstream Transport)";
+        const matType = isEoL ? "Waste_Treatment" : "Service";
+        
+        const waterComp = waterTree.Upstream?.components?.find(c => c.name === upst.name);
+        const fossilComp = fossilTree.Upstream?.components?.find(c => c.name === upst.name);
+        const landComp = landTree.Upstream?.components?.find(c => c.name === upst.name);
+        
+        // Determine processing name
+        const transportProcessing = isEoL ? "Waste Treatment" : "Inbound Transport";
+
+        addDataRow(
+    catName, 
+    upst.name.replace(/,/g, ''), 
+    matType, 
+    "N/A", 
+    transportProcessing,
+    "1.00",
+    "1.0", 
+    "system", 
+    upst.subtotal,                           // Climate (9)
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,          // 11 zeros (10-20)
+    landComp?.subtotal || 0,                  // Land (21)
+    waterComp?.subtotal || 0,                 // Water (22)
+    0,                                        // Minerals (23)
+    fossilComp?.subtotal || 0,                // Fossil (24)
+    "0",                                      // Biogenic (25)
+    "COMPLIANT",                              // EUDR (26)
+    false,                                    // Primary (27)
+    "",                                       // 🆕 Verified Electricity (28)
+    "",                                       // 🆕 Verified Gas (29)
+    getDQR(ccTree.Upstream)                   // DQR (30)
+);
+    });
+                   }
+
+    // =============================================================
+// PROCESSING WASTE (Scope 3 Cat 12 - Formulation Loss)
+// =============================================================
+const wasteComponents = ccTree.Waste?.components || [];
+if (wasteComponents.length > 0) {
+    wasteComponents.forEach(waste => {
+        addDataRow(
+            "Scope 3 Cat 12 (End-of-Life)",
+            waste.name,
+            "Processing_Waste",
+            "N/A",
+            "Waste Treatment",
+            "1.00",
+            "1.0",
+            "system",
+            waste.subtotal,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0,
+            "0",
+            "COMPLIANT",
+            false,
+            "",            // 🆕 ADD THIS
+            "",            // 🆕 ADD THIS
+            getDQR(ccTree.Waste)
+        );
+    });
+    }
+
+// =============================================================
+// OUTBOUND LOGISTICS (Scope 3 Cat 4)
+// =============================================================
+if (ccTree.Transport?.total > 0) {
+    let dist = parseFloat(document.getElementById('transportDistance')?.value) || 0;
+    const mode = document.getElementById('transportMode')?.value || 'road';
+    if (document.getElementById('crisisRoutingToggle')?.checked && (mode === 'sea' || mode === 'road')) dist *= 1.40;
+    
+    addDataRow(
+        "Scope 3 Cat 4 (Outbound Transport)", 
+        `Outbound_Logistics_${mode}`, 
+        "Service", 
+        "N/A", 
+        "Outbound Transport",
+        "1.00",
+        dist, 
+        "km", 
+        ccTree.Transport.total,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        fossilTree.Transport?.total || 0,
+        "0",
+        "COMPLIANT",
+        false,
+        "",            // 🆕 ADD THIS
+        "",            // 🆕 ADD THIS
+        getDQR(ccTree.Transport)
+    );
     }
     
+    // =============================================================
+// MANUFACTURING (Scope 3 Cat 1 / Processing)
+// =============================================================
+if (ccTree.Manufacturing?.total > 0) {
+    const fossilMfg = fossilTree.Manufacturing?.total || 0;
+    const landMfg = landTree.Manufacturing?.total || 0;
+    const mfgCountryCode = document.getElementById('manufacturingCountry')?.value || 'Unknown';
+    const usePrimaryData = document.getElementById('usePrimaryFactoryData')?.checked || false;
+    
+    // 🆕 Get verified intensity values
+    let verifiedKwh = '';
+    let verifiedGas = '';
+    if (usePrimaryData) {
+        const totalKWh = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
+        const totalGasM3 = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
+        const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+        if (totalKWh > 0) verifiedKwh = (totalKWh / totalProd).toFixed(4);
+        if (totalGasM3 > 0) verifiedGas = (totalGasM3 / totalProd).toFixed(4);
+    }
+    
+    addDataRow(
+        "Scope 3 Cat 1 (Processing)", 
+        "Factory_Operations", 
+        "Energy", 
+        mfgCountryCode, 
+        "Factory Operations", 
+        "1.00", 
+        mb.final_content_weight_kg || 0, 
+        "kg", 
+        ccTree.Manufacturing.total, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 11 zeros
+        landMfg,                              // Land Use
+        "0",                                  // Water Scarcity
+        0,                                    // Minerals
+        fossilMfg,                            // Fossil
+        "0",                                  // Biogenic
+        "COMPLIANT",                          // EUDR
+        usePrimaryData,                       // Primary Data
+        verifiedKwh,                          // 🆕 Verified Electricity
+        verifiedGas,                          // 🆕 Verified Gas
+        getDQR(ccTree.Manufacturing)          // DQR
+    );
+    }
+    
+    // =============================================================
+    // DOWNLOAD (Single CSV file)
+    // =============================================================
     const csvContent = "\uFEFF" + csvLines.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -954,7 +1159,7 @@ function exportCSRDMatrix() {
     URL.revokeObjectURL(url);
     
     console.log("✅ CSRD Retailer Matrix Exported Successfully (ESRS E1, E3, E4, E5)");
-}
+        }
 
 // ================== RAW DATA EXPORT ==================
 function downloadRawData() {
