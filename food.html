@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOXY | PEF 3.1 & LCA Software for European Food Brands</title>
+    <meta name="description" content="AIOXY provides audit-grade Life Cycle Assessment (LCA) and CSRD Scope 3 data infrastructure for European food and beverage brands using Agribalyse 3.2.">
+    <meta name="keywords" content="PEF 3.1, LCA software, CSRD compliance, Scope 3 food brands, Agribalyse 3.2, Digital Product Passport, EU sustainability data">
+   
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+ 
+    <!-- AIOXY MODULAR JAVASCRIPT -->
+    <!-- 1. Data (must load first) -->
+    <script src="ingredients.js"></script>
+    
+    <!-- 2. Core Engine -->
+    <script src="engine.js"></script>
+    
+    <!-- 3. Main Controller -->
+    <script src="main.js"></script>
+    
+    <!-- 4. UI Layer -->
+    <script src="ui.js"></script>
+    
+    <!-- 5. PDF Generator -->
+    <script src="pdf-generator.js"></script>
+    
+    <!-- 6. Audit Trail & Exports -->
+    <script src="audit-trail.js"></script>
+    
+    <!-- 7. Business Case & ROI -->
+    <script src="business-case.js"></script>
+    
+    <style>
+        /* ========== ALL CSS REMAINS EXACTLY THE SAME ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root {
+            --primary: #0A2540;
+            --primary-light: #1A365D;
+            --primary-dark: #061B2E;
+            --secondary: #00D4AA;
+            --secondary-dark: #00B894;
+            --accent: #FF6B6B;
+            --light: #F8FAFC;
+            --dark: #2D3748;
+            --gray: #718096;
+            --border: #E2E8F0;
+            --card-bg: #FFFFFF;
+            --success: #48BB78;
+            --warning: #248;
+            --gradient-primary: linear-gradient(135deg, #0A2540 0%, #1A365D 100%);
+            --gradient-secondary: linear-gradient(135deg, #00D4AA 0%, #00B894 100%);
+            --gradient-accent: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.15);
+            
+            --dqr-excellent: #48BB78;
+            --dqr-very-good: #68D391;
+            --dqr-good: #ECC94B;
+            --dqr-fair: #ED8936;
+            --dqr-poor: #FC8181;
+        }
+
+        body {
+            background: linear-gradient(135deg, #F8FAFC 0%, #EDF2F7 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2.5rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            background: var(--gradient-secondary);
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .compliance-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 0.6rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 0 3rem;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 1.25rem 2rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            transition: left 0.3s ease;
+        }
+
+        .nav-tab:hover::before {
+            left: 0;
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--secondary);
+        }
+
+        .nav-tab.active::before {
+            left: 0;
+        }
+
+        .main-content {
+            padding: 2.5rem 3rem;
+            display: grid;
+            gap: 2rem;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.1);
+        }
+
+        .btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.75rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: var(--gradient-secondary);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-accent {
+            background: var(--gradient-accent);
+        }
+
+        .ingredient-list {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .ingredient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .ingredient-item:hover {
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .ingredient-item:last-child {
+            border-bottom: none;
+        }
+
+        .ingredient-info {
+            flex: 1;
+        }
+
+        .ingredient-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .ingredient-stats {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .ingredient-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .quantity-input {
+            width: 90px;
+            border: none;
+            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .remove-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem 1rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border-top: 4px solid var(--primary);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(10, 37, 64, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.25rem 0;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .savings-badge {
+            background: var(--gradient-secondary);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .chart-container {
+            height: 250px;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .environmental-story {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.75rem;
+            border-radius: 14px;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+
+        .environmental-story::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: rgba(255,255,255,0.05);
+            transform: rotate(30deg);
+        }
+
+        .story-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .story-content {
+            line-height: 1.6;
+            font-size: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .story-highlight {
+            background: rgba(255,255,255,0.15);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .compliance-notice {
+            background: #E3F2FD;
+            border: 1px solid #2196F3;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .compliance-icon {
+            background: #2196F3;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(10, 37, 64, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .transport-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .advanced-options {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 1.5rem 0;
+        }
+
+        .footer {
+            background: var(--primary-dark);
+            color: white;
+            padding: 1.5rem 3rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        /* DQR Badges */
+        .dqr-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        
+        .dqr-excellent { background: #48BB78; color: white; }
+        .dqr-very-good { background: #68D391; color: white; }
+        .dqr-good { background: #ECC94B; color: var(--dark); }
+        .dqr-fair { background: #ED8936; color: white; }
+        .dqr-poor { background: #FC8181; color: white; }
+        
+        .mass-balance {
+            background: #F7FAFC;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
+        }
+        
+        .mass-balance-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mass-balance-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .mass-balance-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dqr-factor {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 2px solid var(--border);
+        }
+        
+        .dqr-factor-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .dqr-factor-label {
+            font-weight: 700;
+            color: var(--gray);
+            margin: 0.25rem 0;
+        }
+        
+        .pef-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .pef-table th {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .pef-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .pef-category {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .pef-unit {
+            color: var(--gray);
+            font-family: monospace;
+        }
+        
+        .pef-value {
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        .badge {
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--secondary-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .source-badge {
+            background: rgba(10, 37, 64, 0.1);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        
+        .impact-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .comparison-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+        
+        .comparison-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .comparison-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .business-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .business-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+        
+        .business-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .business-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        .roi-badge {
+            background: var(--gradient-secondary);
+            color: white;
+            padding: 0.3rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+        
+        .ledger-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .ledger-table th, .ledger-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+        
+        .ledger-table th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .money-positive {
+            color: var(--success);
+            font-weight: 700;
+        }
+        
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .scenario-btn {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .scenario-btn:hover {
+            transform: translateY(-3px);
+            border-color: var(--secondary);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .scenario-btn.active {
+            background: rgba(0, 212, 170, 0.1);
+            border-color: var(--secondary);
+        }
+        
+        .universal-comparison-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+        
+        .universal-comparison-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .universal-comparison-item.highlight {
+            background: rgba(0, 212, 170, 0.1);
+            border-color: var(--secondary);
+        }
+        
+        .bar-container {
+            flex: 1;
+            height: 20px;
+            background: var(--light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+        
+        .story-item {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            min-width: 120px;
+        }
+        
+        .story-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .story-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .story-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            text-align: center;
+        }
+        
+        .qrcode-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .qrcode-container canvas {
+            border: 10px solid white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .dpp-id {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 1rem 0;
+            letter-spacing: 1px;
+        }
+        
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .export-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .export-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--secondary);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .export-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .export-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .export-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
+            line-height: 1.4;
+        }
+        
+        .audit-trail-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
+        }
+        
+        .audit-category {
+            margin-bottom: 2rem;
+        }
+        
+        .audit-category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .audit-component {
+            margin-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .audit-component-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            background: rgba(10, 37, 64, 0.05);
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .audit-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .audit-item:last-child {
+            border-bottom: none;
+        }
+        
+        .audit-item-name {
+            flex: 1;
+        }
+        
+        .audit-item-value {
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        
+        .empty-state h3 {
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        #pdf-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 37, 64, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-secondary);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .fix-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #0A2540 0%, #1A365D 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+
+        .fix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .fix-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .fix-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--secondary);
+            box-shadow: 0 5px 15px rgba(0, 212, 170, 0.1);
+        }
+
+        .fix-number {
+            width: 30px;
+            height: 30px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: 800;
+        }
+
+        .pef-score-chart {
+            height: 200px;
+            margin: 1.5rem 0;
+        }
+
+        .sensitivity-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .sensitivity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00D4AA 0%, #FF6B6B 100%);
+            border-radius: 4px;
+        }
+
+        .temporal-timeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .temporal-point {
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .temporal-point::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: var(--secondary);
+            opacity: 0.2;
+            border-radius: 50%;
+        }
+
+        .audit-step {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .audit-step:last-child {
+            border-bottom: none;
+        }
+
+        .audit-step-number {
+            width: 30px;
+            height: 30px;
+            background: var(--light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .foreground-chip {
+            background: rgba(72, 187, 120, 0.1);
+            color: #48BB78;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #48BB78;
+        }
+
+        .background-chip {
+            background: rgba(255, 107, 107, 0.1);
+            color: #FF6B6B;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid #FF6B6B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    AIOXY
+                </div>
+                <div class="tagline">Science-Based Sustainability Intelligence Platform</div>
+                <div class="compliance-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    Standard-Aligned • PEF 3.1 Methodology • Verification-Ready
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="tab-indicator" id="tabIndicator"></div>
+            <button class="nav-tab active" onclick="showTab('calculator', event)">
+                <i class="fas fa-calculator"></i>
+                Calculator
+            </button>
+            <button class="nav-tab" onclick="showTab('results', event)">
+                <i class="fas fa-chart-line"></i>
+                Results
+            </button>
+            <button class="nav-tab" onclick="showTab('business-case', event)">
+                <i class="fas fa-euro-sign"></i>
+                Business Case
+            </button>
+            <button class="nav-tab" onclick="showTab('pef-scorecard', event)">
+                <i class="fas fa-list-ol"></i>
+                PEF Scorecard
+            </button>
+            <button class="nav-tab" onclick="showTab('dpp', event)">
+                <i class="fas fa-qrcode"></i>
+                Transparency Card
+            </button>
+            <button class="nav-tab" onclick="showTab('export', event)">
+                <i class="fas fa-file-export"></i>
+                Export Reports
+            </button>
+            <button class="nav-tab" onclick="showTab('transparency', event)">
+                <i class="fas fa-search"></i>
+                Transparency Log
+            </button>
+            <button class="nav-tab" onclick="showTab('methodology', event)">
+                <i class="fas fa-file-contract"></i>
+                Methodology
+            </button>
+        </div>
+
+        <div class="main-content">
+            <!-- Calculator Tab -->
+            <div id="calculator-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            Product Information
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-info-circle"></i>
+                            Required for Transparency Card
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" id="productName" class="form-control" placeholder="Enter product name" value="Plant-Based Protein Burger">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Customer Name (for story)</label>
+                        <input type="text" id="customerName" class="form-control" placeholder="e.g., Maria" value="Maria">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Category (Smart Baseline Detection)</label>
+                        <select id="productCategory" class="form-control" onchange="updateComparison()">
+                            <option value="auto">✨ Auto-Detect (Recommended)</option>
+                            <option value="dairy_alt">Plant-Based Milk</option>
+                            <option value="meat_alt">Plant-Based Meat</option>
+                            <option value="dairy">Dairy Product</option>
+                            <option value="meat">Meat Product</option>
+                            <option>Personal Care</option>
+                            <option>Household Products</option>
+                            <option>Textiles</option>
+                            <option>Electronics</option>
+                        </select>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Product Weight (kg)</label>
+                            <input type="number" id="productWeight" class="form-control" value="0.200" step="0.001" min="0" onchange="calculateImpact()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="color: var(--primary);">
+                                <i class="fas fa-compress-arrows-alt"></i> Concentration Ratio
+                            </label>
+                            <input type="number" id="concentrationRatio" class="form-control" value="1.0" step="0.1" min="1" onchange="calculateImpact()">
+                            <small style="color: var(--gray); font-size: 0.7rem;">e.g., 10 for powder replacing 10L liquid</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="color: var(--primary);">
+                                <i class="fas fa-dumbbell"></i> Protein (g/100g)
+                            </label>
+                            <input type="number" id="proteinContent" class="form-control" value="15" step="0.1" min="0" onchange="calculateImpact()">
+                            <small style="color: var(--secondary-dark); font-size: 0.7rem; font-weight: bold;">Unlocks Nutritional LCA</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            Performance Comparison
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Compare Against</label>
+                        <select id="comparisonBaseline" class="form-control" onchange="updateComparison()">
+                            <option value="auto">Auto-detect (Recommended)</option>
+                            <optgroup label="Food Products (Cradle-to-Retail Equivalent)">
+                                <option value="beef-product">Conventional Beef (Retail Equiv.)</option>
+                                <option value="milk-product">Conventional Cow Milk (Retail Equiv.)</option>
+                                <option value="soy-protein-product">Conventional Soy Protein Concentrate</option>
+                                <option value="whey-protein-product">Conventional Whey Protein Isolate</option> 
+                                <option value="wheat-protein-product">Conventional Wheat Protein Isolate</option>
+                                <option value="pea-protein-product">Conventional Pea Protein Isolate</option>
+                                <option value="chocolate-spread-conventional">Conventional Palm Oil Spread</option>
+                                <option value="chicken-product">Conventional Chicken (Retail Equiv.)</option>
+                                <option value="pork-product">Conventional Pork (Retail Equiv.)</option>
+                                <option value="cheese-product">Conventional Cheese (Retail Equiv.)</option>
+                                <option value="coffee-product">Conventional Coffee (Retail Equiv.)</option>
+                                <option value="chocolate-product">Conventional Chocolate (Retail Equiv.)</option>
+                                <option value="bread-product">Conventional Bread (Retail Equiv.)</option>
+                                <option value="pasta-product">Conventional Egg Pasta (Dry Retail Equiv.)</option>
+                            </optgroup>
+                            <optgroup label="Personal Care (Cradle-to-Retail Equivalent)">
+                                <option value="shampoo-conventional">Conventional Shampoo</option>
+                                <option value="soap-conventional">Conventional Soap</option>
+                                <option value="lotion-conventional">Conventional Lotion</option>
+                            </optgroup>
+                            <optgroup label="Textiles (Cradle-to-Retail Equivalent)">
+                                <option value="cotton-tshirt">Conventional Cotton T-Shirt</option>
+                                <option value="polyester-tshirt">Conventional Polyester T-Shirt</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Custom Baseline (kg CO₂e/kg)</label>
+                        <input type="number" id="customBaseline" class="form-control" placeholder="Enter custom competitor baseline" step="0.1" min="0">
+                        <small style="color: var(--gray); font-size: 0.8rem;">Use this to compare against specific competitors</small>
+                    </div>
+                    
+                    <div class="compliance-notice" style="margin-top: 1rem;">
+                        <div class="compliance-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <strong>Smart Detection Active</strong><br>
+                            System automatically detects product type and selects the most relevant comparison baseline.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-apple-alt"></i>
+                            </div>
+                            Ingredients (Science-Based)
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-database"></i>
+                            50 Ingredients • AGRIBALYSE 3.2 • DQR Rated
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Select Ingredient (Base Data)</label>
+                            <select id="ingredientSelect" class="form-control">
+                                <option value="">Choose from science-based ingredients...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Origin Country</label>
+                            <select id="ingredientOriginSelect" class="form-control">
+                                <option value="FR">🇫🇷 France (Base)</option>
+                            </select>
+                            <small style="color: var(--gray); font-size: 0.7rem;">Source region for physics adjustments</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Quantity (kg)</label>
+                        <input type="number" id="ingredientQuantity" value="0.150" step="0.001" min="0" class="form-control">
+                    </div>
+                    
+                    <button class="btn" onclick="addIngredient()">
+                        <i class="fas fa-plus"></i>
+                        Add Ingredient
+                    </button>
+                    <button class="btn btn-accent" style="margin-left: 1rem; background: linear-gradient(135deg, #8E44AD 0%, #9B59B6 100%);" onclick="loadBioreactorPreset()">
+                        <i class="fas fa-flask"></i> Load Bioreactor Preset (Fermentation)
+                    </button>
+                    
+                    <div class="ingredient-list" id="ingredientList">
+                        <div class="empty-state">
+                            <i class="fas fa-apple-alt"></i>
+                            <h3>No ingredients added yet</h3>
+                            <p>Add ingredients to calculate your environmental impact</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card hidden" id="hydrationSuggestionCard" style="margin-top: 1rem; border-left: 4px solid #00D4AA;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon" style="background: var(--gradient-secondary);">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            Physics-Based Recipe Suggestion
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div id="hydrationMessage" style="margin-bottom: 1rem;"></div>
+                        <div class="action-buttons">
+                            <button class="btn btn-success" onclick="applyHydrationSuggestion()">
+                                <i class="fas fa-check"></i>
+                                Apply Suggestion
+                            </button>
+                            <button class="btn btn-outline" onclick="dismissHydrationSuggestion()">
+                                <i class="fas fa-times"></i>
+                                Use My Recipe As-Is
+                            </button>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--gray);">
+                            <i class="fas fa-info-circle"></i>
+                            Based on standard industry formulations for accurate comparisons
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-industry"></i>
+                            </div>
+                            Manufacturing & Supply Chain
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Manufacturing Country</label>
+                        <select id="manufacturingCountry" class="form-control" onchange="calculateImpact()">
+                            <option value="">Select country...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Processing Method</label>
+                        <select id="processingMethod" class="form-control">
+                            <option value="none">No Additional Processing</option>
+                            <option value="pasteurization">Pasteurization</option>
+                            <option value="uht_processing">UHT Processing (140°C)</option>
+                            <option value="sterilization">Batch Sterilization (121°C)</option>
+                            <option value="emulsification">Emulsification / Homogenization</option>
+                            <option value="baking">Baking</option>
+                            <option value="roasting">Roasting</option>
+                            <option value="frying">Frying</option>
+                            <option value="freezing">Freezing (IQF)</option>
+                            <option value="drying">Spray Drying</option>
+                            <option value="milling">Milling</option>
+                            <option value="mixing">Mixing/Blending</option>
+                            <option value="fermentation">Fermentation</option>
+                            <option value="extrusion">Extrusion</option>
+                            <option value="oat-processing">Oat Enzyming/Heat Treatment</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="background: #F8FAFC; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--secondary);">
+                        <label class="form-label" style="margin-bottom: 0.5rem;"><i class="fas fa-bolt" style="color: #F6AD55;"></i> Factory Energy Source</label>
+                        <select id="energySource" class="form-control" onchange="calculateImpact()">
+                            <option value="grid">Regional Grid Mix (Default)</option>
+                            <option value="renewable">100% Renewable Energy (Verified EAC/GO)</option>
+                            <option value="natural_gas">Natural Gas Direct</option>
+                            <option value="coal">Coal Direct</option>
+                        </select>
+                    </div>
+                    
+                    <div style="background: #F0F9FF; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 1px solid #BDE0FE;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label class="form-label" style="margin-bottom: 0; color: #084B82;">
+                                <i class="fas fa-bolt"></i> Factory Energy Override (Primary Data)
+                            </label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="usePrimaryFactoryData" onchange="toggleFactoryInputs()">
+                                <label class="form-check-label" for="usePrimaryFactoryData" style="font-size: 0.8rem;">I have real bills</label>
+                            </div>
+                        </div>
+                        
+                        <div id="factoryDataInputs" class="hidden">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label class="form-label" style="font-size: 0.8rem;">Annual Elec. (kWh)</label>
+                                    <input type="number" id="factoryTotalKWh" class="form-control" placeholder="e.g. 50000">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.8rem;">Annual Gas (m³)</label>
+                                    <input type="number" id="factoryTotalGas" class="form-control" placeholder="e.g. 25000">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.8rem;">Total Output (kg)</label>
+                                    <input type="number" id="factoryTotalOutput" class="form-control" placeholder="e.g. 100000">
+                                </div>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #084B82; margin-top: 0.5rem;">
+                                <i class="fas fa-check-circle"></i> This replaces generic processing estimates with your verified data.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Transportation</label>
+                        <div class="transport-section">
+                            <div>
+                                <label class="form-label">Distance (km)</label>
+                                <input type="number" id="transportDistance" value="300" min="0" class="form-control">
+                            </div>
+                            <div>
+                                <label class="form-label">Transport Mode</label>
+                                <select id="transportMode" class="form-control">
+                                    <option value="road">Road Freight (HGV Diesel)</option>
+                                    <option value="rail">Rail Freight (Electric)</option>
+                                    <option value="sea">Sea Freight (Container)</option>
+                                    <option value="air">Air Freight</option>
+                                    <option value="lastmile">Last-mile Delivery</option>
+                                    <option value="electric_van">Electric Van</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #FFF5F5; border-left: 4px solid #E53E3E; padding: 1rem; margin-top: 1rem; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="form-label" style="margin-bottom: 0; color: #C53030;">
+                                <i class="fas fa-ship"></i> <strong>Geopolitical Crisis Rerouting</strong>
+                            </label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="crisisRoutingToggle" onchange="calculateImpact()">
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #C53030; margin-top: 0.5rem;">
+                            Applies standard +40% distance penalty for Suez/Hormuz avoidance (Cape of Good Hope route).
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline" onclick="toggleAdvanced()">
+                        <i class="fas fa-cog"></i>
+                        Advanced Options
+                    </button>
+
+                    <div class="advanced-options hidden" id="advancedOptions">
+                        <div class="form-group">
+                            <label class="form-label">Refrigerated Transport</label>
+                            <select id="refrigeratedTransport" class="form-control">
+                                <option value="no">No Refrigeration</option>
+                                <option value="yes">Refrigerated (+20-40% emissions)</option>
+                            </select>
+                        </div> 
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            Packaging Materials
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Primary Packaging Material</label>
+                        <select id="packagingMaterial" class="form-control">
+                            <option value="cardboard">Cardboard (Coated)</option>
+                            <option value="PET">PET Plastic</option>
+                            <option value="rPET">rPET (Recycled)</option>
+                            <option value="HDPE">HDPE Plastic</option>
+                            <option value="LDPE">LDPE Plastic</option>
+                            <option value="PP">PP Plastic</option>
+                            <option value="glass">Glass</option>
+                            <option value="aluminum">Aluminum</option>
+                            <option value="steel">Steel</option>
+                            <option value="PLA">PLA Bioplastic</option>
+                            <option value="mycelium">Mycelium Foam</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Packaging Weight (kg)</label>
+                        <input type="number" id="packagingWeight" value="0.050" step="0.001" min="0" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Recycled Content (%)</label>
+                        <input type="number" id="recycledContent" value="30" min="0" max="100" class="form-control">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label class="form-label">End-of-Life Destination (PPWR Compliance)</label>
+                        <select id="packagingEoL" class="form-control">
+                            <option value="eu_average">EU Average Mix (Default)</option>
+                            <option value="recycled">100% Recycled (Closed Loop)</option>
+                            <option value="incinerated">100% Incinerated (Energy Recovery)</option>
+                            <option value="landfill">100% Landfill</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn btn-outline" onclick="startNewAudit()" style="flex: 1; padding: 1.25rem; border-color: var(--accent); color: var(--accent);">
+                        <i class="fas fa-trash-alt"></i>
+                        Start New Audit
+                    </button>
+                    <button class="btn btn-success" onclick="calculateImpact()" style="flex: 3; padding: 1.25rem; font-size: 1.1rem;">
+                        <i class="fas fa-rocket"></i>
+                        Calculate Environmental Impact
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Tab -->
+            <div id="results-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            Impact Analysis
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-clock"></i>
+                            PEF 3.1 Methodology • AWARE • Data Quality Rated
+                        </div>
+                    </div>
+                    
+                    <div class="loading hidden" id="loadingResults">
+                        <div class="spinner"></div>
+                        <h3>Calculating Environmental Footprint...</h3>
+                        <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                            Processing 16 impact categories with AGRIBALYSE 3.2 data and uncertainty calculations
+                        </p>
+                    </div>
+
+                    <div id="resultsContent">
+                        <div class="data-quality-section hidden" id="dataQualitySection">
+                            <h3 style="margin-bottom: 1rem; color: var(--primary);">
+                                <i class="fas fa-chart-line"></i>
+                                Data Quality Assessment
+                            </h3>
+                            <div class="dqr-breakdown" id="dqrBreakdown"></div>
+                            <div style="text-align: center; margin-top: 1rem;">
+                                <span class="dqr-badge dqr-excellent" id="overallDQRBadge">
+                                    <i class="fas fa-star"></i>
+                                    Overall Data Quality: Excellent
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mass-balance hidden" id="massBalanceSection">
+                            <div class="mass-balance-title">
+                                <i class="fas fa-balance-scale"></i>
+                                Mass Balance Verification
+                            </div>
+                            <div id="massBalanceContent"></div>
+                        </div>
+
+                        <div id="pefSingleScoreSection" style="margin-top: 1.5rem;"></div>
+
+                        <div class="results-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-smog"></i></div>
+                                <div class="metric-value" id="co2Value">0.00 kg</div>
+                                <div class="metric-label">Climate Change (GWP100)</div>
+                                <div class="savings-badge" id="co2Savings">0% saved</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-tint"></i></div>
+                                <div class="metric-value" id="waterValue">0 m³</div>
+                                <div class="metric-label">Water Scarcity per kg</div>
+                                <div class="savings-badge" id="waterSavings">0% saved</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-mountain"></i></div>
+                                <div class="metric-value" id="landValue">0 Pt</div>
+                                <div class="metric-label">Land Use per kg</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon"><i class="fas fa-fire"></i></div>
+                                <div class="metric-value" id="fossilValue">0 MJ</div>
+                                <div class="metric-label">Fossil Resources</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-comparison" id="universalComparisonSection">
+                            <h3 style="margin-bottom: 1rem; color: var(--primary);">
+                                <i class="fas fa-chart-bar"></i>
+                                Universal Product Comparison
+                            </h3>
+                            <div style="background: #E3F2FD; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                                <i class="fas fa-robot" style="color: var(--primary);"></i>
+                                <strong id="baselineName">Comparing against: Detecting...</strong>
+                            </div>
+                            <div class="universal-comparison-grid" id="universalComparisonGrid"></div>
+                        </div>
+
+                        <div class="environmental-story hidden" id="environmentalStory">
+                            <div class="story-title">
+                                <i class="fas fa-globe-europe"></i>
+                                Environmental Impact Story
+                            </div>
+                            <div class="story-content" id="storyContent"></div>
+                            <div class="story-comparison" id="storyComparison"></div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="emissionChart"></canvas>
+                        </div>
+
+                        <div class="impact-comparison">
+                            <div class="comparison-card">
+                                <i class="fas fa-car" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="carKm">0 km</div>
+                                <div class="comparison-label">Equivalent car distance saved</div>
+                            </div>
+                            <div class="comparison-card">
+                                <i class="fas fa-home" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="householdEnergy">0 days</div>
+                                <div class="comparison-label">Household energy consumption</div>
+                            </div>
+                            <div class="comparison-card">
+                                <i class="fas fa-tree" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="treeYears">0</div>
+                                <div class="comparison-label">Tree-year sequestration equivalent</div>
+                            </div>
+                            <div class="comparison-card">
+                                <i class="fas fa-tint" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="comparison-value" id="waterScarcity">0</div>
+                                <div class="comparison-label">Water scarcity reduction (AWARE)</div>
+                            </div>
+                        </div>
+
+                        <div class="compliance-notice">
+                            <div class="compliance-icon"><i class="fas fa-check"></i></div>
+                            <div>
+                                <strong>Verification-Ready Assessment</strong><br>
+                                This assessment follows PEF 3.1 methodology using AGRIBALYSE 3.2, JRC EF 3.1, and AWARE 2.0 data. 
+                                All claims are substantiated and transparent through the Digital Transparency Card.
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn" onclick="showTab('business-case', event)"><i class="fas fa-euro-sign"></i>View Business Case</button>
+                            <button class="btn" onclick="showTab('pef-scorecard', event)"><i class="fas fa-list-ol"></i>View Full PEF Scorecard</button>
+                            <button class="btn" onclick="showTab('dpp', event)"><i class="fas fa-qrcode"></i>Generate Transparency Card</button>
+                            <button class="btn" onclick="generatePDFReport('comprehensive')"><i class="fas fa-file-pdf"></i>Download PDF Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Case Tab -->
+            <div id="business-case-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon"><i class="fas fa-euro-sign"></i></div>
+                            Business Case & ROI Analysis
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-chart-line"></i>
+                            Financial Impact • ROI • Market Advantage • Scales from 1 to Billions
+                        </div>
+                    </div>
+
+                    <div class="business-case">
+                        <div class="form-group" style="background: white; padding: 2rem; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 2rem;">
+                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 1.5rem; align-items: end;">
+                                <div>
+                                    <label class="form-label" style="font-size: 1.1rem; margin-bottom: 0.5rem;">
+                                        <i class="fas fa-boxes"></i> Annual Production Volume
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.85rem; color: var(--primary);">
+                                        <i class="fas fa-tag"></i> Wholesale Price (€/kg)
+                                    </label>
+                                    <input type="number" id="wholesalePrice" class="form-control" value="10.00" step="0.10" min="0.10" onchange="updateBusinessCase()" style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
+                                <button class="btn btn-outline" onclick="setVolume(100)">100 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(1000)">1,000 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(10000)">10,000 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(100000)">100,000 units</button>
+                                <button class="btn btn-outline" onclick="setVolume(1000000)">1 Million</button>
+                                <button class="btn btn-outline" onclick="setVolume(10000000)">10 Million</button>
+                                <button class="btn btn-outline" onclick="setVolume(100000000)">100 Million</button>
+                                <button class="btn btn-outline" onclick="setVolume(1000000000)">1 Billion</button>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <input type="range" id="salesVolume" min="1" max="1000000000" value="10000" step="1" style="width: 100%; height: 8px; border-radius: 4px;" oninput="updateVolumeDisplay(this.value); updateBusinessCase();">
+                            </div>
+                            
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
+                                    <span id="volumeDisplay">10,000</span>
+                                </div>
+                                <div style="font-size: 1rem; color: var(--gray);">
+                                    <span id="businessScaleDisplay">Growing Business</span> • Tier: <span id="volumeTierDisplay">10K-100K</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">What-If Scenarios (Physics-Based)</h3>
+                        <div class="scenario-grid">
+                            <div class="scenario-btn" id="scenario-renewables" onclick="toggleScenario('renewables')">
+                                <i class="fas fa-solar-panel"></i>
+                                <div style="font-weight: 600;">Renewable Energy</div>
+                                <div style="font-size: 0.75rem; color: gray;">-95% Manufacturing CO₂</div>
+                            </div>
+                            <div class="scenario-btn" id="scenario-local" onclick="toggleScenario('local')">
+                                <i class="fas fa-truck"></i>
+                                <div style="font-weight: 600;">Local Sourcing</div>
+                                <div style="font-size: 0.75rem; color: gray;">Reduce Dist. to 50km</div>
+                            </div>
+                            <div class="scenario-btn" id="scenario-lightweight" onclick="toggleScenario('lightweight')">
+                                <i class="fas fa-feather"></i>
+                                <div style="font-weight: 600;">Lightweight Pkg</div>
+                                <div style="font-size: 0.75rem; color: gray;">-20% Packaging Weight</div>
+                            </div>
+                            <div class="scenario-btn" id="scenario-regen_ag" onclick="toggleScenario('regen_ag')">
+                                <i class="fas fa-seedling"></i>
+                                <div style="font-weight: 600;">Regen Ag</div>
+                                <div style="font-size: 0.75rem; color: gray;">Soil Carbon Credit</div>
+                            </div>
+                            <div class="scenario-btn" id="scenario-no_waste" onclick="toggleScenario('no_waste')">
+                                <i class="fas fa-recycle"></i>
+                                <div style="font-weight: 600;">Zero Waste</div>
+                                <div style="font-size: 0.75rem; color: gray;">+10% Yield Efficiency</div>
+                            </div>
+                            <div class="scenario-btn" id="scenario-bulk" onclick="toggleScenario('bulk')">
+                                <i class="fas fa-ship"></i>
+                                <div style="font-weight: 600;">Bulk Shipping</div>
+                                <div style="font-size: 0.75rem; color: gray;">Sea/Rail vs Road</div>
+                            </div>
+                            <div class="scenario-btn" id="scenario-circular_pkg" onclick="toggleScenario('circular_pkg')">
+                                <i class="fas fa-infinity"></i>
+                                <div style="font-weight: 600;">Circular Pkg</div>
+                                <div style="font-size: 0.75rem; color: gray;">Closed Loop Cycle</div>
+                            </div>
+                            <div class="scenario-btn" id="scenario-reset" onclick="resetScenarios()">
+                                <i class="fas fa-undo"></i>
+                                <div style="font-weight: 600;">Reset All</div>
+                                <div style="font-size: 0.75rem; color: gray;">Baseline Physics</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h3 style="margin-bottom: 1rem; color: var(--primary);">
+                                <i class="fas fa-calculator"></i>
+                                Financial Impact Analysis (Real Physics)
+                            </h3>
+                            <table class="ledger-table">
+                                <thead>
+                                    <tr><th>Cost Driver (Real Math)</th><th>Physics Delta</th><th>Financial Impact</th></tr>
+                                </thead>
+                                <tbody id="ledgerBody"></tbody>
+                            </table>
+                            <div style="margin-top: 1.5rem; text-align: right;">
+                                <div style="font-size: 0.9rem; color: gray;">Total Annual Benefit</div>
+                                <div style="font-size: 2rem; font-weight: 800; color: var(--success);" id="totalBenefit">€0</div>
+                            </div>
+                        </div>
+
+                        <div class="business-metrics">
+                            <div class="business-card">
+                                <i class="fas fa-rocket" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="business-value" id="roiValue">0%</div>
+                                <div class="business-label">ROI (3-Year)</div>
+                                <div class="roi-badge" id="roiBadge">CALCULATING</div>
+                            </div>
+                            <div class="business-card">
+                                <i class="fas fa-piggy-bank" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="business-value" id="savingsValue">€0</div>
+                                <div class="business-label">Annual Cost Savings</div>
+                            </div>
+                            <div class="business-card">
+                                <i class="fas fa-chart-bar" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="business-value" id="premiumValue">0%</div>
+                                <div class="business-label">Price Premium Potential</div>
+                            </div>
+                            <div class="business-card">
+                                <i class="fas fa-users" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                                <div class="business-value" id="marketValue">0%</div>
+                                <div class="business-label">Market Share Growth</div>
+                            </div>
+                        </div>
+
+                        <div class="mass-balance" style="margin-top: 2rem;">
+                            <div class="mass-balance-title"><i class="fas fa-euro-sign"></i>Investment & Return Breakdown</div>
+                            <div class="mass-balance-item"><span>Implementation Cost:</span><span id="implementationCost">€0</span></div>
+                            <div class="mass-balance-item"><span>Annual Carbon Reduction:</span><span id="carbonReductionDisplay">0 kg CO₂e</span></div>
+                            <div class="mass-balance-item"><span>Total Annual Benefit:</span><span id="totalBenefitDisplay">€0</span></div>
+                            <div class="mass-balance-item" style="font-weight: 600; color: var(--primary);"><span>3-Year Net Return:</span><span id="netReturnDisplay">€0</span></div>
+                        </div>
+
+                        <div class="environmental-story" style="margin-top: 2rem;">
+                            <div class="story-title"><i class="fas fa-bullseye"></i>Strategic Business Impact</div>
+                            <div class="story-content" id="businessStory"></div>
+                        </div>
+
+                        <div class="compliance-notice" style="margin-top: 2rem;">
+                            <div class="compliance-icon"><i class="fas fa-users"></i></div>
+                            <div>
+                                <strong>Brand Value Enhancement</strong><br>
+                                Science-based sustainability data builds consumer trust and loyalty. 
+                                Transparent environmental reporting attracts eco-conscious customers and supports premium pricing strategies.
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-outline" onclick="showTab('results', event)"><i class="fas fa-arrow-left"></i>Back</button>
+                            <button class="btn btn-success" onclick="generateProfessionalPDF('business-case-tab', 'Business Case Analysis')"><i class="fas fa-file-certificate"></i>Professional Report</button>
+                            <button class="btn" onclick="downloadScreenViewPDF('business-case-tab', 'Business_Case_Visual')"><i class="fas fa-camera"></i>Quick Visual</button>
+                            <button class="btn btn-outline" onclick="downloadEditablePDF('business-case-tab', 'Business_Case_Data')"><i class="fas fa-table"></i>Data Export</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PEF Scorecard Tab -->
+            <div id="pef-scorecard-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon"><i class="fas fa-list-ol"></i></div>
+                            Complete PEF 3.1 Impact Scorecard
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-file-certificate"></i>
+                            Science-Based • 16 Impact Categories • DQR Rated
+                        </div>
+                    </div>
+
+                    <div class="compliance-notice">
+                        <div class="compliance-icon"><i class="fas fa-calculator"></i></div>
+                        <div>
+                            <strong>Standard-Aligned PEF 3.1 Methodology</strong><br>
+                            This scorecard presents the complete environmental footprint across all 16 mandatory PEF impact categories. 
+                            All values are calculated using JRC EF 3.1 characterization factors and are transparent for verification purposes.
+                        </div>
+                    </div>
+
+                    <div class="pef-scorecard">
+                        <table class="pef-table">
+                            <thead>
+                                <tr>
+                                    <th>Impact Category</th><th>Total Impact</th><th>Unit</th><th>Per kg Product</th><th>Data Quality</th><th>Uncertainty</th>
+                                </tr>
+                                <tr style="background: #E3F2FD;">
+                                    <td colspan="6" style="padding: 0.5rem; font-size: 0.75rem; color: #1976D2; text-align: center;">
+                                        <i class="fas fa-info-circle"></i>
+                                        PEF 3.1 Methodology • Cradle-to-Retail Boundary • AGRIBALYSE 3.2 Data
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody id="pefScorecardBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="data-quality-section">
+                        <h3 style="margin-bottom: 1rem; color: var(--primary);"><i class="fas fa-database"></i>Data Quality Breakdown</h3>
+                        <div id="ingredientDataQuality"></div>
+                    </div>
+
+                    <div id="temporalDiscountingSection"></div>
+                    <div id="isoComplianceSection"></div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-outline" onclick="showTab('dpp', event)"><i class="fas fa-qrcode"></i>Transparency Card</button>
+                        <button class="btn btn-success" onclick="generateProfessionalPDF('pef-scorecard-tab', 'PEF 3.1 Scorecard')"><i class="fas fa-file-certificate"></i>Professional Report</button>
+                        <button class="btn" onclick="downloadScreenViewPDF('pef-scorecard-tab', 'PEF_Scorecard_Visual')"><i class="fas fa-camera"></i>Quick Visual</button>
+                        <button class="btn" onclick="downloadRawData()"><i class="fas fa-database"></i>Raw Data</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Digital Transparency Card Tab -->
+            <div id="dpp-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon"><i class="fas fa-passport"></i></div>
+                            Digital Transparency Card
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-qrcode"></i>
+                            Science-Based • Full PEF Data • DQR Embedded
+                        </div>
+                    </div>
+
+                    <div class="dpp-section">
+                        <h3 style="margin-bottom: 1rem; color: var(--primary);">Your Product's Environmental Profile</h3>
+                        <p style="margin-bottom: 1.5rem; color: var(--gray);">
+                            Scan this QR code to access the complete 16-impact environmental footprint and transparency data
+                        </p>
+                        <div class="qrcode-container"><div id="qrcode"></div></div>
+                        <div class="dpp-id" id="dppId">TRC-#####-#####</div>
+                        <p style="font-size: 0.9rem; color: var(--gray); max-width: 600px; margin: 0 auto;">
+                            This Digital Transparency Card contains the complete PEF 3.1 16-impact matrix, supply chain transparency information, 
+                            and methodology documentation aligned with science-based sustainability reporting.
+                        </p>
+                    </div>
+
+                    <div class="compliance-notice">
+                        <div class="compliance-icon"><i class="fas fa-database"></i></div>
+                        <div>
+                            <strong>Complete PEF Data Embedded</strong><br>
+                            This transparency card contains the full 16-impact PEF matrix. Data structure follows JSON-LD format 
+                            with interoperability standards.
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn" onclick="generateDPP()"><i class="fas fa-sync-alt"></i>Regenerate Card</button>
+                        <button class="btn" onclick="downloadDPPData()"><i class="fas fa-download"></i>Download Card Data</button>
+                        <button class="btn btn-outline" onclick="generatePDFReport('dpp')"><i class="fas fa-print"></i>Print QR Label</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Reports Tab -->
+            <div id="export-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon"><i class="fas fa-file-export"></i></div>
+                            Export Reports
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-file-pdf"></i>
+                            Professional Reports • Verification-Ready • Multiple Formats
+                        </div>
+                    </div>
+
+                    <div class="export-section">
+                        <h3 style="margin-bottom: 1rem; color: var(--primary); text-align: center;">Generate Professional Reports</h3>
+                        <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">
+                            Download comprehensive reports for stakeholders, marketing, or internal documentation
+                        </p>
+                        
+                        <div class="export-options">
+                            <div class="export-card" onclick="exportCSRDMatrix()" style="border-color: #27AE60; background: #F0FFF4;">
+                                <div class="export-icon" style="background: #27AE60;"><i class="fas fa-file-excel"></i></div>
+                                <div class="export-title" style="color: #27AE60;">CSRD Scope 3 Matrix (.csv)</div>
+                                <div class="export-desc">Flat-file supply chain data strictly mapped for Retailer Procurement & GHG Protocol Cat 1 compliance. Includes EUDR flags.</div>
+                            </div>
+                            <div class="export-card" onclick="generatePDFReport('marketing')">
+                                <div class="export-icon"><i class="fas fa-chart-line"></i></div>
+                                <div class="export-title">Marketing Report</div>
+                                <div class="export-desc">Consumer-friendly environmental performance overview with key metrics and storytelling elements.</div>
+                            </div>
+                            <div class="export-card" onclick="generatePDFReport('executive')">
+                                <div class="export-icon"><i class="fas fa-user-tie"></i></div>
+                                <div class="export-title">Executive Summary</div>
+                                <div class="export-desc">High-level environmental performance overview with key metrics and improvement opportunities.</div>
+                            </div>
+                            <div class="export-card" onclick="generatePDFReport('technical')">
+                                <div class="export-icon"><i class="fas fa-calculator"></i></div>
+                                <div class="export-title">Technical Report</div>
+                                <div class="export-desc">Detailed technical documentation with full calculation methodology and data sources.</div>
+                            </div>
+                            <div class="export-card" onclick="generatePDFReport('transparency')">
+                                <div class="export-icon"><i class="fas fa-qrcode"></i></div>
+                                <div class="export-title">Transparency Package</div>
+                                <div class="export-desc">Complete Digital Transparency Card documentation with QR codes and methodology statements.</div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-success" onclick="generatePDFReport('comprehensive')"><i class="fas fa-file-pdf"></i>Generate All Reports</button>
+                            <button class="btn btn-outline" onclick="downloadAllData()"><i class="fas fa-database"></i>Download Complete Dataset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transparency Log Tab -->
+            <div id="transparency-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon"><i class="fas fa-search"></i></div>
+                            Transparency Log
+                        </div>
+                        <div class="badge">
+                            <i class="fas fa-shield-alt"></i>
+                            Science-Based • Full Transparency
+                        </div>
+                    </div>
+
+                    <div class="compliance-notice">
+                        <div class="compliance-icon"><i class="fas fa-calculator"></i></div>
+                        <div>
+                            <strong>Complete Calculation Transparency</strong><br>
+                            This transparency log shows every calculation step and data source used in the environmental assessment.
+                        </div>
+                    </div>
+
+                    <div id="foregroundBackgroundSection"></div>
+                    <div id="completeAuditTrailSection"></div>
+
+                    <div class="audit-trail-section" id="auditTrailContent">
+                        <div class="empty-state">
+                            <i class="fas fa-calculator"></i>
+                            <h3>No calculation data available</h3>
+                            <p>Calculate environmental impacts first to generate the transparency log</p>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-outline" onclick="calculateImpact(); showTab('transparency', event)"><i class="fas fa-sync-alt"></i>Refresh</button>
+                        <button class="btn btn-success" onclick="generateProfessionalPDF('transparency-tab', 'Transparency Log')"><i class="fas fa-file-certificate"></i>Professional Log</button>
+                        <button class="btn" onclick="downloadScreenViewPDF('transparency-tab', 'Transparency_Log_Visual')"><i class="fas fa-camera"></i>Quick Visual</button>
+                        <button class="btn" onclick="exportAuditData()"><i class="fas fa-download"></i>JSON Data</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Methodology Tab -->
+            <div id="methodology-tab" class="tab-content hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon"><i class="fas fa-file-certificate"></i></div>
+                            Methodology
+                        </div>
+                    </div>
+                    
+                    <div class="compliance-notice">
+                        <div class="compliance-icon"><i class="fas fa-gavel"></i></div>
+                        <div>
+                            <strong>Science-Based Methodology & Regulatory Alignment</strong><br><br>
+                            Environmental estimates are based on a Comparative Life Cycle Assessment (LCA) utilizing the <strong>Product Environmental Footprint (PEF) 3.1</strong> methodology.<br><br>
+                            <strong>ISO 14044 Allocation Procedure:</strong> For multi-output agricultural and thermal extrusion processes, impacts are allocated based on physical mass ratio (Mass Allocation) in strict accordance with ISO 14044:2006+A1:2018 hierarchy.
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">PEF 3.1 Methodology Used</h3>
+                    
+                    <div class="results-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fas fa-tint"></i></div>
+                            <div class="metric-value">AWARE 2.0</div>
+                            <div class="metric-label">Water Scarcity</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fas fa-recycle"></i></div>
+                            <div class="metric-value">CFF</div>
+                            <div class="metric-label">Circular Footprint</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fas fa-chart-bar"></i></div>
+                            <div class="metric-value">PEF</div>
+                            <div class="metric-label">Allocation</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fas fa-database"></i></div>
+                            <div class="metric-value">DQR</div>
+                            <div class="metric-label">Data Quality</div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn" onclick="downloadMethodology()"><i class="fas fa-file-download"></i>Download Methodology</button>
+                        <button class="btn btn-outline" onclick="showTab('export', event)"><i class="fas fa-user-check"></i>Request Verification</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-content">
+                <div>© 2024 AIOXY Sustainability Intelligence. Estimates based on Agribalyse 3.1 data. For consumer information and marketing purposes only.</div>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Documentation</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Loading Overlay -->
+    <div id="pdf-loading-overlay">
+        <div class="spinner"></div>
+        <h3>Generating Report...</h3>
+        <p>This may take a few moments.</p>
+    </div>
+
+    <!-- Supplier Data Modal -->
+    <div id="supplierModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="color: var(--primary);"><i class="fas fa-tractor"></i> Primary Farm Data</h3>
+                <button onclick="closeSupplierModal()" style="background: none; border: none; font-size: 1.5rem; color: var(--gray); cursor: pointer;">×</button>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <p style="color: var(--gray); margin-bottom: 1rem;">
+                    <i class="fas fa-info-circle"></i> 
+                    Replace Agribalyse averages with your <strong>specific farm data</strong> for accurate calculations.
+                </p>
+
+                <div style="background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <div style="font-weight: 700; color: var(--primary); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+                        <i class="fas fa-link"></i> Supplier Data Bridge (No Login Required)
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button class="btn btn-outline" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 0.5rem;" onclick="generateSupplierLink()">1. Copy Request Link for Farmer</button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="supplierTokenInput" class="form-control" style="font-size: 0.85rem; padding: 0.5rem;" placeholder="2. Paste Farmer's 'AIOXY-' Token Here">
+                            <button class="btn btn-success" style="font-size: 0.85rem; padding: 0.5rem; flex-shrink: 0;" onclick="decodeSupplierToken()">3. Import</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group"><label class="form-label">Farm Region/Country</label><input type="text" id="supplierFarmRegion" class="form-control" placeholder="e.g., Normandy, France"></div>
+                <div class="form-group"><label class="form-label"><i class="fas fa-map-marker-alt"></i> Primary Origin Geolocation (EUDR Mandate)</label><input type="text" id="supplierGeolocation" class="form-control" placeholder="e.g., 43.6045, 1.4442"></div>
+                <div class="form-group"><label>EUDR Due Diligence Statement (DDS) Reference</label><input type="text" id="supplierDDS" placeholder="e.g., EUDR-2026-ABC12345"></div>
+                <div class="form-group"><label>Nitrogen Fertilizer (kg per ton of crop)</label><input type="number" id="primaryNitrogen" placeholder="e.g. 15"></div>
+                <div class="form-group"><label>Yield (kg per hectare)</label><input type="number" id="primaryYield" placeholder="e.g. 5000"></div>
+                <div class="form-group">
+                    <label class="form-label">Irrigation Water Source</label>
+                    <select id="supplierWaterSource" class="form-control">
+                        <option value="">Select...</option>
+                        <option value="rainfed">Rainfed (no irrigation)</option>
+                        <option value="surface">Surface water (river, lake)</option>
+                        <option value="groundwater">Groundwater (well)</option>
+                        <option value="mixed">Mixed irrigation</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Farming Practice</label>
+                    <select id="supplierPractice" class="form-control">
+                        <option value="">Select...</option>
+                        <option value="conventional">Conventional</option>
+                        <option value="organic">Organic Certified</option>
+                        <option value="regen">Regenerative Agriculture</option>
+                        <option value="precision">Precision Farming</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="background: #F0F9FF; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #BDE0FE;">
+                <div style="font-size: 0.8rem; color: #084B82;">
+                    <i class="fas fa-shield-alt"></i>
+                    <strong>Compliance Note:</strong> This primary data enables:
+                    <ul style="margin: 0.5rem 0 0 1rem;">
+                        <li>Specific "Carbon Reduced" claims</li>
+                        <li>Accurate water footprint (regional AWARE factors)</li>
+                        <li>Verifiable supply chain transparency</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-outline" onclick="closeSupplierModal()" style="flex: 1;"><i class="fas fa-times"></i> Use Agribalyse Average</button>
+                <button class="btn" onclick="saveSupplierData()" style="flex: 1; background: var(--gradient-secondary);"><i class="fas fa-save"></i> Save Primary Data</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
