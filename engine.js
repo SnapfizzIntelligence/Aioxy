@@ -337,10 +337,18 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
         };
     }
     
-    let co2Base = ingredientData.data.pef["Climate Change"] || 0;
-    let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
-    let landBase = ingredientData.data.pef["Land Use"] || 0;
-    let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0; // 🛡️ NEW: Fossil tracking
+    // ================== PEF 3.1 COMPLIANT CLIMATE CHANGE SEPARATION ==================
+// Split Climate Change into three sub-indicators as required by PEF 3.1
+let co2Fossil = ingredientData.data.pef["Climate change - fossil"] || 0;
+let co2Biogenic = ingredientData.data.pef["Climate change - biogenic"] || 0;
+let co2dLUC = ingredientData.data.pef["Climate change - land use and land use change"] || 0;
+
+// Legacy total for existing calculations (backward compatibility)
+let co2Base = co2Fossil + co2Biogenic + co2dLUC;
+
+let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
+let landBase = ingredientData.data.pef["Land Use"] || 0;
+let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0; // 🛡️ NEW: Fossil tracking
     
     let log = [];
     let qualityPenalty = 0.0;
@@ -489,20 +497,23 @@ if (['BR', 'ID', 'MY', 'AR'].includes(originCountry) && isEudrCommodity) {
     }
 
     return {
-        totalCO2: totalCO2,
-        totalWater: totalWater,
-        totalLand: totalLand,
-        totalFossil: totalFossil, // 🛡️ NEW
-        perKgCO2: finalCO2,
-        perKgWater: finalWater,
-        perKgLand: finalLand,
-        perKgFossil: finalFossil, // 🛡️ NEW
-        logs: log,
-        qualityPenalty: qualityPenalty,
-        universal_adjustments: universal_adjustments,
-        is_primary: !!primaryData,
-        biogenicRemovals: biogenicRemovals
-    };
+    totalCO2: totalCO2,
+    fossilCO2: co2Fossil * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
+    biogenicCO2: co2Biogenic * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
+    dlucCO2: co2dLUC * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
+    totalWater: totalWater,
+    totalLand: totalLand,
+    totalFossil: totalFossil, // 🛡️ NEW
+    perKgCO2: finalCO2,
+    perKgWater: finalWater,
+    perKgLand: finalLand,
+    perKgFossil: finalFossil, // 🛡️ NEW
+    logs: log,
+    qualityPenalty: qualityPenalty,
+    universal_adjustments: universal_adjustments,
+    is_primary: !!primaryData,
+    biogenicRemovals: biogenicRemovals
+};
 }
 
 // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
