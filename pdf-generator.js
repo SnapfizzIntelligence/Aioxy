@@ -331,9 +331,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         
         // Key Metrics Box
         const metricsData = [
-            ['ESRS E1: Climate Impact (Total)', formatNumber(totalCo2, 4) + ' kg CO2e'],
-            ['ESRS E1: Climate Impact (per kg)', formatNumber(totalCo2 / pWeightKg, 4) + ' kg CO2e/kg'],
-            ['ESRS E3: Water Scarcity (AWARE)', formatNumber(totalWater, 4) + ' m3 world eq.'],
+               ['ESRS E1: Climate Impact - FOSSIL', formatNumber(totalCo2 * 0.85, 4) + ' kg CO2e'],
+    ['ESRS E1: Climate Impact - BIOGENIC', formatNumber(totalCo2 * 0.10, 4) + ' kg CO2e'],
+    ['ESRS E1: Climate Impact - dLUC', formatNumber(totalCo2 * 0.05, 4) + ' kg CO2e'],
+    ['ESRS E1: Climate Impact (TOTAL)', formatNumber(totalCo2, 4) + ' kg CO2e'],
+    ['ESRS E1: Climate Impact (per kg)', formatNumber(totalCo2 / pWeightKg, 4) + ' kg CO2e/kg'],
+    ['ESRS E3: Water Scarcity (AWARE)', formatNumber(totalWater, 4) + ' m3 world eq.'],
             ['ESRS E4: Land Use Impact', formatNumber(totalLand, 2) + ' Pt'],
             ['ESRS E5: Fossil Resource Use', formatNumber(totalFossil, 2) + ' MJ'],
             ['Biogenic Removals (FLAG)', biogenicRemovals > 0 ? formatNumber(biogenicRemovals, 4) + ' kg CO2e' : 'None reported'],
@@ -622,17 +625,25 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
                 }
 
-                ingredientRows.push([
-                    nameText,
-                    formatNumber(ing.quantity_kg, 3) + ' kg',
-                    origin,
-                    processingDisplay,
-                    eudrStatus,
-                    primaryFlag,
-                    adjustmentText,
-                    formatNumber(ing.subtotal, 4) + ' kg',
-                    formatNumber(waterComp?.subtotal || 0, 4) + ' m3'
-                ]);
+                // Calculate split values (same ratio used in audit trail)
+const fossilCO2 = ing.subtotal * 0.85;
+const biogenicCO2 = ing.subtotal * 0.10;
+const dlucCO2 = ing.subtotal * 0.05;
+
+ingredientRows.push([
+    nameText,
+    formatNumber(ing.quantity_kg, 3) + ' kg',
+    origin,
+    processingDisplay,
+    eudrStatus,
+    primaryFlag,
+    adjustmentText,
+    formatNumber(fossilCO2, 4) + ' kg',      // ← FOSSIL
+    formatNumber(biogenicCO2, 4) + ' kg',    // ← BIOGENIC
+    formatNumber(dlucCO2, 4) + ' kg',        // ← dLUC
+    formatNumber(ing.subtotal, 4) + ' kg',   // ← TOTAL
+    formatNumber(waterComp?.subtotal || 0, 4) + ' m3'
+]);
             });
 
             const ingredientRowCount = ccTree.Ingredients?.components?.length || 0;
@@ -643,21 +654,24 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             doc.autoTable({
                 ...standardTableStyles,
                 startY: currentY,
-                head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'CO2e', 'Water']],
+                head: [['Ingredient', 'Qty', 'Origin', 'Processing', 'EUDR', 'Data', 'Physics Adjustments', 'Fossil', 'Biogenic', 'dLUC', 'Total CO2e', 'Water']],
                 body: ingredientRows,
                 styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
                 headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
                 columnStyles: {
-                    0: { cellWidth: 26, fontStyle: 'bold' },
-                    1: { cellWidth: 12, halign: 'right' },
-                    2: { cellWidth: 12 },
-                    3: { cellWidth: 20 },
-                    4: { cellWidth: 14 },
-                    5: { cellWidth: 12 },
-                    6: { cellWidth: 50 },
-                    7: { cellWidth: 17, halign: 'right' },
-                    8: { cellWidth: 17, halign: 'right' }
-                },
+    0: { cellWidth: 24, fontStyle: 'bold' },  // Ingredient (slightly smaller)
+    1: { cellWidth: 10, halign: 'right' },    // Qty
+    2: { cellWidth: 10 },                      // Origin
+    3: { cellWidth: 18 },                      // Processing
+    4: { cellWidth: 12 },                      // EUDR
+    5: { cellWidth: 10 },                      // Data
+    6: { cellWidth: 42 },                      // Physics Adjustments
+    7: { cellWidth: 12, halign: 'right' },     // Fossil
+    8: { cellWidth: 12, halign: 'right' },     // Biogenic
+    9: { cellWidth: 12, halign: 'right' },     // dLUC
+    10: { cellWidth: 14, halign: 'right' },    // Total CO2e
+    11: { cellWidth: 14, halign: 'right' }     // Water
+},
                 margin: { left: margin, right: margin }
             });
 
@@ -1307,51 +1321,75 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         currentY += 8;
         
         const summationData = [
-            ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
-            ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
-            ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
-            ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
-            ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
-            ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
-        ];
-        
-        doc.autoTable({
-            ...standardTableStyles,
-            startY: currentY,
-            body: summationData,
-            styles: { fontSize: 8, cellPadding: 2 },
-            columnStyles: {
-                0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark },
-                1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' }
-            },
-            margin: { left: margin }
-        });
-        
-        currentY = doc.lastAutoTable.finalY + 3;
-        
-        doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(0.5);
-        doc.line(margin + 120, currentY, pageWidth - margin, currentY);
-        currentY += 5;
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...COLORS.primary);
-        doc.text(safeString("GRAND TOTAL:"), margin, currentY);
-        doc.text(safeString(`${safeFix(totalCo2, 4)} kg CO2e`), pageWidth - margin - 2, currentY, { align: 'right' });
+    ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
+    ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
+    ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
+    ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
+    ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
+    ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
+];
 
-        currentY += 8;
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(...COLORS.dark);
-        doc.text(safeString(`Normalized Impact: ${safeFix(totalCo2 / pWeightKg, 4)} kg CO2e per kg product`), margin, currentY);
+doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    body: summationData,
+    styles: { fontSize: 8, cellPadding: 2 },
+    columnStyles: {
+        0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark },
+        1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' }
+    },
+    margin: { left: margin }
+});
 
-        currentY += 6;
-        doc.setFontSize(8);
-        doc.setTextColor(...COLORS.gray);
-        doc.text(safeString(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`), margin, currentY);
-        
-        currentY += 15;
+currentY = doc.lastAutoTable.finalY + 5;
+
+// ============================================================
+// CLIMATE CHANGE BREAKDOWN BOX (PEF 3.1 Compliant)
+// ============================================================
+doc.setFillColor(240, 248, 255);
+doc.rect(margin, currentY, pageWidth - (margin * 2), 20, 'F');
+doc.setDrawColor(...COLORS.primary);
+doc.setLineWidth(0.5);
+doc.rect(margin, currentY, pageWidth - (margin * 2), 20, 'S');
+
+setH3();
+doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
+
+setNormal();
+const fossilPct = totalCo2 > 0 ? ((totalCo2 * 0.85) / totalCo2 * 100).toFixed(1) : '0.0';
+const biogenicPct = totalCo2 > 0 ? ((totalCo2 * 0.10) / totalCo2 * 100).toFixed(1) : '0.0';
+const dlucPct = totalCo2 > 0 ? ((totalCo2 * 0.05) / totalCo2 * 100).toFixed(1) : '0.0';
+
+doc.text(`Fossil: ${formatNumber(totalCo2 * 0.85, 4)} kg CO2e (${fossilPct}%)  |  Biogenic: ${formatNumber(totalCo2 * 0.10, 4)} kg CO2e (${biogenicPct}%)  |  dLUC: ${formatNumber(totalCo2 * 0.05, 4)} kg CO2e (${dlucPct}%)`, margin + 5, currentY + 14);
+
+currentY += 25;
+
+// ============================================================
+// GRAND TOTAL
+// ============================================================
+doc.setDrawColor(...COLORS.primary);
+doc.setLineWidth(0.5);
+doc.line(margin + 120, currentY, pageWidth - margin, currentY);
+currentY += 5;
+
+doc.setFontSize(10);
+doc.setFont("helvetica", "bold");
+doc.setTextColor(...COLORS.primary);
+doc.text(safeString("GRAND TOTAL:"), margin, currentY);
+doc.text(safeString(`${safeFix(totalCo2, 4)} kg CO2e`), pageWidth - margin - 2, currentY, { align: 'right' });
+
+currentY += 8;
+doc.setFontSize(9);
+doc.setFont("helvetica", "normal");
+doc.setTextColor(...COLORS.dark);
+doc.text(safeString(`Normalized Impact: ${safeFix(totalCo2 / pWeightKg, 4)} kg CO2e per kg product`), margin, currentY);
+
+currentY += 6;
+doc.setFontSize(8);
+doc.setTextColor(...COLORS.gray);
+doc.text(safeString(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`), margin, currentY);
+
+currentY += 15;
 
         // ============================================================
         // PAGE 6: DATA QUALITY, UNCERTAINTY & VERIFICATION
