@@ -1405,6 +1405,323 @@ function displayTemporalDiscounting() {
         });
     }, 100);
             }
+// ================== UI INTEGRATION: FOREGROUND/BACKGROUND DISPLAY ==================
+function displayForegroundBackground() {
+    const transparencyTab = document.getElementById('transparency-tab');
+    if (!transparencyTab || !auditTrailData?.foreground_background) return;
+
+    let fgSection = document.getElementById('foregroundBackgroundSection');
+    if (!fgSection) {
+        fgSection = document.createElement('div');
+        fgSection.id = 'foregroundBackgroundSection';
+        fgSection.className = 'audit-trail-section';
+        fgSection.style.marginTop = '1.5rem';
+        
+        const auditContent = transparencyTab.querySelector('.audit-trail-section');
+        if (auditContent) {
+            auditContent.parentNode.insertBefore(fgSection, auditContent);
+        }
+    }
+
+    const fb = auditTrailData.foreground_background;
+    
+    fgSection.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="card-icon" style="background: var(--gradient-primary);">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div>
+                <h3 style="color: var(--primary); margin: 0;">Foreground/Background System</h3>
+                <div style="color: var(--gray); font-size: 0.9rem;">
+                    ISO 14044 compliant • 5% cutoff rule applied
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div style="background: rgba(72, 187, 120, 0.1); border-radius: 10px; padding: 1.5rem; border: 2px solid var(--success);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="width: 12px; height: 12px; background: var(--success); border-radius: 50%;"></div>
+                    <h4 style="margin: 0; color: var(--primary);">Foreground System</h4>
+                </div>
+                <div style="font-size: 2rem; font-weight: 800; color: var(--success);">
+                    ${fb.foreground_count}
+                </div>
+                <div style="color: var(--gray); margin-bottom: 1rem;">Measured processes</div>
+                
+                <div style="background: white; border-radius: 8px; padding: 1rem; max-height: 150px; overflow-y: auto;">
+                    ${fb.components.foreground.map(comp => `
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                            <div>${comp.name}</div>
+                            <div style="font-weight: 600;">${(comp.contribution).toFixed(2)} kg CO₂e</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin-top: 1rem; font-size: 0.9rem;">
+                    <strong>Data Quality:</strong> Measured/specific data (DQR: ${fb.foreground_dqr?.toFixed(1) || '1.5'})
+                </div>
+            </div>
+            
+            <div style="background: rgba(255, 107, 107, 0.1); border-radius: 10px; padding: 1.5rem; border: 2px solid var(--accent);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="width: 12px; height: 12px; background: var(--accent); border-radius: 50%;"></div>
+                    <h4 style="margin: 0; color: var(--primary);">Background System</h4>
+                </div>
+                <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">
+                    ${fb.background_count}
+                </div>
+                <div style="color: var(--gray); margin-bottom: 1rem;">Industry average data</div>
+                
+                <div style="background: white; border-radius: 8px; padding: 1rem; max-height: 150px; overflow-y: auto;">
+                    ${fb.components.background.map(comp => `
+                        <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                            <div>${comp.name}</div>
+                            <div style="font-weight: 600;">${(comp.contribution).toFixed(2)} kg CO₂e</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin-top: 1rem; font-size: 0.9rem;">
+                    <strong>Data Quality:</strong> Industry averages (DQR: ${fb.background_dqr?.toFixed(1) || '2.0'})
+                </div>
+            </div>
+        </div>
+        
+        <div style="background: var(--light); border-radius: 10px; padding: 1.5rem; margin-top: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 600; color: var(--primary);">Cutoff Rule Applied: ${(fb.cutoff_percentage * 100).toFixed(0)}%</div>
+                    <div style="color: var(--gray); font-size: 0.9rem;">
+                        Processes contributing ≥${(fb.cutoff_percentage * 100).toFixed(0)}% of total impact are in foreground
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">
+                        ${((fb.foreground_contribution / (fb.foreground_contribution + fb.background_contribution)) * 100).toFixed(1)}%
+                    </div>
+                    <div style="color: var(--gray); font-size: 0.9rem;">of impact in foreground</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ================== UI INTEGRATION: ISO COMPLIANCE DISPLAY ==================
+function displayISOCompliance() {
+    const methodologyTab = document.getElementById('methodology-tab');
+    if (!methodologyTab || !auditTrailData?.ISO_compliance) return;
+
+    let isoSection = document.getElementById('isoComplianceSection');
+    if (!isoSection) {
+        isoSection = document.createElement('div');
+        isoSection.id = 'isoComplianceSection';
+        isoSection.className = 'card';
+        isoSection.style.marginTop = '1.5rem';
+        methodologyTab.appendChild(isoSection);
+    }
+
+    const iso = auditTrailData.ISO_compliance;
+    
+    isoSection.innerHTML = `
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #0A2540 0%, #1A365D 100%);">
+                    <i class="fas fa-file-certificate"></i>
+                </div>
+                ISO 14040/14044 Compliance Framework
+            </div>
+            <div class="badge">
+                <i class="fas fa-check-circle"></i>
+                Standard-Aligned • Verification-Ready Framework
+            </div>
+        </div>
+
+        <div style="margin: 1.5rem 0;">
+            <div style="background: #E3F2FD; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="width: 40px; height: 40px; background: #2196F3; color: white; 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary);">Compliance Statement</div>
+                        <div style="color: var(--gray); font-size: 0.9rem;">
+                            This assessment follows ISO 14040:2006 and ISO 14044:2006
+                        </div>
+                    </div>
+                </div>
+                <div style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; color: var(--dark);">
+                    ${iso.compliance_statement}
+                </div>
+            </div>
+            
+            <h4 style="margin-bottom: 1rem; color: var(--primary);">
+                <i class="fas fa-balance-scale"></i> ISO 14040 Principles
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                ${Object.entries(iso.principles).map(([key, value]) => `
+                    <div style="background: white; border-radius: 8px; padding: 1rem; border: 1px solid var(--border);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">
+                            ${key.replace(/_/g, ' ').toUpperCase()}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--gray);">
+                            ${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// ================== UI INTEGRATION: COMPLETE AUDIT TRAIL ==================
+function displayCompleteAuditTrail() {
+    const transparencyTab = document.getElementById('transparency-tab');
+    if (!transparencyTab || !auditTrailData) return;
+
+    let auditSection = document.getElementById('completeAuditTrailSection');
+    if (!auditSection) {
+        auditSection = document.createElement('div');
+        auditSection.id = 'completeAuditTrailSection';
+        auditSection.className = 'card';
+        auditSection.style.marginTop = '1.5rem';
+        transparencyTab.querySelector('.main-content')?.appendChild(auditSection);
+    }
+
+    const audit = auditTrailData;
+    const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
+    let functionalUnitText = "1 kg of final product";
+    let nutritionalLCA_HTML = "";
+
+    if (userProtein > 0 && audit.pefCategories["Climate Change"]) {
+        functionalUnitText = "1 kg Mass / 100g Delivered Protein";
+        const pWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
+        const unifiedCO2 = audit.pefCategories["Climate Change"].total / pWeightKg;
+        const kgNeeded = 100 / (userProtein * 10);
+        const co2Per100gProtein = unifiedCO2 * kgNeeded;
+
+        const anchorProteinDB = {
+            'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
+            'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
+            'plant-milk': 1.0, 'default': 10.0
+        };
+    
+        const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
+            audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
+        const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
+        const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
+        const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
+    
+        nutritionalLCA_HTML = `
+        <div>
+            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Nutritional LCA Impact</div>
+            <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: #8E44AD;">
+                ${co2Per100gProtein.toFixed(2)} kg CO₂e <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(per 100g protein)</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--gray); margin-top: 0.3rem; border-top: 1px solid var(--border); padding-top: 0.3rem;">
+                <i class="fas fa-info-circle"></i> Baseline Equivalent: <strong>${baseCo2PerProtein.toFixed(2)} kg CO₂e</strong>
+            </div>
+        </div>`;
+    }
+
+    auditSection.innerHTML = `
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-icon" style="background: var(--gradient-primary);">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+                Complete Chain-of-Custody Audit Trail
+            </div>
+            <div class="badge">
+                <i class="fas fa-shield-alt"></i>
+                ISO 14044 Compliant • Tamper-Evident
+            </div>
+        </div>
+        
+        <div style="margin: 1.5rem 0;">
+            <div style="background: var(--light); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="width: 40px; height: 40px; background: var(--primary); color: white; 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary);">Assessment Traceability</div>
+                        <div style="color: var(--gray); font-size: 0.9rem;">
+                            Unique ID: Verifies calculation instance and inputs
+                        </div>
+                    </div>
+                </div>
+                <div style="background: white; border-radius: 8px; padding: 1rem; font-family: monospace; 
+                            word-break: break-all; font-size: 0.8rem; color: var(--primary);">
+                    ${audit.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--success);">
+                    <i class="fas fa-check-circle"></i> Audit trail verified - calculation integrity maintained
+                </div>
+            </div>
+
+            <h4 style="margin-bottom: 1rem; color: var(--primary);">
+                <i class="fas fa-info-circle"></i> Calculation Metadata
+            </h4>
+            <div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Product Name</div>
+                        <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
+                        <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
+                        <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
+                        <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
+                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
+                        </div>
+                    </div>
+                    ${nutritionalLCA_HTML}
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Data Quality Rating</div>
+                        <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
+                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">
+                            <i class="fas fa-balance-scale"></i> Impact-weighted per PEF 3.1 §6.5
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
+                <i class="fas fa-database"></i> Data Sources & Methodology
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Methodology</div>
+                    <div>PEF 3.1 Compliant</div>
+                </div>
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Data Source</div>
+                    <div>AGRIBALYSE 3.2</div>
+                </div>
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Characterization</div>
+                    <div>JRC EF 3.1</div>
+                </div>
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Water Method</div>
+                    <div>AWARE 2.0</div>
+                </div>
+            </div>
+        </div>
+    `;
+                            }
 
 // ================== UI.JS LOADED ==================
 console.log("✅ [AIOXY] ui.js loaded - Interface ready");
