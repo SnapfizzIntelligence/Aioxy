@@ -289,10 +289,17 @@ function calculateGLECTransport(massKg, distanceKm, mode, refType = 'ambient') {
     }
     
     const totalEmissions = fuelEmissions + refrigerantEmissions;
-    
-    console.log(`🚚 GLEC v3.2: ${mode} (${refType}) | Raw: ${distanceKm}km → Adj: ${adjustedDistance.toFixed(1)}km | Fuel: ${fuelEmissions.toFixed(3)}kg | Refrigerant: ${refrigerantEmissions.toFixed(3)}kg | Total: ${totalEmissions.toFixed(3)}kg CO₂e`);
 
-    return totalEmissions;
+// 🛡️ THE TRANSPARENCY FIX: Capture the exact physics trace inside the engine
+const glecTrace = `[GLEC v3.2: ${massTons.toFixed(4)}t × ${distanceKm}km × ${factor} EF × ${daf} DAF]${refrigerantEmissions > 0 ? ` + Refrigerant(${refrigerantEmissions.toFixed(4)}kg)` : ''}`;
+
+console.log(`🚚 GLEC v3.2: ${mode} (${refType}) | Raw: ${distanceKm}km → Adj: ${adjustedDistance.toFixed(1)}km | Fuel: ${fuelEmissions.toFixed(3)}kg | Refrigerant: ${refrigerantEmissions.toFixed(3)}kg | Total: ${totalEmissions.toFixed(3)}kg CO₂e`);
+
+// Change from returning a primitive number to returning the Audit Packet
+return {
+    total: totalEmissions,
+    calculation_trace: glecTrace
+};
 }
 
 // ================== SAFE HELPERS (NO CRASH) ==================
@@ -584,16 +591,20 @@ function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     const impactPerKg = burdenAcquisition + creditEoL + burdenDisposal;
     const totalImpact = Math.max(0, impactPerKg * weightKg);
 
-    return {
-        totalImpact: totalImpact,
-        virginBurden: (1 - R1) * Ev * weightKg,
-        recycledBurden: R1 * (A_factor * Erecycled + (1 - A_factor) * Ev * qualityRatio) * weightKg,
-        disposalBurden: burdenDisposal * weightKg,
-        recyclingCredit: creditEoL * weightKg,  // Now correctly using (1-A)
-        effectiveRecyclingRate: R2,
-        dqr_penalty: dqrPenalty,
-        cff_parameters: { A: A_factor, Methodology: "PEF 3.1" }
-    };
+    // 🛡️ THE TRANSPARENCY FIX: Lock the exact CFF mathematical substitution
+const cffTrace = `[CFF: Mass(${weightKg.toFixed(3)}kg) × [(1-${R1})*${Ev} + ${R1}*(${A_factor}*${Erecycled} + (1-${A_factor})*${Ev}*${qualityRatio.toFixed(2)}) + (1-${R2})*${currentEd.toFixed(2)} - ${R2}*(1-${A_factor})*(${Erecycled} - ${Ev}*${qualityRatio.toFixed(2)})]]`;
+
+return {
+    totalImpact: totalImpact,
+    virginBurden: (1 - R1) * Ev * weightKg,
+    recycledBurden: R1 * (A_factor * Erecycled + (1 - A_factor) * Ev * qualityRatio) * weightKg,
+    disposalBurden: burdenDisposal * weightKg,
+    recyclingCredit: creditEoL * weightKg,
+    effectiveRecyclingRate: R2,
+    dqr_penalty: dqrPenalty,
+    cff_parameters: { A: A_factor, Methodology: "PEF 3.1" },
+    calculation_trace: cffTrace // ⬅️ PASS TRACE OUT
+};
 }
 
 // ================== AUDIT-GRADE AWARE ENGINE (ISO 14046 / PEF 3.1) ==================
@@ -1928,12 +1939,16 @@ const foodCalculationEngine = {
         
         console.log(`🗑️ Waste EoL: ${wasteKg.toFixed(3)}kg loss | Feed Credit: -${feedCredit.toFixed(4)} | Landfill: +${landfillCO2.toFixed(4)} | Wastewater: +${wastewaterCO2.toFixed(4)} | Net: ${totalCO2.toFixed(4)} kg CO2e`);
         
-        return {
-            total: totalCO2,
-            breakdown: breakdown,
-            wasteSplit: wasteSplit,
-            methodology: "IPCC 2006 GL Vol 5 + JRC BAT 2019 + EU RED II"
-        };
+        // 🛡️ THE TRANSPARENCY FIX: Trace EoL components
+const wasteTrace = `[IPCC/JRC Waste: FeedCredit(-${feedCredit.toFixed(4)}) + LandfillCH4(${landfillCO2.toFixed(4)}) + WastewaterCH4(${wastewaterCO2.toFixed(4)})]`;
+
+return {
+    total: totalCO2,
+    breakdown: breakdown,
+    wasteSplit: wasteSplit,
+    methodology: "IPCC 2006 GL Vol 5 + JRC BAT 2019 + EU RED II",
+    calculation_trace: wasteTrace // ⬅️ PASS TRACE OUT
+};
     }, 
 
     calculateFoodImpact() {
