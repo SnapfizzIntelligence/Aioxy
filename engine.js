@@ -2387,6 +2387,19 @@ auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.compo
             window.lastManufacturingResult = mfgResult;
             
             console.log(`✅ [Audit] Manufacturing impact: ${mfgResult.co2.toFixed(4)} kg CO₂e using ${mfgResult.method}`);
+
+            // 🛡️ Route the manufacturing trace to the tree level for PDF access
+auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.calculation_trace = mfgResult.calculation_trace;
+
+// 🛡️ THE ALLOCATION GUARD - Show how factory costs were split
+const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
+const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+const allocationFactor = totalProd > 0 ? (massBalanceData.productMass / totalProd) * 100 : 0;
+const allocationTrace = usePrimary && totalProd > 0 ? 
+    `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : 
+    "Industry Benchmark Allocation (JRC Default)";
+
+auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.allocation_trace = allocationTrace;
         }
         
         // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
