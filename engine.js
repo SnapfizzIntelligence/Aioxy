@@ -2359,61 +2359,53 @@ if (ing.data?.metadata?.dqr_overall) {
 
         
         // 6. MANUFACTURING IMPACTS - UPDATED with Audit-Ready Engine
-        if (massBalanceData.productMass > 0) {
-            // Call the new empirical manufacturing engine
-            const mfgResult = calculateManufacturingImpact(
-                massBalanceData.inputMass,
-                massBalanceData.productMass,
-                processingMethod,
-                manufacturingCountryCode
-            );
-            
-            // Add to Climate Change
-            auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += mfgResult.co2;
-            auditTrail.pefCategories["Climate Change"].total += mfgResult.co2;
-            
-            // Add detailed component for audit trail
-            // 🛡️ THE ALLOCATION GUARD
-const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
-const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
-const allocationFactor = (massBalanceData.productMass / totalProd) * 100;
-const allocationTrace = usePrimary ? `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : "Industry Benchmark Allocation (JRC Default)";
+if (massBalanceData.productMass > 0) {
+    // Call the new empirical manufacturing engine
+    const mfgResult = calculateManufacturingImpact(
+        massBalanceData.inputMass,
+        massBalanceData.productMass,
+        processingMethod,
+        manufacturingCountryCode
+    );
+    
+    // Add to Climate Change
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.total += mfgResult.co2;
+    auditTrail.pefCategories["Climate Change"].total += mfgResult.co2;
+    
+    // 🛡️ THE ALLOCATION GUARD
+    const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
+    const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+    const allocationFactor = (massBalanceData.productMass / totalProd) * 100;
+    const allocationTrace = usePrimary ? `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : "Industry Benchmark Allocation (JRC Default)";
 
-auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
-    name: `Processing (${processingMethod || 'none'})`,
-    subtotal: mfgResult.co2,
-    details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh${mfgResult.fugitive_co2 > 0 ? ` | Includes ${mfgResult.fugitive_co2.toFixed(4)}kg Fugitive Refrigerant` : ''}`,
-    confidence: mfgResult.confidence,
-    grid_intensity: mfgResult.grid_intensity_g_per_kwh,
-    energy_source: mfgResult.energy_source,
-    calculation_trace: mfgResult.calculation_trace || `${mfgResult.kwh.toFixed(2)} kWh × ${mfgResult.grid_intensity_g_per_kwh} gCO2e/kWh`,
-    allocation_trace: allocationTrace // ⬅️ ROUTE ALLOCATION PROOF TO MEMORY
-});
-            
-            // Add to Fossil Resources (kWh to MJ conversion: 1 kWh = 3.6 MJ)
-            const fossilMJ = mfgResult.kwh * 3.6;
-            auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
-            auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
-            
-            // Store for business case calculations
-            window.lastManufacturingResult = mfgResult;
-            
-            console.log(`✅ [Audit] Manufacturing impact: ${mfgResult.co2.toFixed(4)} kg CO₂e using ${mfgResult.method}`);
+    // Add detailed component for audit trail
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
+        name: `Processing (${processingMethod || 'none'})`,
+        subtotal: mfgResult.co2,
+        details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh${mfgResult.fugitive_co2 > 0 ? ` | Includes ${mfgResult.fugitive_co2.toFixed(4)}kg Fugitive Refrigerant` : ''}`,
+        confidence: mfgResult.confidence,
+        grid_intensity: mfgResult.grid_intensity_g_per_kwh,
+        energy_source: mfgResult.energy_source,
+        calculation_trace: mfgResult.calculation_trace || `${mfgResult.kwh.toFixed(2)} kWh × ${mfgResult.grid_intensity_g_per_kwh} gCO2e/kWh`,
+        allocation_trace: allocationTrace
+    });
+    
+    // Add to Fossil Resources (kWh to MJ conversion: 1 kWh = 3.6 MJ)
+    const fossilMJ = mfgResult.kwh * 3.6;
+    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Manufacturing.total += fossilMJ;
+    auditTrail.pefCategories["Resource Use, fossils"].total += fossilMJ;
+    
+    // Store for business case calculations
+    window.lastManufacturingResult = mfgResult;
+    
+    console.log(`✅ [Audit] Manufacturing impact: ${mfgResult.co2.toFixed(4)} kg CO₂e using ${mfgResult.method}`);
 
-            // 🛡️ Route the manufacturing trace to the tree level for PDF access
-auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.calculation_trace = mfgResult.calculation_trace;
-
-// 🛡️ THE ALLOCATION GUARD - Show how factory costs were split
-const usePrimary = document.getElementById('usePrimaryFactoryData')?.checked;
-const totalProd = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
-const allocationFactor = totalProd > 0 ? (massBalanceData.productMass / totalProd) * 100 : 0;
-const allocationTrace = usePrimary && totalProd > 0 ? 
-    `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : 
-    "Industry Benchmark Allocation (JRC Default)";
-
-auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.allocation_trace = allocationTrace;
+    // 🛡️ Route the manufacturing trace to the tree level for PDF access
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.calculation_trace = mfgResult.calculation_trace;
+    
+    // 🛡️ Route the allocation trace (already declared above, just assign)
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.allocation_trace = allocationTrace;
         }
-        
         
         // 7. TRANSPORTATION (THE FIX: USING THE SINGLE SOURCE OF TRUTH)
         finalIngredients.forEach(ing => {
