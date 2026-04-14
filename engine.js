@@ -1744,15 +1744,17 @@ function calculateParametricBaseline(baselineCategoryKey, targetCountry) {
     }
 
     // 5. Simulate Standard Logistics (Inbound + Outbound)
-    // A. Inbound (Farm to Factory): Assume 500km regional sourcing
-    const inboundRef = (anchor.processing === 'freezing' || anchor.processing === 'pasteurization') ? 'chilled' : 'ambient';
-    const inboundTransportCO2 = calculateGLECTransport(anchor.factor, 500, 'road', inboundRef);
-    
-    // B. Outbound (Factory to Retail): Assume 400km distribution
-    let outboundRef = 'ambient';
-    if (anchor.processing === 'freezing') outboundRef = 'frozen';
-    else if (anchor.processing === 'pasteurization') outboundRef = 'chilled';
-    const outboundTransportCO2 = calculateGLECTransport(1.0, 400, 'road', outboundRef);
+// A. Inbound (Farm to Factory): Assume 500km regional sourcing
+const inboundRef = (anchor.processing === 'freezing' || anchor.processing === 'pasteurization') ? 'chilled' : 'ambient';
+const inboundTransportObj = calculateGLECTransport(anchor.factor, 500, 'road', inboundRef);
+const inboundTransportCO2 = inboundTransportObj.total; // ⬅️ FIX 4: ADD .total
+
+// B. Outbound (Factory to Retail): Assume 400km distribution
+let outboundRef = 'ambient';
+if (anchor.processing === 'freezing') outboundRef = 'frozen';
+else if (anchor.processing === 'pasteurization') outboundRef = 'chilled';
+const outboundTransportObj = calculateGLECTransport(1.0, 400, 'road', outboundRef);
+const outboundTransportCO2 = outboundTransportObj.total; // ⬅️ FIX 4: ADD .total
     
     const totalTransportCO2 = inboundTransportCO2 + outboundTransportCO2;
 
@@ -2419,27 +2421,32 @@ return {
                 const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
                 let inboundDistance = 0;
 
-                if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
-                    inboundDistance = 1200;
-                    ingredientTransportCO2 = calculateGLECTransport(ing.quantity, inboundDistance, 'road', inboundRefType);
-                    transportNote = `Regional cross-border road transport (${originCountry} → ${manufacturingCountryCode} | ${inboundDistance} km)`;
-                } else {
-                    inboundDistance = 15000;
-                    // 🛡️ APPLY GEOPOLITICAL CRISIS ROUTING TO IMPORTS
-                    if (isCrisisActive) {
-                        inboundDistance = 15000 * 1.40; // 21,000 km Cape of Good Hope reroute
-                        transportNote = `[⚠️ CRISIS REROUTE] Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode} | 15,000 km → ${inboundDistance} km)`;
-                    } else {
-                        transportNote = `Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode} | ${inboundDistance} km)`;
-                    }
-                    ingredientTransportCO2 = calculateGLECTransport(ing.quantity, inboundDistance, 'sea', inboundRefType);
+                let transportObj = null;
+
+if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
+    inboundDistance = 1200;
+    transportObj = calculateGLECTransport(ing.quantity, inboundDistance, 'road', inboundRefType);
+    ingredientTransportCO2 = transportObj.total; // ⬅️ ADD .total
+    transportNote = `Regional cross-border road transport (${originCountry} → ${manufacturingCountryCode} | ${inboundDistance} km)`;
+} else {
+    inboundDistance = 15000;
+    // 🛡️ APPLY GEOPOLITICAL CRISIS ROUTING TO IMPORTS
+    if (isCrisisActive) {
+        inboundDistance = 15000 * 1.40; // 21,000 km Cape of Good Hope reroute
+        transportNote = `[⚠️ CRISIS REROUTE] Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode} | 15,000 km → ${inboundDistance} km)`;
+    } else {
+        transportNote = `Intercontinental sea freight (${originCountry} → ${manufacturingCountryCode} | ${inboundDistance} km)`;
+    }
+    transportObj = calculateGLECTransport(ing.quantity, inboundDistance, 'sea', inboundRefType);
+    ingredientTransportCO2 = transportObj.total; // ⬅️ ADD .total
+}
+
+} else {
+    console.log(`🚚 Logistics: Local sourcing ${ing.name} within ${manufacturingCountryCode}`);
+    transportObj = calculateGLECTransport(ing.quantity, 200, 'road', inboundRefType);
+    ingredientTransportCO2 = transportObj.total; // ⬅️ ADD .total
+    transportNote = `Local domestic sourcing (${manufacturingCountryCode})`;
                 }
-                
-            } else {
-                console.log(`🚚 Logistics: Local sourcing ${ing.name} within ${manufacturingCountryCode}`);
-                ingredientTransportCO2 = calculateGLECTransport(ing.quantity, 200, 'road', inboundRefType);
-                transportNote = `Local domestic sourcing (${manufacturingCountryCode})`;
-            }
 
             if (ingredientTransportCO2 > 0) {
                 auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
