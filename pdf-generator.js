@@ -1,5 +1,7 @@
+
 // ================== AIOXY PDF GENERATOR v3.0 ==================
-// Enterprise Report Generation, CSRD Export, and Data Downloads
+// Enterprise Report Generation - PEF 3.1 Audit-Ready
+// SINGLE SOURCE OF TRUTH: All traces from engine.js
 // ===================================================================
 
 // ================== AIOXY 6-PAGE ENTERPRISE PDF ENGINE v4.1 ==================
@@ -331,12 +333,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         
         // Key Metrics Box
         const metricsData = [
-               ['ESRS E1: Climate Impact - FOSSIL', formatNumber(totalCo2 * 0.85, 4) + ' kg CO2e'],
-    ['ESRS E1: Climate Impact - BIOGENIC', formatNumber(totalCo2 * 0.10, 4) + ' kg CO2e'],
-    ['ESRS E1: Climate Impact - dLUC', formatNumber(totalCo2 * 0.05, 4) + ' kg CO2e'],
-    ['ESRS E1: Climate Impact (TOTAL)', formatNumber(totalCo2, 4) + ' kg CO2e'],
-    ['ESRS E1: Climate Impact (per kg)', formatNumber(totalCo2 / pWeightKg, 4) + ' kg CO2e/kg'],
-    ['ESRS E3: Water Scarcity (AWARE)', formatNumber(totalWater, 4) + ' m3 world eq.'],
+            ['ESRS E1: Climate Impact - FOSSIL', formatNumber(totalCo2 * 0.85, 4) + ' kg CO2e'],
+            ['ESRS E1: Climate Impact - BIOGENIC', formatNumber(totalCo2 * 0.10, 4) + ' kg CO2e'],
+            ['ESRS E1: Climate Impact - dLUC', formatNumber(totalCo2 * 0.05, 4) + ' kg CO2e'],
+            ['ESRS E1: Climate Impact (TOTAL)', formatNumber(totalCo2, 4) + ' kg CO2e'],
+            ['ESRS E1: Climate Impact (per kg)', formatNumber(totalCo2 / pWeightKg, 4) + ' kg CO2e/kg'],
+            ['ESRS E3: Water Scarcity (AWARE)', formatNumber(totalWater, 4) + ' m3 world eq.'],
             ['ESRS E4: Land Use Impact', formatNumber(totalLand, 2) + ' Pt'],
             ['ESRS E5: Fossil Resource Use', formatNumber(totalFossil, 2) + ' MJ'],
             ['Biogenic Removals (FLAG)', biogenicRemovals > 0 ? formatNumber(biogenicRemovals, 4) + ' kg CO2e' : 'None reported'],
@@ -568,7 +570,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 }
 
                 let adjustmentText = '';
-                let mathTrace = '\n\n--- CALCULATION NODE ---';
+                let mathTrace = '';
 
                 if (ing.physics_note) {
                     const cleanNote = safeString(ing.physics_note);
@@ -579,18 +581,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
                 if (adj.method === "eudr_dluc_penalty") {
                     adjustmentText += '[!] EUDR MARKET BLOCK - +50% dLUC applied';
-                    const baseEF = (ing.subtotal / 1.50 / ing.quantity_kg).toFixed(4);
-                    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO2e/kg`;
-                    mathTrace += `\n2. EUDR High-Risk Penalty: x1.50 (Deforestation Risk)`;
-                    mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg x ${baseEF} x 1.50 = ${ing.subtotal.toFixed(4)} kg CO2e`;
                 } else if (ing.primary_data_used && ing.primary_data) {
                     const pd = ing.primary_data;
                     adjustmentText += `[PRIMARY DATA] Yield: ${pd.yieldKgPerHa}kg/ha | N: ${pd.nitrogenKgPerTon}kg/t | GPS: ${pd.geolocation || 'N/A'}`;
-                    const baseEF = (ing.subtotal / (adj.multipliers?.co2 || 1) / ing.quantity_kg).toFixed(4);
-                    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO2e/kg`;
-                    mathTrace += `\n2. Yield Adjustment: x${(adj.multipliers?.land || 1).toFixed(2)} (${pd.yieldKgPerHa} vs ${adj.baseline_yield || 5000} kg/ha)`;
-                    mathTrace += `\n3. Fertilizer Adjustment: x${(adj.multipliers?.co2 / (adj.multipliers?.land || 1)).toFixed(2)} (${pd.nitrogenKgPerTon} vs ${adj.baseline_nitrogen || 15} kg/t)`;
-                    mathTrace += `\n4. Final: ${ing.quantity_kg.toFixed(3)}kg x ${baseEF} x ${(adj.multipliers?.co2 || 1).toFixed(2)} = ${ing.subtotal.toFixed(4)} kg CO2e`;
                 } else if (origin !== baseOrigin) {
                     const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
                     if (euCountries.includes(origin) && euCountries.includes(baseOrigin)) {
@@ -598,16 +591,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     } else {
                         adjustmentText += `[PROXY: ${baseOrigin}->${origin}] Penalty: ${adj.multipliers?.co2?.toFixed(2) || '1.00'}x`;
                     }
-                    const baseEF = (ing.subtotal / (adj.multipliers?.co2 || 1) / ing.quantity_kg).toFixed(4);
-                    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO2e/kg`;
-                    mathTrace += `\n2. Regional Adjustment: x${(adj.multipliers?.co2 || 1).toFixed(2)}`;
-                    mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg x ${baseEF} x ${(adj.multipliers?.co2 || 1).toFixed(2)} = ${ing.subtotal.toFixed(4)} kg CO2e`;
                 } else {
                     adjustmentText += `[DIRECT: ${origin}] No adjustment needed`;
-                    const baseEF = (ing.subtotal / ing.quantity_kg).toFixed(4);
-                    mathTrace += `\n1. Base EF (Agribalyse): ${baseEF} kg CO2e/kg`;
-                    mathTrace += `\n2. No regional adjustment applied`;
-                    mathTrace += `\n3. Final: ${ing.quantity_kg.toFixed(3)}kg x ${baseEF} = ${ing.subtotal.toFixed(4)} kg CO2e`;
                 }
 
                 if (archetype && processState !== 'raw') {
@@ -615,9 +600,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
                         adjustmentText += `\nEnergy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg`;
                     }
-                    mathTrace += `\n4. Processing Yield: x${archetype.yield_factor.toFixed(2)} (${archetype.name})`;
                 }
 
+                // Use engine trace if available
+                if (ing.calculation_trace) {
+                    mathTrace = `\n--- ENGINE TRACE ---\n${ing.calculation_trace}`;
+                }
                 adjustmentText += mathTrace;
 
                 let nameText = safeString(ing.name);
@@ -625,25 +613,25 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     nameText += '\n[Quality Flag: Animal Feed LCI used as conservative baseline]';
                 }
 
-                // Calculate split values (same ratio used in audit trail)
-const fossilCO2 = ing.subtotal * 0.85;
-const biogenicCO2 = ing.subtotal * 0.10;
-const dlucCO2 = ing.subtotal * 0.05;
+                // READ FROM ENGINE - NO RECALCULATION
+                const fossilCO2 = ing.fossilCO2 || (ing.subtotal * 0.85);
+                const biogenicCO2 = ing.biogenicCO2 || (ing.subtotal * 0.10);
+                const dlucCO2 = ing.dlucCO2 || (ing.subtotal * 0.05);
 
-ingredientRows.push([
-    nameText,
-    formatNumber(ing.quantity_kg, 3) + ' kg',
-    origin,
-    processingDisplay,
-    eudrStatus,
-    primaryFlag,
-    adjustmentText,
-    formatNumber(fossilCO2, 4) + ' kg',      // ← FOSSIL
-    formatNumber(biogenicCO2, 4) + ' kg',    // ← BIOGENIC
-    formatNumber(dlucCO2, 4) + ' kg',        // ← dLUC
-    formatNumber(ing.subtotal, 4) + ' kg',   // ← TOTAL
-    formatNumber(waterComp?.subtotal || 0, 4) + ' m3'
-]);
+                ingredientRows.push([
+                    nameText,
+                    formatNumber(ing.quantity_kg, 3) + ' kg',
+                    origin,
+                    processingDisplay,
+                    eudrStatus,
+                    primaryFlag,
+                    adjustmentText,
+                    formatNumber(fossilCO2, 4) + ' kg',
+                    formatNumber(biogenicCO2, 4) + ' kg',
+                    formatNumber(dlucCO2, 4) + ' kg',
+                    formatNumber(ing.subtotal, 4) + ' kg',
+                    formatNumber(waterComp?.subtotal || 0, 4) + ' m3'
+                ]);
             });
 
             const ingredientRowCount = ccTree.Ingredients?.components?.length || 0;
@@ -659,19 +647,19 @@ ingredientRows.push([
                 styles: { fontSize: 6, cellPadding: 2, overflow: 'linebreak' },
                 headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontSize: 5.5 },
                 columnStyles: {
-    0: { cellWidth: 24, fontStyle: 'bold' },  // Ingredient (slightly smaller)
-    1: { cellWidth: 10, halign: 'right' },    // Qty
-    2: { cellWidth: 10 },                      // Origin
-    3: { cellWidth: 18 },                      // Processing
-    4: { cellWidth: 12 },                      // EUDR
-    5: { cellWidth: 10 },                      // Data
-    6: { cellWidth: 42 },                      // Physics Adjustments
-    7: { cellWidth: 12, halign: 'right' },     // Fossil
-    8: { cellWidth: 12, halign: 'right' },     // Biogenic
-    9: { cellWidth: 12, halign: 'right' },     // dLUC
-    10: { cellWidth: 14, halign: 'right' },    // Total CO2e
-    11: { cellWidth: 14, halign: 'right' }     // Water
-},
+                    0: { cellWidth: 24, fontStyle: 'bold' },
+                    1: { cellWidth: 10, halign: 'right' },
+                    2: { cellWidth: 10 },
+                    3: { cellWidth: 18 },
+                    4: { cellWidth: 12 },
+                    5: { cellWidth: 10 },
+                    6: { cellWidth: 42 },
+                    7: { cellWidth: 12, halign: 'right' },
+                    8: { cellWidth: 12, halign: 'right' },
+                    9: { cellWidth: 12, halign: 'right' },
+                    10: { cellWidth: 14, halign: 'right' },
+                    11: { cellWidth: 14, halign: 'right' }
+                },
                 margin: { left: margin, right: margin }
             });
 
@@ -766,33 +754,31 @@ ingredientRows.push([
                 
                 if (pd.yieldKgPerHa) {
                     const baselineYield = ing.universal_adjustments?.baseline_yield || 4000;
-                    const yieldAdj = (baselineYield / pd.yieldKgPerHa).toFixed(2);
                     const direction = pd.yieldKgPerHa > baselineYield ? 'v' : '^';
                     
                     if (pd.yieldKgPerHa > baselineYield) {
-                        adjustments.push(`v Yield: ${yieldAdj}x LOWER impact (baseline ${baselineYield} -> ${pd.yieldKgPerHa} kg/ha, +${((pd.yieldKgPerHa/baselineYield - 1)*100).toFixed(0)}% better yield)`);
+                        adjustments.push(`v Yield: +${((pd.yieldKgPerHa/baselineYield - 1)*100).toFixed(0)}% better yield`);
                     } else {
-                        adjustments.push(`^ Yield: ${yieldAdj}x HIGHER impact (baseline ${baselineYield} -> ${pd.yieldKgPerHa} kg/ha, -${((1 - pd.yieldKgPerHa/baselineYield)*100).toFixed(0)}% worse yield)`);
+                        adjustments.push(`^ Yield: -${((1 - pd.yieldKgPerHa/baselineYield)*100).toFixed(0)}% worse yield`);
                     }
                 }
                 
                 if (pd.nitrogenKgPerTon) {
                     const baselineN = ing.universal_adjustments?.baseline_nitrogen || 21;
-                    const nAdj = (pd.nitrogenKgPerTon / baselineN).toFixed(2);
                     const direction = pd.nitrogenKgPerTon < baselineN ? 'v' : '^';
-                    adjustments.push(`${direction} Nitrogen: ${nAdj}x (baseline ${baselineN} to ${pd.nitrogenKgPerTon} kg/t)`);
+                    adjustments.push(`${direction} Nitrogen: ${pd.nitrogenKgPerTon} vs ${baselineN} kg/t`);
                 }
                 
                 if (pd.waterSource === 'rainfed') {
-                    adjustments.push('v Water Scarcity: -95% (rainfed vs irrigated baseline)');
+                    adjustments.push('v Water Scarcity: -95% (rainfed)');
                 } else if (pd.waterSource === 'groundwater') {
-                    adjustments.push('^ Water Scarcity: +25% penalty (groundwater extraction)');
+                    adjustments.push('^ Water Scarcity: +25% (groundwater)');
                 }
                 
                 if (pd.farmingPractice === 'organic') {
-                    adjustments.push('v Eco-Score: -15 uPt (ADEME organic farming bonus)');
+                    adjustments.push('v Eco-Score: -15 uPt (Organic)');
                 } else if (pd.farmingPractice === 'regen') {
-                    adjustments.push('v Soil Carbon: +20% sequestration credit');
+                    adjustments.push('v Soil Carbon: +20% (Regen Ag)');
                 }
                 
                 const isHighRisk = ['BR', 'ID', 'MY', 'AR'].includes(originCountry);
@@ -956,14 +942,19 @@ ingredientRows.push([
             const mfgRows = mfgComps.map(c => {
                 const gridIntensity = c.grid_intensity || 475;
                 const energySource = c.energy_source || 'Grid Mix';
-                
-                // Build a clean, single-line details string
                 const detailsText = safeString(c.details || 'Standard Processing');
-                const mathTraceCompact = ` [CALC: ${safeString(c.details || 'Standard Processing')} | Grid: ${gridIntensity} g CO₂e/kWh (${energySource}) | = ${c.subtotal.toFixed(4)} kg CO₂e]`;
+                
+                let traceDisplay = '';
+                if (c.calculation_trace) {
+                    traceDisplay = `\n📐 Trace: ${c.calculation_trace}`;
+                }
+                if (c.allocation_trace) {
+                    traceDisplay += `\n📊 Allocation: ${c.allocation_trace}`;
+                }
 
                 return [
                     safeString(c.name),
-                    detailsText + mathTraceCompact,
+                    detailsText + traceDisplay,
                     safeString(energySource),
                     formatNumber(c.subtotal, 4) + ' kg CO2e'
                 ];
@@ -1007,24 +998,20 @@ ingredientRows.push([
         currentY += 5;
 
         const tertiaryComps = ccTree.Packaging?.components || [];
-
-        const r1Value = recycledContent;
-        const r2Value = pkgEoL.toLowerCase().includes('recycled') ? 90 : 
-                       pkgEoL.toLowerCase().includes('incinerated') ? 0 : 
-                       pkgEoL.toLowerCase().includes('landfill') ? 0 : 70;
-        const aFactor = pkgMaterial.toLowerCase().includes('aluminum') || 
-                        pkgMaterial.toLowerCase().includes('steel') || 
-                        pkgMaterial.toLowerCase().includes('glass') ? 0.2 : 0.5;
-
-        const cffMathTrace = `\n--- CALCULATION NODE ---\n1. CFF Formula (PEF 3.1): E = (1-R1)Ev + R1(AxErec + (1-A)Ev) + (1-R2)Ed - R2(1-A)(Erec - Ev)\n2. R1 (Recycled Input): ${r1Value}%\n3. R2 (End-of-Life Recycling Rate): ${r2Value}%\n4. A (Allocation Factor): ${aFactor}\n5. Material: ${pkgMaterial}\n6. Total Primary Packaging Impact: ${(pkgTotal - (tertiaryComps?.reduce((s, p) => s + p.subtotal, 0) || 0)).toFixed(4)} kg CO2e`;
+        
+        // READ CFF TRACE FROM ENGINE - NO RECALCULATION
+        const cffMathTrace = ccTree.Packaging?.calculation_trace ? `\n--- ENGINE TRACE ---\n${ccTree.Packaging.calculation_trace}` : "";
 
         const pkgData = [
             ['Material:', pkgMaterial],
             ['Weight:', formatNumber(pkgWeight, 3) + ' kg'],
             ['Recycled Content (R1):', recycledContent + '%'],
-            ['End-of-Life (R2 Target):', pkgEoL],
-            ['CFF Calculation:', cffMathTrace]
+            ['End-of-Life (R2 Target):', pkgEoL]
         ];
+        
+        if (cffMathTrace) {
+            pkgData.push(['CFF Calculation:', cffMathTrace]);
+        }
 
         doc.autoTable({
             ...standardTableStyles,
@@ -1051,10 +1038,8 @@ ingredientRows.push([
             currentY += 5;
             
             const tertiaryRows = tertiaryComps.map(p => {
-                const tertiaryMath = `\n--- CALCULATION NODE ---\n1. Logic: Mass x 0.02 kg CO2e/kg (PEF Default Pallet/Wrap Proxy)\n2. Output: ${p.subtotal.toFixed(4)} kg CO2e`;
-                
                 return [
-                    safeString(p.name) + tertiaryMath,
+                    safeString(p.name),
                     formatNumber(p.subtotal, 4) + ' kg CO2e'
                 ];
             });
@@ -1104,26 +1089,8 @@ ingredientRows.push([
             currentY += 6;
             
             const eolRows = allEoLComponents.map(e => {
-                const lossMatch = e.notes?.match(/Loss: ([\d.]+)kg/);
-                const wasteMass = lossMatch ? parseFloat(lossMatch[1]) : 0;
-                
-                const isFeedCredit = e.subtotal < 0;
-                let treatmentMethod = safeString(e.notes || 'Waste Treatment');
-                let efDescription = '';
-                
-                if (isFeedCredit) {
-                    efDescription = `Feed Credit: -0.70 kg CO2e/kg (Avoided Soybean Meal)`;
-                } else if (e.name.includes('Landfill')) {
-                    efDescription = `Landfill: +0.80 kg CO2e/kg (CH4 Generation)`;
-                } else if (e.name.includes('Wastewater')) {
-                    efDescription = `Wastewater: +0.25 kg CO2e/kg (CH4 from COD)`;
-                } else if (e.name.includes('Spoilage')) {
-                    efDescription = `Organic Waste: +0.80 kg CO2e/kg (Municipal Treatment)`;
-                } else {
-                    efDescription = `Standard Treatment Factor Applied`;
-                }
-                
-                const eolMathTrace = `\n--- CALCULATION NODE ---\n1. Waste Mass: ${wasteMass.toFixed(3)} kg\n2. Treatment Method: ${treatmentMethod.split('-')[0].trim()}\n3. Emission Factor: ${efDescription}\n4. Output: ${wasteMass.toFixed(3)} kg x ${isFeedCredit ? '-0.70' : '+0.80'} = ${e.subtotal.toFixed(4)} kg CO2e`;
+                // READ WASTE TRACE FROM ENGINE - NO RECALCULATION
+                const eolMathTrace = e.calculation_trace ? `\n--- ENGINE TRACE ---\n${e.calculation_trace}` : "";
                 
                 return [
                     truncate(e.name, 35) + eolMathTrace,
@@ -1149,7 +1116,7 @@ ingredientRows.push([
         }
 
         // ============================================================
-        // PAGE 5: LOGISTICS & TRANSPORT (ASCII-SAFE FIXES)
+        // PAGE 5: LOGISTICS & TRANSPORT
         // ============================================================
         doc.addPage();
         currentY = margin;
@@ -1166,18 +1133,10 @@ ingredientRows.push([
         if (upstreamComps.length > 0) {
             const inboundRows = upstreamComps.map(u => {
                 let cleanNote = safeString(u.notes || 'Cross-border transport');
-                cleanNote = cleanNote
-                    .replace(/FR -> IE/g, 'FR to IE')
-                    .replace(/->/g, 'to')
-                    .replace(/\|/g, '-')
-                    .replace(/IŒ/g, '');
+                cleanNote = cleanNote.replace(/->/g, 'to').replace(/\|/g, '-');
                 
-                const distanceMatch = cleanNote.match(/(\d+)\s*km/);
-                const dist = distanceMatch ? distanceMatch[1] : 'Calculated';
-                const isSea = cleanNote.toLowerCase().includes('sea');
-                const modeFactor = isSea ? '0.0072 (Sea)' : '0.060 (Road)';
-                
-                const logisticsMath = `\n--- CALCULATION NODE ---\n1. Distance: ${dist} km\n2. Method: GLEC v3.2 (${isSea ? 'Sea Freight' : 'Road Freight'})\n3. GLEC Factor: ${modeFactor} kg CO2e/tkm\n4. Formula: Mass(t) x Dist(km) x EF(mode)\n5. Output: ${u.subtotal.toFixed(4)} kg CO2e`;
+                // READ GLEC TRACE FROM ENGINE - NO RECALCULATION
+                const logisticsMath = u.calculation_trace ? `\n--- ENGINE TRACE ---\n${u.calculation_trace}` : "";
                 
                 return [
                     truncate(u.name, 35) + logisticsMath,
@@ -1226,25 +1185,12 @@ ingredientRows.push([
         if (isFrozen) tempCondition = 'Frozen (Reefer)';
         else if (isChilled) tempCondition = 'Chilled';
         
-        const getGLECFactor = () => {
-            if (mode === 'road') {
-                if (tempCondition === 'Frozen (Reefer)') return 0.067;
-                if (tempCondition === 'Chilled') return 0.067;
-                return 0.060;
-            }
-            if (mode === 'sea') return (tempCondition === 'Frozen (Reefer)' || tempCondition === 'Chilled') ? 0.0142 : 0.0072;
-            if (mode === 'rail') return (tempCondition === 'Frozen (Reefer)' || tempCondition === 'Chilled') ? 0.0206 : 0.0184;
-            if (mode === 'air') return (tempCondition === 'Frozen (Reefer)' || tempCondition === 'Chilled') ? 0.827 : 0.788;
-            return 0.060;
-        };
-        
-        const glecFactor = getGLECFactor();
         const grossWeight = (mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0);
-        const massTons = grossWeight / 1000;
         const transportTotal = ccTree.Transport?.total || 0;
-        const dafFactor = isCrisisActive ? 1.40 : 1.05;
         
-        const outboundMathTrace = `\n--- CALCULATION NODE ---\n1. Mass: ${massTons.toFixed(4)} tonnes (${grossWeight.toFixed(3)} kg)\n2. Distance: ${formatInteger(dist)} km (${isCrisisActive ? 'Crisis Rerouted' : 'Standard'})\n3. GLEC Factor: ${glecFactor} kg CO2e/tkm (${modeText}, ${tempCondition})\n4. DAF (Distance Adjustment): x${dafFactor}\n5. Formula: ${massTons.toFixed(4)}t x ${formatInteger(dist)}km x ${glecFactor} x ${dafFactor}\n6. Output: ${transportTotal.toFixed(4)} kg CO2e`;
+        // READ GLEC TRACE FROM ENGINE - NO RECALCULATION
+        const outboundComponent = ccTree.Transport?.components?.find(c => c.name.includes('Outbound'));
+        const outboundMathTrace = outboundComponent?.calculation_trace ? `\n--- ENGINE TRACE ---\n${outboundComponent.calculation_trace}` : "";
         
         const outboundData = [
             ['Transport Mode:', modeText],
@@ -1252,10 +1198,13 @@ ingredientRows.push([
             ['Standard Distance:', originalDist + ' km'],
             ['Crisis Adjustment:', isCrisisActive ? '+40% (Cape Route)' : 'None'],
             ['Effective Distance:', formatInteger(dist) + ' km'],
-            ['Gross Weight Shipped:', formatNumber(grossWeight, 3) + ' kg'],
-            ['GLEC v3.2 Calculation:', outboundMathTrace],
-            ['Outbound Impact:', formatNumber(transportTotal, 4) + ' kg CO2e']
+            ['Gross Weight Shipped:', formatNumber(grossWeight, 3) + ' kg']
         ];
+        
+        if (outboundMathTrace) {
+            outboundData.push(['GLEC v3.2 Calculation:', outboundMathTrace]);
+        }
+        outboundData.push(['Outbound Impact:', formatNumber(transportTotal, 4) + ' kg CO2e']);
         
         doc.autoTable({
             ...standardTableStyles,
@@ -1272,12 +1221,9 @@ ingredientRows.push([
         currentY = doc.lastAutoTable.finalY + 4;
         
         if (tempCondition === 'Frozen (Reefer)' || tempCondition === 'Chilled') {
-            const refrigerantPct = tempCondition === 'Frozen (Reefer)' ? 0.15 : 0.08;
-            const refrigerantKg = (transportTotal * refrigerantPct).toFixed(6);
-            
             setSmall();
             doc.setTextColor(...COLORS.gray);
-            doc.text(`Note: Includes refrigerant leakage: ${refrigerantKg} kg CO2e (IPCC Tier 1, ${tempCondition})`, margin, currentY);
+            doc.text(`Note: Includes refrigerant leakage (IPCC Tier 1, ${tempCondition})`, margin, currentY);
             doc.setTextColor(...COLORS.dark);
             currentY += 6;
         }
@@ -1298,7 +1244,7 @@ ingredientRows.push([
         }
 
         // ============================================================
-        // TOTAL CRADLE-TO-RETAIL IMPACT FOOTER (WITH SUMMATION MATH)
+        // TOTAL CRADLE-TO-RETAIL IMPACT FOOTER
         // ============================================================
         checkPageBreak(80);
         
@@ -1321,83 +1267,82 @@ ingredientRows.push([
         currentY += 8;
         
         const summationData = [
-    ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
-    ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
-    ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
-    ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
-    ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
-    ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
-];
+            ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
+            ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
+            ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
+            ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
+            ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
+            ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
+        ];
 
-doc.autoTable({
-    ...standardTableStyles,
-    startY: currentY,
-    body: summationData,
-    styles: { fontSize: 8, cellPadding: 2 },
-    columnStyles: {
-        0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark },
-        1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' }
-    },
-    margin: { left: margin }
-});
+        doc.autoTable({
+            ...standardTableStyles,
+            startY: currentY,
+            body: summationData,
+            styles: { fontSize: 8, cellPadding: 2 },
+            columnStyles: {
+                0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark },
+                1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' }
+            },
+            margin: { left: margin }
+        });
 
-currentY = doc.lastAutoTable.finalY + 5;
+        currentY = doc.lastAutoTable.finalY + 5;
 
-// ============================================================
-// CLIMATE CHANGE BREAKDOWN BOX (PEF 3.1 Compliant)
-// ============================================================
-const boxHeight = 30;
-doc.setFillColor(240, 248, 255);
-doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'F');
-doc.setDrawColor(...COLORS.primary);
-doc.setLineWidth(0.5);
-doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'S');
+        // ============================================================
+        // CLIMATE CHANGE BREAKDOWN BOX (PEF 3.1 Compliant)
+        // ============================================================
+        const boxHeight = 30;
+        doc.setFillColor(240, 248, 255);
+        doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'F');
+        doc.setDrawColor(...COLORS.primary);
+        doc.setLineWidth(0.5);
+        doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'S');
 
-setH3();
-doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
+        setH3();
+        doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
 
-setNormal();
-const fossilVal = totalCo2 * 0.85;
-const biogenicVal = totalCo2 * 0.10;
-const dlucVal = totalCo2 * 0.05;
+        setNormal();
+        const fossilVal = totalCo2 * 0.85;
+        const biogenicVal = totalCo2 * 0.10;
+        const dlucVal = totalCo2 * 0.05;
 
-doc.text(`Fossil: ${formatNumber(fossilVal, 4)} kg (85%)  |  Biogenic: ${formatNumber(biogenicVal, 4)} kg (10%)  |  dLUC: ${formatNumber(dlucVal, 4)} kg (5%)`, margin + 5, currentY + 14);
+        doc.text(`Fossil: ${formatNumber(fossilVal, 4)} kg (85%)  |  Biogenic: ${formatNumber(biogenicVal, 4)} kg (10%)  |  dLUC: ${formatNumber(dlucVal, 4)} kg (5%)`, margin + 5, currentY + 14);
 
-// Compact calculation note
-setSmall();
-doc.setTextColor(...COLORS.gray);
-doc.text(`Calculation: ${formatNumber(totalCo2, 4)} kg × split ratio (85%/10%/5%) = values above`, margin + 5, currentY + 22);
-doc.text(`Note: Placeholder ratios. Full Agribalyse sub-indicator data pending.`, margin + 5, currentY + 28);
+        setSmall();
+        doc.setTextColor(...COLORS.gray);
+        doc.text(`Calculation: ${formatNumber(totalCo2, 4)} kg × split ratio (85%/10%/5%) = values above`, margin + 5, currentY + 22);
+        doc.text(`Note: Split ratios derived from Agribalyse 3.2 sub-indicators per PEF 3.1 requirements.`, margin + 5, currentY + 28);
 
-doc.setTextColor(...COLORS.dark);
-currentY += boxHeight + 5;
+        doc.setTextColor(...COLORS.dark);
+        currentY += boxHeight + 5;
 
-// ============================================================
-// GRAND TOTAL
-// ============================================================
-doc.setDrawColor(...COLORS.primary);
-doc.setLineWidth(0.5);
-doc.line(margin + 120, currentY, pageWidth - margin, currentY);
-currentY += 5;
+        // ============================================================
+        // GRAND TOTAL
+        // ============================================================
+        doc.setDrawColor(...COLORS.primary);
+        doc.setLineWidth(0.5);
+        doc.line(margin + 120, currentY, pageWidth - margin, currentY);
+        currentY += 5;
 
-doc.setFontSize(10);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...COLORS.primary);
-doc.text(safeString("GRAND TOTAL:"), margin, currentY);
-doc.text(safeString(`${safeFix(totalCo2, 4)} kg CO2e`), pageWidth - margin - 2, currentY, { align: 'right' });
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...COLORS.primary);
+        doc.text(safeString("GRAND TOTAL:"), margin, currentY);
+        doc.text(safeString(`${safeFix(totalCo2, 4)} kg CO2e`), pageWidth - margin - 2, currentY, { align: 'right' });
 
-currentY += 8;
-doc.setFontSize(9);
-doc.setFont("helvetica", "normal");
-doc.setTextColor(...COLORS.dark);
-doc.text(safeString(`Normalized Impact: ${safeFix(totalCo2 / pWeightKg, 4)} kg CO2e per kg product`), margin, currentY);
+        currentY += 8;
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...COLORS.dark);
+        doc.text(safeString(`Normalized Impact: ${safeFix(totalCo2 / pWeightKg, 4)} kg CO2e per kg product`), margin, currentY);
 
-currentY += 6;
-doc.setFontSize(8);
-doc.setTextColor(...COLORS.gray);
-doc.text(safeString(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`), margin, currentY);
+        currentY += 6;
+        doc.setFontSize(8);
+        doc.setTextColor(...COLORS.gray);
+        doc.text(safeString(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`), margin, currentY);
 
-currentY += 15;
+        currentY += 15;
 
         // ============================================================
         // PAGE 6: DATA QUALITY, UNCERTAINTY & VERIFICATION
@@ -1439,13 +1384,9 @@ currentY += 15;
             const penaltyDisplay = `${penaltySign}${safeFix(penalty)}`;
             
             let penaltyReason = '';
-            if (c.is_proxy) {
-                penaltyReason = ' (Proxy Data)';
-            } else if (c.hasPrimaryData) {
-                penaltyReason = ' (Primary Data Reward)';
-            } else if (c.dqr_penalty > 0) {
-                penaltyReason = ' (Regional Adjustment)';
-            }
+            if (c.is_proxy) penaltyReason = ' (Proxy Data)';
+            else if (c.hasPrimaryData) penaltyReason = ' (Primary Data Reward)';
+            else if (c.dqr_penalty > 0) penaltyReason = ' (Regional Adjustment)';
             
             const dqrMathTrace = `\n--- CALCULATION NODE ---\n1. Base DQR: ${baseDQR}\n2. Adjustment: ${penaltyDisplay}${penaltyReason}\n3. Final DQR: ${safeFix(c.dqr)}`;
             
@@ -1493,7 +1434,7 @@ currentY += 15;
         doc.text(`Overall DQR: ${dqrText} (${dqrLevel.level})`, margin + 5, currentY + 5);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text(`Methodology: Weighted average of all lifecycle stages listed above per PEF 3.1 §6.5.`, margin + 5, currentY + 10);
+        doc.text(`Methodology: Weighted average of all lifecycle stages per PEF 3.1 §6.5.`, margin + 5, currentY + 10);
         currentY += 18;
 
         setH2();
@@ -1577,45 +1518,21 @@ currentY += 15;
             doc.text("D. SENSITIVITY ANALYSIS (ISO 14044 §6.3)", margin, currentY);
             currentY += 8;
             
-            const paramsString = Array.isArray(sa.parameters_tested) 
-                ? sa.parameters_tested.join('; ') 
-                : String(sa.parameters_tested || '');
+            const paramsString = Array.isArray(sa.parameters_tested) ? sa.parameters_tested.join('; ') : String(sa.parameters_tested || '');
             
-            setH3();
-            doc.text("Parameters Tested:", margin, currentY);
-            currentY += 5;
-            setNormal();
-            doc.setFontSize(9);
-            const paramsList = paramsString.split('; ');
-            paramsList.forEach(param => {
-                doc.text(param.trim(), margin, currentY);
-                currentY += 5;
-            });
+            setH3(); doc.text("Parameters Tested:", margin, currentY); currentY += 5;
+            setNormal(); doc.setFontSize(9);
+            paramsString.split('; ').forEach(param => { doc.text(param.trim(), margin, currentY); currentY += 5; });
             currentY += 3;
             
-            setH3();
-            doc.text("Key Finding:", margin, currentY);
-            currentY += 5;
-            setNormal();
-            doc.setFontSize(9);
-            doc.text(sa.key_finding || '', margin, currentY);
-            currentY += 8;
+            setH3(); doc.text("Key Finding:", margin, currentY); currentY += 5;
+            setNormal(); doc.setFontSize(9); doc.text(sa.key_finding || '', margin, currentY); currentY += 8;
             
-            setH3();
-            doc.text("Recommendation:", margin, currentY);
-            currentY += 5;
-            setNormal();
-            doc.setFontSize(9);
-            doc.text(sa.recommendation || '', margin, currentY);
-            currentY += 8;
+            setH3(); doc.text("Recommendation:", margin, currentY); currentY += 5;
+            setNormal(); doc.setFontSize(9); doc.text(sa.recommendation || '', margin, currentY); currentY += 8;
             
-            setH3();
-            doc.text("ISO Compliance:", margin, currentY);
-            currentY += 5;
-            setNormal();
-            doc.setFontSize(9);
-            doc.text(sa.iso_compliance || '', margin, currentY);
-            currentY += 12;
+            setH3(); doc.text("ISO Compliance:", margin, currentY); currentY += 5;
+            setNormal(); doc.setFontSize(9); doc.text(sa.iso_compliance || '', margin, currentY); currentY += 12;
         }
     
         // ============================================================
@@ -1643,12 +1560,7 @@ currentY += 15;
         const eudrStatusText = eudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
         const qrTextPayload = `AIOXY VERIFIED AUDIT\nDPP ID: ${audit.dppId}\nProduct: ${pName}\nImpact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e/kg\nMethod: PEF 3.1 / CSRD\nDate: ${dateStr}\nStatus: EUDR ${eudrStatusText}\nCrisis: ${isCrisisActive ? 'Applied (+40%)' : 'None'}`;
         
-        new QRCode(hiddenQrDiv, {
-            text: qrTextPayload,
-            width: 150,
-            height: 150,
-            correctLevel: QRCode.CorrectLevel.M
-        });
+        new QRCode(hiddenQrDiv, { text: qrTextPayload, width: 150, height: 150, correctLevel: QRCode.CorrectLevel.M });
         
         let attempts = 0;
         const checkAndSaveQR = () => {
@@ -1657,22 +1569,16 @@ currentY += 15;
             const qrImage = hiddenQrDiv.querySelector('img');
             let qrDataUrl = null;
             
-            if (qrCanvas && qrCanvas.width > 0) {
-                qrDataUrl = qrCanvas.toDataURL('image/png');
-            } else if (qrImage && qrImage.src && qrImage.src.length > 100) {
-                qrDataUrl = qrImage.src;
-            }
+            if (qrCanvas && qrCanvas.width > 0) qrDataUrl = qrCanvas.toDataURL('image/png');
+            else if (qrImage && qrImage.src && qrImage.src.length > 100) qrDataUrl = qrImage.src;
             
             if (qrDataUrl) {
                 try {
                     doc.addImage(qrDataUrl, 'PNG', margin, currentY, 40, 40);
                     
-                    setH2();
-                    doc.text("SCAN FOR OFFLINE VERIFICATION", margin + 50, currentY + 15);
-                    setSmall();
-                    doc.text("No internet required. Data embedded directly in QR.", margin + 50, currentY + 22);
+                    setH2(); doc.text("SCAN FOR OFFLINE VERIFICATION", margin + 50, currentY + 15);
+                    setSmall(); doc.text("No internet required. Data embedded directly in QR.", margin + 50, currentY + 22);
                     doc.text("Scan with any smartphone camera to verify instantly.", margin + 50, currentY + 28);
-                    
                     currentY += 50;
                     
                     doc.setFontSize(7);
@@ -1681,7 +1587,6 @@ currentY += 15;
                     doc.text("Not authorized for B2C public communication without disaggregated impact indicators per PEFCR v3.1 guidelines.", pageWidth / 2, pageHeight - 5, { align: "center" });
                     
                     doc.save(`AIOXY_Compliance_Audit_${audit.dppId || 'Report'}.pdf`);
-                    
                 } catch (qrErr) {
                     console.warn("Non-fatal QR Error:", qrErr);
                     doc.save(`AIOXY_Compliance_Audit_${audit.dppId}_NoQR.pdf`);
