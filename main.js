@@ -3,14 +3,15 @@
 // ===================================================================
 
 // ================== GLOBAL VARIABLES ==================
-let selectedIngredients = [];
-let currentChart = null;
-let currentDPPId = null;
-let finalPefResults = {};
-let massBalanceData = {};
-let auditTrailData = {};
-let currentComparisonBaseline = null;
-let currentAnnualVolume = 10000;
+var selectedIngredients = [];
+var currentChart = null;
+var currentDPPId = null;
+var finalPefResults = {};
+var massBalanceData = {};
+var auditTrailData = {};
+var currentComparisonBaseline = null;
+var currentAnnualVolume = 10000;
+
 
 // Physics-based scenarios (7 total)
 let activeScenarios = {
