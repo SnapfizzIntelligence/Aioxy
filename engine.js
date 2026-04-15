@@ -344,14 +344,22 @@ function calculateIngredientImpact(ingredientData, quantityKg, originCountry, pr
         };
     }
     
-    // ================== PEF 3.1 COMPLIANT CLIMATE CHANGE SEPARATION ==================
-// Split Climate Change into three sub-indicators as required by PEF 3.1
-let co2Fossil = ingredientData.data.pef["Climate change - fossil"] || 0;
+    // ================== PEF 3.1 AUDITOR-GRADE CLIMATE DISAGGREGATION ==================
+// Logic: Precautionary Default (Total - (Biogenic + dLUC) = Fossil)
+// If sub-indicators are missing, remainder goes to Fossil (conservative assumption)
+
+let co2Total = ingredientData.data.pef["Climate Change"] || 0;
+
+// 1. Try to get actual sub-indicator data if it exists in Agribalyse
 let co2Biogenic = ingredientData.data.pef["Climate change - biogenic"] || 0;
 let co2dLUC = ingredientData.data.pef["Climate change - land use and land use change"] || 0;
 
+// 2. APPLY THE FORMULA: Any unknown impact is forced into Fossil (Conservative Principle)
+let co2Fossil = co2Total - (co2Biogenic + co2dLUC);
+co2Fossil = Math.max(0, co2Fossil);
+
 // Legacy total for existing calculations (backward compatibility)
-let co2Base = co2Fossil + co2Biogenic + co2dLUC;
+let co2Base = co2Total;
 
 let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
 let landBase = ingredientData.data.pef["Land Use"] || 0;
@@ -397,22 +405,27 @@ let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0; // 🛡�
         finalLand *= landAdjustment;
         finalWater *= waterAdjustment;
         finalFossil *= co2Adjustment; // 🛡️ FIX: Fossil energy tracks yield/fertilizer efficiency
-
-
+        
+        // 🛡️ CRITICAL: Apply the SAME adjustments to the sub-indicators
+        co2Fossil *= co2Adjustment;
+        co2Biogenic *= co2Adjustment;
+        co2dLUC *= co2Adjustment;
+        
         const practiceStr = primaryData.farmingPractice ? `[${primaryData.farmingPractice.toUpperCase()}]` : '';
-    log.push(`✅ PRIMARY DATA VERIFIED ${practiceStr}: Yield adj: ${yieldAdjustment.toFixed(2)}x | N adj: ${nAdjustment.toFixed(2)}x`);
-    qualityPenalty = -0.5; // BONUS: Better DQR for primary data
-    
-    universal_adjustments = {
-        adjusted_from_country: "Agribalyse Default",
-        adjusted_for_country: primaryData.farmRegion || originCountry,
-        multipliers: { co2: co2Adjustment, land: landAdjustment, water: waterAdjustment, fossil: co2Adjustment },
-        adder: 0,
-        method: "primary_data_override",
-        baseline_yield: baselineYield,           // ← ADDED: For PDF primary data section
-        baseline_nitrogen: baselineN * 1000      // ← ADDED: Convert kg/kg to kg/ton for display
-    };
-} 
+        log.push(`✅ PRIMARY DATA VERIFIED ${practiceStr}: Yield adj: ${yieldAdjustment.toFixed(2)}x | N adj: ${nAdjustment.toFixed(2)}x`);
+        qualityPenalty = -0.5; // BONUS: Better DQR for primary data
+        
+        universal_adjustments = {
+            adjusted_from_country: "Agribalyse Default",
+            adjusted_for_country: primaryData.farmRegion || originCountry,
+            multipliers: { co2: co2Adjustment, land: landAdjustment, water: waterAdjustment, fossil: co2Adjustment },
+            adder: 0,
+            method: "primary_data_override",
+            baseline_yield: baselineYield,
+            baseline_nitrogen: baselineN * 1000
+        };
+            }
+        
 // 2. CONSERVATIVE DEFAULT (No primary data provided)
 else {
     const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
@@ -429,6 +442,12 @@ else {
             finalWater *= 1.15;
             finalLand *= 1.15;
             finalFossil *= 1.15; // 🛡️ FIX: Apply uncertainty buffer to fossil use
+            
+            // 🛡️ CRITICAL: Apply proxy penalty to sub-indicators
+            co2Fossil *= 1.15;
+            co2Biogenic *= 1.15;
+            co2dLUC *= 1.15;
+            
             log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
             
             universal_adjustments = {
@@ -453,8 +472,7 @@ else {
             baseline_nitrogen: defaultBaselineN              // ← ADDED
         };
     }
-    }
-    
+}
     
     // =========================================================
 // 🛡️ MANDATORY EUDR OVERLAY - Commodity & Origin Specific
@@ -472,6 +490,12 @@ const isEudrCommodity = eudrCommodities.some(c =>
 if (['BR', 'ID', 'MY', 'AR'].includes(originCountry) && isEudrCommodity) {
     finalCO2 *= 1.50;
     finalLand *= 1.50;
+    
+    // 🛡️ CRITICAL: Apply EUDR penalty to sub-indicators
+    co2Fossil *= 1.50;
+    co2Biogenic *= 1.50;
+    co2dLUC *= 1.50;
+    
     log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}) for regulated commodity. +50% Deforestation Risk Multiplier applied.`);
     qualityPenalty = 4.0;
     
@@ -488,41 +512,40 @@ if (['BR', 'ID', 'MY', 'AR'].includes(originCountry) && isEudrCommodity) {
         universal_adjustments.multipliers.co2 *= 1.50;
         universal_adjustments.multipliers.land *= 1.50;
     }
-     }
+}
 
-    // Calculate final totals
-    const totalCO2 = finalCO2 * quantityKg;
-    const totalWater = finalWater * quantityKg;
-    const totalLand = finalLand * quantityKg;
-    const totalFossil = finalFossil * quantityKg; // 🛡️ NEW
+// Calculate final totals
+const totalCO2 = finalCO2 * quantityKg;
+const totalWater = finalWater * quantityKg;
+const totalLand = finalLand * quantityKg;
+const totalFossil = finalFossil * quantityKg; // 🛡️ NEW
 
-    // 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
-    let biogenicRemovals = 0;
-    if (primaryData && primaryData.farmingPractice === 'regen') {
-        biogenicRemovals = (co2Base * 0.20) * quantityKg;
-        log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
-    }
+// 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
+let biogenicRemovals = 0;
+if (primaryData && primaryData.farmingPractice === 'regen') {
+    biogenicRemovals = (co2Base * 0.20) * quantityKg;
+    log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
+}
 
-    return {
+return {
     totalCO2: totalCO2,
     fossilCO2: co2Fossil * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
     biogenicCO2: co2Biogenic * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
     dlucCO2: co2dLUC * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
     totalWater: totalWater,
     totalLand: totalLand,
-    totalFossil: totalFossil, // 🛡️ NEW
+    totalFossil: totalFossil,
     perKgCO2: finalCO2,
     perKgWater: finalWater,
     perKgLand: finalLand,
-    perKgFossil: finalFossil, // 🛡️ NEW
+    perKgFossil: finalFossil,
     logs: log,
     qualityPenalty: qualityPenalty,
     universal_adjustments: universal_adjustments,
     is_primary: !!primaryData,
     biogenicRemovals: biogenicRemovals
 };
-}
-
+    
 // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
 function calculateCFF(packagingData, weightKg, recycledContentPercent) {
     // 1. DATA VALIDATION
