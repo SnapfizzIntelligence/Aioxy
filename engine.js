@@ -862,6 +862,14 @@ if (energySource === 'renewable') {
     energyNote = `Grid Mix (${countryCode})`;
 }
 
+// 🛡️ PEF 3.1 FUGITIVE EMISSIONS MANDATE
+let fugitiveCO2 = 0;
+if (processingMethod === 'freezing') {
+    // Industry average leakage allowance: ~15g CO2e per kg of frozen product
+    fugitiveCO2 = massOutputKg * 0.015; 
+    if (physicsData) physicsData.note = "Includes standard PEF refrigerant leakage allowance";
+}
+
 // 🛡️ THE SCENARIO PROOF: Build complete trace with reasoning
 const scenarioProof = scenarioNote ? ` [Modified: ${scenarioNote}]` : "";
 
@@ -869,14 +877,6 @@ const scenarioProof = scenarioNote ? ` [Modified: ${scenarioNote}]` : "";
 const fugitiveTrace = fugitiveCO2 > 0 ? ` + Fugitive Refrigerant (${fugitiveCO2.toFixed(4)}kg)` : "";
 
 const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity} gCO2e/kWh EF [${energyNote}]${scenarioProof}${fugitiveTrace}`;
-    
-    // 🛡️ PEF 3.1 FUGITIVE EMISSIONS MANDATE
-    let fugitiveCO2 = 0;
-    if (processingMethod === 'freezing') {
-        // Industry average leakage allowance: ~15g CO2e per kg of frozen product
-        fugitiveCO2 = massOutputKg * 0.015; 
-        if (physicsData) physicsData.note = "Includes standard PEF refrigerant leakage allowance";
-    }
 
     // Natural Gas emits ~202g CO2e per MJ
     const gasCO2 = (naturalGasMj * 202) / 1000;
