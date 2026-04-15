@@ -32,7 +32,7 @@ function displayFullPefScorecard() {
     
     for (const category in finalPefResults) {
         const row = document.createElement('tr');
-        const unit = pefCategories[category].unit;
+        const unit = pefCategories[category]?.unit || finalPefResults[category]?.unit || '';
         const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
         
         let displayValue = formatPEFValue(finalPefResults[category].total);
