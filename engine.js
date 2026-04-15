@@ -2765,27 +2765,24 @@ Note: This screening-level assessment is designed for internal strategic decisio
 
     // ================== EXPOSE TO GLOBAL ==================
     // Expose the engine and related data structures
-    global.foodCalculationEngine = foodCalculationEngine;
-    global.PHYSICS_CONSTANTS = PHYSICS_CONSTANTS;
-    global.PHYSICS_DB = PHYSICS_DB;
-    global.FOOD_PHYSICS_DB = FOOD_PHYSICS_DB;
     global.calculateGLECTransport = calculateGLECTransport;
-    global.calculateIngredientImpact = calculateIngredientImpact;
-    global.calculateCFF = calculateCFF;
-    global.calculateAWARE = calculateAWARE;
-    global.calculateMassBalance = calculateMassBalance;
-    global.calculateManufacturingImpact = calculateManufacturingImpact;
-    global.calculatePEFSingleScore = calculatePEFSingleScore;
-    global.calculateMonteCarloUncertainty = calculateMonteCarloUncertainty;
-    global.analyzeForegroundBackground = analyzeForegroundBackground;
-    global.getISOCompliance = getISOCompliance;
-    global.validateAndApplyScenarios = validateAndApplyScenarios;
-    global.applyScenarioPhysics = applyScenarioPhysics;
-    global.generateAuditHash = generateAuditHash;
-    global.calculateParametricBaseline = calculateParametricBaseline;
-    global.getUnifiedMetrics = getUnifiedMetrics;
-    global.pefCategories = pefCategories;
-    global.ANCHOR_DATASETS = ANCHOR_DATASETS;
+global.calculateIngredientImpact = calculateIngredientImpact;
+global.calculateCFF = calculateCFF;
+global.calculateAWARE = calculateAWARE;
+global.calculateMassBalance = calculateMassBalance;
+global.calculateManufacturingImpact = calculateManufacturingImpact;
+global.calculatePEFSingleScore = calculatePEFSingleScore;
+global.calculateMonteCarloUncertainty = calculateMonteCarloUncertainty;
+global.analyzeForegroundBackground = analyzeForegroundBackground;
+global.getISOCompliance = getISOCompliance;
+global.applyTemporalDiscounting = applyTemporalDiscounting;  // ← ADD THIS LINE
+global.validateAndApplyScenarios = validateAndApplyScenarios;
+global.applyScenarioPhysics = applyScenarioPhysics;
+global.generateAuditHash = generateAuditHash;
+global.calculateParametricBaseline = calculateParametricBaseline;
+global.getUnifiedMetrics = getUnifiedMetrics;
+global.pefCategories = pefCategories;
+global.ANCHOR_DATASETS = ANCHOR_DATASETS;
 
     // ================== GLOBAL COMPATIBILITY BRIDGE ==================
     // This maintains backward compatibility with existing UI/PDF/audit code
