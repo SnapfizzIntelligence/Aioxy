@@ -2457,6 +2457,8 @@ if (massBalanceData.productMass > 0) {
             
             let transportNote = "";
             let ingredientTransportCO2 = 0;
+            let transportObj = null;
+
 
             if (originCountry !== manufacturingCountryCode) {
                 console.log(`🚚 Logistics: Importing ${ing.name} from ${originCountry} to ${manufacturingCountryCode}`);
@@ -2482,8 +2484,7 @@ if (massBalanceData.productMass > 0) {
                 const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
                 let inboundDistance = 0;
 
-                let transportObj = null;
-
+                
 if (originRegion === mfgRegion && originRegion !== 'UNKNOWN') {
     inboundDistance = 1200;
     transportObj = calculateGLECTransport(ing.quantity, inboundDistance, 'road', inboundRefType);
