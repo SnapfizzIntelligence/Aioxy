@@ -2763,9 +2763,13 @@ Note: This screening-level assessment is designed for internal strategic decisio
         }
     };
 
-    // ================== EXPOSE TO GLOBAL ==================
-    // Expose the engine and related data structures
-    global.calculateGLECTransport = calculateGLECTransport;
+ // ================== EXPOSE TO GLOBAL ==================
+// Expose the engine and related data structures
+global.foodCalculationEngine = foodCalculationEngine;  // ← ADD THIS LINE BACK
+global.PHYSICS_CONSTANTS = PHYSICS_CONSTANTS;          // ← ADD THIS LINE BACK
+global.PHYSICS_DB = PHYSICS_DB;                        // ← ADD THIS LINE BACK
+global.FOOD_PHYSICS_DB = FOOD_PHYSICS_DB;              // ← ADD THIS LINE BACK
+global.calculateGLECTransport = calculateGLECTransport;
 global.calculateIngredientImpact = calculateIngredientImpact;
 global.calculateCFF = calculateCFF;
 global.calculateAWARE = calculateAWARE;
@@ -2775,7 +2779,7 @@ global.calculatePEFSingleScore = calculatePEFSingleScore;
 global.calculateMonteCarloUncertainty = calculateMonteCarloUncertainty;
 global.analyzeForegroundBackground = analyzeForegroundBackground;
 global.getISOCompliance = getISOCompliance;
-global.applyTemporalDiscounting = applyTemporalDiscounting;  // ← ADD THIS LINE
+global.applyTemporalDiscounting = applyTemporalDiscounting;
 global.validateAndApplyScenarios = validateAndApplyScenarios;
 global.applyScenarioPhysics = applyScenarioPhysics;
 global.generateAuditHash = generateAuditHash;
