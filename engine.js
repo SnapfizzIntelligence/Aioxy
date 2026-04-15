@@ -1884,7 +1884,7 @@ const pefCategories = {
 };
 
 // ================== MAIN ENGINE (PEF 3.1 COMPLIANT) ==================
-window.foodCalculationEngine = {
+const foodCalculationEngine = {
     getDQRQualityLevel(dqrScore) {
         if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
         if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
@@ -2256,7 +2256,7 @@ if (ing.data?.metadata?.dqr_overall) {
         source: ing.data.metadata.source_dataset,
         origin_country: ingredientOrigin,
         is_proxy: isProxyData,
-        uncertainty: foodCalculationEngine.calculateUncertainty(finalDQR),
+        uncertainty: this.calculateUncertainty(finalDQR),
         hasPrimaryData: !!item.primaryData,
         dqr_trace: dqrTrace // ⬅️ ROUTE THE DQR PROOF TO MEMORY
     });
