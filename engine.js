@@ -386,8 +386,8 @@
         // Logic: Precautionary Default (Total - (Biogenic + dLUC) = Fossil)
         // If sub-indicators are missing, remainder goes to Fossil (conservative assumption)
 
-        let co2Total = ingredientData.data.pef["Climate Change"] || 0;
-
+        let co2Total = ingredientData?.data?.pef?.["Climate Change"] || ingredientData?.pef?.["Climate Change"] || 0;
+        
         // 1. Try to get actual sub-indicator data if it exists in Agribalyse
         let co2Biogenic = ingredientData.data.pef["Climate change - biogenic"] || 0;
         let co2dLUC = ingredientData.data.pef["Climate change - land use and land use change"] || 0;
