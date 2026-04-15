@@ -1,0 +1,3 @@
+🕵️  Auditing SYNTH: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_synthese.csv
+🕵️  Auditing FARM: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_farm_gate.csv
+✅ SUCCESS: 226 ingredients audited and exported to ingredients_db.js
