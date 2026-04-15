@@ -1884,7 +1884,7 @@ const pefCategories = {
 };
 
 // ================== MAIN ENGINE (PEF 3.1 COMPLIANT) ==================
-const foodCalculationEngine = {
+window.foodCalculationEngine = {
     getDQRQualityLevel(dqrScore) {
         if (dqrScore <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
         if (dqrScore <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
