@@ -864,8 +864,12 @@ if (energySource === 'renewable') {
 
 // 🛡️ THE SCENARIO PROOF: Build complete trace with reasoning
 const scenarioProof = scenarioNote ? ` [Modified: ${scenarioNote}]` : "";
-const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity} gCO2e/kWh EF [${energyNote}]${scenarioProof}`;
 
+// 🛡️ AUDIT FIX: Ensure Fugitive Emissions are visible in the math trace
+const fugitiveTrace = fugitiveCO2 > 0 ? ` + Fugitive Refrigerant (${fugitiveCO2.toFixed(4)}kg)` : "";
+
+const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity} gCO2e/kWh EF [${energyNote}]${scenarioProof}${fugitiveTrace}`;
+    
     // 🛡️ PEF 3.1 FUGITIVE EMISSIONS MANDATE
     let fugitiveCO2 = 0;
     if (processingMethod === 'freezing') {
@@ -2634,37 +2638,40 @@ auditTrail.pefCategories["Resource Use, fossils"].total += outboundFossilMJ;
         const contributionTree = auditTrail.pefCategories["Climate Change"].contribution_tree;
 
         // 1. Route Manufacturing Data
-        if (contributionTree.Manufacturing && contributionTree.Manufacturing.total > 0) {
-            dqrComponents.push({
-                name: "Manufacturing & Energy Use",
-                impact: contributionTree.Manufacturing.total, // This grabs the 0.6531 kg from your physics
-                dqr: 2.5, 
-                source: "JRC EF 3.1 Benchmark",
-                uncertainty: 20
-            });
-        }
+if (contributionTree.Manufacturing && contributionTree.Manufacturing.total > 0) {
+    dqrComponents.push({
+        name: "Manufacturing & Energy Use",
+        impact: contributionTree.Manufacturing.total,
+        dqr: 2.5, 
+        source: "JRC EF 3.1 Benchmark",
+        uncertainty: 20,
+        dqr_trace: "DQR: 2.50 [Secondary JRC Industry Benchmark]" // ⬅️ ADD THIS
+    });
+}
 
-        // 2. Route Packaging Data
-        if (contributionTree.Packaging && contributionTree.Packaging.total > 0) {
-            dqrComponents.push({
-                name: "Packaging Lifecycle",
-                impact: contributionTree.Packaging.total, // This grabs the 0.0964 kg from your physics
-                dqr: 3.0, 
-                source: "Agribalyse 3.2",
-                uncertainty: 25
-            });
-        }
+// 2. Route Packaging Data
+if (contributionTree.Packaging && contributionTree.Packaging.total > 0) {
+    dqrComponents.push({
+        name: "Packaging Lifecycle",
+        impact: contributionTree.Packaging.total,
+        dqr: 3.0, 
+        source: "Agribalyse 3.2",
+        uncertainty: 25,
+        dqr_trace: "DQR: 3.00 [Secondary Material Database]" // ⬅️ ADD THIS
+    });
+}
 
-        // 3. Route Logistics Data (Inbound + Outbound)
-        if (contributionTree.Transport && contributionTree.Transport.total > 0) {
-            dqrComponents.push({
-                name: "Inbound/Outbound Logistics",
-                impact: contributionTree.Transport.total, // This grabs the sum of all trucks/ships
-                dqr: 3.0, 
-                source: "GLEC v3.2 / Agribalyse",
-                uncertainty: 30
-            });
-        }
+// 3. Route Logistics Data (Inbound + Outbound)
+if (contributionTree.Transport && contributionTree.Transport.total > 0) {
+    dqrComponents.push({
+        name: "Inbound/Outbound Logistics",
+        impact: contributionTree.Transport.total,
+        dqr: 3.0, 
+        source: "GLEC v3.2 / Agribalyse",
+        uncertainty: 30,
+        dqr_trace: "DQR: 3.00 [Secondary Logistics Database]" // ⬅️ ADD THIS
+    });
+            }
         
         // Save Global State
 const foregroundBackground = analyzeForegroundBackground(selectedIngredients, totalClimate, auditTrail.pefCategories, dqrComponents);
