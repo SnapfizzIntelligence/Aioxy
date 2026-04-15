@@ -2726,20 +2726,6 @@ finalPefResults['Climate Change - Fossil'].total = totalClimateChange * 0.912;
 finalPefResults['Climate Change - Biogenic'].total = totalClimateChange * 0.071;
 finalPefResults['Climate Change - dLUC'].total = totalClimateChange * 0.017;
 
-// ================== PEF 3.1 CARBON BREAKDOWN (AUDITOR-READY) ==================
-// Agribalyse 3.2 provides 'Climate Change' total. We split this into 3 mandatory sub-indicators.
-const totalClimateChange = auditTrail.pefCategories["Climate Change"]?.total || 0;
-
-// 1. Initialize the sub-category objects in finalPefResults (Prevents UI Crash)
-finalPefResults['Climate Change - Fossil'] = { total: 0, unit: 'kg CO2e' };
-finalPefResults['Climate Change - Biogenic'] = { total: 0, unit: 'kg CO2e' };
-finalPefResults['Climate Change - dLUC'] = { total: 0, unit: 'kg CO2e' };
-
-// 2. Apply Proxy Ratios (PEF 3.1 Default for Secondary Food Data)
-// Source: JRC EF 3.1 sectoral proxy distribution for processed food
-finalPefResults['Climate Change - Fossil'].total = totalClimateChange * 0.912;
-finalPefResults['Climate Change - Biogenic'].total = totalClimateChange * 0.071;
-finalPefResults['Climate Change - dLUC'].total = totalClimateChange * 0.017;
 
 const results = {
     finalPefResults: finalPefResults,
