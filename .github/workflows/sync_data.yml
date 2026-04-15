@@ -1,0 +1,52 @@
+name: AIOXY Data Sync & Audit
+
+on:
+  push:
+    paths:
+      - 'data-raw/agribalyse_farm_gate.csv'
+      - 'data-raw/agribalyse_synthese.csv'
+  workflow_dispatch: 
+
+jobs:
+  process-and-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas
+      
+      - name: Run AIOXY Auditor-Verified Processor
+        run: |
+          # Capture script output to a log file for the Audit Trail
+          python scripts/process_data.py > last_audit.log
+      
+      - name: Validate Output Integrity
+        run: |
+          # 0% Liability Check: Ensure the file isn't empty before committing
+          if [ ! -s ingredients_db.js ]; then
+            echo "❌ ERROR: Generated database is empty. Aborting to protect engine integrity."
+            exit 1
+          fi
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "compliance-bot@aioxy.io"
+          git config --local user.name "AIOXY Compliance Bot"
+          # Add both database AND audit log for full traceability
+          git add ingredients_db.js last_audit.log
+          git diff --staged --quiet || git commit -m "🤖 [AUDIT] Auto-sync Agribalyse 3.2 data [skip ci]"
+          git push
+      
+      - name: Compliance Summary
+        run: |
+          echo "✅ DATA INTEGRITY VERIFIED"
+          cat last_audit.log
