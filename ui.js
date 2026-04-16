@@ -825,46 +825,95 @@ function displayPEFSingleScore() {
 
 // ================== INGREDIENT MANAGEMENT ==================
 function populateIngredientSelect() {
-    const select = document.getElementById('ingredientSelect');
-    if (!select) {
-        console.error('❌ ingredientSelect element not found!');
-        return;
-    }
+    // This function is now replaced by searchable typeahead
+    // We keep it for backward compatibility but it does nothing
+    console.log('📦 [populateIngredientSelect] Using searchable typeahead instead');
     
-    select.innerHTML = '<option value="">Choose from science-based ingredients...</option>';
-    
-    if (!window.aioxyData || !window.aioxyData.ingredients) {
-        console.error('❌ [populateIngredientSelect] No ingredient data available!');
-        select.innerHTML += '<option value="">⚠️ Data loading... Please refresh</option>';
-        return;
-    }
-    
-    const ingredients = window.aioxyData.ingredients;
-    const ingredientCount = Object.keys(ingredients).length;
-    
-    console.log(`📦 [populateIngredientSelect] Populating ${ingredientCount} ingredients...`);
-    
-    if (ingredientCount === 0) {
-        select.innerHTML = '<option value="">❌ No ingredients found in database</option>';
-        return;
-    }
-    
-    const sortedKeys = Object.keys(ingredients).sort((a, b) => {
-        return ingredients[a].name.localeCompare(ingredients[b].name);
-    });
-    
-    sortedKeys.forEach(key => {
-        const ingredient = ingredients[key];
-        const option = document.createElement('option');
-        option.value = key;
-        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(ingredient.data.metadata.dqr_overall);
-        option.textContent = `${ingredient.name} (${dqrQuality.level} DQR)`;
-        option.title = `${ingredient.data.pef["Climate Change"].toFixed(2)} kg CO₂e/kg`;
-        select.appendChild(option);
-    });
-    
-    console.log(`✅ [populateIngredientSelect] Added ${sortedKeys.length} ingredients to dropdown`);
+    // Setup the new search functionality
+    setupIngredientSearch();
 }
+
+// ================== SEARCHABLE INGREDIENT TYPEAHEAD ==================
+function setupIngredientSearch() {
+    const searchInput = document.getElementById('ingredientSearch');
+    const dropdown = document.getElementById('ingredientDropdown');
+    const hiddenSelect = document.getElementById('ingredientSelect');
+    
+    if (!searchInput || !dropdown) {
+        console.warn('⚠️ Search elements not found - using fallback');
+        return;
+    }
+    
+    // Build search index from ALL ingredients (farm gate + synthese)
+    const ingredients = window.aioxyData?.ingredients || {};
+    const searchIndex = Object.entries(ingredients).map(([id, data]) => ({
+        id,
+        name: data.name,
+        name_fr: data.name_fr || '',
+        dqr: data.data?.metadata?.dqr_overall || 2.5,
+        co2: data.data?.pef?.["Climate Change"] || 0
+    }));
+    
+    console.log(`🔍 [Search] Indexed ${searchIndex.length} ingredients`);
+    
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        
+        if (query.length < 2) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+        
+        // Fuzzy search - matches anywhere in name
+        const matches = searchIndex
+            .filter(item => 
+                item.name.toLowerCase().includes(query) ||
+                item.name_fr.toLowerCase().includes(query)
+            )
+            .slice(0, 15); // Limit to 15 results
+        
+        if (matches.length === 0) {
+            dropdown.innerHTML = '<li class="no-results">❌ No ingredients found</li>';
+        } else {
+            dropdown.innerHTML = matches.map(item => `
+                <li onclick="selectIngredient('${item.id}', '${item.name.replace(/'/g, "\\'")}')">
+                    <div class="ingredient-name">${item.name}</div>
+                    <div class="ingredient-meta">
+                        DQR: ${item.dqr?.toFixed(1) || 'N/A'} | 
+                        CO₂e: ${item.co2?.toFixed(2) || 'N/A'} kg/kg
+                        ${item.name_fr ? ' | ' + item.name_fr.substring(0, 40) + '...' : ''}
+                    </div>
+                </li>
+            `).join('');
+        }
+        
+        dropdown.classList.remove('hidden');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+    
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            dropdown.classList.add('hidden');
+            searchInput.value = '';
+            hiddenSelect.value = '';
+        }
+    });
+}
+
+// Global function for selecting ingredient
+window.selectIngredient = function(id, name) {
+    document.getElementById('ingredientSelect').value = id;
+    document.getElementById('ingredientSearch').value = name;
+    document.getElementById('ingredientDropdown').classList.add('hidden');
+    console.log(`✅ Selected: ${name} (${id})`);
+};
 
 function populateCountrySelect() {
     const targets = ['manufacturingCountry', 'ingredientOriginSelect'];
