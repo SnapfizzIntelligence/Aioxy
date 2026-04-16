@@ -5,11 +5,10 @@ import os
 from datetime import datetime
 
 # ==========================================
-# AIOXY ROBUST DATA PROCESSOR v3.1
-# Compliance Level: PEF 3.1 / CSRD
+# AIOXY ROBUST DATA PROCESSOR v3.2
+# Fix: Bypasses Pandas Array Truncation
 # ==========================================
 
-# Strict Column Mapping (Never map by unit)
 MAPPING = {
     "Changement climatique": "Climate Change",
     "Appauvrissement de la couche d'ozone": "Ozone Depletion",
@@ -44,17 +43,22 @@ def get_safe_float(val):
 def process_agribalyse_file(filepath, source_type):
     print(f"🕵️  Auditing {source_type}: {filepath}")
     try:
-        # Dynamic Header Detection
-        preview = pd.read_csv(filepath, sep=None, engine='python', encoding='latin-1', nrows=20, header=None)
+        # Load preview to find header
+        preview = pd.read_csv(filepath, sep=',', encoding='latin-1', nrows=20, header=None, low_memory=False)
         
         header_row_idx = 0
         for i, row in preview.iterrows():
-            row_str = str(row.values)
-            if "Nom du Produit" in row_str or "LCI Name" in row_str:
-                header_row_idx = i
+            # SCAN EVERY CELL EXPLICITLY to avoid pandas '...' truncation
+            for cell in row.values:
+                cell_str = str(cell)
+                if "Nom du Produit" in cell_str or "LCI Name" in cell_str:
+                    header_row_idx = i
+                    break
+            if header_row_idx > 0:
                 break
         
-        df = pd.read_csv(filepath, sep=None, engine='python', encoding='latin-1', skiprows=header_row_idx)
+        # Load actual data skipping the disclaimers
+        df = pd.read_csv(filepath, sep=',', encoding='latin-1', skiprows=header_row_idx, low_memory=False)
         print(f"✅ Detected header at row {header_row_idx}")
         
         data_store = {}
@@ -73,12 +77,10 @@ def process_agribalyse_file(filepath, source_type):
                 match_col = [c for c in df.columns if fr_key in c]
                 impacts[en_key] = get_safe_float(row[match_col[0]]) if match_col else 0.0
 
-            # Extract DQR safely
             dqr_col = [c for c in df.columns if 'DQR' in c or 'Note de qualité' in c]
             overall_dqr = get_safe_float(row[dqr_col[0]]) if dqr_col else 2.5
             if overall_dqr == 0: overall_dqr = 2.5
 
-            # Exact UI/Engine Schema Match
             data_store[item_id] = {
                 "name": name_fr,
                 "loss": 0.05 if source_type == "SYNTH" else 0.02,
@@ -118,7 +120,6 @@ def main():
         print("❌ Error: No data processed. Check file paths.")
         return
 
-    # SAFE NAMESPACE MERGE: Do not destroy the physics constants
     header = f"// AIOXY DATABASE | VERIFIED: {datetime.now().strftime('%Y-%m-%d')}\n"
     js_content = header + "window.aioxyData = window.aioxyData || {};\n"
     js_content += "window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {}, " + json.dumps(all_data, indent=2, ensure_ascii=False) + ");"
@@ -126,7 +127,7 @@ def main():
     with open(output_js, "w", encoding="utf-8") as f:
         f.write(js_content)
     
-    print(f"🚀 SUCCESS: {len(all_data)} ingredients audited and merged into ingredients_db.js")
+    print(f"🚀 SUCCESS: {len(all_data)} ingredients audited and merged.")
 
 if __name__ == "__main__":
     main()
