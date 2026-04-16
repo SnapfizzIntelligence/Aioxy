@@ -1,5 +1,5 @@
 // AIOXY FARM GATE DATABASE | AUDIT-GRADE
-// Generated: 2026-04-16 06:44:17
+// Generated: 2026-04-16 17:09:05
 // Total Ingredients: 221
 // DQR: 2.5 (PEF 3.1 Secondary Data Standard)
 // Allocation: Economic (Agribalyse Official)
