@@ -546,7 +546,26 @@ if (allEoL.length > 0) {
     </div>`;
     }
 
-    // ========== TOTAL IMPACT FOOTER ==========
+        // ========== TOTAL IMPACT FOOTER ==========
+    // Calculate actual sums from ingredient components - NO FAKE MATH
+    let totalFossil = 0;
+    let totalBiogenic = 0;
+    let totalDLUC = 0;
+    
+    // Sum from ingredients
+    ingredients.forEach(ing => {
+        totalFossil += ing.fossilCO2 || 0;
+        totalBiogenic += ing.biogenicCO2 || 0;
+        totalDLUC += ing.dlucCO2 || 0;
+    });
+    
+    // Add manufacturing, transport, packaging, upstream, waste (all fossil)
+    totalFossil += (catCC.contribution_tree.Manufacturing?.total || 0);
+    totalFossil += (catCC.contribution_tree.Transport?.total || 0);
+    totalFossil += (catCC.contribution_tree.Packaging?.total || 0);
+    totalFossil += (catCC.contribution_tree.Upstream?.total || 0);
+    totalFossil += (catCC.contribution_tree.Waste?.total || 0);
+    
     html += `
         <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
             <div>
@@ -554,9 +573,9 @@ if (allEoL.length > 0) {
             </div>
             <div style="text-align:right;">
                 <div style="font-size: 1.2rem; font-weight:bold;">
-    Fossil: ${(catCC.total * 0.85).toFixed(4)} kg | 
-    Biogenic: ${(catCC.total * 0.10).toFixed(4)} kg | 
-    dLUC: ${(catCC.total * 0.05).toFixed(4)} kg
+    Fossil: ${totalFossil.toFixed(4)} kg | 
+    Biogenic: ${totalBiogenic.toFixed(4)} kg | 
+    dLUC: ${totalDLUC.toFixed(4)} kg
 </div>
 <div style="font-size: 1.5rem; font-weight:bold; margin-top: 5px;">
     TOTAL: ${catCC.total.toFixed(4)} kg CO₂e
