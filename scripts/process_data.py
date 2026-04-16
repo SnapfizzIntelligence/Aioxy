@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-AIOXY DATA PROCESSOR v8.0 - CTO + AUDITOR VERIFIED
-Compliance: PEF 3.1 / CSRD / EU Green Claims Directive
-DQR: Audit-Grade 2.5 (PEF Secondary Data Standard)
-Allocation: Economic (Agribalyse Official Method)
+AIOXY FARM GATE PROCESSOR - FINAL VERSION
+Outputs exact format matching manual verification
+Skips eggs (blank data)
+Includes both French and English names
 """
 
 import json
 import re
-import os
 import csv
 from datetime import datetime
 
@@ -21,7 +20,7 @@ def clean_id(name):
     return name.strip('-')[:100]
 
 def get_safe_float(val):
-    """Convert European decimal format to float"""
+    """Convert to float, handling empty/European decimals"""
     try:
         if val is None or val == '' or val == '-':
             return 0.0
@@ -32,10 +31,12 @@ def get_safe_float(val):
     except (ValueError, TypeError):
         return 0.0
 
-def generate_db():
+def generate_farm_gate_db():
     input_file = "data-raw/agribalyse_farm_gate.csv"
-    output_file = "ingredients_db.js"
+    output_file = "farm_gate_ingredients.js"
     
+    # Try alternate path
+    import os
     if not os.path.exists(input_file):
         input_file = "agribalyse_farm_gate.csv"
     
@@ -49,124 +50,136 @@ def generate_db():
         reader = csv.reader(f)
         rows = list(reader)
 
-    # Find header row
+    # Find header row (contains "Changement climatique")
     header_idx = -1
-    for i, row in enumerate(rows[:10]):
-        row_str = ' '.join(row)
-        if "Changement climatique" in row_str or "Score unique EF3.1" in row_str:
+    for i, row in enumerate(rows[:15]):
+        row_str = ' '.join(str(cell) for cell in row)
+        if "Changement climatique" in row_str:
             header_idx = i
             break
     
     if header_idx == -1:
-        print("❌ Error: Could not find header row.")
+        print("❌ Could not find header row")
         return
     
     headers = rows[header_idx]
     print(f"✅ Found header at row {header_idx}")
     
-    # Column mapping
+    # Map column indices
     col_map = {}
     for i, h in enumerate(headers):
         h_clean = str(h).strip()
         
-        if h_clean == "Changement climatique" or ("Changement climatique" in h_clean and "émissions" not in h_clean):
-            col_map["Climate Change"] = i
-        if "émissions fossiles" in h_clean.lower():
-            col_map["Climate Change - Fossil"] = i
-        if "émissions biogéniques" in h_clean.lower():
-            col_map["Climate Change - Biogenic"] = i
-        if "affectation" in h_clean.lower() or "changement d'affectation" in h_clean.lower():
-            col_map["Climate Change - Land Use"] = i
-        if "Appauvrissement" in h_clean:
-            col_map["Ozone Depletion"] = i
-        if "Rayonnements" in h_clean:
-            col_map["Ionizing Radiation"] = i
-        if "photochimique" in h_clean.lower():
-            col_map["Photochemical Ozone Formation"] = i
-        if "Particules" in h_clean:
-            col_map["Particulate Matter"] = i
-        if "non-canc" in h_clean.lower():
-            col_map["Human Toxicity, non-cancer"] = i
-        if "canc" in h_clean.lower() and "non-" not in h_clean.lower():
-            col_map["Human Toxicity, cancer"] = i
-        if "Acidification" in h_clean:
-            col_map["Acidification"] = i
-        if "Eutrophisation terre" in h_clean:
-            col_map["Eutrophication, terrestrial"] = i
-        if "Eutrophisation eaux douces" in h_clean:
-            col_map["Eutrophication, freshwater"] = i
-        if "Eutrophisation marine" in h_clean:
-            col_map["Eutrophication, marine"] = i
-        if "cotoxicit" in h_clean.lower():
-            col_map["Ecotoxicity, freshwater"] = i
-        if "Utilisation du sol" in h_clean:
-            col_map["Land Use"] = i
-        if "ressources eau" in h_clean.lower() or ("eau" in h_clean.lower() and "épuisement" in h_clean.lower() and "ressources" in h_clean.lower()):
-            col_map["Water Use/Scarcity (AWARE)"] = i
-        if "ressources énergétiques" in h_clean.lower() or ("énergétique" in h_clean.lower() and "ressources" in h_clean.lower()):
-            col_map["Resource Use, fossils"] = i
-        if "ressources min" in h_clean.lower():
-            col_map["Resource Use, minerals/metals"] = i
         if "Score unique" in h_clean:
             col_map["single_score"] = i
-    
-    print(f"📊 Column Mapping:")
-    print(f"   Water Use: column {col_map.get('Water Use/Scarcity (AWARE)', 'NOT FOUND')}")
-    print(f"   Resource Use (fossils): column {col_map.get('Resource Use, fossils', 'NOT FOUND')}")
-    
-    # Process all ingredients
+        elif "Changement climatique" in h_clean and "fossile" not in h_clean and "biog" not in h_clean and "affectation" not in h_clean:
+            col_map["Climate Change"] = i
+        elif "fossile" in h_clean.lower():
+            col_map["Climate Change - Fossil"] = i
+        elif "biog" in h_clean.lower():
+            col_map["Climate Change - Biogenic"] = i
+        elif "affectation" in h_clean.lower() or "sols" in h_clean.lower():
+            col_map["Climate Change - Land Use"] = i
+        elif "Appauvrissement" in h_clean:
+            col_map["Ozone Depletion"] = i
+        elif "Rayonnements" in h_clean:
+            col_map["Ionizing Radiation"] = i
+        elif "photochimique" in h_clean.lower():
+            col_map["Photochemical Ozone Formation"] = i
+        elif "Particules" in h_clean:
+            col_map["Particulate Matter"] = i
+        elif "non-canc" in h_clean.lower():
+            col_map["Human Toxicity, non-cancer"] = i
+        elif "canc" in h_clean.lower() and "non-" not in h_clean.lower():
+            col_map["Human Toxicity, cancer"] = i
+        elif "Acidification" in h_clean:
+            col_map["Acidification"] = i
+        elif "Eutrophisation terre" in h_clean:
+            col_map["Eutrophication, terrestrial"] = i
+        elif "Eutrophisation eaux douces" in h_clean:
+            col_map["Eutrophication, freshwater"] = i
+        elif "Eutrophisation marine" in h_clean:
+            col_map["Eutrophication, marine"] = i
+        elif "cotoxicit" in h_clean.lower():
+            col_map["Ecotoxicity, freshwater"] = i
+        elif "Utilisation du sol" in h_clean:
+            col_map["Land Use"] = i
+        elif "ressources eau" in h_clean.lower():
+            col_map["Water Use/Scarcity (AWARE)"] = i
+        elif "ressources min" in h_clean.lower():
+            col_map["Resource Use, minerals/metals"] = i
+        elif "ressources énergétique" in h_clean.lower() or ("énergétique" in h_clean.lower() and "ressources" in h_clean.lower()):
+            col_map["Resource Use, fossils"] = i
+
+    # Process all rows
     data_start = header_idx + 1
     count = 0
+    skipped = 0
     
     for row in rows[data_start:]:
-        if not row or all(cell == '' or cell is None for cell in row):
+        if not row or len(row) < 5:
             continue
         
+        # Get names (Column 0 = French, Column 1 = English LCI Name)
         name_fr = row[0].strip() if row[0] else ''
+        name_en = row[1].strip() if len(row) > 1 and row[1] else name_fr
         
+        # Skip eggs (blank data) and empty rows
         if not name_fr or 'Oeuf' in name_fr or 'oeuf' in name_fr.lower():
+            skipped += 1
             continue
         
-        if len(row) < 2 or not row[1].strip():
+        # Skip rows with no climate data
+        climate_idx = col_map.get("Climate Change")
+        if climate_idx is None or climate_idx >= len(row):
             continue
         
-        item_id = clean_id(name_fr) + "-raw"
+        climate_val = get_safe_float(row[climate_idx])
+        if climate_val == 0.0:
+            continue
         
+        item_id = clean_id(name_en) + "-raw"
+        
+        # Build PEF data
         pef_data = {}
-        target_keys = [
-            "Climate Change", "Climate Change - Fossil", "Climate Change - Biogenic", 
-            "Climate Change - Land Use", "Ozone Depletion", "Human Toxicity, non-cancer",
-            "Human Toxicity, cancer", "Particulate Matter", "Ionizing Radiation",
-            "Photochemical Ozone Formation", "Acidification", "Eutrophication, terrestrial",
-            "Eutrophication, freshwater", "Eutrophication, marine", "Ecotoxicity, freshwater",
-            "Land Use", "Water Use/Scarcity (AWARE)", "Resource Use, minerals/metals", 
-            "Resource Use, fossils"
-        ]
         
-        for key in target_keys:
+        # Helper to get value
+        def get_val(key):
             idx = col_map.get(key)
-            if idx is not None and idx < len(row):
-                pef_data[key] = get_safe_float(row[idx])
-            else:
-                pef_data[key] = 0.0
+            return get_safe_float(row[idx]) if idx is not None and idx < len(row) else 0.0
         
-        single_score_idx = col_map.get("single_score")
-        single_score = get_safe_float(row[single_score_idx]) if single_score_idx is not None and single_score_idx < len(row) else 0.0
+        pef_data["Climate Change"] = get_val("Climate Change")
+        pef_data["Climate Change - Fossil"] = get_val("Climate Change - Fossil")
+        pef_data["Climate Change - Biogenic"] = get_val("Climate Change - Biogenic")
+        pef_data["Climate Change - Land Use"] = get_val("Climate Change - Land Use")
+        pef_data["Ozone Depletion"] = get_val("Ozone Depletion")
+        pef_data["Human Toxicity, non-cancer"] = get_val("Human Toxicity, non-cancer")
+        pef_data["Human Toxicity, cancer"] = get_val("Human Toxicity, cancer")
+        pef_data["Particulate Matter"] = get_val("Particulate Matter")
+        pef_data["Ionizing Radiation"] = get_val("Ionizing Radiation")
+        pef_data["Photochemical Ozone Formation"] = get_val("Photochemical Ozone Formation")
+        pef_data["Acidification"] = get_val("Acidification")
+        pef_data["Eutrophication, terrestrial"] = get_val("Eutrophication, terrestrial")
+        pef_data["Eutrophication, freshwater"] = get_val("Eutrophication, freshwater")
+        pef_data["Eutrophication, marine"] = get_val("Eutrophication, marine")
+        pef_data["Ecotoxicity, freshwater"] = get_val("Ecotoxicity, freshwater")
+        pef_data["Land Use"] = get_val("Land Use")
+        pef_data["Water Use/Scarcity (AWARE)"] = get_val("Water Use/Scarcity (AWARE)")
+        pef_data["Resource Use, minerals/metals"] = get_val("Resource Use, minerals/metals")
+        pef_data["Resource Use, fossils"] = get_val("Resource Use, fossils")
         
-        # ============================================================
-        # AUDIT-GRADE DQR CONFIGURATION (PEF 3.1 Compliant)
-        # DQR 2.5 = Standard secondary data floor
-        # TeR=3 (Market average), GR=2 (French data), TiR=3 (3-7 years), P=2 (Expert verified)
-        # ============================================================
+        single_score = get_val("single_score")
+        
         db[item_id] = {
-            "name": name_fr,
+            "name": name_en,
+            "name_fr": name_fr,
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
                 "pef": pef_data,
                 "metadata": {
                     "source_dataset": "AGRIBALYSE 3.2",
-                    "source_activity": f"{name_fr} {{FR}} U",
+                    "source_activity": f"{name_en} {{FR}} U",
                     "source_uuid": f"agb-3.2-{item_id}",
                     "allocation_method": "Economic Allocation",
                     "dqr": {
@@ -181,25 +194,32 @@ def generate_db():
             }
         }
         count += 1
-    
-    print(f"✅ Processed: {count} ingredients")
-    
+        print(f"  ✅ {name_en[:50]}...")
+
+    print(f"\n📊 Processed: {count} ingredients")
+    print(f"   Skipped: {skipped} (eggs/empty)")
+
     # Write output
-    js_output = f"// AIOXY DATABASE | AUDIT-GRADE | VERIFIED: {datetime.now().strftime('%Y-%m-%d')}\n"
-    js_output += f"// Total Ingredients: {count}\n"
-    js_output += "// DQR: 2.5 (PEF 3.1 Secondary Data Standard)\n"
-    js_output += "// Allocation: Economic (Agribalyse Official Method)\n"
-    js_output += "// Source: AGRIBALYSE 3.2 - Official ADEME Database\n"
-    js_output += "// ===============================================================\n\n"
-    js_output += "window.aioxyData = window.aioxyData || {};\n"
-    js_output += "window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {}, "
-    js_output += json.dumps(db, indent=2, ensure_ascii=False)
-    js_output += ");\n"
+    js_output = f"""// AIOXY FARM GATE DATABASE | AUDIT-GRADE
+// Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+// Total Ingredients: {count}
+// DQR: 2.5 (PEF 3.1 Secondary Data Standard)
+// Allocation: Economic (Agribalyse Official)
+// Source: AGRIBALYSE 3.2 - Official ADEME Database
+// ===============================================================
+
+"""
+    
+    for item_id, item_data in db.items():
+        js_output += f'        "{item_id}": '
+        js_output += json.dumps(item_data, indent=12, ensure_ascii=False)
+        js_output += ",\n\n"
     
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(js_output)
     
-    print(f"📄 Generated: {output_file}")
+    print(f"\n✅ Generated: {output_file}")
+    print("   Copy the contents between the braces into your Data.txt ingredients section.")
 
 if __name__ == "__main__":
-    generate_db()
+    generate_farm_gate_db()
