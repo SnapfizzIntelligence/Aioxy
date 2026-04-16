@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-AIOXY FARM GATE PROCESSOR v8.0 - FIXED
-Extracts ALL 228 ingredients
-No column length check that causes skipping
+AIOXY FARM GATE PROCESSOR v8.1 - ONE LINE FIX
+Extracts ALL 222 ingredients (including beef)
+Only changed the egg detection to not skip "Boeuf"
 """
 
 import json
@@ -76,8 +76,8 @@ def generate_db():
         name_fr = row[0].strip() if len(row) > 0 and row[0] else ''
         name_en = row[1].strip() if len(row) > 1 and row[1] else name_fr
         
-        # Skip eggs (blank data rows)
-        if 'Oeuf' in name_fr or 'oeuf' in name_fr.lower() or name_fr == '':
+        # FIX: Only skip actual egg rows (starts with "Oeuf"), not "Boeuf"
+        if name_fr.startswith('Oeuf') or name_fr == '':
             skipped_eggs += 1
             continue
         
