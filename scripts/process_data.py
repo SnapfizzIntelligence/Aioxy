@@ -5,27 +5,29 @@ import os
 from datetime import datetime
 
 # ==========================================
-# AIOXY ROBUST DATA PROCESSOR v3.2
-# Fix: Bypasses Pandas Array Truncation
+# AIOXY ROBUST DATA PROCESSOR v3.3
+# Compliance Level: PEF 3.1 / CSRD
+# Fix: French CSV Semicolon & Case Insensitive Mapping
 # ==========================================
 
+# Lowercase mapping for robust matching
 MAPPING = {
-    "Changement climatique": "Climate Change",
-    "Appauvrissement de la couche d'ozone": "Ozone Depletion",
-    "Rayonnements ionisants": "Ionizing Radiation",
-    "Formation photochimique d'ozone": "Photochemical Ozone Formation",
-    "Particules": "Particulate Matter",
-    "Effets toxicologiques sur la santé humaine : substances non-cancérogènes": "Human Toxicity, non-cancer",
-    "Effets toxicologiques sur la santé humaine : substances cancérogènes": "Human Toxicity, cancer",
-    "Acidification terrestre et eaux douces": "Acidification",
-    "Eutrophisation eaux douces": "Eutrophication, freshwater",
-    "Eutrophisation marine": "Eutrophication, marine",
-    "Eutrophisation terrestre": "Eutrophication, terrestrial",
-    "Écotoxicité pour écosystèmes aquatiques d'eau douce": "Ecotoxicity, freshwater",
-    "Utilisation du sol": "Land Use",
-    "Épuisement des ressources eau": "Water Use/Scarcity (AWARE)",
-    "Épuisement des ressources énergétiques": "Resource Use, fossils",
-    "Épuisement des ressources minéraux": "Resource Use, minerals/metals"
+    "changement climatique": "Climate Change",
+    "couche d'ozone": "Ozone Depletion",
+    "rayonnements ionisants": "Ionizing Radiation",
+    "photochimique": "Photochemical Ozone Formation",
+    "particules": "Particulate Matter",
+    "non-cancérogènes": "Human Toxicity, non-cancer",
+    "cancérogènes": "Human Toxicity, cancer",
+    "acidification": "Acidification",
+    "eutrophisation eaux douces": "Eutrophication, freshwater",
+    "eutrophisation marine": "Eutrophication, marine",
+    "eutrophisation terrestre": "Eutrophication, terrestrial",
+    "écotoxicité": "Ecotoxicity, freshwater",
+    "utilisation du sol": "Land Use",
+    "épuisement des ressources eau": "Water Use/Scarcity (AWARE)",
+    "ressources énergétiques": "Resource Use, fossils",
+    "ressources minéraux": "Resource Use, minerals/metals"
 }
 
 def clean_id(name):
@@ -36,36 +38,47 @@ def clean_id(name):
 def get_safe_float(val):
     try:
         if pd.isna(val) or val == "" or val == "-": return 0.0
+        # Convert European comma decimals to standard periods
         return float(str(val).replace(',', '.'))
     except:
         return 0.0
 
 def process_agribalyse_file(filepath, source_type):
-    print(f"🕵️  Auditing {source_type}: {filepath}")
+    print(f"\n🕵️ Auditing {source_type}: {filepath}")
     try:
-        # Load preview to find header
-        preview = pd.read_csv(filepath, sep=',', encoding='latin-1', nrows=20, header=None, low_memory=False)
-        
+        # 1. DETECT HEADER ROW AND SEPARATOR MANUALLY
         header_row_idx = 0
-        for i, row in preview.iterrows():
-            # SCAN EVERY CELL EXPLICITLY to avoid pandas '...' truncation
-            for cell in row.values:
-                cell_str = str(cell)
-                if "Nom du Produit" in cell_str or "LCI Name" in cell_str:
-                    header_row_idx = i
-                    break
-            if header_row_idx > 0:
-                break
+        detected_sep = ';' # Default Agribalyse French Excel export
         
-        # Load actual data skipping the disclaimers
-        df = pd.read_csv(filepath, sep=',', encoding='latin-1', skiprows=header_row_idx, low_memory=False)
-        print(f"✅ Detected header at row {header_row_idx}")
+        with open(filepath, 'r', encoding='latin-1') as f:
+            lines = f.readlines()
+            for i, line in enumerate(lines[:30]):
+                # Agribalyse uses "Nom du Produit" or "LCI Name"
+                if "Nom du" in line or "LCI Name" in line:
+                    header_row_idx = i
+                    if ';' in line: detected_sep = ';'
+                    elif ',' in line: detected_sep = ','
+                    break
+
+        print(f"✅ Detected header at row {header_row_idx} using separator '{detected_sep}'")
+        
+        # 2. LOAD DATAFRAME
+        df = pd.read_csv(filepath, sep=detected_sep, encoding='latin-1', skiprows=header_row_idx, low_memory=False)
+        
+        # Lowercase all columns for safe matching
+        df.columns = [str(c).lower() for c in df.columns]
         
         data_store = {}
+        processed_count = 0
         
         for _, row in df.iterrows():
-            name_fr = str(row.get('Nom du Produit en Français', row.get('LCI Name', 'Unknown')))
-            if name_fr == 'nan' or name_fr == 'Unknown':
+            # Locate the Product Name column robustly
+            name_col = [c for c in df.columns if "nom du produit" in c or "lci name" in c]
+            if not name_col:
+                continue
+                
+            name_fr = str(row[name_col[0]])
+            if name_fr == 'nan' or name_fr.strip() == '':
                 name_fr = str(row.iloc[0])
                 if name_fr == 'nan': continue
             
@@ -74,13 +87,24 @@ def process_agribalyse_file(filepath, source_type):
             
             impacts = {}
             for fr_key, en_key in MAPPING.items():
-                match_col = [c for c in df.columns if fr_key in c]
-                impacts[en_key] = get_safe_float(row[match_col[0]]) if match_col else 0.0
+                # Find all columns containing the French key
+                match_cols = [c for c in df.columns if fr_key in c]
+                
+                if not match_cols:
+                    impacts[en_key] = 0.0
+                    continue
+                    
+                # We want the TOTAL impact, not the sub-indicators (Fossil/Biogenic).
+                # The total is always the shortest column name string.
+                best_col = min(match_cols, key=len)
+                impacts[en_key] = get_safe_float(row[best_col])
 
-            dqr_col = [c for c in df.columns if 'DQR' in c or 'Note de qualité' in c]
-            overall_dqr = get_safe_float(row[dqr_col[0]]) if dqr_col else 2.5
+            # Extract DQR safely
+            dqr_cols = [c for c in df.columns if 'dqr' in c or 'qualité' in c]
+            overall_dqr = get_safe_float(row[dqr_cols[0]]) if dqr_cols else 2.5
             if overall_dqr == 0: overall_dqr = 2.5
 
+            # Perfect AIOXY Schema Match
             data_store[item_id] = {
                 "name": name_fr,
                 "loss": 0.05 if source_type == "SYNTH" else 0.02,
@@ -98,6 +122,9 @@ def process_agribalyse_file(filepath, source_type):
                     }
                 }
             }
+            processed_count += 1
+            
+        print(f"✅ Successfully processed {processed_count} ingredients from {source_type}")
         return data_store
     except Exception as e:
         print(f"❌ Error processing {filepath}: {e}")
@@ -113,13 +140,19 @@ def main():
     
     if os.path.exists(path_synth):
         all_data.update(process_agribalyse_file(path_synth, "SYNTH"))
+    else:
+        print(f"⚠️ Could not find {path_synth}")
+        
     if os.path.exists(path_farm):
         all_data.update(process_agribalyse_file(path_farm, "FARM"))
+    else:
+        print(f"⚠️ Could not find {path_farm}")
 
     if not all_data:
         print("❌ Error: No data processed. Check file paths.")
         return
 
+    # SAFE NAMESPACE MERGE: Do not destroy the physics constants!
     header = f"// AIOXY DATABASE | VERIFIED: {datetime.now().strftime('%Y-%m-%d')}\n"
     js_content = header + "window.aioxyData = window.aioxyData || {};\n"
     js_content += "window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {}, " + json.dumps(all_data, indent=2, ensure_ascii=False) + ");"
@@ -127,7 +160,7 @@ def main():
     with open(output_js, "w", encoding="utf-8") as f:
         f.write(js_content)
     
-    print(f"🚀 SUCCESS: {len(all_data)} ingredients audited and merged.")
+    print(f"\n🚀 SUCCESS: {len(all_data)} ingredients audited and merged into ingredients_db.js")
 
 if __name__ == "__main__":
     main()
