@@ -1,10 +1,10 @@
 
-🕵️ Auditing SYNTH: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_synthese.csv
-✅ Detected header at row 6 using separator ';'
-✅ Successfully processed 0 ingredients from SYNTH
+🕵️ Auditing Grid Coordinates: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_synthese.csv
+✅ Product Name locked at Column 5. Locked 11 specific impact coordinates.
+✅ Extracted 2458 validated ingredients from SYNTH
 
-🕵️ Auditing FARM: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_farm_gate.csv
-✅ Detected header at row 3 using separator ','
-✅ Successfully processed 227 ingredients from FARM
+🕵️ Auditing Grid Coordinates: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_farm_gate.csv
+✅ Product Name locked at Column 1. Locked 11 specific impact coordinates.
+✅ Extracted 227 validated ingredients from FARM
 
-🚀 SUCCESS: 226 ingredients audited and merged into ingredients_db.js
+🚀 DATABASE DEPLOYMENT READY: 2679 ingredients mapped successfully.
