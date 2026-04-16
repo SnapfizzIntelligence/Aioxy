@@ -1242,37 +1242,21 @@
                             Performance Comparison
                         </div>
                     </div>
+
+                    
                     
                     <div class="form-group">
-                        <label class="form-label">Compare Against</label>
-                        <select id="comparisonBaseline" class="form-control" onchange="updateComparison()">
-                            <option value="auto">Auto-detect (Recommended)</option>
-                            <optgroup label="Food Products (Cradle-to-Retail Equivalent)">
-                                <option value="beef-product">Conventional Beef (Retail Equiv.)</option>
-                                <option value="milk-product">Conventional Cow Milk (Retail Equiv.)</option>
-                                <option value="soy-protein-product">Conventional Soy Protein Concentrate</option>
-                                <option value="whey-protein-product">Conventional Whey Protein Isolate</option> 
-                                <option value="wheat-protein-product">Conventional Wheat Protein Isolate</option>
-                                <option value="pea-protein-product">Conventional Pea Protein Isolate</option>
-                                <option value="chocolate-spread-conventional">Conventional Palm Oil Spread</option>
-                                <option value="chicken-product">Conventional Chicken (Retail Equiv.)</option>
-                                <option value="pork-product">Conventional Pork (Retail Equiv.)</option>
-                                <option value="cheese-product">Conventional Cheese (Retail Equiv.)</option>
-                                <option value="coffee-product">Conventional Coffee (Retail Equiv.)</option>
-                                <option value="chocolate-product">Conventional Chocolate (Retail Equiv.)</option>
-                                <option value="bread-product">Conventional Bread (Retail Equiv.)</option>
-                                <option value="pasta-product">Conventional Egg Pasta (Dry Retail Equiv.)</option>
-                            </optgroup>
-                            <optgroup label="Personal Care (Cradle-to-Retail Equivalent)">
-                                <option value="shampoo-conventional">Conventional Shampoo</option>
-                                <option value="soap-conventional">Conventional Soap</option>
-                                <option value="lotion-conventional">Conventional Lotion</option>
-                            </optgroup>
-                            <optgroup label="Textiles (Cradle-to-Retail Equivalent)">
-                                <option value="cotton-tshirt">Conventional Cotton T-Shirt</option>
-                                <option value="polyester-tshirt">Conventional Polyester T-Shirt</option>
-                            </optgroup>
-                        </select>
+    <label class="form-label">Compare Against</label>
+    <div class="searchable-select">
+        <input type="text" 
+               id="baselineSearch" 
+               class="form-control" 
+               placeholder="Search 221 ingredients for exact baseline..."
+               autocomplete="off">
+        <ul id="baselineDropdown" class="search-dropdown hidden"></ul>
+        <input type="hidden" id="comparisonBaseline" value="auto" onchange="updateComparison()">
+    </div>
+    <small style="color: var(--gray); font-size: 0.7rem;">Creates a Parametric Twin using identical system boundaries (ISO 14044).</small>
                     </div>
                     
                     <div class="form-group">
