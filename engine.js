@@ -1478,6 +1478,18 @@ Note: This screening-level assessment is designed for internal strategic decisio
 // JRC BAT processing energy available as optional toggle for protein isolates.
 // ============================================================================
 
+// ANCHOR DATASETS - Maps old category keys to actual ingredient IDs (Backward Compatibility)
+const ANCHOR_DATASETS = {
+    'beef-product': { id: 'beef-cattle-conventional-national-average-at-farm-gate-fr', factor: 1.0, name: 'Beef' },
+    'chicken-product': { id: 'broiler-conventional-at-farm-gate-fr', factor: 1.0, name: 'Chicken' },
+    'pork-product': { id: 'pig-conventional-national-average-at-farm-gate-fr', factor: 1.0, name: 'Pork' },
+    'milk-product': { id: 'cow-milk-conventional-national-average-at-farm-gate-fr', factor: 1.0, name: 'Cow Milk' },
+    'cheese-product': { id: 'cow-milk-conventional-national-average-at-farm-gate-fr', factor: 10.0, name: 'Cheese' },
+    'plant-burger': { id: 'soybean-national-average-animal-feed-at-farm-gate-fr', factor: 0.3, name: 'Plant-Based Patty' },
+    'plant-milk': { id: 'oat-grain-national-average-animal-feed-at-farm-gate-fr', factor: 0.1, name: 'Oat/Plant Milk' },
+    'default': { id: 'beef-cattle-conventional-national-average-at-farm-gate-fr', factor: 1.0, name: 'Conventional Product' }
+};
+    
 // OFFICIAL JRC BAT ENERGY VALUES - Commission Implementing Decision (EU) 2019/2031
 // Source: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.L_.2019.313.01.0060.01.ENG
 const JRC_BAT_PROCESSING = {
