@@ -1810,34 +1810,34 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
                 </div>
         
         <!-- 🆕 SENSITIVITY ANALYSIS CARD -->
-        <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
-            <i class="fas fa-chart-line"></i> Sensitivity Analysis (ISO 14044 §6.3)
-        </h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-            ${audit.comparison_baseline?.sensitivity_analysis ? `
-            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                <div style="font-weight: 600; color: var(--primary);">Parameters Tested</div>
-                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.parameters_tested.join(', ')}</div>
-            </div>
-            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                <div style="font-weight: 600; color: var(--primary);">Key Finding</div>
-                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.key_finding}</div>
-            </div>
-            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                <div style="font-weight: 600; color: var(--primary);">Recommendation</div>
-                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.recommendation}</div>
-            </div>
-            <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                <div style="font-weight: 600; color: var(--primary);">Compliance</div>
-                <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.iso_compliance}</div>
-            </div>
-            ` : `
-            <div style="background: var(--light); border-radius: 8px; padding: 1rem; grid-column: 1/-1;">
-                <div style="font-weight: 600; color: var(--primary);">Sensitivity Analysis</div>
-                <div style="font-size: 0.85rem;">Run calculation to generate sensitivity analysis. Parameters include transport distance, grid intensity, and concentration ratio.</div>
-            </div>
-            `}
-        </div>
+<h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
+    <i class="fas fa-chart-line"></i> Sensitivity Analysis (ISO 14044 §6.3)
+</h4>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+    ${audit.comparison_baseline?.sensitivity_analysis ? `
+    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+        <div style="font-weight: 600; color: var(--primary);">Parameters Tested</div>
+        <div style="font-size: 0.85rem;">${(audit.comparison_baseline.sensitivity_analysis.parameters_tested || []).join(', ') || 'None specified'}</div>
+    </div>
+    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+        <div style="font-weight: 600; color: var(--primary);">Key Finding</div>
+        <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.key_finding || 'Not available'}</div>
+    </div>
+    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+        <div style="font-weight: 600; color: var(--primary);">Recommendation</div>
+        <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.recommendation || 'Not available'}</div>
+    </div>
+    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+        <div style="font-weight: 600; color: var(--primary);">Compliance</div>
+        <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.iso_compliance || 'Not available'}</div>
+    </div>
+    ` : `
+    <div style="background: var(--light); border-radius: 8px; padding: 1rem; grid-column: 1/-1;">
+        <div style="font-weight: 600; color: var(--primary);">Sensitivity Analysis</div>
+        <div style="font-size: 0.85rem;">Run calculation to generate sensitivity analysis. Parameters include transport distance, grid intensity, and concentration ratio.</div>
+    </div>
+    `}
+</div>
     </div>
 `;
                                  }
