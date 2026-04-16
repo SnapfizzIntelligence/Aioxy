@@ -1,3 +1,10 @@
-🕵️  Auditing SYNTH: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_synthese.csv
-🕵️  Auditing FARM: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_farm_gate.csv
-✅ SUCCESS: 226 ingredients audited and exported to ingredients_db.js
+
+🕵️ Auditing SYNTH: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_synthese.csv
+✅ Detected header at row 6 using separator ';'
+✅ Successfully processed 0 ingredients from SYNTH
+
+🕵️ Auditing FARM: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_farm_gate.csv
+✅ Detected header at row 3 using separator ','
+✅ Successfully processed 227 ingredients from FARM
+
+🚀 SUCCESS: 226 ingredients audited and merged into ingredients_db.js

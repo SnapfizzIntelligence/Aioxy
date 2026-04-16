@@ -1,8 +1,8 @@
-// AIOXY DATABASE | VERIFIED: 2026-04-15
+// AIOXY DATABASE | VERIFIED: 2026-04-16
 window.aioxyData = window.aioxyData || {};
-window.aioxyData.ingredients = {
-  "apricot-conventional-national-average-at-orchard-fr-u-raw": {
-    "name": "Apricot, conventional, national average, at orchard {FR} U",
+window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {}, {
+  "abricot-conventionnel-moyenne-nationale-au-verger-france-raw": {
+    "name": "Abricot, conventionnel, moyenne nationale, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -20,25 +20,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Abricot, conventionnel, moyenne nationale, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lamb-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
-    "name": "Lamb, conventional, indoor production system, at farm gate {FR} U",
+  "agneau-syst-me-de-production-conventionnel-en-int-rieur-la-ferme-france-raw": {
+    "name": "Agneau systÃ¨me de production conventionnel en intÃ©rieur, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -56,25 +57,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Agneau systÃ¨me de production conventionnel en intÃ©rieur, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lamb-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
-    "name": "Lamb, conventional, Roquefort system, at farm gate {FR} U",
+  "agneau-conventionnel-syst-me-roquefort-la-ferme-france-raw": {
+    "name": "Agneau, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -92,25 +94,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Agneau, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "seaweed-non-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw": {
-    "name": "Seaweed non-optimized production, 1kg algae (Laminaria), fresh weight {FR} U",
+  "algue-production-non-optimis-e-1-kg-d-algues-laminaria-poids-frais-france-raw": {
+    "name": "Algue production non optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -128,25 +131,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Algue production non optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw": {
-    "name": "Seaweed optimized production, 1kg algae (Laminaria), fresh weight {FR} U",
+  "algue-production-optimis-e-1-kg-d-algues-laminaria-poids-frais-france-raw": {
+    "name": "Algue production optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -164,25 +168,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Algue production optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pineapple-mixed-production-reunion-island-average-at-production-site-re-u-raw": {
-    "name": "Pineapple, mixed production, Reunion Island average, at production site {RE} U",
+  "ananas-production-mixte-la-ferme-le-de-la-r-union-raw": {
+    "name": "Ananas, production mixte, Ã  la ferme, Ã®le de la RÃ©union",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -200,25 +205,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Ananas, production mixte, Ã  la ferme, Ã®le de la RÃ©union",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "european-anchovy-engraulis-encrasicolus-eca-seine-average-at-landing-ma-u-raw": {
-    "name": "European Anchovy, Engraulis encrasicolus, ECA, Seine, average, at landing {MA} U",
+  "anchois-europ-enne-engraulis-encrasicolus-atlantique-centre-est-senne-au-d-barqu-raw": {
+    "name": "Anchois europÃ©enne, Engraulis encrasicolus, atlantique centre est, senne, au dÃ©barquement, Maroc",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -236,25 +242,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Anchois europÃ©enne, Engraulis encrasicolus, atlantique centre est, senne, au dÃ©barquement, Maroc",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "oat-grain-national-average-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Oat grain, national average, animal feed, at farm gate {FR} U",
+  "avoine-moyenne-nationale-alimentation-animale-la-ferme-france-raw": {
+    "name": "Avoine, moyenne nationale, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -272,25 +279,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Avoine, moyenne nationale, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "banana-mixed-production-west-indies-at-farm-gate-wi-u-raw": {
-    "name": "Banana, mixed production, West Indies, at farm gate {WI} U",
+  "banane-conventionnelle-la-ferme-antilles-raw": {
+    "name": "Banane conventionnelle, Ã  la ferme, Antilles",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -308,25 +316,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Banane conventionnelle, Ã  la ferme, Antilles",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr-u-raw": {
-    "name": "Sea bass or sea bream, 200-500g, conventional, in cage, at farm gate {FR} U",
+  "bar-ou-daurade-200-500g-conventionnel-en-cage-la-ferme-france-raw": {
+    "name": "Bar ou daurade, 200-500g, conventionnel, en cage, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -344,25 +353,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Bar ou daurade, 200-500g, conventionnel, en cage, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "beetroot-for-juice-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Beetroot for juice, conventional, at farm gate {FR} U",
+  "betterave-pour-du-jus-conventionnel-la-ferme-france-raw": {
+    "name": "Betterave pour du jus, conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -380,25 +390,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Betterave pour du jus, conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-producti-raw": {
-    "name": "Sugar beet roots, conventional, national average, animal feed, at farm gate, production {FR} U",
+  "betteraves-moyen-conventionnel-national-alimentation-animale-la-ferme-france-raw": {
+    "name": "Betteraves, moyen conventionnel, national, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -416,25 +427,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Betteraves, moyen conventionnel, national, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "durum-wheat-grain-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Durum wheat grain, conventional, national average, at farm gate {FR} U",
+  "bl-dur-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "BlÃ© dur, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -452,25 +464,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "BlÃ© dur, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soft-wheat-grain-conventional-protein-improved-quality-15-moisture-at-farm-gate--raw": {
-    "name": "Soft wheat grain, conventional, protein improved quality, 15% moisture, at farm gate {FR} U",
+  "bl-tendre-conventionnel-am-liorant-prot-ine-15-d-humidit-la-ferme-france-raw": {
+    "name": "BlÃ© tendre, conventionnel, amÃ©liorant protÃ©ine, 15% d'humiditÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -488,25 +501,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "BlÃ© tendre, conventionnel, amÃ©liorant protÃ©ine, 15% d'humiditÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soft-wheat-grain-conventional-national-average-animal-feed-at-farm-gate-producti-raw": {
-    "name": "Soft wheat grain, conventional, national average, animal feed, at farm gate, production {FR} U",
+  "bl-tendre-conventionnel-moyenne-nationale-alimentation-animale-la-ferme-france-raw": {
+    "name": "BlÃ© tendre, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -524,25 +538,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "BlÃ© tendre, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soft-wheat-grain-conventional-breadmaking-quality-15-moisture-at-farm-gate-fr-u-raw": {
-    "name": "Soft wheat grain, conventional, breadmaking quality, 15% moisture, at farm gate {FR} U",
+  "bl-tendre-conventionnel-panifiable-15-d-humidit-la-ferme-france-raw": {
+    "name": "BlÃ© tendre, conventionnel, panifiable, 15% d'humiditÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -560,25 +575,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "BlÃ© tendre, conventionnel, panifiable, 15% d'humiditÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soft-wheat-grain-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Soft wheat grain, systematic cover cropping scenario, at farm gate {FR} U",
+  "bl-tendre-levier-culture-interm-diaire-syst-matique-du-sc-nario-la-ferme-france-raw": {
+    "name": "BlÃ© tendre, levier culture intermÃ©diaire systÃ©matique du scÃ©nario, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -596,25 +612,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "BlÃ© tendre, levier culture intermÃ©diaire systÃ©matique du scÃ©nario, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soft-wheat-grain-protein-crop-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Soft wheat grain, protein crop scenario, at farm gate {FR} U",
+  "bl-tendre-levier-l-gumineuse-dans-rotation-la-ferme-france-raw": {
+    "name": "BlÃ© tendre, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -632,25 +649,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "BlÃ© tendre, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soft-wheat-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
-    "name": "Soft wheat grain, basis scenario without lever, at farm gate {FR} U",
+  "bl-tendre-sc-nario-de-base-la-ferme-france-raw": {
+    "name": "BlÃ© tendre, scÃ©nario de base, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -668,25 +686,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "BlÃ© tendre, scÃ©nario de base, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "beef-cattle-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Beef cattle, conventional, national average, at farm gate {FR} U",
+  "boeuf-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Boeuf, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -704,25 +723,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Boeuf, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-ewe-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
-    "name": "Cull ewe, conventional, indoor production system, at farm gate {FR} U",
+  "brebis-de-r-forme-conventionnel-int-rieur-la-ferme-france-raw": {
+    "name": "Brebis de rÃ©forme, conventionnel, intÃ©rieur, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -740,25 +760,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Brebis de rÃ©forme, conventionnel, intÃ©rieur, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-ewe-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
-    "name": "Cull ewe, conventional, Roquefort system, at farm gate {FR} U",
+  "brebis-de-r-forme-conventionnel-syst-me-roquefort-la-ferme-france-raw": {
+    "name": "Brebis de rÃ©forme, conventionnel, systÃ¨me Roquefort , Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -776,25 +797,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Brebis de rÃ©forme, conventionnel, systÃ¨me Roquefort , Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "duck-for-roasting-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Duck for roasting, conventional, at farm gate {FR} U",
+  "canard-r-tir-conventionnel-la-ferme-france-raw": {
+    "name": "Canard Ã  rÃ´tir,  conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -812,25 +834,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Canard Ã  rÃ´tir,  conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "fattening-duck-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Fattening duck, conventional, at farm gate {FR} U",
+  "canard-engraissement-conventionnel-la-ferme-france-raw": {
+    "name": "Canard Engraissement,  conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -848,25 +871,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Canard Engraissement,  conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, national average, at farm gate {FR} U",
+  "carotte-conventionnelle-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Carotte conventionnelle, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -884,25 +908,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte conventionnelle, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-fall-creances-lower-normandie-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, fall, Creances, Lower Normandie, at farm gate {FR} U",
+  "carotte-conventionnel-automne-creances-basse-normandie-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, automne, Creances, Basse-Normandie, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -920,25 +945,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, automne, Creances, Basse-Normandie, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-fall-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, fall, Mont St. Michel, Lower Normandie, at farm gate {FR} U",
+  "carotte-conventionnel-automne-mont-st-michel-basse-normandie-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, automne, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -956,25 +982,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, automne, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-fall-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, fall, Val de Saire, Lower Normandie, at farm gate {FR} U",
+  "carotte-conventionnel-automne-val-de-saire-basse-normandie-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, automne, Val de Saire, Basse-Normandie, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -992,25 +1019,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, automne, Val de Saire, Basse-Normandie, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-main-season-aquitaine-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, main season, Aquitaine, at farm gate {FR} U",
+  "carotte-conventionnel-de-saison-aquitaine-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, de saison, Aquitaine, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1028,25 +1056,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, de saison, Aquitaine, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-winter-aquitaine-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, winter, Aquitaine, at farm gate {FR} U",
+  "carotte-conventionnel-hiver-aquitaine-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, hiver, Aquitaine, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1064,25 +1093,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, hiver, Aquitaine, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-winter-creances-lower-normandie-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, winter, Creances, Lower Normandie, at farm gate {FR} U",
+  "carotte-conventionnel-hiver-creances-basse-normandie-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, hiver, Creances, Basse-Normandie, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1100,25 +1130,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, hiver, Creances, Basse-Normandie, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-winter-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, winter, Mont St. Michel, Lower Normandie, at farm gate {FR} U",
+  "carotte-conventionnel-hiver-mont-st-michel-basse-normandie-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, hiver, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1136,25 +1167,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, hiver, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-winter-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, winter, Val de Saire, Lower Normandie, at farm gate {FR} U",
+  "carotte-conventionnel-hiver-val-de-saire-basse-normandie-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, hiver, Val de Saire, Basse-Normandie, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1172,25 +1204,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, hiver, Val de Saire, Basse-Normandie, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "carrot-conventional-early-aquitaine-at-farm-gate-fr-u-raw": {
-    "name": "Carrot, conventional, early, Aquitaine, at farm gate {FR} U",
+  "carotte-conventionnel-pr-coce-aquitaine-la-ferme-france-raw": {
+    "name": "Carotte, conventionnel, prÃ©coce, Aquitaine, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1208,25 +1241,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Carotte, conventionnel, prÃ©coce, Aquitaine, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cherry-conventional-national-average-at-orchard-fr-u-raw": {
-    "name": "Cherry, conventional, national average, at orchard {FR} U",
+  "cerise-conventionnelle-moyenne-nationale-au-verger-france-raw": {
+    "name": "Cerise, conventionnelle, moyenne nationale, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1244,25 +1278,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Cerise, conventionnelle, moyenne nationale, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "hemp-straw-ret-champagne-at-farm-gate-fr-u-raw": {
-    "name": "Hemp, straw, ret, Champagne, at farm gate {FR} U",
+  "chanvre-paille-champagne-la-ferme-france-raw": {
+    "name": "Chanvre, paille, Champagne, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1280,25 +1315,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Chanvre, paille, Champagne, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "kid-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
-    "name": "Kid goat, conventional, intensive forage area, at farm gate {FR} U",
+  "chevreau-conventionnel-fourage-intensif-la-ferme-france-raw": {
+    "name": "Chevreau, conventionnel, fourage intensif, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1316,25 +1352,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Chevreau, conventionnel, fourage intensif, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
-    "name": "Cull goat, conventional, intensive forage area, at farm gate {FR} U",
+  "chevrette-de-r-forme-conventionnel-fourrage-intensif-la-ferme-france-raw": {
+    "name": "Chevrette de rÃ©forme, conventionnel, fourrage intensif, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1352,25 +1389,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Chevrette de rÃ©forme, conventionnel, fourrage intensif, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-season-conventional-refrigerant-loss-300-storage-and-forcing-at--raw": {
-    "name": "Chicory witloof, season, conventional, refrigerant loss 300%, storage and forcing, at farm gate {FR} U",
+  "chicor-e-witlode-en-saison-conventionnel-perte-de-r-frig-rant-300-stockage-et-fo-raw": {
+    "name": "ChicorÃ©e witlode, en saison, conventionnel, perte de rÃ©frigÃ©rant 300%, stockage et forÃ§age, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1388,25 +1426,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "ChicorÃ©e witlode, en saison, conventionnel, perte de rÃ©frigÃ©rant 300%, stockage et forÃ§age, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cauliflower-summer-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Cauliflower, summer, conventional, at farm gate {FR} U",
+  "chou-fleur-conventionnel-culture-d-t-la-ferme-france-raw": {
+    "name": "Chou-fleur conventionnel, culture d'Ã©tÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1424,25 +1463,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Chou-fleur conventionnel, culture d'Ã©tÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cauliflower-winter-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Cauliflower, winter, conventional, at farm gate {FR} U",
+  "chou-fleur-conventionnel-culture-d-hiver-la-ferme-france-raw": {
+    "name": "Chou-fleur conventionnel, culture d'hiver, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1460,25 +1500,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Chou-fleur conventionnel, culture d'hiver, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cauliflower-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Cauliflower, conventional, national average, at farm gate {FR} U",
+  "chou-fleur-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Chou-fleur conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1496,25 +1537,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Chou-fleur conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "clementine-export-quality-souss-at-orchard-ma-u-raw": {
-    "name": "Clementine, export quality, Souss, at orchard {MA} U",
+  "cl-mentine-pour-exportation-au-verger-souss-maroc-raw": {
+    "name": "ClÃ©mentine, pour exportation, au verger, Souss, Maroc",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1532,25 +1574,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "ClÃ©mentine, pour exportation, au verger, Souss, Maroc",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-produ-raw": {
-    "name": "Rapeseed, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U",
+  "colza-conventionnel-9-d-humidit-moyenne-nationale-aliment-pour-animaux-productio-raw": {
+    "name": "Colza, conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, production, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1568,25 +1611,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Colza, conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, production, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "rapeseed-systematic-covercropping-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Rapeseed, systematic covercropping scenario, at farm gate {FR} U",
+  "colza-levier-culture-interm-diaire-la-ferme-france-raw": {
+    "name": "Colza, levier culture intermÃ©diaire, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1604,25 +1648,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Colza, levier culture intermÃ©diaire, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "rapeseed-protein-crop-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Rapeseed, protein crop scenario, at farm gate {FR} U",
+  "colza-levier-l-gumineuse-dans-rotation-la-ferme-france-raw": {
+    "name": "Colza, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1640,25 +1685,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Colza, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "rapeseed-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
-    "name": "Rapeseed, basis scenario without lever, at farm gate {FR} U",
+  "colza-sc-nario-de-base-la-ferme-france-raw": {
+    "name": "Colza, scÃ©nario de base, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1676,25 +1722,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Colza, scÃ©nario de base, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr-u-raw": {
-    "name": "Great Scallop, Pecten maximus, BSBrieuc, Dredge, average, at landing {FR} U",
+  "coquille-saint-jacques-pecten-maximus-bais-de-st-brieuc-drague-au-d-barquement-f-raw": {
+    "name": "Coquille Saint-Jacques,  Pecten maximus, bais de St Brieuc, drague, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1712,25 +1759,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Coquille Saint-Jacques,  Pecten maximus, bais de St Brieuc, drague, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "zucchini-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Zucchini, autumn, under tunnel, conventional, at farm gate {FR} U",
+  "courgette-conventionnelle-automne-sous-tunnel-la-ferme-france-raw": {
+    "name": "Courgette conventionnelle, automne sous tunnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1748,25 +1796,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Courgette conventionnelle, automne sous tunnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "zucchini-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Zucchini, conventional, national average, at farm gate {FR} U",
+  "courgette-conventionnelle-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Courgette conventionnelle, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1784,25 +1833,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Courgette conventionnelle, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "zucchini-open-field-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Zucchini, open field, conventional, at farm gate {FR} U",
+  "courgette-conventionnelle-plein-champ-la-ferme-france-raw": {
+    "name": "Courgette conventionnelle, plein champ, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1820,25 +1870,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Courgette conventionnelle, plein champ, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "zucchini-springtime-under-tunnel-conventionel-at-farm-gate-fr-u-raw": {
-    "name": "Zucchini, springtime, under tunnel, conventionel, at farm gate {FR} U",
+  "courgette-conventionnelle-printemps-sous-tunnel-la-ferme-france-raw": {
+    "name": "Courgette conventionnelle, printemps sous tunnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1856,25 +1907,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Courgette conventionnelle, printemps sous tunnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "fresh-shrimps-china-production-fr-u-raw": {
-    "name": "Fresh shrimps, China production {FR} U",
+  "crevette-chine-conventionnelle-la-ferme-france-raw": {
+    "name": "Crevette, Chine, conventionnelle, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1892,25 +1944,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Crevette, Chine, conventionnelle, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "turkey-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Turkey, conventional, at farm gate {FR} U",
+  "dinde-conventionnel-la-ferme-france-raw": {
+    "name": "Dinde, conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1928,25 +1981,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Dinde, conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "turkey-label-rouge-at-farm-gate-fr-u-raw": {
-    "name": "Turkey, Label Rouge, at farm gate {FR} U",
+  "dinde-label-rouge-la-ferme-france-raw": {
+    "name": "Dinde, Label Rouge, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -1964,25 +2018,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Dinde, Label Rouge, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-early-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Chicory witloof, early, conventional at farm gate {FR} U",
+  "endive-conventionnelle-pr-coce-la-ferme-france-raw": {
+    "name": "Endive conventionnelle, prÃ©coce, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2000,25 +2055,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Endive conventionnelle, prÃ©coce, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-season-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Chicory witloof, season, conventional at farm gate {FR} U",
+  "endive-conventionnelle-saison-la-ferme-france-raw": {
+    "name": "Endive conventionnelle, saison, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2036,25 +2092,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Endive conventionnelle, saison, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-late-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Chicory witloof, late, conventional at farm gate {FR} U",
+  "endive-conventionnelle-tardive-la-ferme-france-raw": {
+    "name": "Endive conventionnelle, tardive, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2072,25 +2129,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Endive conventionnelle, tardive, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Chicory witloof, conventional, national average at farm gate {FR} U",
+  "endive-conventionnelle-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Endive, conventionnelle, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2108,25 +2166,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Endive, conventionnelle, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "spring-faba-bean-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Spring faba bean, conventional, national average, at farm gate {FR} U",
+  "f-verole-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "FÃ©verole, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2144,25 +2203,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "FÃ©verole, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "spring-faba-bean-conventional-reduced-protection-at-farm-gate-fr-u-raw": {
-    "name": "Spring faba bean, conventional, reduced protection, at farm gate {FR} U",
+  "f-verole-conventionnel-protection-int-gr-e-la-ferme-france-raw": {
+    "name": "FÃ©verole, conventionnel, protection intÃ©grÃ©e, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2180,25 +2240,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "FÃ©verole, conventionnel, protection intÃ©grÃ©e, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "hemp-fibre-without-processing-fr-u-raw": {
-    "name": "Hemp fibre, without processing {FR} U",
+  "fibres-de-chanvre-france-raw": {
+    "name": "Fibres de chanvre, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2216,25 +2277,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fibres de chanvre, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-soilless-protected-crops-frost-protection-conventional-at-farm-gate-f-raw": {
-    "name": "Strawberry, soilless protected crops, frost protection, conventional, at farm gate {FR} U",
+  "fraise-conventionnelle-hors-sol-sous-abri-anti-gel-la-ferme-france-raw": {
+    "name": "Fraise conventionnelle, hors sol sous abri anti gel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2252,25 +2314,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise conventionnelle, hors sol sous abri anti gel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-soilless-protected-crops-heated-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Strawberry, soilless protected crops, heated, conventional, at farm gate {FR} U",
+  "fraise-conventionnelle-hors-sol-sous-abri-chauff-la-ferme-france-raw": {
+    "name": "Fraise conventionnelle, hors sol sous abri chauffÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2288,25 +2351,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise conventionnelle, hors sol sous abri chauffÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-soilless-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Strawberry, soilless protected crops, non-heated, conventional, at farm gate {FR} U",
+  "fraise-conventionnelle-hors-sol-sous-abri-non-chauff-la-ferme-france-raw": {
+    "name": "Fraise conventionnelle, hors sol sous abri non chauffÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2324,25 +2388,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise conventionnelle, hors sol sous abri non chauffÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Strawberry, conventional, national average, at farm gate {FR} U",
+  "fraise-conventionnelle-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Fraise conventionnelle, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2360,25 +2425,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise conventionnelle, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-open-field-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Strawberry, open field, conventional, at farm gate {FR} U",
+  "fraise-conventionnelle-plein-champ-la-ferme-france-raw": {
+    "name": "Fraise conventionnelle, plein champ, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2396,25 +2462,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise conventionnelle, plein champ, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-soil-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Strawberry, soil protected crops, non-heated, conventional, at farm gate {FR} U",
+  "fraise-conventionnelle-sol-sous-abri-non-chauff-la-ferme-france-raw": {
+    "name": "Fraise conventionnelle, sol sous abri non chauffÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2432,25 +2499,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise conventionnelle, sol sous abri non chauffÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-for-processing-open-field-conventional-at-farm-gate-es-u-raw": {
-    "name": "Strawberry for processing, open field, conventional, at farm gate {ES} U",
+  "fraise-industrie-plein-champ-conventionnel-la-ferme-espagne-raw": {
+    "name": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Espagne",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2468,25 +2536,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Espagne",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-for-processing-open-field-conventional-at-farm-gate-ma-u-raw": {
-    "name": "Strawberry for processing, open field, conventional, at farm gate {MA} U",
+  "fraise-industrie-plein-champ-conventionnel-la-ferme-maroc-raw": {
+    "name": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, maroc",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2504,25 +2573,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, maroc",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "strawberry-for-processing-open-field-conventional-at-farm-gate-pl-u-raw": {
-    "name": "Strawberry for processing, open field, conventional, at farm gate {PL} U",
+  "fraise-industrie-plein-champ-conventionnel-la-ferme-pologne-raw": {
+    "name": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Pologne",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2540,25 +2610,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Pologne",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "gadidae-celticsea-bottom-trawl-average-at-landing-fr-u-raw": {
-    "name": "Gadidae, CelticSea, Bottom Trawl, average, at landing {FR} U",
+  "gadidae-mer-celtique-chalut-de-fond-au-d-barquement-france-raw": {
+    "name": "Gadidae, mer celtique, chalut de fond, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2576,25 +2647,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Gadidae, mer celtique, chalut de fond, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "suckler-heifer-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gat-raw": {
-    "name": "Suckler heifer, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U",
+  "g-nisse-allaitante-syst-me-d-engraissement-conventionnel-plus-de-1-2-ugb-par-ha--raw": {
+    "name": "GÃ©nisse allaitante  systÃ¨me d'engraissement conventionnel, plus de 1,2 UGB par ha, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2612,25 +2684,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "GÃ©nisse allaitante  systÃ¨me d'engraissement conventionnel, plus de 1,2 UGB par ha, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "coffee-bean-robusta-depulped-brazil-at-farm-gate-br-u-raw": {
-    "name": "Coffee bean (Robusta), depulped, Brazil, at farm gate {BR} U",
+  "grain-de-caf-robusta-d-pulp-s-au-br-sil-au-d-part-de-l-exploitation-br-sil-raw": {
+    "name": "Grain de cafÃ© (robusta), dÃ©pulpÃ©s, au BrÃ©sil, au dÃ©part de l'exploitation, BrÃ©sil",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2648,25 +2721,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Grain de cafÃ© (robusta), dÃ©pulpÃ©s, au BrÃ©sil, au dÃ©part de l'exploitation, BrÃ©sil",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "hemp-grain-champagne-at-farm-gate-fr-u-raw": {
-    "name": "Hemp, grain, Champagne, at farm gate {FR} U",
+  "graine-de-chanvre-champagne-la-ferme-france-raw": {
+    "name": "Graine de chanvre, Champagne, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2684,25 +2758,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Graine de chanvre, Champagne, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gat-raw": {
-    "name": "Sunflower grain, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U",
+  "graine-de-tournesol-conventionnel-9-d-humidit-moyenne-nationale-aliment-pour-ani-raw": {
+    "name": "Graine de tournesol,  conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2720,25 +2795,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Graine de tournesol,  conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sunflower-grain-systematic-covercropping-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Sunflower grain, systematic covercropping scenario, at farm gate {FR} U",
+  "graine-de-tournesol-levier-culture-interm-diaire-la-ferme-france-raw": {
+    "name": "Graine de tournesol, levier culture intermÃ©diaire, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2756,25 +2832,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Graine de tournesol, levier culture intermÃ©diaire, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sunflower-grain-protein-crop-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Sunflower grain, protein crop scenario, at farm gate {FR} U",
+  "graine-de-tournesol-levier-l-gumineuse-dans-rotation-la-ferme-france-raw": {
+    "name": "Graine de tournesol, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2792,25 +2869,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Graine de tournesol, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sunflower-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
-    "name": "Sunflower grain, basis scenario without lever, at farm gate {FR} U",
+  "graine-de-tournesol-sc-nario-de-base-la-ferme-france-raw": {
+    "name": "Graine de tournesol, scÃ©nario de base, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2828,25 +2906,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Graine de tournesol, scÃ©nario de base, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr-u-raw": {
-    "name": "Flaxseed extruded, Bleu Blanc Coeur feed, at farm gate {FR} U",
+  "graines-de-lin-extrud-es-aliment-bleu-blanc-coeur-la-ferme-france-raw": {
+    "name": "Graines de lin extrudÃ©es, aliment Bleu Blanc Coeur, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2864,25 +2943,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Graines de lin extrudÃ©es, aliment Bleu Blanc Coeur, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "flaxseed-straw-ret-normandie-at-farm-gate-fr-u-raw": {
-    "name": "Flaxseed, straw, ret, Normandie, at farm gate {FR} U",
+  "graines-de-lin-paille-normandie-la-ferme-france-raw": {
+    "name": "Graines de lin, paille, Normandie, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2900,25 +2980,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Graines de lin, paille, Normandie, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "large-trout-2-4kg-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Large trout, 2-4kg, conventional, at farm gate {FR} U",
+  "grande-truite-2-4-kg-conventionnel-la-ferme-france-raw": {
+    "name": "Grande truite, 2-4 kg, conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2936,25 +3017,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Grande truite, 2-4 kg, conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl-u-raw": {
-    "name": "Atlantic Herring, Clupea harengus, NEA, Pelagic Trawl, average, at landing {NL} U",
+  "hareng-de-l-atlantique-clupea-harengus-atlantique-nord-est-chalut-p-lagique-au-d-raw": {
+    "name": "Hareng de l'Atlantique, Clupea harengus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -2972,25 +3054,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Hareng de l'Atlantique, Clupea harengus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "french-bean-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "French bean, conventional, national average, at farm gate {FR} U",
+  "haricot-fran-ais-moyenne-conventionnelle-nationale-la-ferme-france-raw": {
+    "name": "Haricot franÃ§ais, moyenne conventionnelle, nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3008,25 +3091,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Haricot franÃ§ais, moyenne conventionnelle, nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lobster-1-kg-of-product-at-landing-fr-u-raw": {
-    "name": "Lobster, 1 kg of product, at landing {FR} U",
+  "homard-au-d-barquement-france-raw": {
+    "name": "Homard, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3044,25 +3128,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Homard, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "kiwi-fr-conventional-national-average-at-orchard-fr-u-raw": {
-    "name": "Kiwi FR, conventional, national average, at orchard {FR} U",
+  "kiwi-fr-conventionnel-moyenne-nationale-au-verger-france-raw": {
+    "name": "Kiwi FR, conventionnel, moyenne nationale, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3080,25 +3165,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Kiwi FR, conventionnel, moyenne nationale, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "wool-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
-    "name": "Wool, conventional, Roquefort system, at farm gate {FR} U",
+  "laine-conventionnel-syst-me-roquefort-la-ferme-france-raw": {
+    "name": "Laine, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3116,25 +3202,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Laine, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "wool-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
-    "name": "Wool, conventional, indoor production system, at farm gate {FR} U",
+  "laine-syst-me-de-production-conventionnel-int-rieur-la-ferme-france-raw": {
+    "name": "Laine, systÃ¨me de production conventionnel, intÃ©rieur, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3152,25 +3239,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Laine, systÃ¨me de production conventionnel, intÃ©rieur, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sheep-milk-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
-    "name": "Sheep milk, conventional, Roquefort system, at farm gate {FR} U",
+  "lait-de-brebis-conventionnel-syst-me-roquefort-la-ferme-france-raw": {
+    "name": "Lait de brebis, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3188,25 +3276,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lait de brebis, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "goat-milk-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
-    "name": "Goat milk, conventional, intensive forage area, at farm gate {FR} U",
+  "lait-de-ch-vre-fourrage-intensif-la-ferme-france-raw": {
+    "name": "Lait de chÃ¨vre, fourrage intensif, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3224,25 +3313,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lait de chÃ¨vre, fourrage intensif, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cow-milk-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Cow milk, conventional, national average, at farm gate {FR} U",
+  "lait-de-vache-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Lait de vache, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3260,25 +3350,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lait de vache, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cow-milk-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr--raw": {
-    "name": "Cow milk, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U",
+  "lait-de-vache-syst-me-conventionnel-lait-de-plaine-ma-s-ensilage-10-30-la-ferme--raw": {
+    "name": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 10 Ã  30%, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3296,25 +3387,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 10 Ã  30%, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cow-milk-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw": {
-    "name": "Cow milk, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U",
+  "lait-de-vache-syst-me-conventionnel-lait-de-plaine-ma-s-ensilage-5-10-la-ferme-f-raw": {
+    "name": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 5 Ã  10%, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3332,25 +3424,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 5 Ã  10%, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cow-milk-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-raw": {
-    "name": "Cow milk, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U",
+  "lait-de-vache-syst-me-conventionnel-lait-de-plaine-ma-s-ensilage-plus-de-30-la-f-raw": {
+    "name": "Lait de vache, systÃ¨me conventionnel, Lait de plaine, maÃ¯s ensilage plus de 30%, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3368,25 +3461,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lait de vache, systÃ¨me conventionnel, Lait de plaine, maÃ¯s ensilage plus de 30%, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cow-milk-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw": {
-    "name": "Cow milk, conventional, highland milk system, grass fed, at farm gate {FR} U",
+  "lait-de-vache-syst-me-conventionnel-montagne-nourri-l-herbe-la-ferme-france-raw": {
+    "name": "Lait de vache, systÃ¨me conventionnel, montagne, nourri Ã  l'herbe, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3404,25 +3498,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lait de vache, systÃ¨me conventionnel, montagne, nourri Ã  l'herbe, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lettuce-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Lettuce, autumn under tunnel, conventional, at farm gate {FR} U",
+  "laitue-conventionnelle-automne-sous-tunnel-la-ferme-france-raw": {
+    "name": "Laitue conventionnelle, automne sous tunnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3440,25 +3535,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Laitue conventionnelle, automne sous tunnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lettuce-winter-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Lettuce, winter under tunnel, conventional, at farm gate {FR} U",
+  "laitue-conventionnelle-hiver-sous-tunnel-la-ferme-france-raw": {
+    "name": "Laitue conventionnelle, hiver sous tunnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3476,25 +3572,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Laitue conventionnelle, hiver sous tunnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lettuce-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Lettuce, conventional, national average, at farm gate {FR} U",
+  "laitue-conventionnelle-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Laitue conventionnelle, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3512,25 +3609,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Laitue conventionnelle, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lettuce-open-field-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Lettuce, open field, conventional, at farm gate {FR} U",
+  "laitue-conventionnelle-plein-champ-la-ferme-france-raw": {
+    "name": "Laitue conventionnelle, plein champ, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3548,25 +3646,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Laitue conventionnelle, plein champ, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-rabbit-conventional-in-cage-at-farm-gate-fr-u-raw": {
-    "name": "Cull rabbit, conventional, in cage, at farm gate {FR} U",
+  "lapin-de-r-forme-conventionnel-en-cage-la-ferme-france-raw": {
+    "name": "Lapin de rÃ©forme, conventionnel, en cage, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3584,25 +3683,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lapin de rÃ©forme, conventionnel, en cage, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "rabbit-conventional-in-cage-at-farm-gate-fr-u-raw": {
-    "name": "Rabbit, conventional, in cage, at farm gate {FR} U",
+  "lapin-conventionnel-en-cage-la-ferme-france-raw": {
+    "name": "Lapin, conventionnel, en cage, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3620,25 +3720,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lapin, conventionnel, en cage, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "spring-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw": {
-    "name": "Spring lupin, 2013, conventional, national average, at farm gate, production {FR} U",
+  "lupin-de-printemps-2013-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Lupin de printemps, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3656,25 +3757,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lupin de printemps, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "spring-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw": {
-    "name": "Spring lupin, 2015, conventional, national average, at farm gate, production {FR} U",
+  "lupin-de-printemps-2015-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Lupin de printemps, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3692,25 +3794,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lupin de printemps, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "winter-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw": {
-    "name": "Winter lupin, 2013, conventional, national average, at farm gate, production {FR} U",
+  "lupin-d-hiver-2013-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Lupin d'hiver, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3728,25 +3831,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lupin d'hiver, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "winter-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw": {
-    "name": "Winter lupin, 2015, conventional, national average, at farm gate, production {FR} U",
+  "lupin-d-hiver-2015-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Lupin d'hiver, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3764,25 +3868,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lupin d'hiver, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "lupin-conventional-national-average-at-farm-gate-production-fr-u-raw": {
-    "name": "Lupin, conventional, national average, at farm gate, production {FR} U",
+  "lupin-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Lupin, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3800,25 +3905,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Lupin, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "alfalfa-dehydrated-100-biomass-energy-process-conventional-at-feed-plant-fr-u-raw": {
-    "name": "Alfalfa, dehydrated, 100% biomass energy process, conventional, at feed plant {FR} U",
+  "luzerne-d-shydrat-e-conventionnelle-processus-avec-nergie-100-biomasse-sortie-us-raw": {
+    "name": "Luzerne dÃ©shydratÃ©e, conventionnelle, processus avec Ã©nergie 100% biomasse, sortie usine, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3836,25 +3942,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Luzerne dÃ©shydratÃ©e, conventionnelle, processus avec Ã©nergie 100% biomasse, sortie usine, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "alfalfa-dehydrated-with-new-energies-process-conventional-at-feed-plant-fr-u-raw": {
-    "name": "Alfalfa, dehydrated, with new energies process, conventional, at feed plant {FR} U",
+  "luzerne-d-shydrat-e-conventionnelle-sortie-usine-france-raw": {
+    "name": "Luzerne dÃ©shydratÃ©e, conventionnelle, sortie usine, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3872,25 +3979,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Luzerne dÃ©shydratÃ©e, conventionnelle, sortie usine, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "alfalfa-conventional-for-dehydration-animal-feed-at-farm-gate-production-fr-u-raw": {
-    "name": "Alfalfa, conventional, for dehydration, animal feed, at farm gate, production {FR} U",
+  "luzerne-conventionnel-par-d-shydratation-alimentation-animale-la-ferme-france-raw": {
+    "name": "Luzerne, conventionnel, par dÃ©shydratation, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3908,25 +4016,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Luzerne, conventionnel, par dÃ©shydratation, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "alfalfa-conventional-for-animal-feeding-at-farm-gate-fr-u-raw": {
-    "name": "Alfalfa, conventional, for animal feeding, at farm gate {FR} U",
+  "luzerne-conventionnel-pour-l-alimentation-des-animaux-la-ferme-france-raw": {
+    "name": "Luzerne, conventionnel, pour l'alimentation des animaux, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3944,25 +4053,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Luzerne, conventionnel, pour l'alimentation des animaux, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "alfalfa-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Alfalfa, conventional, national average, at farm gate {FR} U",
+  "luzerne-moyenne-conventionnelle-nationale-la-ferme-france-raw": {
+    "name": "Luzerne, moyenne conventionnelle, nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -3980,25 +4090,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Luzerne, moyenne conventionnelle, nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-f-raw": {
-    "name": "Maize grain, conventional, 28% moisture, national average, animal feed, at farm gate {FR} U",
+  "ma-s-grain-conventionnel-28-d-humidit-moyenne-nationale-alimentation-animale-la--raw": {
+    "name": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4016,25 +4127,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "maize-grain-conventional-28-moisture-national-average-with-water-footprint-anima-raw": {
-    "name": "Maize grain, conventional, 28% moisture, national average, with water footprint, animal feed, at farm gate {FR} U",
+  "ma-s-grain-conventionnel-28-d-humidit-moyenne-nationale-avec-empreinte-eau-alime-raw": {
+    "name": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, avec empreinte eau, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4052,25 +4164,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, avec empreinte eau, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "grain-maize-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Grain maize, systematic cover cropping scenario, at farm gate {FR} U",
+  "ma-s-grain-levier-culture-interm-diaire-syst-matique-la-ferme-france-raw": {
+    "name": "MaÃ¯s grain, levier culture intermÃ©diaire systÃ©matique, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4088,25 +4201,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "MaÃ¯s grain, levier culture intermÃ©diaire systÃ©matique, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "grain-maize-protein-crop-scenario-at-farm-gate-fr-u-raw": {
-    "name": "Grain maize, protein crop scenario, at farm gate {FR} U",
+  "ma-s-grain-levier-l-gumineuse-dans-rotation-la-ferme-france-raw": {
+    "name": "MaÃ¯s grain, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4124,25 +4238,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "MaÃ¯s grain, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "grain-maize-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
-    "name": "Grain maize, basis scenario without lever, at farm gate {FR} U",
+  "ma-s-grain-sc-nario-de-base-la-ferme-france-raw": {
+    "name": "MaÃ¯s grain, scÃ©nario de base, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4160,25 +4275,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "MaÃ¯s grain, scÃ©nario de base, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl-u-raw": {
-    "name": "Atlantic Mackerel, Scomber scombrus, NEA, Pelagic Trawl, average, at landing {NL} U",
+  "maquereau-atlantique-scomber-scombrus-atlantique-nord-est-chalut-p-lagique-au-d--raw": {
+    "name": "Maquereau Atlantique, Scomber scombrus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4196,25 +4312,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Maquereau Atlantique, Scomber scombrus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "melon-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Melon, conventional, national average, at farm gate {FR} U",
+  "melon-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Melon conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4232,25 +4349,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Melon conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "melon-open-field-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Melon, open field, conventional, at farm gate {FR} U",
+  "melon-conventionnel-plein-champ-la-ferme-france-raw": {
+    "name": "Melon conventionnel, plein champ, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4268,25 +4386,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Melon conventionnel, plein champ, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "melon-under-low-tunnel-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Melon, under low tunnel, conventional, at farm gate {FR} U",
+  "melon-conventionnel-sous-chenille-la-ferme-france-raw": {
+    "name": "Melon conventionnel, sous chenille, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4304,25 +4423,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Melon conventionnel, sous chenille, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "melon-protected-crop-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Melon, protected crop, conventional, at farm gate {FR} U",
+  "melon-conventionnel-sous-tunnel-la-ferme-france-raw": {
+    "name": "Melon conventionnel, sous tunnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4340,25 +4460,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Melon conventionnel, sous tunnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "mussels-with-shell-at-farm-gate-fr-u-raw": {
-    "name": "Mussels, with shell, at farm gate {FR} U",
+  "moules-avec-la-coquille-au-port-france-raw": {
+    "name": "Moules, avec la coquille, au port, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4376,25 +4497,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Moules, avec la coquille, au port, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "walnut-dried-inshell-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Walnut, dried inshell, conventional, national average, at farm gate {FR} U",
+  "noix-conventionnelle-en-coque-s-ch-e-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Noix conventionnelle, en coque sÃ©chÃ©e, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4412,25 +4534,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Noix conventionnelle, en coque sÃ©chÃ©e, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "walnut-dried-inshell-varieties-with-lateral-fructification-conventional-at-farm--raw": {
-    "name": "Walnut, dried inshell, varieties with lateral fructification, conventional, at farm gate {FR} U",
+  "noix-conventionnelle-en-coque-s-ch-e-vari-t-s-fructification-lat-rale-la-ferme-f-raw": {
+    "name": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s Ã  fructification latÃ©rale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4448,25 +4571,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s Ã  fructification latÃ©rale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "walnut-dried-inshell-traditional-varieties-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Walnut, dried inshell, traditional varieties, conventional, at farm gate {FR} U",
+  "noix-conventionnelle-en-coque-s-ch-e-vari-t-s-traditionnelles-la-ferme-france-raw": {
+    "name": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s traditionnelles, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4484,25 +4608,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s traditionnelles, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "egg-conventionnal-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Egg, conventionnal, national average, at farm gate {FR} U",
+  "oeuf-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Oeuf, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4520,25 +4645,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oeuf, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "egg-conventional-indoor-production-cage-2012-rules-at-farm-gate-fr-u-raw": {
-    "name": "Egg, conventional, indoor production, cage 2012 rules, at farm gate {FR} U",
+  "oeuf-production-conventionnelle-int-rieur-cage-r-gles-2012-la-ferme-france-raw": {
+    "name": "Oeuf, production conventionnelle, intÃ©rieur, cage rÃ¨gles 2012, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4556,25 +4682,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oeuf, production conventionnelle, intÃ©rieur, cage rÃ¨gles 2012, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "egg-conventional-outdoor-system-at-farm-gate-fr-u-raw": {
-    "name": "Egg, conventional, outdoor system, at farm gate {FR} U",
+  "oeuf-syst-me-conventionnel-en-plein-air-la-ferme-france-raw": {
+    "name": "Oeuf, systÃ¨me conventionnel, en plein air, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4592,25 +4719,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oeuf, systÃ¨me conventionnel, en plein air, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "egg-conventional-indoor-system-non-cage-at-farm-gate-fr-u-raw": {
-    "name": "Egg, conventional, indoor system, non-cage, at farm gate {FR} U",
+  "oeuf-syst-me-conventionnel-int-rieur-au-sol-la-ferme-france-raw": {
+    "name": "Oeuf, systÃ¨me conventionnel, intÃ©rieur, au sol, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4628,25 +4756,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oeuf, systÃ¨me conventionnel, intÃ©rieur, au sol, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "egg-conventional-indoor-system-cage-at-farm-gate-fr-u-raw": {
-    "name": "Egg, conventional, indoor system, cage, at farm gate {FR} U",
+  "oeuf-syst-me-conventionnel-int-rieur-en-cage-la-ferme-france-raw": {
+    "name": "Oeuf, systÃ¨me conventionnel, intÃ©rieur, en cage, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4664,25 +4793,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oeuf, systÃ¨me conventionnel, intÃ©rieur, en cage, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "onion-short-day-sown-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Onion, short day sown, conventional, at farm gate {FR} U",
+  "oignon-conventionnel-jour-court-sem-la-ferme-france-raw": {
+    "name": "Oignon conventionnel, jour court semÃ©, Ã  la ferme , France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4700,25 +4830,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oignon conventionnel, jour court semÃ©, Ã  la ferme , France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "onion-long-day-planted-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Onion, long-day planted, conventional, at farm gate {FR} U",
+  "oignon-conventionnel-jour-long-plant-la-ferme-france-raw": {
+    "name": "Oignon conventionnel, jour long plantÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4736,25 +4867,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oignon conventionnel, jour long plantÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "onion-long-day-sown-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Onion, long-day sown, conventional, at farm gate {FR} U",
+  "oignon-conventionnel-jour-long-sem-la-ferme-france-raw": {
+    "name": "Oignon conventionnel, jour long semÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4772,25 +4904,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oignon conventionnel, jour long semÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "onion-conventional-national-average-at-farm-fr-u-raw": {
-    "name": "Onion, conventional, national average, at farm {FR} U",
+  "oignon-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Oignon conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4808,25 +4941,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Oignon conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "spring-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Spring barley, conventional, malting quality, animal feed, at farm gate {FR} U",
+  "orge-de-printemps-conventionnel-brassicole-la-ferme-france-raw": {
+    "name": "Orge de printemps, conventionnel, brassicole, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4844,25 +4978,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Orge de printemps, conventionnel, brassicole, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "spring-barley-conventional-downgraded-quality-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Spring barley, conventional, downgraded quality, animal feed, at farm gate {FR} U",
+  "orge-de-printemps-conventionnel-d-class-la-ferme-france-raw": {
+    "name": "Orge de printemps, conventionnel, dÃ©classÃ©,  Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4880,25 +5015,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Orge de printemps, conventionnel, dÃ©classÃ©,  Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "winter-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Winter barley, conventional, malting quality, animal feed, at farm gate {FR} U",
+  "orge-d-hiver-conventionnel-brassicole-la-ferme-france-raw": {
+    "name": "Orge d'hiver, conventionnel, brassicole, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4916,25 +5052,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Orge d'hiver, conventionnel, brassicole, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Barley, feed grain, conventional, national average, animal feed, at farm gate {FR} U ",
+  "orge-pour-alimentation-animale-conventionnel-moyenne-nationale-france-raw": {
+    "name": "Orge, pour alimentation animale, conventionnel, moyenne nationale, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4952,25 +5089,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Orge, pour alimentation animale, conventionnel, moyenne nationale, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "peach-conventional-national-average-at-orchard-fr-u-raw": {
-    "name": "Peach, conventional, national average, at orchard {FR} U",
+  "p-che-conventionnelle-moyenne-nationale-au-verger-france-raw": {
+    "name": "PÃªche conventionnelle, moyenne nationale, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -4988,25 +5126,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "PÃªche conventionnelle, moyenne nationale, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "annual-vining-pea-for-industry-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Annual vining pea for industry, Conventional, National average, at farm gate {FR} U",
+  "petit-pois-annuel-pour-transformation-industrielle-conventionnel-moyenne-nationa-raw": {
+    "name": "Petit pois annuel pour transformation industrielle, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5024,25 +5163,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Petit pois annuel pour transformation industrielle, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "small-trout-250-350g-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Small trout, 250-350g, conventional, at farm gate {FR} U",
+  "petite-truite-250-350g-conventionnel-la-ferme-france-raw": {
+    "name": "Petite truite, 250-350g,  conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5060,25 +5200,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Petite truite, 250-350g,  conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pear-conventional-national-average-at-orchard-fr-u-raw": {
-    "name": "Pear, conventional, national average, at orchard {FR} U",
+  "poire-conventionnelle-au-verger-france-raw": {
+    "name": "Poire conventionnelle, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5096,25 +5237,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poire conventionnelle, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pear-at-farm-nl-u-raw": {
-    "name": "Pear, at farm {NL} U",
+  "poire-la-ferme-pays-bas-raw": {
+    "name": "Poire, Ã  la ferme, Pays-Bas",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5132,25 +5274,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poire, Ã  la ferme, Pays-Bas",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "autumn-irrigated-leek-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Autumn irrigated leek, conventional, at farm gate {FR} U",
+  "poireau-conventionnel-automne-irrigu-la-ferme-france-raw": {
+    "name": "Poireau conventionnel, automne irriguÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5168,25 +5311,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poireau conventionnel, automne irriguÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "leek-winter-non-irrigated-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Leek, winter non-irrigated, conventional, at farm gate {FR} U",
+  "poireau-conventionnel-hiver-non-irrigu-la-ferme-france-raw": {
+    "name": "Poireau conventionnel, hiver non irriguÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5204,25 +5348,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poireau conventionnel, hiver non irriguÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "leek-conventional-national-average-at-plant-fr-u-raw": {
-    "name": "Leek, conventional, national average, at plant {FR} U",
+  "poireau-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Poireau conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5240,25 +5385,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poireau conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "leek-early-planted-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Leek, early planted, conventional, at farm gate {FR} U",
+  "poireau-conventionnel-pr-coce-plant-la-ferme-france-raw": {
+    "name": "Poireau conventionnel, prÃ©coce plantÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5276,25 +5422,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poireau conventionnel, prÃ©coce plantÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "leek-early-sown-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Leek, early sown, conventional, at farm gate {FR} U",
+  "poireau-conventionnel-pr-coce-sem-la-ferme-france-raw": {
+    "name": "Poireau conventionnel, prÃ©coce semÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5312,25 +5459,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poireau conventionnel, prÃ©coce semÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr-u-raw": {
-    "name": "Spring pea, conventional, 15% moisture, animal feed, at farm gate, production {FR} U",
+  "pois-de-printemps-conventionnel-15-d-humidit-aliment-pour-animaux-la-ferme-franc-raw": {
+    "name": "Pois de printemps, conventionnel, 15% d'humiditÃ©, aliment pour animaux, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5348,25 +5496,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pois de printemps, conventionnel, 15% d'humiditÃ©, aliment pour animaux, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "winter-pea-conventional-15-moisture-at-farm-gate-fr-u-raw": {
-    "name": "Winter pea, conventional, 15% moisture, at farm gate {FR} U",
+  "pois-d-hiver-conventionnel-15-d-humidit-la-ferme-france-raw": {
+    "name": "Pois d'hiver, conventionnel, 15% d'humiditÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5384,25 +5533,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pois d'hiver, conventionnel, 15% d'humiditÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "black-pepper-conventional-at-farm-gate-vn-u-raw": {
-    "name": "Black pepper, conventional, at farm gate {VN} U",
+  "poivre-noir-conventionnel-la-ferme-vietnam-raw": {
+    "name": "Poivre noir, conventionnel, Ã  la ferme, Vietnam",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5420,25 +5570,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poivre noir, conventionnel, Ã  la ferme, Vietnam",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cider-apple-conventional-national-average-at-orchard-fr-u-raw": {
-    "name": "Cider apple, conventional, national average, at orchard {FR} U",
+  "pomme-cidre-moyen-conventionnel-national-au-verger-france-raw": {
+    "name": "Pomme Ã  cidre, moyen conventionnel, national, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5456,25 +5607,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pomme Ã  cidre, moyen conventionnel, national, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "apple-conventional-national-average-at-orchard-fr-u-raw": {
-    "name": "Apple, conventional, national average, at orchard {FR} U",
+  "pomme-conventionnelle-moyenne-nationale-au-verger-france-raw": {
+    "name": "Pomme conventionnelle, moyenne nationale, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5492,25 +5644,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pomme conventionnelle, moyenne nationale, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "apple-conventional-non-scab-tolerant-at-orchard-fr-u-raw": {
-    "name": "Apple, conventional, non scab-tolerant, at orchard {FR} U",
+  "pomme-conventionnelle-non-tol-rante-la-tavelure-au-verger-france-raw": {
+    "name": "Pomme conventionnelle, non tolÃ©rante Ã  la tavelure, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5528,25 +5681,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pomme conventionnelle, non tolÃ©rante Ã  la tavelure, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "apple-conventional-scab-tolerant-at-orchard-fr-u-raw": {
-    "name": "Apple, conventional, scab-tolerant, at orchard {FR} U",
+  "pomme-conventionnelle-tol-rante-tavelure-au-verger-france-raw": {
+    "name": "Pomme conventionnelle, tolÃ©rante tavelure, au verger, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5564,25 +5718,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pomme conventionnelle, tolÃ©rante tavelure, au verger, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "starch-potato-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Starch potato, conventional, national average, at farm gate {FR} U",
+  "pomme-de-terre-f-cule-moyenne-conventionnel-national-la-ferme-france-raw": {
+    "name": "Pomme de terre fÃ©cule, moyenne conventionnel, national, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5600,25 +5755,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pomme de terre fÃ©cule, moyenne conventionnel, national, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "ware-potato-conventional-for-industrial-use-at-farm-gate-fr-u-raw": {
-    "name": "Ware potato, conventional, for industrial use, at farm gate {FR} U",
+  "pommes-de-terre-conventionnel-usage-industriel-la-ferme-france-raw": {
+    "name": "Pommes de terre, conventionnel, Ã  usage industriel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5636,25 +5792,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pommes de terre, conventionnel, Ã  usage industriel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Ware potato, conventional, variety mix, national average, at farm gate {FR} U",
+  "pommes-de-terre-conventionnel-m-lange-de-vari-t-s-moyenne-nationale-la-ferme-fra-raw": {
+    "name": "Pommes de terre, conventionnel, mÃ©lange de variÃ©tÃ©s, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5672,25 +5829,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pommes de terre, conventionnel, mÃ©lange de variÃ©tÃ©s, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "ware-potato-conventional-for-fresh-market-other-varieties-at-farm-gate-fr-u-raw": {
-    "name": "Ware potato, conventional, for fresh market, other varieties, at farm gate {FR} U",
+  "pommes-de-terre-conventionnel-pour-le-march-frais-autres-vari-t-s-la-ferme-franc-raw": {
+    "name": "Pommes de terre, conventionnel, pour le marchÃ© frais, autres variÃ©tÃ©s, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5708,25 +5866,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pommes de terre, conventionnel, pour le marchÃ© frais, autres variÃ©tÃ©s, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "ware-potato-conventional-for-fresh-market-firm-flesh-varieties-at-farm-gate-fr-u-raw": {
-    "name": "Ware potato, conventional, for fresh market, firm flesh varieties, at farm gate {FR} U",
+  "pommes-de-terre-conventionnel-pour-le-march-frais-vari-t-s-chair-ferme-la-ferme--raw": {
+    "name": "Pommes de terre, conventionnel, pour le marchÃ© frais, variÃ©tÃ©s Ã  chair ferme, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5744,25 +5903,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Pommes de terre, conventionnel, pour le marchÃ© frais, variÃ©tÃ©s Ã  chair ferme, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pig-label-rouge-outdoor-system-at-farm-gate-fr-u-raw": {
-    "name": "Pig, Label Rouge, outdoor system, at farm gate {FR} U",
+  "porc-label-rouge-syst-me-plein-air-la-ferme-france-raw": {
+    "name": "Porc, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5780,25 +5940,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pig-conventional-porc-bien-etre-at-farm-gate-fr-u-raw": {
-    "name": "Pig, conventional, Porc Bien Etre, at farm gate {FR} U",
+  "porc-conventionnel-cahier-des-charges-porc-bien-tre-la-ferme-france-raw": {
+    "name": "Porc, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5816,25 +5977,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pig-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw": {
-    "name": "Pig, conventional, on-farm feed supply, at farm gate {FR} U",
+  "porc-conventionnel-fourniture-d-aliments-la-ferme-la-ferme-france-raw": {
+    "name": "Porc, conventionnel, fourniture d'aliments Ã  la ferme, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5852,25 +6014,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc, conventionnel, fourniture d'aliments Ã  la ferme, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pig-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Pig, conventional, national average, at farm gate {FR} U",
+  "porc-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Porc, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5888,25 +6051,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "mixt-pig-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Mixt pig, conventional, national average, at farm gate {FR} U",
+  "porc-moyen-97-porc-3-truie-de-r-forme-conventionnel-moyenne-nationale-la-ferme-f-raw": {
+    "name": "Porc moyen (97% porc, 3% truie de rÃ©forme), conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5924,25 +6088,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc moyen (97% porc, 3% truie de rÃ©forme), conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pig-label-rouge-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Pig, Label Rouge, national average, at farm gate {FR} U",
+  "porc-label-rouge-moyenne-nationale-50-courette-50-plein-air-la-ferme-france-raw": {
+    "name": "Porc, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5960,25 +6125,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "mixt-pig-label-rouge-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Mixt pig, Label Rouge, national average, at farm gate {FR} U",
+  "porc-moyen-97-porc-3-truie-de-r-forme-label-rouge-moyenne-nationale-50-courette--raw": {
+    "name": "Porc moyen (97% porc, 3% truie de rÃ©forme), Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -5996,25 +6162,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc moyen (97% porc, 3% truie de rÃ©forme), Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "pig-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw": {
-    "name": "Pig, Label Rouge, pig with run system, at farm gate {FR} U",
+  "porc-label-rouge-syst-me-courette-la-ferme-france-raw": {
+    "name": "Porc, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6032,25 +6199,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Porc, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-hen-conventional-indoor-system-non-cage-at-farm-gate-fr-u-raw": {
-    "name": "Cull hen, conventional, indoor system, non-cage, at farm gate {FR} U",
+  "poule-de-r-forme-conventionnel-int-rieur-au-sol-la-ferme-france-raw": {
+    "name": "Poule de rÃ©forme, conventionnel, intÃ©rieur, au sol, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6068,25 +6236,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poule de rÃ©forme, conventionnel, intÃ©rieur, au sol, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-hen-conventional-indoor-production-cage-2012-rules-at-farm-gate-fr-u-raw": {
-    "name": "Cull hen, conventional, indoor production, cage 2012 rules, at farm gate {FR} U",
+  "poule-de-r-forme-conventionnel-int-rieur-cage-r-gles-2012-la-ferme-france-raw": {
+    "name": "Poule de rÃ©forme, conventionnel, intÃ©rieur, cage rÃ¨gles 2012, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6104,25 +6273,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poule de rÃ©forme, conventionnel, intÃ©rieur, cage rÃ¨gles 2012, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-hen-conventional-indoor-system-cage-at-farm-gate-fr-u-raw": {
-    "name": "Cull hen, conventional, indoor system, cage, at farm gate {FR} U",
+  "poule-de-r-forme-conventionnel-int-rieur-en-cage-la-ferme-france-raw": {
+    "name": "Poule de rÃ©forme, conventionnel, intÃ©rieur, en cage, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6140,25 +6310,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poule de rÃ©forme, conventionnel, intÃ©rieur, en cage, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-hen-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Cull hen, conventional, national average, at farm gate {FR} U",
+  "poule-de-r-forme-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Poule de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6176,25 +6347,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poule de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-hen-conventional-outdoor-system-at-farm-gate-fr-u-raw": {
-    "name": "Cull hen, conventional, outdoor system, at farm gate {FR} U",
+  "poule-de-r-forme-conventionnel-syst-me-ext-rieur-la-ferme-france-raw": {
+    "name": "Poule de rÃ©forme, conventionnel, systÃ¨me extÃ©rieur, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6212,25 +6384,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poule de rÃ©forme, conventionnel, systÃ¨me extÃ©rieur, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "broiler-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Broiler, conventional, at farm gate {FR} U",
+  "poulet-conventionnel-la-ferme-france-raw": {
+    "name": "Poulet, conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6248,25 +6421,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poulet, conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "broiler-label-rouge-at-farm-gate-fr-u-raw": {
-    "name": "Broiler, Label Rouge, at farm gate {FR} U",
+  "poulet-label-rouge-la-ferme-france-raw": {
+    "name": "Poulet, Label Rouge, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6284,25 +6458,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poulet, Label Rouge, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "broiler-production-mix-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Broiler, production mix, national average, at farm gate {FR} U",
+  "poulet-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Poulet, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6320,25 +6495,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Poulet, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-early-conventional-root-production-at-farm-gate-fr-u-raw": {
-    "name": "Chicory witloof, early, conventional, root production, at farm gate {FR} U",
+  "production-de-racine-d-endive-conventionnelle-pr-coce-la-ferme-france-raw": {
+    "name": "Production de racine d'endive conventionnelle, prÃ©coce, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6356,25 +6532,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Production de racine d'endive conventionnelle, prÃ©coce, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-season-conventional-root-production-at-farm-gate-fr-u-raw": {
-    "name": "Chicory witloof, season, conventional, root production, at farm gate {FR} U",
+  "production-de-racine-d-endive-conventionnelle-saison-la-ferme-france-raw": {
+    "name": "Production de racine d'endive conventionnelle, saison, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6392,25 +6569,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Production de racine d'endive conventionnelle, saison, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-witloof-late-conventional-root-production-at-farm-gate-fr-u-raw": {
-    "name": "Chicory witloof, late, conventional, root production, at farm gate {FR} U",
+  "production-de-racine-d-endive-conventionnelle-tardive-la-ferme-france-raw": {
+    "name": "Production de racine d'endive conventionnelle, tardive, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6428,25 +6606,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Production de racine d'endive conventionnelle, tardive, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "quinoa-fr-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Quinoa FR, conventional, at farm gate {FR} U",
+  "quinoa-conventionnel-la-ferme-france-raw": {
+    "name": "Quinoa, conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6464,25 +6643,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Quinoa, conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "chicory-roots-conventional-at-farm-gate-fr-u-raw": {
-    "name": "Chicory roots, conventional, at farm gate {FR} U",
+  "racines-de-chicor-e-conventionnel-la-ferme-france-raw": {
+    "name": "Racines de chicorÃ©e, conventionnel, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6500,25 +6680,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Racines de chicorÃ©e, conventionnel, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "grapefruit-for-juice-conventional-at-farm-gate-us-u-raw": {
-    "name": "Grapefruit for juice, conventional, at farm gate {US} U",
+  "raisin-pour-du-jus-conventionnel-la-ferme-etats-unis-raw": {
+    "name": "Raisin pour du jus, conventionnel, Ã  la ferme, Etats-Unis",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6536,25 +6717,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Raisin pour du jus, conventionnel, Ã  la ferme, Etats-Unis",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "grape-integrated-french-mix-fr-u-raw": {
-    "name": "Grape, integrated, french mix {FR} U",
+  "raisin-int-gr-m-lange-fran-ais-france-raw": {
+    "name": "Raisin, intÃ©grÃ©, mÃ©lange franÃ§ais, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6572,25 +6754,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Raisin, intÃ©grÃ©, mÃ©lange franÃ§ais, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "grape-integrated-aoc-beaujolais-at-vineyard-fr-u-raw": {
-    "name": "Grape, integrated, AOC, Beaujolais, at vineyard {FR} U",
+  "raisin-production-int-gr-e-aoc-beaujolais-au-vignoble-france-raw": {
+    "name": "Raisin, production intÃ©grÃ©e, AOC Beaujolais, au vignoble, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6608,25 +6791,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Raisin, production intÃ©grÃ©e, AOC Beaujolais, au vignoble, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "grape-integrated-variety-mix-languedoc-roussillon-at-vineyard-fr-u-raw": {
-    "name": "Grape, integrated, variety mix, Languedoc-Roussillon, at vineyard {FR} U",
+  "raisin-production-int-gr-e-m-lange-de-vari-t-s-languedoc-roussillon-au-vignoble--raw": {
+    "name": "Raisin, production intÃ©grÃ©e, mÃ©lange de variÃ©tÃ©s, Languedoc-Roussillon, au vignoble, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6644,25 +6828,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Raisin, production intÃ©grÃ©e, mÃ©lange de variÃ©tÃ©s, Languedoc-Roussillon, au vignoble, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "saithe-pollachius-virens-northsea-bottom-trawl-average-frozen-at-landing-fr-u-raw": {
-    "name": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, frozen, at landing {FR} U",
+  "saithe-pollachius-virens-mer-du-nord-chalut-de-fond-congel-s-au-d-barquement-fra-raw": {
+    "name": "Saithe, Pollachius virens, mer du Nord, chalut de fond, congelÃ©s, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6680,25 +6865,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Saithe, Pollachius virens, mer du Nord, chalut de fond, congelÃ©s, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "saithe-pollachius-virens-northsea-bottom-trawl-average-fresh-at-landing-eu-u-raw": {
-    "name": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, fresh, at landing {EU} U",
+  "saithe-pollachius-virens-mer-du-nord-chalut-de-fond-frais-au-d-barquement-europe-raw": {
+    "name": "Saithe, Pollachius virens, mer du Nord, chalut de fond, frais, au dÃ©barquement, Europe",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6716,25 +6902,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Saithe, Pollachius virens, mer du Nord, chalut de fond, frais, au dÃ©barquement, Europe",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr-u-raw": {
-    "name": "European Pilchard, Sardina pilchardus, ECA, Seine, average, at landing {FR} U",
+  "sardine-europ-enne-sardina-pilchardus-atlantique-centre-est-senne-au-d-barquemen-raw": {
+    "name": "Sardine europÃ©enne,  Sardina pilchardus, atlantique centre est, senne, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6752,25 +6939,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Sardine europÃ©enne,  Sardina pilchardus, atlantique centre est, senne, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "european-pilchard-sardina-pilchardus-bbiscay-seine-average-at-landing-fr-u-raw": {
-    "name": "European Pilchard, Sardina pilchardus, BBiscay, Seine, average, at landing {FR} U",
+  "sardine-europ-enne-sardina-pilchardus-baie-de-biscay-senne-au-d-barquement-franc-raw": {
+    "name": "Sardine europÃ©enne, Sardina pilchardus, baie de Biscay, senne, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6788,25 +6976,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Sardine europÃ©enne, Sardina pilchardus, baie de Biscay, senne, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "salmon-farmed-conventional-at-farm-gate-no-u-raw": {
-    "name": "Salmon, farmed, conventional, at farm gate {NO} U",
+  "saumon-issu-d-aquaculture-conventionnel-la-ferme-norv-ge-raw": {
+    "name": "Saumon issu d'aquaculture, conventionnel, Ã  la ferme, NorvÃ¨ge",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6824,25 +7013,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Saumon issu d'aquaculture, conventionnel, Ã  la ferme, NorvÃ¨ge",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soybean-cut-off-date-2008-br-market-for-soybean-without-transport-cut-off-u-adap-raw": {
-    "name": "Soybean, cut-off date 2008 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
+  "soja-cut-off-date-2008-la-ferme-br-sil-raw": {
+    "name": "Soja, cut-off date 2008, Ã  la ferme, BrÃ©sil",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6860,25 +7050,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Soja, cut-off date 2008, Ã  la ferme, BrÃ©sil",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soybean-cut-off-date-2020-br-market-for-soybean-without-transport-cut-off-u-adap-raw": {
-    "name": "Soybean, cut-off date 2020 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
+  "soja-cut-off-date-2020-la-ferme-br-sil-raw": {
+    "name": "Soja, cut-off date 2020, Ã  la ferme, BrÃ©sil",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6896,25 +7087,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Soja, cut-off date 2020, Ã  la ferme, BrÃ©sil",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soybean-not-associated-to-deforestation-br-market-for-soybean-without-transport--raw": {
-    "name": "Soybean, not associated to deforestation {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent\n",
+  "soja-issu-de-zones-non-d-forest-es-la-ferme-br-sil-raw": {
+    "name": "Soja, issu de zones non dÃ©forestÃ©es, Ã  la ferme, BrÃ©sil",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6932,25 +7124,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Soja, issu de zones non dÃ©forestÃ©es, Ã  la ferme, BrÃ©sil",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "soybean-national-average-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Soybean, national average, animal feed, at farm gate {FR} U",
+  "soja-moyenne-nationale-aliment-pour-animaux-la-ferme-france-raw": {
+    "name": "Soja, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -6968,25 +7161,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Soja, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr-u-raw": {
-    "name": "Common Sole, Solea solea, BBiscay, Trammel Net, average, at landing {FR} U",
+  "sole-commune-solea-solea-baie-de-biscay-tr-mail-au-d-barquement-france-raw": {
+    "name": "Sole commune, Solea solea, baie de Biscay, trÃ©mail, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7004,25 +7198,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Sole commune, Solea solea, baie de Biscay, trÃ©mail, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "silage-sorghum-national-average-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Silage sorghum, national average, animal feed, at farm gate {FR} U",
+  "sorgho-ensilage-moyenne-nationale-alimentation-animale-la-ferme-france-raw": {
+    "name": "Sorgho ensilage, moyenne nationale, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7040,25 +7235,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Sorgho ensilage, moyenne nationale, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw": {
-    "name": "Sorghum grain, conventional, national average, animal feed, at farm gate {FR} U",
+  "sorgho-conventionnel-moyenne-nationale-alimentation-animale-la-ferme-france-raw": {
+    "name": "Sorgho, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7076,25 +7272,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Sorgho, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "young-suckler-bull-conventional-fattening-system-less-than-1-2-lu-per-ha-at-farm-raw": {
-    "name": "Young suckler bull, conventional, fattening system, less than 1.2 LU per ha, at farm gate {FR} U",
+  "taurillon-allaitant-conventionnel-syst-me-d-engraissement-moins-de-1-2-ugb-par-h-raw": {
+    "name": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, moins de 1.2 UGB par ha, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7112,25 +7309,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, moins de 1.2 UGB par ha, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "young-suckler-bull-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-raw": {
-    "name": "Young suckler bull, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U",
+  "taurillon-allaitant-conventionnel-syst-me-d-engraissement-plus-de-1-2-ugb-par-ha-raw": {
+    "name": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, plus de 1.2 UGB par ha, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7148,25 +7346,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, plus de 1.2 UGB par ha, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "young-dairy-bull-conventional-fattening-system-at-farm-gate-fr-u-raw": {
-    "name": "Young dairy bull, conventional, fattening system, at farm gate {FR} U",
+  "taurillon-laitier-conventionnel-syst-me-d-engraissement-la-ferme-france-raw": {
+    "name": "Taurillon laitier, conventionnel, systÃ¨me d'engraissement, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7184,25 +7383,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Taurillon laitier, conventionnel, systÃ¨me d'engraissement, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "albacore-thunnus-alalunga-nea-pelagic-trawl-average-at-landing-fr-u-raw": {
-    "name": "Albacore, Thunnus alalunga, NEA, Pelagic trawl, average, at landing {FR} U",
+  "thon-albacore-thunnus-alalunga-atlantique-nord-est-chalut-p-lagique-au-d-barquem-raw": {
+    "name": "Thon albacore, Thunnus alalunga, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7220,25 +7420,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Thon albacore, Thunnus alalunga, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "yellowfin-tuna-thunnus-albacares-eca-seine-average-at-landing-ci-u-raw": {
-    "name": "Yellowfin Tuna, Thunnus albacares, ECA, Seine, average, at landing {CI} U",
+  "thon-albacore-thunnus-albacares-atlantique-centre-est-senne-au-d-barquement-c-te-raw": {
+    "name": "Thon Albacore, Thunnus albacares, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7256,25 +7457,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Thon Albacore, Thunnus albacares, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "skipjack-tuna-katsuwonus-pelamis-eca-seine-average-at-landing-ci-u-raw": {
-    "name": "Skipjack Tuna, Katsuwonus pelamis, ECA, Seine, average, at landing {CI} U",
+  "thon-listao-katsuwonus-pelamis-atlantique-centre-est-senne-au-d-barquement-c-te--raw": {
+    "name": "Thon Listao, Katsuwonus pelamis, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7292,25 +7494,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Thon Listao, Katsuwonus pelamis, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "bluefin-tuna-thunnus-thynnus-medsea-longline-average-at-landing-fr-u-raw": {
-    "name": "Bluefin Tuna, Thunnus thynnus, MedSea, Longline, average, at landing {FR} U",
+  "thon-rouge-thunnus-thynnus-m-diterrann-e-palangre-au-d-barquement-france-raw": {
+    "name": "Thon rouge,  Thunnus thynnus, mÃ©diterrannÃ©e, palangre, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7328,25 +7531,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Thon rouge,  Thunnus thynnus, mÃ©diterrannÃ©e, palangre, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "bluefin-tuna-thunnus-thynnus-medsea-seine-average-at-cage-gate-fr-u-raw": {
-    "name": "Bluefin Tuna, Thunnus thynnus, MedSea, Seine, average, at cage gate {FR} U",
+  "thon-rouge-thunnus-thynnus-m-diterrann-e-senne-la-ferme-france-raw": {
+    "name": "Thon rouge, Thunnus thynnus, mÃ©diterrannÃ©e, senne, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7364,25 +7568,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Thon rouge, Thunnus thynnus, mÃ©diterrannÃ©e, senne, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "tomato-medium-size-conventional-soil-based-non-heated-greenhouse-at-greenhouse-f-raw": {
-    "name": "Tomato, medium size, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U",
+  "tomate-conventionnelle-calibre-inerm-diaire-sol-sous-abri-non-chauff-la-ferme-fr-raw": {
+    "name": "Tomate conventionnelle, calibre inermÃ©diaire, sol sous abri non chauffÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7400,25 +7605,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Tomate conventionnelle, calibre inermÃ©diaire, sol sous abri non chauffÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "tomato-medium-size-conventional-heated-greenhouse-at-greenhouse-fr-u-raw": {
-    "name": "Tomato, medium size, conventional, heated greenhouse, at greenhouse {FR} U",
+  "tomate-conventionnelle-calibre-interm-diaire-sous-abri-chauff-la-ferme-france-raw": {
+    "name": "Tomate conventionnelle, calibre intermÃ©diaire, sous abri chauffÃ©, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7436,25 +7642,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Tomate conventionnelle, calibre intermÃ©diaire, sous abri chauffÃ©, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenho-raw": {
-    "name": "Tomato, average basket, conventional, heated greenhouse, national average, at greenhouse {FR} U",
+  "tomate-conventionnelle-panier-moyen-serre-chauff-e-moyenne-nationale-la-ferme-fr-raw": {
+    "name": "Tomate conventionnelle, panier moyen, serre chauffÃ©e, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7472,25 +7679,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Tomate conventionnelle, panier moyen, serre chauffÃ©e, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "tomato-average-basket-conventional-soil-based-non-heated-greenhouse-at-greenhous-raw": {
-    "name": "Tomato, average basket, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U",
+  "tomate-conventionnelle-panier-moyen-sol-sous-abri-non-chauff-moyenne-nationale-l-raw": {
+    "name": "Tomate conventionnelle, panier moyen, sol sous abri non chauffÃ©, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7508,25 +7716,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Tomate conventionnelle, panier moyen, sol sous abri non chauffÃ©, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "brown-crab-1-kg-of-product-at-landing-gb-u-raw": {
-    "name": "Brown crab, 1 kg of product, at landing {GB} U",
+  "tourteau-1-kg-de-produit-au-d-barquement-angleterre-raw": {
+    "name": "Tourteau, 1 kg de produit, au dÃ©barquement, Angleterre",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7544,25 +7753,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Tourteau, 1 kg de produit, au dÃ©barquement, Angleterre",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "brown-crab-1-kg-of-product-at-landing-fr-u-raw": {
-    "name": "Brown crab, 1 kg of product, at landing {FR} U",
+  "tourteau-1-kg-de-produit-au-d-barquement-france-raw": {
+    "name": "Tourteau, 1 kg de produit, au dÃ©barquement, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7580,25 +7790,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Tourteau, 1 kg de produit, au dÃ©barquement, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "brown-crab-1-kg-of-product-at-landing-ie-u-raw": {
-    "name": "Brown crab, 1 kg of product, at landing {IE} U",
+  "tourteau-1-kg-de-produit-au-d-barquement-irlande-raw": {
+    "name": "Tourteau, 1 kg de produit, au dÃ©barquement, Irlande",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7616,25 +7827,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Tourteau, 1 kg de produit, au dÃ©barquement, Irlande",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "triticale-grain-conventional-national-average-animal-feed-at-farm-gate-productio-raw": {
-    "name": "Triticale grain, conventional, national average, animal feed, at farm gate, production {FR} U",
+  "triticale-conventionnel-moyenne-nationale-alimentation-animale-la-ferme-producti-raw": {
+    "name": "Triticale, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, production, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7652,25 +7864,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Triticale, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, production, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-sow-conventional-porc-bien-etre-at-farm-gate-fr-u-raw": {
-    "name": "Cull sow, Conventional, Porc Bien Etre, at farm gate {FR} U",
+  "truie-de-r-forme-conventionnel-cahier-des-charges-porc-bien-tre-la-ferme-france-raw": {
+    "name": "Truie de rÃ©forme, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7688,25 +7901,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Truie de rÃ©forme, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-sow-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw": {
-    "name": "Cull sow, conventional, on-farm feed supply, at farm gate {FR} U",
+  "truie-de-r-forme-conventionnel-fourniture-d-aliments-la-ferme-france-raw": {
+    "name": "Truie de rÃ©forme, conventionnel, fourniture d'aliments Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7724,25 +7938,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Truie de rÃ©forme, conventionnel, fourniture d'aliments Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-sow-conventional-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Cull sow, conventional, national average, at farm gate {FR} U",
+  "truie-de-r-forme-conventionnel-moyenne-nationale-la-ferme-france-raw": {
+    "name": "Truie de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7760,25 +7975,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Truie de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-sow-label-rouge-national-average-at-farm-gate-fr-u-raw": {
-    "name": "Cull sow, Label Rouge, national average, at farm gate {FR} U",
+  "truie-de-r-forme-label-rouge-moyenne-nationale-50-courette-50-plein-air-la-ferme-raw": {
+    "name": "Truie de rÃ©forme, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7796,25 +8012,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Truie de rÃ©forme, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-sow-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw": {
-    "name": "Cull sow, Label Rouge, pig with run system, at farm gate {FR} U",
+  "truie-de-r-forme-label-rouge-syst-me-courette-la-ferme-france-raw": {
+    "name": "Truie de rÃ©forme, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7832,25 +8049,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Truie de rÃ©forme, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-sow-label-rouge-outdoor-system-at-farm-gate-fr-u-raw": {
-    "name": "Cull sow, Label Rouge, outdoor system, at farm gate {FR} U",
+  "truie-de-r-forme-label-rouge-syst-me-plein-air-la-ferme-france-raw": {
+    "name": "Truie de rÃ©forme, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7868,25 +8086,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Truie de rÃ©forme, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "suckler-cull-cow-conventional-suckler-cow-system-less-than-1-2-lu-per-ha-at-farm-raw": {
-    "name": "Suckler cull cow, conventional, suckler cow system, less than 1.2 LU per ha, at farm gate {FR} U",
+  "vache-allaitante-de-r-forme-conventionnel-vache-allaitante-syst-me-moins-de-1-2--raw": {
+    "name": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, moins de 1.2 UGB par ha, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7904,25 +8123,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, moins de 1.2 UGB par ha, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "suckler-cull-cow-conventional-suckler-cow-system-more-than-1-2-lu-per-ha-at-farm-raw": {
-    "name": "Suckler cull cow, conventional, suckler cow system, more than 1.2 LU per ha, at farm gate {FR} U",
+  "vache-allaitante-de-r-forme-conventionnel-vache-allaitante-syst-me-plus-de-1-2-u-raw": {
+    "name": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, plus de 1.2 UGB par ha, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7940,25 +8160,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, plus de 1.2 UGB par ha, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-cow-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw": {
-    "name": "Cull cow, conventional, highland milk system, grass fed, at farm gate {FR} U",
+  "vache-de-r-forme-conventionnel-syst-me-laitier-de-montagne-nourri-l-herbe-la-fer-raw": {
+    "name": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de montagne, nourri Ã  l'herbe, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -7976,25 +8197,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de montagne, nourri Ã  l'herbe, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-cow-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr--raw": {
-    "name": "Cull cow, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U",
+  "vache-de-r-forme-conventionnel-syst-me-laitier-de-plaine-ensillage-de-ma-s-10-30-raw": {
+    "name": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 10 Ã  30%, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -8012,25 +8234,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 10 Ã  30%, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-cow-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw": {
-    "name": "Cull cow, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U",
+  "vache-de-r-forme-conventionnel-syst-me-laitier-de-plaine-ensillage-de-ma-s-5-10--raw": {
+    "name": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 5 Ã  10%, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -8048,25 +8271,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 5 Ã  10%, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "cull-cow-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-raw": {
-    "name": "Cull cow, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U",
+  "vache-de-r-forme-conventionnel-syst-me-laitier-de-plaine-ensillage-de-ma-s-plus--raw": {
+    "name": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s plus de 30%, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -8084,25 +8308,26 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s plus de 30%, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   },
-  "veal-conventional-fattening-system-calves-from-lowland-milk-system-at-farm-gate--raw": {
-    "name": "Veal, conventional, fattening system, calves from lowland milk system, at farm gate {FR} U",
+  "veau-conventionnel-syst-me-d-engraissement-syst-me-laitier-de-plaine-la-ferme-fr-raw": {
+    "name": "Veau conventionnel, systÃ¨me d'engraissement, systÃ¨me laitier de plaine, Ã  la ferme, France",
     "loss": 0.02,
     "processing_yield": 1.0,
     "data": {
@@ -8120,21 +8345,22 @@ window.aioxyData.ingredients = {
         "Eutrophication, terrestrial": 0.0,
         "Ecotoxicity, freshwater": 0.0,
         "Land Use": 0.0,
-        "Water Use": 0.0,
+        "Water Use/Scarcity (AWARE)": 0.0,
         "Resource Use, fossils": 0.0,
-        "Resource Use, minerals": 0.0
+        "Resource Use, minerals/metals": 0.0
       },
       "metadata": {
-        "source": "Agribalyse 3.2",
-        "compliance": "PEF 3.1 / JRC EF 3.1",
+        "source_dataset": "AGRIBALYSE 3.2",
+        "source_activity": "Veau conventionnel, systÃ¨me d'engraissement, systÃ¨me laitier de plaine, Ã  la ferme, France",
+        "dqr_overall": 2.5,
         "dqr": {
           "P": 2.5,
           "TiR": 2.5,
           "TeR": 2.5,
-          "GR": 2.5,
-          "note": "Derived from overall Agribalyse score for screening-level accuracy"
-        }
+          "GR": 2.5
+        },
+        "biogenic_net": 0.0
       }
     }
   }
-};
+});
