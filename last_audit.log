@@ -1,4 +1,1 @@
-
-🕵️ Auditing Grid Coordinates: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_farm_gate.csv
-✅ Successfully mapped 227 ingredients.
-🚀 Deployment ready: /home/runner/work/Aioxy/Aioxy/ingredients_db.js has been updated.
+✅ Deployment Ready: Processed 227 compliant ingredients into ingredients_db.js.
