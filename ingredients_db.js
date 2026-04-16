@@ -1,57 +1,13 @@
 // AIOXY FARM GATE DATABASE | AUDIT-GRADE
-// Generated: 2026-04-16 17:09:05
-// Total Ingredients: 221
+// Generated: 2026-04-16 17:15:59
+// Total Ingredients: 216
 // DQR: 2.5 (PEF 3.1 Secondary Data Standard)
 // Allocation: Economic (Agribalyse Official)
 // ===============================================================
 
 window.aioxyData = window.aioxyData || {};
 window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {}, {
-    "apricot-conventional-national-average-at-orchard-fr-u-raw": {
-            "name": "Apricot, conventional, national average, at orchard {FR} U",
-            "name_fr": "Abricot, conventionnel, moyenne nationale, au verger, France",
-            "loss": 0.03,
-            "processing_yield": 1.0,
-            "data": {
-                    "pef": {
-                            "Climate Change": 0.25,
-                            "Ozone Depletion": 4.14e-09,
-                            "Ionizing Radiation": 0.0485,
-                            "Photochemical Ozone Formation": 0.00045,
-                            "Particulate Matter": 9.49e-09,
-                            "Human Toxicity, non-cancer": 1.11e-08,
-                            "Human Toxicity, cancer": 2.25e-10,
-                            "Acidification": 0.000874,
-                            "Eutrophication, freshwater": 8.8e-05,
-                            "Eutrophication, marine": 0.0219,
-                            "Eutrophication, terrestrial": 0.0044,
-                            "Ecotoxicity, freshwater": 9.18,
-                            "Land Use": 349.0,
-                            "Water Use/Scarcity (AWARE)": 1.31,
-                            "Resource Use, fossils": 2.44,
-                            "Resource Use, minerals/metals": 2.22e-06,
-                            "Climate Change - Biogenic": 0.00284,
-                            "Climate Change - Fossil": 0.247,
-                            "Climate Change - Land Use": 7.67e-05
-                    },
-                    "metadata": {
-                            "source_dataset": "AGRIBALYSE 3.2",
-                            "source_activity": "Apricot, conventional, national average, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-apricot-conventional-national-average-at-orchard-fr-u-raw",
-                            "allocation_method": "Economic Allocation",
-                            "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
-                            },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.1
-                    }
-            }
-    },
-
-    "lamb-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
+    "lamb-conventional-indoor-production-system-at-farm-gate-fr": {
             "name": "Lamb, conventional, indoor production system, at farm gate {FR} U",
             "name_fr": "Agneau systÃ¨me de production conventionnel en intÃ©rieur, Ã  la ferme, France",
             "loss": 0.03,
@@ -81,7 +37,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lamb, conventional, indoor production system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lamb-conventional-indoor-production-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-lamb-conventional-indoor-production-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -95,7 +51,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "lamb-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
+    "lamb-conventional-roquefort-system-at-farm-gate-fr": {
             "name": "Lamb, conventional, Roquefort system, at farm gate {FR} U",
             "name_fr": "Agneau, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
             "loss": 0.03,
@@ -125,7 +81,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lamb, conventional, Roquefort system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lamb-conventional-roquefort-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-lamb-conventional-roquefort-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -139,7 +95,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "seaweed-non-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw": {
+    "seaweed-non-optimized-production-1kg-algae-laminaria-fresh-weight-fr": {
             "name": "Seaweed non-optimized production, 1kg algae (Laminaria), fresh weight {FR} U",
             "name_fr": "Algue production non optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
             "loss": 0.03,
@@ -169,7 +125,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Seaweed non-optimized production, 1kg algae (Laminaria), fresh weight {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-seaweed-non-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw",
+                            "source_uuid": "agb-3.2-seaweed-non-optimized-production-1kg-algae-laminaria-fresh-weight-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -183,7 +139,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw": {
+    "seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr": {
             "name": "Seaweed optimized production, 1kg algae (Laminaria), fresh weight {FR} U",
             "name_fr": "Algue production optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
             "loss": 0.03,
@@ -213,7 +169,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Seaweed optimized production, 1kg algae (Laminaria), fresh weight {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw",
+                            "source_uuid": "agb-3.2-seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -227,7 +183,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pineapple-mixed-production-reunion-island-average-at-production-site-re-u-raw": {
+    "pineapple-mixed-production-reunion-island-average-at-production-site-re": {
             "name": "Pineapple, mixed production, Reunion Island average, at production site {RE} U",
             "name_fr": "Ananas, production mixte, Ã  la ferme, Ã®le de la RÃ©union",
             "loss": 0.03,
@@ -257,7 +213,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pineapple, mixed production, Reunion Island average, at production site {RE} U {FR} U",
-                            "source_uuid": "agb-3.2-pineapple-mixed-production-reunion-island-average-at-production-site-re-u-raw",
+                            "source_uuid": "agb-3.2-pineapple-mixed-production-reunion-island-average-at-production-site-re",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -271,7 +227,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "european-anchovy-engraulis-encrasicolus-eca-seine-average-at-landing-ma-u-raw": {
+    "european-anchovy-engraulis-encrasicolus-eca-seine-average-at-landing-ma": {
             "name": "European Anchovy, Engraulis encrasicolus, ECA, Seine, average, at landing {MA} U",
             "name_fr": "Anchois europÃ©enne, Engraulis encrasicolus, atlantique centre est, senne, au dÃ©barquement, Maroc",
             "loss": 0.03,
@@ -301,7 +257,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "European Anchovy, Engraulis encrasicolus, ECA, Seine, average, at landing {MA} U {FR} U",
-                            "source_uuid": "agb-3.2-european-anchovy-engraulis-encrasicolus-eca-seine-average-at-landing-ma-u-raw",
+                            "source_uuid": "agb-3.2-european-anchovy-engraulis-encrasicolus-eca-seine-average-at-landing-ma",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -315,7 +271,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "oat-grain-national-average-animal-feed-at-farm-gate-fr-u-raw": {
+    "oat-grain-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Oat grain, national average, animal feed, at farm gate {FR} U",
             "name_fr": "Avoine, moyenne nationale, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -345,7 +301,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Oat grain, national average, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-oat-grain-national-average-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-oat-grain-national-average-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -359,7 +315,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "banana-mixed-production-west-indies-at-farm-gate-wi-u-raw": {
+    "banana-mixed-production-west-indies-at-farm-gate-wi": {
             "name": "Banana, mixed production, West Indies, at farm gate {WI} U",
             "name_fr": "Banane conventionnelle, Ã  la ferme, Antilles",
             "loss": 0.03,
@@ -389,7 +345,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Banana, mixed production, West Indies, at farm gate {WI} U {FR} U",
-                            "source_uuid": "agb-3.2-banana-mixed-production-west-indies-at-farm-gate-wi-u-raw",
+                            "source_uuid": "agb-3.2-banana-mixed-production-west-indies-at-farm-gate-wi",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -403,7 +359,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr-u-raw": {
+    "sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr": {
             "name": "Sea bass or sea bream, 200-500g, conventional, in cage, at farm gate {FR} U",
             "name_fr": "Bar ou daurade, 200-500g, conventionnel, en cage, Ã  la ferme, France",
             "loss": 0.03,
@@ -433,7 +389,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sea bass or sea bream, 200-500g, conventional, in cage, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -447,7 +403,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "beetroot-for-juice-conventional-at-farm-gate-fr-u-raw": {
+    "beetroot-for-juice-conventional-at-farm-gate-fr": {
             "name": "Beetroot for juice, conventional, at farm gate {FR} U",
             "name_fr": "Betterave pour du jus, conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -477,7 +433,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Beetroot for juice, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-beetroot-for-juice-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-beetroot-for-juice-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -491,7 +447,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
+    "sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr": {
             "name": "Sugar beet roots, conventional, national average, animal feed, at farm gate, production {FR} U",
             "name_fr": "Betteraves, moyen conventionnel, national, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -521,7 +477,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sugar beet roots, conventional, national average, animal feed, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -535,7 +491,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "durum-wheat-grain-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "durum-wheat-grain-conventional-national-average-at-farm-gate-fr": {
             "name": "Durum wheat grain, conventional, national average, at farm gate {FR} U",
             "name_fr": "BlÃ© dur, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -565,7 +521,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Durum wheat grain, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-durum-wheat-grain-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-durum-wheat-grain-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -579,7 +535,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soft-wheat-grain-conventional-protein-improved-quality-15-moisture-at-farm-gate-fr-u-raw": {
+    "soft-wheat-grain-conventional-protein-improved-quality-15-moisture-at-farm-gate-fr": {
             "name": "Soft wheat grain, conventional, protein improved quality, 15% moisture, at farm gate {FR} U",
             "name_fr": "BlÃ© tendre, conventionnel, amÃ©liorant protÃ©ine, 15% d'humiditÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -609,7 +565,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soft wheat grain, conventional, protein improved quality, 15% moisture, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-soft-wheat-grain-conventional-protein-improved-quality-15-moisture-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-soft-wheat-grain-conventional-protein-improved-quality-15-moisture-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -623,7 +579,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soft-wheat-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
+    "soft-wheat-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr": {
             "name": "Soft wheat grain, conventional, national average, animal feed, at farm gate, production {FR} U",
             "name_fr": "BlÃ© tendre, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -653,7 +609,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soft wheat grain, conventional, national average, animal feed, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-soft-wheat-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-soft-wheat-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -667,7 +623,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soft-wheat-grain-conventional-breadmaking-quality-15-moisture-at-farm-gate-fr-u-raw": {
+    "soft-wheat-grain-conventional-breadmaking-quality-15-moisture-at-farm-gate-fr": {
             "name": "Soft wheat grain, conventional, breadmaking quality, 15% moisture, at farm gate {FR} U",
             "name_fr": "BlÃ© tendre, conventionnel, panifiable, 15% d'humiditÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -697,7 +653,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soft wheat grain, conventional, breadmaking quality, 15% moisture, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-soft-wheat-grain-conventional-breadmaking-quality-15-moisture-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-soft-wheat-grain-conventional-breadmaking-quality-15-moisture-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -711,7 +667,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soft-wheat-grain-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw": {
+    "soft-wheat-grain-systematic-cover-cropping-scenario-at-farm-gate-fr": {
             "name": "Soft wheat grain, systematic cover cropping scenario, at farm gate {FR} U",
             "name_fr": "BlÃ© tendre, levier culture intermÃ©diaire systÃ©matique du scÃ©nario, Ã  la ferme, France",
             "loss": 0.03,
@@ -741,7 +697,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soft wheat grain, systematic cover cropping scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-soft-wheat-grain-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-soft-wheat-grain-systematic-cover-cropping-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -755,7 +711,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soft-wheat-grain-protein-crop-scenario-at-farm-gate-fr-u-raw": {
+    "soft-wheat-grain-protein-crop-scenario-at-farm-gate-fr": {
             "name": "Soft wheat grain, protein crop scenario, at farm gate {FR} U",
             "name_fr": "BlÃ© tendre, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
             "loss": 0.03,
@@ -785,7 +741,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soft wheat grain, protein crop scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-soft-wheat-grain-protein-crop-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-soft-wheat-grain-protein-crop-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -799,7 +755,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soft-wheat-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
+    "soft-wheat-grain-basis-scenario-without-lever-at-farm-gate-fr": {
             "name": "Soft wheat grain, basis scenario without lever, at farm gate {FR} U",
             "name_fr": "BlÃ© tendre, scÃ©nario de base, Ã  la ferme, France",
             "loss": 0.03,
@@ -829,7 +785,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soft wheat grain, basis scenario without lever, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-soft-wheat-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-soft-wheat-grain-basis-scenario-without-lever-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -843,7 +799,51 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-ewe-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
+    "beef-cattle-conventional-national-average-at-farm-gate-fr": {
+            "name": "Beef cattle, conventional, national average, at farm gate {FR} U",
+            "name_fr": "Boeuf, moyenne nationale, Ã  la ferme, France",
+            "loss": 0.03,
+            "processing_yield": 1.0,
+            "data": {
+                    "pef": {
+                            "Climate Change": 14.5,
+                            "Ozone Depletion": 5.43e-08,
+                            "Ionizing Radiation": 0.307,
+                            "Photochemical Ozone Formation": 0.0209,
+                            "Particulate Matter": 1.38e-06,
+                            "Human Toxicity, non-cancer": 2.12e-07,
+                            "Human Toxicity, cancer": 5.74e-09,
+                            "Acidification": 0.206,
+                            "Eutrophication, freshwater": 0.000573,
+                            "Eutrophication, marine": 0.0433,
+                            "Eutrophication, terrestrial": 0.911,
+                            "Ecotoxicity, freshwater": 73.0,
+                            "Land Use": 966.0,
+                            "Water Use/Scarcity (AWARE)": 1.16,
+                            "Resource Use, fossils": 24.2,
+                            "Resource Use, minerals/metals": 1.75e-05,
+                            "Climate Change - Biogenic": 10.9,
+                            "Climate Change - Fossil": 3.62,
+                            "Climate Change - Land Use": -0.0277
+                    },
+                    "metadata": {
+                            "source_dataset": "AGRIBALYSE 3.2",
+                            "source_activity": "Beef cattle, conventional, national average, at farm gate {FR} U {FR} U",
+                            "source_uuid": "agb-3.2-beef-cattle-conventional-national-average-at-farm-gate-fr",
+                            "allocation_method": "Economic Allocation",
+                            "dqr": {
+                                    "TeR": 3.0,
+                                    "GR": 2.0,
+                                    "TiR": 3.0,
+                                    "P": 2.0
+                            },
+                            "dqr_overall": 2.5,
+                            "single_score_mpt": 1.35
+                    }
+            }
+    },
+
+    "cull-ewe-conventional-indoor-production-system-at-farm-gate-fr": {
             "name": "Cull ewe, conventional, indoor production system, at farm gate {FR} U",
             "name_fr": "Brebis de rÃ©forme, conventionnel, intÃ©rieur, Ã  la ferme, France",
             "loss": 0.03,
@@ -873,7 +873,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull ewe, conventional, indoor production system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-ewe-conventional-indoor-production-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-ewe-conventional-indoor-production-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -887,7 +887,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-ewe-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
+    "cull-ewe-conventional-roquefort-system-at-farm-gate-fr": {
             "name": "Cull ewe, conventional, Roquefort system, at farm gate {FR} U",
             "name_fr": "Brebis de rÃ©forme, conventionnel, systÃ¨me Roquefort , Ã  la ferme, France",
             "loss": 0.03,
@@ -917,7 +917,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull ewe, conventional, Roquefort system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-ewe-conventional-roquefort-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-ewe-conventional-roquefort-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -931,7 +931,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "duck-for-roasting-conventional-at-farm-gate-fr-u-raw": {
+    "duck-for-roasting-conventional-at-farm-gate-fr": {
             "name": "Duck for roasting, conventional, at farm gate {FR} U",
             "name_fr": "Canard Ã  rÃ´tir,  conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -961,7 +961,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Duck for roasting, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-duck-for-roasting-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-duck-for-roasting-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -975,7 +975,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "fattening-duck-conventional-at-farm-gate-fr-u-raw": {
+    "fattening-duck-conventional-at-farm-gate-fr": {
             "name": "Fattening duck, conventional, at farm gate {FR} U",
             "name_fr": "Canard Engraissement,  conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -1005,7 +1005,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Fattening duck, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-fattening-duck-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-fattening-duck-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1019,7 +1019,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-national-average-at-farm-gate-fr": {
             "name": "Carrot, conventional, national average, at farm gate {FR} U",
             "name_fr": "Carotte conventionnelle, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -1049,7 +1049,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1063,7 +1063,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-fall-creances-lower-normandie-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-fall-creances-lower-normandie-at-farm-gate-fr": {
             "name": "Carrot, conventional, fall, Creances, Lower Normandie, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, automne, Creances, Basse-Normandie, Ã  la ferme, France",
             "loss": 0.03,
@@ -1093,7 +1093,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, fall, Creances, Lower Normandie, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-fall-creances-lower-normandie-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-fall-creances-lower-normandie-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1107,7 +1107,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-fall-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-fall-mont-st-michel-lower-normandie-at-farm-gate-fr": {
             "name": "Carrot, conventional, fall, Mont St. Michel, Lower Normandie, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, automne, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
             "loss": 0.03,
@@ -1137,7 +1137,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, fall, Mont St. Michel, Lower Normandie, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-fall-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-fall-mont-st-michel-lower-normandie-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1151,7 +1151,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-fall-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-fall-val-de-saire-lower-normandie-at-farm-gate-fr": {
             "name": "Carrot, conventional, fall, Val de Saire, Lower Normandie, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, automne, Val de Saire, Basse-Normandie, Ã  la ferme, France",
             "loss": 0.03,
@@ -1181,7 +1181,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, fall, Val de Saire, Lower Normandie, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-fall-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-fall-val-de-saire-lower-normandie-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1195,7 +1195,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-main-season-aquitaine-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-main-season-aquitaine-at-farm-gate-fr": {
             "name": "Carrot, conventional, main season, Aquitaine, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, de saison, Aquitaine, Ã  la ferme, France",
             "loss": 0.03,
@@ -1225,7 +1225,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, main season, Aquitaine, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-main-season-aquitaine-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-main-season-aquitaine-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1239,7 +1239,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-winter-aquitaine-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-winter-aquitaine-at-farm-gate-fr": {
             "name": "Carrot, conventional, winter, Aquitaine, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, hiver, Aquitaine, Ã  la ferme, France",
             "loss": 0.03,
@@ -1269,7 +1269,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, winter, Aquitaine, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-winter-aquitaine-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-winter-aquitaine-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1283,7 +1283,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-winter-creances-lower-normandie-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-winter-creances-lower-normandie-at-farm-gate-fr": {
             "name": "Carrot, conventional, winter, Creances, Lower Normandie, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, hiver, Creances, Basse-Normandie, Ã  la ferme, France",
             "loss": 0.03,
@@ -1313,7 +1313,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, winter, Creances, Lower Normandie, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-winter-creances-lower-normandie-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-winter-creances-lower-normandie-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1327,7 +1327,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-winter-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-winter-mont-st-michel-lower-normandie-at-farm-gate-fr": {
             "name": "Carrot, conventional, winter, Mont St. Michel, Lower Normandie, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, hiver, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
             "loss": 0.03,
@@ -1357,7 +1357,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, winter, Mont St. Michel, Lower Normandie, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-winter-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-winter-mont-st-michel-lower-normandie-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1371,7 +1371,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-winter-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-winter-val-de-saire-lower-normandie-at-farm-gate-fr": {
             "name": "Carrot, conventional, winter, Val de Saire, Lower Normandie, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, hiver, Val de Saire, Basse-Normandie, Ã  la ferme, France",
             "loss": 0.03,
@@ -1401,7 +1401,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, winter, Val de Saire, Lower Normandie, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-winter-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-winter-val-de-saire-lower-normandie-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1415,7 +1415,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "carrot-conventional-early-aquitaine-at-farm-gate-fr-u-raw": {
+    "carrot-conventional-early-aquitaine-at-farm-gate-fr": {
             "name": "Carrot, conventional, early, Aquitaine, at farm gate {FR} U",
             "name_fr": "Carotte, conventionnel, prÃ©coce, Aquitaine, Ã  la ferme, France",
             "loss": 0.03,
@@ -1445,7 +1445,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Carrot, conventional, early, Aquitaine, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-carrot-conventional-early-aquitaine-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-carrot-conventional-early-aquitaine-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1459,7 +1459,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cherry-conventional-national-average-at-orchard-fr-u-raw": {
+    "cherry-conventional-national-average-at-orchard-fr": {
             "name": "Cherry, conventional, national average, at orchard {FR} U",
             "name_fr": "Cerise, conventionnelle, moyenne nationale, au verger, France",
             "loss": 0.03,
@@ -1489,7 +1489,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cherry, conventional, national average, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cherry-conventional-national-average-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-cherry-conventional-national-average-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1503,7 +1503,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "hemp-straw-ret-champagne-at-farm-gate-fr-u-raw": {
+    "hemp-straw-ret-champagne-at-farm-gate-fr": {
             "name": "Hemp, straw, ret, Champagne, at farm gate {FR} U",
             "name_fr": "Chanvre, paille, Champagne, Ã  la ferme, France",
             "loss": 0.03,
@@ -1533,7 +1533,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Hemp, straw, ret, Champagne, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-hemp-straw-ret-champagne-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-hemp-straw-ret-champagne-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1547,7 +1547,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "kid-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
+    "kid-goat-conventional-intensive-forage-area-at-farm-gate-fr": {
             "name": "Kid goat, conventional, intensive forage area, at farm gate {FR} U",
             "name_fr": "Chevreau, conventionnel, fourage intensif, Ã  la ferme, France",
             "loss": 0.03,
@@ -1577,7 +1577,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Kid goat, conventional, intensive forage area, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-kid-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-kid-goat-conventional-intensive-forage-area-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1591,7 +1591,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
+    "cull-goat-conventional-intensive-forage-area-at-farm-gate-fr": {
             "name": "Cull goat, conventional, intensive forage area, at farm gate {FR} U",
             "name_fr": "Chevrette de rÃ©forme, conventionnel, fourrage intensif, Ã  la ferme, France",
             "loss": 0.03,
@@ -1621,7 +1621,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull goat, conventional, intensive forage area, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-goat-conventional-intensive-forage-area-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1635,7 +1635,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-season-conventional-refrigerant-loss-300-storage-and-forcing-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-season-conventional-refrigerant-loss-300-storage-and-forcing-at-farm-gate-fr": {
             "name": "Chicory witloof, season, conventional, refrigerant loss 300%, storage and forcing, at farm gate {FR} U",
             "name_fr": "ChicorÃ©e witlode, en saison, conventionnel, perte de rÃ©frigÃ©rant 300%, stockage et forÃ§age, Ã  la ferme, France",
             "loss": 0.03,
@@ -1665,7 +1665,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, season, conventional, refrigerant loss 300%, storage and forcing, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-season-conventional-refrigerant-loss-300-storage-and-forcing-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-season-conventional-refrigerant-loss-300-storage-and-forcing-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1679,7 +1679,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cauliflower-summer-conventional-at-farm-gate-fr-u-raw": {
+    "cauliflower-summer-conventional-at-farm-gate-fr": {
             "name": "Cauliflower, summer, conventional, at farm gate {FR} U",
             "name_fr": "Chou-fleur conventionnel, culture d'Ã©tÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -1709,7 +1709,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cauliflower, summer, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cauliflower-summer-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cauliflower-summer-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1723,7 +1723,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cauliflower-winter-conventional-at-farm-gate-fr-u-raw": {
+    "cauliflower-winter-conventional-at-farm-gate-fr": {
             "name": "Cauliflower, winter, conventional, at farm gate {FR} U",
             "name_fr": "Chou-fleur conventionnel, culture d'hiver, Ã  la ferme, France",
             "loss": 0.03,
@@ -1753,7 +1753,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cauliflower, winter, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cauliflower-winter-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cauliflower-winter-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1767,7 +1767,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cauliflower-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "cauliflower-conventional-national-average-at-farm-gate-fr": {
             "name": "Cauliflower, conventional, national average, at farm gate {FR} U",
             "name_fr": "Chou-fleur conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -1797,7 +1797,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cauliflower, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cauliflower-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cauliflower-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1811,7 +1811,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "clementine-export-quality-souss-at-orchard-ma-u-raw": {
+    "clementine-export-quality-souss-at-orchard-ma": {
             "name": "Clementine, export quality, Souss, at orchard {MA} U",
             "name_fr": "ClÃ©mentine, pour exportation, au verger, Souss, Maroc",
             "loss": 0.03,
@@ -1841,7 +1841,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Clementine, export quality, Souss, at orchard {MA} U {FR} U",
-                            "source_uuid": "agb-3.2-clementine-export-quality-souss-at-orchard-ma-u-raw",
+                            "source_uuid": "agb-3.2-clementine-export-quality-souss-at-orchard-ma",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1855,7 +1855,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
+    "rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": {
             "name": "Rapeseed, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U",
             "name_fr": "Colza, conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, production, France",
             "loss": 0.03,
@@ -1885,7 +1885,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Rapeseed, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1899,7 +1899,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "rapeseed-systematic-covercropping-scenario-at-farm-gate-fr-u-raw": {
+    "rapeseed-systematic-covercropping-scenario-at-farm-gate-fr": {
             "name": "Rapeseed, systematic covercropping scenario, at farm gate {FR} U",
             "name_fr": "Colza, levier culture intermÃ©diaire, Ã  la ferme, France",
             "loss": 0.03,
@@ -1929,7 +1929,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Rapeseed, systematic covercropping scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-rapeseed-systematic-covercropping-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-rapeseed-systematic-covercropping-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1943,7 +1943,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "rapeseed-protein-crop-scenario-at-farm-gate-fr-u-raw": {
+    "rapeseed-protein-crop-scenario-at-farm-gate-fr": {
             "name": "Rapeseed, protein crop scenario, at farm gate {FR} U",
             "name_fr": "Colza, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
             "loss": 0.03,
@@ -1973,7 +1973,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Rapeseed, protein crop scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-rapeseed-protein-crop-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-rapeseed-protein-crop-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -1987,7 +1987,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "rapeseed-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
+    "rapeseed-basis-scenario-without-lever-at-farm-gate-fr": {
             "name": "Rapeseed, basis scenario without lever, at farm gate {FR} U",
             "name_fr": "Colza, scÃ©nario de base, Ã  la ferme, France",
             "loss": 0.03,
@@ -2017,7 +2017,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Rapeseed, basis scenario without lever, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-rapeseed-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-rapeseed-basis-scenario-without-lever-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2031,7 +2031,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr-u-raw": {
+    "great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr": {
             "name": "Great Scallop, Pecten maximus, BSBrieuc, Dredge, average, at landing {FR} U",
             "name_fr": "Coquille Saint-Jacques,  Pecten maximus, bais de St Brieuc, drague, au dÃ©barquement, France",
             "loss": 0.03,
@@ -2061,7 +2061,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Great Scallop, Pecten maximus, BSBrieuc, Dredge, average, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2075,7 +2075,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "zucchini-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
+    "zucchini-autumn-under-tunnel-conventional-at-farm-gate-fr": {
             "name": "Zucchini, autumn, under tunnel, conventional, at farm gate {FR} U",
             "name_fr": "Courgette conventionnelle, automne sous tunnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -2105,7 +2105,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Zucchini, autumn, under tunnel, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-zucchini-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-zucchini-autumn-under-tunnel-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2119,7 +2119,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "zucchini-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "zucchini-conventional-national-average-at-farm-gate-fr": {
             "name": "Zucchini, conventional, national average, at farm gate {FR} U",
             "name_fr": "Courgette conventionnelle, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -2149,7 +2149,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Zucchini, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-zucchini-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-zucchini-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2163,7 +2163,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "zucchini-open-field-conventional-at-farm-gate-fr-u-raw": {
+    "zucchini-open-field-conventional-at-farm-gate-fr": {
             "name": "Zucchini, open field, conventional, at farm gate {FR} U",
             "name_fr": "Courgette conventionnelle, plein champ, Ã  la ferme, France",
             "loss": 0.03,
@@ -2193,7 +2193,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Zucchini, open field, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-zucchini-open-field-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-zucchini-open-field-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2207,7 +2207,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "zucchini-springtime-under-tunnel-conventionel-at-farm-gate-fr-u-raw": {
+    "zucchini-springtime-under-tunnel-conventionel-at-farm-gate-fr": {
             "name": "Zucchini, springtime, under tunnel, conventionel, at farm gate {FR} U",
             "name_fr": "Courgette conventionnelle, printemps sous tunnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -2237,7 +2237,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Zucchini, springtime, under tunnel, conventionel, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-zucchini-springtime-under-tunnel-conventionel-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-zucchini-springtime-under-tunnel-conventionel-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2251,7 +2251,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "fresh-shrimps-china-production-fr-u-raw": {
+    "fresh-shrimps-china-production-fr": {
             "name": "Fresh shrimps, China production {FR} U",
             "name_fr": "Crevette, Chine, conventionnelle, Ã  la ferme, France",
             "loss": 0.03,
@@ -2281,7 +2281,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Fresh shrimps, China production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-fresh-shrimps-china-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-fresh-shrimps-china-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2295,7 +2295,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "turkey-conventional-at-farm-gate-fr-u-raw": {
+    "turkey-conventional-at-farm-gate-fr": {
             "name": "Turkey, conventional, at farm gate {FR} U",
             "name_fr": "Dinde, conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -2325,7 +2325,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Turkey, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-turkey-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-turkey-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2339,7 +2339,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "turkey-label-rouge-at-farm-gate-fr-u-raw": {
+    "turkey-label-rouge-at-farm-gate-fr": {
             "name": "Turkey, Label Rouge, at farm gate {FR} U",
             "name_fr": "Dinde, Label Rouge, Ã  la ferme, France",
             "loss": 0.03,
@@ -2369,7 +2369,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Turkey, Label Rouge, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-turkey-label-rouge-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-turkey-label-rouge-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2383,7 +2383,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-early-conventional-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-early-conventional-at-farm-gate-fr": {
             "name": "Chicory witloof, early, conventional at farm gate {FR} U",
             "name_fr": "Endive conventionnelle, prÃ©coce, Ã  la ferme, France",
             "loss": 0.03,
@@ -2413,7 +2413,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, early, conventional at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-early-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-early-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2427,7 +2427,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-season-conventional-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-season-conventional-at-farm-gate-fr": {
             "name": "Chicory witloof, season, conventional at farm gate {FR} U",
             "name_fr": "Endive conventionnelle, saison, Ã  la ferme, France",
             "loss": 0.03,
@@ -2457,7 +2457,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, season, conventional at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-season-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-season-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2471,7 +2471,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-late-conventional-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-late-conventional-at-farm-gate-fr": {
             "name": "Chicory witloof, late, conventional at farm gate {FR} U",
             "name_fr": "Endive conventionnelle, tardive, Ã  la ferme, France",
             "loss": 0.03,
@@ -2501,7 +2501,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, late, conventional at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-late-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-late-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2515,7 +2515,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-conventional-national-average-at-farm-gate-fr": {
             "name": "Chicory witloof, conventional, national average at farm gate {FR} U",
             "name_fr": "Endive, conventionnelle, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -2545,7 +2545,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, conventional, national average at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2559,7 +2559,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "spring-faba-bean-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "spring-faba-bean-conventional-national-average-at-farm-gate-fr": {
             "name": "Spring faba bean, conventional, national average, at farm gate {FR} U",
             "name_fr": "FÃ©verole, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -2589,7 +2589,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Spring faba bean, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-spring-faba-bean-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-spring-faba-bean-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2603,7 +2603,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "spring-faba-bean-conventional-reduced-protection-at-farm-gate-fr-u-raw": {
+    "spring-faba-bean-conventional-reduced-protection-at-farm-gate-fr": {
             "name": "Spring faba bean, conventional, reduced protection, at farm gate {FR} U",
             "name_fr": "FÃ©verole, conventionnel, protection intÃ©grÃ©e, Ã  la ferme, France",
             "loss": 0.03,
@@ -2633,7 +2633,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Spring faba bean, conventional, reduced protection, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-spring-faba-bean-conventional-reduced-protection-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-spring-faba-bean-conventional-reduced-protection-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2647,7 +2647,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "hemp-fibre-without-processing-fr-u-raw": {
+    "hemp-fibre-without-processing-fr": {
             "name": "Hemp fibre, without processing {FR} U",
             "name_fr": "Fibres de chanvre, France",
             "loss": 0.03,
@@ -2677,7 +2677,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Hemp fibre, without processing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-hemp-fibre-without-processing-fr-u-raw",
+                            "source_uuid": "agb-3.2-hemp-fibre-without-processing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2691,7 +2691,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-soilless-protected-crops-frost-protection-conventional-at-farm-gate-fr-u-raw": {
+    "strawberry-soilless-protected-crops-frost-protection-conventional-at-farm-gate-fr": {
             "name": "Strawberry, soilless protected crops, frost protection, conventional, at farm gate {FR} U",
             "name_fr": "Fraise conventionnelle, hors sol sous abri anti gel, Ã  la ferme, France",
             "loss": 0.03,
@@ -2721,7 +2721,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry, soilless protected crops, frost protection, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-frost-protection-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-frost-protection-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2735,7 +2735,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-soilless-protected-crops-heated-conventional-at-farm-gate-fr-u-raw": {
+    "strawberry-soilless-protected-crops-heated-conventional-at-farm-gate-fr": {
             "name": "Strawberry, soilless protected crops, heated, conventional, at farm gate {FR} U",
             "name_fr": "Fraise conventionnelle, hors sol sous abri chauffÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -2765,7 +2765,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry, soilless protected crops, heated, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-heated-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-heated-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2779,7 +2779,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-soilless-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw": {
+    "strawberry-soilless-protected-crops-non-heated-conventional-at-farm-gate-fr": {
             "name": "Strawberry, soilless protected crops, non-heated, conventional, at farm gate {FR} U",
             "name_fr": "Fraise conventionnelle, hors sol sous abri non chauffÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -2809,7 +2809,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry, soilless protected crops, non-heated, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-non-heated-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2823,7 +2823,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "strawberry-conventional-national-average-at-farm-gate-fr": {
             "name": "Strawberry, conventional, national average, at farm gate {FR} U",
             "name_fr": "Fraise conventionnelle, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -2853,7 +2853,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2867,7 +2867,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-open-field-conventional-at-farm-gate-fr-u-raw": {
+    "strawberry-open-field-conventional-at-farm-gate-fr": {
             "name": "Strawberry, open field, conventional, at farm gate {FR} U",
             "name_fr": "Fraise conventionnelle, plein champ, Ã  la ferme, France",
             "loss": 0.03,
@@ -2897,7 +2897,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry, open field, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-open-field-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-open-field-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2911,7 +2911,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-soil-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw": {
+    "strawberry-soil-protected-crops-non-heated-conventional-at-farm-gate-fr": {
             "name": "Strawberry, soil protected crops, non-heated, conventional, at farm gate {FR} U",
             "name_fr": "Fraise conventionnelle, sol sous abri non chauffÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -2941,7 +2941,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry, soil protected crops, non-heated, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-soil-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-soil-protected-crops-non-heated-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2955,7 +2955,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-for-processing-open-field-conventional-at-farm-gate-es-u-raw": {
+    "strawberry-for-processing-open-field-conventional-at-farm-gate-es": {
             "name": "Strawberry for processing, open field, conventional, at farm gate {ES} U",
             "name_fr": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Espagne",
             "loss": 0.03,
@@ -2985,7 +2985,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry for processing, open field, conventional, at farm gate {ES} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-es-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-es",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -2999,7 +2999,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-for-processing-open-field-conventional-at-farm-gate-ma-u-raw": {
+    "strawberry-for-processing-open-field-conventional-at-farm-gate-ma": {
             "name": "Strawberry for processing, open field, conventional, at farm gate {MA} U",
             "name_fr": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, maroc",
             "loss": 0.03,
@@ -3029,7 +3029,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry for processing, open field, conventional, at farm gate {MA} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-ma-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-ma",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3043,7 +3043,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "strawberry-for-processing-open-field-conventional-at-farm-gate-pl-u-raw": {
+    "strawberry-for-processing-open-field-conventional-at-farm-gate-pl": {
             "name": "Strawberry for processing, open field, conventional, at farm gate {PL} U",
             "name_fr": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Pologne",
             "loss": 0.03,
@@ -3073,7 +3073,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Strawberry for processing, open field, conventional, at farm gate {PL} U {FR} U",
-                            "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-pl-u-raw",
+                            "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-pl",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3087,7 +3087,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "gadidae-celticsea-bottom-trawl-average-at-landing-fr-u-raw": {
+    "gadidae-celticsea-bottom-trawl-average-at-landing-fr": {
             "name": "Gadidae, CelticSea, Bottom Trawl, average, at landing {FR} U",
             "name_fr": "Gadidae, mer celtique, chalut de fond, au dÃ©barquement, France",
             "loss": 0.03,
@@ -3117,7 +3117,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Gadidae, CelticSea, Bottom Trawl, average, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-gadidae-celticsea-bottom-trawl-average-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-gadidae-celticsea-bottom-trawl-average-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3131,7 +3131,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "suckler-heifer-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
+    "suckler-heifer-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr": {
             "name": "Suckler heifer, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U",
             "name_fr": "GÃ©nisse allaitante  systÃ¨me d'engraissement conventionnel, plus de 1,2 UGB par ha, Ã  la ferme, France",
             "loss": 0.03,
@@ -3161,7 +3161,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Suckler heifer, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-suckler-heifer-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-suckler-heifer-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3175,7 +3175,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "coffee-bean-robusta-depulped-brazil-at-farm-gate-br-u-raw": {
+    "coffee-bean-robusta-depulped-brazil-at-farm-gate-br": {
             "name": "Coffee bean (Robusta), depulped, Brazil, at farm gate {BR} U",
             "name_fr": "Grain de cafÃ© (robusta), dÃ©pulpÃ©s, au BrÃ©sil, au dÃ©part de l'exploitation, BrÃ©sil",
             "loss": 0.03,
@@ -3205,7 +3205,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Coffee bean (Robusta), depulped, Brazil, at farm gate {BR} U {FR} U",
-                            "source_uuid": "agb-3.2-coffee-bean-robusta-depulped-brazil-at-farm-gate-br-u-raw",
+                            "source_uuid": "agb-3.2-coffee-bean-robusta-depulped-brazil-at-farm-gate-br",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3219,7 +3219,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "hemp-grain-champagne-at-farm-gate-fr-u-raw": {
+    "hemp-grain-champagne-at-farm-gate-fr": {
             "name": "Hemp, grain, Champagne, at farm gate {FR} U",
             "name_fr": "Graine de chanvre, Champagne, Ã  la ferme, France",
             "loss": 0.03,
@@ -3249,7 +3249,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Hemp, grain, Champagne, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-hemp-grain-champagne-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-hemp-grain-champagne-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3263,7 +3263,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
+    "sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": {
             "name": "Sunflower grain, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U",
             "name_fr": "Graine de tournesol,  conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
             "loss": 0.03,
@@ -3293,7 +3293,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sunflower grain, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3307,7 +3307,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sunflower-grain-systematic-covercropping-scenario-at-farm-gate-fr-u-raw": {
+    "sunflower-grain-systematic-covercropping-scenario-at-farm-gate-fr": {
             "name": "Sunflower grain, systematic covercropping scenario, at farm gate {FR} U",
             "name_fr": "Graine de tournesol, levier culture intermÃ©diaire, Ã  la ferme, France",
             "loss": 0.03,
@@ -3337,7 +3337,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sunflower grain, systematic covercropping scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sunflower-grain-systematic-covercropping-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-sunflower-grain-systematic-covercropping-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3351,7 +3351,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sunflower-grain-protein-crop-scenario-at-farm-gate-fr-u-raw": {
+    "sunflower-grain-protein-crop-scenario-at-farm-gate-fr": {
             "name": "Sunflower grain, protein crop scenario, at farm gate {FR} U",
             "name_fr": "Graine de tournesol, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
             "loss": 0.03,
@@ -3381,7 +3381,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sunflower grain, protein crop scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sunflower-grain-protein-crop-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-sunflower-grain-protein-crop-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3395,7 +3395,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sunflower-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
+    "sunflower-grain-basis-scenario-without-lever-at-farm-gate-fr": {
             "name": "Sunflower grain, basis scenario without lever, at farm gate {FR} U",
             "name_fr": "Graine de tournesol, scÃ©nario de base, Ã  la ferme, France",
             "loss": 0.03,
@@ -3425,7 +3425,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sunflower grain, basis scenario without lever, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sunflower-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-sunflower-grain-basis-scenario-without-lever-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3439,7 +3439,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr-u-raw": {
+    "flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr": {
             "name": "Flaxseed extruded, Bleu Blanc Coeur feed, at farm gate {FR} U",
             "name_fr": "Graines de lin extrudÃ©es, aliment Bleu Blanc Coeur, Ã  la ferme, France",
             "loss": 0.03,
@@ -3469,7 +3469,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Flaxseed extruded, Bleu Blanc Coeur feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3483,7 +3483,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "flaxseed-straw-ret-normandie-at-farm-gate-fr-u-raw": {
+    "flaxseed-straw-ret-normandie-at-farm-gate-fr": {
             "name": "Flaxseed, straw, ret, Normandie, at farm gate {FR} U",
             "name_fr": "Graines de lin, paille, Normandie, Ã  la ferme, France",
             "loss": 0.03,
@@ -3513,7 +3513,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Flaxseed, straw, ret, Normandie, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-flaxseed-straw-ret-normandie-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-flaxseed-straw-ret-normandie-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3527,7 +3527,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "large-trout-2-4kg-conventional-at-farm-gate-fr-u-raw": {
+    "large-trout-2-4kg-conventional-at-farm-gate-fr": {
             "name": "Large trout, 2-4kg, conventional, at farm gate {FR} U",
             "name_fr": "Grande truite, 2-4 kg, conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -3557,7 +3557,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Large trout, 2-4kg, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-large-trout-2-4kg-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-large-trout-2-4kg-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3571,7 +3571,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl-u-raw": {
+    "atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl": {
             "name": "Atlantic Herring, Clupea harengus, NEA, Pelagic Trawl, average, at landing {NL} U",
             "name_fr": "Hareng de l'Atlantique, Clupea harengus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
             "loss": 0.03,
@@ -3601,7 +3601,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Atlantic Herring, Clupea harengus, NEA, Pelagic Trawl, average, at landing {NL} U {FR} U",
-                            "source_uuid": "agb-3.2-atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl-u-raw",
+                            "source_uuid": "agb-3.2-atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3615,7 +3615,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "french-bean-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "french-bean-conventional-national-average-at-farm-gate-fr": {
             "name": "French bean, conventional, national average, at farm gate {FR} U",
             "name_fr": "Haricot franÃ§ais, moyenne conventionnelle, nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -3645,7 +3645,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "French bean, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-french-bean-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-french-bean-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3659,7 +3659,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "lobster-1-kg-of-product-at-landing-fr-u-raw": {
+    "lobster-1-kg-of-product-at-landing-fr": {
             "name": "Lobster, 1 kg of product, at landing {FR} U",
             "name_fr": "Homard, au dÃ©barquement, France",
             "loss": 0.03,
@@ -3689,7 +3689,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lobster, 1 kg of product, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lobster-1-kg-of-product-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-lobster-1-kg-of-product-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3703,7 +3703,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "kiwi-fr-conventional-national-average-at-orchard-fr-u-raw": {
+    "kiwi-fr-conventional-national-average-at-orchard-fr": {
             "name": "Kiwi FR, conventional, national average, at orchard {FR} U",
             "name_fr": "Kiwi FR, conventionnel, moyenne nationale, au verger, France",
             "loss": 0.03,
@@ -3733,7 +3733,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Kiwi FR, conventional, national average, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-kiwi-fr-conventional-national-average-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-kiwi-fr-conventional-national-average-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3747,7 +3747,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "wool-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
+    "wool-conventional-roquefort-system-at-farm-gate-fr": {
             "name": "Wool, conventional, Roquefort system, at farm gate {FR} U",
             "name_fr": "Laine, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
             "loss": 0.03,
@@ -3777,7 +3777,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Wool, conventional, Roquefort system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-wool-conventional-roquefort-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-wool-conventional-roquefort-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3791,7 +3791,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "wool-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
+    "wool-conventional-indoor-production-system-at-farm-gate-fr": {
             "name": "Wool, conventional, indoor production system, at farm gate {FR} U",
             "name_fr": "Laine, systÃ¨me de production conventionnel, intÃ©rieur, Ã  la ferme, France",
             "loss": 0.03,
@@ -3821,7 +3821,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Wool, conventional, indoor production system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-wool-conventional-indoor-production-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-wool-conventional-indoor-production-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3835,7 +3835,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sheep-milk-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
+    "sheep-milk-conventional-roquefort-system-at-farm-gate-fr": {
             "name": "Sheep milk, conventional, Roquefort system, at farm gate {FR} U",
             "name_fr": "Lait de brebis, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
             "loss": 0.03,
@@ -3865,7 +3865,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sheep milk, conventional, Roquefort system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sheep-milk-conventional-roquefort-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-sheep-milk-conventional-roquefort-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3879,7 +3879,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "goat-milk-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
+    "goat-milk-conventional-intensive-forage-area-at-farm-gate-fr": {
             "name": "Goat milk, conventional, intensive forage area, at farm gate {FR} U",
             "name_fr": "Lait de chÃ¨vre, fourrage intensif, Ã  la ferme, France",
             "loss": 0.03,
@@ -3909,7 +3909,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Goat milk, conventional, intensive forage area, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-goat-milk-conventional-intensive-forage-area-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-goat-milk-conventional-intensive-forage-area-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3923,7 +3923,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cow-milk-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "cow-milk-conventional-national-average-at-farm-gate-fr": {
             "name": "Cow milk, conventional, national average, at farm gate {FR} U",
             "name_fr": "Lait de vache, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -3953,7 +3953,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cow milk, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cow-milk-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cow-milk-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -3967,7 +3967,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cow-milk-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw": {
+    "cow-milk-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr": {
             "name": "Cow milk, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U",
             "name_fr": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 10 Ã  30%, Ã  la ferme, France",
             "loss": 0.03,
@@ -3997,7 +3997,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cow milk, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4011,7 +4011,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cow-milk-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw": {
+    "cow-milk-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr": {
             "name": "Cow milk, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U",
             "name_fr": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 5 Ã  10%, Ã  la ferme, France",
             "loss": 0.03,
@@ -4041,7 +4041,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cow milk, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4055,7 +4055,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cow-milk-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw": {
+    "cow-milk-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr": {
             "name": "Cow milk, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U",
             "name_fr": "Lait de vache, systÃ¨me conventionnel, Lait de plaine, maÃ¯s ensilage plus de 30%, Ã  la ferme, France",
             "loss": 0.03,
@@ -4085,7 +4085,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cow milk, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4099,7 +4099,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cow-milk-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw": {
+    "cow-milk-conventional-highland-milk-system-grass-fed-at-farm-gate-fr": {
             "name": "Cow milk, conventional, highland milk system, grass fed, at farm gate {FR} U",
             "name_fr": "Lait de vache, systÃ¨me conventionnel, montagne, nourri Ã  l'herbe, Ã  la ferme, France",
             "loss": 0.03,
@@ -4129,7 +4129,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cow milk, conventional, highland milk system, grass fed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cow-milk-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cow-milk-conventional-highland-milk-system-grass-fed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4143,7 +4143,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "lettuce-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
+    "lettuce-autumn-under-tunnel-conventional-at-farm-gate-fr": {
             "name": "Lettuce, autumn under tunnel, conventional, at farm gate {FR} U",
             "name_fr": "Laitue conventionnelle, automne sous tunnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -4173,7 +4173,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lettuce, autumn under tunnel, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lettuce-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-lettuce-autumn-under-tunnel-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4187,7 +4187,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "lettuce-winter-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
+    "lettuce-winter-under-tunnel-conventional-at-farm-gate-fr": {
             "name": "Lettuce, winter under tunnel, conventional, at farm gate {FR} U",
             "name_fr": "Laitue conventionnelle, hiver sous tunnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -4217,7 +4217,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lettuce, winter under tunnel, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lettuce-winter-under-tunnel-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-lettuce-winter-under-tunnel-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4231,7 +4231,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "lettuce-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "lettuce-conventional-national-average-at-farm-gate-fr": {
             "name": "Lettuce, conventional, national average, at farm gate {FR} U",
             "name_fr": "Laitue conventionnelle, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4261,7 +4261,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lettuce, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lettuce-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-lettuce-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4275,7 +4275,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "lettuce-open-field-conventional-at-farm-gate-fr-u-raw": {
+    "lettuce-open-field-conventional-at-farm-gate-fr": {
             "name": "Lettuce, open field, conventional, at farm gate {FR} U",
             "name_fr": "Laitue conventionnelle, plein champ, Ã  la ferme, France",
             "loss": 0.03,
@@ -4305,7 +4305,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lettuce, open field, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lettuce-open-field-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-lettuce-open-field-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4319,7 +4319,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-rabbit-conventional-in-cage-at-farm-gate-fr-u-raw": {
+    "cull-rabbit-conventional-in-cage-at-farm-gate-fr": {
             "name": "Cull rabbit, conventional, in cage, at farm gate {FR} U",
             "name_fr": "Lapin de rÃ©forme, conventionnel, en cage, Ã  la ferme, France",
             "loss": 0.03,
@@ -4349,7 +4349,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull rabbit, conventional, in cage, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-rabbit-conventional-in-cage-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-rabbit-conventional-in-cage-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4363,7 +4363,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "rabbit-conventional-in-cage-at-farm-gate-fr-u-raw": {
+    "rabbit-conventional-in-cage-at-farm-gate-fr": {
             "name": "Rabbit, conventional, in cage, at farm gate {FR} U",
             "name_fr": "Lapin, conventionnel, en cage, Ã  la ferme, France",
             "loss": 0.03,
@@ -4393,7 +4393,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Rabbit, conventional, in cage, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-rabbit-conventional-in-cage-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-rabbit-conventional-in-cage-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4407,7 +4407,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "spring-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw": {
+    "spring-lupin-2013-conventional-national-average-at-farm-gate-production-fr": {
             "name": "Spring lupin, 2013, conventional, national average, at farm gate, production {FR} U",
             "name_fr": "Lupin de printemps, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4437,7 +4437,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Spring lupin, 2013, conventional, national average, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-spring-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-spring-lupin-2013-conventional-national-average-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4451,7 +4451,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "spring-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw": {
+    "spring-lupin-2015-conventional-national-average-at-farm-gate-production-fr": {
             "name": "Spring lupin, 2015, conventional, national average, at farm gate, production {FR} U",
             "name_fr": "Lupin de printemps, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4481,7 +4481,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Spring lupin, 2015, conventional, national average, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-spring-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-spring-lupin-2015-conventional-national-average-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4495,7 +4495,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "winter-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw": {
+    "winter-lupin-2013-conventional-national-average-at-farm-gate-production-fr": {
             "name": "Winter lupin, 2013, conventional, national average, at farm gate, production {FR} U",
             "name_fr": "Lupin d'hiver, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4525,7 +4525,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Winter lupin, 2013, conventional, national average, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-winter-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-winter-lupin-2013-conventional-national-average-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4539,7 +4539,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "winter-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw": {
+    "winter-lupin-2015-conventional-national-average-at-farm-gate-production-fr": {
             "name": "Winter lupin, 2015, conventional, national average, at farm gate, production {FR} U",
             "name_fr": "Lupin d'hiver, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4569,7 +4569,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Winter lupin, 2015, conventional, national average, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-winter-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-winter-lupin-2015-conventional-national-average-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4583,7 +4583,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "lupin-conventional-national-average-at-farm-gate-production-fr-u-raw": {
+    "lupin-conventional-national-average-at-farm-gate-production-fr": {
             "name": "Lupin, conventional, national average, at farm gate, production {FR} U",
             "name_fr": "Lupin, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4613,7 +4613,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Lupin, conventional, national average, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-lupin-conventional-national-average-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-lupin-conventional-national-average-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4627,7 +4627,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "alfalfa-dehydrated-100-biomass-energy-process-conventional-at-feed-plant-fr-u-raw": {
+    "alfalfa-dehydrated-100-biomass-energy-process-conventional-at-feed-plant-fr": {
             "name": "Alfalfa, dehydrated, 100% biomass energy process, conventional, at feed plant {FR} U",
             "name_fr": "Luzerne dÃ©shydratÃ©e, conventionnelle, processus avec Ã©nergie 100% biomasse, sortie usine, France",
             "loss": 0.03,
@@ -4657,7 +4657,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Alfalfa, dehydrated, 100% biomass energy process, conventional, at feed plant {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-alfalfa-dehydrated-100-biomass-energy-process-conventional-at-feed-plant-fr-u-raw",
+                            "source_uuid": "agb-3.2-alfalfa-dehydrated-100-biomass-energy-process-conventional-at-feed-plant-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4671,7 +4671,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "alfalfa-dehydrated-with-new-energies-process-conventional-at-feed-plant-fr-u-raw": {
+    "alfalfa-dehydrated-with-new-energies-process-conventional-at-feed-plant-fr": {
             "name": "Alfalfa, dehydrated, with new energies process, conventional, at feed plant {FR} U",
             "name_fr": "Luzerne dÃ©shydratÃ©e, conventionnelle, sortie usine, France",
             "loss": 0.03,
@@ -4701,7 +4701,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Alfalfa, dehydrated, with new energies process, conventional, at feed plant {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-alfalfa-dehydrated-with-new-energies-process-conventional-at-feed-plant-fr-u-raw",
+                            "source_uuid": "agb-3.2-alfalfa-dehydrated-with-new-energies-process-conventional-at-feed-plant-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4715,7 +4715,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "alfalfa-conventional-for-dehydration-animal-feed-at-farm-gate-production-fr-u-raw": {
+    "alfalfa-conventional-for-dehydration-animal-feed-at-farm-gate-production-fr": {
             "name": "Alfalfa, conventional, for dehydration, animal feed, at farm gate, production {FR} U",
             "name_fr": "Luzerne, conventionnel, par dÃ©shydratation, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4745,7 +4745,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Alfalfa, conventional, for dehydration, animal feed, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-alfalfa-conventional-for-dehydration-animal-feed-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-alfalfa-conventional-for-dehydration-animal-feed-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4759,7 +4759,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "alfalfa-conventional-for-animal-feeding-at-farm-gate-fr-u-raw": {
+    "alfalfa-conventional-for-animal-feeding-at-farm-gate-fr": {
             "name": "Alfalfa, conventional, for animal feeding, at farm gate {FR} U",
             "name_fr": "Luzerne, conventionnel, pour l'alimentation des animaux, Ã  la ferme, France",
             "loss": 0.03,
@@ -4789,7 +4789,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Alfalfa, conventional, for animal feeding, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-alfalfa-conventional-for-animal-feeding-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-alfalfa-conventional-for-animal-feeding-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4803,7 +4803,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "alfalfa-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "alfalfa-conventional-national-average-at-farm-gate-fr": {
             "name": "Alfalfa, conventional, national average, at farm gate {FR} U",
             "name_fr": "Luzerne, moyenne conventionnelle, nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4833,7 +4833,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Alfalfa, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-alfalfa-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-alfalfa-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4847,7 +4847,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr-u-raw": {
+    "maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Maize grain, conventional, 28% moisture, national average, animal feed, at farm gate {FR} U",
             "name_fr": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4877,7 +4877,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Maize grain, conventional, 28% moisture, national average, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4891,7 +4891,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "maize-grain-conventional-28-moisture-national-average-with-water-footprint-animal-feed-at-farm-gate--raw": {
+    "maize-grain-conventional-28-moisture-national-average-with-water-footprint-animal-feed-at-farm-gate-": {
             "name": "Maize grain, conventional, 28% moisture, national average, with water footprint, animal feed, at farm gate {FR} U",
             "name_fr": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, avec empreinte eau, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -4921,7 +4921,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Maize grain, conventional, 28% moisture, national average, with water footprint, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-maize-grain-conventional-28-moisture-national-average-with-water-footprint-animal-feed-at-farm-gate--raw",
+                            "source_uuid": "agb-3.2-maize-grain-conventional-28-moisture-national-average-with-water-footprint-animal-feed-at-farm-gate-",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4935,7 +4935,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "grain-maize-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw": {
+    "grain-maize-systematic-cover-cropping-scenario-at-farm-gate-fr": {
             "name": "Grain maize, systematic cover cropping scenario, at farm gate {FR} U",
             "name_fr": "MaÃ¯s grain, levier culture intermÃ©diaire systÃ©matique, Ã  la ferme, France",
             "loss": 0.03,
@@ -4965,7 +4965,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Grain maize, systematic cover cropping scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-grain-maize-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-grain-maize-systematic-cover-cropping-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -4979,7 +4979,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "grain-maize-protein-crop-scenario-at-farm-gate-fr-u-raw": {
+    "grain-maize-protein-crop-scenario-at-farm-gate-fr": {
             "name": "Grain maize, protein crop scenario, at farm gate {FR} U",
             "name_fr": "MaÃ¯s grain, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
             "loss": 0.03,
@@ -5009,7 +5009,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Grain maize, protein crop scenario, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-grain-maize-protein-crop-scenario-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-grain-maize-protein-crop-scenario-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5023,7 +5023,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "grain-maize-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
+    "grain-maize-basis-scenario-without-lever-at-farm-gate-fr": {
             "name": "Grain maize, basis scenario without lever, at farm gate {FR} U",
             "name_fr": "MaÃ¯s grain, scÃ©nario de base, Ã  la ferme, France",
             "loss": 0.03,
@@ -5053,7 +5053,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Grain maize, basis scenario without lever, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-grain-maize-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-grain-maize-basis-scenario-without-lever-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5067,7 +5067,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl-u-raw": {
+    "atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl": {
             "name": "Atlantic Mackerel, Scomber scombrus, NEA, Pelagic Trawl, average, at landing {NL} U",
             "name_fr": "Maquereau Atlantique, Scomber scombrus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
             "loss": 0.03,
@@ -5097,7 +5097,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Atlantic Mackerel, Scomber scombrus, NEA, Pelagic Trawl, average, at landing {NL} U {FR} U",
-                            "source_uuid": "agb-3.2-atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl-u-raw",
+                            "source_uuid": "agb-3.2-atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5111,7 +5111,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "melon-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "melon-conventional-national-average-at-farm-gate-fr": {
             "name": "Melon, conventional, national average, at farm gate {FR} U",
             "name_fr": "Melon conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -5141,7 +5141,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Melon, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-melon-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-melon-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5155,7 +5155,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "melon-open-field-conventional-at-farm-gate-fr-u-raw": {
+    "melon-open-field-conventional-at-farm-gate-fr": {
             "name": "Melon, open field, conventional, at farm gate {FR} U",
             "name_fr": "Melon conventionnel, plein champ, Ã  la ferme, France",
             "loss": 0.03,
@@ -5185,7 +5185,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Melon, open field, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-melon-open-field-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-melon-open-field-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5199,7 +5199,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "melon-under-low-tunnel-conventional-at-farm-gate-fr-u-raw": {
+    "melon-under-low-tunnel-conventional-at-farm-gate-fr": {
             "name": "Melon, under low tunnel, conventional, at farm gate {FR} U",
             "name_fr": "Melon conventionnel, sous chenille, Ã  la ferme, France",
             "loss": 0.03,
@@ -5229,7 +5229,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Melon, under low tunnel, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-melon-under-low-tunnel-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-melon-under-low-tunnel-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5243,7 +5243,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "melon-protected-crop-conventional-at-farm-gate-fr-u-raw": {
+    "melon-protected-crop-conventional-at-farm-gate-fr": {
             "name": "Melon, protected crop, conventional, at farm gate {FR} U",
             "name_fr": "Melon conventionnel, sous tunnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -5273,7 +5273,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Melon, protected crop, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-melon-protected-crop-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-melon-protected-crop-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5287,7 +5287,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "mussels-with-shell-at-farm-gate-fr-u-raw": {
+    "mussels-with-shell-at-farm-gate-fr": {
             "name": "Mussels, with shell, at farm gate {FR} U",
             "name_fr": "Moules, avec la coquille, au port, France",
             "loss": 0.03,
@@ -5317,7 +5317,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Mussels, with shell, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-mussels-with-shell-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-mussels-with-shell-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5331,7 +5331,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "walnut-dried-inshell-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "walnut-dried-inshell-conventional-national-average-at-farm-gate-fr": {
             "name": "Walnut, dried inshell, conventional, national average, at farm gate {FR} U",
             "name_fr": "Noix conventionnelle, en coque sÃ©chÃ©e, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -5361,7 +5361,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Walnut, dried inshell, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-walnut-dried-inshell-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-walnut-dried-inshell-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5375,7 +5375,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "walnut-dried-inshell-varieties-with-lateral-fructification-conventional-at-farm-gate-fr-u-raw": {
+    "walnut-dried-inshell-varieties-with-lateral-fructification-conventional-at-farm-gate-fr": {
             "name": "Walnut, dried inshell, varieties with lateral fructification, conventional, at farm gate {FR} U",
             "name_fr": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s Ã  fructification latÃ©rale, Ã  la ferme, France",
             "loss": 0.03,
@@ -5405,7 +5405,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Walnut, dried inshell, varieties with lateral fructification, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-walnut-dried-inshell-varieties-with-lateral-fructification-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-walnut-dried-inshell-varieties-with-lateral-fructification-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5419,7 +5419,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "walnut-dried-inshell-traditional-varieties-conventional-at-farm-gate-fr-u-raw": {
+    "walnut-dried-inshell-traditional-varieties-conventional-at-farm-gate-fr": {
             "name": "Walnut, dried inshell, traditional varieties, conventional, at farm gate {FR} U",
             "name_fr": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s traditionnelles, Ã  la ferme, France",
             "loss": 0.03,
@@ -5449,7 +5449,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Walnut, dried inshell, traditional varieties, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-walnut-dried-inshell-traditional-varieties-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-walnut-dried-inshell-traditional-varieties-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5463,7 +5463,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "onion-short-day-sown-conventional-at-farm-gate-fr-u-raw": {
+    "onion-short-day-sown-conventional-at-farm-gate-fr": {
             "name": "Onion, short day sown, conventional, at farm gate {FR} U",
             "name_fr": "Oignon conventionnel, jour court semÃ©, Ã  la ferme , France",
             "loss": 0.03,
@@ -5493,7 +5493,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Onion, short day sown, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-onion-short-day-sown-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-onion-short-day-sown-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5507,7 +5507,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "onion-long-day-planted-conventional-at-farm-gate-fr-u-raw": {
+    "onion-long-day-planted-conventional-at-farm-gate-fr": {
             "name": "Onion, long-day planted, conventional, at farm gate {FR} U",
             "name_fr": "Oignon conventionnel, jour long plantÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -5537,7 +5537,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Onion, long-day planted, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-onion-long-day-planted-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-onion-long-day-planted-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5551,7 +5551,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "onion-long-day-sown-conventional-at-farm-gate-fr-u-raw": {
+    "onion-long-day-sown-conventional-at-farm-gate-fr": {
             "name": "Onion, long-day sown, conventional, at farm gate {FR} U",
             "name_fr": "Oignon conventionnel, jour long semÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -5581,7 +5581,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Onion, long-day sown, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-onion-long-day-sown-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-onion-long-day-sown-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5595,7 +5595,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "onion-conventional-national-average-at-farm-fr-u-raw": {
+    "onion-conventional-national-average-at-farm-fr": {
             "name": "Onion, conventional, national average, at farm {FR} U",
             "name_fr": "Oignon conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -5625,7 +5625,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Onion, conventional, national average, at farm {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-onion-conventional-national-average-at-farm-fr-u-raw",
+                            "source_uuid": "agb-3.2-onion-conventional-national-average-at-farm-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5639,7 +5639,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "spring-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw": {
+    "spring-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr": {
             "name": "Spring barley, conventional, malting quality, animal feed, at farm gate {FR} U",
             "name_fr": "Orge de printemps, conventionnel, brassicole, Ã  la ferme, France",
             "loss": 0.03,
@@ -5669,7 +5669,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Spring barley, conventional, malting quality, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-spring-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-spring-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5683,7 +5683,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "spring-barley-conventional-downgraded-quality-animal-feed-at-farm-gate-fr-u-raw": {
+    "spring-barley-conventional-downgraded-quality-animal-feed-at-farm-gate-fr": {
             "name": "Spring barley, conventional, downgraded quality, animal feed, at farm gate {FR} U",
             "name_fr": "Orge de printemps, conventionnel, dÃ©classÃ©,  Ã  la ferme, France",
             "loss": 0.03,
@@ -5713,7 +5713,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Spring barley, conventional, downgraded quality, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-spring-barley-conventional-downgraded-quality-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-spring-barley-conventional-downgraded-quality-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5727,7 +5727,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "winter-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw": {
+    "winter-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr": {
             "name": "Winter barley, conventional, malting quality, animal feed, at farm gate {FR} U",
             "name_fr": "Orge d'hiver, conventionnel, brassicole, Ã  la ferme, France",
             "loss": 0.03,
@@ -5757,7 +5757,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Winter barley, conventional, malting quality, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-winter-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-winter-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5771,7 +5771,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw": {
+    "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Barley, feed grain, conventional, national average, animal feed, at farm gate {FR} U",
             "name_fr": "Orge, pour alimentation animale, conventionnel, moyenne nationale, France",
             "loss": 0.03,
@@ -5801,7 +5801,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Barley, feed grain, conventional, national average, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5815,7 +5815,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "peach-conventional-national-average-at-orchard-fr-u-raw": {
+    "peach-conventional-national-average-at-orchard-fr": {
             "name": "Peach, conventional, national average, at orchard {FR} U",
             "name_fr": "PÃªche conventionnelle, moyenne nationale, au verger, France",
             "loss": 0.03,
@@ -5845,7 +5845,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Peach, conventional, national average, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-peach-conventional-national-average-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-peach-conventional-national-average-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5859,7 +5859,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "annual-vining-pea-for-industry-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "annual-vining-pea-for-industry-conventional-national-average-at-farm-gate-fr": {
             "name": "Annual vining pea for industry, Conventional, National average, at farm gate {FR} U",
             "name_fr": "Petit pois annuel pour transformation industrielle, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -5889,7 +5889,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Annual vining pea for industry, Conventional, National average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-annual-vining-pea-for-industry-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-annual-vining-pea-for-industry-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5903,7 +5903,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "small-trout-250-350g-conventional-at-farm-gate-fr-u-raw": {
+    "small-trout-250-350g-conventional-at-farm-gate-fr": {
             "name": "Small trout, 250-350g, conventional, at farm gate {FR} U",
             "name_fr": "Petite truite, 250-350g,  conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -5933,7 +5933,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Small trout, 250-350g, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-small-trout-250-350g-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-small-trout-250-350g-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5947,7 +5947,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pear-conventional-national-average-at-orchard-fr-u-raw": {
+    "pear-conventional-national-average-at-orchard-fr": {
             "name": "Pear, conventional, national average, at orchard {FR} U",
             "name_fr": "Poire conventionnelle, au verger, France",
             "loss": 0.03,
@@ -5977,7 +5977,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pear, conventional, national average, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-pear-conventional-national-average-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-pear-conventional-national-average-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -5991,7 +5991,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pear-at-farm-nl-u-raw": {
+    "pear-at-farm-nl": {
             "name": "Pear, at farm {NL} U",
             "name_fr": "Poire, Ã  la ferme, Pays-Bas",
             "loss": 0.03,
@@ -6021,7 +6021,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pear, at farm {NL} U {FR} U",
-                            "source_uuid": "agb-3.2-pear-at-farm-nl-u-raw",
+                            "source_uuid": "agb-3.2-pear-at-farm-nl",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6035,7 +6035,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "autumn-irrigated-leek-conventional-at-farm-gate-fr-u-raw": {
+    "autumn-irrigated-leek-conventional-at-farm-gate-fr": {
             "name": "Autumn irrigated leek, conventional, at farm gate {FR} U",
             "name_fr": "Poireau conventionnel, automne irriguÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -6065,7 +6065,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Autumn irrigated leek, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-autumn-irrigated-leek-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-autumn-irrigated-leek-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6079,7 +6079,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "leek-winter-non-irrigated-conventional-at-farm-gate-fr-u-raw": {
+    "leek-winter-non-irrigated-conventional-at-farm-gate-fr": {
             "name": "Leek, winter non-irrigated, conventional, at farm gate {FR} U",
             "name_fr": "Poireau conventionnel, hiver non irriguÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -6109,7 +6109,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Leek, winter non-irrigated, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-leek-winter-non-irrigated-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-leek-winter-non-irrigated-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6123,7 +6123,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "leek-conventional-national-average-at-plant-fr-u-raw": {
+    "leek-conventional-national-average-at-plant-fr": {
             "name": "Leek, conventional, national average, at plant {FR} U",
             "name_fr": "Poireau conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -6153,7 +6153,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Leek, conventional, national average, at plant {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-leek-conventional-national-average-at-plant-fr-u-raw",
+                            "source_uuid": "agb-3.2-leek-conventional-national-average-at-plant-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6167,7 +6167,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "leek-early-planted-conventional-at-farm-gate-fr-u-raw": {
+    "leek-early-planted-conventional-at-farm-gate-fr": {
             "name": "Leek, early planted, conventional, at farm gate {FR} U",
             "name_fr": "Poireau conventionnel, prÃ©coce plantÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -6197,7 +6197,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Leek, early planted, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-leek-early-planted-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-leek-early-planted-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6211,7 +6211,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "leek-early-sown-conventional-at-farm-gate-fr-u-raw": {
+    "leek-early-sown-conventional-at-farm-gate-fr": {
             "name": "Leek, early sown, conventional, at farm gate {FR} U",
             "name_fr": "Poireau conventionnel, prÃ©coce semÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -6241,7 +6241,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Leek, early sown, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-leek-early-sown-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-leek-early-sown-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6255,7 +6255,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr-u-raw": {
+    "spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr": {
             "name": "Spring pea, conventional, 15% moisture, animal feed, at farm gate, production {FR} U",
             "name_fr": "Pois de printemps, conventionnel, 15% d'humiditÃ©, aliment pour animaux, Ã  la ferme, France",
             "loss": 0.03,
@@ -6285,7 +6285,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Spring pea, conventional, 15% moisture, animal feed, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6299,7 +6299,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "winter-pea-conventional-15-moisture-at-farm-gate-fr-u-raw": {
+    "winter-pea-conventional-15-moisture-at-farm-gate-fr": {
             "name": "Winter pea, conventional, 15% moisture, at farm gate {FR} U",
             "name_fr": "Pois d'hiver, conventionnel, 15% d'humiditÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -6329,7 +6329,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Winter pea, conventional, 15% moisture, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-winter-pea-conventional-15-moisture-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-winter-pea-conventional-15-moisture-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6343,7 +6343,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "black-pepper-conventional-at-farm-gate-vn-u-raw": {
+    "black-pepper-conventional-at-farm-gate-vn": {
             "name": "Black pepper, conventional, at farm gate {VN} U",
             "name_fr": "Poivre noir, conventionnel, Ã  la ferme, Vietnam",
             "loss": 0.03,
@@ -6373,7 +6373,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Black pepper, conventional, at farm gate {VN} U {FR} U",
-                            "source_uuid": "agb-3.2-black-pepper-conventional-at-farm-gate-vn-u-raw",
+                            "source_uuid": "agb-3.2-black-pepper-conventional-at-farm-gate-vn",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6387,7 +6387,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cider-apple-conventional-national-average-at-orchard-fr-u-raw": {
+    "cider-apple-conventional-national-average-at-orchard-fr": {
             "name": "Cider apple, conventional, national average, at orchard {FR} U",
             "name_fr": "Pomme Ã  cidre, moyen conventionnel, national, au verger, France",
             "loss": 0.03,
@@ -6417,7 +6417,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cider apple, conventional, national average, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cider-apple-conventional-national-average-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-cider-apple-conventional-national-average-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6431,7 +6431,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "apple-conventional-national-average-at-orchard-fr-u-raw": {
+    "apple-conventional-national-average-at-orchard-fr": {
             "name": "Apple, conventional, national average, at orchard {FR} U",
             "name_fr": "Pomme conventionnelle, moyenne nationale, au verger, France",
             "loss": 0.03,
@@ -6461,7 +6461,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Apple, conventional, national average, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-apple-conventional-national-average-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-apple-conventional-national-average-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6475,7 +6475,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "apple-conventional-non-scab-tolerant-at-orchard-fr-u-raw": {
+    "apple-conventional-non-scab-tolerant-at-orchard-fr": {
             "name": "Apple, conventional, non scab-tolerant, at orchard {FR} U",
             "name_fr": "Pomme conventionnelle, non tolÃ©rante Ã  la tavelure, au verger, France",
             "loss": 0.03,
@@ -6505,7 +6505,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Apple, conventional, non scab-tolerant, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-apple-conventional-non-scab-tolerant-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-apple-conventional-non-scab-tolerant-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6519,7 +6519,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "apple-conventional-scab-tolerant-at-orchard-fr-u-raw": {
+    "apple-conventional-scab-tolerant-at-orchard-fr": {
             "name": "Apple, conventional, scab-tolerant, at orchard {FR} U",
             "name_fr": "Pomme conventionnelle, tolÃ©rante tavelure, au verger, France",
             "loss": 0.03,
@@ -6549,7 +6549,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Apple, conventional, scab-tolerant, at orchard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-apple-conventional-scab-tolerant-at-orchard-fr-u-raw",
+                            "source_uuid": "agb-3.2-apple-conventional-scab-tolerant-at-orchard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6563,7 +6563,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "starch-potato-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "starch-potato-conventional-national-average-at-farm-gate-fr": {
             "name": "Starch potato, conventional, national average, at farm gate {FR} U",
             "name_fr": "Pomme de terre fÃ©cule, moyenne conventionnel, national, Ã  la ferme, France",
             "loss": 0.03,
@@ -6593,7 +6593,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Starch potato, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-starch-potato-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-starch-potato-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6607,7 +6607,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "ware-potato-conventional-for-industrial-use-at-farm-gate-fr-u-raw": {
+    "ware-potato-conventional-for-industrial-use-at-farm-gate-fr": {
             "name": "Ware potato, conventional, for industrial use, at farm gate {FR} U",
             "name_fr": "Pommes de terre, conventionnel, Ã  usage industriel, Ã  la ferme, France",
             "loss": 0.03,
@@ -6637,7 +6637,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Ware potato, conventional, for industrial use, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-ware-potato-conventional-for-industrial-use-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-ware-potato-conventional-for-industrial-use-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6651,7 +6651,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr-u-raw": {
+    "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr": {
             "name": "Ware potato, conventional, variety mix, national average, at farm gate {FR} U",
             "name_fr": "Pommes de terre, conventionnel, mÃ©lange de variÃ©tÃ©s, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -6681,7 +6681,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Ware potato, conventional, variety mix, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6695,7 +6695,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "ware-potato-conventional-for-fresh-market-other-varieties-at-farm-gate-fr-u-raw": {
+    "ware-potato-conventional-for-fresh-market-other-varieties-at-farm-gate-fr": {
             "name": "Ware potato, conventional, for fresh market, other varieties, at farm gate {FR} U",
             "name_fr": "Pommes de terre, conventionnel, pour le marchÃ© frais, autres variÃ©tÃ©s, Ã  la ferme, France",
             "loss": 0.03,
@@ -6725,7 +6725,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Ware potato, conventional, for fresh market, other varieties, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-ware-potato-conventional-for-fresh-market-other-varieties-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-ware-potato-conventional-for-fresh-market-other-varieties-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6739,7 +6739,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "ware-potato-conventional-for-fresh-market-firm-flesh-varieties-at-farm-gate-fr-u-raw": {
+    "ware-potato-conventional-for-fresh-market-firm-flesh-varieties-at-farm-gate-fr": {
             "name": "Ware potato, conventional, for fresh market, firm flesh varieties, at farm gate {FR} U",
             "name_fr": "Pommes de terre, conventionnel, pour le marchÃ© frais, variÃ©tÃ©s Ã  chair ferme, Ã  la ferme, France",
             "loss": 0.03,
@@ -6769,7 +6769,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Ware potato, conventional, for fresh market, firm flesh varieties, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-ware-potato-conventional-for-fresh-market-firm-flesh-varieties-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-ware-potato-conventional-for-fresh-market-firm-flesh-varieties-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6783,7 +6783,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pig-label-rouge-outdoor-system-at-farm-gate-fr-u-raw": {
+    "pig-label-rouge-outdoor-system-at-farm-gate-fr": {
             "name": "Pig, Label Rouge, outdoor system, at farm gate {FR} U",
             "name_fr": "Porc, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
             "loss": 0.03,
@@ -6813,7 +6813,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pig, Label Rouge, outdoor system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-pig-label-rouge-outdoor-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-pig-label-rouge-outdoor-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6827,7 +6827,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pig-conventional-porc-bien-etre-at-farm-gate-fr-u-raw": {
+    "pig-conventional-porc-bien-etre-at-farm-gate-fr": {
             "name": "Pig, conventional, Porc Bien Etre, at farm gate {FR} U",
             "name_fr": "Porc, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
             "loss": 0.03,
@@ -6857,7 +6857,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pig, conventional, Porc Bien Etre, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-pig-conventional-porc-bien-etre-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-pig-conventional-porc-bien-etre-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6871,7 +6871,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pig-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw": {
+    "pig-conventional-on-farm-feed-supply-at-farm-gate-fr": {
             "name": "Pig, conventional, on-farm feed supply, at farm gate {FR} U",
             "name_fr": "Porc, conventionnel, fourniture d'aliments Ã  la ferme, Ã  la ferme, France",
             "loss": 0.03,
@@ -6901,7 +6901,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pig, conventional, on-farm feed supply, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-pig-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-pig-conventional-on-farm-feed-supply-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6915,7 +6915,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pig-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "pig-conventional-national-average-at-farm-gate-fr": {
             "name": "Pig, conventional, national average, at farm gate {FR} U",
             "name_fr": "Porc, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -6945,7 +6945,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pig, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-pig-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-pig-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -6959,7 +6959,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "mixt-pig-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "mixt-pig-conventional-national-average-at-farm-gate-fr": {
             "name": "Mixt pig, conventional, national average, at farm gate {FR} U",
             "name_fr": "Porc moyen (97% porc, 3% truie de rÃ©forme), conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -6989,7 +6989,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Mixt pig, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-mixt-pig-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-mixt-pig-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7003,7 +7003,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pig-label-rouge-national-average-at-farm-gate-fr-u-raw": {
+    "pig-label-rouge-national-average-at-farm-gate-fr": {
             "name": "Pig, Label Rouge, national average, at farm gate {FR} U",
             "name_fr": "Porc, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
             "loss": 0.03,
@@ -7033,7 +7033,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pig, Label Rouge, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-pig-label-rouge-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-pig-label-rouge-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7047,7 +7047,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "mixt-pig-label-rouge-national-average-at-farm-gate-fr-u-raw": {
+    "mixt-pig-label-rouge-national-average-at-farm-gate-fr": {
             "name": "Mixt pig, Label Rouge, national average, at farm gate {FR} U",
             "name_fr": "Porc moyen (97% porc, 3% truie de rÃ©forme), Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
             "loss": 0.03,
@@ -7077,7 +7077,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Mixt pig, Label Rouge, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-mixt-pig-label-rouge-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-mixt-pig-label-rouge-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7091,7 +7091,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "pig-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw": {
+    "pig-label-rouge-pig-with-run-system-at-farm-gate-fr": {
             "name": "Pig, Label Rouge, pig with run system, at farm gate {FR} U",
             "name_fr": "Porc, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
             "loss": 0.03,
@@ -7121,7 +7121,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Pig, Label Rouge, pig with run system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-pig-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-pig-label-rouge-pig-with-run-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7135,227 +7135,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-hen-conventional-indoor-system-non-cage-at-farm-gate-fr-u-raw": {
-            "name": "Cull hen, conventional, indoor system, non-cage, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, intÃ©rieur, au sol, Ã  la ferme, France",
-            "loss": 0.03,
-            "processing_yield": 1.0,
-            "data": {
-                    "pef": {
-                            "Climate Change": 0.0,
-                            "Ozone Depletion": 0.0,
-                            "Ionizing Radiation": 0.0,
-                            "Photochemical Ozone Formation": 0.0,
-                            "Particulate Matter": 0.0,
-                            "Human Toxicity, non-cancer": 0.0,
-                            "Human Toxicity, cancer": 0.0,
-                            "Acidification": 0.0,
-                            "Eutrophication, freshwater": 0.0,
-                            "Eutrophication, marine": 0.0,
-                            "Eutrophication, terrestrial": 0.0,
-                            "Ecotoxicity, freshwater": 0.0,
-                            "Land Use": 0.0,
-                            "Water Use/Scarcity (AWARE)": 0.0,
-                            "Resource Use, fossils": 0.0,
-                            "Resource Use, minerals/metals": 0.0,
-                            "Climate Change - Biogenic": 0.0,
-                            "Climate Change - Fossil": 0.0,
-                            "Climate Change - Land Use": 0.0
-                    },
-                    "metadata": {
-                            "source_dataset": "AGRIBALYSE 3.2",
-                            "source_activity": "Cull hen, conventional, indoor system, non-cage, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-hen-conventional-indoor-system-non-cage-at-farm-gate-fr-u-raw",
-                            "allocation_method": "Economic Allocation",
-                            "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
-                            },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
-                    }
-            }
-    },
-
-    "cull-hen-conventional-indoor-production-cage-2012-rules-at-farm-gate-fr-u-raw": {
-            "name": "Cull hen, conventional, indoor production, cage 2012 rules, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, intÃ©rieur, cage rÃ¨gles 2012, Ã  la ferme, France",
-            "loss": 0.03,
-            "processing_yield": 1.0,
-            "data": {
-                    "pef": {
-                            "Climate Change": 0.0,
-                            "Ozone Depletion": 0.0,
-                            "Ionizing Radiation": 0.0,
-                            "Photochemical Ozone Formation": 0.0,
-                            "Particulate Matter": 0.0,
-                            "Human Toxicity, non-cancer": 0.0,
-                            "Human Toxicity, cancer": 0.0,
-                            "Acidification": 0.0,
-                            "Eutrophication, freshwater": 0.0,
-                            "Eutrophication, marine": 0.0,
-                            "Eutrophication, terrestrial": 0.0,
-                            "Ecotoxicity, freshwater": 0.0,
-                            "Land Use": 0.0,
-                            "Water Use/Scarcity (AWARE)": 0.0,
-                            "Resource Use, fossils": 0.0,
-                            "Resource Use, minerals/metals": 0.0,
-                            "Climate Change - Biogenic": 0.0,
-                            "Climate Change - Fossil": 0.0,
-                            "Climate Change - Land Use": 0.0
-                    },
-                    "metadata": {
-                            "source_dataset": "AGRIBALYSE 3.2",
-                            "source_activity": "Cull hen, conventional, indoor production, cage 2012 rules, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-hen-conventional-indoor-production-cage-2012-rules-at-farm-gate-fr-u-raw",
-                            "allocation_method": "Economic Allocation",
-                            "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
-                            },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
-                    }
-            }
-    },
-
-    "cull-hen-conventional-indoor-system-cage-at-farm-gate-fr-u-raw": {
-            "name": "Cull hen, conventional, indoor system, cage, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, intÃ©rieur, en cage, Ã  la ferme, France",
-            "loss": 0.03,
-            "processing_yield": 1.0,
-            "data": {
-                    "pef": {
-                            "Climate Change": 0.0,
-                            "Ozone Depletion": 0.0,
-                            "Ionizing Radiation": 0.0,
-                            "Photochemical Ozone Formation": 0.0,
-                            "Particulate Matter": 0.0,
-                            "Human Toxicity, non-cancer": 0.0,
-                            "Human Toxicity, cancer": 0.0,
-                            "Acidification": 0.0,
-                            "Eutrophication, freshwater": 0.0,
-                            "Eutrophication, marine": 0.0,
-                            "Eutrophication, terrestrial": 0.0,
-                            "Ecotoxicity, freshwater": 0.0,
-                            "Land Use": 0.0,
-                            "Water Use/Scarcity (AWARE)": 0.0,
-                            "Resource Use, fossils": 0.0,
-                            "Resource Use, minerals/metals": 0.0,
-                            "Climate Change - Biogenic": 0.0,
-                            "Climate Change - Fossil": 0.0,
-                            "Climate Change - Land Use": 0.0
-                    },
-                    "metadata": {
-                            "source_dataset": "AGRIBALYSE 3.2",
-                            "source_activity": "Cull hen, conventional, indoor system, cage, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-hen-conventional-indoor-system-cage-at-farm-gate-fr-u-raw",
-                            "allocation_method": "Economic Allocation",
-                            "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
-                            },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
-                    }
-            }
-    },
-
-    "cull-hen-conventional-national-average-at-farm-gate-fr-u-raw": {
-            "name": "Cull hen, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
-            "loss": 0.03,
-            "processing_yield": 1.0,
-            "data": {
-                    "pef": {
-                            "Climate Change": 0.0,
-                            "Ozone Depletion": 0.0,
-                            "Ionizing Radiation": 0.0,
-                            "Photochemical Ozone Formation": 0.0,
-                            "Particulate Matter": 0.0,
-                            "Human Toxicity, non-cancer": 0.0,
-                            "Human Toxicity, cancer": 0.0,
-                            "Acidification": 0.0,
-                            "Eutrophication, freshwater": 0.0,
-                            "Eutrophication, marine": 0.0,
-                            "Eutrophication, terrestrial": 0.0,
-                            "Ecotoxicity, freshwater": 0.0,
-                            "Land Use": 0.0,
-                            "Water Use/Scarcity (AWARE)": 0.0,
-                            "Resource Use, fossils": 0.0,
-                            "Resource Use, minerals/metals": 0.0,
-                            "Climate Change - Biogenic": 0.0,
-                            "Climate Change - Fossil": 0.0,
-                            "Climate Change - Land Use": 0.0
-                    },
-                    "metadata": {
-                            "source_dataset": "AGRIBALYSE 3.2",
-                            "source_activity": "Cull hen, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-hen-conventional-national-average-at-farm-gate-fr-u-raw",
-                            "allocation_method": "Economic Allocation",
-                            "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
-                            },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
-                    }
-            }
-    },
-
-    "cull-hen-conventional-outdoor-system-at-farm-gate-fr-u-raw": {
-            "name": "Cull hen, conventional, outdoor system, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, systÃ¨me extÃ©rieur, Ã  la ferme, France",
-            "loss": 0.03,
-            "processing_yield": 1.0,
-            "data": {
-                    "pef": {
-                            "Climate Change": 0.0,
-                            "Ozone Depletion": 0.0,
-                            "Ionizing Radiation": 0.0,
-                            "Photochemical Ozone Formation": 0.0,
-                            "Particulate Matter": 0.0,
-                            "Human Toxicity, non-cancer": 0.0,
-                            "Human Toxicity, cancer": 0.0,
-                            "Acidification": 0.0,
-                            "Eutrophication, freshwater": 0.0,
-                            "Eutrophication, marine": 0.0,
-                            "Eutrophication, terrestrial": 0.0,
-                            "Ecotoxicity, freshwater": 0.0,
-                            "Land Use": 0.0,
-                            "Water Use/Scarcity (AWARE)": 0.0,
-                            "Resource Use, fossils": 0.0,
-                            "Resource Use, minerals/metals": 0.0,
-                            "Climate Change - Biogenic": 0.0,
-                            "Climate Change - Fossil": 0.0,
-                            "Climate Change - Land Use": 0.0
-                    },
-                    "metadata": {
-                            "source_dataset": "AGRIBALYSE 3.2",
-                            "source_activity": "Cull hen, conventional, outdoor system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-hen-conventional-outdoor-system-at-farm-gate-fr-u-raw",
-                            "allocation_method": "Economic Allocation",
-                            "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
-                            },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
-                    }
-            }
-    },
-
-    "broiler-conventional-at-farm-gate-fr-u-raw": {
+    "broiler-conventional-at-farm-gate-fr": {
             "name": "Broiler, conventional, at farm gate {FR} U",
             "name_fr": "Poulet, conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -7385,7 +7165,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Broiler, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-broiler-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-broiler-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7399,7 +7179,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "broiler-label-rouge-at-farm-gate-fr-u-raw": {
+    "broiler-label-rouge-at-farm-gate-fr": {
             "name": "Broiler, Label Rouge, at farm gate {FR} U",
             "name_fr": "Poulet, Label Rouge, Ã  la ferme, France",
             "loss": 0.03,
@@ -7429,7 +7209,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Broiler, Label Rouge, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-broiler-label-rouge-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-broiler-label-rouge-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7443,7 +7223,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "broiler-production-mix-national-average-at-farm-gate-fr-u-raw": {
+    "broiler-production-mix-national-average-at-farm-gate-fr": {
             "name": "Broiler, production mix, national average, at farm gate {FR} U",
             "name_fr": "Poulet, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -7473,7 +7253,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Broiler, production mix, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-broiler-production-mix-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-broiler-production-mix-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7487,7 +7267,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-early-conventional-root-production-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-early-conventional-root-production-at-farm-gate-fr": {
             "name": "Chicory witloof, early, conventional, root production, at farm gate {FR} U",
             "name_fr": "Production de racine d'endive conventionnelle, prÃ©coce, Ã  la ferme, France",
             "loss": 0.03,
@@ -7517,7 +7297,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, early, conventional, root production, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-early-conventional-root-production-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-early-conventional-root-production-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7531,7 +7311,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-season-conventional-root-production-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-season-conventional-root-production-at-farm-gate-fr": {
             "name": "Chicory witloof, season, conventional, root production, at farm gate {FR} U",
             "name_fr": "Production de racine d'endive conventionnelle, saison, Ã  la ferme, France",
             "loss": 0.03,
@@ -7561,7 +7341,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, season, conventional, root production, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-season-conventional-root-production-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-season-conventional-root-production-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7575,7 +7355,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-witloof-late-conventional-root-production-at-farm-gate-fr-u-raw": {
+    "chicory-witloof-late-conventional-root-production-at-farm-gate-fr": {
             "name": "Chicory witloof, late, conventional, root production, at farm gate {FR} U",
             "name_fr": "Production de racine d'endive conventionnelle, tardive, Ã  la ferme, France",
             "loss": 0.03,
@@ -7605,7 +7385,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory witloof, late, conventional, root production, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-witloof-late-conventional-root-production-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-witloof-late-conventional-root-production-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7619,7 +7399,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "quinoa-fr-conventional-at-farm-gate-fr-u-raw": {
+    "quinoa-fr-conventional-at-farm-gate-fr": {
             "name": "Quinoa FR, conventional, at farm gate {FR} U",
             "name_fr": "Quinoa, conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -7649,7 +7429,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Quinoa FR, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-quinoa-fr-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-quinoa-fr-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7663,7 +7443,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "chicory-roots-conventional-at-farm-gate-fr-u-raw": {
+    "chicory-roots-conventional-at-farm-gate-fr": {
             "name": "Chicory roots, conventional, at farm gate {FR} U",
             "name_fr": "Racines de chicorÃ©e, conventionnel, Ã  la ferme, France",
             "loss": 0.03,
@@ -7693,7 +7473,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Chicory roots, conventional, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-chicory-roots-conventional-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-chicory-roots-conventional-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7707,7 +7487,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "grapefruit-for-juice-conventional-at-farm-gate-us-u-raw": {
+    "grapefruit-for-juice-conventional-at-farm-gate-us": {
             "name": "Grapefruit for juice, conventional, at farm gate {US} U",
             "name_fr": "Raisin pour du jus, conventionnel, Ã  la ferme, Etats-Unis",
             "loss": 0.03,
@@ -7737,7 +7517,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Grapefruit for juice, conventional, at farm gate {US} U {FR} U",
-                            "source_uuid": "agb-3.2-grapefruit-for-juice-conventional-at-farm-gate-us-u-raw",
+                            "source_uuid": "agb-3.2-grapefruit-for-juice-conventional-at-farm-gate-us",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7751,7 +7531,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "grape-integrated-french-mix-fr-u-raw": {
+    "grape-integrated-french-mix-fr": {
             "name": "Grape, integrated, french mix {FR} U",
             "name_fr": "Raisin, intÃ©grÃ©, mÃ©lange franÃ§ais, France",
             "loss": 0.03,
@@ -7781,7 +7561,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Grape, integrated, french mix {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-grape-integrated-french-mix-fr-u-raw",
+                            "source_uuid": "agb-3.2-grape-integrated-french-mix-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7795,7 +7575,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "grape-integrated-aoc-beaujolais-at-vineyard-fr-u-raw": {
+    "grape-integrated-aoc-beaujolais-at-vineyard-fr": {
             "name": "Grape, integrated, AOC, Beaujolais, at vineyard {FR} U",
             "name_fr": "Raisin, production intÃ©grÃ©e, AOC Beaujolais, au vignoble, France",
             "loss": 0.03,
@@ -7825,7 +7605,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Grape, integrated, AOC, Beaujolais, at vineyard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-grape-integrated-aoc-beaujolais-at-vineyard-fr-u-raw",
+                            "source_uuid": "agb-3.2-grape-integrated-aoc-beaujolais-at-vineyard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7839,7 +7619,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "grape-integrated-variety-mix-languedoc-roussillon-at-vineyard-fr-u-raw": {
+    "grape-integrated-variety-mix-languedoc-roussillon-at-vineyard-fr": {
             "name": "Grape, integrated, variety mix, Languedoc-Roussillon, at vineyard {FR} U",
             "name_fr": "Raisin, production intÃ©grÃ©e, mÃ©lange de variÃ©tÃ©s, Languedoc-Roussillon, au vignoble, France",
             "loss": 0.03,
@@ -7869,7 +7649,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Grape, integrated, variety mix, Languedoc-Roussillon, at vineyard {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-grape-integrated-variety-mix-languedoc-roussillon-at-vineyard-fr-u-raw",
+                            "source_uuid": "agb-3.2-grape-integrated-variety-mix-languedoc-roussillon-at-vineyard-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7883,7 +7663,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "saithe-pollachius-virens-northsea-bottom-trawl-average-frozen-at-landing-fr-u-raw": {
+    "saithe-pollachius-virens-northsea-bottom-trawl-average-frozen-at-landing-fr": {
             "name": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, frozen, at landing {FR} U",
             "name_fr": "Saithe, Pollachius virens, mer du Nord, chalut de fond, congelÃ©s, au dÃ©barquement, France",
             "loss": 0.03,
@@ -7913,7 +7693,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, frozen, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-saithe-pollachius-virens-northsea-bottom-trawl-average-frozen-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-saithe-pollachius-virens-northsea-bottom-trawl-average-frozen-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7927,7 +7707,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "saithe-pollachius-virens-northsea-bottom-trawl-average-fresh-at-landing-eu-u-raw": {
+    "saithe-pollachius-virens-northsea-bottom-trawl-average-fresh-at-landing-eu": {
             "name": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, fresh, at landing {EU} U",
             "name_fr": "Saithe, Pollachius virens, mer du Nord, chalut de fond, frais, au dÃ©barquement, Europe",
             "loss": 0.03,
@@ -7957,7 +7737,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, fresh, at landing {EU} U {FR} U",
-                            "source_uuid": "agb-3.2-saithe-pollachius-virens-northsea-bottom-trawl-average-fresh-at-landing-eu-u-raw",
+                            "source_uuid": "agb-3.2-saithe-pollachius-virens-northsea-bottom-trawl-average-fresh-at-landing-eu",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -7971,7 +7751,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr-u-raw": {
+    "european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr": {
             "name": "European Pilchard, Sardina pilchardus, ECA, Seine, average, at landing {FR} U",
             "name_fr": "Sardine europÃ©enne,  Sardina pilchardus, atlantique centre est, senne, au dÃ©barquement, France",
             "loss": 0.03,
@@ -8001,7 +7781,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "European Pilchard, Sardina pilchardus, ECA, Seine, average, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8015,7 +7795,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "european-pilchard-sardina-pilchardus-bbiscay-seine-average-at-landing-fr-u-raw": {
+    "european-pilchard-sardina-pilchardus-bbiscay-seine-average-at-landing-fr": {
             "name": "European Pilchard, Sardina pilchardus, BBiscay, Seine, average, at landing {FR} U",
             "name_fr": "Sardine europÃ©enne, Sardina pilchardus, baie de Biscay, senne, au dÃ©barquement, France",
             "loss": 0.03,
@@ -8045,7 +7825,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "European Pilchard, Sardina pilchardus, BBiscay, Seine, average, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-european-pilchard-sardina-pilchardus-bbiscay-seine-average-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-european-pilchard-sardina-pilchardus-bbiscay-seine-average-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8059,7 +7839,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "salmon-farmed-conventional-at-farm-gate-no-u-raw": {
+    "salmon-farmed-conventional-at-farm-gate-no": {
             "name": "Salmon, farmed, conventional, at farm gate {NO} U",
             "name_fr": "Saumon issu d'aquaculture, conventionnel, Ã  la ferme, NorvÃ¨ge",
             "loss": 0.03,
@@ -8089,7 +7869,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Salmon, farmed, conventional, at farm gate {NO} U {FR} U",
-                            "source_uuid": "agb-3.2-salmon-farmed-conventional-at-farm-gate-no-u-raw",
+                            "source_uuid": "agb-3.2-salmon-farmed-conventional-at-farm-gate-no",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8103,7 +7883,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soybean-cut-off-date-2008-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw": {
+    "soybean-cut-off-date-2008-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent": {
             "name": "Soybean, cut-off date 2008 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
             "name_fr": "Soja, cut-off date 2008, Ã  la ferme, BrÃ©sil",
             "loss": 0.03,
@@ -8133,7 +7913,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soybean, cut-off date 2008 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent {FR} U",
-                            "source_uuid": "agb-3.2-soybean-cut-off-date-2008-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw",
+                            "source_uuid": "agb-3.2-soybean-cut-off-date-2008-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8147,7 +7927,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soybean-cut-off-date-2020-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw": {
+    "soybean-cut-off-date-2020-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent": {
             "name": "Soybean, cut-off date 2020 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
             "name_fr": "Soja, cut-off date 2020, Ã  la ferme, BrÃ©sil",
             "loss": 0.03,
@@ -8177,7 +7957,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soybean, cut-off date 2020 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent {FR} U",
-                            "source_uuid": "agb-3.2-soybean-cut-off-date-2020-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw",
+                            "source_uuid": "agb-3.2-soybean-cut-off-date-2020-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8191,7 +7971,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soybean-not-associated-to-deforestation-br-market-for-soybean-without-transport-cut-off-u-adapted-fr-raw": {
+    "soybean-not-associated-to-deforestation-br-market-for-soybean-without-transport-cut-off-u-adapted-fr": {
             "name": "Soybean, not associated to deforestation {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
             "name_fr": "Soja, issu de zones non dÃ©forestÃ©es, Ã  la ferme, BrÃ©sil",
             "loss": 0.03,
@@ -8221,7 +8001,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soybean, not associated to deforestation {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent {FR} U",
-                            "source_uuid": "agb-3.2-soybean-not-associated-to-deforestation-br-market-for-soybean-without-transport-cut-off-u-adapted-fr-raw",
+                            "source_uuid": "agb-3.2-soybean-not-associated-to-deforestation-br-market-for-soybean-without-transport-cut-off-u-adapted-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8235,7 +8015,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "soybean-national-average-animal-feed-at-farm-gate-fr-u-raw": {
+    "soybean-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Soybean, national average, animal feed, at farm gate {FR} U",
             "name_fr": "Soja, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
             "loss": 0.03,
@@ -8265,7 +8045,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Soybean, national average, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-soybean-national-average-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-soybean-national-average-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8279,7 +8059,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr-u-raw": {
+    "common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr": {
             "name": "Common Sole, Solea solea, BBiscay, Trammel Net, average, at landing {FR} U",
             "name_fr": "Sole commune, Solea solea, baie de Biscay, trÃ©mail, au dÃ©barquement, France",
             "loss": 0.03,
@@ -8309,7 +8089,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Common Sole, Solea solea, BBiscay, Trammel Net, average, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8323,7 +8103,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "silage-sorghum-national-average-animal-feed-at-farm-gate-fr-u-raw": {
+    "silage-sorghum-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Silage sorghum, national average, animal feed, at farm gate {FR} U",
             "name_fr": "Sorgho ensilage, moyenne nationale, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -8353,7 +8133,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Silage sorghum, national average, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-silage-sorghum-national-average-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-silage-sorghum-national-average-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8367,7 +8147,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw": {
+    "sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr": {
             "name": "Sorghum grain, conventional, national average, animal feed, at farm gate {FR} U",
             "name_fr": "Sorgho, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
             "loss": 0.03,
@@ -8397,7 +8177,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Sorghum grain, conventional, national average, animal feed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8411,7 +8191,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "young-suckler-bull-conventional-fattening-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
+    "young-suckler-bull-conventional-fattening-system-less-than-1-2-lu-per-ha-at-farm-gate-fr": {
             "name": "Young suckler bull, conventional, fattening system, less than 1.2 LU per ha, at farm gate {FR} U",
             "name_fr": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, moins de 1.2 UGB par ha, Ã  la ferme, France",
             "loss": 0.03,
@@ -8441,7 +8221,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Young suckler bull, conventional, fattening system, less than 1.2 LU per ha, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-young-suckler-bull-conventional-fattening-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-young-suckler-bull-conventional-fattening-system-less-than-1-2-lu-per-ha-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8455,7 +8235,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "young-suckler-bull-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
+    "young-suckler-bull-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr": {
             "name": "Young suckler bull, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U",
             "name_fr": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, plus de 1.2 UGB par ha, Ã  la ferme, France",
             "loss": 0.03,
@@ -8485,7 +8265,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Young suckler bull, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-young-suckler-bull-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-young-suckler-bull-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8499,7 +8279,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "young-dairy-bull-conventional-fattening-system-at-farm-gate-fr-u-raw": {
+    "young-dairy-bull-conventional-fattening-system-at-farm-gate-fr": {
             "name": "Young dairy bull, conventional, fattening system, at farm gate {FR} U",
             "name_fr": "Taurillon laitier, conventionnel, systÃ¨me d'engraissement, Ã  la ferme, France",
             "loss": 0.03,
@@ -8529,7 +8309,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Young dairy bull, conventional, fattening system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-young-dairy-bull-conventional-fattening-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-young-dairy-bull-conventional-fattening-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8543,7 +8323,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "albacore-thunnus-alalunga-nea-pelagic-trawl-average-at-landing-fr-u-raw": {
+    "albacore-thunnus-alalunga-nea-pelagic-trawl-average-at-landing-fr": {
             "name": "Albacore, Thunnus alalunga, NEA, Pelagic trawl, average, at landing {FR} U",
             "name_fr": "Thon albacore, Thunnus alalunga, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, France",
             "loss": 0.03,
@@ -8573,7 +8353,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Albacore, Thunnus alalunga, NEA, Pelagic trawl, average, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-albacore-thunnus-alalunga-nea-pelagic-trawl-average-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-albacore-thunnus-alalunga-nea-pelagic-trawl-average-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8587,7 +8367,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "yellowfin-tuna-thunnus-albacares-eca-seine-average-at-landing-ci-u-raw": {
+    "yellowfin-tuna-thunnus-albacares-eca-seine-average-at-landing-ci": {
             "name": "Yellowfin Tuna, Thunnus albacares, ECA, Seine, average, at landing {CI} U",
             "name_fr": "Thon Albacore, Thunnus albacares, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
             "loss": 0.03,
@@ -8617,7 +8397,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Yellowfin Tuna, Thunnus albacares, ECA, Seine, average, at landing {CI} U {FR} U",
-                            "source_uuid": "agb-3.2-yellowfin-tuna-thunnus-albacares-eca-seine-average-at-landing-ci-u-raw",
+                            "source_uuid": "agb-3.2-yellowfin-tuna-thunnus-albacares-eca-seine-average-at-landing-ci",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8631,7 +8411,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "skipjack-tuna-katsuwonus-pelamis-eca-seine-average-at-landing-ci-u-raw": {
+    "skipjack-tuna-katsuwonus-pelamis-eca-seine-average-at-landing-ci": {
             "name": "Skipjack Tuna, Katsuwonus pelamis, ECA, Seine, average, at landing {CI} U",
             "name_fr": "Thon Listao, Katsuwonus pelamis, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
             "loss": 0.03,
@@ -8661,7 +8441,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Skipjack Tuna, Katsuwonus pelamis, ECA, Seine, average, at landing {CI} U {FR} U",
-                            "source_uuid": "agb-3.2-skipjack-tuna-katsuwonus-pelamis-eca-seine-average-at-landing-ci-u-raw",
+                            "source_uuid": "agb-3.2-skipjack-tuna-katsuwonus-pelamis-eca-seine-average-at-landing-ci",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8675,7 +8455,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "bluefin-tuna-thunnus-thynnus-medsea-longline-average-at-landing-fr-u-raw": {
+    "bluefin-tuna-thunnus-thynnus-medsea-longline-average-at-landing-fr": {
             "name": "Bluefin Tuna, Thunnus thynnus, MedSea, Longline, average, at landing {FR} U",
             "name_fr": "Thon rouge,  Thunnus thynnus, mÃ©diterrannÃ©e, palangre, au dÃ©barquement, France",
             "loss": 0.03,
@@ -8705,7 +8485,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Bluefin Tuna, Thunnus thynnus, MedSea, Longline, average, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-bluefin-tuna-thunnus-thynnus-medsea-longline-average-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-bluefin-tuna-thunnus-thynnus-medsea-longline-average-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8719,7 +8499,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "bluefin-tuna-thunnus-thynnus-medsea-seine-average-at-cage-gate-fr-u-raw": {
+    "bluefin-tuna-thunnus-thynnus-medsea-seine-average-at-cage-gate-fr": {
             "name": "Bluefin Tuna, Thunnus thynnus, MedSea, Seine, average, at cage gate {FR} U",
             "name_fr": "Thon rouge, Thunnus thynnus, mÃ©diterrannÃ©e, senne, Ã  la ferme, France",
             "loss": 0.03,
@@ -8749,7 +8529,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Bluefin Tuna, Thunnus thynnus, MedSea, Seine, average, at cage gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-bluefin-tuna-thunnus-thynnus-medsea-seine-average-at-cage-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-bluefin-tuna-thunnus-thynnus-medsea-seine-average-at-cage-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8763,7 +8543,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "tomato-medium-size-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw": {
+    "tomato-medium-size-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr": {
             "name": "Tomato, medium size, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U",
             "name_fr": "Tomate conventionnelle, calibre inermÃ©diaire, sol sous abri non chauffÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -8793,7 +8573,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Tomato, medium size, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-tomato-medium-size-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw",
+                            "source_uuid": "agb-3.2-tomato-medium-size-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8807,7 +8587,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "tomato-medium-size-conventional-heated-greenhouse-at-greenhouse-fr-u-raw": {
+    "tomato-medium-size-conventional-heated-greenhouse-at-greenhouse-fr": {
             "name": "Tomato, medium size, conventional, heated greenhouse, at greenhouse {FR} U",
             "name_fr": "Tomate conventionnelle, calibre intermÃ©diaire, sous abri chauffÃ©, Ã  la ferme, France",
             "loss": 0.03,
@@ -8837,7 +8617,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Tomato, medium size, conventional, heated greenhouse, at greenhouse {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-tomato-medium-size-conventional-heated-greenhouse-at-greenhouse-fr-u-raw",
+                            "source_uuid": "agb-3.2-tomato-medium-size-conventional-heated-greenhouse-at-greenhouse-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8851,7 +8631,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr-u-raw": {
+    "tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr": {
             "name": "Tomato, average basket, conventional, heated greenhouse, national average, at greenhouse {FR} U",
             "name_fr": "Tomate conventionnelle, panier moyen, serre chauffÃ©e, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -8881,7 +8661,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Tomato, average basket, conventional, heated greenhouse, national average, at greenhouse {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr-u-raw",
+                            "source_uuid": "agb-3.2-tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8895,7 +8675,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "tomato-average-basket-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw": {
+    "tomato-average-basket-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr": {
             "name": "Tomato, average basket, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U",
             "name_fr": "Tomate conventionnelle, panier moyen, sol sous abri non chauffÃ©, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -8925,7 +8705,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Tomato, average basket, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-tomato-average-basket-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw",
+                            "source_uuid": "agb-3.2-tomato-average-basket-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8939,7 +8719,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "brown-crab-1-kg-of-product-at-landing-gb-u-raw": {
+    "brown-crab-1-kg-of-product-at-landing-gb": {
             "name": "Brown crab, 1 kg of product, at landing {GB} U",
             "name_fr": "Tourteau, 1 kg de produit, au dÃ©barquement, Angleterre",
             "loss": 0.03,
@@ -8969,7 +8749,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Brown crab, 1 kg of product, at landing {GB} U {FR} U",
-                            "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-gb-u-raw",
+                            "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-gb",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -8983,7 +8763,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "brown-crab-1-kg-of-product-at-landing-fr-u-raw": {
+    "brown-crab-1-kg-of-product-at-landing-fr": {
             "name": "Brown crab, 1 kg of product, at landing {FR} U",
             "name_fr": "Tourteau, 1 kg de produit, au dÃ©barquement, France",
             "loss": 0.03,
@@ -9013,7 +8793,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Brown crab, 1 kg of product, at landing {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-fr-u-raw",
+                            "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9027,7 +8807,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "brown-crab-1-kg-of-product-at-landing-ie-u-raw": {
+    "brown-crab-1-kg-of-product-at-landing-ie": {
             "name": "Brown crab, 1 kg of product, at landing {IE} U",
             "name_fr": "Tourteau, 1 kg de produit, au dÃ©barquement, Irlande",
             "loss": 0.03,
@@ -9057,7 +8837,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Brown crab, 1 kg of product, at landing {IE} U {FR} U",
-                            "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-ie-u-raw",
+                            "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-ie",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9071,7 +8851,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
+    "triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr": {
             "name": "Triticale grain, conventional, national average, animal feed, at farm gate, production {FR} U",
             "name_fr": "Triticale, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, production, France",
             "loss": 0.03,
@@ -9101,7 +8881,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Triticale grain, conventional, national average, animal feed, at farm gate, production {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
+                            "source_uuid": "agb-3.2-triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9115,7 +8895,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-sow-conventional-porc-bien-etre-at-farm-gate-fr-u-raw": {
+    "cull-sow-conventional-porc-bien-etre-at-farm-gate-fr": {
             "name": "Cull sow, Conventional, Porc Bien Etre, at farm gate {FR} U",
             "name_fr": "Truie de rÃ©forme, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
             "loss": 0.03,
@@ -9145,7 +8925,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull sow, Conventional, Porc Bien Etre, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-sow-conventional-porc-bien-etre-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-sow-conventional-porc-bien-etre-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9159,7 +8939,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-sow-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw": {
+    "cull-sow-conventional-on-farm-feed-supply-at-farm-gate-fr": {
             "name": "Cull sow, conventional, on-farm feed supply, at farm gate {FR} U",
             "name_fr": "Truie de rÃ©forme, conventionnel, fourniture d'aliments Ã  la ferme, France",
             "loss": 0.03,
@@ -9189,7 +8969,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull sow, conventional, on-farm feed supply, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-sow-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-sow-conventional-on-farm-feed-supply-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9203,7 +8983,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-sow-conventional-national-average-at-farm-gate-fr-u-raw": {
+    "cull-sow-conventional-national-average-at-farm-gate-fr": {
             "name": "Cull sow, conventional, national average, at farm gate {FR} U",
             "name_fr": "Truie de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
             "loss": 0.03,
@@ -9233,7 +9013,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull sow, conventional, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-sow-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-sow-conventional-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9247,7 +9027,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-sow-label-rouge-national-average-at-farm-gate-fr-u-raw": {
+    "cull-sow-label-rouge-national-average-at-farm-gate-fr": {
             "name": "Cull sow, Label Rouge, national average, at farm gate {FR} U",
             "name_fr": "Truie de rÃ©forme, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
             "loss": 0.03,
@@ -9277,7 +9057,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull sow, Label Rouge, national average, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-sow-label-rouge-national-average-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-sow-label-rouge-national-average-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9291,7 +9071,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-sow-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw": {
+    "cull-sow-label-rouge-pig-with-run-system-at-farm-gate-fr": {
             "name": "Cull sow, Label Rouge, pig with run system, at farm gate {FR} U",
             "name_fr": "Truie de rÃ©forme, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
             "loss": 0.03,
@@ -9321,7 +9101,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull sow, Label Rouge, pig with run system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-sow-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-sow-label-rouge-pig-with-run-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9335,7 +9115,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-sow-label-rouge-outdoor-system-at-farm-gate-fr-u-raw": {
+    "cull-sow-label-rouge-outdoor-system-at-farm-gate-fr": {
             "name": "Cull sow, Label Rouge, outdoor system, at farm gate {FR} U",
             "name_fr": "Truie de rÃ©forme, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
             "loss": 0.03,
@@ -9365,7 +9145,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull sow, Label Rouge, outdoor system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-sow-label-rouge-outdoor-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-sow-label-rouge-outdoor-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9379,7 +9159,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "suckler-cull-cow-conventional-suckler-cow-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
+    "suckler-cull-cow-conventional-suckler-cow-system-less-than-1-2-lu-per-ha-at-farm-gate-fr": {
             "name": "Suckler cull cow, conventional, suckler cow system, less than 1.2 LU per ha, at farm gate {FR} U",
             "name_fr": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, moins de 1.2 UGB par ha, Ã  la ferme, France",
             "loss": 0.03,
@@ -9409,7 +9189,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Suckler cull cow, conventional, suckler cow system, less than 1.2 LU per ha, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-suckler-cull-cow-conventional-suckler-cow-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-suckler-cull-cow-conventional-suckler-cow-system-less-than-1-2-lu-per-ha-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9423,7 +9203,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "suckler-cull-cow-conventional-suckler-cow-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
+    "suckler-cull-cow-conventional-suckler-cow-system-more-than-1-2-lu-per-ha-at-farm-gate-fr": {
             "name": "Suckler cull cow, conventional, suckler cow system, more than 1.2 LU per ha, at farm gate {FR} U",
             "name_fr": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, plus de 1.2 UGB par ha, Ã  la ferme, France",
             "loss": 0.03,
@@ -9453,7 +9233,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Suckler cull cow, conventional, suckler cow system, more than 1.2 LU per ha, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-suckler-cull-cow-conventional-suckler-cow-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-suckler-cull-cow-conventional-suckler-cow-system-more-than-1-2-lu-per-ha-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9467,7 +9247,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-cow-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw": {
+    "cull-cow-conventional-highland-milk-system-grass-fed-at-farm-gate-fr": {
             "name": "Cull cow, conventional, highland milk system, grass fed, at farm gate {FR} U",
             "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de montagne, nourri Ã  l'herbe, Ã  la ferme, France",
             "loss": 0.03,
@@ -9497,7 +9277,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull cow, conventional, highland milk system, grass fed, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-cow-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-cow-conventional-highland-milk-system-grass-fed-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9511,7 +9291,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-cow-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw": {
+    "cull-cow-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr": {
             "name": "Cull cow, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U",
             "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 10 Ã  30%, Ã  la ferme, France",
             "loss": 0.03,
@@ -9541,7 +9321,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull cow, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9555,7 +9335,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-cow-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw": {
+    "cull-cow-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr": {
             "name": "Cull cow, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U",
             "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 5 Ã  10%, Ã  la ferme, France",
             "loss": 0.03,
@@ -9585,7 +9365,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull cow, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9599,7 +9379,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "cull-cow-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw": {
+    "cull-cow-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr": {
             "name": "Cull cow, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U",
             "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s plus de 30%, Ã  la ferme, France",
             "loss": 0.03,
@@ -9629,7 +9409,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Cull cow, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
@@ -9643,7 +9423,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
-    "veal-conventional-fattening-system-calves-from-lowland-milk-system-at-farm-gate-fr-u-raw": {
+    "veal-conventional-fattening-system-calves-from-lowland-milk-system-at-farm-gate-fr": {
             "name": "Veal, conventional, fattening system, calves from lowland milk system, at farm gate {FR} U",
             "name_fr": "Veau conventionnel, systÃ¨me d'engraissement, systÃ¨me laitier de plaine, Ã  la ferme, France",
             "loss": 0.03,
@@ -9673,7 +9453,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                     "metadata": {
                             "source_dataset": "AGRIBALYSE 3.2",
                             "source_activity": "Veal, conventional, fattening system, calves from lowland milk system, at farm gate {FR} U {FR} U",
-                            "source_uuid": "agb-3.2-veal-conventional-fattening-system-calves-from-lowland-milk-system-at-farm-gate-fr-u-raw",
+                            "source_uuid": "agb-3.2-veal-conventional-fattening-system-calves-from-lowland-milk-system-at-farm-gate-fr",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
                                     "TeR": 3.0,
