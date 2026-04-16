@@ -917,6 +917,68 @@ window.selectIngredient = function(id, name) {
     console.log(`✅ Selected: ${name} (${id})`);
 };
 
+// ================== SEARCHABLE BASELINE TYPEAHEAD ==================
+function setupBaselineSearch() {
+    const searchInput = document.getElementById('baselineSearch');
+    const dropdown = document.getElementById('baselineDropdown');
+    const hiddenSelect = document.getElementById('comparisonBaseline');
+    
+    if (!searchInput || !dropdown) return;
+    
+    const ingredients = window.aioxyData?.ingredients || {};
+    const searchIndex = Object.entries(ingredients).map(([id, data]) => ({
+        id,
+        name: data.name || 'Unknown',
+        co2: data.data?.pef?.["Climate Change"] || 0
+    }));
+    
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (query.length < 2) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+        
+        const matches = searchIndex
+            .filter(item => (item.name || '').toLowerCase().includes(query))
+            .slice(0, 15);
+        
+        if (!matches || matches.length === 0) {
+            dropdown.innerHTML = '<li class="no-results">❌ No ingredients found</li>';
+        } else {
+            dropdown.innerHTML = matches.map(item => {
+                const safeName = (item.name || 'Unknown').replace(/'/g, "\\'");
+                return `
+                <li onclick="selectBaseline('${item.id}', '${safeName}')">
+                    <div class="ingredient-name">${item.name || 'Unknown'}</div>
+                    <div class="ingredient-meta">CO₂e: ${(item.co2 || 0).toFixed(2)} kg/kg (Agribalyse 3.2)</div>
+                </li>
+            `}).join('');
+        }
+        dropdown.classList.remove('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+}
+
+window.selectBaseline = function(id, name) {
+    const selectEl = document.getElementById('comparisonBaseline');
+    const searchEl = document.getElementById('baselineSearch');
+    const dropdownEl = document.getElementById('baselineDropdown');
+    
+    if (selectEl) {
+        selectEl.value = id;
+        selectEl.dispatchEvent(new Event('change')); 
+    }
+    if (searchEl) searchEl.value = name || 'Unknown';
+    if (dropdownEl) dropdownEl.classList.add('hidden');
+    console.log(`⚖️ [Parametric Twin] Baseline locked to: ${name}`);
+};
+
 function populateCountrySelect() {
     const targets = ['manufacturingCountry', 'ingredientOriginSelect'];
     
