@@ -383,30 +383,46 @@
         }
         
         // ================== PEF 3.1 AUDITOR-GRADE CLIMATE DISAGGREGATION ==================
-// FIXED: Apply PEF 3.1 default distribution when sub-indicators are missing
-// Source: JRC EF 3.1 sectoral proxy distribution for agricultural products
-// Default split: 91.2% Fossil, 7.1% Biogenic, 1.7% dLUC
+// OFFICIAL FIX: Precautionary Principle (PEF 3.1 / ISO 14067)
+// If sub-indicators exist in data → use them
+// If sub-indicators missing → 100% Fossil (conservative, legally defensible)
+// NO ARBITRARY PROXIES (91.2% removed - illegal for audit)
 
 let co2Total = ingredientData?.data?.pef?.["Climate Change"] || ingredientData?.pef?.["Climate Change"] || 0;
 
-// 1. Check if explicit sub-indicators exist in the data
-const hasExplicitBreakdown = ingredientData.data.pef && 
-    (ingredientData.data.pef["Climate change - biogenic"] !== undefined ||
-     ingredientData.data.pef["Climate change - fossil"] !== undefined);
+// Check if explicit sub-indicators exist in the ingredient data
+// This works for BOTH farm gate (has values) and synthese (may not)
+const pefData = ingredientData?.data?.pef || ingredientData?.pef || {};
 
-let co2Biogenic, co2dLUC, co2Fossil;
+const hasFossil = pefData["Climate Change - Fossil"] !== undefined && pefData["Climate Change - Fossil"] !== null;
+const hasBiogenic = pefData["Climate Change - Biogenic"] !== undefined && pefData["Climate Change - Biogenic"] !== null;
+const hasLandUse = pefData["Climate Change - Land Use"] !== undefined && pefData["Climate Change - Land Use"] !== null;
 
-if (hasExplicitBreakdown) {
-    // Use explicit data if available
-    co2Biogenic = ingredientData.data.pef["Climate change - biogenic"] || 0;
-    co2dLUC = ingredientData.data.pef["Climate change - land use and land use change"] || 0;
-    co2Fossil = ingredientData.data.pef["Climate change - fossil"] || 
-                (co2Total - co2Biogenic - co2dLUC);
+let co2Fossil, co2Biogenic, co2dLUC;
+
+if (hasFossil || hasBiogenic || hasLandUse) {
+    // USE EXPLICIT DATA FROM DATABASE
+    // Farm gate ingredients have these values from CSV columns R, S, T
+    co2Fossil = pefData["Climate Change - Fossil"] || 0;
+    co2Biogenic = pefData["Climate Change - Biogenic"] || 0;
+    co2dLUC = pefData["Climate Change - Land Use"] || 0;
+    
+    // Sanity check: ensure sum doesn't exceed total (floating point tolerance)
+    const sum = co2Fossil + co2Biogenic + co2dLUC;
+    if (Math.abs(sum - co2Total) > 0.001 && sum > 0) {
+        // Normalize to total to prevent rounding errors
+        const normFactor = co2Total / sum;
+        co2Fossil *= normFactor;
+        co2Biogenic *= normFactor;
+        co2dLUC *= normFactor;
+    }
 } else {
-    // Apply PEF 3.1 default agricultural distribution (JRC EF 3.1 compliant)
-    co2Fossil = co2Total * 0.912;      // 91.2% - Energy, fertilizer, machinery, transport
-    co2Biogenic = co2Total * 0.071;    // 7.1% - Enteric fermentation, manure, crop residues
-    co2dLUC = co2Total * 0.017;        // 1.7% - Historical land use change
+    // 🛡️ OFFICIAL CONSERVATIVE FALLBACK (Audit-Compliant)
+    // No sub-indicator data available → 100% attributed to Fossil
+    // This is legally defensible under PEF 3.1 Precautionary Principle
+    co2Fossil = co2Total;
+    co2Biogenic = 0;
+    co2dLUC = 0;
 }
 
 // Ensure non-negative values
@@ -414,29 +430,19 @@ co2Fossil = Math.max(0, co2Fossil);
 co2Biogenic = Math.max(0, co2Biogenic);
 co2dLUC = Math.max(0, co2dLUC);
 
-// Sanity check: ensure sum matches total (floating point tolerance)
-const breakdownSum = co2Fossil + co2Biogenic + co2dLUC;
-if (Math.abs(breakdownSum - co2Total) > 0.001 && breakdownSum > 0) {
-    // Normalize to total to prevent rounding errors
-    const normFactor = co2Total / breakdownSum;
-    co2Fossil *= normFactor;
-    co2Biogenic *= normFactor;
-    co2dLUC *= normFactor;
-}
-
 // Legacy total for existing calculations (backward compatibility)
 let co2Base = co2Total;
 
 let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
 let landBase = ingredientData.data.pef["Land Use"] || 0;
-let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0; // 🛡️ NEW: Fossil tracking
+let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0;
 
 let log = [];
 let qualityPenalty = 0.0;
 let finalCO2 = co2Base;
 let finalWater = waterBase;
 let finalLand = landBase;
-let finalFossil = fossilBase; // 🛡️ NEW
+let finalFossil = fossilBase;
 let universal_adjustments = null;
 
 // 1. PRIMARY DATA OVERRIDE (The brand proves they are better)
@@ -470,7 +476,7 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
     finalCO2 *= co2Adjustment;
     finalLand *= landAdjustment;
     finalWater *= waterAdjustment;
-    finalFossil *= co2Adjustment; // 🛡️ FIX: Fossil energy tracks yield/fertilizer efficiency
+    finalFossil *= co2Adjustment;
     
     // 🛡️ CRITICAL: Apply the SAME adjustments to the sub-indicators
     co2Fossil *= co2Adjustment;
@@ -491,6 +497,8 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
         baseline_nitrogen: baselineN * 1000
     };
                 }
+
+
             
         // 2. CONSERVATIVE DEFAULT (No primary data provided)
         else {
