@@ -1,1 +1,6 @@
-✅ Extraction Complete: 227 ingredients added to ingredients_db.js with full PEF detail.
+✅ Found header at row 1
+📊 Column Mapping:
+   Water Use: column 18
+   Resource Use (fossils): column NOT FOUND
+✅ Processed: 222 ingredients
+📄 Generated: ingredients_db.js
