@@ -840,15 +840,14 @@ function setupIngredientSearch() {
     const hiddenSelect = document.getElementById('ingredientSelect');
     
     if (!searchInput || !dropdown) {
-        console.warn('⚠️ Search elements not found - using fallback');
+        console.warn('⚠️ Search elements not found');
         return;
     }
     
-    // Build search index from ALL ingredients (farm gate + synthese)
     const ingredients = window.aioxyData?.ingredients || {};
     const searchIndex = Object.entries(ingredients).map(([id, data]) => ({
         id,
-        name: data.name,
+        name: data.name || 'Unknown Ingredient',
         name_fr: data.name_fr || '',
         dqr: data.data?.metadata?.dqr_overall || 2.5,
         co2: data.data?.pef?.["Climate Change"] || 0
@@ -864,54 +863,57 @@ function setupIngredientSearch() {
             return;
         }
         
-        // Fuzzy search - matches anywhere in name
         const matches = searchIndex
             .filter(item => 
-                item.name.toLowerCase().includes(query) ||
-                item.name_fr.toLowerCase().includes(query)
+                (item.name || '').toLowerCase().includes(query) ||
+                (item.name_fr || '').toLowerCase().includes(query)
             )
-            .slice(0, 15); // Limit to 15 results
+            .slice(0, 15);
         
-        if (matches.length === 0) {
+        if (!matches || matches.length === 0) {
             dropdown.innerHTML = '<li class="no-results">❌ No ingredients found</li>';
         } else {
-            dropdown.innerHTML = matches.map(item => `
-                <li onclick="selectIngredient('${item.id}', '${item.name.replace(/'/g, "\\'")}')">
-                    <div class="ingredient-name">${item.name}</div>
+            dropdown.innerHTML = matches.map(item => {
+                const safeName = (item.name || 'Unknown').replace(/'/g, "\\'");
+                return `
+                <li onclick="selectIngredient('${item.id}', '${safeName}')">
+                    <div class="ingredient-name">${item.name || 'Unknown'}</div>
                     <div class="ingredient-meta">
-                        DQR: ${item.dqr?.toFixed(1) || 'N/A'} | 
-                        CO₂e: ${item.co2?.toFixed(2) || 'N/A'} kg/kg
+                        DQR: ${(item.dqr || 2.5).toFixed(1)} | 
+                        CO₂e: ${(item.co2 || 0).toFixed(2)} kg/kg
                         ${item.name_fr ? ' | ' + item.name_fr.substring(0, 40) + '...' : ''}
                     </div>
                 </li>
-            `).join('');
+            `}).join('');
         }
         
         dropdown.classList.remove('hidden');
     });
     
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
             dropdown.classList.add('hidden');
         }
     });
     
-    // Keyboard navigation
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             dropdown.classList.add('hidden');
             searchInput.value = '';
-            hiddenSelect.value = '';
+            if (hiddenSelect) hiddenSelect.value = '';
         }
     });
 }
 
 // Global function for selecting ingredient
 window.selectIngredient = function(id, name) {
-    document.getElementById('ingredientSelect').value = id;
-    document.getElementById('ingredientSearch').value = name;
-    document.getElementById('ingredientDropdown').classList.add('hidden');
+    const selectEl = document.getElementById('ingredientSelect');
+    const searchEl = document.getElementById('ingredientSearch');
+    const dropdownEl = document.getElementById('ingredientDropdown');
+    
+    if (selectEl) selectEl.value = id;
+    if (searchEl) searchEl.value = name || 'Unknown';
+    if (dropdownEl) dropdownEl.classList.add('hidden');
     console.log(`✅ Selected: ${name} (${id})`);
 };
 
