@@ -1155,10 +1155,14 @@ function setupDemoData() {
     
     const demoIngredientId = plantBasedIds.length > 0 ? plantBasedIds[0] : availableIngredients[0];
     
+    // FIX: Add ALL required fields
     selectedIngredients = [{
         id: demoIngredientId,
         name: window.aioxyData.ingredients[demoIngredientId].name,
-        quantity: 0.15
+        quantity: 0.15,
+        originCountry: 'FR',           // ← ADD THIS
+        processingState: 'raw',        // ← ADD THIS
+        physics_note: ''               // ← ADD THIS
     }];
     
     console.log(`✅ [setupDemoData] Demo data set: ${selectedIngredients[0].name} (${demoIngredientId})`);
