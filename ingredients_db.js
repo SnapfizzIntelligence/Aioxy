@@ -1,6 +1,6 @@
 // AIOXY FARM GATE DATABASE | AUDIT-GRADE
-// Generated: 2026-04-16 17:18:48
-// Total Ingredients: 221
+// Generated: 2026-04-16 17:25:38
+// Total Ingredients: 222
 // DQR: 2.5 (PEF 3.1 Secondary Data Standard)
 // Allocation: Economic (Agribalyse Official)
 // ===============================================================
@@ -839,6 +839,50 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             },
                             "dqr_overall": 2.5,
                             "single_score_mpt": 0.0605
+                    }
+            }
+    },
+
+    "beef-cattle-conventional-national-average-at-farm-gate-fr-u-raw": {
+            "name": "Beef cattle, conventional, national average, at farm gate {FR} U",
+            "name_fr": "Boeuf, moyenne nationale, Ã  la ferme, France",
+            "loss": 0.03,
+            "processing_yield": 1.0,
+            "data": {
+                    "pef": {
+                            "Climate Change": 14.5,
+                            "Ozone Depletion": 5.43e-08,
+                            "Ionizing Radiation": 0.307,
+                            "Photochemical Ozone Formation": 0.0209,
+                            "Particulate Matter": 1.38e-06,
+                            "Human Toxicity, non-cancer": 2.12e-07,
+                            "Human Toxicity, cancer": 5.74e-09,
+                            "Acidification": 0.206,
+                            "Eutrophication, freshwater": 0.000573,
+                            "Eutrophication, marine": 0.0433,
+                            "Eutrophication, terrestrial": 0.911,
+                            "Ecotoxicity, freshwater": 73.0,
+                            "Land Use": 966.0,
+                            "Water Use/Scarcity (AWARE)": 1.16,
+                            "Resource Use, fossils": 24.2,
+                            "Resource Use, minerals/metals": 1.75e-05,
+                            "Climate Change - Biogenic": 10.9,
+                            "Climate Change - Fossil": 3.62,
+                            "Climate Change - Land Use": -0.0277
+                    },
+                    "metadata": {
+                            "source_dataset": "AGRIBALYSE 3.2",
+                            "source_activity": "Beef cattle, conventional, national average, at farm gate {FR} U {FR} U",
+                            "source_uuid": "agb-3.2-beef-cattle-conventional-national-average-at-farm-gate-fr-u-raw",
+                            "allocation_method": "Economic Allocation",
+                            "dqr": {
+                                    "TeR": 3.0,
+                                    "GR": 2.0,
+                                    "TiR": 3.0,
+                                    "P": 2.0
+                            },
+                            "dqr_overall": 2.5,
+                            "single_score_mpt": 1.35
                     }
             }
     },

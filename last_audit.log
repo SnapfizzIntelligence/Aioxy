@@ -12,8 +12,8 @@
   📦 Processed 220 ingredients...
 
 ✅ SUCCESS!
-   Ingredients extracted: 221
+   Ingredients extracted: 222
    Skipped empty rows: 0
-   Skipped eggs: 6
+   Skipped eggs: 5
 
 📄 Generated: ingredients_db.js
