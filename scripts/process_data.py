@@ -5,11 +5,12 @@ import csv
 from datetime import datetime
 
 # ==========================================
-# AIOXY NATIVE CSV PROCESSOR v4.0
-# Strict Coordinate Mapping with Total-Isolation
+# AIOXY NATIVE CSV PROCESSOR v4.2
+# Exact Engine Mapping & Metadata Preservation
 # ==========================================
 
 MAPPING = {
+    # Main Indicators
     "changement climatique": "Climate Change",
     "couche d'ozone": "Ozone Depletion",
     "rayonnements ionisants": "Ionizing Radiation",
@@ -20,13 +21,18 @@ MAPPING = {
     "acidification": "Acidification",
     "eutrophisation eaux douces": "Eutrophication, freshwater",
     "eutrophisation marine": "Eutrophication, marine",
-    "eutrophisation terreste": "Eutrophication, terrestrial", # Agribalyse typo
     "eutrophisation terrestre": "Eutrophication, terrestrial",
+    "eutrophisation terreste": "Eutrophication, terrestrial",
     "écotoxicité": "Ecotoxicity, freshwater",
     "utilisation du sol": "Land Use",
     "ressources eau": "Water Use/Scarcity (AWARE)",
     "ressources énergétiques": "Resource Use, fossils",
-    "ressources minéraux": "Resource Use, minerals/metals"
+    "ressources minéraux": "Resource Use, minerals/metals",
+    
+    # EXACT String Matches for the AIOXY Engine Logic
+    "émissions fossiles": "Climate change - fossil",
+    "émissions biogéniques": "Climate change - biogenic",
+    "affectation des sols": "Climate change - land use and land use change"
 }
 
 def clean_id(name):
@@ -54,8 +60,8 @@ def process_agribalyse_file(filepath, source_type):
         impact_row_idx = -1
         name_row_idx = -1
         
-        # 1. Locate Header Rows
-        for i, row in enumerate(rows[:20]):
+        # Identify Header Rows
+        for i, row in enumerate(rows[:25]):
             row_str = " ".join(row).lower()
             if "changement climatique" in row_str and impact_row_idx == -1:
                 impact_row_idx = i
@@ -63,42 +69,32 @@ def process_agribalyse_file(filepath, source_type):
                 name_row_idx = i
                 
         if impact_row_idx == -1 or name_row_idx == -1:
-            print(f"❌ Critical Error: Missing headers in {filepath}")
+            print("❌ Critical Error: Missing headers in CSV.")
             return {}
             
         impact_headers = rows[impact_row_idx]
         col_headers = rows[name_row_idx]
         
-        # 2. Map Exact Impact Indices (Prevent Sub-indicator Overwrites)
+        # Map Indices
         impact_col_indices = {}
-        temp_matches = {en_key: [] for en_key in MAPPING.values()}
-        
         for idx, col_val in enumerate(impact_headers):
             col_val_lower = col_val.lower()
             for fr_key, en_key in MAPPING.items():
                 if fr_key in col_val_lower:
-                    temp_matches[en_key].append((idx, col_val_lower))
+                    # Logic: Ensure the main total "Climate Change" doesn't get 
+                    # overwritten by a sub-indicator column containing the same word
+                    if en_key == "Climate Change" and any(x in col_val_lower for x in ["fossiles", "biogéniques", "sols"]):
+                        continue
+                    impact_col_indices[en_key] = idx
                     
-        for en_key, matches in temp_matches.items():
-            if matches:
-                # Isolate the main total by finding the shortest column name
-                best_match = min(matches, key=lambda x: len(x[1]))
-                impact_col_indices[en_key] = best_match[0]
-                    
-        # 3. Map Name and DQR Indices
         name_col_idx = 0
         dqr_col_idx = -1
-        
         for idx, col_val in enumerate(col_headers):
             col_val_lower = col_val.lower()
-            if "nom du produit" in col_val_lower or "lci name" in col_val_lower:
-                name_col_idx = idx
-            if "dqr" in col_val_lower or "qualité" in col_val_lower:
-                dqr_col_idx = idx
+            if "nom du produit" in col_val_lower or "lci name" in col_val_lower: name_col_idx = idx
+            if "dqr" in col_val_lower or "qualité" in col_val_lower: dqr_col_idx = idx
                 
-        print(f"✅ Product Name locked at Column {name_col_idx}. Locked {len(impact_col_indices)} specific impact coordinates.")
-        
-        # 4. Extract Data
+        # Data Extraction
         start_row = max(impact_row_idx, name_row_idx) + 1
         processed_count = 0
         
@@ -113,19 +109,17 @@ def process_agribalyse_file(filepath, source_type):
             
             impacts = {}
             for en_key, idx in impact_col_indices.items():
-                if idx < len(row):
-                    impacts[en_key] = get_safe_float(row[idx])
-                else:
-                    impacts[en_key] = 0.0
+                impacts[en_key] = get_safe_float(row[idx]) if idx < len(row) else 0.0
                     
             overall_dqr = 2.5
             if dqr_col_idx != -1 and dqr_col_idx < len(row):
                 dqr_val = get_safe_float(row[dqr_col_idx])
                 if dqr_val > 0: overall_dqr = dqr_val
             
+            # MANDATORY STRUCTURE FOR UI & ENGINE COMPATIBILITY
             data_store[item_id] = {
                 "name": name_fr,
-                "loss": 0.05 if source_type == "SYNTH" else 0.02,
+                "loss": 0.02, # Default for Farm Gate
                 "processing_yield": 1.0,
                 "data": {
                     "pef": impacts,
@@ -133,46 +127,42 @@ def process_agribalyse_file(filepath, source_type):
                         "source_dataset": "AGRIBALYSE 3.2",
                         "source_activity": name_fr,
                         "dqr_overall": overall_dqr,
-                        "dqr": {"P": overall_dqr, "TiR": overall_dqr, "TeR": overall_dqr, "GR": overall_dqr},
-                        "biogenic_net": 0.0
+                        "dqr": {"P": overall_dqr, "TiR": overall_dqr, "TeR": overall_dqr, "GR": overall_dqr}
                     }
                 }
             }
             processed_count += 1
             
-        print(f"✅ Extracted {processed_count} validated ingredients from {source_type}")
+        print(f"✅ Successfully mapped {processed_count} ingredients.")
         return data_store
         
     except Exception as e:
-        print(f"❌ Read failure {filepath}: {str(e)}")
+        print(f"❌ Processing failure: {str(e)}")
         return {}
 
 def main():
     base = os.getcwd()
-    path_synth = os.path.join(base, "data-raw", "agribalyse_synthese.csv")
+    # Path setup
     path_farm = os.path.join(base, "data-raw", "agribalyse_farm_gate.csv")
     output_js = os.path.join(base, "ingredients_db.js")
 
     all_data = {}
     
-    if os.path.exists(path_synth):
-        all_data.update(process_agribalyse_file(path_synth, "SYNTH"))
     if os.path.exists(path_farm):
         all_data.update(process_agribalyse_file(path_farm, "FARM"))
-
-    if not all_data:
-        print("❌ CRITICAL: No data extracted.")
+    else:
+        print(f"❌ Input file not found: {path_farm}")
         return
 
-    # Infrastructure Merge
-    header = f"// AIOXY DATABASE | VERIFIED: {datetime.now().strftime('%Y-%m-%d')}\n"
+    # JS Wrapper with Object.assign for multi-file loading
+    header = f"// AIOXY AUTOMATED DATABASE | VERIFIED: {datetime.now().strftime('%Y-%m-%d')}\n"
     js_content = header + "window.aioxyData = window.aioxyData || {};\n"
     js_content += "window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {}, " + json.dumps(all_data, indent=2, ensure_ascii=False) + ");"
     
     with open(output_js, "w", encoding="utf-8") as f:
         f.write(js_content)
     
-    print(f"\n🚀 DATABASE DEPLOYMENT READY: {len(all_data)} ingredients mapped successfully.")
+    print(f"🚀 Deployment ready: {output_js} has been updated.")
 
 if __name__ == "__main__":
     main()
