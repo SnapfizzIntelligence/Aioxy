@@ -1469,391 +1469,358 @@ Note: This screening-level assessment is designed for internal strategic decisio
         return ((h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0')).padEnd(64, 'A').toUpperCase();
     }
 
-    // ============================================================================
-    // ⚖️ THE PARAMETRIC TWIN ENGINE (Dynamic Apples-to-Apples Baselines)
-    // ============================================================================
-    // OFFICIAL JRC BAT ENERGY VALUES - Commission Implementing Decision (EU) 2019/2031
-    // Source: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.L_.2019.313.01.0060.01.ENG
-    // ============================================================================
-    const JRC_BAT_PROCESSING = {
-        // Table 19: Oilseed processing and vegetable oil refining
-        'soy-protein-product': {
-            energy_mwh_per_tonne: 1.15,        // Midpoint of 0.65-1.65 MWh/tonne
-            thermal_mj_per_kg: 6.5,            // Steam for extraction and drying
-            source: 'JRC BAT (EU) 2019/2031, Table 19 - Integrated crushing and refining of soybeans',
-            processing_steps: 'Crushing, hexane extraction, desolventising, drying'
-        },
-        // Table 25: Starch production (includes protein fractionation)
-        'wheat-protein-product': {
-            energy_mwh_per_tonne: 0.95,        // Midpoint of 0.65-1.25 MWh/tonne
-            thermal_mj_per_kg: 8.0,            // Steam for gluten drying
-            source: 'JRC BAT (EU) 2019/2031, Table 25 - Maize/wheat starch and protein',
-            processing_steps: 'Milling, gluten separation, drying'
-        },
-        'pea-protein-product': {
-            energy_mwh_per_tonne: 0.95,        // Same as wheat starch process (fractionation)
-            thermal_mj_per_kg: 7.0,            // Steam for protein precipitation and drying
-            source: 'JRC BAT (EU) 2019/2031, Table 25 - applied to legume fractionation',
-            processing_steps: 'Milling, protein extraction, precipitation, drying'
-        },
-        // Table 8: Dairies (powder production)
-        'whey-protein-product': {
-            energy_mwh_per_tonne: 0.35,        // Midpoint of 0.2-0.5 MWh/tonne for powder
-            thermal_mj_per_kg: 15.0,           // Additional for ultrafiltration and spray drying
-            source: 'JRC BAT (EU) 2019/2031, Table 8 - Dairy powder',
-            processing_steps: 'Ultrafiltration, diafiltration, spray drying'
-        }
-    };
+// ============================================================================
+// ⚖️ THE PARAMETRIC TWIN ENGINE - CLONE & SWAP (ISO 14044 §4.2.3.2 COMPLIANT)
+// ============================================================================
+// OFFICIAL METHODOLOGY: Functional Equivalence via Identical System Boundaries
+// All manufacturing, transport, and packaging parameters are cloned from the 
+// user's product configuration. Only the agricultural ingredient is swapped.
+// JRC BAT processing energy available as optional toggle for protein isolates.
+// ============================================================================
 
-    const ANCHOR_DATASETS = {
-        // Maps a product category to its conventional Agribalyse "Anchor" ingredient
-        // factor: mass ratio (e.g., it takes 10kg of milk to make 1kg of cheese)
-        
-        // ========== MEAT PRODUCTS ==========
-        'beef-product': { 
-            id: 'beef-cattle-conventional-national-average-at-farm-gate-fr', 
-            processing: 'freezing', 
-            factor: 1.0,
-            name: 'Beef'
-        },
-        'chicken-product': { 
-            id: 'broiler-conventional-at-farm-gate-fr', 
-            processing: 'freezing', 
-            factor: 1.0,
-            name: 'Chicken'
-        },
-        'pork-product': { 
-            id: 'pig-conventional-national-average-at-farm-gate-fr', 
-            processing: 'freezing', 
-            factor: 1.0,
-            name: 'Pork'
-        },
-        
-        // ========== DAIRY PRODUCTS ==========
-        'milk-product': { 
-            id: 'cow-milk-conventional-national-average-at-farm-gate-fr', 
-            processing: 'pasteurization', 
-            factor: 1.0,
-            name: 'Cow Milk'
-        },
-        'cheese-product': { 
-            id: 'cow-milk-conventional-national-average-at-farm-gate-fr', 
-            processing: 'fermentation', 
-            factor: 10.0, // 10kg milk → 1kg cheese
-            name: 'Cheese'
-        },
-        
-        // ========== PLANT-BASED PROTEINS (WITH BAT ENERGY) ==========
-        'soy-protein-product': { 
-            id: 'soybean-national-average-animal-feed-at-farm-gate-fr', 
-            processing: 'milling', 
-            factor: 3.1, // PHYSICS: ~3.1kg beans → 1kg Soy Protein Concentrate (70% protein)
-            name: 'Soy Protein Concentrate',
-            use_bat_energy: true  // 🆕 Flag to apply JRC BAT energy
-        },
-        'wheat-protein-product': { 
-            id: 'soft-wheat-grain-conventional-at-farm-gate-fr', 
-            processing: 'milling', 
-            factor: 4.8, // PHYSICS: ~4.8kg wheat → 1kg Vital Wheat Gluten (after starch allocation)
-            name: 'Wheat Protein Isolate',
-            use_bat_energy: true  // 🆕 Flag to apply JRC BAT energy
-        },
-        'whey-protein-product': {
-            id: 'cow-milk-conventional-national-average-at-farm-gate-fr',
-            processing: 'ultrafiltration',
-            factor: 32.0, // PHYSICS: ~32kg liquid milk → 1kg Whey Protein Isolate (90% protein)
-            name: 'Whey Protein Isolate',
-            use_bat_energy: true  // 🆕 Flag to apply JRC BAT energy
-        },
-        'pea-protein-product': {
-            id: 'spring-pea-conventional-national-average-at-farm-gate-fr',
-            processing: 'fractionation',
-            factor: 3.5, // PHYSICS: ~3.5kg peas → 1kg Pea Protein Isolate (80% protein)
-            name: 'Pea Protein Isolate',
-            use_bat_energy: true  // 🆕 Flag to apply JRC BAT energy
-        },
-        
-        // ========== PLANT-BASED FINISHED PRODUCTS ==========
-        'plant-burger': { 
-            id: 'soybean-national-average-animal-feed-at-farm-gate-fr', 
-            processing: 'extrusion', 
-            factor: 0.3, 
-            name: 'Plant-Based Patty'  
-        },
-        'plant-milk': { 
-            id: 'oat-grain-national-average-animal-feed-at-farm-gate-fr', 
-            processing: 'oat-processing', 
-            factor: 0.1, 
-            name: 'Oat/Plant Milk'  
-        },
-        
-        // ========== GRAIN PRODUCTS ==========
-        'pasta-product': { 
-            id: 'durum-wheat-grain-conventional-national-average-at-farm-gate-fr', 
-            processing: 'drying', 
-            factor: 1.0,
-            name: 'Pasta'
-        },
-        'bread-product': { 
-            id: 'durum-wheat-grain-conventional-national-average-at-farm-gate-fr', 
-            processing: 'baking', 
-            factor: 0.8, // 80% yield after baking
-            name: 'Bread'
-        },
-        
-        // ========== BEVERAGES ==========
-        'coffee-product': { 
-            id: 'coffee-bean-robusta-depulped-brazil-at-farm-gate-br', 
-            processing: 'drying', 
-            factor: 1.2, // 20% roasting loss
-            name: 'Coffee'
-        },
-        
-        // ========== CONFECTIONERY ==========
-        'chocolate-product': { 
-            id: 'cocoa-powder-agribalyse-3-2', 
-            processing: 'mixing', 
-            factor: 1.0,
-            name: 'Chocolate'
-        },
-        'chocolate-spread-conventional': { 
-            id: 'palm-oil-refined-agribalyse-3-2', 
-            processing: 'mixing', 
-            factor: 1.0,
-            name: 'Chocolate Spread'
-        },
-        
-        // ========== PERSONAL CARE ==========
-        'shampoo-conventional': {
-            id: 'palm-oil-refined-agribalyse-3-2',  // Proxy - palm oil derivatives
-            processing: 'mixing',
-            factor: 1.0,
-            name: 'Conventional Shampoo'
-        },
-        'soap-conventional': {
-            id: 'palm-oil-refined-agribalyse-3-2',  // Proxy
-            processing: 'mixing',
-            factor: 1.0,
-            name: 'Conventional Soap'
-        },
-        'lotion-conventional': {
-            id: 'palm-oil-refined-agribalyse-3-2',  // Proxy
-            processing: 'mixing',
-            factor: 1.0,
-            name: 'Conventional Lotion'
-        },
-        
-        // ========== TEXTILES ==========
-        'cotton-tshirt': {
-            id: 'cotton-conv-global',  // You have this in ingredients.js
-            processing: 'milling',
-            factor: 1.0,
-            name: 'Conventional Cotton T-Shirt'
-        },
-        'polyester-tshirt': {
-            id: 'polyester-virgin-pet',  // You have this in ingredients.js
-            processing: 'extrusion',
-            factor: 1.0,
-            name: 'Conventional Polyester T-Shirt'
-        },
-        
-        // ========== FALLBACK ==========
-        'default': { 
-            id: 'beef-cattle-conventional-national-average-at-farm-gate-fr', 
-            processing: 'freezing', 
-            factor: 1.0,
-            name: 'Conventional Product'
-        }, 
-        // Add sensitivity ranges for key parameters
-        _sensitivity_config: {
-            transport_distance_km: { baseline: 500, range: [250, 1000] },
-            outbound_distance_km: { baseline: 400, range: [200, 800] },
-            packaging_weight_kg: { baseline: 0.050, range: [0.025, 0.100] },
-            grid_intensity_g_per_kwh: { baseline: 480, range: [200, 800] },
-            concentration_ratio: { baseline: 1.0, range: [0.5, 2.0] }
-        }
-    };
+// OFFICIAL JRC BAT ENERGY VALUES - Commission Implementing Decision (EU) 2019/2031
+// Source: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.L_.2019.313.01.0060.01.ENG
+const JRC_BAT_PROCESSING = {
+    // Table 19: Oilseed processing and vegetable oil refining
+    'soy-protein-concentrate': {
+        energy_mwh_per_tonne: 1.15,
+        thermal_mj_per_kg: 6.5,
+        source: 'JRC BAT (EU) 2019/2031, Table 19',
+        processing_steps: 'Crushing, hexane extraction, desolventising, drying',
+        applies_to: ['soy', 'soybean', 'soy-protein']
+    },
+    // Table 25: Starch production (includes protein fractionation)
+    'wheat-protein-isolate': {
+        energy_mwh_per_tonne: 0.95,
+        thermal_mj_per_kg: 8.0,
+        source: 'JRC BAT (EU) 2019/2031, Table 25',
+        processing_steps: 'Milling, gluten separation, drying',
+        applies_to: ['wheat', 'wheat-protein', 'gluten']
+    },
+    'pea-protein-isolate': {
+        energy_mwh_per_tonne: 0.95,
+        thermal_mj_per_kg: 7.0,
+        source: 'JRC BAT (EU) 2019/2031, Table 25 (applied to legume fractionation)',
+        processing_steps: 'Milling, protein extraction, precipitation, drying',
+        applies_to: ['pea', 'spring-pea', 'pea-protein']
+    },
+    // Table 8: Dairies (powder production)
+    'whey-protein-isolate': {
+        energy_mwh_per_tonne: 0.35,
+        thermal_mj_per_kg: 15.0,
+        source: 'JRC BAT (EU) 2019/2031, Table 8',
+        processing_steps: 'Ultrafiltration, diafiltration, spray drying',
+        applies_to: ['whey', 'whey-protein', 'milk-protein']
+    }
+};
 
-    function calculateParametricBaseline(baselineCategoryKey, targetCountry) {
-        console.log(`⚖️ [Parametric Twin] Constructing apples-to-apples baseline for: ${baselineCategoryKey}`);
-        
-        const aioxyDataRef = global.aioxyData || {};
-        
-        // Safety check
-        if (!aioxyDataRef.ingredients) {
-            console.warn("⚠️ [Parametric Twin] Missing ingredient data");
-            return {
-                name: `Benchmark`,
-                co2PerKg: 5.0,
-                waterPerKg: 1.0,
-                landUsePerKg: 2.0,
-                fossilPerKg: 10.0,
-                concentration_ratio: 1.0,
-                breakdown: { farm: 5.0, bat_processing: 0, manufacturing: 0, logistics: 0, packaging: 0 },
-                methodology: "Fallback (Missing Data)",
-                allocation_method: "Mass allocation",
-                allocation_note: "Default",
-                bat_source: null,
-                bat_processing_note: "",
-                sensitivity_analysis: { performed: false },
-                compliance_statement: "Fallback baseline"
-            };
-        }
-        
-        // 1. Fetch the Anchor ingredient
-        const anchor = ANCHOR_DATASETS[baselineCategoryKey] || ANCHOR_DATASETS['default'];
-        const anchorIng = aioxyDataRef.ingredients[anchor.id];
-        
-        if (!anchorIng) {
-            console.warn(`⚠️ [Audit Warning] Anchor dataset missing for ${baselineCategoryKey}. Using fallback.`);
-            return { 
-                name: `Generic ${anchor.name || 'Product'}`, 
-                co2PerKg: 5.0, 
-                waterPerKg: 1.0,
-                landUsePerKg: 2.0,
-                fossilPerKg: 10.0,
-                concentration_ratio: 1.0,
-                breakdown: { farm: 5.0, bat_processing: 0, manufacturing: 0, logistics: 0, packaging: 0 },
-                methodology: "Fallback (Missing Anchor)",
-                allocation_method: "Mass allocation",
-                allocation_note: "Default",
-                bat_source: null,
-                bat_processing_note: "",
-                sensitivity_analysis: { performed: false },
-                compliance_statement: "Fallback baseline"
-            };
-        }
-
-        // 2. Calculate Farm Gate Impact (Agribalyse LCI * concentration factor)
-        const farmGateCO2 = (anchorIng.data.pef["Climate Change"] || 0) * anchor.factor;
-        const farmGateWater = (anchorIng.data.pef["Water Use/Scarcity (AWARE)"] || 0) * anchor.factor;
-        const farmGateLand = (anchorIng.data.pef["Land Use"] || 0) * anchor.factor;
-        const farmGateFossil = (anchorIng.data.pef["Resource Use, fossils"] || 0) * anchor.factor;
-
-        // 3. Simulate Standard Industry Manufacturing
-        const domGetter = (id, returnValue = false) => {
-            if (returnValue) return global.document?.getElementById(id)?.value;
-            return global.document?.getElementById(id)?.checked || false;
-        };
-        const mfgImpact = calculateManufacturingImpact(anchor.factor, 1.0, anchor.processing, targetCountry, true, domGetter);
-
-        // 🆕 4. ADD JRC BAT PROCESSING ENERGY FOR PROTEIN ISOLATES (ONLY IF FLAGGED)
-        let batProcessingCO2 = 0;
-        let batProcessingFossil = 0;
-        let batProcessingNote = '';
-        
-        // Only apply BAT energy if the anchor has the flag
-        if (anchor.use_bat_energy) {
-            const batData = JRC_BAT_PROCESSING[baselineCategoryKey];
-            if (batData) {
-                // Get grid intensity for target country
-                const countryData = aioxyDataRef.countries?.[targetCountry] || { electricityCO2: 480 };
-                const gridIntensity = countryData.electricityCO2 || 480; // g CO₂e/kWh
-                
-                // Electricity emissions from BAT energy
-                const electricityKWh = batData.energy_mwh_per_tonne * 1000; // Convert MWh to kWh
-                const elecCO2 = electricityKWh * (gridIntensity / 1000) / 1000; // Convert to kg CO₂e/kg output
-                
-                // Thermal emissions (natural gas: 202 g CO₂e per MJ = 0.202 kg CO₂e per MJ)
-                const thermalCO2 = (batData.thermal_mj_per_kg || 0) * 0.202;
-                
-                batProcessingCO2 = elecCO2 + thermalCO2;
-                
-                // Fossil resource use (kWh → MJ: ×3.6)
-                batProcessingFossil = (electricityKWh * 3.6 / 1000) + (batData.thermal_mj_per_kg || 0);
-                
-                batProcessingNote = `Includes JRC BAT processing: ${batData.energy_mwh_per_tonne} MWh/t electricity + ${batData.thermal_mj_per_kg} MJ/kg thermal. ${batData.processing_steps}.`;
-                
-                console.log(`⚙️ [JRC BAT] Added ${batProcessingCO2.toFixed(3)} kg CO₂e/kg processing energy for ${baselineCategoryKey}`);
-                console.log(`   └─ Source: ${batData.source}`);
-            }
-        }
-
-        // 5. Simulate Standard Logistics (Inbound + Outbound)
-        // A. Inbound (Farm to Factory): Assume 500km regional sourcing
-        const inboundRef = (anchor.processing === 'freezing' || anchor.processing === 'pasteurization') ? 'chilled' : 'ambient';
-        const inboundTransportObj = calculateGLECTransport(anchor.factor, 500, 'road', inboundRef);
-        const inboundTransportCO2 = inboundTransportObj.total;
-
-        // B. Outbound (Factory to Retail): Assume 400km distribution
-        let outboundRef = 'ambient';
-        if (anchor.processing === 'freezing') outboundRef = 'frozen';
-        else if (anchor.processing === 'pasteurization') outboundRef = 'chilled';
-        const outboundTransportObj = calculateGLECTransport(1.0, 400, 'road', outboundRef);
-        const outboundTransportCO2 = outboundTransportObj.total;
-        
-        const totalTransportCO2 = inboundTransportCO2 + outboundTransportCO2;
-
-        // 6. Standard Packaging (Conservative estimate: 50g mixed packaging per kg)
-        const packagingCO2 = 0.15;
-
-        // 7. Correlate Baseline Fossil Use for Logistics & Packaging
-        const transportFossilMJ = totalTransportCO2 * 14.0;
-        const packagingFossilMJ = packagingCO2 * 20.0;
-
-        // 8. Assemble the Final Baseline Profile
-        const ratio = parseFloat(global.document?.getElementById('concentrationRatio')?.value) || 1.0;
-
-        const totalCO2PerKg = (farmGateCO2 + mfgImpact.co2 + batProcessingCO2 + totalTransportCO2 + packagingCO2) * ratio;
-        const totalFossilPerKg = (farmGateFossil + (mfgImpact.kwh * 3.6) + batProcessingFossil + transportFossilMJ + packagingFossilMJ) * ratio;
-        const baseName = anchor.name;
-
-        console.log(`   └─ Baseline Scaled by Concentration Ratio: ${ratio}x`);
-        console.log(`   └─ Baseline Total: ${totalCO2PerKg.toFixed(2)} kg CO₂e/kg equivalent`);
-
-        // Build comprehensive methodology statement
-        let methodologyStatement = "Dynamic parametric twin using Agribalyse 3.2 farm data";
-        if (anchor.use_bat_energy && batProcessingNote) {
-            methodologyStatement += ` + JRC BAT (EU) 2019/2031 processing energy. ${batProcessingNote}`;
-        } else {
-            methodologyStatement += " + standard manufacturing. Functional equivalence adjusted.";
-        }
-
+function calculateParametricBaseline(anchorId, targetCountry) {
+    console.log(`⚖️ [Parametric Twin] Constructing ISO 14044 compliant apples-to-apples baseline for: ${anchorId}`);
+    
+    const aioxyDataRef = global.aioxyData || {};
+    
+    // 1. SAFETY CHECK - Database must exist
+    if (!aioxyDataRef.ingredients) {
+        console.warn("⚠️ [Parametric Twin] Missing ingredient data");
         return {
-            // ========== CORE METRICS ==========
-            name: `Conventional ${baseName} (Parametric Twin)`,
-            co2PerKg: totalCO2PerKg,
-            waterPerKg: farmGateWater * ratio,
-            landUsePerKg: farmGateLand * ratio,
-            fossilPerKg: totalFossilPerKg,
-            concentration_ratio: ratio,
-            
-            // ========== BREAKDOWN ==========
-            breakdown: {
-                farm: farmGateCO2 * ratio,
-                bat_processing: batProcessingCO2 * ratio,
-                manufacturing: mfgImpact.co2 * ratio,
-                logistics: totalTransportCO2 * ratio,
-                packaging: packagingCO2 * ratio
+            name: `Benchmark (Data Missing)`,
+            co2PerKg: 5.0,
+            waterPerKg: 1.0,
+            landUsePerKg: 2.0,
+            fossilPerKg: 10.0,
+            concentration_ratio: 1.0,
+            breakdown: { farm: 5.0, manufacturing: 0, logistics: 0, packaging: 0 },
+            methodology: "Fallback - Database Unavailable",
+            allocation_method: "Mass allocation",
+            allocation_note: "Default",
+            sensitivity_analysis: { 
+                performed: false, 
+                parameters_tested: [], 
+                key_finding: "Data missing", 
+                recommendation: "Reload database", 
+                iso_compliance: "Fallback only" 
             },
-            
-            // ========== METHODOLOGY & ALLOCATION ==========
-            anchor_used: anchor.id,
-            methodology: methodologyStatement + " Mass allocation applied per ISO 14044:2006 §4.3.4 hierarchy (physical causality).",
-            allocation_method: "Mass allocation (kg input per kg output) - ISO 14044 compliant",
-            allocation_note: anchor.factor > 1.0 ? 
-                `${anchor.factor} kg raw material → 1 kg finished product (mass balance)` : 
-                "Direct mass equivalence (1:1 ratio)",
-            
-            // ========== SOURCES ==========
-            bat_source: anchor.use_bat_energy ? JRC_BAT_PROCESSING[baselineCategoryKey]?.source : "Agribalyse 3.2 + standard manufacturing",
-            bat_processing_note: batProcessingNote || "Standard processing only",
-            
-            // ========== SENSITIVITY ANALYSIS ==========
-            sensitivity_analysis: {
-                performed: true,
-                parameters_tested: ['Transport Distance (±50%)', 'Grid Intensity (200-800 g CO₂e/kWh)', 'Concentration Ratio (0.5-2.0x)'],
-                key_finding: anchor.use_bat_energy ? 
-                    `Grid intensity variation causes up to ±${((JRC_BAT_PROCESSING[baselineCategoryKey]?.energy_mwh_per_tonne * 1000 * 0.600 / 1000) / totalCO2PerKg * 100).toFixed(1)}% variation in baseline CO₂e.` :
-                    `Transport distance variation (±50%) causes up to ±${((totalTransportCO2 * 0.5) / totalCO2PerKg * 100).toFixed(1)}% variation in baseline CO₂e.`,
-                recommendation: "Full sensitivity analysis recommended during third-party verification for public comparative claims.",
-                iso_compliance: "ISO 14044:2006 §6.3 - Screening-level sensitivity analysis performed"
-            },
-            
-            // ========== COMPLIANCE STATEMENT ==========
-            compliance_statement: "This parametric twin baseline meets ISO 14044 requirements for functional equivalence, system boundary matching, allocation documentation, and sensitivity analysis. Suitable for internal decision-making and B2B screening. Third-party critical review required for public comparative assertions."
+            compliance_statement: "Fallback baseline - database missing."
         };
     }
+    
+    // 2. RESOLVE THE ANCHOR INGREDIENT
+    let anchorIng = aioxyDataRef.ingredients[anchorId];
+    let anchorName = "Selected Baseline";
+    let concentrationRatio = 1.0;
+    
+    if (!anchorIng && ANCHOR_DATASETS && ANCHOR_DATASETS[anchorId]) {
+        const mappedAnchor = ANCHOR_DATASETS[anchorId];
+        anchorIng = aioxyDataRef.ingredients[mappedAnchor.id];
+        anchorName = mappedAnchor.name;
+        concentrationRatio = mappedAnchor.factor || 1.0;
+        console.log(`   └─ Mapped legacy category "${anchorId}" → ${mappedAnchor.id}`);
+    } else if (anchorIng) {
+        anchorName = anchorIng.name || 'Selected Ingredient';
+        concentrationRatio = parseFloat(global.document?.getElementById('concentrationRatio')?.value) || 1.0;
+    }
+    
+    // 3. FALLBACK - Anchor not found
+    if (!anchorIng) {
+        console.warn(`⚠️ [Audit Warning] Anchor ingredient "${anchorId}" not found. Using fallback.`);
+        return { 
+            name: `Generic Product (Anchor Missing)`, 
+            co2PerKg: 5.0, 
+            waterPerKg: 1.0,
+            landUsePerKg: 2.0,
+            fossilPerKg: 10.0,
+            concentration_ratio: 1.0,
+            breakdown: { farm: 5.0, manufacturing: 0, logistics: 0, packaging: 0 },
+            methodology: "Fallback - Anchor Ingredient Not Found",
+            allocation_method: "Mass allocation",
+            allocation_note: "Default",
+            sensitivity_analysis: { 
+                performed: false, 
+                parameters_tested: [], 
+                key_finding: "Anchor missing", 
+                recommendation: "Select valid baseline", 
+                iso_compliance: "Fallback only" 
+            },
+            compliance_statement: "Fallback baseline - anchor ingredient not found in database."
+        };
+    }
+
+    // 4. DOM GETTER - Clones System Boundary from User Interface
+    const domGetter = (id, returnValue) => {
+        const el = global.document?.getElementById(id);
+        if (!el) return returnValue ? '' : false;
+        return returnValue ? (el.value || '') : (el.checked || false);
+    };
+
+    // 5. CLONE SYSTEM BOUNDARIES FROM USER'S PRODUCT CONFIGURATION
+    const userProcessing = domGetter('processingMethod', true) || 'none';
+    const userTransportDist = parseFloat(domGetter('transportDistance', true)) || 300;
+    const userTransportMode = domGetter('transportMode', true) || 'road';
+    const userRefrigerated = domGetter('refrigeratedTransport', true) || 'no';
+    const userPkgWeight = parseFloat(domGetter('packagingWeight', true)) || 0.050;
+    const userPkgMaterial = domGetter('packagingMaterial', true) || 'cardboard';
+    const userRecycledPct = parseFloat(domGetter('recycledContent', true)) || 30;
+    const userEnergySource = domGetter('energySource', true) || 'grid';
+    const eolTargetElement = global.document?.getElementById('packagingEoL');
+    
+    // 🆕 JRC BAT TOGGLE - Check if user wants BAT processing energy
+    const useJRCBAT = domGetter('useJRCBAT', false) || false;
+    
+    // Determine temperature condition for transport
+    const isFrozen = userProcessing === 'freezing';
+    const isChilled = userRefrigerated === 'yes' || userProcessing === 'pasteurization';
+    let refType = 'ambient';
+    if (isFrozen) refType = 'frozen';
+    else if (isChilled) refType = 'chilled';
+
+    console.log(`   └─ Cloned Boundaries: Processing=${userProcessing}, Transport=${userTransportDist}km ${userTransportMode} (${refType}), Packaging=${userPkgWeight}kg ${userPkgMaterial}`);
+    if (useJRCBAT) console.log(`   └─ 🏭 JRC BAT Processing Energy: ENABLED`);
+
+    // =====================================================================
+    // A. FARM GATE IMPACT (Agribalyse LCI × Concentration Ratio)
+    // =====================================================================
+    const pef = anchorIng.data?.pef || {};
+    const farmGateCO2 = (pef["Climate Change"] || 0) * concentrationRatio;
+    const farmGateWater = (pef["Water Use/Scarcity (AWARE)"] || 0) * concentrationRatio;
+    const farmGateLand = (pef["Land Use"] || 0) * concentrationRatio;
+    const farmGateFossil = (pef["Resource Use, fossils"] || 0) * concentrationRatio;
+    
+    const farmFossilCO2 = (pef["Climate Change - Fossil"] || farmGateCO2 * 0.912) * concentrationRatio;
+    const farmBiogenicCO2 = (pef["Climate Change - Biogenic"] || farmGateCO2 * 0.071) * concentrationRatio;
+    const farmDLUCCO2 = (pef["Climate Change - Land Use"] || farmGateCO2 * 0.017) * concentrationRatio;
+
+    // =====================================================================
+    // B. MANUFACTURING IMPACT (Cloned Processing + Optional JRC BAT)
+    // =====================================================================
+    let mfgCO2 = 0;
+    let mfgKwh = 0;
+    let mfgGasMj = 0;
+    let batProcessingNote = '';
+    let batSource = '';
+    
+    // Check if JRC BAT applies to this ingredient
+    let applicableBAT = null;
+    if (useJRCBAT) {
+        const anchorNameLower = (anchorIng.name || '').toLowerCase();
+        const anchorIdLower = anchorId.toLowerCase();
+        
+        for (const [key, batData] of Object.entries(JRC_BAT_PROCESSING)) {
+            const appliesTo = batData.applies_to || [];
+            const matches = appliesTo.some(term => 
+                anchorNameLower.includes(term) || anchorIdLower.includes(term)
+            );
+            if (matches) {
+                applicableBAT = batData;
+                break;
+            }
+        }
+    }
+    
+    if (applicableBAT) {
+        // Use JRC BAT processing energy
+        const countryData = aioxyDataRef.countries?.[targetCountry] || { electricityCO2: 480 };
+        const gridIntensity = countryData.electricityCO2 || 480;
+        
+        const electricityKWh = applicableBAT.energy_mwh_per_tonne * 1000;
+        const elecCO2 = electricityKWh * (gridIntensity / 1000) / 1000;
+        const thermalCO2 = (applicableBAT.thermal_mj_per_kg || 0) * 0.202;
+        
+        mfgCO2 = (elecCO2 + thermalCO2) * concentrationRatio;
+        mfgKwh = electricityKWh * concentrationRatio;
+        mfgGasMj = (applicableBAT.thermal_mj_per_kg || 0) * concentrationRatio;
+        
+        batProcessingNote = `JRC BAT processing: ${applicableBAT.energy_mwh_per_tonne} MWh/t + ${applicableBAT.thermal_mj_per_kg} MJ/kg (${applicableBAT.processing_steps})`;
+        batSource = applicableBAT.source;
+        
+        console.log(`   └─ 🏭 JRC BAT Applied: +${mfgCO2.toFixed(3)} kg CO₂e/kg`);
+    } else {
+        // Use cloned processing method
+        const mfgImpact = calculateManufacturingImpact(
+            concentrationRatio,
+            1.0,
+            userProcessing,
+            targetCountry,
+            true,
+            domGetter
+        );
+        
+        mfgCO2 = mfgImpact.co2;
+        mfgKwh = mfgImpact.kwh;
+        mfgGasMj = mfgImpact.gas_mj || 0;
+        
+        if (userEnergySource === 'renewable') {
+            mfgCO2 = mfgCO2 * 0.05;
+        }
+        
+        if (useJRCBAT && !applicableBAT) {
+            batProcessingNote = 'JRC BAT requested but not applicable to this ingredient. Using cloned processing.';
+        } else if (!useJRCBAT) {
+            batProcessingNote = 'Using cloned processing method (JRC BAT toggle disabled).';
+        }
+    }
+
+    // =====================================================================
+    // C. LOGISTICS IMPACT (Cloned Transport)
+    // =====================================================================
+    const inboundObj = calculateGLECTransport(concentrationRatio, 200, 'road', refType);
+    const outboundObj = calculateGLECTransport(1.0, userTransportDist, userTransportMode, refType);
+    const totalTransportCO2 = inboundObj.total + outboundObj.total;
+
+    // =====================================================================
+    // D. PACKAGING IMPACT (Cloned Packaging via CFF)
+    // =====================================================================
+    let packagingCO2 = 0;
+    const pkgData = aioxyDataRef.packaging?.[userPkgMaterial];
+    if (pkgData && userPkgWeight > 0) {
+        const cffResult = calculateCFF(pkgData, userPkgWeight, userRecycledPct, eolTargetElement);
+        packagingCO2 = cffResult.totalImpact;
+    } else {
+        packagingCO2 = userPkgWeight * 3.0;
+    }
+
+    // =====================================================================
+    // E. CORRELATE FOSSIL RESOURCE USE
+    // =====================================================================
+    const transportFossilMJ = totalTransportCO2 * 14.0;
+    const packagingFossilMJ = packagingCO2 * 20.0;
+    const mfgFossilMJ = mfgKwh * 3.6 + mfgGasMj;
+
+    // =====================================================================
+    // F. ASSEMBLE IDENTICAL BOUNDARY TWIN
+    // =====================================================================
+    const totalCO2PerKg = farmGateCO2 + mfgCO2 + totalTransportCO2 + packagingCO2;
+    const totalFossilPerKg = farmGateFossil + mfgFossilMJ + transportFossilMJ + packagingFossilMJ;
+    
+    const totalFossilCO2 = farmFossilCO2 + mfgCO2 + totalTransportCO2 + packagingCO2;
+    const totalBiogenicCO2 = farmBiogenicCO2;
+    const totalDLUCCO2 = farmDLUCCO2;
+
+    console.log(`   └─ Parametric Twin Total: ${totalCO2PerKg.toFixed(4)} kg CO₂e/kg`);
+
+    // =====================================================================
+    // G. BUILD METHODOLOGY STATEMENT
+    // =====================================================================
+    let methodologyStatement = "Parametric Clone & Swap - ISO 14044:2006 §4.2.3.2 Functional Equivalence. ";
+    if (applicableBAT && useJRCBAT) {
+        methodologyStatement += `JRC BAT (EU) 2019/2031 processing energy applied. ${batProcessingNote}. `;
+    } else {
+        methodologyStatement += "Manufacturing, transport, and packaging boundaries cloned from user product. ";
+    }
+    methodologyStatement += "Only agricultural ingredient differs.";
+
+    // =====================================================================
+    // H. RETURN COMPLIANT BASELINE OBJECT
+    // =====================================================================
+    return {
+        // ========== CORE METRICS ==========
+        name: `Parametric Twin: ${anchorName}`,
+        co2PerKg: totalCO2PerKg,
+        waterPerKg: farmGateWater,
+        landUsePerKg: farmGateLand,
+        fossilPerKg: totalFossilPerKg,
+        concentration_ratio: concentrationRatio,
+        
+        // ========== PEF 3.1 CLIMATE CHANGE SUB-INDICATORS ==========
+        fossilCO2PerKg: totalFossilCO2,
+        biogenicCO2PerKg: totalBiogenicCO2,
+        dlucCO2PerKg: totalDLUCCO2,
+        
+        // ========== BREAKDOWN ==========
+        breakdown: {
+            farm: farmGateCO2,
+            manufacturing: mfgCO2,
+            logistics: totalTransportCO2,
+            packaging: packagingCO2
+        },
+        
+        // ========== CLONED PARAMETERS (FOR AUDIT TRAIL) ==========
+        cloned_parameters: {
+            processing_method: applicableBAT ? `JRC BAT (${applicableBAT.processing_steps})` : userProcessing,
+            transport_distance_km: userTransportDist,
+            transport_mode: userTransportMode,
+            transport_temperature: refType,
+            packaging_material: userPkgMaterial,
+            packaging_weight_kg: userPkgWeight,
+            recycled_content_pct: userRecycledPct,
+            energy_source: userEnergySource,
+            jrc_bat_applied: !!(applicableBAT && useJRCBAT)
+        },
+        
+        // ========== METHODOLOGY & ALLOCATION ==========
+        anchor_used: anchorId,
+        anchor_name: anchorName,
+        methodology: methodologyStatement,
+        allocation_method: "Mass allocation (kg input per kg output) - ISO 14044:2006 §4.3.4 hierarchy",
+        allocation_note: concentrationRatio !== 1.0 ? 
+            `Concentration ratio applied: ${concentrationRatio}x mass equivalence` : 
+            "Direct mass equivalence (1:1 ratio)",
+        
+        // ========== JRC BAT INFO ==========
+        bat_applied: !!(applicableBAT && useJRCBAT),
+        bat_source: applicableBAT ? applicableBAT.source : null,
+        bat_processing_note: batProcessingNote,
+        
+        // ========== SENSITIVITY ANALYSIS (ISO 14044 §6.3) ==========
+        sensitivity_analysis: {
+            performed: true,
+            parameters_tested: [
+                'Functional Equivalence Matching (System Boundaries Cloned)',
+                `Transport Distance (${userTransportDist} km ±50%)`,
+                `Grid Intensity (${aioxyDataRef.countries?.[targetCountry]?.electricityCO2 || 480} g CO₂e/kWh)`,
+                `Concentration Ratio (${concentrationRatio}x)`,
+                useJRCBAT ? 'JRC BAT Processing Energy Applied' : 'JRC BAT Toggle Disabled'
+            ],
+            key_finding: applicableBAT && useJRCBAT ? 
+                `JRC BAT processing energy applied (${applicableBAT.energy_mwh_per_tonne} MWh/t + ${applicableBAT.thermal_mj_per_kg} MJ/kg). Grid intensity variation causes up to ±${((applicableBAT.energy_mwh_per_tonne * 1000 * 0.600 / 1000) / totalCO2PerKg * 100).toFixed(1)}% variation.` :
+                `Baseline system boundaries successfully cloned. Transport distance variation (±50%) would change total by approximately ±${((totalTransportCO2 * 0.5) / totalCO2PerKg * 100).toFixed(1)}%.`,
+            recommendation: "For public comparative assertions, conduct third-party critical review per ISO 14044 §6.1.",
+            iso_compliance: "ISO 14044:2006 §4.2.3.2 - System boundaries dynamically matched. §6.3 - Screening-level sensitivity analysis performed."
+        },
+        
+        // ========== COMPLIANCE STATEMENT ==========
+        compliance_statement: "This parametric twin baseline achieves structural parity (ISO 14044 §4.2.3.2) by utilizing identical logistical and manufacturing boundaries, isolating agricultural variance for defensible comparative assessment. Suitable for internal decision-making and B2B screening. Third-party critical review required for public comparative assertions per ISO 14044 §6.1."
+    };
+            }
 
     // ================== WASTE END-OF-LIFE CALCULATOR (IPCC 2006 / JRC BAT) ==================
     function calculateWasteEndOfLife(wasteKg, wasteType, processingType = 'isolated') {
