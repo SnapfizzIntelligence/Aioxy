@@ -1258,6 +1258,18 @@
     </div>
     <small style="color: var(--gray); font-size: 0.7rem;">Creates a Parametric Twin using identical system boundaries (ISO 14044).</small>
                     </div>
+
+                    <div class="form-group" style="margin-top: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="useJRCBAT" onchange="updateComparison()">
+        <label for="useJRCBAT" style="font-weight: 600; color: var(--primary); margin: 0;">
+            <i class="fas fa-industry"></i> Apply JRC BAT Processing Energy
+        </label>
+    </div>
+    <small style="color: var(--gray); font-size: 0.7rem; display: block; margin-top: 0.25rem;">
+        For protein isolates/concentrates (soy, pea, wheat, whey). Uses EU 2019/2031 BAT energy values.
+    </small>
+                    </div>
                     
                     <div class="form-group">
                         <label class="form-label">Custom Baseline (kg CO₂e/kg)</label>
