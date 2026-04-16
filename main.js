@@ -559,8 +559,9 @@ function initApp() {
         console.log('   Available ingredients:', Object.keys(window.aioxyData.ingredients).length);
         
         // Populate dropdowns
-        populateIngredientSelect();
-        populateCountrySelect();
+populateIngredientSelect();
+populateCountrySelect();
+setupIngredientSearch();     
         
         // Set up demo data
         setupDemoData();
