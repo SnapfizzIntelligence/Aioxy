@@ -1,10 +1,6 @@
 
-🕵️ Auditing Grid Coordinates: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_synthese.csv
-✅ Product Name locked at Column 5. Locked 11 specific impact coordinates.
-✅ Extracted 2458 validated ingredients from SYNTH
-
 🕵️ Auditing Grid Coordinates: /home/runner/work/Aioxy/Aioxy/data-raw/agribalyse_farm_gate.csv
 ✅ Product Name locked at Column 1. Locked 11 specific impact coordinates.
 ✅ Extracted 227 validated ingredients from FARM
 
-🚀 DATABASE DEPLOYMENT READY: 2679 ingredients mapped successfully.
+🚀 DATABASE DEPLOYMENT READY: 226 ingredients mapped successfully.
