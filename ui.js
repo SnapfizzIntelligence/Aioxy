@@ -844,20 +844,11 @@ function setupIngredientSearch() {
         return;
     }
     
-    // SAFETY: Ensure ingredients exists
-    if (!window.aioxyData || !window.aioxyData.ingredients) {
-        console.warn('⚠️ Ingredient data not loaded yet, will retry');
-        window.aioxyData = window.aioxyData || {};
-        window.aioxyData.ingredients = window.aioxyData.ingredients || {};
-        setTimeout(() => setupIngredientSearch(), 200);
-        return;
-    }
-    
     // Build search index from ALL ingredients (farm gate + synthese)
-    const ingredients = window.aioxyData.ingredients;
+    const ingredients = window.aioxyData?.ingredients || {};
     const searchIndex = Object.entries(ingredients).map(([id, data]) => ({
         id,
-        name: data.name || 'Unknown',
+        name: data.name,
         name_fr: data.name_fr || '',
         dqr: data.data?.metadata?.dqr_overall || 2.5,
         co2: data.data?.pef?.["Climate Change"] || 0
@@ -881,8 +872,7 @@ function setupIngredientSearch() {
             )
             .slice(0, 15); // Limit to 15 results
         
-        // SAFETY: Check if matches exists and has items
-        if (!matches || matches.length === 0) {
+        if (matches.length === 0) {
             dropdown.innerHTML = '<li class="no-results">❌ No ingredients found</li>';
         } else {
             dropdown.innerHTML = matches.map(item => `
@@ -912,7 +902,7 @@ function setupIngredientSearch() {
         if (e.key === 'Escape') {
             dropdown.classList.add('hidden');
             searchInput.value = '';
-            if (hiddenSelect) hiddenSelect.value = '';
+            hiddenSelect.value = '';
         }
     });
 }
