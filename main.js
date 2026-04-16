@@ -556,12 +556,13 @@ function initApp() {
         // ========== END UNIVERSAL PHYSICS CHECK ==========
         
         // Now we can safely access the data
-        console.log('   Available ingredients:', Object.keys(window.aioxyData.ingredients).length);
-        
-        // Populate dropdowns
+console.log('   Available ingredients:', Object.keys(window.aioxyData.ingredients).length);
+
+// Populate dropdowns
 populateIngredientSelect();
 populateCountrySelect();
 setupIngredientSearch();     
+setupBaselineSearch();        
         
         // Set up demo data
         setupDemoData();
