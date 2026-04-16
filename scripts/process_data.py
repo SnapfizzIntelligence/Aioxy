@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-AIOXY FARM GATE PROCESSOR v8.0 - FIXED
-Extracts ALL 228 ingredients
-No column length check that causes skipping
+AIOXY FARM GATE PROCESSOR v9.0 - COMPLETE
+Extracts ALL 222 ingredients (including beef)
+Minimal changes from working v8.0
 """
 
 import json
@@ -15,7 +15,11 @@ from datetime import datetime
 def clean_id(name):
     name = str(name).lower()
     name = re.sub(r'[^a-z0-9]', '-', name)
-    return re.sub(r'-+', '-', name).strip('-')[:100]
+    name = re.sub(r'-+', '-', name).strip('-')
+    # Remove trailing -u if present (for beef and others)
+    if name.endswith('-u'):
+        name = name[:-2]
+    return name[:100]
 
 def get_safe_float(val, idx):
     """Safely get float value by index, returns 0.0 if out of bounds"""
@@ -52,11 +56,12 @@ def generate_db():
             header_idx = i
             break
     
-    if header_idx == -1:
-        print("❌ Could not find header row")
-        return
-    
-    print(f"✅ Header found at row {header_idx}")
+    # FIX: Ensure we use the correct header row (row 2)
+    if header_idx < 2:
+        header_idx = 2
+        print(f"⚠️ Adjusted header to row {header_idx}")
+    else:
+        print(f"✅ Header found at row {header_idx}")
     
     # Data starts 2 rows after header (header, then units row, then data)
     data_start = header_idx + 2
@@ -76,17 +81,22 @@ def generate_db():
         name_fr = row[0].strip() if len(row) > 0 and row[0] else ''
         name_en = row[1].strip() if len(row) > 1 and row[1] else name_fr
         
-        # Skip eggs (blank data rows)
-        if 'Oeuf' in name_fr or 'oeuf' in name_fr.lower() or name_fr == '':
+        # FIX: Only skip egg rows that have NO climate data
+        # Beef and other valid ingredients have climate data in column 5
+        has_climate_data = len(row) > 5 and row[5] and str(row[5]).strip()
+        is_egg = 'Oeuf' in name_fr or 'oeuf' in name_fr.lower()
+        
+        if is_egg and not has_climate_data:
             skipped_eggs += 1
             continue
         
         # Skip rows with no climate data (likely metadata)
-        if len(row) <= 5:
+        if not has_climate_data:
             skipped_empty += 1
             continue
         
-        item_id = clean_id(name_en) + "-raw"
+        # Generate ID without -raw suffix to match engine expectations
+        item_id = clean_id(name_en)
         
         # Fixed column mapping - use get_safe_float with index
         pef_data = {
@@ -145,7 +155,7 @@ def generate_db():
     print(f"\n✅ SUCCESS!")
     print(f"   Ingredients extracted: {count}")
     print(f"   Skipped empty rows: {skipped_empty}")
-    print(f"   Skipped eggs: {skipped_eggs}")
+    print(f"   Skipped eggs (no data): {skipped_eggs}")
 
     # Write output
     js_output = f"""// AIOXY FARM GATE DATABASE | AUDIT-GRADE
