@@ -2741,42 +2741,64 @@ function calculateParametricBaseline(anchorId, targetCountry) {
             const baselineCO2Total = blCO2 + upliftCO2;
 
             // ================== PEF 3.1 CARBON BREAKDOWN (AUDITOR-READY) ==================
-            // Agribalyse 3.2 provides 'Climate Change' total. We split this into 3 mandatory sub-indicators.
-            const totalClimateChange = auditTrail.pefCategories["Climate Change"]?.total || 0;
+// Calculate ACTUAL bottom-up sums from contribution tree - NO FAKE PROXIES
 
-            // 1. Initialize the sub-category objects in finalPefResults (Prevents UI Crash)
-            this.state.finalPefResults['Climate Change - Fossil'] = { total: 0, unit: 'kg CO2e' };
-            this.state.finalPefResults['Climate Change - Biogenic'] = { total: 0, unit: 'kg CO2e' };
-            this.state.finalPefResults['Climate Change - dLUC'] = { total: 0, unit: 'kg CO2e' };
+// 1. Initialize the sub-category objects in finalPefResults (Prevents UI Crash)
+this.state.finalPefResults['Climate Change - Fossil'] = { total: 0, unit: 'kg CO2e' };
+this.state.finalPefResults['Climate Change - Biogenic'] = { total: 0, unit: 'kg CO2e' };
+this.state.finalPefResults['Climate Change - dLUC'] = { total: 0, unit: 'kg CO2e' };
 
-            // 2. Apply Proxy Ratios (PEF 3.1 Default for Secondary Food Data)
-            // Source: JRC EF 3.1 sectoral proxy distribution for processed food
-            this.state.finalPefResults['Climate Change - Fossil'].total = totalClimateChange * 0.912;
-            this.state.finalPefResults['Climate Change - Biogenic'].total = totalClimateChange * 0.071;
-            this.state.finalPefResults['Climate Change - dLUC'].total = totalClimateChange * 0.017;
+// 2. Calculate ACTUAL bottom-up sums from contribution tree
+let actualFossil = 0;
+let actualBiogenic = 0;
+let actualDLUC = 0;
 
-            const results = {
-                finalPefResults: this.state.finalPefResults,
-                co2PerKg: unified.co2PerKg,
-                waterScarcityPerKg: unified.waterPerKg,
-                landUsePerKg: unified.landPerKg,
-                fossilPerKg: unified.fossilPerKg,
-                fossilCO2Breakdown: this.state.finalPefResults['Climate Change - Fossil']?.total || 0,
-                biogenicCO2Breakdown: this.state.finalPefResults['Climate Change - Biogenic']?.total || 0,
-                dlucCO2Breakdown: this.state.finalPefResults['Climate Change - dLUC']?.total || 0,
-                overallDQR: foregroundBackground.overall_dqr,
-                overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
-                comparison: {
-                    baseline: { ...comparisonBaseline, co2PerKg: baselineCO2Total },
-                    co2SavedPerKg: Math.max(0, baselineCO2Total - unified.co2PerKg),
-                    uplift_applied: uplift
-                }
-            };
+// Sum from ingredients
+const ingComponents = auditTrail.pefCategories["Climate Change"].contribution_tree.Ingredients?.components || [];
+ingComponents.forEach(comp => {
+    actualFossil += comp.fossilCO2 || 0;
+    actualBiogenic += comp.biogenicCO2 || 0;
+    actualDLUC += comp.dlucCO2 || 0;
+});
 
-            console.log(`✅ [AIOXY UNIFIED] Calc Complete. CO2: ${unified.co2PerKg.toFixed(2)} kg/kg`);
-            return results;
-        }
-    };
+// Add manufacturing, transport, upstream, waste (all fossil)
+actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing?.total || 0);
+actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Transport?.total || 0);
+actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream?.total || 0);
+actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Waste?.total || 0);
+
+// Packaging: sum fossil and biogenic from its components
+const pkgComponents = auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging?.components || [];
+pkgComponents.forEach(comp => {
+    actualFossil += comp.fossilCO2 || (comp.subtotal || 0); // Default to fossil if not specified
+    actualBiogenic += comp.biogenicCO2 || 0;
+});
+
+// 3. Assign true values
+this.state.finalPefResults['Climate Change - Fossil'].total = actualFossil;
+this.state.finalPefResults['Climate Change - Biogenic'].total = actualBiogenic;
+this.state.finalPefResults['Climate Change - dLUC'].total = actualDLUC;
+
+const results = {
+    finalPefResults: this.state.finalPefResults,
+    co2PerKg: unified.co2PerKg,
+    waterScarcityPerKg: unified.waterPerKg,
+    landUsePerKg: unified.landPerKg,
+    fossilPerKg: unified.fossilPerKg,
+    fossilCO2Breakdown: actualFossil,
+    biogenicCO2Breakdown: actualBiogenic,
+    dlucCO2Breakdown: actualDLUC,
+    overallDQR: foregroundBackground.overall_dqr,
+    overallUncertainty: auditTrail.uncertainty_analysis.overall_uncertainty,
+    comparison: {
+        baseline: { ...comparisonBaseline, co2PerKg: baselineCO2Total },
+        co2SavedPerKg: Math.max(0, baselineCO2Total - unified.co2PerKg),
+        uplift_applied: uplift
+    }
+};
+
+console.log(`✅ [AIOXY UNIFIED] Calc Complete. CO2: ${unified.co2PerKg.toFixed(2)} kg/kg (Fossil: ${actualFossil.toFixed(4)}, Biogenic: ${actualBiogenic.toFixed(4)}, dLUC: ${actualDLUC.toFixed(4)})`);
+return results;
 
  // ================== EXPOSE TO GLOBAL ==================
 // Expose the engine and related data structures
