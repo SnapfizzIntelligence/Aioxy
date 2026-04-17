@@ -1942,6 +1942,18 @@ function calculateParametricBaseline(anchorId, targetCountry) {
         };
     }
 
+            // ================== HELPER: Packaging Biogenic Carbon Split ==================
+function getPackagingCarbonSplit(materialName) {
+    const mat = (materialName || "").toLowerCase();
+    const biogenicMaterials = ['cardboard', 'paper', 'mycelium', 'pla'];
+    const isBiogenic = biogenicMaterials.some(m => mat.includes(m));
+    
+    if (isBiogenic) {
+        return { biogenicRatio: 0.85, fossilRatio: 0.15 };
+    }
+    return { biogenicRatio: 0.00, fossilRatio: 1.00 };
+                }
+
     // ================== MAIN ENGINE (PEF 3.1 COMPLIANT) ==================
     const foodCalculationEngine = {
         // Module state - replaces implicit globals
@@ -2618,29 +2630,46 @@ function calculateParametricBaseline(anchorId, targetCountry) {
                     const packagingProcurementCO2 = cffResult.virginBurden + cffResult.recycledBurden - cffResult.recyclingCredit;
                     const packagingDisposalCO2 = cffResult.disposalBurden;
 
-                    // Log Procurement under Packaging (Cat 1)
-                    auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.total += packagingProcurementCO2;
-                    
-                    // Log Disposal under Upstream / End-of-Life (Cat 12)
-                    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components = auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components || [];
-                    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
-                        name: `End-of-Life: Packaging Disposal`,
-                        subtotal: packagingDisposalCO2,
-                        notes: `Scope 3 Category 12 (Disposal of ${packagingWeight.toFixed(3)}kg packaging)`
-                    });
-                    auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += packagingDisposalCO2;
-                    
-                    auditTrail.pefCategories["Climate Change"].total += cffResult.totalImpact;
+                    // 🛡️ REGULATOR FIX: Apply Biogenic Split to Packaging Lifecycle
+const pkgSplit = getPackagingCarbonSplit(packagingMaterial);
+const pkgFossilProcurement = packagingProcurementCO2 * pkgSplit.fossilRatio;
+const pkgBiogenicProcurement = packagingProcurementCO2 * pkgSplit.biogenicRatio;
+const pkgFossilDisposal = packagingDisposalCO2 * pkgSplit.fossilRatio;
+const pkgBiogenicDisposal = packagingDisposalCO2 * pkgSplit.biogenicRatio;
 
-                    // Empirical LCI Proxy: Propagate to other PEF categories
-                    const fossilPkg = cffResult.totalImpact * 15.0;
-                    const waterPkg = cffResult.totalImpact * 0.05;
-                    
-                    auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Packaging.total += fossilPkg;
-                    auditTrail.pefCategories["Resource Use, fossils"].total += fossilPkg;
-                    
-                    auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree.Packaging.total += waterPkg;
-                    auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total += waterPkg;
+// Log Procurement under Packaging (Cat 1) WITH fossil/biogenic split
+auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.components.push({
+    name: `Primary Packaging: ${packagingMaterial}`,
+    subtotal: packagingProcurementCO2,
+    fossilCO2: pkgFossilProcurement,
+    biogenicCO2: pkgBiogenicProcurement,
+    dlucCO2: 0
+});
+auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.total += packagingProcurementCO2;
+
+// Log Disposal under Upstream / End-of-Life (Cat 12) WITH fossil/biogenic split
+auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components = auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components || [];
+auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.components.push({
+    name: `End-of-Life: Packaging Disposal`,
+    subtotal: packagingDisposalCO2,
+    fossilCO2: pkgFossilDisposal,
+    biogenicCO2: pkgBiogenicDisposal,
+    dlucCO2: 0,
+    notes: `Scope 3 Category 12 (Disposal of ${packagingWeight.toFixed(3)}kg packaging)`
+});
+auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += packagingDisposalCO2;
+
+auditTrail.pefCategories["Climate Change"].total += cffResult.totalImpact;
+
+// Empirical LCI Proxy: Propagate to other PEF categories
+const fossilPkg = cffResult.totalImpact * 15.0;
+const waterPkg = cffResult.totalImpact * 0.05;
+
+auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Packaging.total += fossilPkg;
+auditTrail.pefCategories["Resource Use, fossils"].total += fossilPkg;
+
+auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree.Packaging.total += waterPkg;
+auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total += waterPkg;
                 }
             }
 
