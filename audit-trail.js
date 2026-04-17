@@ -2,6 +2,16 @@
 // Transparency Log, CSRD Matrix Export, and Data Downloads
 // ===================================================================
 
+// Helper function for safe string display
+function safeString(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 // ================== PEF SCORECARD ==================
 function displayFullPefScorecard() {
     const tbody = document.getElementById('pefScorecardBody');
@@ -545,12 +555,16 @@ if (allEoL.length > 0) {
         </div>
     </div>`;
     }
-    // ============================================================
+    
+// ============================================================
 // F. PARAMETRIC TWIN VERIFICATION (NUMBERS ONLY)
 // ============================================================
 if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdown) {
     const b = window.currentComparisonBaseline;
     const bd = b.breakdown;
+    
+    // Use direct values instead of safeString
+    const anchorName = b.anchor_name || b.name || 'Selected Baseline';
     
     html += `
     <div style="margin-bottom: 25px;">
@@ -559,30 +573,30 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         </h4>
         <div style="border: 1px solid #ccc; padding: 15px; font-size: 0.85rem; background: #F8FAFC;">
             <div style="margin-bottom: 10px;">
-                <strong>Anchor:</strong> ${safeString(b.anchor_name || b.name)}<br>
+                <strong>Anchor:</strong> ${anchorName}<br>
                 <strong>Methodology:</strong> System boundaries cloned from assessed product. Only agricultural ingredient differs.
             </div>
             
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 6px 0;"><strong>1. Agricultural Phase (Farm Gate)</strong></td>
-                    <td style="text-align: right; font-family: monospace;">${bd.farm.toFixed(4)} kg CO₂e</td>
+                    <td style="text-align: right; font-family: monospace;">${bd.farm ? bd.farm.toFixed(4) : '0.0000'} kg CO₂e</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 6px 0;"><strong>2. Cloned Manufacturing</strong></td>
-                    <td style="text-align: right; font-family: monospace;">${bd.manufacturing.toFixed(4)} kg CO₂e</td>
+                    <td style="text-align: right; font-family: monospace;">${bd.manufacturing ? bd.manufacturing.toFixed(4) : '0.0000'} kg CO₂e</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 6px 0;"><strong>3. Cloned Logistics</strong></td>
-                    <td style="text-align: right; font-family: monospace;">${bd.logistics.toFixed(4)} kg CO₂e</td>
+                    <td style="text-align: right; font-family: monospace;">${bd.logistics ? bd.logistics.toFixed(4) : '0.0000'} kg CO₂e</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 6px 0;"><strong>4. Cloned Packaging</strong></td>
-                    <td style="text-align: right; font-family: monospace;">${bd.packaging.toFixed(4)} kg CO₂e</td>
+                    <td style="text-align: right; font-family: monospace;">${bd.packaging ? bd.packaging.toFixed(4) : '0.0000'} kg CO₂e</td>
                 </tr>
                 <tr style="font-weight: bold; background: #E2E8F0;">
                     <td style="padding: 8px 0; font-size: 0.95rem;">TOTAL PARAMETRIC TWIN BASELINE</td>
-                    <td style="text-align: right; font-family: monospace; font-size: 0.95rem;">${b.co2PerKg.toFixed(4)} kg CO₂e/kg</td>
+                    <td style="text-align: right; font-family: monospace; font-size: 0.95rem;">${b.co2PerKg ? b.co2PerKg.toFixed(4) : '0.0000'} kg CO₂e/kg</td>
                 </tr>
             </table>
             
