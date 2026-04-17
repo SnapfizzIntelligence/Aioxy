@@ -699,16 +699,16 @@ return {
             R2 = (p.r1_max || 0.8) * (p.r2 || 0.7);
         }
 
-        // 🛡️ STRICT MATERIAL-SPECIFIC DISPOSAL CONSTANTS (ISO 14044 COMPLIANT)
+                // 🛡️ STRICT MATERIAL-SPECIFIC DISPOSAL CONSTANTS (ISO 14044 COMPLIANT)
 let currentEd = p.co2_disposal_average || Ed;
 if (eolTarget === 'landfill') {
-    currentEd = p.co2_disposal_landfill !== undefined ? p.co2_disposal_landfill : (Ed * 1.2);
+    currentEd = p.co2_disposal_landfill !== undefined ? p.co2_disposal_landfill : Ed;
 } else if (eolTarget === 'incinerated') {
-    currentEd = p.co2_disposal_incineration !== undefined ? p.co2_disposal_incineration : (Ed * 1.5);
+    currentEd = p.co2_disposal_incineration !== undefined ? p.co2_disposal_incineration : Ed;
 }
 if (eolTarget === 'incinerated') {
     dqrPenalty = 0.5;
-    }
+            }
 
         // 🛡️ OFFICIAL CFF MATH (PEF 3.1 COMPLIANT)
         // Input Side: Virgin vs Recycled
