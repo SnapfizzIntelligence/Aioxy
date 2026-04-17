@@ -1422,10 +1422,11 @@ Note: This screening-level assessment is designed for internal strategic decisio
         }
         
         // 4. REGENERATIVE AGRICULTURE (Physics: Soil carbon sequestration)
-        if (scenarios.regen_ag) {
-            if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
-                const currentTotal = modifiedResults["Climate Change"].contribution_tree.Ingredients.total;
-                const potentialRemovals = currentTotal * 0.20;
+if (scenarios.regen_ag) {
+    if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
+        // REGULATOR FIX: Scenarios cannot invent 20% flat removals.
+        // This must remain 0 until linked to a specific verified potential.
+        const potentialRemovals = 0;
                 const existingRemovals = modifiedResults["Climate Change"].biogenic_removals || 0;
                 const newRemovals = Math.max(0, potentialRemovals - existingRemovals);
                 
@@ -1768,7 +1769,8 @@ const pkgBiogenicCO2 = packagingCO2 * pkgSplit.biogenicRatio;
     // =====================================================================
     // E. CORRELATE FOSSIL RESOURCE USE
     // =====================================================================
-    const transportFossilMJ = totalTransportCO2 * 14.0;
+    // 🛡️ THERMODYNAMIC FIX: Diesel = 36 MJ/L. Emissions = 3.24 kgCO2/L. Ratio = 11.11 MJ/kgCO2e.
+const transportFossilMJ = totalTransportCO2 * 11.11;
     const packagingFossilMJ = packagingCO2 * 20.0;
     const mfgFossilMJ = mfgKwh * 3.6 + mfgGasMj;
 
@@ -2599,7 +2601,7 @@ function getPackagingCarbonSplit(materialName) {
                     auditTrail.pefCategories["Climate Change"].total += ingredientTransportCO2;
                     
                     // 🛡️ REGULATOR FIX: Correlate Inbound Transport to Fossil Resources
-                    const inboundFossilMJ = ingredientTransportCO2 * 14.0;
+                    const inboundFossilMJ = ingredientTransportCO2 * 11.11;
                     auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.components || [];
                     auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Upstream.total || 0) + inboundFossilMJ;
                     auditTrail.pefCategories["Resource Use, fossils"].total += inboundFossilMJ;
@@ -2647,7 +2649,7 @@ function getPackagingCarbonSplit(materialName) {
             });
 
             // 🛡️ REGULATOR FIX: Correlate Outbound Transport to Fossil Resources
-            const outboundFossilMJ = distributionCO2 * 14.0;
+            const outboundFossilMJ = distributionCO2 * 11.11;
             auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components = auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.components || [];
             auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total = (auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Transport.total || 0) + outboundFossilMJ;
             auditTrail.pefCategories["Resource Use, fossils"].total += outboundFossilMJ;
@@ -2698,7 +2700,8 @@ auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += p
 auditTrail.pefCategories["Climate Change"].total += cffResult.totalImpact;
 
 // Empirical LCI Proxy: Propagate to other PEF categories
-const fossilPkg = cffResult.totalImpact * 15.0;
+// 🛡️ REGULATOR FIX: Do not invent Fossil MJ from CO2. Pull from database or default to 0.
+const fossilPkg = packagingWeight * (packagingData?.fossil_mj_per_kg || 0);
 const waterPkg = cffResult.totalImpact * 0.05;
 
 auditTrail.pefCategories["Resource Use, fossils"].contribution_tree.Packaging.total += fossilPkg;
