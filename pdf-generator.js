@@ -1396,100 +1396,98 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
 
 
         // ============================================================
-// PAGE 9: TOTAL IMPACT - PULL FROM ENGINE, ZERO RECALCULATION
-// ============================================================
-doc.addPage();
-currentY = margin;
+        // PAGE 9: TOTAL IMPACT - PULL FROM ENGINE, ZERO RECALCULATION
+        // ============================================================
+        doc.addPage();
+        currentY = margin;
 
-doc.setDrawColor(...COLORS.primary);
-doc.setLineWidth(1.5);
-doc.line(margin, currentY, pageWidth - margin, currentY);
-currentY += 10;
+        doc.setDrawColor(...COLORS.primary);
+        doc.setLineWidth(1.5);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+        currentY += 10;
 
-const ingTotal = ccTree.Ingredients?.total || 0;
-const mfgTotal = ccTree.Manufacturing?.total || 0;
-const transTotal = ccTree.Transport?.total || 0;
-const pkgTotalFinal = ccTree.Packaging?.total || 0;
-const upstTotal = ccTree.Upstream?.total || 0;
-const wasteTotal = ccTree.Waste?.total || 0;
+        const ingTotal = ccTree.Ingredients?.total || 0;
+        const mfgTotal = ccTree.Manufacturing?.total || 0;
+        const transTotal = ccTree.Transport?.total || 0;
+        const pkgTotalFinal = ccTree.Packaging?.total || 0;
+        const upstTotal = ccTree.Upstream?.total || 0;
+        const wasteTotal = ccTree.Waste?.total || 0;
 
-doc.setFontSize(12);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...COLORS.primary);
-doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
-currentY += 8;
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...COLORS.primary);
+        doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
+        currentY += 8;
 
-const summationData = [
-    ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
-    ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
-    ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
-    ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
-    ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
-    ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
-];
+        const summationData = [
+            ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
+            ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
+            ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
+            ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
+            ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
+            ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
+        ];
 
-doc.autoTable({
-    ...standardTableStyles,
-    startY: currentY,
-    body: summationData,
-    styles: { fontSize: 8, cellPadding: 2 },
-    columnStyles: { 0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark }, 1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' } },
-    margin: { left: margin }
-});
+        doc.autoTable({
+            ...standardTableStyles,
+            startY: currentY,
+            body: summationData,
+            styles: { fontSize: 8, cellPadding: 2 },
+            columnStyles: { 0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark }, 1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' } },
+            margin: { left: margin }
+        });
+        currentY = doc.lastAutoTable.finalY + 5;
 
-currentY = doc.lastAutoTable.finalY + 5;
+        // 🛡️ FIX: Removed the fatal duplicate 'const' declarations. 
+        // We reuse fossilPct, biogenicPct, and dlucPct from Page 2.
+        
+        const summaryBoxHeight = 35; // Renamed to avoid collision with Page 6
+        doc.setFillColor(240, 248, 255);
+        doc.rect(margin, currentY, pageWidth - (margin * 2), summaryBoxHeight, 'F');
+        doc.setDrawColor(...COLORS.primary);
+        doc.setLineWidth(0.5);
+        doc.rect(margin, currentY, pageWidth - (margin * 2), summaryBoxHeight, 'S');
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(...COLORS.primary);
+        doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
 
-// 🛡️ USE ALREADY-DECLARED ENGINE VALUES - ZERO RECALCULATION
-// These values come from auditTrailData.pefCategories declared at top of file
-const fossilPct = totalCo2 > 0 ? (fossilTotal / totalCo2 * 100).toFixed(1) : '0.0';
-const biogenicPct = totalCo2 > 0 ? (biogenicTotal / totalCo2 * 100).toFixed(1) : '0.0';
-const dlucPct = totalCo2 > 0 ? (dlucTotal / totalCo2 * 100).toFixed(1) : '0.0';
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(...COLORS.dark);
+        doc.text(`Fossil: ${fossilTotal.toFixed(4)} kg (${fossilPct}%)  |  Biogenic: ${biogenicTotal.toFixed(4)} kg (${biogenicPct}%)  |  dLUC: ${dlucTotal.toFixed(4)} kg (${dlucPct}%)`, margin + 5, currentY + 14);
+        
+        doc.setFont("courier", "normal");
+        doc.setFontSize(6);
+        doc.setTextColor(...COLORS.gray);
+        doc.text(`Source: Engine-calculated sub-indicators from Agribalyse 3.2`, margin + 5, currentY + 24);
+        
+        currentY += summaryBoxHeight + 5;
 
-const boxHeight = 35;
-doc.setFillColor(240, 248, 255);
-doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'F');
-doc.setDrawColor(...COLORS.primary);
-doc.setLineWidth(0.5);
-doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'S');
+        doc.setDrawColor(...COLORS.primary);
+        doc.setLineWidth(0.5);
+        doc.line(margin + 120, currentY, pageWidth - margin, currentY);
+        currentY += 5;
 
-doc.setFont("helvetica", "bold");
-doc.setFontSize(9);
-doc.setTextColor(...COLORS.primary);
-doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...COLORS.primary);
+        doc.text("GRAND TOTAL:", margin, currentY);
+        doc.text(`${totalCo2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
+        
+        currentY += 7;
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...COLORS.dark);
+        doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
+        
+        currentY += 5;
+        doc.setFontSize(7);
+        doc.setTextColor(...COLORS.gray);
+        doc.text(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`, margin, currentY);
 
-doc.setFont("helvetica", "normal");
-doc.setFontSize(8);
-doc.setTextColor(...COLORS.dark);
-doc.text(`Fossil: ${fossilTotal.toFixed(4)} kg (${fossilPct}%)  |  Biogenic: ${biogenicTotal.toFixed(4)} kg (${biogenicPct}%)  |  dLUC: ${dlucTotal.toFixed(4)} kg (${dlucPct}%)`, margin + 5, currentY + 14);
 
-doc.setFont("courier", "normal");
-doc.setFontSize(6);
-doc.setTextColor(...COLORS.gray);
-doc.text(`Source: Engine-calculated sub-indicators from Agribalyse 3.2`, margin + 5, currentY + 24);
-
-currentY += boxHeight + 5;
-
-doc.setDrawColor(...COLORS.primary);
-doc.setLineWidth(0.5);
-doc.line(margin + 120, currentY, pageWidth - margin, currentY);
-currentY += 5;
-
-doc.setFontSize(10);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...COLORS.primary);
-doc.text("GRAND TOTAL:", margin, currentY);
-doc.text(`${totalCo2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
-
-currentY += 7;
-doc.setFontSize(8);
-doc.setFont("helvetica", "normal");
-doc.setTextColor(...COLORS.dark);
-doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
-
-currentY += 5;
-doc.setFontSize(7);
-doc.setTextColor(...COLORS.gray);
-doc.text(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`, margin, currentY);
         
         // ============================================================
         // PAGE 10: DQR + MONTE CARLO
