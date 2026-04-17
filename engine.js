@@ -445,24 +445,29 @@ let finalLand = landBase;
 let finalFossil = fossilBase;
 let universal_adjustments = null;
 
-// 1. PRIMARY DATA OVERRIDE (The brand proves they are better)
+// 1. PRIMARY DATA OVERRIDE - STRICT ISO 14044 COMPLIANT
+// Primary data improves DQR and calculates foreground N₂O. Does NOT scale background LCI.
 if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon !== undefined) {
-    // Extract baseline data from ingredient metadata (fallback to conservative defaults if missing)
-    const baselineYield = ingredientData.data.metadata?.yield_kg_ha || 5000; 
-    const baselineN = ingredientData.data.metadata?.nitrogen_content_kg_kg || 0.015; 
     
-    // Physics: Higher yield = less land/tractor fuel per kg
-    // Cap between 0.5 and 2.0 to prevent extreme claims
-    const yieldAdjustment = Math.max(0.5, Math.min(baselineYield / Math.max(primaryData.yieldKgPerHa, 100), 2.0));
+    // 🛡️ IPCC TIER 1 (2019 Refinement): Direct N₂O emissions from synthetic fertilizer
+    // Formula: N₂O_Direct = F_SN × EF₁ × (44/28)
+    // F_SN = Annual synthetic fertilizer N applied (kg N/yr)
+    // EF₁ = 0.01 kg N₂O-N / kg N (default emission factor)
+    // 44/28 = Conversion factor from N₂O-N to N₂O
     
-    // Physics: Less nitrogen = less N2O emissions
-    const userN_kg_kg = primaryData.nitrogenKgPerTon / 1000;
-    const nAdjustment = baselineN > 0 ? Math.max(0.5, Math.min(userN_kg_kg / baselineN, 2.0)) : 1.0;
+    const F_SN = primaryData.nitrogenKgPerTon * quantityKg; // kg N applied for this batch
+    const EF1 = 0.01; // IPCC Tier 1 default
+    const conversionFactor = 44 / 28; // 1.5714
     
-    // Industry standard: 60% of crop footprint is yield-driven (land/fuel), 40% is fertilizer-driven
-    const co2Adjustment = (0.6 * yieldAdjustment) + (0.4 * nAdjustment);
-    const landAdjustment = yieldAdjustment; // Land use scales inversely with yield
-
+    const n2oDirect_kg = F_SN * EF1 * conversionFactor;
+    const n2oCO2e = n2oDirect_kg * 273; // GWP100 for N₂O (IPCC AR6)
+    
+    // Add foreground N₂O emissions to fossil CO₂
+    finalCO2 += n2oCO2e;
+    co2Fossil += n2oCO2e;
+    
+    log.push(`🌱 IPCC TIER 1: Direct N₂O emissions = ${F_SN.toFixed(2)} kg N × 0.01 × 1.5714 × 273 = ${n2oCO2e.toFixed(4)} kg CO₂e`);
+    
     // AUDIT FIX: Connect Supplier Water Source to AWARE Math
     let waterAdjustment = 1.0;
     if (primaryData.waterSource === 'rainfed') {
@@ -473,32 +478,25 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
         log.push(`💧 Groundwater source identified: +25% Scarcity Penalty`);
     }
     
-    finalCO2 *= co2Adjustment;
-    finalLand *= landAdjustment;
     finalWater *= waterAdjustment;
-    finalFossil *= co2Adjustment;
     
-    // 🛡️ CRITICAL: Apply the SAME adjustments to the sub-indicators
-    co2Fossil *= co2Adjustment;
-    co2Biogenic *= co2Adjustment;
-    co2dLUC *= co2Adjustment;
+    // 🛡️ PRIMARY DATA IMPROVES DQR (Parameter Uncertainty: 2.0 → 1.0)
+    // Does NOT magically shrink the physical Agribalyse mass proxy
+    qualityPenalty = -1.0; // Reduces DQR by 1 full point
     
     const practiceStr = primaryData.farmingPractice ? `[${primaryData.farmingPractice.toUpperCase()}]` : '';
-    log.push(`✅ PRIMARY DATA VERIFIED ${practiceStr}: Yield adj: ${yieldAdjustment.toFixed(2)}x | N adj: ${nAdjustment.toFixed(2)}x`);
-    qualityPenalty = -0.5; // BONUS: Better DQR for primary data
+    log.push(`✅ PRIMARY DATA VERIFIED ${practiceStr}: DQR improved (P: 2.0 → 1.0). N₂O foreground calculated via IPCC Tier 1.`);
     
     universal_adjustments = {
         adjusted_from_country: "Agribalyse Default",
         adjusted_for_country: primaryData.farmRegion || originCountry,
-        multipliers: { co2: co2Adjustment, land: landAdjustment, water: waterAdjustment, fossil: co2Adjustment },
-        adder: 0,
-        method: "primary_data_override",
-        baseline_yield: baselineYield,
-        baseline_nitrogen: baselineN * 1000
+        multipliers: { co2: 1.0, land: 1.0, water: waterAdjustment, fossil: 1.0 }, // NO ARBITRARY 60/40 SCALING
+        adder: n2oCO2e, // Foreground N₂O addition
+        method: "primary_data_ipcc_tier1",
+        baseline_yield: ingredientData.data.metadata?.yield_kg_ha || 5000,
+        baseline_nitrogen: (ingredientData.data.metadata?.nitrogen_content_kg_kg || 0.015) * 1000
     };
-                }
-
-
+}
             
         // 2. CONSERVATIVE DEFAULT (No primary data provided)
         else {
