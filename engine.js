@@ -549,59 +549,59 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
         }
         
         // =========================================================
-        // 🛡️ MANDATORY EUDR OVERLAY - Commodity & Origin Specific
-        // =========================================================
-        // EUDR specifically targets: Cattle (Beef/Dairy), Cocoa, Coffee, Oil Palm, Rubber, Soya, Wood/Paper
-        const eudrCommodities = ['beef', 'cattle', 'cow', 'milk', 'cheese', 'cocoa', 'chocolate', 'coffee', 'palm', 'soy', 'soybean', 'rubber', 'wood', 'paper', 'cardboard'];
-        // 🛡️ CRASH FIX: Safely fallback if the DB object lacks an internal .id or .name string
-        const safeName = (ingredientData.name || "").toLowerCase();
-        const safeId = (ingredientData.id || ingredientData.dbId || "").toLowerCase();
+// 🛡️ STRICT EUDR BOOLEAN GATE (ISO 14044 COMPLIANT)
+// =========================================================
+// EUDR specifically targets: Cattle (Beef/Dairy), Cocoa, Coffee, Oil Palm, Rubber, Soya, Wood/Paper
+const eudrCommodities = ['beef', 'cattle', 'cow', 'milk', 'cheese', 'cocoa', 'chocolate', 'coffee', 'palm', 'soy', 'soybean', 'rubber', 'wood', 'paper', 'cardboard'];
+const safeName = (ingredientData.name || "").toLowerCase();
+const safeId = (ingredientData.id || ingredientData.dbId || "").toLowerCase();
+const isEudrCommodity = eudrCommodities.some(c => safeName.includes(c) || safeId.includes(c));
+const eudrHighRisk = ['BR', 'ID', 'MY', 'AR'];
 
-        const isEudrCommodity = eudrCommodities.some(c => 
-            safeName.includes(c) || safeId.includes(c)
-        );
-
-        if (['BR', 'ID', 'MY', 'AR'].includes(originCountry) && isEudrCommodity) {
-            finalCO2 *= 1.50;
-            finalLand *= 1.50;
-            
-            // 🛡️ CRITICAL: Apply EUDR penalty to sub-indicators
-            co2Fossil *= 1.50;
-            co2Biogenic *= 1.50;
-            co2dLUC *= 1.50;
-            
-            log.push(`🛑 EUDR/dLUC PENALTY: High-risk origin (${originCountry}) for regulated commodity. +50% Deforestation Risk Multiplier applied.`);
-            qualityPenalty = 4.0;
-            
-            if (!universal_adjustments) {
-                universal_adjustments = {
-                    adjusted_from_country: "FR",
-                    adjusted_for_country: originCountry,
-                    multipliers: { co2: 1.50, land: 1.50, water: 1.0, fossil: 1.0 }, 
-                    adder: 0,
-                    method: "eudr_dluc_penalty"
-                };
-            } else {
-                universal_adjustments.method = "eudr_dluc_penalty";
-                universal_adjustments.multipliers.co2 *= 1.50;
-                universal_adjustments.multipliers.land *= 1.50;
-            }
-        }
-
-        // Calculate final totals
-        const totalCO2 = finalCO2 * quantityKg;
-        const totalWater = finalWater * quantityKg;
-        const totalLand = finalLand * quantityKg;
-        const totalFossil = finalFossil * quantityKg; // 🛡️ NEW
-
-        // 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
-        let biogenicRemovals = 0;
-        if (primaryData && primaryData.farmingPractice === 'regen') {
-            biogenicRemovals = (co2Base * 0.20) * quantityKg;
-            log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
-        }
-
+if (isEudrCommodity && eudrHighRisk.includes(originCountry)) {
+    // STRICT ISO COMPLIANCE: EUDR is a legal gate, not a carbon multiplier
+    if (!primaryData || !primaryData.ddsReference || !primaryData.geolocation) {
+        log.push(`🛑 EUDR COMPLIANCE BLOCK: Missing DDS or Geolocation for high-risk commodity (${originCountry}).`);
+        // Return zero impact - supply chain cannot be assessed
         return {
+            totalCO2: 0,
+            fossilCO2: 0,
+            biogenicCO2: 0,
+            dlucCO2: 0,
+            totalWater: 0,
+            totalLand: 0,
+            totalFossil: 0,
+            perKgCO2: 0,
+            perKgWater: 0,
+            perKgLand: 0,
+            perKgFossil: 0,
+            logs: log,
+            qualityPenalty: 5.0,
+            universal_adjustments: { method: "eudr_blocked", adjusted_for_country: originCountry },
+            is_primary: !!primaryData,
+            biogenicRemovals: 0,
+            compliance_blocked: true,
+            block_reason: "EUDR Violation: Missing DDS or Geolocation"
+        };
+    }
+    // Compliant - DDS and geolocation provided. Use baseline Agribalyse values.
+    log.push(`✅ EUDR COMPLIANT: DDS and Geolocation verified for ${originCountry}.`);
+}
+
+// Calculate final totals
+const totalCO2 = finalCO2 * quantityKg;
+const totalWater = finalWater * quantityKg;
+const totalLand = finalLand * quantityKg;
+const totalFossil = finalFossil * quantityKg;
+
+// 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
+let biogenicRemovals = 0;
+if (primaryData && primaryData.farmingPractice === 'regen') {
+    biogenicRemovals = (co2Base * 0.20) * quantityKg;
+    log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
+}
+
+return {
     totalCO2: totalCO2,
     fossilCO2: co2Fossil * quantityKg,
     biogenicCO2: co2Biogenic * quantityKg,
@@ -619,7 +619,6 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
     is_primary: !!primaryData,
     biogenicRemovals: biogenicRemovals
 };
-    }
 
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
     function calculateCFF(packagingData, weightKg, recycledContentPercent, eolTargetElement) {
