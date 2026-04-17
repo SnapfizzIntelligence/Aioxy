@@ -961,7 +961,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9);
             doc.setTextColor(...COLORS.primary);
-            doc.text("TERTIARY LOGISTICS PACKAGING (PEF Proxy)", margin, currentY);
+            doc.text("D.TERTIARY LOGISTICS PACKAGING (PEF Proxy)", margin, currentY);
             currentY += 5;
             
             const tertiaryRows = tertiaryComps.map(p => {
@@ -997,7 +997,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         currentY += 12;
 
         // ============================================================
-        // D. END-OF-LIFE TREATMENT
+        // E. END-OF-LIFE TREATMENT
         // ============================================================
         const wasteComponents = ccTree.Waste?.components || [];
         const eolComponents = ccTree.Upstream?.components?.filter(c => c.name.includes('End-of-Life')) || [];
@@ -1006,7 +1006,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         if (allEoLComponents.length > 0) {
             checkPageBreak(60);
             setH2();
-            doc.text("D. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
+            doc.text("E. END-OF-LIFE TREATMENT (Scope 3 Cat 12)", margin, currentY);
             currentY += 6;
             
             const eolRows = allEoLComponents.map(e => {
@@ -1154,7 +1154,7 @@ const outboundData = [
             currentY += 20;
         }
 
- // ============================================================
+// ============================================================
 // F. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2) - FIXED
 // ============================================================
 if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdown) {
@@ -1162,29 +1162,28 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     const bd = b.breakdown;
     const cloned = b.cloned_parameters || {};
     
-    // Get dynamic values
-    const targetCountry = cloned.manufacturing_country || document.getElementById('manufacturingCountry')?.value || 'FR';
-    const gridIntensity = window.aioxyData?.countries?.[targetCountry]?.electricityCO2 || 480;
-    const processingMethod = cloned.processing_method || 'none';
-    const processData = window.aioxyData?.processing?.[processingMethod] || { kwh_per_kg: 0 };
+    // 🛡️ FIX: Renamed variables to avoid 'const' collisions with earlier PDF code
+    const twinTargetCountry = cloned.manufacturing_country || document.getElementById('manufacturingCountry')?.value || 'FR';
+    const twinGridIntensity = window.aioxyData?.countries?.[twinTargetCountry]?.electricityCO2 || 480;
+    const twinProcessingMethod = cloned.processing_method || 'none';
+    const twinProcessData = window.aioxyData?.processing?.[twinProcessingMethod] || { kwh_per_kg: 0 };
+    const twinTransportMode = cloned.transport_mode || 'road';
+    const twinTransportDist = cloned.transport_distance_km || 300;
+    const twinTransportTemp = cloned.transport_temperature || 'ambient';
     
-    const transportMode = cloned.transport_mode || 'road';
-    const transportDist = cloned.transport_distance_km || 300;
-    const transportTemp = cloned.transport_temperature || 'ambient';
-    
-    const glecFactors = {
+    const twinGlecFactors = {
         road: { ambient: 0.060, chilled: 0.067, frozen: 0.067 },
         sea: { ambient: 0.0072, reefer: 0.0142 },
         rail: { ambient: 0.0184, reefer: 0.0206 },
         air: { ambient: 0.788, reefer: 0.827 }
     };
-    const glecEF = glecFactors[transportMode]?.[transportTemp === 'frozen' ? 'frozen' : (transportTemp === 'chilled' ? 'chilled' : 'ambient')] || 0.060;
-    const daf = transportMode === 'sea' ? 1.15 : (transportMode === 'air' ? 95 : 1.05);
     
-    const pkgMaterial = cloned.packaging_material || 'cardboard';
-    const pkgWeight = cloned.packaging_weight_kg || 0.050;
-    const recycledPct = cloned.recycled_content_pct || 30;
-    const pkgData = window.aioxyData?.packaging?.[pkgMaterial] || {};
+    const twinGlecEF = twinGlecFactors[twinTransportMode]?.[twinTransportTemp === 'frozen' ? 'frozen' : (twinTransportTemp === 'chilled' ? 'chilled' : 'ambient')] || 0.060;
+    const twinDaf = twinTransportMode === 'sea' ? 1.15 : (twinTransportMode === 'air' ? 95 : 1.05);
+    const twinPkgMaterial = cloned.packaging_material || 'cardboard';
+    const twinPkgWeight = cloned.packaging_weight_kg || 0.050;
+    const twinRecycledPct = cloned.recycled_content_pct || 30;
+    const twinPkgData = window.aioxyData?.packaging?.[twinPkgMaterial] || {};
     
     doc.addPage();
     currentY = 20;
@@ -1216,7 +1215,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     doc.text(`Anchor ID: ${shortId}`, margin, currentY);
     currentY += 4;
     
-    doc.text("Methodology: System boundaries cloned from assessed product.", margin, currentY);
+    doc.text("Methodology: System boundaries cloned from assessed product. Only agricultural ingredient differs.", margin, currentY);
     currentY += 6;
     
     // Helper function for wrapped text in boxes
@@ -1236,7 +1235,6 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         doc.setFont("courier", "normal");
         doc.setFontSize(7);
         doc.setTextColor(...COLORS.dark);
-        
         lines.forEach(line => {
             const wrappedLines = doc.splitTextToSize(line, textMaxWidth);
             wrappedLines.forEach(wrappedLine => {
@@ -1258,7 +1256,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         doc.rect(margin, boxStartY - 2, boxWidth, currentY - boxStartY - 2);
         currentY += 3;
     };
-    
+
     // 1. FARM GATE
     const baseRaw = bd.farm / (b.concentration_ratio || 1.0);
     const anchorIng = window.aioxyData?.ingredients?.[b.anchor_used];
@@ -1274,15 +1272,15 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         ],
         `${bd.farm.toFixed(4)} kg CO2e`
     );
-    
+
     // 2. MANUFACTURING
-    const mfgKwh = processData.kwh_per_kg || 0;
-    const mfgCO2Calc = (1.0 * mfgKwh * gridIntensity) / 1000;
-    const fugitiveCO2 = processingMethod === 'freezing' ? 0.015 : 0;
+    const mfgKwh = twinProcessData.kwh_per_kg || 0;
+    const mfgCO2Calc = (1.0 * mfgKwh * twinGridIntensity) / 1000;
+    const fugitiveCO2 = twinProcessingMethod === 'freezing' ? 0.015 : 0;
     
     const mfgLines = [
-        `Processing: ${processingMethod} (cloned)`,
-        `Grid Intensity: ${gridIntensity} g CO2e/kWh (${targetCountry})`,
+        `Processing: ${twinProcessingMethod} (cloned)`,
+        `Grid Intensity: ${twinGridIntensity} g CO2e/kWh (${twinTargetCountry})`,
         `Energy Intensity: ${mfgKwh.toFixed(3)} kWh/kg`,
     ];
     
@@ -1290,7 +1288,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         mfgLines.push(`JRC BAT Applied: Yes`);
     } else {
         mfgLines.push(`Formula: Mass x kWh/kg x Grid Intensity / 1000`);
-        mfgLines.push(`= 1.0 x ${mfgKwh.toFixed(3)} x ${gridIntensity} / 1000`);
+        mfgLines.push(`= 1.0 x ${mfgKwh.toFixed(3)} x ${twinGridIntensity} / 1000`);
         mfgLines.push(`= ${mfgCO2Calc.toFixed(4)} kg CO2e`);
         if (fugitiveCO2 > 0) {
             mfgLines.push(`+ Fugitive Refrigerant: 1.0 x 0.015 = 0.0150 kg CO2e`);
@@ -1302,24 +1300,24 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         mfgLines,
         `${bd.manufacturing.toFixed(4)} kg CO2e`
     );
-    
+
     // 3. LOGISTICS
     const inboundMass = (b.concentration_ratio || 1.0) / 1000;
     const outboundMass = 1.0 / 1000;
-    const inboundCO2 = inboundMass * 200 * glecEF * daf;
-    const outboundCO2 = outboundMass * transportDist * glecEF * daf;
+    const inboundCO2 = inboundMass * 200 * twinGlecEF * twinDaf;
+    const outboundCO2 = outboundMass * twinTransportDist * twinGlecEF * twinDaf;
     
     const logisticsLines = [
-        `Mode: ${transportMode.toUpperCase()} (cloned) | Temp: ${transportTemp}`,
-        `GLEC EF: ${glecEF} kg CO2e/tkm | DAF: ${daf}x`,
+        `Mode: ${twinTransportMode.toUpperCase()} (cloned) | Temp: ${twinTransportTemp}`,
+        `GLEC EF: ${twinGlecEF} kg CO2e/tkm | DAF: ${twinDaf}x`,
         ``,
         `INBOUND (Farm -> Factory): 200 km`,
         `Mass: ${inboundMass.toFixed(6)} t`,
-        `= ${inboundMass.toFixed(6)} x 200 x ${glecEF} x ${daf.toFixed(2)} = ${inboundCO2.toFixed(4)}`,
+        `= ${inboundMass.toFixed(6)} x 200 x ${twinGlecEF} x ${twinDaf.toFixed(2)} = ${inboundCO2.toFixed(4)}`,
         ``,
-        `OUTBOUND (Factory -> Retail): ${transportDist} km`,
+        `OUTBOUND (Factory -> Retail): ${twinTransportDist} km`,
         `Mass: ${outboundMass.toFixed(6)} t`,
-        `= ${outboundMass.toFixed(6)} x ${transportDist} x ${glecEF} x ${daf.toFixed(2)} = ${outboundCO2.toFixed(4)}`,
+        `= ${outboundMass.toFixed(6)} x ${twinTransportDist} x ${twinGlecEF} x ${twinDaf.toFixed(2)} = ${outboundCO2.toFixed(4)}`,
         ``,
         `${inboundCO2.toFixed(4)} + ${outboundCO2.toFixed(4)}`,
     ];
@@ -1329,15 +1327,15 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         logisticsLines,
         `${bd.logistics.toFixed(4)} kg CO2e`
     );
-    
+
     // 4. PACKAGING
-    const Ev = pkgData.co2_virgin || 2.5;
-    const Erec = pkgData.co2_recycled || 1.2;
-    const Ed = pkgData.co2_disposal || 0.05;
-    const A = (pkgMaterial.includes('aluminum') || pkgMaterial.includes('steel') || pkgMaterial.includes('glass')) ? 0.2 : 0.5;
-    const QsQp = (pkgData.q || 0.9) / 1.0;
-    const R1 = recycledPct / 100;
-    const R2 = pkgData.r2 || pkgData.r1_max || 0.68;
+    const Ev = twinPkgData.co2_virgin || 2.5;
+    const Erec = twinPkgData.co2_recycled || 1.2;
+    const Ed = twinPkgData.co2_disposal || 0.05;
+    const A = (twinPkgMaterial.includes('aluminum') || twinPkgMaterial.includes('steel') || twinPkgMaterial.includes('glass')) ? 0.2 : 0.5;
+    const QsQp = (twinPkgData.q || 0.9) / 1.0;
+    const R1 = twinRecycledPct / 100;
+    const R2 = twinPkgData.r2 || twinPkgData.r1_max || 0.68;
     
     const term1 = (1 - R1) * Ev;
     const term2 = R1 * (A * Erec + (1 - A) * Ev * QsQp);
@@ -1346,14 +1344,14 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     const pkgPerKg = term1 + term2 + term3 - term4;
     
     const packagingLines = [
-        `Material: ${pkgMaterial} | Weight: ${(pkgWeight*1000).toFixed(0)}g | R1: ${recycledPct}%`,
+        `Material: ${twinPkgMaterial} | Weight: ${(twinPkgWeight*1000).toFixed(0)}g | R1: ${twinRecycledPct}%`,
         `Ev=${Ev.toFixed(2)} Erec=${Erec.toFixed(2)} Ed=${Ed.toFixed(2)} A=${A.toFixed(1)} R2=${R2.toFixed(2)}`,
         `Term1: (1-${R1.toFixed(2)})x${Ev.toFixed(2)} = ${term1.toFixed(4)}`,
         `Term2: ${R1.toFixed(2)}x(${A.toFixed(1)}x${Erec.toFixed(2)}+${(1-A).toFixed(1)}x${Ev.toFixed(2)}x${QsQp.toFixed(2)}) = ${term2.toFixed(4)}`,
         `Term3: (1-${R2.toFixed(2)})x${Ed.toFixed(2)} = ${term3.toFixed(4)}`,
         `Term4: ${R2.toFixed(2)}x${(1-A).toFixed(1)}x(${Erec.toFixed(2)}-${Ev.toFixed(2)}x${QsQp.toFixed(2)}) = ${term4.toFixed(4)}`,
         `Impact/kg: ${term1.toFixed(4)}+${term2.toFixed(4)}+${term3.toFixed(4)}-${Math.abs(term4).toFixed(4)} = ${pkgPerKg.toFixed(4)}`,
-        `x Weight ${pkgWeight.toFixed(3)} kg`,
+        `x Weight ${twinPkgWeight.toFixed(3)} kg`,
     ];
     
     drawTraceBoxFixed(
@@ -1361,7 +1359,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         packagingLines,
         `${bd.packaging.toFixed(4)} kg CO2e`
     );
-    
+
     // TOTAL SUMMATION
     currentY += 5;
     doc.setDrawColor(...COLORS.primary);
@@ -1396,7 +1394,6 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     currentY += 10;
 }
 
-    
 
         // ============================================================
 // PAGE 9: TOTAL IMPACT - PULL FROM ENGINE, ZERO RECALCULATION
