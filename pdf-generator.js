@@ -1046,39 +1046,40 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         currentY += 8;
         
         setH2();
-        doc.text("A. INBOUND LOGISTICS (Scope 3 Cat 4)", margin, currentY);
-        currentY += 6;
-        
-        const upstreamComps = ccTree.Upstream?.components?.filter(c => !c.name.includes('End-of-Life')) || [];
-        if (upstreamComps.length > 0) {
-            const inboundRows = upstreamComps.map(u => {
-                const trace = buildGLECTrace(u);
-                return [
-                    truncate(u.name, 35) + `\n\n--- CALCULATION NODE ---\n${trace}`,
-                    truncate(safeString(u.notes || 'Cross-border transport'), 50),
-                    formatNumber(u.subtotal, 4) + ' kg CO2e'
-                ];
-            });
+doc.text("A. INBOUND LOGISTICS (Scope 3 Cat 4)", margin, currentY);
+currentY += 6;
 
-            doc.autoTable({
-                ...standardTableStyles,
-                startY: currentY,
-                head: [['Shipment', 'Route Details', 'Impact']],
-                body: inboundRows,
-                columnStyles: {
-                    0: { cellWidth: 60 },
-                    1: { cellWidth: 75 },
-                    2: { cellWidth: 45, halign: 'right', fontStyle: 'bold' }
-                },
-                margin: { left: margin }
-            });
-            
-            currentY = doc.lastAutoTable.finalY + 10;
-        } else {
-            setNormal();
-            doc.text("No inbound logistics data (local sourcing assumed).", margin, currentY);
-            currentY += 10;
-        }
+const upstreamComps = ccTree.Upstream?.components?.filter(c => !c.name.includes('End-of-Life')) || [];
+if (upstreamComps.length > 0) {
+    const inboundRows = upstreamComps.map(u => {
+        // 🛡️ USE ENGINE'S CALCULATION TRACE - NO RECALCULATION
+        const trace = u.calculation_trace || `[GLEC v3.2: ${formatNumber(u.subtotal, 4)} kg CO2e]`;
+        return [
+            truncate(u.name, 35) + `\n\n--- CALCULATION NODE ---\n${trace}`,
+            truncate(safeString(u.notes || 'Cross-border transport'), 50),
+            formatNumber(u.subtotal, 4) + ' kg CO2e'
+        ];
+    });
+
+    doc.autoTable({
+        ...standardTableStyles,
+        startY: currentY,
+        head: [['Shipment', 'Route Details', 'Impact']],
+        body: inboundRows,
+        columnStyles: {
+            0: { cellWidth: 60 },
+            1: { cellWidth: 75 },
+            2: { cellWidth: 45, halign: 'right', fontStyle: 'bold' }
+        },
+        margin: { left: margin }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 10;
+} else {
+    setNormal();
+    doc.text("No inbound logistics data (local sourcing assumed).", margin, currentY);
+    currentY += 10;
+            }
         
         checkPageBreak(70);
         setH2();
@@ -1095,28 +1096,29 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         }
         
         const isFrozen = document.getElementById('processingMethod')?.value === 'freezing';
-        const isChilled = document.getElementById('refrigeratedTransport')?.value === 'yes';
-        let tempCondition = 'Ambient';
-        if (isFrozen) tempCondition = 'Frozen (Reefer)';
-        else if (isChilled) tempCondition = 'Chilled';
-        
-        const grossWeight = (mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0);
-        const transportTotal = ccTree.Transport?.total || 0;
-        
-        const outboundComponent = ccTree.Transport?.components?.find(c => c.name.includes('Outbound'));
-        const outboundTrace = outboundComponent?.calculation_trace || 
-            `--- CALCULATION NODE ---\n1. Mass: ${(grossWeight/1000).toFixed(6)} tonnes\n2. Distance: ${dist} km\n3. GLEC Factor: 0.06 kg CO2e/tkm (Road Freight, ${tempCondition})\n4. DAF: x1.05\n5. Formula: ${(grossWeight/1000).toFixed(6)}t x ${dist}km x 0.06 x 1.05\n6. Output: ${formatNumber(transportTotal, 4)} kg CO2e`;
-        
-        const outboundData = [
-            ['Transport Mode:', modeText],
-            ['Temperature Condition:', tempCondition],
-            ['Standard Distance:', originalDist + ' km'],
-            ['Crisis Adjustment:', isCrisisActive ? '+40% (Cape Route)' : 'None'],
-            ['Effective Distance:', Math.round(dist) + ' km'],
-            ['Gross Weight Shipped:', formatNumber(grossWeight, 3) + ' kg'],
-            ['GLEC v3.2 Calculation:', outboundTrace],
-            ['Outbound Impact:', formatNumber(transportTotal, 4) + ' kg CO2e']
-        ];
+const isChilled = document.getElementById('refrigeratedTransport')?.value === 'yes';
+let tempCondition = 'Ambient';
+if (isFrozen) tempCondition = 'Frozen (Reefer)';
+else if (isChilled) tempCondition = 'Chilled';
+
+const grossWeight = (mb?.final_output_kg || pWeightKg) + (mb?.packaging_weight_kg || 0);
+const transportTotal = ccTree.Transport?.total || 0;
+
+const outboundComponent = ccTree.Transport?.components?.find(c => c.name.includes('Outbound'));
+// 🛡️ USE ENGINE'S CALCULATION TRACE - NO RECALCULATION
+const outboundTrace = outboundComponent?.calculation_trace || 
+    `[GLEC v3.2: Transport impact calculated by engine - ${formatNumber(transportTotal, 4)} kg CO2e]`;
+
+const outboundData = [
+    ['Transport Mode:', modeText],
+    ['Temperature Condition:', tempCondition],
+    ['Standard Distance:', originalDist + ' km'],
+    ['Crisis Adjustment:', isCrisisActive ? '+40% (Cape Route)' : 'None'],
+    ['Effective Distance:', Math.round(dist) + ' km'],
+    ['Gross Weight Shipped:', formatNumber(grossWeight, 3) + ' kg'],
+    ['GLEC v3.2 Calculation:', outboundTrace],
+    ['Outbound Impact:', formatNumber(transportTotal, 4) + ' kg CO2e']
+];
         
         doc.autoTable({
             ...standardTableStyles,
@@ -1152,13 +1154,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             currentY += 20;
         }
 
- // --- E. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2) WITH FULL MATH TRACE ---
+ // ============================================================
+// F. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2) - FIXED
+// ============================================================
 if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdown) {
     const b = window.currentComparisonBaseline;
     const bd = b.breakdown;
     const cloned = b.cloned_parameters || {};
     
-    // Get dynamic values from database for trace
+    // Get dynamic values
     const targetCountry = cloned.manufacturing_country || document.getElementById('manufacturingCountry')?.value || 'FR';
     const gridIntensity = window.aioxyData?.countries?.[targetCountry]?.electricityCO2 || 480;
     const processingMethod = cloned.processing_method || 'none';
@@ -1168,7 +1172,6 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     const transportDist = cloned.transport_distance_km || 300;
     const transportTemp = cloned.transport_temperature || 'ambient';
     
-    // GLEC factors for trace
     const glecFactors = {
         road: { ambient: 0.060, chilled: 0.067, frozen: 0.067 },
         sea: { ambient: 0.0072, reefer: 0.0142 },
@@ -1184,57 +1187,76 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     const pkgData = window.aioxyData?.packaging?.[pkgMaterial] || {};
     
     doc.addPage();
-    currentY = 25;
+    currentY = 20;
     
-    // Header
+    // Header - use smaller font
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(...COLORS.primary);
     doc.text("F. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2)", margin, currentY);
     
-    currentY += 8;
+    currentY += 7;
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor(...COLORS.dark);
-    doc.text(`Anchor: ${safeString(b.anchor_name || b.name)}`, margin, currentY);
-    currentY += 5;
-    doc.text(`Anchor ID: ${safeString(b.anchor_used || 'N/A')}`, margin, currentY);
-    currentY += 5;
-    doc.text("Methodology: System boundaries cloned from assessed product. Only agricultural ingredient differs.", margin, currentY);
     
-    currentY += 8;
+    // Anchor name - wrap if too long
+    const anchorDisplay = (b.anchor_name || b.name || 'Selected Baseline');
+    const anchorLines = doc.splitTextToSize(anchorDisplay, pageWidth - (margin * 2) - 20);
+    doc.text(`Anchor: ${anchorLines[0]}`, margin, currentY);
+    if (anchorLines.length > 1) {
+        currentY += 4;
+        doc.text(`       ${anchorLines[1]}`, margin, currentY);
+    }
+    currentY += 4;
     
-    // Box drawing helper
-    const drawTraceBox = (title, lines, finalValue) => {
+    // Anchor ID - truncate if too long
+    const anchorIdDisplay = (b.anchor_used || 'N/A');
+    const shortId = anchorIdDisplay.length > 50 ? anchorIdDisplay.substring(0, 47) + '...' : anchorIdDisplay;
+    doc.text(`Anchor ID: ${shortId}`, margin, currentY);
+    currentY += 4;
+    
+    doc.text("Methodology: System boundaries cloned from assessed product.", margin, currentY);
+    currentY += 6;
+    
+    // Helper function for wrapped text in boxes
+    const drawTraceBoxFixed = (title, lines, finalValue) => {
         const boxStartY = currentY;
+        const boxWidth = pageWidth - (margin * 2);
+        const textMaxWidth = boxWidth - 15;
         
         // Title
         doc.setFont("courier", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(...COLORS.primary);
-        doc.text(title, margin + 2, currentY);
-        currentY += 6;
-        
-        // Math lines
-        doc.setFont("courier", "normal");
         doc.setFontSize(8);
+        doc.setTextColor(...COLORS.primary);
+        doc.text(title, margin + 3, currentY);
+        currentY += 5;
+        
+        // Math lines with wrapping
+        doc.setFont("courier", "normal");
+        doc.setFontSize(7);
         doc.setTextColor(...COLORS.dark);
+        
         lines.forEach(line => {
-            doc.text(line, margin + 4, currentY);
-            currentY += 4;
+            const wrappedLines = doc.splitTextToSize(line, textMaxWidth);
+            wrappedLines.forEach(wrappedLine => {
+                doc.text(wrappedLine, margin + 5, currentY);
+                currentY += 3.5;
+            });
         });
         
         // Result
-        currentY += 2;
+        currentY += 1;
         doc.setFont("courier", "bold");
-        doc.text(`= ${finalValue}`, margin + 4, currentY);
-        currentY += 6;
+        doc.setFontSize(8);
+        doc.text(`= ${finalValue}`, margin + 5, currentY);
+        currentY += 5;
         
         // Draw box
-        doc.setDrawColor(200, 200, 200);
+        doc.setDrawColor(180, 180, 180);
         doc.setLineWidth(0.3);
-        doc.rect(margin, boxStartY - 2, pageWidth - (margin * 2), currentY - boxStartY - 2);
-        currentY += 4;
+        doc.rect(margin, boxStartY - 2, boxWidth, currentY - boxStartY - 2);
+        currentY += 3;
     };
     
     // 1. FARM GATE
@@ -1242,16 +1264,15 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     const anchorIng = window.aioxyData?.ingredients?.[b.anchor_used];
     const farmCO2Raw = anchorIng?.data?.pef?.["Climate Change"] || baseRaw;
     
-    drawTraceBox(
+    drawTraceBoxFixed(
         "1. AGRICULTURAL PHASE (FARM GATE)",
         [
-            `Source: AGRIBALYSE 3.2 - ${safeString(b.anchor_name || 'Selected Ingredient')}`,
-            `Raw LCI Value: ${farmCO2Raw.toFixed(4)} kg CO₂e/kg`,
+            `Raw LCI Value: ${farmCO2Raw.toFixed(4)} kg CO2e/kg`,
             `Concentration Ratio: ${(b.concentration_ratio || 1.0).toFixed(2)}x`,
-            `Formula: Raw LCI × Concentration Ratio`,
-            `= ${farmCO2Raw.toFixed(4)} × ${(b.concentration_ratio || 1.0).toFixed(2)}`,
+            `Formula: Raw LCI x Concentration Ratio`,
+            `= ${farmCO2Raw.toFixed(4)} x ${(b.concentration_ratio || 1.0).toFixed(2)}`,
         ],
-        `${bd.farm.toFixed(4)} kg CO₂e`
+        `${bd.farm.toFixed(4)} kg CO2e`
     );
     
     // 2. MANUFACTURING
@@ -1260,244 +1281,223 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     const fugitiveCO2 = processingMethod === 'freezing' ? 0.015 : 0;
     
     const mfgLines = [
-        `Processing: ${processingMethod} (cloned from assessed product)`,
-        `Grid Intensity: ${gridIntensity} g CO₂e/kWh (${targetCountry})`,
+        `Processing: ${processingMethod} (cloned)`,
+        `Grid Intensity: ${gridIntensity} g CO2e/kWh (${targetCountry})`,
         `Energy Intensity: ${mfgKwh.toFixed(3)} kWh/kg`,
     ];
     
     if (b.bat_applied) {
-        mfgLines.push(`JRC BAT Applied: ${safeString(b.bat_processing_note || 'Yes')}`);
-        mfgLines.push(`Source: ${safeString(b.bat_source || 'EU 2019/2031')}`);
+        mfgLines.push(`JRC BAT Applied: Yes`);
     } else {
-        mfgLines.push(`Formula: Mass × kWh/kg × Grid Intensity ÷ 1000`);
-        mfgLines.push(`= 1.0 kg × ${mfgKwh.toFixed(3)} × ${gridIntensity} ÷ 1000`);
-        mfgLines.push(`= ${mfgCO2Calc.toFixed(4)} kg CO₂e`);
+        mfgLines.push(`Formula: Mass x kWh/kg x Grid Intensity / 1000`);
+        mfgLines.push(`= 1.0 x ${mfgKwh.toFixed(3)} x ${gridIntensity} / 1000`);
+        mfgLines.push(`= ${mfgCO2Calc.toFixed(4)} kg CO2e`);
         if (fugitiveCO2 > 0) {
-            mfgLines.push(`+ Fugitive Refrigerant: 1.0 kg × 0.015 = 0.0150 kg CO₂e`);
+            mfgLines.push(`+ Fugitive Refrigerant: 1.0 x 0.015 = 0.0150 kg CO2e`);
         }
     }
     
-    drawTraceBox(
+    drawTraceBoxFixed(
         "2. CLONED MANUFACTURING",
         mfgLines,
-        `${bd.manufacturing.toFixed(4)} kg CO₂e`
+        `${bd.manufacturing.toFixed(4)} kg CO2e`
     );
     
-    // 3. LOGISTICS - WITH FULL GLEC TRACE
+    // 3. LOGISTICS
     const inboundMass = (b.concentration_ratio || 1.0) / 1000;
     const outboundMass = 1.0 / 1000;
-    const inboundCO2 = inboundMass * 200 * glecEF * (transportMode === 'sea' ? 1.15 : 1.05);
-    const outboundCO2 = outboundMass * transportDist * glecEF * (transportMode === 'sea' ? 1.15 : 1.05);
+    const inboundCO2 = inboundMass * 200 * glecEF * daf;
+    const outboundCO2 = outboundMass * transportDist * glecEF * daf;
     
     const logisticsLines = [
-        `Mode: ${transportMode.toUpperCase()} (cloned)`,
-        `Temperature: ${transportTemp} (cloned)`,
-        `GLEC EF: ${glecEF} kg CO₂e/tkm`,
-        `DAF: ${daf}x`,
+        `Mode: ${transportMode.toUpperCase()} (cloned) | Temp: ${transportTemp}`,
+        `GLEC EF: ${glecEF} kg CO2e/tkm | DAF: ${daf}x`,
         ``,
-        `INBOUND (Farm → Factory): 200 km`,
-        `Mass: ${inboundMass.toFixed(6)} tonnes`,
-        `Formula: Mass(t) × Distance(km) × EF × DAF`,
-        `= ${inboundMass.toFixed(6)} × 200 × ${glecEF} × ${daf.toFixed(2)}`,
-        `= ${inboundCO2.toFixed(4)} kg CO₂e`,
+        `INBOUND (Farm -> Factory): 200 km`,
+        `Mass: ${inboundMass.toFixed(6)} t`,
+        `= ${inboundMass.toFixed(6)} x 200 x ${glecEF} x ${daf.toFixed(2)} = ${inboundCO2.toFixed(4)}`,
         ``,
-        `OUTBOUND (Factory → Retail): ${transportDist} km`,
-        `Mass: ${outboundMass.toFixed(6)} tonnes`,
-        `= ${outboundMass.toFixed(6)} × ${transportDist} × ${glecEF} × ${daf.toFixed(2)}`,
-        `= ${outboundCO2.toFixed(4)} kg CO₂e`,
+        `OUTBOUND (Factory -> Retail): ${transportDist} km`,
+        `Mass: ${outboundMass.toFixed(6)} t`,
+        `= ${outboundMass.toFixed(6)} x ${transportDist} x ${glecEF} x ${daf.toFixed(2)} = ${outboundCO2.toFixed(4)}`,
         ``,
         `${inboundCO2.toFixed(4)} + ${outboundCO2.toFixed(4)}`,
     ];
     
-    drawTraceBox(
+    drawTraceBoxFixed(
         "3. CLONED LOGISTICS",
         logisticsLines,
-        `${bd.logistics.toFixed(4)} kg CO₂e`
+        `${bd.logistics.toFixed(4)} kg CO2e`
     );
     
-    // 4. PACKAGING - WITH FULL CFF TRACE
+    // 4. PACKAGING
     const Ev = pkgData.co2_virgin || 2.5;
     const Erec = pkgData.co2_recycled || 1.2;
     const Ed = pkgData.co2_disposal || 0.05;
     const A = (pkgMaterial.includes('aluminum') || pkgMaterial.includes('steel') || pkgMaterial.includes('glass')) ? 0.2 : 0.5;
     const QsQp = (pkgData.q || 0.9) / 1.0;
     const R1 = recycledPct / 100;
-    const R2 = pkgData.r2 || 0.68;
+    const R2 = pkgData.r2 || pkgData.r1_max || 0.68;
     
     const term1 = (1 - R1) * Ev;
     const term2 = R1 * (A * Erec + (1 - A) * Ev * QsQp);
     const term3 = (1 - R2) * Ed;
     const term4 = R2 * (1 - A) * (Erec - Ev * QsQp);
     const pkgPerKg = term1 + term2 + term3 - term4;
-    const pkgTotal = pkgPerKg * pkgWeight;
     
     const packagingLines = [
-        `Material: ${pkgMaterial} (cloned)`,
-        `Weight: ${(pkgWeight * 1000).toFixed(0)}g (cloned)`,
-        `Recycled Content (R1): ${recycledPct}%`,
-        ``,
-        `PEF 3.1 CFF Parameters:`,
-        `Ev (virgin) = ${Ev.toFixed(2)}`,
-        `Erec (recycled) = ${Erec.toFixed(2)}`,
-        `Ed (disposal) = ${Ed.toFixed(2)}`,
-        `A (allocation) = ${A.toFixed(1)}`,
-        `Qs/Qp (quality) = ${QsQp.toFixed(2)}`,
-        `R2 (recycling rate) = ${R2.toFixed(2)}`,
-        ``,
-        `Term 1: (1-${R1.toFixed(2)}) × ${Ev.toFixed(2)} = ${term1.toFixed(4)}`,
-        `Term 2: ${R1.toFixed(2)} × (${A.toFixed(1)}×${Erec.toFixed(2)} + ${(1-A).toFixed(1)}×${Ev.toFixed(2)}×${QsQp.toFixed(2)}) = ${term2.toFixed(4)}`,
-        `Term 3: (1-${R2.toFixed(2)}) × ${Ed.toFixed(2)} = ${term3.toFixed(4)}`,
-        `Term 4: ${R2.toFixed(2)} × ${(1-A).toFixed(1)} × (${Erec.toFixed(2)} - ${Ev.toFixed(2)}×${QsQp.toFixed(2)}) = ${term4.toFixed(4)}`,
-        ``,
-        `Impact per kg: ${term1.toFixed(4)} + ${term2.toFixed(4)} + ${term3.toFixed(4)} - ${term4.toFixed(4)} = ${pkgPerKg.toFixed(4)}`,
-        `× Packaging weight: ${pkgWeight.toFixed(3)} kg`,
+        `Material: ${pkgMaterial} | Weight: ${(pkgWeight*1000).toFixed(0)}g | R1: ${recycledPct}%`,
+        `Ev=${Ev.toFixed(2)} Erec=${Erec.toFixed(2)} Ed=${Ed.toFixed(2)} A=${A.toFixed(1)} R2=${R2.toFixed(2)}`,
+        `Term1: (1-${R1.toFixed(2)})x${Ev.toFixed(2)} = ${term1.toFixed(4)}`,
+        `Term2: ${R1.toFixed(2)}x(${A.toFixed(1)}x${Erec.toFixed(2)}+${(1-A).toFixed(1)}x${Ev.toFixed(2)}x${QsQp.toFixed(2)}) = ${term2.toFixed(4)}`,
+        `Term3: (1-${R2.toFixed(2)})x${Ed.toFixed(2)} = ${term3.toFixed(4)}`,
+        `Term4: ${R2.toFixed(2)}x${(1-A).toFixed(1)}x(${Erec.toFixed(2)}-${Ev.toFixed(2)}x${QsQp.toFixed(2)}) = ${term4.toFixed(4)}`,
+        `Impact/kg: ${term1.toFixed(4)}+${term2.toFixed(4)}+${term3.toFixed(4)}-${Math.abs(term4).toFixed(4)} = ${pkgPerKg.toFixed(4)}`,
+        `x Weight ${pkgWeight.toFixed(3)} kg`,
     ];
     
-    drawTraceBox(
+    drawTraceBoxFixed(
         "4. CLONED PACKAGING",
         packagingLines,
-        `${bd.packaging.toFixed(4)} kg CO₂e`
+        `${bd.packaging.toFixed(4)} kg CO2e`
     );
     
     // TOTAL SUMMATION
-    currentY += 6;
+    currentY += 5;
     doc.setDrawColor(...COLORS.primary);
-    doc.setLineWidth(1.0);
+    doc.setLineWidth(0.8);
     doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 8;
+    currentY += 6;
+    
+    doc.setFont("courier", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.primary);
+    doc.text("TOTAL PARAMETRIC TWIN BASELINE", margin, currentY);
+    currentY += 5;
+    
+    doc.setFont("courier", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...COLORS.dark);
+    doc.text(`${bd.farm.toFixed(4)} + ${bd.manufacturing.toFixed(4)} + ${bd.logistics.toFixed(4)} + ${bd.packaging.toFixed(4)}`, margin + 10, currentY);
+    currentY += 4;
     
     doc.setFont("courier", "bold");
     doc.setFontSize(10);
     doc.setTextColor(...COLORS.primary);
-    doc.text("TOTAL PARAMETRIC TWIN BASELINE", margin, currentY);
-    currentY += 6;
+    doc.text(`= ${b.co2PerKg.toFixed(4)} kg CO2e/kg`, margin + 10, currentY);
     
-    doc.setFont("courier", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...COLORS.dark);
-    doc.text(`${bd.farm.toFixed(4)} + ${bd.manufacturing.toFixed(4)} + ${bd.logistics.toFixed(4)} + ${bd.packaging.toFixed(4)}`, margin + 10, currentY);
-    currentY += 5;
-    
-    doc.setFont("courier", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...COLORS.primary);
-    doc.text(`= ${b.co2PerKg.toFixed(4)} kg CO₂e/kg`, margin + 10, currentY);
-    
-    currentY += 10;
+    currentY += 8;
     
     // Compliance footer
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7);
     doc.setTextColor(40, 167, 69);
     doc.text("✓ Functional Equivalence Verified per ISO 14044 §4.2.3.2", margin, currentY);
-    currentY += 5;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...COLORS.gray);
-    doc.setFontSize(7);
-    doc.text("All manufacturing, transport, and packaging boundaries are identical to the assessed product. Only agricultural ingredient differs.", margin, currentY);
-    
-    currentY += 15;
-                             }
-          
-    
+    currentY += 10;
+}
+
     
 
         // ============================================================
-        // PAGE 9: TOTAL IMPACT
-        // ============================================================
-        doc.addPage();
-        currentY = margin;
-        
-        doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(1.5);
-        doc.line(margin, currentY, pageWidth - margin, currentY);
-        currentY += 10;
-        
-        const ingTotal = ccTree.Ingredients?.total || 0;
-        const mfgTotal = ccTree.Manufacturing?.total || 0;
-        const transTotal = ccTree.Transport?.total || 0;
-        const pkgTotalFinal = ccTree.Packaging?.total || 0;
-        const upstTotal = ccTree.Upstream?.total || 0;
-        const wasteTotal = ccTree.Waste?.total || 0;
-        
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...COLORS.primary);
-        doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
-        currentY += 8;
-        
-        const summationData = [
-            ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
-            ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
-            ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
-            ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
-            ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
-            ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
-        ];
+// PAGE 9: TOTAL IMPACT - PULL FROM ENGINE, ZERO RECALCULATION
+// ============================================================
+doc.addPage();
+currentY = margin;
 
-        doc.autoTable({
-            ...standardTableStyles,
-            startY: currentY,
-            body: summationData,
-            styles: { fontSize: 8, cellPadding: 2 },
-            columnStyles: { 0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark }, 1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' } },
-            margin: { left: margin }
-        });
+doc.setDrawColor(...COLORS.primary);
+doc.setLineWidth(1.5);
+doc.line(margin, currentY, pageWidth - margin, currentY);
+currentY += 10;
 
-        currentY = doc.lastAutoTable.finalY + 5;
+const ingTotal = ccTree.Ingredients?.total || 0;
+const mfgTotal = ccTree.Manufacturing?.total || 0;
+const transTotal = ccTree.Transport?.total || 0;
+const pkgTotalFinal = ccTree.Packaging?.total || 0;
+const upstTotal = ccTree.Upstream?.total || 0;
+const wasteTotal = ccTree.Waste?.total || 0;
 
-        const boxHeight = 45;
-        doc.setFillColor(240, 248, 255);
-        doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'F');
-        doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(0.5);
-        doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'S');
+doc.setFontSize(12);
+doc.setFont("helvetica", "bold");
+doc.setTextColor(...COLORS.primary);
+doc.text("TOTAL CRADLE-TO-RETAIL IMPACT:", margin, currentY);
+currentY += 8;
 
-        setH3();
-        doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
+const summationData = [
+    ['Ingredients (Scope 3 Cat 1):', formatNumber(ingTotal, 4) + ' kg CO2e'],
+    ['Manufacturing (Scope 3 Cat 1/2):', formatNumber(mfgTotal, 4) + ' kg CO2e'],
+    ['Transport - Outbound (Scope 3 Cat 4):', formatNumber(transTotal, 4) + ' kg CO2e'],
+    ['Packaging - Primary & Tertiary (Scope 3 Cat 1):', formatNumber(pkgTotalFinal, 4) + ' kg CO2e'],
+    ['Upstream/Inbound Logistics (Scope 3 Cat 4):', formatNumber(upstTotal, 4) + ' kg CO2e'],
+    ['End-of-Life & Processing Waste (Scope 3 Cat 12):', formatNumber(wasteTotal, 4) + ' kg CO2e']
+];
 
-        setNormal();
-        doc.text(`Fossil: ${formatNumber(fossilTotal, 4)} kg (${fossilPct}%)  |  Biogenic: ${formatNumber(biogenicTotal, 4)} kg (${biogenicPct}%)  |  dLUC: ${formatNumber(dlucTotal, 4)} kg (${dlucPct}%)`, margin + 5, currentY + 14);
+doc.autoTable({
+    ...standardTableStyles,
+    startY: currentY,
+    body: summationData,
+    styles: { fontSize: 8, cellPadding: 2 },
+    columnStyles: { 0: { cellWidth: 120, fontStyle: 'bold', textColor: COLORS.dark }, 1: { cellWidth: 60, halign: 'right', fontStyle: 'bold' } },
+    margin: { left: margin }
+});
 
-        setTrace();
-        const aggregationTrace = `--- CALCULATION NODE ---
-1. Total Climate Impact: ${formatNumber(totalCo2, 4)} kg CO2e
-2. Component Summation:
-   Ingredients Fossil: ${formatNumber(ccTree.Ingredients?.components?.reduce((s, c) => s + (c.fossilCO2 || 0), 0) || 0, 4)} kg
-   Transport Fossil: ${formatNumber(transTotal + upstTotal, 4)} kg (100% fossil)
-   Manufacturing Fossil: ${formatNumber(mfgTotal, 4)} kg (100% fossil)
-   Packaging Fossil: ${formatNumber(pkgTotalFinal, 4)} kg (100% fossil)
-   Waste Fossil: ${formatNumber(wasteTotal, 4)} kg
-3. Total Fossil = ${formatNumber(fossilTotal, 4)} kg CO2e
-4. Split Ratios: Fossil ${fossilPct}% | Biogenic ${biogenicPct}% | dLUC ${dlucPct}%`;
-        
-        doc.text(aggregationTrace, margin + 5, currentY + 22, { maxWidth: pageWidth - margin * 2 - 10 });
+currentY = doc.lastAutoTable.finalY + 5;
 
-        doc.setTextColor(...COLORS.dark);
-        currentY += boxHeight + 5;
+// 🛡️ PULL DIRECTLY FROM ENGINE - ZERO RECALCULATION
+// These values come from finalPefResults which the engine already calculated
+const fossilTotal = auditTrailData?.pefCategories?.["Climate Change - Fossil"]?.total || 0;
+const biogenicTotal = auditTrailData?.pefCategories?.["Climate Change - Biogenic"]?.total || 0;
+const dlucTotal = auditTrailData?.pefCategories?.["Climate Change - dLUC"]?.total || 0;
+const totalCO2 = auditTrailData?.pefCategories?.["Climate Change"]?.total || 0;
 
-        doc.setDrawColor(...COLORS.primary);
-        doc.setLineWidth(0.5);
-        doc.line(margin + 120, currentY, pageWidth - margin, currentY);
-        currentY += 5;
+const fossilPct = totalCO2 > 0 ? (fossilTotal / totalCO2 * 100).toFixed(1) : '0.0';
+const biogenicPct = totalCO2 > 0 ? (biogenicTotal / totalCO2 * 100).toFixed(1) : '0.0';
+const dlucPct = totalCO2 > 0 ? (dlucTotal / totalCO2 * 100).toFixed(1) : '0.0';
 
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...COLORS.primary);
-        doc.text(safeString("GRAND TOTAL:"), margin, currentY);
-        doc.text(safeString(`${safeFix(totalCo2, 4)} kg CO2e`), pageWidth - margin - 2, currentY, { align: 'right' });
+const boxHeight = 35;
+doc.setFillColor(240, 248, 255);
+doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'F');
+doc.setDrawColor(...COLORS.primary);
+doc.setLineWidth(0.5);
+doc.rect(margin, currentY, pageWidth - (margin * 2), boxHeight, 'S');
 
-        currentY += 8;
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(...COLORS.dark);
-        doc.text(safeString(`Normalized Impact: ${safeFix(totalCo2 / pWeightKg, 4)} kg CO2e per kg product`), margin, currentY);
+doc.setFont("helvetica", "bold");
+doc.setFontSize(9);
+doc.setTextColor(...COLORS.primary);
+doc.text("PEF 3.1 Climate Change Breakdown:", margin + 5, currentY + 6);
 
-        currentY += 6;
-        doc.setFontSize(8);
-        doc.setTextColor(...COLORS.gray);
-        doc.text(safeString(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`), margin, currentY);
-        currentY += 15;
+doc.setFont("helvetica", "normal");
+doc.setFontSize(8);
+doc.setTextColor(...COLORS.dark);
+doc.text(`Fossil: ${fossilTotal.toFixed(4)} kg (${fossilPct}%)  |  Biogenic: ${biogenicTotal.toFixed(4)} kg (${biogenicPct}%)  |  dLUC: ${dlucTotal.toFixed(4)} kg (${dlucPct}%)`, margin + 5, currentY + 14);
+
+doc.setFont("courier", "normal");
+doc.setFontSize(6);
+doc.setTextColor(...COLORS.gray);
+doc.text(`Source: Engine-calculated sub-indicators from Agribalyse 3.2`, margin + 5, currentY + 24);
+
+currentY += boxHeight + 5;
+
+doc.setDrawColor(...COLORS.primary);
+doc.setLineWidth(0.5);
+doc.line(margin + 120, currentY, pageWidth - margin, currentY);
+currentY += 5;
+
+doc.setFontSize(10);
+doc.setFont("helvetica", "bold");
+doc.setTextColor(...COLORS.primary);
+doc.text("GRAND TOTAL:", margin, currentY);
+doc.text(`${totalCO2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
+
+currentY += 7;
+doc.setFontSize(8);
+doc.setFont("helvetica", "normal");
+doc.setTextColor(...COLORS.dark);
+doc.text(`Normalized Impact: ${(totalCO2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
+
+currentY += 5;
+doc.setFontSize(7);
+doc.setTextColor(...COLORS.gray);
+doc.text(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`, margin, currentY);
 
         // ============================================================
         // PAGE 10: DQR + MONTE CARLO
