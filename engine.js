@@ -538,52 +538,44 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
 }
             
         // 2. CONSERVATIVE DEFAULT (No primary data provided)
-        else {
-            const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
-            const eudrHighRisk = ['BR', 'ID', 'MY', 'AR']; 
-            
-            // Default baseline values for secondary data (crop-specific from metadata)
-            const defaultBaselineYield = ingredientData.data.metadata?.yield_kg_ha || 4000;
-            const defaultBaselineN = (ingredientData.data.metadata?.nitrogen_content_kg_kg || 0.021) * 1000;
+else {
+    const euCountries = ['FR', 'DE', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'DK', 'FI', 'PT', 'IE', 'LU', 'GR', 'PL', 'CZ', 'HU', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR', 'RO', 'BG', 'CY', 'MT'];
+    const eudrHighRisk = ['BR', 'ID', 'MY', 'AR']; 
+    
+    // Default baseline values for secondary data (crop-specific from metadata)
+    const defaultBaselineYield = ingredientData.data.metadata?.yield_kg_ha || 4000;
+    const defaultBaselineN = (ingredientData.data.metadata?.nitrogen_content_kg_kg || 0.021) * 1000;
 
-            if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
-                if (!eudrHighRisk.includes(originCountry)) {
-                    qualityPenalty = 1.0; 
-                    finalCO2 *= 1.15;
-                    finalWater *= 1.15;
-                    finalLand *= 1.15;
-                    finalFossil *= 1.15; // 🛡️ FIX: Apply uncertainty buffer to fossil use
-                    
-                    // 🛡️ CRITICAL: Apply proxy penalty to sub-indicators
-                    co2Fossil *= 1.15;
-                    co2Biogenic *= 1.15;
-                    co2dLUC *= 1.15;
-                    
-                    log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). Applied +15% uncertainty buffer.`);
-                    
-                    universal_adjustments = {
-                        adjusted_from_country: "FR",
-                        adjusted_for_country: originCountry,
-                        multipliers: { co2: 1.15, land: 1.15, water: 1.15, fossil: 1.15 },
-                        adder: 0,
-                        method: "proxy_with_penalty",
-                        baseline_yield: defaultBaselineYield,
-                        baseline_nitrogen: defaultBaselineN
-                    };
-                }
-            } else {
-                log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
-                universal_adjustments = {
-                    adjusted_from_country: "FR",
-                    adjusted_for_country: originCountry || "FR",
-                    multipliers: { co2: 1.0, land: 1.0, water: 1.0, fossil: 1.0 },
-                    adder: 0,
-                    method: "direct_agribalyse",
-                    baseline_yield: defaultBaselineYield,
-                    baseline_nitrogen: defaultBaselineN
-                };
-            }
+    if (originCountry && !euCountries.includes(originCountry) && originCountry !== 'FR') {
+        if (!eudrHighRisk.includes(originCountry)) {
+            // 🛡️ AUDIT FIX: No physical carbon multipliers. Uncertainty handled by DQR downgrade.
+            qualityPenalty = 1.0; // Downgrades Geographical Representativeness (GR)
+            
+            log.push(`⚠️ CONSERVATIVE PROXY: Unverified offshore origin (${originCountry}). DQR downgraded (GR: 2.0 → 3.0).`);
+            
+            universal_adjustments = {
+                adjusted_from_country: "FR",
+                adjusted_for_country: originCountry,
+                multipliers: { co2: 1.0, land: 1.0, water: 1.0, fossil: 1.0 }, // NO ARBITRARY 1.15x
+                adder: 0,
+                method: "proxy_dqr_penalty",
+                baseline_yield: defaultBaselineYield,
+                baseline_nitrogen: defaultBaselineN
+            };
         }
+    } else {
+        log.push(`📚 SECONDARY DATA: Direct Agribalyse EU match used.`);
+        universal_adjustments = {
+            adjusted_from_country: "FR",
+            adjusted_for_country: originCountry || "FR",
+            multipliers: { co2: 1.0, land: 1.0, water: 1.0, fossil: 1.0 },
+            adder: 0,
+            method: "direct_agribalyse",
+            baseline_yield: defaultBaselineYield,
+            baseline_nitrogen: defaultBaselineN
+        };
+    }
+    }
         
         // =========================================================
 // 🛡️ STRICT EUDR BOOLEAN GATE (ISO 14044 COMPLIANT)
