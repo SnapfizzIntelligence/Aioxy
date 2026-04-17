@@ -620,6 +620,7 @@ return {
     is_primary: !!primaryData,
     biogenicRemovals: biogenicRemovals
 };
+}
 
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
     function calculateCFF(packagingData, weightKg, recycledContentPercent, eolTargetElement) {
