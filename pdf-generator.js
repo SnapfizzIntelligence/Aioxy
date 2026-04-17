@@ -1152,7 +1152,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             currentY += 20;
         }
 
-        // --- E. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2) WITH FULL MATH TRACE ---
+ // --- E. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2) WITH FULL MATH TRACE ---
 if (global.currentComparisonBaseline && global.currentComparisonBaseline.breakdown) {
     const b = global.currentComparisonBaseline;
     const bd = b.breakdown;
@@ -1397,7 +1397,10 @@ if (global.currentComparisonBaseline && global.currentComparisonBaseline.breakdo
     doc.text("All manufacturing, transport, and packaging boundaries are identical to the assessed product. Only agricultural ingredient differs.", margin, currentY);
     
     currentY += 15;
-              }
+                             }
+          
+    
+    
 
         // ============================================================
         // PAGE 9: TOTAL IMPACT
