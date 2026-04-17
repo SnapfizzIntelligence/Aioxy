@@ -587,6 +587,7 @@ if (isEudrCommodity && eudrHighRisk.includes(originCountry)) {
     // Compliant - DDS and geolocation provided. Use baseline Agribalyse values.
     log.push(`✅ EUDR COMPLIANT: DDS and Geolocation verified for ${originCountry}.`);
 }
+    };
 
 // Calculate final totals
 const totalCO2 = finalCO2 * quantityKg;
