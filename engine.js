@@ -2783,37 +2783,34 @@ this.state.finalPefResults['Climate Change - Fossil'] = { total: 0, unit: 'kg CO
 this.state.finalPefResults['Climate Change - Biogenic'] = { total: 0, unit: 'kg CO2e' };
 this.state.finalPefResults['Climate Change - dLUC'] = { total: 0, unit: 'kg CO2e' };
 
-// 2. Calculate ACTUAL bottom-up sums from contribution tree
+// 2. Calculate EXACT bottom-up sums from ALL components in the tree
 let actualFossil = 0;
 let actualBiogenic = 0;
 let actualDLUC = 0;
 
-// Sum from ingredients
-const ingComponents = auditTrail.pefCategories["Climate Change"].contribution_tree.Ingredients?.components || [];
-ingComponents.forEach(comp => {
-    actualFossil += comp.fossilCO2 || 0;
-    actualBiogenic += comp.biogenicCO2 || 0;
-    actualDLUC += comp.dlucCO2 || 0;
-});
+const stages = ['Ingredients', 'Manufacturing', 'Transport', 'Packaging', 'Upstream', 'Waste'];
 
-// Add manufacturing, transport, upstream, waste (all fossil)
-actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing?.total || 0);
-actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Transport?.total || 0);
-actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream?.total || 0);
-actualFossil += (auditTrail.pefCategories["Climate Change"].contribution_tree.Waste?.total || 0);
-
-// Packaging: sum fossil and biogenic from its components
-const pkgComponents = auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging?.components || [];
-pkgComponents.forEach(comp => {
-    actualFossil += comp.fossilCO2 || (comp.subtotal || 0); // Default to fossil if not specified
-    actualBiogenic += comp.biogenicCO2 || 0;
+stages.forEach(stage => {
+    const components = auditTrail.pefCategories["Climate Change"].contribution_tree[stage]?.components || [];
+    
+    components.forEach(comp => {
+        // If the component has explicit sub-indicators, use them
+        if (comp.fossilCO2 !== undefined || comp.biogenicCO2 !== undefined || comp.dlucCO2 !== undefined) {
+            actualFossil += comp.fossilCO2 || 0;
+            actualBiogenic += comp.biogenicCO2 || 0;
+            actualDLUC += comp.dlucCO2 || 0;
+        } else {
+            // STRICT ISO COMPLIANCE: No split defined = 100% Fossil
+            actualFossil += comp.subtotal || 0;
+        }
+    });
 });
 
 // 3. Assign true values
 this.state.finalPefResults['Climate Change - Fossil'].total = actualFossil;
 this.state.finalPefResults['Climate Change - Biogenic'].total = actualBiogenic;
 this.state.finalPefResults['Climate Change - dLUC'].total = actualDLUC;
-
+            
 const results = {
     finalPefResults: this.state.finalPefResults,
     co2PerKg: unified.co2PerKg,
