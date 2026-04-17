@@ -1718,17 +1718,22 @@ function calculateParametricBaseline(anchorId, targetCountry) {
     const outboundObj = calculateGLECTransport(1.0, userTransportDist, userTransportMode, refType);
     const totalTransportCO2 = inboundObj.total + outboundObj.total;
 
-    // =====================================================================
-    // D. PACKAGING IMPACT (Cloned Packaging via CFF)
-    // =====================================================================
-    let packagingCO2 = 0;
-    const pkgData = aioxyDataRef.packaging?.[userPkgMaterial];
-    if (pkgData && userPkgWeight > 0) {
-        const cffResult = calculateCFF(pkgData, userPkgWeight, userRecycledPct, eolTargetElement);
-        packagingCO2 = cffResult.totalImpact;
-    } else {
-        packagingCO2 = userPkgWeight * 3.0;
-    }
+// =====================================================================
+// D. PACKAGING IMPACT (Cloned Packaging via CFF)
+// =====================================================================
+let packagingCO2 = 0;
+const pkgData = aioxyDataRef.packaging?.[userPkgMaterial];
+if (pkgData && userPkgWeight > 0) {
+    const cffResult = calculateCFF(pkgData, userPkgWeight, userRecycledPct, eolTargetElement);
+    packagingCO2 = cffResult.totalImpact;
+} else {
+    packagingCO2 = userPkgWeight * 3.0;
+}
+
+// 🛡️ REGULATOR FIX: Split packaging impact by material chemistry
+const pkgSplit = getPackagingCarbonSplit(userPkgMaterial);
+const pkgFossilCO2 = packagingCO2 * pkgSplit.fossilRatio;
+const pkgBiogenicCO2 = packagingCO2 * pkgSplit.biogenicRatio;
 
     // =====================================================================
     // E. CORRELATE FOSSIL RESOURCE USE
@@ -1737,15 +1742,16 @@ function calculateParametricBaseline(anchorId, targetCountry) {
     const packagingFossilMJ = packagingCO2 * 20.0;
     const mfgFossilMJ = mfgKwh * 3.6 + mfgGasMj;
 
-    // =====================================================================
-    // F. ASSEMBLE IDENTICAL BOUNDARY TWIN
-    // =====================================================================
-    const totalCO2PerKg = farmGateCO2 + mfgCO2 + totalTransportCO2 + packagingCO2;
-    const totalFossilPerKg = farmGateFossil + mfgFossilMJ + transportFossilMJ + packagingFossilMJ;
-    
-    const totalFossilCO2 = farmFossilCO2 + mfgCO2 + totalTransportCO2 + packagingCO2;
-    const totalBiogenicCO2 = farmBiogenicCO2;
-    const totalDLUCCO2 = farmDLUCCO2;
+// =====================================================================
+// F. ASSEMBLE IDENTICAL BOUNDARY TWIN
+// =====================================================================
+const totalCO2PerKg = farmGateCO2 + mfgCO2 + totalTransportCO2 + packagingCO2;
+const totalFossilPerKg = farmGateFossil + mfgFossilMJ + transportFossilMJ + packagingFossilMJ;
+
+// 🛡️ REGULATOR FIX: Use biogenic split for packaging instead of 100% fossil
+const totalFossilCO2 = farmFossilCO2 + mfgCO2 + totalTransportCO2 + pkgFossilCO2;
+const totalBiogenicCO2 = farmBiogenicCO2 + pkgBiogenicCO2;
+const totalDLUCCO2 = farmDLUCCO2;
 
     console.log(`   └─ Parametric Twin Total: ${totalCO2PerKg.toFixed(4)} kg CO₂e/kg`);
 
