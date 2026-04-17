@@ -619,12 +619,15 @@ const totalWater = finalWater * quantityKg;
 const totalLand = finalLand * quantityKg;
 const totalFossil = finalFossil * quantityKg;
 
-// 🛡️ REGULATOR FIX: Calculate actual VERIFIED biogenic removals from Primary Data
+// 🛡️ REGULATOR FIX: Biogenic removals CANNOT be a flat 20% guess.
+// Must be empirically verified (e.g., soil sampling / Tier 3 models).
 let biogenicRemovals = 0;
 if (primaryData && primaryData.farmingPractice === 'regen') {
-    biogenicRemovals = (co2Base * 0.20) * quantityKg;
-    log.push(`🌱 REGEN AG VERIFIED: ${biogenicRemovals.toFixed(4)} kg CO₂e soil carbon sequestration recorded separately.`);
-}
+    // If a verified certificate value exists in the future, use it here.
+    // For now, we record the practice but claim 0 removals to prevent greenwashing.
+    biogenicRemovals = primaryData.verifiedSoilCarbonKg || 0; 
+    log.push(`🌱 REGEN AG: Practice recorded. Verified soil carbon sequestration: ${biogenicRemovals.toFixed(4)} kg CO₂e.`);
+    }
 
 return {
     totalCO2: totalCO2,
