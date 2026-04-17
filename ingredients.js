@@ -894,17 +894,116 @@ window.aioxyData.transportation = {
 };
 
 window.aioxyData.packaging = {
-    "cardboard": { co2_virgin: 0.86, co2_recycled: 0.49, co2_disposal: 0.05, co2_avoided_credit: 0.80, r1_max: 0.92, r2: 0.85, q: 0.90 },
-    "PET": { co2_virgin: 3.10, co2_recycled: 1.50, co2_disposal: 0.04, co2_avoided_credit: 1.30, r1_max: 0.60, r2: 0.50, q: 0.95 },
-    "rPET": { co2_virgin: 3.10, co2_recycled: 1.10, co2_disposal: 0.04, co2_avoided_credit: 1.30, r1_max: 1.00, r2: 0.60, q: 0.95 },
-    "HDPE": { co2_virgin: 2.60, co2_recycled: 1.40, co2_disposal: 0.04, co2_avoided_credit: 1.20, r1_max: 0.60, r2: 0.50, q: 0.90 },
-    "LDPE": { co2_virgin: 2.40, co2_recycled: 1.30, co2_disposal: 0.04, co2_avoided_credit: 1.20, r1_max: 0.50, r2: 0.40, q: 0.90 },
-    "PP": { co2_virgin: 2.70, co2_recycled: 1.45, co2_disposal: 0.04, co2_avoided_credit: 1.20, r1_max: 0.60, r2: 0.50, q: 0.90 },
-    "glass": { co2_virgin: 1.40, co2_recycled: 0.75, co2_disposal: 0.01, co2_avoided_credit: 0.70, r1_max: 0.95, r2: 0.90, q: 1.00 },
-    "aluminum": { co2_virgin: 16.6, co2_recycled: 2.30, co2_disposal: 0.0, co2_avoided_credit: 14.0, r1_max: 0.95, r2: 0.90, q: 1.00 },
-    "steel": { co2_virgin: 2.50, co2_recycled: 0.80, co2_disposal: 0.0, co2_avoided_credit: 1.80, r1_max: 0.95, r2: 0.90, q: 1.00 },
-    "PLA": { co2_virgin: 2.50, co2_recycled: 1.80, co2_disposal: 0.00, co2_avoided_credit: 0.00, r1_max: 0.10, r2: 0.01, q: 0.80 },
-    "paper": { co2_virgin: 1.10, co2_recycled: 0.70, co2_disposal: 0.05, co2_avoided_credit: 0.70, r1_max: 0.80, r2: 0.75, q: 0.85 }
+    "cardboard": { 
+        co2_virgin: 0.86, 
+        co2_recycled: 0.49, 
+        co2_disposal_average: 0.05,
+        co2_disposal_landfill: 0.12,     // 🆕 ADD THIS
+        co2_disposal_incineration: 0.08,  // 🆕 ADD THIS (biogenic carbon release)
+        r1_max: 0.92, 
+        r2: 0.85, 
+        q: 0.90 
+    },
+    "PET": { 
+        co2_virgin: 3.10, 
+        co2_recycled: 1.50, 
+        co2_disposal_average: 0.04,
+        co2_disposal_landfill: 0.02,      // 🆕 ADD THIS (inert in landfill)
+        co2_disposal_incineration: 2.80,  // 🆕 ADD THIS (fossil carbon release)
+        r1_max: 0.60, 
+        r2: 0.50, 
+        q: 0.95 
+    },
+    "rPET": { 
+        co2_virgin: 3.10, 
+        co2_recycled: 1.10, 
+        co2_disposal_average: 0.04,
+        co2_disposal_landfill: 0.02,
+        co2_disposal_incineration: 2.80,
+        r1_max: 1.00, 
+        r2: 0.60, 
+        q: 0.95 
+    },
+    "HDPE": { 
+        co2_virgin: 2.60, 
+        co2_recycled: 1.40, 
+        co2_disposal_average: 0.04,
+        co2_disposal_landfill: 0.02,
+        co2_disposal_incineration: 2.50,
+        r1_max: 0.60, 
+        r2: 0.50, 
+        q: 0.90 
+    },
+    "LDPE": { 
+        co2_virgin: 2.40, 
+        co2_recycled: 1.30, 
+        co2_disposal_average: 0.04,
+        co2_disposal_landfill: 0.02,
+        co2_disposal_incineration: 2.40,
+        r1_max: 0.50, 
+        r2: 0.40, 
+        q: 0.90 
+    },
+    "PP": { 
+        co2_virgin: 2.70, 
+        co2_recycled: 1.45, 
+        co2_disposal_average: 0.04,
+        co2_disposal_landfill: 0.02,
+        co2_disposal_incineration: 2.60,
+        r1_max: 0.60, 
+        r2: 0.50, 
+        q: 0.90 
+    },
+    "glass": { 
+        co2_virgin: 1.40, 
+        co2_recycled: 0.75, 
+        co2_disposal_average: 0.01,
+        co2_disposal_landfill: 0.00,       // 🆕 Inert - no GHG emissions
+        co2_disposal_incineration: 0.00,   // 🆕 Inert - no GHG emissions
+        r1_max: 0.95, 
+        r2: 0.90, 
+        q: 1.00 
+    },
+    "aluminum": { 
+        co2_virgin: 16.6, 
+        co2_recycled: 2.30, 
+        co2_disposal_average: 0.00,
+        co2_disposal_landfill: 0.00,
+        co2_disposal_incineration: 0.00,
+        r1_max: 0.95, 
+        r2: 0.90, 
+        q: 1.00 
+    },
+    "steel": { 
+        co2_virgin: 2.50, 
+        co2_recycled: 0.80, 
+        co2_disposal_average: 0.00,
+        co2_disposal_landfill: 0.00,
+        co2_disposal_incineration: 0.00,
+        r1_max: 0.95, 
+        r2: 0.90, 
+        q: 1.00 
+    },
+    "PLA": { 
+        co2_virgin: 2.50, 
+        co2_recycled: 1.80, 
+        co2_disposal_average: 0.00,
+        co2_disposal_landfill: 0.05,       // 🆕 Bioplastic degrades slowly
+        co2_disposal_incineration: 0.10,   // 🆕 Biogenic carbon release
+        r1_max: 0.10, 
+        r2: 0.01, 
+        q: 0.80 
+    },
+    "paper": { 
+        co2_virgin: 1.10, 
+        co2_recycled: 0.70, 
+        co2_disposal_average: 0.05,
+        co2_disposal_landfill: 0.15,       // 🆕 Methane from decomposition
+        co2_disposal_incineration: 0.08,   // 🆕 Biogenic carbon release
+        r1_max: 0.80, 
+        r2: 0.75, 
+        q: 0.85 
+    }
 };
 
 window.aioxyData.crop_classes = {
