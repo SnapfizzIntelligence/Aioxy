@@ -297,14 +297,10 @@ if (archetype && processState !== 'raw') {
     }
 }
 
-// Get the actual calculated CO2 from the original ingredient data
-const ingData = window.aioxyData?.ingredients?.[ing.id];
-const pef = ingData?.data?.pef || {};
-const co2Multiplier = adj.multipliers?.co2 || 1.0;
-const calculatedCO2 = (pef["Climate Change"] || 0) * co2Multiplier * ing.quantity_kg;
-const actualCO2 = calculatedCO2 > 0 ? calculatedCO2 : (ing.subtotal || 0);
+// 🛡️ READ FROM ENGINE - NO FAKE UI RECALCULATION
+// Use the exact subtotal calculated by the engine using Gross Grown Mass
+const actualCO2 = ing.subtotal || 0;
 
-// READ FROM ENGINE - NO RECALCULATION. ZERO IF MISSING.
 const fossilCO2 = ing.fossilCO2 || 0;
 const biogenicCO2 = ing.biogenicCO2 || 0;
 const dlucCO2 = ing.dlucCO2 || 0;
@@ -608,25 +604,11 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     `;
 }
 
-        // ========== TOTAL IMPACT FOOTER ==========
-    // Calculate actual sums from ingredient components - NO FAKE MATH
-    let totalFossil = 0;
-    let totalBiogenic = 0;
-    let totalDLUC = 0;
-    
-    // Sum from ingredients
-    ingredients.forEach(ing => {
-        totalFossil += ing.fossilCO2 || 0;
-        totalBiogenic += ing.biogenicCO2 || 0;
-        totalDLUC += ing.dlucCO2 || 0;
-    });
-    
-    // Add manufacturing, transport, packaging, upstream, waste (all fossil)
-    totalFossil += (catCC.contribution_tree.Manufacturing?.total || 0);
-    totalFossil += (catCC.contribution_tree.Transport?.total || 0);
-    totalFossil += (catCC.contribution_tree.Packaging?.total || 0);
-    totalFossil += (catCC.contribution_tree.Upstream?.total || 0);
-    totalFossil += (catCC.contribution_tree.Waste?.total || 0);
+                // ========== TOTAL IMPACT FOOTER ==========
+    // 🛡️ PULL DIRECTLY FROM THE ENGINE'S UNIFIED TRUTH (ZERO FAKE MATH)
+    const totalFossil = auditTrailData?.pefCategories?.['Climate Change - Fossil']?.total || 0;
+    const totalBiogenic = auditTrailData?.pefCategories?.['Climate Change - Biogenic']?.total || 0;
+    const totalDLUC = auditTrailData?.pefCategories?.['Climate Change - dLUC']?.total || 0;
     
     html += `
         <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
