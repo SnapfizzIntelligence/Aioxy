@@ -2834,6 +2834,8 @@ const results = {
 
 console.log(`✅ [AIOXY UNIFIED] Calc Complete. CO2: ${unified.co2PerKg.toFixed(2)} kg/kg (Fossil: ${actualFossil.toFixed(4)}, Biogenic: ${actualBiogenic.toFixed(4)}, dLUC: ${actualDLUC.toFixed(4)})`);
 return results;
+        }
+    };
 
  // ================== EXPOSE TO GLOBAL ==================
 // Expose the engine and related data structures
