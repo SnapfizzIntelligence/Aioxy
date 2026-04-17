@@ -602,23 +602,23 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
         }
 
         return {
-            totalCO2: totalCO2,
-            fossilCO2: co2Fossil * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
-            biogenicCO2: co2Biogenic * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
-            dlucCO2: co2dLUC * quantityKg * (universal_adjustments?.multipliers?.co2 || 1),
-            totalWater: totalWater,
-            totalLand: totalLand,
-            totalFossil: totalFossil,
-            perKgCO2: finalCO2,
-            perKgWater: finalWater,
-            perKgLand: finalLand,
-            perKgFossil: finalFossil,
-            logs: log,
-            qualityPenalty: qualityPenalty,
-            universal_adjustments: universal_adjustments,
-            is_primary: !!primaryData,
-            biogenicRemovals: biogenicRemovals
-        };
+    totalCO2: totalCO2,
+    fossilCO2: co2Fossil * quantityKg,
+    biogenicCO2: co2Biogenic * quantityKg,
+    dlucCO2: co2dLUC * quantityKg,
+    totalWater: totalWater,
+    totalLand: totalLand,
+    totalFossil: totalFossil,
+    perKgCO2: finalCO2,
+    perKgWater: finalWater,
+    perKgLand: finalLand,
+    perKgFossil: finalFossil,
+    logs: log,
+    qualityPenalty: qualityPenalty,
+    universal_adjustments: universal_adjustments,
+    is_primary: !!primaryData,
+    biogenicRemovals: biogenicRemovals
+};
     }
 
     // ================== AUDIT-GRADE CFF ENGINE (UI COMPATIBLE) ==================
