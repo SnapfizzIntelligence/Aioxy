@@ -507,17 +507,13 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
     
     log.push(`🌱 IPCC TIER 1: Direct N₂O emissions = ${F_SN.toFixed(2)} kg N × 0.01 × 1.5714 × 273 = ${n2oCO2e.toFixed(4)} kg CO₂e`);
     
-    // AUDIT FIX: Connect Supplier Water Source to AWARE Math
-    let waterAdjustment = 1.0;
-    if (primaryData.waterSource === 'rainfed') {
-        waterAdjustment = 0.05; 
-        log.push(`💧 Verified Rainfed: -95% Water Scarcity Impact`);
-    } else if (primaryData.waterSource === 'groundwater') {
-        waterAdjustment = 1.25;
-        log.push(`💧 Groundwater source identified: +25% Scarcity Penalty`);
-    }
-    
-    finalWater *= waterAdjustment;
+// 🛡️ AUDIT FIX: AWARE CF handles water scarcity spatially. No arbitrary multipliers.
+if (primaryData.waterSource === 'rainfed') {
+    log.push(`💧 Verified Rainfed: Water source recorded`);
+} else if (primaryData.waterSource === 'groundwater') {
+    log.push(`💧 Groundwater source recorded`);
+}
+// NO waterAdjustment multiplier - AWARE watershed CF already accounts for scarcity
     
     // 🛡️ PRIMARY DATA IMPROVES DQR (Parameter Uncertainty: 2.0 → 1.0)
     // Does NOT magically shrink the physical Agribalyse mass proxy
