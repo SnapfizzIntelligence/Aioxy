@@ -437,7 +437,46 @@ let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
 let landBase = ingredientData.data.pef["Land Use"] || 0;
 let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0;
 
+// 🛡️ STRICT SPATIAL AWARE ROUTING (ISO 14046 COMPLIANT)
+// If primary data provides farm region, attempt exact watershed match
+if (primaryData && primaryData.farmRegion && PHYSICS_DB.watersheds && PHYSICS_DB.watersheds[originCountry]) {
+    const watersheds = PHYSICS_DB.watersheds[originCountry];
+    const regionKey = Object.keys(watersheds).find(key => 
+        primaryData.farmRegion.toLowerCase().includes(key.toLowerCase())
+    );
+    
+    if (regionKey && watersheds[regionKey]?.default) {
+        const watershedCF = watersheds[regionKey].default;
+        const nationalCF = watersheds["NationalAvg"]?.default || waterBase;
+        if (nationalCF > 0) {
+            const adjustmentFactor = watershedCF / nationalCF;
+            waterBase = waterBase * adjustmentFactor;
+            // log will be initialized below, so we push after log is created
+        }
+    }
+}
+
 let log = [];
+
+// 🛡️ Log the AWARE watershed adjustment if applied
+if (primaryData && primaryData.farmRegion && PHYSICS_DB.watersheds && PHYSICS_DB.watersheds[originCountry]) {
+    const watersheds = PHYSICS_DB.watersheds[originCountry];
+    const regionKey = Object.keys(watersheds).find(key => 
+        primaryData.farmRegion.toLowerCase().includes(key.toLowerCase())
+    );
+    
+    if (regionKey && watersheds[regionKey]?.default) {
+        const watershedCF = watersheds[regionKey].default;
+        const nationalCF = watersheds["NationalAvg"]?.default || ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
+        if (nationalCF > 0) {
+            const adjustmentFactor = watershedCF / nationalCF;
+            log.push(`💧 Primary Data: Watershed CF applied for ${regionKey} (CF: ${watershedCF}, Adj: ${adjustmentFactor.toFixed(2)}x)`);
+        }
+    } else {
+        log.push(`💧 Watershed not found for '${primaryData.farmRegion}', using NationalAvg`);
+    }
+}
+
 let qualityPenalty = 0.0;
 let finalCO2 = co2Base;
 let finalWater = waterBase;
