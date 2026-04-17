@@ -1442,16 +1442,11 @@ doc.autoTable({
 
 currentY = doc.lastAutoTable.finalY + 5;
 
-// 🛡️ PULL DIRECTLY FROM ENGINE - ZERO RECALCULATION
-// These values come from finalPefResults which the engine already calculated
-const fossilTotal = auditTrailData?.pefCategories?.["Climate Change - Fossil"]?.total || 0;
-const biogenicTotal = auditTrailData?.pefCategories?.["Climate Change - Biogenic"]?.total || 0;
-const dlucTotal = auditTrailData?.pefCategories?.["Climate Change - dLUC"]?.total || 0;
-const totalCO2 = auditTrailData?.pefCategories?.["Climate Change"]?.total || 0;
-
-const fossilPct = totalCO2 > 0 ? (fossilTotal / totalCO2 * 100).toFixed(1) : '0.0';
-const biogenicPct = totalCO2 > 0 ? (biogenicTotal / totalCO2 * 100).toFixed(1) : '0.0';
-const dlucPct = totalCO2 > 0 ? (dlucTotal / totalCO2 * 100).toFixed(1) : '0.0';
+// 🛡️ USE ALREADY-DECLARED ENGINE VALUES - ZERO RECALCULATION
+// These values come from auditTrailData.pefCategories declared at top of file
+const fossilPct = totalCo2 > 0 ? (fossilTotal / totalCo2 * 100).toFixed(1) : '0.0';
+const biogenicPct = totalCo2 > 0 ? (biogenicTotal / totalCo2 * 100).toFixed(1) : '0.0';
+const dlucPct = totalCo2 > 0 ? (dlucTotal / totalCo2 * 100).toFixed(1) : '0.0';
 
 const boxHeight = 35;
 doc.setFillColor(240, 248, 255);
@@ -1486,19 +1481,19 @@ doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
 doc.setTextColor(...COLORS.primary);
 doc.text("GRAND TOTAL:", margin, currentY);
-doc.text(`${totalCO2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
+doc.text(`${totalCo2.toFixed(4)} kg CO2e`, pageWidth - margin - 2, currentY, { align: 'right' });
 
 currentY += 7;
 doc.setFontSize(8);
 doc.setFont("helvetica", "normal");
 doc.setTextColor(...COLORS.dark);
-doc.text(`Normalized Impact: ${(totalCO2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
+doc.text(`Normalized Impact: ${(totalCo2 / pWeightKg).toFixed(4)} kg CO2e per kg product`, margin, currentY);
 
 currentY += 5;
 doc.setFontSize(7);
 doc.setTextColor(...COLORS.gray);
 doc.text(`Uncertainty: +/-${formatPercent(uncertainty)} (Monte Carlo, 500 iterations)`, margin, currentY);
-
+        
         // ============================================================
         // PAGE 10: DQR + MONTE CARLO
         // ============================================================
