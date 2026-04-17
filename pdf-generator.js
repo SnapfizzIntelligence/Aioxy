@@ -1153,8 +1153,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         }
 
  // --- E. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2) WITH FULL MATH TRACE ---
-if (global.currentComparisonBaseline && global.currentComparisonBaseline.breakdown) {
-    const b = global.currentComparisonBaseline;
+if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdown) {
+    const b = window.currentComparisonBaseline;
     const bd = b.breakdown;
     const cloned = b.cloned_parameters || {};
     
