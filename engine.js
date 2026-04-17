@@ -1425,15 +1425,12 @@ Note: This screening-level assessment is designed for internal strategic decisio
 if (scenarios.regen_ag) {
     if (modifiedResults["Climate Change"]?.contribution_tree?.Ingredients) {
         // REGULATOR FIX: Scenarios cannot invent 20% flat removals.
-        // This must remain 0 until linked to a specific verified potential.
-        const potentialRemovals = 0;
-                const existingRemovals = modifiedResults["Climate Change"].biogenic_removals || 0;
-                const newRemovals = Math.max(0, potentialRemovals - existingRemovals);
-                
-                modifiedResults["Climate Change"].biogenic_removals = existingRemovals + newRemovals;
-                scenarioLog.push(`Regen Ag: ${newRemovals.toFixed(4)} kg CO₂e hypothetical sequestration added (No Double Counting)`);
-            }
-        }
+        // Soil Organic Carbon must be empirically measured (IPCC Tier 2/3).
+        // This remains 0 until linked to verified soil sampling data.
+        const newRemovals = 0; 
+        scenarioLog.push(`Regen Ag: Transition modeled. 0 kg CO₂e sequestration claimed without physical soil sampling data.`);
+    }
+}
         
         // 5. ZERO WASTE MANUFACTURING (Physics: Yield efficiency)
         if (scenarios.no_waste) {
