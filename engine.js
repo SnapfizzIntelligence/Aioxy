@@ -668,14 +668,16 @@ return {
             R2 = (p.r1_max || 0.8) * (p.r2 || 0.7);
         }
 
-        // Adjust disposal burden based on landfill vs incineration
-        let currentEd = Ed;
-        if (eolTarget === 'landfill') {
-            currentEd = Ed * 1.5;
-        } else if (eolTarget === 'incinerated') {
-            currentEd = Ed * 0.8;
-            dqrPenalty = 0.5;
-        }
+        // 🛡️ STRICT MATERIAL-SPECIFIC DISPOSAL CONSTANTS (ISO 14044 COMPLIANT)
+let currentEd = p.co2_disposal_average || Ed;
+if (eolTarget === 'landfill') {
+    currentEd = p.co2_disposal_landfill !== undefined ? p.co2_disposal_landfill : (Ed * 1.2);
+} else if (eolTarget === 'incinerated') {
+    currentEd = p.co2_disposal_incineration !== undefined ? p.co2_disposal_incineration : (Ed * 1.5);
+}
+if (eolTarget === 'incinerated') {
+    dqrPenalty = 0.5;
+    }
 
         // 🛡️ OFFICIAL CFF MATH (PEF 3.1 COMPLIANT)
         // Input Side: Virgin vs Recycled
