@@ -221,6 +221,12 @@ VERSION: {
     LAST_UPDATED: '2024-01-15',
     JRC_ERROR_MARGIN: 0.01,  // 1% maximum allowed deviation
 },
+        // ================== CRITICAL REVIEW PANEL (ISO 14044 §6.2) ==================
+REVIEW_PANEL: {
+    MIN_MEMBERS: 3,
+    REQUIRED_ROLES: ['chair', 'methodology_expert', 'industry_expert', 'scientist'],
+    CONFLICT_DECLARATION_REQUIRED: true,
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -571,6 +577,139 @@ ilcd_uuids: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Critical Review Panel Enforcement ==================
+/**
+ * Validate critical review panel composition per ISO 14044 §6.2
+ * Required for comparative assertions disclosed to the public
+ * 
+ * @param {Array} panelMembers - Array of {name, affiliation, role, conflictDeclaration}
+ * @param {boolean} isComparativeAssertion - Whether study compares products publicly
+ * @returns {Object} Panel validation result
+ */
+function validateReviewPanel(panelMembers = [], isComparativeAssertion = false) {
+    const MIN = PHYSICS_CONSTANTS.REVIEW_PANEL.MIN_MEMBERS;
+    const REQUIRED = PHYSICS_CONSTANTS.REVIEW_PANEL.REQUIRED_ROLES;
+    
+    if (!isComparativeAssertion) {
+        return {
+            required: false,
+            valid: true,
+            note: 'No comparative assertion - critical review optional'
+        };
+    }
+    
+    // Check minimum members
+    if (!panelMembers || panelMembers.length < MIN) {
+        return {
+            required: true,
+            valid: false,
+            reason: `Insufficient panel members: ${panelMembers?.length || 0}/${MIN} required`,
+            watermark: '⚠️ PENDING CRITICAL REVIEW - NOT VALID FOR PUBLIC CLAIMS'
+        };
+    }
+    
+    // Check for chair
+    const hasChair = panelMembers.some(m => m.role === 'chair');
+    if (!hasChair) {
+        return {
+            required: true,
+            valid: false,
+            reason: 'Panel must have a designated chair',
+            watermark: '⚠️ PENDING CRITICAL REVIEW - CHAIR REQUIRED'
+        };
+    }
+    
+    // Check conflict declarations
+    const missingDeclaration = panelMembers.filter(m => !m.conflictDeclaration);
+    if (missingDeclaration.length > 0) {
+        return {
+            required: true,
+            valid: false,
+            reason: `${missingDeclaration.length} member(s) missing conflict of interest declaration`,
+            watermark: '⚠️ PENDING CRITICAL REVIEW - CONFLICT DECLARATION REQUIRED'
+        };
+    }
+    
+    // Check independence (no company employees)
+    const hasEmployee = panelMembers.some(m => m.isEmployee === true);
+    if (hasEmployee) {
+        return {
+            required: true,
+            valid: false,
+            reason: 'Panel members must be independent (no company employees)',
+            watermark: '⚠️ PENDING CRITICAL REVIEW - INDEPENDENCE REQUIRED'
+        };
+    }
+    
+    return {
+        required: true,
+        valid: true,
+        panelSize: panelMembers.length,
+        chair: panelMembers.find(m => m.role === 'chair')?.name,
+        note: '✅ Critical review panel validated per ISO 14044 §6.2',
+        watermark: null
+    };
+}
+
+/**
+ * Generate critical review statement for report
+ */
+function generateReviewStatement(panelMembers, studyDate) {
+    if (!panelMembers || panelMembers.length === 0) {
+        return {
+            statement: 'This study has not undergone third-party critical review.',
+            valid: false
+        };
+    }
+    
+    const chair = panelMembers.find(m => m.role === 'chair');
+    const membersList = panelMembers.map(m => `${m.name} (${m.affiliation}) - ${m.role}`).join('; ');
+    
+    return {
+        statement: `This LCA study has undergone critical review by an independent panel per ISO 14044 §6.2. Panel Chair: ${chair?.name}. Panel Members: ${membersList}. Review Date: ${studyDate}.`,
+        valid: true,
+        chair: chair?.name,
+        memberCount: panelMembers.length
+    };
+}
+
+// ================== HELPER: Comparative Assertion Detection ==================
+/**
+ * Check if study makes comparative assertion
+ * Triggers stricter ISO 14044 requirements
+ * 
+ * @param {object} baseline - Comparison baseline object
+ * @param {boolean} isPublic - Whether results will be disclosed publicly
+ * @returns {Object} Comparative assertion status
+ */
+function checkComparativeAssertion(baseline, isPublic = false) {
+    const isComparative = baseline && baseline.name && baseline.name !== 'None' && 
+                          !baseline.name.includes('Custom User Baseline');
+    
+    if (!isComparative) {
+        return {
+            isComparative: false,
+            requiresReview: false,
+            note: 'No comparative assertion - standard requirements apply'
+        };
+    }
+    
+    if (!isPublic) {
+        return {
+            isComparative: true,
+            requiresReview: false,
+            note: 'Comparative assertion for internal use only - critical review recommended but not required'
+        };
+    }
+    
+    return {
+        isComparative: true,
+        requiresReview: true,
+        note: '⚠️ COMPARATIVE ASSERTION FOR PUBLIC DISCLOSURE - ISO 14044 §6 requires third-party critical review',
+        watermark: 'PENDING CRITICAL REVIEW - NOT VALID FOR PUBLIC CLAIMS'
+    };
+}
 
 // ================== HELPER: Auditor Mode - Calculation Traceability ==================
 /**
@@ -4629,11 +4768,32 @@ auditTrail.calculation_traces = {
 
 // Add verification status
 auditTrail.verification = {
-    jrc_tested: false,  // Set to true when JRC vectors are run
+    jrc_tested: false,
     jrc_results: [],
     auditor_mode_enabled: true,
     traceability: 'Full calculation trace available'
 };
+
+// ========== CRITICAL REVIEW PANEL VALIDATION ==========
+const isPublicClaim = global.document?.getElementById('publicClaimToggle')?.checked || false;
+const comparativeCheck = checkComparativeAssertion(comparisonBaseline, isPublicClaim);
+
+const panelMembers = global.panelMembers || [];
+const panelValidation = validateReviewPanel(panelMembers, comparativeCheck.requiresReview);
+
+auditTrail.comparative_assertion = comparativeCheck;
+auditTrail.review_panel = {
+    ...panelValidation,
+    members: panelMembers,
+    statement: panelValidation.valid ? generateReviewStatement(panelMembers, auditTrail.calculationTimestamp).statement : null
+};
+
+if (comparativeCheck.requiresReview && !panelValidation.valid) {
+    auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
+    auditTrail.compliance_warnings.push(panelValidation.watermark || comparativeCheck.note);
+    auditTrail.watermark = panelValidation.watermark || 'PENDING CRITICAL REVIEW';
+}
+            
             // ================== HELPER: Version Validation ==================
 /**
  * Check if engine version is current for audit purposes
