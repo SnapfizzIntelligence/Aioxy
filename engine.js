@@ -139,6 +139,11 @@ SOC: {
     REGEN_ANNUAL_RATE: 0.5,              // t C/ha/year sequestration for regen ag
     CONSERVATION_ANNUAL_RATE: 0.2,       // t C/ha/year for conservation tillage
 },
+        // ================== WASTE VS CO-PRODUCT (ISO 14044 §4.3.4) ==================
+ALLOCATION: {
+    WASTE_VALUE_THRESHOLD: 0.01,     // USD/kg - below this = waste
+    DEFAULT_WASTE_TYPES: ['husk', 'shell', 'peel', 'stem', 'leaf', 'straw', 'manure'],
+},
         
     };
 
@@ -450,6 +455,77 @@ refrigerants: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Waste vs Co-Product Classification ==================
+/**
+ * Classify output as waste or co-product per ISO 14044 §4.3.4
+ * Waste: No economic value, receives 0% burden allocation
+ * Co-product: Has economic value, shares burden
+ * 
+ * @param {string} outputName - Name of the output
+ * @param {number} economicValue - USD/kg (optional)
+ * @param {boolean} isDestinedForDisposal - Whether output goes to landfill/incineration
+ * @returns {Object} Classification result
+ */
+function classifyWasteOrCoproduct(outputName, economicValue = null, isDestinedForDisposal = false) {
+    const THRESHOLD = PHYSICS_CONSTANTS.ALLOCATION.WASTE_VALUE_THRESHOLD;
+    const DEFAULT_WASTE = PHYSICS_CONSTANTS.ALLOCATION.DEFAULT_WASTE_TYPES;
+    
+    const nameLower = (outputName || '').toLowerCase();
+    
+    // Rule 1: Destined for disposal = waste
+    if (isDestinedForDisposal) {
+        return {
+            type: 'waste',
+            allocationFactor: 0,
+            reason: 'Destined for disposal (landfill/incineration)'
+        };
+    }
+    
+    // Rule 2: Default waste types (agricultural residues)
+    if (DEFAULT_WASTE.some(waste => nameLower.includes(waste))) {
+        return {
+            type: 'waste',
+            allocationFactor: 0,
+            reason: 'Agricultural residue with no economic value'
+        };
+    }
+    
+    // Rule 3: Economic value check
+    if (economicValue !== null) {
+        if (economicValue < THRESHOLD) {
+            return {
+                type: 'waste',
+                allocationFactor: 0,
+                reason: `Economic value $${economicValue}/kg < $${THRESHOLD}/kg threshold`
+            };
+        } else {
+            return {
+                type: 'co-product',
+                allocationFactor: null, // To be calculated via economic/mass allocation
+                reason: `Economic value $${economicValue}/kg ≥ threshold`
+            };
+        }
+    }
+    
+    // Rule 4: Default - if named like a product, treat as co-product
+    if (nameLower.includes('meal') || nameLower.includes('oil') || nameLower.includes('protein') ||
+        nameLower.includes('fiber') || nameLower.includes('flour') || nameLower.includes('bran')) {
+        return {
+            type: 'co-product',
+            allocationFactor: null,
+            reason: 'Identified as marketable co-product'
+        };
+    }
+    
+    // Default: waste
+    return {
+        type: 'waste',
+        allocationFactor: 0,
+        reason: 'No economic value identified - conservative default'
+    };
+}
+
 
 // ================== HELPER: Soil Organic Carbon (SOC) Change ==================
 /**
@@ -1623,6 +1699,31 @@ if (primaryData?.farmingPractice) {
         log.push(`🌱 [SOC] ${socResult.note} - ${socCO2.toFixed(4)} kg CO2 sequestered (reported separately per ISO 14067)`);
     }
         }
+
+        // ========== WASTE VS CO-PRODUCT CLASSIFICATION ==========
+let wasteAllocationNote = '';
+
+if (primaryData?.coProducts) {
+    for (const coProduct of primaryData.coProducts) {
+        const classification = classifyWasteOrCoproduct(
+            coProduct.name,
+            coProduct.price,
+            coProduct.disposal || false
+        );
+        
+        if (classification.type === 'waste') {
+            log.push(`🗑️ [Waste] ${coProduct.name}: ${classification.reason} - receives 0% burden`);
+            wasteAllocationNote = `${coProduct.name} classified as waste, burden stays with main product`;
+        } else {
+            log.push(`📦 [Co-Product] ${coProduct.name}: ${classification.reason} - shares burden`);
+        }
+    }
+}
+
+// If ingredient itself is a co-product from another process, note it
+if (ingredientData?.data?.metadata?.is_co_product) {
+    log.push(`📦 [Co-Product Input] ${ingredientData.name} is a co-product - allocation applied at source`);
+}
         
 // ========== RETURN STATEMENT ==========
 
@@ -1649,8 +1750,9 @@ return {
     eudr_flag: impactResult.eudr_flag || '✅ COMPLIANT',
     eudr_reason: impactResult.eudr_reason || '',
     enteric_co2: entericCO2,
-    enteric_ch4_kg: entericCH4,      // ← COMMA HERE
-    soc_sequestration_co2: socCO2    // ← NO COMMA after last field
+    enteric_ch4_kg: entericCH4,
+    soc_sequestration_co2: socCO2,
+    waste_allocation_note: wasteAllocationNote || ''   // ← ADD THIS (no comma, last field)
 };
     }
 
