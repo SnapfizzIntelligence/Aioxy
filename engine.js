@@ -1600,7 +1600,32 @@ if (isAnimalProduct) {
     log.push(`🐄 [Enteric] ${entericResult.note}`);
 }
 
+
+        // ========== SOIL ORGANIC CARBON (SOC) CHANGE ==========
+let socCO2 = 0;
+
+// Check if primary data includes farming practice and yield for area calculation
+if (primaryData?.farmingPractice) {
+    const practice = primaryData.farmingPractice;
+    const yieldKgPerHa = primaryData.yieldKgPerHa || ingredientData?.data?.metadata?.yield_kg_ha || 4000;
+    const areaHa = quantityKg / yieldKgPerHa;
+    const yearsUnderPractice = primaryData.yearsUnderPractice || 3;
+    
+    const socResult = calculateSOCChange(practice, areaHa, yearsUnderPractice);
+    
+    if (socResult.deltaCO2 > 0) {
+        socCO2 = socResult.deltaCO2;
+        
+        // SOC sequestration is a biogenic removal (negative emission)
+        // Per PEF 3.1, must be reported separately, not netted against total
+        biogenicRemovals = (biogenicRemovals || 0) + socCO2;
+        
+        log.push(`🌱 [SOC] ${socResult.note} - ${socCO2.toFixed(4)} kg CO2 sequestered (reported separately per ISO 14067)`);
+    }
+        }
+        
 // ========== RETURN STATEMENT ==========
+
 return {
     totalCO2: totalCO2,
     fossilCO2: co2Fossil * quantityKg,
@@ -1623,9 +1648,9 @@ return {
     eudr_compliant: impactResult.eudr_compliant !== false,
     eudr_flag: impactResult.eudr_flag || '✅ COMPLIANT',
     eudr_reason: impactResult.eudr_reason || '',
-    // 👉 STEP 4: ADD THESE TWO FIELDS 👈
     enteric_co2: entericCO2,
-    enteric_ch4_kg: entericCH4
+    enteric_ch4_kg: entericCH4,      // ← COMMA HERE
+    soc_sequestration_co2: socCO2    // ← NO COMMA after last field
 };
     }
 
