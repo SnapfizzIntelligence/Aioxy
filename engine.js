@@ -2431,6 +2431,31 @@ if (primaryData && primaryData.farmingPractice === 'regen') {
     log.push(`🌱 REGEN AG: Practice recorded. Verified soil carbon sequestration: ${biogenicRemovals.toFixed(4)} kg CO₂e.`);
     }
 
+        // ========== ALLOCATION HIERARCHY VALIDATION ==========
+const processInfo = {
+    canSubdivide: primaryData?.canSubdivide || false,
+    displacesProduct: primaryData?.displacesProduct || null,
+    displacementRatio: primaryData?.displacementRatio || null,
+    creditValue: primaryData?.creditValue || 0,
+    physicalRelationship: true, // Mass always has physical relationship
+    physicalType: 'mass',
+    massFraction: 1.0 / (1.0 + (primaryData?.coProducts?.length || 0))
+};
+
+const hierarchyResult = resolveAllocationHierarchy(processInfo);
+
+if (useEconomicAllocation) {
+    const validation = validateAllocationChoice('economic', hierarchyResult);
+    log.push(`⚖️ [Allocation] ${validation.note}`);
+    if (!validation.valid) {
+        qualityPenalty += 0.25;
+    }
+} else {
+    log.push(`⚖️ [Allocation] Mass allocation used - Level ${hierarchyResult.level} in ISO 14044 hierarchy`);
+}
+
+impactResult.allocation_hierarchy = hierarchyResult;
+
         // ========== ALLOCATION SENSITIVITY CHECK (ISO 14044 §6.3) ==========
 let sensitivityResult = null;
 
