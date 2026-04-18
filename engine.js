@@ -95,6 +95,29 @@ EUDR: {
     CUTOFF_DATE: '2020-12-31',      // Land converted after this date = non-compliant
     HIGH_RISK_COMMODITIES: ['soy', 'palm', 'cocoa', 'coffee', 'cattle', 'beef', 'rubber', 'wood', 'leather'],
 },
+        // ================== ELECTRICITY MODELING (PEF 3.1 §4.4.2) ==================
+ELECTRICITY: {
+    T_AND_D_LOSSES: 0.07,           // 7% transmission and distribution losses
+    RESIDUAL_MIX_DEFAULT: 1.2,      // Residual mix multiplier vs grid (conservative)
+},
+        // ================== IN-USE EMISSIONS (PEFCR Food & Drink) ==================
+IN_USE: {
+    // Retail storage (supermarket)
+    RETAIL_CHILLED_KWH_PER_KG_DAY: 0.003,
+    RETAIL_FROZEN_KWH_PER_KG_DAY: 0.002,
+    RETAIL_STORAGE_DAYS_CHILLED: 3,
+    RETAIL_STORAGE_DAYS_FROZEN: 14,
+    
+    // Home storage (consumer fridge/freezer)
+    HOME_CHILLED_KWH_PER_KG_DAY: 0.005,
+    HOME_FROZEN_KWH_PER_KG_DAY: 0.004,
+    HOME_STORAGE_DAYS_CHILLED: 3,
+    HOME_STORAGE_DAYS_FROZEN: 30,
+    
+    // Refrigerant leakage rates
+    RETAIL_LEAKAGE_RATE: 0.15,      // 15% annual leakage commercial systems
+    HOME_LEAKAGE_RATE: 0.01,        // 1% annual leakage domestic fridges
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -341,6 +364,26 @@ capital_goods: {
     'cold_storage': 35,
     'default': 0.010
 },
+// ================== RESIDUAL MIX FACTORS (AIB / PEF 3.1) ==================
+// Multiplier applied to grid intensity when no RECs/GOs are held
+// Residual mix = Grid mix minus sold renewable attributes
+residual_mix_multipliers: {
+    'FR': 1.35, 'DE': 1.25, 'IT': 1.18, 'ES': 1.22, 'NL': 1.15,
+    'BE': 1.20, 'AT': 1.10, 'SE': 1.05, 'DK': 1.08, 'FI': 1.05,
+    'PL': 1.12, 'CZ': 1.15, 'HU': 1.18, 'RO': 1.20, 'BG': 1.25,
+    'default': 1.20
+},
+// ================== REFRIGERANT GWP100 (IPCC AR6) ==================
+refrigerants: {
+    'R-134a': 1530,
+    'R-404A': 4728,
+    'R-410A': 2256,
+    'R-407C': 1825,
+    'R-744': 1,          // CO2
+    'R-717': 0,          // Ammonia
+    'R-290': 3,          // Propane
+    'default': 2000      // Conservative default
+},
     };
 
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
@@ -385,6 +428,126 @@ capital_goods: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+
+// ================== HELPER: In-Use Emissions (Retail & Home) ==================
+/**
+ * Calculate in-use emissions for chilled/frozen products
+ * Includes retail storage, home storage, and refrigerant leakage
+ * 
+ * @param {number} productMassKg - Final product mass in kg
+ * @param {string} storageType - 'ambient', 'chilled', or 'frozen'
+ * @param {string} refrigerantType - Refrigerant used (e.g., 'R-404A')
+ * @param {number} gridIntensity - Grid carbon intensity (g CO2e/kWh)
+ * @returns {Object} In-use emissions breakdown
+ */
+function calculateInUseEmissions(productMassKg, storageType, refrigerantType = 'R-404A', gridIntensity = 480) {
+    if (storageType === 'ambient' || !productMassKg || productMassKg <= 0) {
+        return {
+            totalCO2: 0,
+            retailEnergyCO2: 0,
+            homeEnergyCO2: 0,
+            refrigerantCO2: 0,
+            note: 'No cold chain required'
+        };
+    }
+    
+    const IN_USE = PHYSICS_CONSTANTS.IN_USE;
+    const isFrozen = storageType === 'frozen';
+    
+    // Retail storage energy
+    const retailKwhPerDay = isFrozen ? IN_USE.RETAIL_FROZEN_KWH_PER_KG_DAY : IN_USE.RETAIL_CHILLED_KWH_PER_KG_DAY;
+    const retailDays = isFrozen ? IN_USE.RETAIL_STORAGE_DAYS_FROZEN : IN_USE.RETAIL_STORAGE_DAYS_CHILLED;
+    const retailKwh = productMassKg * retailKwhPerDay * retailDays;
+    const retailEnergyCO2 = retailKwh * (gridIntensity / 1000);
+    
+    // Home storage energy
+    const homeKwhPerDay = isFrozen ? IN_USE.HOME_FROZEN_KWH_PER_KG_DAY : IN_USE.HOME_CHILLED_KWH_PER_KG_DAY;
+    const homeDays = isFrozen ? IN_USE.HOME_STORAGE_DAYS_FROZEN : IN_USE.HOME_STORAGE_DAYS_CHILLED;
+    const homeKwh = productMassKg * homeKwhPerDay * homeDays;
+    const homeEnergyCO2 = homeKwh * (gridIntensity / 1000);
+    
+    // Refrigerant leakage
+    const refrigerantGWP = PHYSICS_DB.refrigerants[refrigerantType] || PHYSICS_DB.refrigerants.default;
+    const retailLeakage = retailKwh * 0.0001 * refrigerantGWP * IN_USE.RETAIL_LEAKAGE_RATE;
+    const homeLeakage = homeKwh * 0.00005 * refrigerantGWP * IN_USE.HOME_LEAKAGE_RATE;
+    const refrigerantCO2 = retailLeakage + homeLeakage;
+    
+    const totalCO2 = retailEnergyCO2 + homeEnergyCO2 + refrigerantCO2;
+    
+    console.log(`🏪 [In-Use] ${storageType}: Retail ${retailKwh.toFixed(3)} kWh + Home ${homeKwh.toFixed(3)} kWh + Leakage ${refrigerantCO2.toFixed(4)} kg = ${totalCO2.toFixed(4)} kg CO2e`);
+    
+    return {
+        totalCO2,
+        retailEnergyCO2,
+        homeEnergyCO2,
+        refrigerantCO2,
+        retailKwh,
+        homeKwh,
+        note: `${storageType} storage: retail ${retailDays} days, home ${homeDays} days`
+    };
+        }
+
+// ================== HELPER: Electricity Tracking Hierarchy ==================
+/**
+ * Apply PEF 3.1 electricity tracking hierarchy
+ * Priority: Supplier Contract → Residual Mix → Consumption Mix
+ * 
+ * @param {number} baseGridIntensity - Base grid intensity (g CO2e/kWh)
+ * @param {string} countryCode - ISO country code
+ * @param {string} energySource - User selection ('grid', 'renewable', 'natural_gas', 'coal')
+ * @param {boolean} hasRECs - User holds Guarantees of Origin / RECs
+ * @returns {Object} {intensity: number, source: string, note: string}
+ */
+function applyElectricityHierarchy(baseGridIntensity, countryCode, energySource, hasRECs = false) {
+    const T_AND_D = PHYSICS_CONSTANTS.ELECTRICITY.T_AND_D_LOSSES;
+    
+    // Priority 1: Direct renewable with certificates
+    if (energySource === 'renewable' && hasRECs) {
+        return {
+            intensity: 20 * (1 + T_AND_D),  // Residual renewable impact + T&D
+            source: 'Supplier Contract (Verified RECs/GOs)',
+            note: '100% renewable with certificates - PEF 3.1 compliant'
+        };
+    }
+    
+    // Priority 1b: Direct fossil source
+    if (energySource === 'natural_gas') {
+        return {
+            intensity: 490 * (1 + T_AND_D),
+            source: 'Direct Natural Gas',
+            note: 'On-site natural gas generation'
+        };
+    }
+    
+    if (energySource === 'coal') {
+        return {
+            intensity: 980 * (1 + T_AND_D),
+            source: 'Direct Coal',
+            note: 'On-site coal generation'
+        };
+    }
+    
+    // Priority 2: Residual Mix (no certificates = must use residual)
+    if (energySource === 'grid' && !hasRECs) {
+        const multiplier = PHYSICS_DB.residual_mix_multipliers[countryCode] || 
+                          PHYSICS_DB.residual_mix_multipliers.default;
+        const residualIntensity = baseGridIntensity * multiplier;
+        
+        return {
+            intensity: residualIntensity * (1 + T_AND_D),
+            source: `Residual Mix (${countryCode})`,
+            note: `No RECs/GOs - using residual mix (${(multiplier*100-100).toFixed(0)}% higher than grid)`
+        };
+    }
+    
+    // Priority 3: Consumption Mix (fallback)
+    return {
+        intensity: baseGridIntensity * (1 + T_AND_D),
+        source: `Consumption Mix (${countryCode})`,
+        note: 'Grid consumption mix + T&D losses'
+    };
+}
 
 // ================== HELPER: EUDR Compliance Check ==================
 /**
@@ -1577,24 +1740,55 @@ if (eolTarget === 'incinerated') {
             energySource = energySourceVal;
         }
 
-        let gridIntensity;
-        let energyNote;
+        // ========== PEF 3.1 ELECTRICITY TRACKING HIERARCHY ==========
+const hasRECs = domGetter('hasRECs', false) || false;
+const baseGridIntensity = country.electricityCO2 || 480;
+const T_AND_D = PHYSICS_CONSTANTS.ELECTRICITY.T_AND_D_LOSSES;
 
-        let scenarioNote = "";
-        if (energySource === 'renewable') {
-            gridIntensity = 20; 
-            energyNote = "100% Renewable (Verified EAC/GO)";
-            scenarioNote = "Renewable PPA Applied (-95% vs grid)";
-        } else if (energySource === 'natural_gas') {
-            gridIntensity = 490;
-            energyNote = "Natural Gas (Direct)";
-        } else if (energySource === 'coal') {
-            gridIntensity = 980;
-            energyNote = "Coal (Direct)";
-        } else {
-            gridIntensity = country.electricityCO2 || 480;
-            energyNote = `Grid Mix (${countryCode})`;
-        }
+let gridIntensity;
+let energyNote;
+let scenarioNote = "";
+let electricityHierarchyNote = "";
+
+// HIERARCHY LEVEL 1: User has verified RECs/GOs (overrides everything)
+if (hasRECs) {
+    if (energySource === 'renewable') {
+        gridIntensity = 20 * (1 + T_AND_D);
+        energyNote = "Supplier Contract (Verified RECs/GOs)";
+        electricityHierarchyNote = "PEF 3.1 compliant - certificates verified";
+        scenarioNote = "100% Renewable with RECs (-95% vs grid)";
+    } else {
+        // Has RECs but using grid - RECs offset the residual
+        gridIntensity = baseGridIntensity * (1 + T_AND_D);
+        energyNote = `Grid + RECs (${countryCode})`;
+        electricityHierarchyNote = "RECs applied to offset grid consumption";
+    }
+} 
+// HIERARCHY LEVEL 2: No RECs - check energy source
+else {
+    if (energySource === 'renewable') {
+        // Claiming renewable without certificates - MUST use residual mix
+        const multiplier = PHYSICS_DB.residual_mix_multipliers[countryCode] || 
+                          PHYSICS_DB.residual_mix_multipliers.default;
+        gridIntensity = baseGridIntensity * multiplier * (1 + T_AND_D);
+        energyNote = `Residual Mix (${countryCode})`;
+        electricityHierarchyNote = `⚠️ No RECs - using residual mix (${(multiplier*100-100).toFixed(0)}% higher)`;
+        scenarioNote = "";
+    } else if (energySource === 'natural_gas') {
+        gridIntensity = 490 * (1 + T_AND_D);
+        energyNote = "Natural Gas (Direct)";
+    } else if (energySource === 'coal') {
+        gridIntensity = 980 * (1 + T_AND_D);
+        energyNote = "Coal (Direct)";
+    } else {
+        // Grid with no RECs - residual mix applies
+        const multiplier = PHYSICS_DB.residual_mix_multipliers[countryCode] || 
+                          PHYSICS_DB.residual_mix_multipliers.default;
+        gridIntensity = baseGridIntensity * multiplier * (1 + T_AND_D);
+        energyNote = `Residual Mix (${countryCode})`;
+        electricityHierarchyNote = `No RECs - using residual mix per PEF 3.1`;
+    }
+    }
 
         // 🛡️ PEF 3.1 FUGITIVE EMISSIONS MANDATE
         let fugitiveCO2 = 0;
@@ -1644,7 +1838,11 @@ if (annualOutput > 0) {
         capitalGoodsNote = `Capital goods excluded: ${cutoffEval.contribution} contribution (<1% cutoff)`;
     }
 }
-        return {
+        // Build energy trace BEFORE return
+const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity.toFixed(0)} gCO2e/kWh [${energyNote}] | ${electricityHierarchyNote}${scenarioNote ? ' | ' + scenarioNote : ''}${fugitiveTrace}`;
+
+// THEN return the object
+return {
     co2: manufacturingCO2,
     kwh: electricityKWh,
     gas_mj: naturalGasMj,
@@ -1656,9 +1854,9 @@ if (annualOutput > 0) {
     energy_source: energyNote,
     country: countryCode,
     fugitive_co2: fugitiveCO2,
-    capital_goods_co2: capitalGoodsCO2,  // <-- ADD THIS LINE
-    capital_goods_note: capitalGoodsNote, // <-- ADD THIS LINE
-    calculation_trace: energyTrace
+    capital_goods_co2: capitalGoodsCO2,
+    capital_goods_note: capitalGoodsNote,
+    calculation_trace: energyTrace  // Reference the variable, don't define it here
 };
     }
 
