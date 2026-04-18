@@ -245,6 +245,37 @@ fertilizer_composition: {
                 note: "Extrusion average"
             }
         }
+        // ================== COUNTRY LUC FALLBACKS (EF 3.1 / WFLDB) ==================
+// Source: PEF 3.1 §4.4.8.1 / Blonk WFLDB
+// Values in kg CO2e per kg of product (20-year amortized)
+country_luc_fallbacks: {
+    // Soybean
+    'soybean-BR': 1.67,
+    'soybean-AR': 0.59,
+    'soybean-US': 0.40,
+    'soybean-PY': 0.55,
+    'soybean-BO': 0.72,
+    // Palm Oil
+    'palmoil-ID': 0.98,
+    'palmoil-MY': 0.71,
+    'palmoil-TH': 0.42,
+    // Cocoa
+    'cocoa-ID': 27.08,
+    'cocoa-CI': 24.46,
+    'cocoa-GH': 6.70,
+    'cocoa-CM': 8.50,
+    // Coffee
+    'coffee-BR': 1.10,
+    'coffee-VN': 0.95,
+    'coffee-CO': 1.30,
+    'coffee-ET': 0.45,
+    // Beef (pasture expansion)
+    'beef-BR': 12.5,
+    'beef-AR': 8.2,
+    'beef-PY': 9.1,
+    // Default for unknown high-risk (precautionary principle)
+    'default_high_risk': 1.67
+},
     };
 
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
@@ -289,6 +320,54 @@ fertilizer_composition: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Get Country LUC Fallback ==================
+/**
+ * Get country-average LUC fallback value per PEF 3.1 §4.4.8.1
+ * @param {string} cropType - e.g., 'soybean', 'palmoil', 'cocoa', 'coffee', 'beef'
+ * @param {string} countryCode - ISO country code (e.g., 'BR', 'ID')
+ * @returns {number} LUC factor in kg CO2e/kg
+ */
+function getCountryLUC(cropType, countryCode) {
+    // Safety check
+    if (!cropType || !countryCode) return 0;
+    
+    const key = `${cropType}-${countryCode}`;
+    const fallbacks = PHYSICS_DB.country_luc_fallbacks;
+    
+    // Exact match
+    if (fallbacks[key] !== undefined) {
+        console.log(`🌍 [LUC Fallback] ${key}: ${fallbacks[key]} kg CO2e/kg`);
+        return fallbacks[key];
+    }
+    
+    // High-risk countries without specific data: use precautionary default
+    const highRiskCountries = ['BR', 'ID', 'MY', 'AR', 'CO', 'PE', 'BO', 'VE', 'GY', 'SR', 'CG', 'CD', 'CM', 'GA', 'GH', 'CI', 'LR', 'NG'];
+    if (highRiskCountries.includes(countryCode)) {
+        console.log(`⚠️ [LUC Fallback] ${key} not found. Using precautionary default: ${fallbacks.default_high_risk}`);
+        return fallbacks.default_high_risk;
+    }
+    
+    // Low-risk countries: zero LUC per PEF default
+    return 0;
+}
+
+/**
+ * Detect crop type from ingredient ID
+ * @param {string} ingredientId - Ingredient identifier
+ * @returns {string} Crop type key
+ */
+function detectCropType(ingredientId) {
+    const id = (ingredientId || '').toLowerCase();
+    
+    if (id.includes('soy') || id.includes('soya')) return 'soybean';
+    if (id.includes('palm')) return 'palmoil';
+    if (id.includes('cocoa')) return 'cocoa';
+    if (id.includes('coffee')) return 'coffee';
+    if (id.includes('beef') || id.includes('cattle')) return 'beef';
+    
+    return 'default';
+}
 
     // ================== HELPER: Get Ingredient Origin ==================
     function getIngredientOrigin(ingredientId) {
