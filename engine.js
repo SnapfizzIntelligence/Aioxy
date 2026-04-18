@@ -90,6 +90,11 @@ CAPITAL_GOODS: {
     DEFAULT_LIFESPAN_YEARS: 15,     // Default machinery lifespan
     BUILDING_LIFESPAN_YEARS: 30,    // Default building lifespan
 },
+        // ================== EUDR COMPLIANCE (Reg. 2023/1115) ==================
+EUDR: {
+    CUTOFF_DATE: '2020-12-31',      // Land converted after this date = non-compliant
+    HIGH_RISK_COMMODITIES: ['soy', 'palm', 'cocoa', 'coffee', 'cattle', 'beef', 'rubber', 'wood', 'leather'],
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -380,6 +385,82 @@ capital_goods: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: EUDR Compliance Check ==================
+/**
+ * Check EUDR compliance per Reg. 2023/1115
+ * Land converted after Dec 31, 2020 on high-risk commodities = non-compliant
+ * 
+ * @param {string} ingredientId - Ingredient identifier
+ * @param {string} originCountry - ISO country code
+ * @param {object} primaryData - Primary supplier data (may contain conversionDate)
+ * @returns {Object} {compliant: boolean, riskLevel: string, reason: string, flag: string}
+ */
+function checkEUDRCompliance(ingredientId, originCountry, primaryData) {
+    const EUDR = PHYSICS_CONSTANTS.EUDR;
+    const HIGH_RISK_COUNTRIES = ['BR', 'ID', 'MY', 'AR', 'CO', 'PE', 'BO', 'VE', 'GY', 'SR', 'CG', 'CD', 'CM', 'GA', 'GH', 'CI', 'LR', 'NG'];
+    
+    // Check if commodity is high-risk
+    const idLower = (ingredientId || '').toLowerCase();
+    const isHighRiskCommodity = EUDR.HIGH_RISK_COMMODITIES.some(c => idLower.includes(c));
+    
+    if (!isHighRiskCommodity) {
+        return {
+            compliant: true,
+            riskLevel: 'low',
+            reason: 'Not a regulated commodity under EUDR',
+            flag: '✅ COMPLIANT'
+        };
+    }
+    
+    // Check if country is high-risk
+    const isHighRiskCountry = HIGH_RISK_COUNTRIES.includes(originCountry);
+    
+    if (!isHighRiskCountry) {
+        return {
+            compliant: true,
+            riskLevel: 'standard',
+            reason: 'Origin country not classified as high-risk',
+            flag: '✅ COMPLIANT'
+        };
+    }
+    
+    // High-risk commodity + high-risk country = need due diligence
+    const hasConversionDate = primaryData?.conversionDate !== undefined;
+    const hasGeolocation = primaryData?.geolocation !== undefined;
+    const hasDDS = primaryData?.ddsReference !== undefined;
+    
+    if (!hasGeolocation || !hasDDS) {
+        return {
+            compliant: false,
+            riskLevel: 'high',
+            reason: 'Missing geolocation or DDS reference for high-risk commodity',
+            flag: '🛑 NON-COMPLIANT - EUDR BLOCKED'
+        };
+    }
+    
+    // Check conversion date if provided
+    if (hasConversionDate) {
+        const cutoffDate = new Date(EUDR.CUTOFF_DATE);
+        const conversionDate = new Date(primaryData.conversionDate);
+        
+        if (conversionDate > cutoffDate) {
+            return {
+                compliant: false,
+                riskLevel: 'critical',
+                reason: `Land converted ${primaryData.conversionDate} (after EUDR cutoff ${EUDR.CUTOFF_DATE})`,
+                flag: '🛑 NON-COMPLIANT - POST-2020 DEFORESTATION'
+            };
+        }
+    }
+    
+    return {
+        compliant: true,
+        riskLevel: 'verified',
+        reason: 'Geolocation and DDS verified, conversion date compliant',
+        flag: '✅ EUDR VERIFIED'
+    };
+                             }
 
 // ================== HELPER: Capital Goods Amortization ==================
 /**
@@ -1144,7 +1225,28 @@ if (primaryData && primaryData.farmingPractice === 'regen') {
     biogenicRemovals = primaryData.verifiedSoilCarbonKg || 0; 
     log.push(`🌱 REGEN AG: Practice recorded. Verified soil carbon sequestration: ${biogenicRemovals.toFixed(4)} kg CO₂e.`);
     }
+        
+// ========== EUDR COMPLIANCE CHECK (Reg. 2023/1115) ==========
+const eudrCheck = checkEUDRCompliance(
+    ingredientData?.id || ingredientId,
+    originCountry,
+    primaryData
+);
 
+if (!eudrCheck.compliant) {
+    log.push(`🛑 [EUDR] ${eudrCheck.flag}: ${eudrCheck.reason}`);
+    
+    // If non-compliant, this ingredient cannot be used in EU market
+    // Flag for audit trail but continue calculation (for reporting purposes)
+    impactResult.eudr_compliant = false;
+    impactResult.eudr_flag = eudrCheck.flag;
+    impactResult.eudr_reason = eudrCheck.reason;
+} else {
+    log.push(`${eudrCheck.flag} [EUDR] ${eudrCheck.reason}`);
+    impactResult.eudr_compliant = true;
+    impactResult.eudr_flag = eudrCheck.flag;
+}
+        
 return {
     totalCO2: totalCO2,
     fossilCO2: co2Fossil * quantityKg,
@@ -1156,15 +1258,17 @@ return {
     perKgCO2: finalCO2,
     perKgWater: finalWater,
     perKgLand: finalLand,
-    marineEutrophication_N: marineEutrophication_kg_N || 0,
-freshwaterEutrophication_P: impactResult.freshwaterEutrophication_P || 0,
     perKgFossil: finalFossil,
     logs: log,
     qualityPenalty: qualityPenalty,
     universal_adjustments: universal_adjustments,
     is_primary: !!primaryData,
-    biogenicRemovals: biogenicRemovals
-    
+    biogenicRemovals: biogenicRemovals,
+    marineEutrophication_N: marineEutrophication_kg_N || 0,
+    freshwaterEutrophication_P: impactResult.freshwaterEutrophication_P || 0,
+    eudr_compliant: impactResult.eudr_compliant !== false,  // <-- ADD THIS
+    eudr_flag: impactResult.eudr_flag || '✅ COMPLIANT',     // <-- ADD THIS
+    eudr_reason: impactResult.eudr_reason || ''              // <-- ADD THIS
 };
     }
 
