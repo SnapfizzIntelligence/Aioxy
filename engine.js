@@ -276,6 +276,32 @@ country_luc_fallbacks: {
     // Default for unknown high-risk (precautionary principle)
     'default_high_risk': 1.67
 },
+// ================== COMMODITY PRICES FOR ECONOMIC ALLOCATION ==================
+// Source: World Bank Commodity Price Data / FAO Stat (USD/kg at factory gate)
+// Used for ISO 14044 §4.3.4.2 economic allocation
+commodity_prices: {
+    // Animal products
+    'beef': 5.20,
+    'milk': 0.42,
+    'cheese': 4.80,
+    'chicken': 2.30,
+    'pork': 2.10,
+    'eggs': 1.80,
+    // Crops
+    'wheat': 0.28,
+    'soybean': 0.52,
+    'soy_oil': 0.95,
+    'soy_meal': 0.48,
+    'palm_oil': 0.85,
+    'rapeseed_oil': 0.95,
+    'sunflower_oil': 0.90,
+    'corn': 0.22,
+    'rice': 0.42,
+    'sugar': 0.38,
+    'coffee': 3.50,
+    'cocoa': 2.80,
+    'default': 0.50
+},
     };
 
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
@@ -320,6 +346,76 @@ country_luc_fallbacks: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+// ================== HELPER: Economic Allocation ==================
+/**
+ * Calculate economic allocation factor per ISO 14044 §4.3.4.2
+ * Formula: Allocation = (Mass_P × Price_P) / Σ(Mass_i × Price_i)
+ * 
+ * @param {Array} coProducts - Array of {mass: kg, price: usd_per_kg, name: string}
+ * @returns {Object} {factors: array, sum: number, mainFactor: number}
+ */
+function calculateEconomicAllocation(coProducts) {
+    // Validate inputs
+    if (!coProducts || coProducts.length === 0) {
+        return { factors: [1.0], sum: 1.0, mainFactor: 1.0 };
+    }
+    
+    // Calculate total economic value
+    let totalValue = 0;
+    const values = [];
+    
+    for (const product of coProducts) {
+        const price = product.price || PHYSICS_DB.commodity_prices.default;
+        const value = product.mass * price;
+        values.push(value);
+        totalValue += value;
+    }
+    
+    if (totalValue <= 0) {
+        console.warn('⚠️ [Economic Allocation] Total value zero, falling back to mass allocation');
+        const totalMass = coProducts.reduce((sum, p) => sum + p.mass, 0);
+        const factors = coProducts.map(p => p.mass / totalMass);
+        return { factors, sum: 1.0, mainFactor: factors[0] };
+    }
+    
+    // Calculate allocation factors
+    const factors = values.map(v => v / totalValue);
+    const sum = factors.reduce((a, b) => a + b, 0);
+    
+    console.log(`💰 [Economic Allocation] Factors: ${factors.map(f => (f*100).toFixed(1)+'%').join(', ')} | Sum: ${sum.toFixed(4)}`);
+    
+    return { 
+        factors, 
+        sum, 
+        mainFactor: factors[0]  // First product is main product
+    };
+}
+
+/**
+ * Get commodity price for an ingredient
+ * @param {string} ingredientId - Ingredient identifier
+ * @returns {number} Price in USD/kg
+ */
+function getCommodityPrice(ingredientId) {
+    const id = (ingredientId || '').toLowerCase();
+    const prices = PHYSICS_DB.commodity_prices;
+    
+    if (id.includes('beef') || id.includes('cattle')) return prices.beef;
+    if (id.includes('milk') || id.includes('dairy')) return prices.milk;
+    if (id.includes('cheese')) return prices.cheese;
+    if (id.includes('chicken') || id.includes('broiler')) return prices.chicken;
+    if (id.includes('pork') || id.includes('pig')) return prices.pork;
+    if (id.includes('wheat')) return prices.wheat;
+    if (id.includes('soy')) return prices.soybean;
+    if (id.includes('palm')) return prices.palm_oil;
+    if (id.includes('corn') || id.includes('maize')) return prices.corn;
+    if (id.includes('rice')) return prices.rice;
+    if (id.includes('sugar')) return prices.sugar;
+    if (id.includes('coffee')) return prices.coffee;
+    if (id.includes('cocoa')) return prices.cocoa;
+    
+    return prices.default;
+}
 
 // ================== HELPER: Get Country LUC Fallback ==================
 /**
@@ -796,11 +892,37 @@ if (isEudrCommodity && eudrHighRisk.includes(originCountry)) {
     log.push(`✅ EUDR COMPLIANT: DDS and Geolocation verified for ${originCountry}.`);
 }
 
-// Calculate final totals
-const totalCO2 = finalCO2 * quantityKg;
-const totalWater = finalWater * quantityKg;
-const totalLand = finalLand * quantityKg;
-const totalFossil = finalFossil * quantityKg;
+// ========== ECONOMIC ALLOCATION (ISO 14044 §4.3.4.2) ==========
+let allocationFactor = 1.0;
+
+// Check if economic allocation is requested via primary data
+const useEconomicAllocation = primaryData?.allocationMethod === 'economic';
+
+if (useEconomicAllocation && primaryData?.coProducts) {
+    const coProducts = [
+        { 
+            mass: quantityKg, 
+            price: getCommodityPrice(ingredientData?.id || ingredientId), 
+            name: ingredientData?.name || 'Main Product' 
+        },
+        ...primaryData.coProducts
+    ];
+    
+    const allocation = calculateEconomicAllocation(coProducts);
+    allocationFactor = allocation.mainFactor;
+    
+    if (Math.abs(allocation.sum - 1.0) > 0.001) {
+        log.push(`⚠️ [Economic Allocation] Sum ≠ 1.0 (${allocation.sum.toFixed(4)}). Check price data.`);
+    } else {
+        log.push(`💰 [Economic Allocation] Main product receives ${(allocationFactor*100).toFixed(1)}% of burden`);
+    }
+}
+
+// Calculate final totals with allocation factor
+const totalCO2 = finalCO2 * quantityKg * allocationFactor;
+const totalWater = finalWater * quantityKg * allocationFactor;
+const totalLand = finalLand * quantityKg * allocationFactor;
+const totalFossil = finalFossil * quantityKg * allocationFactor;
 
 // 🛡️ REGULATOR FIX: Biogenic removals CANNOT be a flat 20% guess.
 // Must be empirically verified (e.g., soil sampling / Tier 3 models).
