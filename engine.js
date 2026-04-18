@@ -233,6 +233,13 @@ JRC: {
     ERROR_MARGIN: 0.01,  // 1% maximum allowed deviation
     REFERENCE_MATERIALS: ['PET_granulates', 'cardboard', 'glass_bottle'],
 },
+        // ================== ALLOCATION HIERARCHY (ISO 14044 §4.3.4) ==================
+ALLOCATION: {
+    WASTE_VALUE_THRESHOLD: 0.01,
+    DEFAULT_WASTE_TYPES: ['husk', 'shell', 'peel', 'stem', 'leaf', 'straw', 'manure'],
+    SENSITIVITY_THRESHOLD: 0.25,
+    HIERARCHY_LEVELS: ['subdivision', 'system_expansion', 'physical', 'economic']
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -609,6 +616,90 @@ jrc_test_vectors: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Allocation Hierarchy Resolution ==================
+/**
+ * Resolve allocation method per ISO 14044 §4.3.4 hierarchy
+ * Priority: Sub-division → System Expansion → Physical → Economic
+ * 
+ * @param {object} process - Process with allocation options
+ * @returns {Object} Resolved allocation method
+ */
+function resolveAllocationHierarchy(process) {
+    const hierarchy = [];
+    
+    // Level 1: Sub-division (can we measure separately?)
+    if (process.canSubdivide) {
+        hierarchy.push({ level: 1, method: 'subdivision', possible: true, note: 'Process can be sub-divided - measure separately' });
+        return {
+            method: 'subdivision',
+            level: 1,
+            allocationFactor: null,
+            hierarchy,
+            note: 'ISO 14044 §4.3.4 - Avoid allocation by subdivision'
+        };
+    } else {
+        hierarchy.push({ level: 1, method: 'subdivision', possible: false, note: 'Sub-division not possible' });
+    }
+    
+    // Level 2: System Expansion (avoided burden)
+    if (process.displacesProduct && process.displacementRatio) {
+        hierarchy.push({ level: 2, method: 'system_expansion', possible: true, note: `Displaces ${process.displacesProduct}` });
+        return {
+            method: 'system_expansion',
+            level: 2,
+            allocationFactor: null,
+            credit: process.creditValue,
+            hierarchy,
+            note: 'ISO 14044 §4.3.4 - System expansion with avoided burden'
+        };
+    } else {
+        hierarchy.push({ level: 2, method: 'system_expansion', possible: false, note: 'No clear displacement relationship' });
+    }
+    
+    // Level 3: Physical Allocation
+    if (process.physicalRelationship) {
+        const physicalType = process.physicalType || 'mass';
+        hierarchy.push({ level: 3, method: 'physical', possible: true, note: `Physical (${physicalType}) allocation possible` });
+        return {
+            method: 'physical',
+            level: 3,
+            physicalType,
+            allocationFactor: process.massFraction || process.energyFraction,
+            hierarchy,
+            note: `ISO 14044 §4.3.4 - Physical allocation by ${physicalType}`
+        };
+    } else {
+        hierarchy.push({ level: 3, method: 'physical', possible: false, note: 'No underlying physical relationship' });
+    }
+    
+    // Level 4: Economic Allocation (fallback)
+    hierarchy.push({ level: 4, method: 'economic', possible: true, note: 'Economic allocation as fallback' });
+    return {
+        method: 'economic',
+        level: 4,
+        allocationFactor: null, // To be calculated via economic allocation
+        hierarchy,
+        note: 'ISO 14044 §4.3.4 - Economic allocation (lowest priority)'
+    };
+}
+
+/**
+ * Validate allocation method choice for audit compliance
+ */
+function validateAllocationChoice(selectedMethod, resolvedHierarchy) {
+    const isValid = resolvedHierarchy.level >= resolvedHierarchy.hierarchy.find(h => h.method === selectedMethod)?.level;
+    
+    return {
+        valid: isValid,
+        selected: selectedMethod,
+        recommended: resolvedHierarchy.method,
+        hierarchy: resolvedHierarchy.hierarchy,
+        note: isValid 
+            ? `✅ ${selectedMethod} allocation compliant with ISO 14044 hierarchy`
+            : `⚠️ ${selectedMethod} allocation not justified - ${resolvedHierarchy.method} is preferred per ISO 14044`
+    };
+}
 
 // ================== HELPER: JRC Reference Testing ==================
 /**
