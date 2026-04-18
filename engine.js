@@ -150,6 +150,20 @@ VALIDITY: {
     DATASET_EXPIRATION_YEARS: 5,
     WARNING_THRESHOLD_MONTHS: 30,    // Warn 6 months before expiration
 },
+
+        // ================== SAMPLING REQUIREMENTS (PEF 3.1 §4.4.6) ==================
+SAMPLING: {
+    MIN_SAMPLE_SIZE: 3,           // Absolute minimum samples required
+    CONFIDENCE_LEVEL: 0.90,       // 90% confidence interval
+},
+        // ================== USETOX FOREGROUND MODELING (PEF 3.1) ==================
+PESTICIDE: {
+    SOIL_FRACTION: 0.90,      // 90% to agricultural soil
+    AIR_FRACTION: 0.09,       // 9% drift to air
+    WATER_FRACTION: 0.01,     // 1% runoff to water
+    PRECAUTIONARY_MAX_CTUH: 1e-5,   // Conservative fallback for missing CFs
+    PRECAUTIONARY_MAX_CTUE: 1000,   // Conservative fallback for ecotoxicity
+},
         
     };
 
@@ -417,6 +431,23 @@ refrigerants: {
     'R-290': 3,          // Propane
     'default': 2000      // Conservative default
 },
+
+// ================== USETOX CHARACTERIZATION FACTORS ==================
+// To be populated with official USEtox 2.0 data
+// Format: { pesticide: { soil: {cancer, noncancer, eco}, air: {...}, water: {...} } }
+usetox_factors: {
+    // Placeholder - populate from USEtox 2.0 database
+    'glyphosate': {
+        soil: { ctu_h_cancer: 1.2e-7, ctu_h_noncancer: 3.4e-8, ctu_e: 45.2 },
+        air: { ctu_h_cancer: 8.5e-8, ctu_h_noncancer: 2.1e-8, ctu_e: 12.3 },
+        water: { ctu_h_cancer: 5.6e-7, ctu_h_noncancer: 1.8e-7, ctu_e: 230.5 }
+    },
+    'default': {
+        soil: { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
+        air: { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
+        water: { ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
+    }
+},
     };
 
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
@@ -461,6 +492,105 @@ refrigerants: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: USEtox Foreground Toxicity ==================
+/**
+ * Calculate foreground pesticide toxicity using USEtox 2.0 framework
+ * Distributes applied mass to soil/air/water per PEF 3.1 defaults
+ * 
+ * @param {string} pesticideName - Active ingredient name
+ * @param {number} applicationRateKg - Application rate in kg
+ * @returns {Object} Toxicity impacts
+ */
+function calculatePesticideToxicity(pesticideName, applicationRateKg) {
+    if (!applicationRateKg || applicationRateKg <= 0) {
+        return {
+            cancer_CTUh: 0,
+            noncancer_CTUh: 0,
+            ecotoxicity_CTUe: 0,
+            note: 'No pesticide applied'
+        };
+    }
+    
+    const PEST = PHYSICS_CONSTANTS.PESTICIDE;
+    const factors = PHYSICS_DB.usetox_factors;
+    
+    // Get CFs for this pesticide (fallback to default)
+    const cf = factors[pesticideName?.toLowerCase()] || factors.default;
+    
+    // Calculate emissions to each compartment
+    const soilMass = applicationRateKg * PEST.SOIL_FRACTION;
+    const airMass = applicationRateKg * PEST.AIR_FRACTION;
+    const waterMass = applicationRateKg * PEST.WATER_FRACTION;
+    
+    // Calculate impacts
+    const cancer_CTUh = 
+        soilMass * cf.soil.ctu_h_cancer +
+        airMass * cf.air.ctu_h_cancer +
+        waterMass * cf.water.ctu_h_cancer;
+    
+    const noncancer_CTUh = 
+        soilMass * cf.soil.ctu_h_noncancer +
+        airMass * cf.air.ctu_h_noncancer +
+        waterMass * cf.water.ctu_h_noncancer;
+    
+    const ecotoxicity_CTUe = 
+        soilMass * cf.soil.ctu_e +
+        airMass * cf.air.ctu_e +
+        waterMass * cf.water.ctu_e;
+    
+    console.log(`🧪 [USEtox] ${pesticideName}: ${applicationRateKg.toFixed(4)} kg → Cancer: ${cancer_CTUh.toExponential(2)} CTUh, Non-cancer: ${noncancer_CTUh.toExponential(2)} CTUh, Eco: ${ecotoxicity_CTUe.toExponential(2)} CTUe`);
+    
+    return {
+        cancer_CTUh,
+        noncancer_CTUh,
+        ecotoxicity_CTUe,
+        soilMass,
+        airMass,
+        waterMass,
+        pesticideName,
+        applicationRateKg,
+        note: `${pesticideName}: ${applicationRateKg.toFixed(4)} kg applied (Soil:${(PEST.SOIL_FRACTION*100)}% Air:${(PEST.AIR_FRACTION*100)}% Water:${(PEST.WATER_FRACTION*100)}%)`
+    };
+}
+
+// ================== HELPER: Sampling Validation (n = √N) ==================
+/**
+ * Validate sample size per PEF 3.1 §4.4.6
+ * Formula: n_required = √N (minimum 3)
+ * 
+ * @param {number} totalFarms - Total number of farms in supply base (N)
+ * @param {number} sampledFarms - Number of farms with primary data (n)
+ * @returns {Object} Validation result
+ */
+function validateSampleSize(totalFarms, sampledFarms) {
+    if (!totalFarms || totalFarms <= 0) {
+        return {
+            valid: true,
+            required: 0,
+            sampled: sampledFarms || 0,
+            note: 'No farm count provided - sample validation skipped'
+        };
+    }
+    
+    const MIN = PHYSICS_CONSTANTS.SAMPLING.MIN_SAMPLE_SIZE;
+    const required = Math.max(MIN, Math.ceil(Math.sqrt(totalFarms)));
+    const sampled = sampledFarms || 0;
+    const valid = sampled >= required;
+    
+    console.log(`📊 [Sampling] ${sampled}/${required} farms sampled (Total N=${totalFarms}, √N=${Math.sqrt(totalFarms).toFixed(1)}) - ${valid ? '✅ Valid' : '❌ Insufficient'}`);
+    
+    return {
+        valid,
+        required,
+        sampled,
+        totalFarms,
+        sqrtN: Math.sqrt(totalFarms),
+        note: valid 
+            ? `✅ Sample size adequate: ${sampled} farms ≥ √${totalFarms} = ${required}`
+            : `⚠️ INSUFFICIENT SAMPLES: ${sampled} farms sampled, need at least ${required} (√${totalFarms}) per PEF 3.1 §4.4.6`
+    };
+}
 
 // ================== HELPER: Data Validity & Expiration ==================
 /**
@@ -1773,6 +1903,37 @@ if (primaryData?.farmingPractice) {
     }
         }
 
+        // ========== SAMPLING VALIDATION (n = √N) ==========
+let samplingResult = null;
+
+if (primaryData?.totalFarms) {
+    const totalFarms = primaryData.totalFarms;
+    const sampledFarms = primaryData.sampledFarms || 1; // If primary data provided, at least 1
+    
+    samplingResult = validateSampleSize(totalFarms, sampledFarms);
+    
+    if (!samplingResult.valid) {
+        log.push(`⚠️ [Sampling] ${samplingResult.note}`);
+        // Downgrade DQR due to insufficient sampling
+        qualityPenalty += 0.5;
+    } else {
+        log.push(`📊 [Sampling] ${samplingResult.note}`);
+    }
+}
+        // ========== PESTICIDE TOXICITY (USEtox Foreground) ==========
+let pesticideResults = [];
+
+if (primaryData?.pesticides && Array.isArray(primaryData.pesticides)) {
+    for (const pesticide of primaryData.pesticides) {
+        const result = calculatePesticideToxicity(
+            pesticide.name,
+            pesticide.rateKg || (pesticide.ratePerHa * (quantityKg / (primaryData.yieldKgPerHa || 4000)))
+        );
+        pesticideResults.push(result);
+        log.push(`🧪 [USEtox] ${result.note}`);
+    }
+                               }
+
         // ========== WASTE VS CO-PRODUCT CLASSIFICATION ==========
 let wasteAllocationNote = '';
 
@@ -1826,7 +1987,9 @@ return {
     enteric_ch4_kg: entericCH4,
     soc_sequestration_co2: socCO2,
     waste_allocation_note: wasteAllocationNote || '',
-    allocation_sensitivity: sensitivityResult   // ← ADD THIS (no comma, last field)
+    allocation_sensitivity: sensitivityResult,
+    sampling_validation: samplingResult,
+    pesticide_toxicity: pesticideResults   // ← NO COMMA - LAST FIELD
 };
     }
 
