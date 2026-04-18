@@ -51,7 +51,21 @@
             diesel: 3.24,            // kg CO2e per liter (Well-to-Wheel, JRC 2020) - CORRECTED from 2.68
             n_to_n2o_synthetic: 0.01,// IPCC Tier 1 factor (1% of N becomes N2O)
             n_to_n2o_legume: 0.0     // Biological fixation has negligible N2O leakage
-        }
+        }, 
+        // ================== NITRATE LEACHING (IPCC 2006 Vol 4, Ch 11) ==================
+// Source: PEF 3.1 Marine Eutrophication / IPCC Tier 1
+N_LEACHING: {
+    FRAC_LEACH: 0.30,           // 30% of applied N leaches to water
+    NO3_CONVERSION: 62/14,      // Convert N to NO3 mass (4.428571428...)
+    INDIRECT_N2O_EF5: 0.011     // Indirect N2O from leached N
+},
+
+// ================== PHOSPHORUS LEACHING (SALCA-P Model) ==================
+// Source: PEF 3.1 Freshwater Eutrophication
+P_LEACHING: {
+    FRAC_RELE: 0.05,            // 5% of applied P lost to water
+    PO4_CONVERSION: 3.06        // Convert P to PO4 mass
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -182,6 +196,20 @@
                 "NationalAvg": { default: 41.0, summer: 70.0, winter: 20.0 }
             }
         }
+        // ================== FERTILIZER COMPOSITION (FAO / Industry Standard) ==================
+// N% and P% for common fertilizers - used for N-leaching and P-leaching calculations
+fertilizer_composition: {
+    'triple_superphosphate': { n_percent: 0, p_percent: 20 },
+    'TSP': { n_percent: 0, p_percent: 20 },
+    'diammonium_phosphate': { n_percent: 18, p_percent: 20 },
+    'DAP': { n_percent: 18, p_percent: 20 },
+    'monoammonium_phosphate': { n_percent: 11, p_percent: 23 },
+    'MAP': { n_percent: 11, p_percent: 23 },
+    'urea': { n_percent: 46, p_percent: 0 },
+    'ammonium_nitrate': { n_percent: 34, p_percent: 0 },
+    'potassium_chloride': { n_percent: 0, p_percent: 0 },
+    'default': { n_percent: 15, p_percent: 10 }  // Conservative default
+},
     };
 
     // ================== 2025 AIOXY FORMULATION STANDARDS (Oatly-Verified) ==================
