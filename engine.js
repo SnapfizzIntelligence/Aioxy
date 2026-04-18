@@ -240,6 +240,13 @@ ALLOCATION: {
     SENSITIVITY_THRESHOLD: 0.25,
     HIERARCHY_LEVELS: ['subdivision', 'system_expansion', 'physical', 'economic']
 },
+        // ================== COMPARATIVE ASSERTIONS (ISO 14044 §6) ==================
+COMPARATIVE: {
+    FUNCTIONAL_EQUIVALENCE_REQUIRED: true,
+    SENSITIVITY_REQUIRED: true,
+    CRITICAL_REVIEW_REQUIRED: true,
+    PUBLIC_DISCLOSURE_RESTRICTED: true,
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -615,6 +622,116 @@ jrc_test_vectors: {
         while (u === 0) u = Math.random();
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+// ================== HELPER: Comparative Assertion Enforcement ==================
+/**
+ * Validate comparative assertion per ISO 14044 §6
+ * Enforces functional equivalence, sensitivity analysis, and critical review
+ * 
+ * @param {object} productSystem - Current product system
+ * @param {object} baselineSystem - Comparison baseline system
+ * @param {boolean} isPublic - Whether results will be publicly disclosed
+ * @returns {Object} Validation result
+ */
+function validateComparativeAssertion(productSystem, baselineSystem, isPublic = false) {
+    const violations = [];
+    const warnings = [];
+    
+    // Check if actually comparing
+    if (!baselineSystem || !baselineSystem.name || baselineSystem.name === 'None') {
+        return {
+            isComparative: false,
+            valid: true,
+            violations,
+            warnings,
+            note: 'No comparative assertion - standard requirements apply'
+        };
+    }
+    
+    // Check 1: Functional Equivalence
+    const functionalUnitMatch = productSystem.functionalUnit === baselineSystem.functionalUnit;
+    if (!functionalUnitMatch) {
+        violations.push({
+            requirement: 'Functional Equivalence (§4.2.3.2)',
+            issue: 'Functional units do not match',
+            fix: 'Ensure compared systems have identical functional unit'
+        });
+    }
+    
+    // Check 2: System Boundary Match
+    const boundaryMatch = JSON.stringify(productSystem.boundaries) === JSON.stringify(baselineSystem.boundaries);
+    if (!boundaryMatch) {
+        warnings.push({
+            requirement: 'Identical System Boundaries',
+            issue: 'System boundaries differ between products',
+            fix: 'Use Parametric Twin to clone boundaries'
+        });
+    }
+    
+    // Check 3: Sensitivity Analysis
+    const hasSensitivity = productSystem.sensitivityAnalysis && baselineSystem.sensitivityAnalysis;
+    if (!hasSensitivity) {
+        violations.push({
+            requirement: 'Sensitivity Analysis (§6.3)',
+            issue: 'Sensitivity analysis not performed',
+            fix: 'Run sensitivity analysis on key parameters'
+        });
+    }
+    
+    // Check 4: Critical Review (public claims only)
+    if (isPublic) {
+        const hasCriticalReview = productSystem.criticalReview && baselineSystem.criticalReview;
+        if (!hasCriticalReview) {
+            violations.push({
+                requirement: 'Critical Review (§6.1)',
+                issue: 'Public comparative claims require third-party critical review',
+                fix: 'Submit study to independent review panel'
+            });
+        }
+    }
+    
+    const valid = violations.length === 0;
+    
+    console.log(`⚖️ [Comparative] ${valid ? '✅ Valid' : '❌ Non-compliant'} - ${violations.length} violations, ${warnings.length} warnings`);
+    
+    return {
+        isComparative: true,
+        valid,
+        violations,
+        warnings,
+        requiresReview: isPublic,
+        watermark: valid ? null : '⚠️ COMPARATIVE ASSERTION NOT VALIDATED - SEE VIOLATIONS',
+        note: valid 
+            ? 'Comparative assertion meets ISO 14044 §6 requirements'
+            : `Non-compliant: ${violations.map(v => v.requirement).join(', ')}`
+    };
+}
+
+/**
+ * Generate comparative assertion statement for report
+ */
+function generateComparativeStatement(validationResult, productName, baselineName) {
+    if (!validationResult.isComparative) {
+        return {
+            allowed: true,
+            statement: 'This study does not make comparative assertions.'
+        };
+    }
+    
+    if (!validationResult.valid) {
+        return {
+            allowed: false,
+            statement: `Comparative assertion between "${productName}" and "${baselineName}" is NOT VALIDATED. ${validationResult.note}`,
+            watermark: '⚠️ COMPARATIVE CLAIMS NOT SUBSTANTIATED'
+        };
+    }
+    
+    return {
+        allowed: true,
+        statement: `Comparative assertion between "${productName}" and "${baselineName}" has been validated per ISO 14044 §6. Functional equivalence confirmed. Sensitivity analysis performed. ${validationResult.requiresReview ? 'Third-party critical review completed.' : 'For internal use only - not for public disclosure.'}`,
+        watermark: validationResult.requiresReview ? '✅ CRITICALLY REVIEWED' : '⚠️ INTERNAL USE ONLY'
+    };
     }
 
 // ================== HELPER: Allocation Hierarchy Resolution ==================
@@ -5026,6 +5143,59 @@ if (comparativeCheck.requiresReview && !panelValidation.valid) {
     auditTrail.compliance_warnings.push(panelValidation.watermark || comparativeCheck.note);
     auditTrail.watermark = panelValidation.watermark || 'PENDING CRITICAL REVIEW';
 }
+            // ========== COMPARATIVE ASSERTION VALIDATION ==========
+const productSystem = {
+    name: productName,
+    functionalUnit: `${massBalanceData.final_content_weight_kg?.toFixed(3) || '0.200'} kg`,
+    boundaries: {
+        ingredients: true,
+        manufacturing: true,
+        transport: true,
+        packaging: true,
+        use: true
+    },
+    sensitivityAnalysis: auditTrail.allocation_sensitivity ? true : false,
+    criticalReview: panelValidation.valid
+};
+
+const baselineSystem = {
+    name: comparisonBaseline?.name || 'None',
+    functionalUnit: '1 kg',
+    boundaries: {
+        ingredients: true,
+        manufacturing: true,
+        transport: true,
+        packaging: true,
+        use: comparisonBaseline?.cloned_parameters ? true : false
+    },
+    sensitivityAnalysis: comparisonBaseline?.sensitivity_analysis?.performed || false,
+    criticalReview: false
+};
+
+const comparativeValidation = validateComparativeAssertion(
+    productSystem, 
+    baselineSystem, 
+    isPublicClaim
+);
+
+const comparativeStatement = generateComparativeStatement(
+    comparativeValidation,
+    productName,
+    comparisonBaseline?.name || 'baseline'
+);
+
+auditTrail.comparative_validation = {
+    ...comparativeValidation,
+    statement: comparativeStatement.statement,
+    watermark: comparativeStatement.watermark
+};
+
+// Add watermark if non-compliant
+if (!comparativeValidation.valid) {
+    auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
+    auditTrail.compliance_warnings.push(comparativeValidation.note);
+    auditTrail.watermark = auditTrail.watermark || comparativeStatement.watermark;
+    }
 
             // ========== JRC REFERENCE VERIFICATION ==========
 // Extract key results for JRC testing
