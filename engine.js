@@ -73,6 +73,13 @@ TRANSPORT: {
     EMPTY_RETURN_RATE: 0.18,    // 18% empty return for road freight
     // Only apply to road and sea; air uses different accounting
 },
+        // ================== DATA NEEDS MATRIX (PEF 3.1 §6.6) ==================
+// Thresholds for data quality enforcement
+DNM: {
+    CONTRIBUTION_THRESHOLD: 0.10,    // 10% contribution = "Most Relevant"
+    PRIMARY_DATA_DQR_MAX: 2.0,       // Under operational control must have DQR ≤ 2.0
+    SECONDARY_DATA_DQR_MAX: 3.0,     // Not under control must have DQR ≤ 3.0
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
