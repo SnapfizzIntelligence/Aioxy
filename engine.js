@@ -66,6 +66,13 @@ P_LEACHING: {
     FRAC_RELE: 0.05,            // 5% of applied P lost to water
     PO4_CONVERSION: 3.06        // Convert P to PO4 mass
 },
+        // ================== TRANSPORT PAYLOAD & EMPTY RETURNS (GLEC v3.2 / ISO 14083) ==================
+// Source: PEF 3.1 §4.4.3
+TRANSPORT: {
+    LOAD_FACTOR: 0.64,          // 64% capacity utilization for HDVs
+    EMPTY_RETURN_RATE: 0.18,    // 18% empty return for road freight
+    // Only apply to road and sea; air uses different accounting
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -353,8 +360,23 @@ fertilizer_composition: {
         }
 
         // 4. CALCULATION: Mass (tons) × Adjusted Distance (km) × Factor (kg CO₂e/tkm)
-        const massTons = massKg / 1000;
-        const fuelEmissions = massTons * adjustedDistance * factor;
+const massTons = massKg / 1000;
+
+// ========== PEF 3.1 PAYLOAD & EMPTY RETURN ADJUSTMENT ==========
+// Formula: EF_adjusted = EF_base × (1 / LF) × (1 + ERR)
+// Source: ISO 14083:2023 / PEF 3.1 §4.4.3
+let payloadMultiplier = 1.0;
+let payloadNote = '';
+
+if (mode === 'road' || mode === 'sea') {
+    const LF = PHYSICS_CONSTANTS.TRANSPORT.LOAD_FACTOR;
+    const ERR = PHYSICS_CONSTANTS.TRANSPORT.EMPTY_RETURN_RATE;
+    payloadMultiplier = (1 / LF) * (1 + ERR);
+    payloadNote = ` × (1/${LF} LF) × (1+${ERR} ERR)`;
+}
+
+const adjustedFactor = factor * payloadMultiplier;
+const fuelEmissions = massTons * adjustedDistance * adjustedFactor;
         
         // 5. REFRIGERANT LEAKAGE (ISO 14083 / GLEC v3.2 requirement)
         // Source: IPCC 2006 GL, Vol 3, Ch 7, Table 7.9 - Transport Refrigeration leak rate 15-50%
@@ -370,9 +392,9 @@ fertilizer_composition: {
         const totalEmissions = fuelEmissions + refrigerantEmissions;
 
         // 🛡️ THE TRANSPARENCY FIX: Capture the exact physics trace inside the engine
-        const glecTrace = `[GLEC v3.2: ${massTons.toFixed(4)}t × ${distanceKm}km × ${factor} EF × ${daf} DAF]${refrigerantEmissions > 0 ? ` + Refrigerant(${refrigerantEmissions.toFixed(4)}kg)` : ''}`;
-
-        console.log(`🚚 GLEC v3.2: ${mode} (${refType}) | Raw: ${distanceKm}km → Adj: ${adjustedDistance.toFixed(1)}km | Fuel: ${fuelEmissions.toFixed(3)}kg | Refrigerant: ${refrigerantEmissions.toFixed(3)}kg | Total: ${totalEmissions.toFixed(3)}kg CO₂e`);
+        const glecTrace = `[GLEC v3.2: ${massTons.toFixed(4)}t × ${distanceKm}km × ${factor} EF${payloadNote} × ${daf} DAF]${refrigerantEmissions > 0 ? ` + Refrigerant(${refrigerantEmissions.toFixed(4)}kg)` : ''}`;
+        
+        console.log(`🚚 GLEC v3.2: ${mode} (${refType}) | Raw: ${distanceKm}km → Adj: ${adjustedDistance.toFixed(1)}km | EF: ${factor}${payloadNote ? ' × ' + payloadMultiplier.toFixed(2) + ' payload' : ''} | Fuel: ${fuelEmissions.toFixed(3)}kg | Refrigerant: ${refrigerantEmissions.toFixed(3)}kg | Total: ${totalEmissions.toFixed(3)}kg CO₂e`);
 
         // FIXED: Always return an object with .total property
         return {
