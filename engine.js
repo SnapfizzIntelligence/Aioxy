@@ -164,6 +164,26 @@ PESTICIDE: {
     PRECAUTIONARY_MAX_CTUH: 1e-5,   // Conservative fallback for missing CFs
     PRECAUTIONARY_MAX_CTUE: 1000,   // Conservative fallback for ecotoxicity
 },
+       // ================== BIODIVERSITY LANCA MODEL (PEF 3.1 §4.4.8.3) ==================
+LANCA: {
+    // Characterization factors by land use type (Pt/m²/year)
+    CF_BIOP: {
+        annual_crops: 0.00042,
+        perennial_crops: 0.00018,
+        pasture: 0.00031,
+        forest: 0.00008,
+        urban: 0.00095,
+        default: 0.00042
+    },
+    // Regional multipliers
+    REGIONAL_FACTORS: {
+        tropical: 1.5,
+        temperate: 1.0,
+        boreal: 0.7,
+        arid: 1.3,
+        default: 1.0
+    }
+},
         
     };
 
@@ -492,6 +512,54 @@ usetox_factors: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Biodiversity LANCA Model ==================
+/**
+ * Calculate biodiversity impact using LANCA Soil Quality Index
+ * Formula: Impact = Area × Time × CF_biop × RegionalFactor
+ * 
+ * @param {number} areaHa - Area in hectares
+ * @param {string} landUseType - 'annual_crops', 'perennial_crops', 'pasture', 'forest'
+ * @param {string} region - 'tropical', 'temperate', 'boreal', 'arid'
+ * @param {number} yearsUnderProduction - Years land has been in this use (default 1)
+ * @returns {Object} Biodiversity impact
+ */
+function calculateBiodiversityLANCA(areaHa, landUseType = 'annual_crops', region = 'temperate', yearsUnderProduction = 1) {
+    if (!areaHa || areaHa <= 0) {
+        return {
+            impact_Pt: 0,
+            note: 'No area provided'
+        };
+    }
+    
+    const LANCA = PHYSICS_CONSTANTS.LANCA;
+    
+    // Get characterization factor
+    const cf_biop = LANCA.CF_BIOP[landUseType] || LANCA.CF_BIOP.default;
+    
+    // Get regional multiplier
+    const regionalFactor = LANCA.REGIONAL_FACTORS[region] || LANCA.REGIONAL_FACTORS.default;
+    
+    // Convert hectares to m² (1 ha = 10,000 m²)
+    const areaM2 = areaHa * 10000;
+    
+    // Calculate impact (Points)
+    const impact_Pt = areaM2 * yearsUnderProduction * cf_biop * regionalFactor;
+    
+    console.log(`🌿 [LANCA] ${areaHa.toFixed(3)} ha ${landUseType} (${region}): ${impact_Pt.toFixed(4)} Pt`);
+    
+    return {
+        impact_Pt,
+        area_ha: areaHa,
+        area_m2: areaM2,
+        landUseType,
+        region,
+        yearsUnderProduction,
+        cf_biop,
+        regionalFactor,
+        note: `${landUseType} in ${region} region: ${impact_Pt.toFixed(4)} Pt biodiversity impact`
+    };
+}
 
 // ================== HELPER: USEtox Foreground Toxicity ==================
 /**
@@ -1934,6 +2002,39 @@ if (primaryData?.pesticides && Array.isArray(primaryData.pesticides)) {
     }
                                }
 
+        // ========== BIODIVERSITY IMPACT (LANCA Model) ==========
+let biodiversityResult = null;
+
+// Calculate area from yield
+const yieldKgPerHa = primaryData?.yieldKgPerHa || ingredientData?.data?.metadata?.yield_kg_ha || 4000;
+const areaHa = quantityKg / yieldKgPerHa;
+
+// Determine land use type
+let landUseType = 'annual_crops';
+const nameLower = (ingredientData?.name || '').toLowerCase();
+if (nameLower.includes('coffee') || nameLower.includes('cocoa') || nameLower.includes('fruit') || nameLower.includes('nut')) {
+    landUseType = 'perennial_crops';
+} else if (nameLower.includes('beef') || nameLower.includes('milk') || nameLower.includes('pasture')) {
+    landUseType = 'pasture';
+}
+
+// Determine region from country
+let region = 'temperate';
+const tropicalCountries = ['BR', 'ID', 'MY', 'CO', 'PE', 'VN', 'TH', 'IN', 'GH', 'CI', 'CM', 'NG', 'CD', 'CG'];
+const borealCountries = ['CA', 'NO', 'SE', 'FI', 'RU'];
+const aridCountries = ['ES', 'AU', 'ZA', 'EG', 'SA', 'AE', 'MA', 'DZ', 'LY'];
+
+if (tropicalCountries.includes(originCountry)) region = 'tropical';
+else if (borealCountries.includes(originCountry)) region = 'boreal';
+else if (aridCountries.includes(originCountry)) region = 'arid';
+
+biodiversityResult = calculateBiodiversityLANCA(areaHa, landUseType, region, 1);
+
+// Add to total land impact
+totalLand += biodiversityResult.impact_Pt;
+
+log.push(`🌿 [LANCA] ${biodiversityResult.note}`);
+
         // ========== WASTE VS CO-PRODUCT CLASSIFICATION ==========
 let wasteAllocationNote = '';
 
@@ -1989,7 +2090,8 @@ return {
     waste_allocation_note: wasteAllocationNote || '',
     allocation_sensitivity: sensitivityResult,
     sampling_validation: samplingResult,
-    pesticide_toxicity: pesticideResults   // ← NO COMMA - LAST FIELD
+    pesticide_toxicity: pesticideResults,
+    biodiversity_lanca: biodiversityResult   // ← NO COMMA - LAST FIELD
 };
     }
 
