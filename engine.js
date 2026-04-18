@@ -353,6 +353,76 @@ commodity_prices: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Data Needs Matrix Evaluation ==================
+/**
+ * Evaluate Data Needs Matrix (DNM) compliance per PEF 3.1 §6.6
+ * Checks if high-impact processes meet data quality requirements
+ * 
+ * @param {Array} processes - Array of process objects with {name, impact, dqr, isUnderOperationalControl}
+ * @param {number} totalImpact - Total impact for the category
+ * @returns {Object} {compliant: boolean, violations: array, warnings: array}
+ */
+function evaluateDNM(processes, totalImpact) {
+    if (!processes || processes.length === 0) {
+        return { compliant: true, violations: [], warnings: [] };
+    }
+    
+    const violations = [];
+    const warnings = [];
+    const THRESHOLD = PHYSICS_CONSTANTS.DNM.CONTRIBUTION_THRESHOLD;
+    
+    for (const process of processes) {
+        const contribution = process.impact / totalImpact;
+        
+        // Skip processes below threshold
+        if (contribution < THRESHOLD) continue;
+        
+        const isHotspot = true;
+        const dqr = process.dqr || 2.5;
+        const isUnderControl = process.isUnderOperationalControl || false;
+        
+        if (isUnderControl) {
+            // Under operational control: Must use primary data (DQR ≤ 2.0)
+            if (dqr > PHYSICS_CONSTANTS.DNM.PRIMARY_DATA_DQR_MAX) {
+                violations.push({
+                    process: process.name,
+                    contribution: (contribution * 100).toFixed(1) + '%',
+                    dqr: dqr.toFixed(2),
+                    requirement: `DQR ≤ ${PHYSICS_CONSTANTS.DNM.PRIMARY_DATA_DQR_MAX} (Primary data required)`,
+                    reason: 'Process under operational control - must use primary data'
+                });
+            }
+        } else {
+            // Not under operational control: Must use high-quality secondary data (DQR ≤ 3.0)
+            if (dqr > PHYSICS_CONSTANTS.DNM.SECONDARY_DATA_DQR_MAX) {
+                warnings.push({
+                    process: process.name,
+                    contribution: (contribution * 100).toFixed(1) + '%',
+                    dqr: dqr.toFixed(2),
+                    requirement: `DQR ≤ ${PHYSICS_CONSTANTS.DNM.SECONDARY_DATA_DQR_MAX} (High-quality secondary data required)`,
+                    reason: 'Hotspot process - requires improved data quality for public claims'
+                });
+            }
+        }
+    }
+    
+    const compliant = violations.length === 0;
+    
+    if (violations.length > 0) {
+        console.warn(`⚠️ [DNM] NON-COMPLIANT: ${violations.length} hotspot(s) with insufficient data quality`);
+        violations.forEach(v => {
+            console.warn(`   - ${v.process}: ${v.contribution} contribution, DQR ${v.dqr} > ${PHYSICS_CONSTANTS.DNM.PRIMARY_DATA_DQR_MAX}`);
+        });
+    }
+    
+    if (warnings.length > 0) {
+        console.log(`📊 [DNM] Warnings: ${warnings.length} hotspot(s) need better data for public claims`);
+    }
+    
+    return { compliant, violations, warnings };
+                    }
+
 // ================== HELPER: Economic Allocation ==================
 /**
  * Calculate economic allocation factor per ISO 14044 §4.3.4.2
@@ -1552,21 +1622,33 @@ if (eolTarget === 'incinerated') {
             ((foregroundDQR * foregroundComponents.reduce((s,c)=>s+c.contribution,0)) + 
              (backgroundDQR * backgroundComponents.reduce((s,c)=>s+c.contribution,0))) / totalRecordedImpact
             : 2.0;
+        
+// ========== DATA NEEDS MATRIX (DNM) EVALUATION ==========
+// Evaluate DNM compliance for Climate Change category
+const allProcesses = [...foregroundComponents, ...backgroundComponents].map(c => ({
+    name: c.name,
+    impact: c.contribution,
+    dqr: c.dqr || 2.5,
+    isUnderOperationalControl: c.name.includes('Manufacturing') || c.data_type === 'foreground'
+}));
 
+const dnmResult = evaluateDNM(allProcesses, totalImpact);
+        
         return {
-            cutoff_percentage: foregroundCutoff,
-            foreground_count: foregroundComponents.length,
-            background_count: backgroundComponents.length,
-            foreground_contribution: foregroundComponents.reduce((sum, c) => sum + c.contribution, 0),
-            background_contribution: backgroundComponents.reduce((sum, c) => sum + c.contribution, 0),
-            foreground_dqr: foregroundDQR,
-            background_dqr: backgroundDQR,
-            overall_dqr: overallDQR, 
-            components: {
-                foreground: foregroundComponents,
-                background: backgroundComponents
-            }
-        };
+    cutoff_percentage: foregroundCutoff,
+    foreground_count: foregroundComponents.length,
+    background_count: backgroundComponents.length,
+    foreground_contribution: foregroundComponents.reduce((sum, c) => sum + c.contribution, 0),
+    background_contribution: backgroundComponents.reduce((sum, c) => sum + c.contribution, 0),
+    foreground_dqr: foregroundDQR,
+    background_dqr: backgroundDQR,
+    overall_dqr: overallDQR,
+    dnm_result: dnmResult,  // <-- ADD THIS LINE
+    components: {
+        foreground: foregroundComponents,
+        background: backgroundComponents
+    }
+};
     }
 
     // ================== FIX 7: TEMPORAL DISCOUNTING (REGULATOR CORRECTED) ==================
