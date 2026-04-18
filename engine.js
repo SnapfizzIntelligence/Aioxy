@@ -4099,6 +4099,22 @@ if (inUseEmissions.totalCO2 > 0) {
             this.state.auditTrailData = auditTrail;
             this.state.currentDPPId = auditTrail.dppId;
 
+            // ========== DATA VALIDITY CHECK ==========
+const validityCheck = checkExpiration(
+    auditTrail.calculationTimestamp,
+    PHYSICS_CONSTANTS.VALIDITY.STUDY_EXPIRATION_YEARS
+);
+
+auditTrail.validity = validityCheck;
+
+if (validityCheck.expired) {
+    console.warn(`⚠️ [Validity] ${validityCheck.note}`);
+    auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
+    auditTrail.compliance_warnings.push(validityCheck.note);
+} else if (validityCheck.warning) {
+    console.log(`📅 [Validity] ${validityCheck.note}`);
+    }
+            
             const blCO2 = comparisonBaseline.co2PerKg || unified.co2PerKg;
             const upliftCO2 = uplift?.co2 || 0;
             const baselineCO2Total = blCO2 + upliftCO2;
