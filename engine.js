@@ -80,6 +80,10 @@ DNM: {
     PRIMARY_DATA_DQR_MAX: 2.0,       // Under operational control must have DQR ≤ 2.0
     SECONDARY_DATA_DQR_MAX: 3.0,     // Not under control must have DQR ≤ 3.0
 },
+        // ================== HOTSPOT IDENTIFICATION (ISO 14044 §4.5.2) ==================
+HOTSPOT: {
+    CUMULATIVE_THRESHOLD: 0.80,    // 80% cumulative contribution = hotspot
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -353,6 +357,52 @@ commodity_prices: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: 80% Hotspot Identification ==================
+/**
+ * Identify hotspots using 80% cumulative contribution rule
+ * Per ISO 14044 §4.5.2 and PEF 3.1 §6.3
+ * 
+ * @param {Array} components - Array of {name, contribution}
+ * @param {number} totalImpact - Total impact value
+ * @returns {Object} {hotspots: array, cumulativeSum: number, summary: string}
+ */
+function identifyHotspots(components, totalImpact) {
+    if (!components || components.length === 0 || totalImpact <= 0) {
+        return { hotspots: [], cumulativeSum: 0, summary: 'No data' };
+    }
+    
+    // Sort by contribution (highest first)
+    const sorted = [...components].sort((a, b) => b.contribution - a.contribution);
+    
+    const hotspots = [];
+    let cumulativeSum = 0;
+    const THRESHOLD = PHYSICS_CONSTANTS.HOTSPOT.CUMULATIVE_THRESHOLD;
+    
+    for (const item of sorted) {
+        if (cumulativeSum < THRESHOLD) {
+            const contributionPct = item.contribution / totalImpact;
+            hotspots.push({
+                name: item.name,
+                contribution: item.contribution,
+                percentage: (contributionPct * 100).toFixed(1) + '%',
+                dqr: item.dqr || 2.5
+            });
+            cumulativeSum += contributionPct;
+        } else {
+            break;
+        }
+    }
+    
+    const summary = `${hotspots.length} processes contribute ${(cumulativeSum * 100).toFixed(1)}% of total impact`;
+    
+    console.log(`🎯 [80% Hotspot] ${summary}`);
+    hotspots.forEach((h, i) => {
+        console.log(`   ${i+1}. ${h.name}: ${h.percentage} (DQR: ${h.dqr})`);
+    });
+    
+    return { hotspots, cumulativeSum, summary };
+            }
 
 // ================== HELPER: Data Needs Matrix Evaluation ==================
 /**
@@ -1633,6 +1683,16 @@ const allProcesses = [...foregroundComponents, ...backgroundComponents].map(c =>
 }));
 
 const dnmResult = evaluateDNM(allProcesses, totalImpact);
+
+        // ========== 80% HOTSPOT IDENTIFICATION ==========
+// Identify hotspots for Climate Change category
+const ccComponents = [
+    ...foregroundComponents.map(c => ({ name: c.name, contribution: c.contribution, dqr: c.dqr })),
+    ...backgroundComponents.map(c => ({ name: c.name, contribution: c.contribution, dqr: c.dqr }))
+];
+
+const hotspotAnalysis = identifyHotspots(ccComponents, totalImpact);
+
         
         return {
     cutoff_percentage: foregroundCutoff,
@@ -1643,7 +1703,8 @@ const dnmResult = evaluateDNM(allProcesses, totalImpact);
     foreground_dqr: foregroundDQR,
     background_dqr: backgroundDQR,
     overall_dqr: overallDQR,
-    dnm_result: dnmResult,  // <-- ADD THIS LINE
+    dnm_result: dnmResult,
+    hotspot_analysis: hotspotAnalysis,  // <-- ADD THIS LINE
     components: {
         foreground: foregroundComponents,
         background: backgroundComponents
