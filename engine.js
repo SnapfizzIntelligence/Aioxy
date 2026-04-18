@@ -130,6 +130,15 @@ ENTERIC: {
     // Conversion to kg CO2e per kg meat/milk
     // Requires yield data from window.aioxyData.yield_benchmarks
 },
+
+// ================== SOIL ORGANIC CARBON (ISO 14067 / PAS 2050-1) ==================
+SOC: {
+    AMORTIZATION_YEARS: 20,              // 20-year amortization for SOC changes
+    DEFAULT_REFERENCE_SOC: 50,           // Default reference SOC (t C/ha)
+    ANNUAL_CROPS_SOC: 5,                 // Typical SOC for annual cropland (t C/ha)
+    REGEN_ANNUAL_RATE: 0.5,              // t C/ha/year sequestration for regen ag
+    CONSERVATION_ANNUAL_RATE: 0.2,       // t C/ha/year for conservation tillage
+},
         
     };
 
@@ -442,6 +451,73 @@ refrigerants: {
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
 
+// ================== HELPER: Soil Organic Carbon (SOC) Change ==================
+/**
+ * Calculate soil organic carbon change per ISO 14067 / PAS 2050-1
+ * Formula: ∆SOC = (SOC_0 - SOC_T) / 20 × 44/12
+ * 
+ * @param {string} farmingPractice - 'conventional', 'conservation', 'regen', 'organic'
+ * @param {number} areaHa - Area in hectares
+ * @param {number} yearsUnderPractice - Years under this practice (default 1)
+ * @returns {Object} SOC change breakdown
+ */
+function calculateSOCChange(farmingPractice, areaHa, yearsUnderPractice = 1) {
+    if (!areaHa || areaHa <= 0) {
+        return { 
+            deltaCO2: 0, 
+            deltaC: 0, 
+            sequesteredCO2: 0,
+            note: 'No area provided' 
+        };
+    }
+    
+    const SOC = PHYSICS_CONSTANTS.SOC;
+    const C_TO_CO2 = 44/12;
+    
+    let annualSequestrationRate = 0;
+    let note = '';
+    
+    switch (farmingPractice?.toLowerCase()) {
+        case 'regen':
+        case 'regenerative':
+            annualSequestrationRate = SOC.REGEN_ANNUAL_RATE;
+            note = 'Regenerative agriculture';
+            break;
+        case 'conservation':
+        case 'no_till':
+            annualSequestrationRate = SOC.CONSERVATION_ANNUAL_RATE;
+            note = 'Conservation tillage';
+            break;
+        case 'organic':
+            annualSequestrationRate = SOC.CONSERVATION_ANNUAL_RATE * 0.8;
+            note = 'Organic farming';
+            break;
+        default:
+            return { 
+                deltaCO2: 0, 
+                deltaC: 0, 
+                sequesteredCO2: 0,
+                note: 'Conventional farming - no sequestration claimed' 
+            };
+    }
+    
+    // Calculate annual sequestration
+    const annualDeltaC = annualSequestrationRate * areaHa;
+    const annualDeltaCO2 = annualDeltaC * C_TO_CO2;
+    
+    // Amortize over 20 years per PAS 2050-1
+    const amortizedDeltaCO2 = (annualDeltaCO2 * Math.min(yearsUnderPractice, SOC.AMORTIZATION_YEARS)) / SOC.AMORTIZATION_YEARS;
+    
+    console.log(`🌱 [SOC] ${note}: ${annualDeltaC.toFixed(3)} t C/ha/yr × ${C_TO_CO2.toFixed(4)} = ${annualDeltaCO2.toFixed(3)} t CO2/yr (amortized: ${amortizedDeltaCO2.toFixed(3)} t CO2)`);
+    
+    return {
+        deltaCO2: amortizedDeltaCO2 * 1000,  // Convert to kg CO2
+        deltaC: annualDeltaC,
+        sequesteredCO2: annualDeltaCO2 * 1000,
+        annualSequestrationRate,
+        note: `${note}: ${annualSequestrationRate} t C/ha/yr sequestered`
+    };
+                                                        }
 
 // ================== HELPER: Enteric Fermentation ==================
 /**
