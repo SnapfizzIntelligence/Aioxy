@@ -1625,6 +1625,25 @@ if (primaryData && primaryData.farmingPractice === 'regen') {
     biogenicRemovals = primaryData.verifiedSoilCarbonKg || 0; 
     log.push(`🌱 REGEN AG: Practice recorded. Verified soil carbon sequestration: ${biogenicRemovals.toFixed(4)} kg CO₂e.`);
     }
+
+        // ========== ALLOCATION SENSITIVITY CHECK (ISO 14044 §6.3) ==========
+let sensitivityResult = null;
+
+if (useEconomicAllocation && primaryData?.coProducts && primaryData.coProducts.length > 0) {
+    const allProducts = [
+        { name: ingredientData?.name || 'Main Product', mass: quantityKg, price: getCommodityPrice(ingredientData?.id || ingredientId) },
+        ...primaryData.coProducts
+    ];
+    
+    sensitivityResult = checkAllocationSensitivity(allProducts);
+    
+    if (sensitivityResult.significantDifference) {
+        log.push(`⚠️ [Sensitivity] ${sensitivityResult.note}`);
+        sensitivityResult.differsAt.forEach(d => {
+            log.push(`   - ${d.product}: Mass ${d.massFactor} vs Economic ${d.economicFactor} (diff: ${d.difference})`);
+        });
+    }
+}
         
 // ========== EUDR COMPLIANCE CHECK (Reg. 2023/1115) ==========
 const eudrCheck = checkEUDRCompliance(
@@ -1752,7 +1771,8 @@ return {
     enteric_co2: entericCO2,
     enteric_ch4_kg: entericCH4,
     soc_sequestration_co2: socCO2,
-    waste_allocation_note: wasteAllocationNote || ''   // ← ADD THIS (no comma, last field)
+    waste_allocation_note: wasteAllocationNote || '',
+    allocation_sensitivity: sensitivityResult   // ← ADD THIS (no comma, last field)
 };
     }
 
