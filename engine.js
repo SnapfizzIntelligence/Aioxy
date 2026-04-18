@@ -3593,6 +3593,40 @@ auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total += waterPkg;
             auditTrail.pefCategories["Climate Change"].contribution_tree.Upstream.total += foodWasteCO2;
             auditTrail.pefCategories["Climate Change"].total += foodWasteCO2;
 
+            // ========== IN-USE EMISSIONS (Retail & Home Cold Chain) ==========
+const processingMethodForStorage = processingMethod || 'none';
+let storageType = 'ambient';
+if (processingMethodForStorage === 'freezing') {
+    storageType = 'frozen';
+} else if (document.getElementById('refrigeratedTransport')?.value === 'yes') {
+    storageType = 'chilled';
+}
+
+const gridIntensityForInUse = aioxyDataRef.countries?.[manufacturingCountryCode]?.electricityCO2 || 480;
+const refrigerantType = document.getElementById('refrigerantType')?.value || 'R-404A';
+
+const inUseEmissions = calculateInUseEmissions(
+    massBalanceData.final_content_weight_kg || 0.2,
+    storageType,
+    refrigerantType,
+    gridIntensityForInUse
+);
+
+if (inUseEmissions.totalCO2 > 0) {
+    auditTrail.pefCategories["Climate Change"].contribution_tree.Use = {
+        total: inUseEmissions.totalCO2,
+        components: [{
+            name: `Cold Chain Storage (${storageType})`,
+            subtotal: inUseEmissions.totalCO2,
+            retailCO2: inUseEmissions.retailEnergyCO2,
+            homeCO2: inUseEmissions.homeEnergyCO2,
+            refrigerantCO2: inUseEmissions.refrigerantCO2,
+            note: inUseEmissions.note
+        }]
+    };
+    auditTrail.pefCategories["Climate Change"].total += inUseEmissions.totalCO2;
+}
+            
             // 9. FINAL AGGREGATION & SAVING
             const functionalUnitWeight = massBalanceData.final_content_weight_kg || 0.2;
             const totalClimate = auditTrail.pefCategories["Climate Change"].total;
