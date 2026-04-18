@@ -118,6 +118,19 @@ IN_USE: {
     RETAIL_LEAKAGE_RATE: 0.15,      // 15% annual leakage commercial systems
     HOME_LEAKAGE_RATE: 0.01,        // 1% annual leakage domestic fridges
 },
+
+        // ================== ENTERIC FERMENTATION (IPCC 2006 Vol 4, Ch 10) ==================
+ENTERIC: {
+    // Emission factors (kg CH4 / head / year) - IPCC Tier 1
+    DAIRY_COW: 100,
+    BEEF_COW: 50,
+    SHEEP: 8,
+    GOAT: 5,
+    PIG: 1.5,
+    // Conversion to kg CO2e per kg meat/milk
+    // Requires yield data from window.aioxyData.yield_benchmarks
+},
+        
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -428,6 +441,78 @@ refrigerants: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+
+// ================== HELPER: Enteric Fermentation ==================
+/**
+ * Calculate enteric methane emissions for animal products
+ * Formula: Emissions = Population × EF_enteric × GWP_CH4
+ * 
+ * @param {string} animalType - 'dairy', 'beef', 'sheep', 'goat', 'pig'
+ * @param {number} quantityKg - Quantity of product in kg
+ * @param {string} originCountry - ISO country code
+ * @returns {Object} Enteric emissions breakdown
+ */
+function calculateEntericMethane(animalType, quantityKg, originCountry) {
+    if (!quantityKg || quantityKg <= 0) {
+        return { totalCO2: 0, ch4_kg: 0, note: 'No animal product' };
+    }
+    
+    const ENTERIC = PHYSICS_CONSTANTS.ENTERIC;
+    const GWP_CH4_biogenic = PHYSICS_CONSTANTS.gwp.ch4_biogenic;
+    
+    // Get emission factor
+    let ef_ch4_per_head = 0;
+    let productPerHeadPerYear = 0;
+    
+    switch (animalType.toLowerCase()) {
+        case 'dairy':
+        case 'milk':
+        case 'cow_milk':
+            ef_ch4_per_head = ENTERIC.DAIRY_COW;
+            productPerHeadPerYear = 8500; // kg milk per year (global average)
+            break;
+        case 'beef':
+        case 'cattle':
+            ef_ch4_per_head = ENTERIC.BEEF_COW;
+            productPerHeadPerYear = 250; // kg beef per year (global average)
+            break;
+        case 'sheep':
+        case 'lamb':
+            ef_ch4_per_head = ENTERIC.SHEEP;
+            productPerHeadPerYear = 20; // kg lamb per year
+            break;
+        case 'goat':
+            ef_ch4_per_head = ENTERIC.GOAT;
+            productPerHeadPerYear = 15;
+            break;
+        case 'pig':
+        case 'pork':
+            ef_ch4_per_head = ENTERIC.PIG;
+            productPerHeadPerYear = 100;
+            break;
+        default:
+            return { totalCO2: 0, ch4_kg: 0, note: 'Not a ruminant/animal product' };
+    }
+    
+    // Calculate heads needed for this quantity
+    const headsNeeded = quantityKg / productPerHeadPerYear;
+    
+    // Calculate methane emissions
+    const ch4_kg = headsNeeded * ef_ch4_per_head;
+    const totalCO2 = ch4_kg * GWP_CH4_biogenic;
+    
+    console.log(`🐄 [Enteric] ${animalType}: ${ch4_kg.toFixed(4)} kg CH4 × ${GWP_CH4_biogenic} = ${totalCO2.toFixed(4)} kg CO2e (biogenic)`);
+    
+    return {
+        totalCO2,
+        ch4_kg,
+        headsNeeded,
+        ef_ch4_per_head,
+        productPerHeadPerYear,
+        note: `Enteric fermentation: ${ch4_kg.toFixed(4)} kg CH4 (${headsNeeded.toFixed(4)} head-equivalents)`
+    };
+}
 
 
 // ================== HELPER: In-Use Emissions (Retail & Home) ==================
@@ -1398,9 +1483,6 @@ const eudrCheck = checkEUDRCompliance(
 
 if (!eudrCheck.compliant) {
     log.push(`🛑 [EUDR] ${eudrCheck.flag}: ${eudrCheck.reason}`);
-    
-    // If non-compliant, this ingredient cannot be used in EU market
-    // Flag for audit trail but continue calculation (for reporting purposes)
     impactResult.eudr_compliant = false;
     impactResult.eudr_flag = eudrCheck.flag;
     impactResult.eudr_reason = eudrCheck.reason;
@@ -1409,7 +1491,40 @@ if (!eudrCheck.compliant) {
     impactResult.eudr_compliant = true;
     impactResult.eudr_flag = eudrCheck.flag;
 }
-        
+
+// ========== 👉 STEP 3: ENTERIC FERMENTATION GOES HERE 👈 ==========
+let entericCO2 = 0;
+let entericCH4 = 0;
+
+const ingredientNameLower = (ingredientData?.name || '').toLowerCase();
+const isAnimalProduct = ingredientNameLower.includes('beef') || 
+                       ingredientNameLower.includes('cattle') ||
+                       ingredientNameLower.includes('milk') || 
+                       ingredientNameLower.includes('dairy') ||
+                       ingredientNameLower.includes('lamb') || 
+                       ingredientNameLower.includes('sheep') ||
+                       ingredientNameLower.includes('goat') ||
+                       ingredientNameLower.includes('pork') || 
+                       ingredientNameLower.includes('pig');
+
+if (isAnimalProduct) {
+    let animalType = 'beef';
+    if (ingredientNameLower.includes('milk') || ingredientNameLower.includes('dairy')) animalType = 'dairy';
+    else if (ingredientNameLower.includes('lamb') || ingredientNameLower.includes('sheep')) animalType = 'sheep';
+    else if (ingredientNameLower.includes('goat')) animalType = 'goat';
+    else if (ingredientNameLower.includes('pork') || ingredientNameLower.includes('pig')) animalType = 'pig';
+    
+    const entericResult = calculateEntericMethane(animalType, quantityKg, originCountry);
+    entericCO2 = entericResult.totalCO2;
+    entericCH4 = entericResult.ch4_kg;
+    
+    co2Biogenic += entericCO2;
+    finalCO2 += entericCO2;
+    
+    log.push(`🐄 [Enteric] ${entericResult.note}`);
+}
+
+// ========== RETURN STATEMENT ==========
 return {
     totalCO2: totalCO2,
     fossilCO2: co2Fossil * quantityKg,
@@ -1429,9 +1544,12 @@ return {
     biogenicRemovals: biogenicRemovals,
     marineEutrophication_N: marineEutrophication_kg_N || 0,
     freshwaterEutrophication_P: impactResult.freshwaterEutrophication_P || 0,
-    eudr_compliant: impactResult.eudr_compliant !== false,  // <-- ADD THIS
-    eudr_flag: impactResult.eudr_flag || '✅ COMPLIANT',     // <-- ADD THIS
-    eudr_reason: impactResult.eudr_reason || ''              // <-- ADD THIS
+    eudr_compliant: impactResult.eudr_compliant !== false,
+    eudr_flag: impactResult.eudr_flag || '✅ COMPLIANT',
+    eudr_reason: impactResult.eudr_reason || '',
+    // 👉 STEP 4: ADD THESE TWO FIELDS 👈
+    enteric_co2: entericCO2,
+    enteric_ch4_kg: entericCH4
 };
     }
 
