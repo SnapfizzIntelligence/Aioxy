@@ -84,6 +84,12 @@ DNM: {
 HOTSPOT: {
     CUMULATIVE_THRESHOLD: 0.80,    // 80% cumulative contribution = hotspot
 },
+        // ================== CAPITAL GOODS (ISO 14044 / PEF 3.1) ==================
+CAPITAL_GOODS: {
+    CUTOFF_THRESHOLD: 0.01,         // 1% rule - must include if >1% of total impact
+    DEFAULT_LIFESPAN_YEARS: 15,     // Default machinery lifespan
+    BUILDING_LIFESPAN_YEARS: 30,    // Default building lifespan
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -313,6 +319,23 @@ commodity_prices: {
     'cocoa': 2.80,
     'default': 0.50
 },
+// ================== CAPITAL GOODS PROXIES (Ecoinvent / Industry) ==================
+// Embedded carbon per unit (kg CO2e)
+capital_goods: {
+    // Processing equipment (kg CO2e per kg capacity per year)
+    'mixer': 0.008,
+    'pasteurizer': 0.015,
+    'fermenter': 0.025,
+    'extruder': 0.020,
+    'spray_dryer': 0.035,
+    'freezer': 0.018,
+    'oven': 0.012,
+    'mill': 0.010,
+    // Building (kg CO2e per m2 per year)
+    'food_plant': 25,
+    'cold_storage': 35,
+    'default': 0.010
+},
     };
 
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
@@ -357,6 +380,67 @@ commodity_prices: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Capital Goods Amortization ==================
+/**
+ * Calculate capital goods impact per ISO 14044 capital goods rules
+ * Formula: Impact_per_kg = (Total_CO2e_Machine / Lifespan_years) / Annual_Output_kg
+ * 
+ * @param {string} equipmentType - Type of equipment (mixer, pasteurizer, etc.)
+ * @param {number} annualOutputKg - Annual production output in kg
+ * @param {number} equipmentCapacity - Equipment capacity (kg or units)
+ * @param {number} lifespanYears - Equipment lifespan (default 15)
+ * @returns {number} Capital goods impact in kg CO2e per kg product
+ */
+function calculateCapitalGoods(equipmentType, annualOutputKg, equipmentCapacity = 1, lifespanYears = null) {
+    if (!annualOutputKg || annualOutputKg <= 0) return 0;
+    
+    const defaults = PHYSICS_CONSTANTS.CAPITAL_GOODS;
+    const lifespan = lifespanYears || defaults.DEFAULT_LIFESPAN_YEARS;
+    
+    // Get embedded carbon factor
+    const factors = PHYSICS_DB.capital_goods;
+    const embeddedCO2ePerUnit = factors[equipmentType] || factors.default;
+    
+    // Calculate total embedded carbon
+    const totalEmbeddedCO2e = embeddedCO2ePerUnit * equipmentCapacity;
+    
+    // Amortize over lifespan and divide by annual output
+    const impactPerKg = (totalEmbeddedCO2e / lifespan) / annualOutputKg;
+    
+    console.log(`🏭 [Capital Goods] ${equipmentType}: ${impactPerKg.toFixed(6)} kg CO2e/kg (${totalEmbeddedCO2e.toFixed(0)} kg CO2e / ${lifespan} yrs / ${annualOutputKg} kg)`);
+    
+    return impactPerKg;
+}
+
+/**
+ * Check if capital goods must be included per 1% cutoff rule
+ * @param {number} capitalImpact - Calculated capital goods impact per kg
+ * @param {number} totalImpactPerKg - Total product impact per kg
+ * @returns {Object} {mustInclude: boolean, contribution: string, reason: string}
+ */
+function evaluateCapitalGoodsCutoff(capitalImpact, totalImpactPerKg) {
+    const THRESHOLD = PHYSICS_CONSTANTS.CAPITAL_GOODS.CUTOFF_THRESHOLD;
+    
+    if (totalImpactPerKg <= 0) {
+        return { mustInclude: false, contribution: '0%', reason: 'No baseline impact' };
+    }
+    
+    const contribution = capitalImpact / totalImpactPerKg;
+    const mustInclude = contribution > THRESHOLD;
+    
+    const reason = mustInclude 
+        ? `Capital goods contribute ${(contribution*100).toFixed(1)}% (>1% cutoff) - MUST BE INCLUDED per ISO 14044`
+        : `Capital goods contribute ${(contribution*100).toFixed(2)}% (<1% cutoff) - May be excluded`;
+    
+    console.log(`🏭 [Capital Goods Cutoff] ${reason}`);
+    
+    return {
+        mustInclude,
+        contribution: (contribution * 100).toFixed(2) + '%',
+        reason
+    };
+        }
 
 // ================== HELPER: 80% Hotspot Identification ==================
 /**
@@ -1433,20 +1517,45 @@ if (eolTarget === 'incinerated') {
 
         console.log(`   └─ Result: ${electricityKWh.toFixed(3)} kWh = ${manufacturingCO2.toFixed(4)} kg CO₂e (${countryCode} grid: ${gridIntensity}g/kWh)`);
 
+
+        // ========== CAPITAL GOODS AMORTIZATION (ISO 14044 1% Rule) ==========
+let capitalGoodsCO2 = 0;
+let capitalGoodsNote = '';
+
+// Check if user provided equipment type in primary data
+const equipmentType = domGetter('equipmentType', true) || processingMethod;
+const annualOutput = parseFloat(domGetter('factoryTotalOutput', true)) || massOutputKg * 1000; // Estimate if not provided
+
+if (annualOutput > 0) {
+    capitalGoodsCO2 = calculateCapitalGoods(equipmentType, annualOutput, massOutputKg);
+    
+    // Evaluate 1% cutoff
+    const totalImpactPerKg = (manufacturingCO2 + capitalGoodsCO2) / massOutputKg;
+    const cutoffEval = evaluateCapitalGoodsCutoff(capitalGoodsCO2 / massOutputKg, totalImpactPerKg);
+    
+    if (cutoffEval.mustInclude) {
+        manufacturingCO2 += capitalGoodsCO2;
+        capitalGoodsNote = `Includes capital goods: +${capitalGoodsCO2.toFixed(4)} kg CO2e (${cutoffEval.contribution} of total)`;
+    } else {
+        capitalGoodsNote = `Capital goods excluded: ${cutoffEval.contribution} contribution (<1% cutoff)`;
+    }
+}
         return {
-            co2: manufacturingCO2,
-            kwh: electricityKWh,
-            gas_mj: naturalGasMj,
-            method: methodUsed,
-            confidence: confidenceLevel,
-            physics_data: physicsData,
-            water_evaporated_kg: waterEvaporated,
-            grid_intensity_g_per_kwh: gridIntensity,
-            energy_source: energyNote, 
-            country: countryCode,
-            fugitive_co2: fugitiveCO2,
-            calculation_trace: energyTrace
-        };
+    co2: manufacturingCO2,
+    kwh: electricityKWh,
+    gas_mj: naturalGasMj,
+    method: methodUsed,
+    confidence: confidenceLevel,
+    physics_data: physicsData,
+    water_evaporated_kg: waterEvaporated,
+    grid_intensity_g_per_kwh: gridIntensity,
+    energy_source: energyNote,
+    country: countryCode,
+    fugitive_co2: fugitiveCO2,
+    capital_goods_co2: capitalGoodsCO2,  // <-- ADD THIS LINE
+    capital_goods_note: capitalGoodsNote, // <-- ADD THIS LINE
+    calculation_trace: energyTrace
+};
     }
 
     // ================== AIOXY COMPLIANCE ENGINE: EF 3.1 (UI COMPATIBLE) ==================
