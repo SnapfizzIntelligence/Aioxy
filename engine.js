@@ -144,6 +144,12 @@ ALLOCATION: {
     WASTE_VALUE_THRESHOLD: 0.01,     // USD/kg - below this = waste
     DEFAULT_WASTE_TYPES: ['husk', 'shell', 'peel', 'stem', 'leaf', 'straw', 'manure'],
 },
+        // ================== DATA VALIDITY (PEF 3.1 §5.1) ==================
+VALIDITY: {
+    STUDY_EXPIRATION_YEARS: 3,
+    DATASET_EXPIRATION_YEARS: 5,
+    WARNING_THRESHOLD_MONTHS: 30,    // Warn 6 months before expiration
+},
         
     };
 
@@ -455,6 +461,54 @@ refrigerants: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: Data Validity & Expiration ==================
+/**
+ * Check if study or dataset has expired per PEF 3.1 §5.1
+ * 
+ * @param {string} timestamp - ISO timestamp of calculation or dataset
+ * @param {number} validityYears - Years until expiration
+ * @returns {Object} Validity status
+ */
+function checkExpiration(timestamp, validityYears = PHYSICS_CONSTANTS.VALIDITY.STUDY_EXPIRATION_YEARS) {
+    if (!timestamp) {
+        return {
+            valid: true,
+            expired: false,
+            warning: false,
+            daysRemaining: null,
+            note: 'No timestamp provided'
+        };
+    }
+    
+    const calculationDate = new Date(timestamp);
+    const expirationDate = new Date(calculationDate);
+    expirationDate.setFullYear(expirationDate.getFullYear() + validityYears);
+    
+    const now = new Date();
+    const daysRemaining = Math.ceil((expirationDate - now) / (1000 * 60 * 60 * 24));
+    const warningThreshold = PHYSICS_CONSTANTS.VALIDITY.WARNING_THRESHOLD_MONTHS * 30;
+    
+    const expired = daysRemaining <= 0;
+    const warning = !expired && daysRemaining <= warningThreshold;
+    const valid = !expired;
+    
+    console.log(`📅 [Validity] ${daysRemaining} days remaining. Expired: ${expired}, Warning: ${warning}`);
+    
+    return {
+        valid,
+        expired,
+        warning,
+        daysRemaining,
+        expirationDate: expirationDate.toISOString().split('T')[0],
+        calculationDate: calculationDate.toISOString().split('T')[0],
+        note: expired 
+            ? `❌ EXPIRED - Study is over ${validityYears} years old. Recalculation required per PEF 3.1 §5.1.`
+            : warning
+                ? `⚠️ WARNING - Study expires in ${daysRemaining} days. Update recommended.`
+                : `✅ Valid - Expires in ${daysRemaining} days`
+    };
+}
 
 // ================== HELPER: Waste vs Co-Product Classification ==================
 /**
