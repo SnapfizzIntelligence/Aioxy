@@ -535,6 +535,60 @@ if (primaryData && primaryData.yieldKgPerHa > 0 && primaryData.nitrogenKgPerTon 
     
     log.push(`🌱 IPCC TIER 1: Direct N₂O emissions = ${F_SN.toFixed(2)} kg N × 0.01 × 1.5714 × 273 = ${n2oCO2e.toFixed(4)} kg CO₂e`);
     
+// ========== PEF 3.1 NITRATE LEACHING (Marine Eutrophication) ==========
+// Formula: Mass_NO3 = (F_SN × FRAC_LEACH) × (62/14)
+// Source: IPCC 2006 Vol 4, Chapter 11 / PEF 3.1
+const nitrateLeached_kg_N = F_SN * PHYSICS_CONSTANTS.N_LEACHING.FRAC_LEACH;
+const nitrateLeached_kg_NO3 = nitrateLeached_kg_N * PHYSICS_CONSTANTS.N_LEACHING.NO3_CONVERSION;
+
+// Store for Marine Eutrophication category (will be used in PEF category calculation)
+const marineEutrophication_kg_N = nitrateLeached_kg_N;
+
+// Indirect N₂O from leached nitrogen (Climate Change category)
+// Formula: N₂O_Indirect = N_leached × EF5 × (44/28) × GWP_N2O
+const n2oIndirect_kg = nitrateLeached_kg_N * PHYSICS_CONSTANTS.N_LEACHING.INDIRECT_N2O_EF5 * (44/28);
+const n2oIndirectCO2e = n2oIndirect_kg * PHYSICS_CONSTANTS.gwp.n2o;
+
+finalCO2 += n2oIndirectCO2e;
+co2Fossil += n2oIndirectCO2e;
+
+log.push(`💧 [N-Leaching] ${nitrateLeached_kg_N.toFixed(4)} kg N leached → ${nitrateLeached_kg_NO3.toFixed(4)} kg NO3 (Marine Eutrophication)`);
+log.push(`🌱 [Indirect N₂O] ${nitrateLeached_kg_N.toFixed(4)} kg N × 0.011 × 44/28 × 273 = +${n2oIndirectCO2e.toFixed(4)} kg CO₂e`);
+
+    
+// ========== PEF 3.1 PHOSPHORUS LEACHING (Freshwater Eutrophication) ==========
+// Formula: Mass_PO4 = (P_applied × FRAC_RELE) × 3.06
+// Source: SALCA-P Model / PEF 3.1
+
+// Calculate P_applied from primary data or use default
+let P_applied = 0;
+if (primaryData && primaryData.phosphorusKgPerTon !== undefined) {
+    P_applied = primaryData.phosphorusKgPerTon * quantityKg;
+} else {
+    // Estimate from fertilizer type if specified
+    const fertilizerType = primaryData?.fertilizerType || 'default';
+    const fertData = PHYSICS_DB.fertilizer_composition[fertilizerType] || PHYSICS_DB.fertilizer_composition.default;
+    // Assume fertilizer applied at rate proportional to nitrogen
+    const estimatedFertilizerMass = F_SN / (fertData.n_percent / 100);
+    P_applied = estimatedFertilizerMass * (fertData.p_percent / 100);
+}
+
+if (P_applied > 0) {
+    const phosphateLeached_kg_P = P_applied * PHYSICS_CONSTANTS.P_LEACHING.FRAC_RELE;
+    const phosphateLeached_kg_PO4 = phosphateLeached_kg_P * PHYSICS_CONSTANTS.P_LEACHING.PO4_CONVERSION;
+    
+    // Store for Freshwater Eutrophication category
+    const freshwaterEutrophication_kg_P = phosphateLeached_kg_P;
+    
+    log.push(`💧 [P-Leaching] ${P_applied.toFixed(4)} kg P applied → ${phosphateLeached_kg_P.toFixed(4)} kg P lost → ${phosphateLeached_kg_PO4.toFixed(4)} kg PO4 (Freshwater Eutrophication)`);
+    
+    // Attach to impact result for later use in PEF categories
+    impactResult.freshwaterEutrophication_P = freshwaterEutrophication_kg_P;
+}
+
+// Store marine eutrophication for later use
+impactResult.marineEutrophication_N = marineEutrophication_kg_N;
+    
 // 🛡️ AUDIT FIX: AWARE CF handles water scarcity spatially. No arbitrary multipliers.
 if (primaryData.waterSource === 'rainfed') {
     log.push(`💧 Verified Rainfed: Water source recorded`);
@@ -668,12 +722,15 @@ return {
     perKgCO2: finalCO2,
     perKgWater: finalWater,
     perKgLand: finalLand,
+    marineEutrophication_N: marineEutrophication_kg_N || 0,
+freshwaterEutrophication_P: impactResult.freshwaterEutrophication_P || 0,
     perKgFossil: finalFossil,
     logs: log,
     qualityPenalty: qualityPenalty,
     universal_adjustments: universal_adjustments,
     is_primary: !!primaryData,
     biogenicRemovals: biogenicRemovals
+    
 };
     }
 
