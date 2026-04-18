@@ -2669,7 +2669,8 @@ return {
     allocation_sensitivity: sensitivityResult,
     sampling_validation: samplingResult,
     pesticide_toxicity: pesticideResults,
-    biodiversity_lanca: biodiversityResult   // ← NO COMMA - LAST FIELD
+    biodiversity_lanca: biodiversityResult,
+    allocation_hierarchy: hierarchyResult   // ← NO COMMA - LAST FIELD
 };
     }
 
