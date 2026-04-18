@@ -247,6 +247,12 @@ COMPARATIVE: {
     CRITICAL_REVIEW_REQUIRED: true,
     PUBLIC_DISCLOSURE_RESTRICTED: true,
 },
+        // ================== ILCD EXPORT FORMAT (ISO 14044 §4.3.2) ==================
+ILCD_EXPORT: {
+    FORMAT_VERSION: '1.1',
+    COMPLIANCE: 'EF 3.1',
+    UUID_NAMESPACE: 'aioxy-lci-export'
+},
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
@@ -623,6 +629,205 @@ jrc_test_vectors: {
         while (v === 0) v = Math.random();
         return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     }
+
+// ================== HELPER: ILCD Unit Process Export ==================
+/**
+ * Export Life Cycle Inventory as ILCD-compliant Unit Process
+ * Required for auditor transparency per ISO 14044 §4.3.2
+ * 
+ * @param {object} auditTrail - Complete audit trail object
+ * @returns {Object} ILCD-compliant LCI export
+ */
+function exportUnitProcessILCD(auditTrail) {
+    const timestamp = new Date().toISOString();
+    const dppId = auditTrail.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    
+    // Build unit process structure
+    const unitProcess = {
+        // ILCD Header
+        '@context': 'https://ilcd.ec.europa.eu/schema/1.1',
+        '@id': dppId,
+        'ilcd:version': PHYSICS_CONSTANTS.ILCD_EXPORT.FORMAT_VERSION,
+        'ilcd:compliance': PHYSICS_CONSTANTS.ILCD_EXPORT.COMPLIANCE,
+        'ilcd:timestamp': timestamp,
+        
+        // Process Information
+        'processInformation': {
+            'name': auditTrail.productName || 'Unnamed Product',
+            'functionalUnit': {
+                'quantity': auditTrail.mass_balance?.final_content_weight_kg || 0.2,
+                'unit': 'kg',
+                'description': '1 kg of final product at factory gate'
+            },
+            'systemBoundary': {
+                'type': 'Cradle-to-Retail',
+                'includes': ['raw_materials', 'manufacturing', 'transport', 'packaging', 'use', 'end_of_life'],
+                'excludes': ['capital_goods_depreciation', 'human_labor', 'administrative_overheads'],
+                'cutoff': '5% mass/energy'
+            }
+        },
+        
+        // Inputs (Ingredients)
+        'inputs': [],
+        
+        // Outputs (Products, Emissions, Waste)
+        'outputs': [],
+        
+        // Impact Assessment Results
+        'impactAssessment': {
+            'method': 'EF 3.1',
+            'categories': []
+        },
+        
+        // Data Quality
+        'dataQuality': {
+            'overallDQR': auditTrail.dqr_summary?.overall_dqr || 1.5,
+            'components': auditTrail.dqr_summary?.component_dqrs || []
+        },
+        
+        // Administrative
+        'administrative': {
+            'practitioner': 'AIOXY Sustainability Intelligence',
+            'generator': 'AIOXY Engine v' + PHYSICS_CONSTANTS.VERSION.ENGINE,
+            'reportDate': timestamp
+        }
+    };
+    
+    // Add ingredient inputs with ILCD UUIDs
+    if (auditTrail.pefCategories?.['Climate Change']?.contribution_tree?.Ingredients?.components) {
+        auditTrail.pefCategories['Climate Change'].contribution_tree.Ingredients.components.forEach((ing, idx) => {
+            unitProcess.inputs.push({
+                '@id': `input-${idx}`,
+                'ilcd:flow': {
+                    'name': ing.name,
+                    'uuid': PHYSICS_DB.ilcd_uuids['Climate Change'] || 'unknown',
+                    'category': 'Raw Material'
+                },
+                'quantity': {
+                    'value': ing.quantity_kg || 0,
+                    'unit': 'kg'
+                },
+                'origin': ing.universal_adjustments?.adjusted_for_country || 'Unknown',
+                'dataQuality': {
+                    'dqr': ing.dqr || 2.5,
+                    'isPrimary': ing.primary_data_used || false
+                }
+            });
+        });
+    }
+    
+    // Add manufacturing energy
+    if (auditTrail.pefCategories?.['Climate Change']?.contribution_tree?.Manufacturing) {
+        const mfg = auditTrail.pefCategories['Climate Change'].contribution_tree.Manufacturing;
+        unitProcess.inputs.push({
+            '@id': 'input-manufacturing',
+            'ilcd:flow': {
+                'name': 'Electricity/Energy',
+                'uuid': PHYSICS_DB.ilcd_uuids['Resource Use, fossils'] || 'unknown',
+                'category': 'Energy'
+            },
+            'quantity': {
+                'value': mfg.kwh || 0,
+                'unit': 'kWh'
+            },
+            'impact': {
+                'value': mfg.total || 0,
+                'unit': 'kg CO2e'
+            }
+        });
+    }
+    
+    // Add transport
+    if (auditTrail.pefCategories?.['Climate Change']?.contribution_tree?.Transport) {
+        const transport = auditTrail.pefCategories['Climate Change'].contribution_tree.Transport;
+        unitProcess.inputs.push({
+            '@id': 'input-transport',
+            'ilcd:flow': {
+                'name': 'Transport Services',
+                'uuid': PHYSICS_DB.ilcd_uuids['Climate Change'] || 'unknown',
+                'category': 'Logistics'
+            },
+            'impact': {
+                'value': transport.total || 0,
+                'unit': 'kg CO2e'
+            }
+        });
+    }
+    
+    // Add impact categories with UUIDs
+    Object.keys(auditTrail.pefCategories || {}).forEach(cat => {
+        if (cat.includes('Climate Change -')) return; // Skip sub-indicators
+        
+        const data = auditTrail.pefCategories[cat];
+        unitProcess.impactAssessment.categories.push({
+            'name': cat,
+            'uuid': PHYSICS_DB.ilcd_uuids[cat] || null,
+            'total': data.total || 0,
+            'unit': data.unit || '',
+            'perKg': auditTrail.mass_balance?.final_content_weight_kg > 0 
+                ? data.total / auditTrail.mass_balance.final_content_weight_kg 
+                : 0
+        });
+    });
+    
+    // Add emissions to output
+    unitProcess.outputs.push({
+        '@id': 'output-co2',
+        'ilcd:flow': {
+            'name': 'Carbon dioxide (fossil)',
+            'uuid': PHYSICS_DB.ilcd_uuids['Climate Change - Fossil'] || 'unknown',
+            'category': 'Emission to air'
+        },
+        'quantity': {
+            'value': auditTrail.pefCategories?.['Climate Change - Fossil']?.total || 0,
+            'unit': 'kg'
+        }
+    });
+    
+    unitProcess.outputs.push({
+        '@id': 'output-product',
+        'ilcd:flow': {
+            'name': auditTrail.productName || 'Product',
+            'category': 'Product'
+        },
+        'quantity': {
+            'value': auditTrail.mass_balance?.final_content_weight_kg || 0.2,
+            'unit': 'kg'
+        }
+    });
+    
+    return unitProcess;
+}
+
+/**
+ * Export as JSON string for download
+ */
+function exportILCDasJSON(auditTrail) {
+    const unitProcess = exportUnitProcessILCD(auditTrail);
+    return JSON.stringify(unitProcess, null, 2);
+}
+
+/**
+ * Validate ILCD export completeness
+ */
+function validateILCDExport(unitProcess) {
+    const missing = [];
+    
+    if (!unitProcess.processInformation?.functionalUnit?.quantity) missing.push('Functional unit quantity');
+    if (!unitProcess.inputs || unitProcess.inputs.length === 0) missing.push('Inputs');
+    if (!unitProcess.outputs || unitProcess.outputs.length === 0) missing.push('Outputs');
+    if (!unitProcess.impactAssessment?.categories || unitProcess.impactAssessment.categories.length === 0) {
+        missing.push('Impact categories');
+    }
+    
+    const valid = missing.length === 0;
+    
+    return {
+        valid,
+        missing,
+        note: valid ? '✅ ILCD export complete and valid' : `⚠️ Missing: ${missing.join(', ')}`
+    };
+}
 
 // ================== HELPER: Comparative Assertion Enforcement ==================
 /**
@@ -5195,6 +5400,22 @@ if (!comparativeValidation.valid) {
     auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
     auditTrail.compliance_warnings.push(comparativeValidation.note);
     auditTrail.watermark = auditTrail.watermark || comparativeStatement.watermark;
+    }
+
+            // ========== ILCD UNIT PROCESS EXPORT ==========
+const ilcdUnitProcess = exportUnitProcessILCD(auditTrail);
+const ilcdValidation = validateILCDExport(ilcdUnitProcess);
+
+auditTrail.ilcd_export = {
+    unit_process: ilcdUnitProcess,
+    validation: ilcdValidation,
+    export_json: () => exportILCDasJSON(auditTrail),
+    timestamp: new Date().toISOString()
+};
+
+if (!ilcdValidation.valid) {
+    auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
+    auditTrail.compliance_warnings.push(ilcdValidation.note);
     }
 
             // ========== JRC REFERENCE VERIFICATION ==========
