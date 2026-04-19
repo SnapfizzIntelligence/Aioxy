@@ -392,7 +392,7 @@ ILCD_EXPORT: {
                 "Yangtze":    { default: 22.0, summer: 45.0, winter: 8.0 },
                 "NationalAvg": { default: 41.0, summer: 70.0, winter: 20.0 }
             }
-        }
+        },
         // ================== FERTILIZER COMPOSITION (FAO / Industry Standard) ==================
 // N% and P% for common fertilizers - used for N-leaching and P-leaching calculations
 fertilizer_composition: {
@@ -434,7 +434,7 @@ fertilizer_composition: {
                 electricity_kwh_per_kg: 1.3,
                 note: "Extrusion average"
             }
-        }
+        },
         // ================== COUNTRY LUC FALLBACKS (EF 3.1 / WFLDB) ==================
 // Source: PEF 3.1 §4.4.8.1 / Blonk WFLDB
 // Values in kg CO2e per kg of product (20-year amortized)
@@ -3456,8 +3456,8 @@ if (annualOutput > 0) {
         capitalGoodsNote = `Capital goods excluded: ${cutoffEval.contribution} contribution (<1% cutoff)`;
     }
 }
-        // Build energy trace BEFORE return
-const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity.toFixed(0)} gCO2e/kWh [${energyNote}] | ${electricityHierarchyNote}${scenarioNote ? ' | ' + scenarioNote : ''}${fugitiveTrace}`;
+        // Build energy trace BEFORE return (overwrite earlier draft)
+energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity.toFixed(0)} gCO2e/kWh [${energyNote}] | ${electricityHierarchyNote}${scenarioNote ? ' | ' + scenarioNote : ''}${fugitiveTrace}`;
 
 // THEN return the object
 return {
@@ -5373,22 +5373,6 @@ if (inUseEmissions.totalCO2 > 0) {
             this.state.auditTrailData = auditTrail;
             this.state.currentDPPId = auditTrail.dppId;
 
-            // ========== DATA VALIDITY CHECK ==========
-const validityCheck = checkExpiration(
-    auditTrail.calculationTimestamp,
-    PHYSICS_CONSTANTS.VALIDITY.STUDY_EXPIRATION_YEARS
-);
-
-auditTrail.validity = validityCheck;
-
-if (validityCheck.expired) {
-    console.warn(`⚠️ [Validity] ${validityCheck.note}`);
-    auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
-    auditTrail.compliance_warnings.push(validityCheck.note);
-} else if (validityCheck.warning) {
-    console.log(`📅 [Validity] ${validityCheck.note}`);
-    }
-            
             const blCO2 = comparisonBaseline.co2PerKg || unified.co2PerKg;
             const upliftCO2 = uplift?.co2 || 0;
             const baselineCO2Total = blCO2 + upliftCO2;
