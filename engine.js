@@ -521,21 +521,25 @@ refrigerants: {
 },
 
 // ================== USETOX CHARACTERIZATION FACTORS ==================
-// To be populated with official USEtox 2.0 data
-// Format: { pesticide: { soil: {cancer, noncancer, eco}, air: {...}, water: {...} } }
-usetox_factors: {
-    // Placeholder - populate from USEtox 2.0 database
-    'glyphosate': {
-        soil: { ctu_h_cancer: 1.2e-7, ctu_h_noncancer: 3.4e-8, ctu_e: 45.2 },
-        air: { ctu_h_cancer: 8.5e-8, ctu_h_noncancer: 2.1e-8, ctu_e: 12.3 },
-        water: { ctu_h_cancer: 5.6e-7, ctu_h_noncancer: 1.8e-7, ctu_e: 230.5 }
-    },
-    'default': {
-        soil: { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
-        air: { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
-        water: { ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
+// Live data from window.aioxyData.usetox (USEtox 2.14 — 3,077 substances)
+// Lookup by CAS RN. Soil compartment = continental agricultural soil (PEF 3.1 default)
+usetox_factors: (function() {
+    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.usetox)
+        ? window.aioxyData.usetox.human_toxicity
+        : null;
+    if (live) {
+        console.log('✅ [USEtox] Live database loaded —', Object.keys(live).length, 'substances');
+        return live;
     }
-},
+    console.warn('⚠️ [USEtox] Live database not found — using fallback');
+    return {
+        'default': {
+            soil: { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
+            air:  { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
+            water:{ ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
+        }
+    };
+})(),
 
 // ================== OFFICIAL EF 3.1 ILCD UUIDs (JRC Source) ==================
 ilcd_uuids: {
