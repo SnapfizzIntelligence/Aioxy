@@ -3129,9 +3129,17 @@ if (eolTarget === 'incinerated') {
         let cf = GLOBAL_DEFAULT_CF;
         
         // Safely check for external data
-        const externalData = (typeof global !== 'undefined' && global.aioxyData?.aware_factors) 
-            ? global.aioxyData.aware_factors 
-            : {};
+        const externalData = (typeof global !== 'undefined' && global.aioxyData)
+    ? (global.aioxyData.aware_20?.agricultural      // ✅ New database key
+    || global.aioxyData.aware_factors               // legacy fallback
+    || {})
+    : {};
+if (global.aioxyData?.aware_20?.agricultural) {
+    console.log('✅ [AWARE] Live AWARE 2.0 database loaded —', 
+        Object.keys(global.aioxyData.aware_20.agricultural).length, 'countries');
+} else {
+    console.warn('⚠️ [AWARE] Live database not found — using fallback');
+}
 
         if (externalData[safeCountryCode]) {
             const countryEntry = externalData[safeCountryCode];
