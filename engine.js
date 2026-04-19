@@ -562,27 +562,52 @@ usetox_factors: (function() {
 })(),
 
 // ================== OFFICIAL EF 3.1 ILCD UUIDs (JRC Source) ==================
-ilcd_uuids: {
-    'Acidification': 'b5c611c6-def3-11e6-bf01-fe55135034f3',
-    'Climate Change': '6209b35f-9447-40b5-b68c-a1099e3674a0',
-    'Climate Change - Biogenic': '706261af-a357-4cc0-a50a-f3033fcbd556',
-    'Climate Change - Fossil': '7fce5b3a-66b8-4ce1-91e8-a925aee1f186',
-    'Climate Change - Land Use': '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12',
-    'Ecotoxicity, freshwater': '05316e7a-b254-4bea-9cf0-6bf33eb5c630',
-    'Eutrophication, marine': 'b5c619fa-def3-11e6-bf01-fe55135034f3',
-    'Eutrophication, freshwater': 'b53ec18f-7377-4ad3-86eb-cc3f4f276b2b',
-    'Eutrophication, terrestrial': 'b5c614d2-def3-11e6-bf01-fe55135034f3',
-    'Human Toxicity, cancer': '2299222a-bbd8-474f-9d4f-4dd1f18aea7c',
-    'Human Toxicity, non-cancer': '7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8',
-    'Ionizing Radiation': 'b5c632be-def3-11e6-bf01-fe55135034f3',
-    'Land Use': 'b2ad6890-c78d-11e6-9d9d-cec0c932ce01',
-    'Ozone Depletion': 'b5c629d6-def3-11e6-bf01-fe55135034f3',
-    'Particulate Matter': 'b5c602c6-def3-11e6-bf01-fe55135034f3',
-    'Photochemical Ozone Formation': 'b5c610fe-def3-11e6-bf01-fe55135034f3',
-    'Resource Use, fossils': 'b2ad6110-c78d-11e6-9d9d-cec0c932ce01',
-    'Resource Use, minerals/metals': 'b2ad6494-c78d-11e6-9d9d-cec0c932ce01',
-    'Water Use/Scarcity (AWARE)': 'b2ad66ce-c78d-11e6-9d9d-cec0c932ce01'
-},
+// Live data from window.aioxyData.ilcd_registry
+ilcd_uuids: (function() {
+    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.ilcd_registry)
+        ? window.aioxyData.ilcd_registry
+        : null;
+    
+    if (live) {
+        // Extract UUIDs from the registry
+        const uuids = {};
+        Object.keys(live).forEach(cat => {
+            uuids[cat] = live[cat].uuid;
+        });
+        
+        // Add sub-indicators manually (not in ILCD registry but needed for export)
+        uuids['Climate Change - Biogenic'] = uuids['Climate change'] || '706261af-a357-4cc0-a50a-f3033fcbd556';
+        uuids['Climate Change - Fossil'] = uuids['Climate change'] || '7fce5b3a-66b8-4ce1-91e8-a925aee1f186';
+        uuids['Climate Change - Land Use'] = uuids['Climate change'] || '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12';
+        
+        console.log('✅ [ILCD] Live UUID registry loaded —', Object.keys(live).length, 'categories');
+        return uuids;
+    }
+    
+    console.warn('⚠️ [ILCD] Live database not found — using fallback UUIDs');
+    return {
+        'Acidification': 'b5c611c6-def3-11e6-bf01-fe55135034f3',
+        'Climate Change': '6209b35f-9447-40b5-b68c-a1099e3674a0',
+        'Climate Change - Biogenic': '706261af-a357-4cc0-a50a-f3033fcbd556',
+        'Climate Change - Fossil': '7fce5b3a-66b8-4ce1-91e8-a925aee1f186',
+        'Climate Change - Land Use': '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12',
+        'Ecotoxicity, freshwater': '05316e7a-b254-4bea-9cf0-6bf33eb5c630',
+        'Eutrophication, marine': 'b5c619fa-def3-11e6-bf01-fe55135034f3',
+        'Eutrophication, freshwater': 'b53ec18f-7377-4ad3-86eb-cc3f4f276b2b',
+        'Eutrophication, terrestrial': 'b5c614d2-def3-11e6-bf01-fe55135034f3',
+        'Human Toxicity, cancer': '2299222a-bbd8-474f-9d4f-4dd1f18aea7c',
+        'Human Toxicity, non-cancer': '7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8',
+        'Ionizing Radiation': 'b5c632be-def3-11e6-bf01-fe55135034f3',
+        'Land Use': 'b2ad6890-c78d-11e6-9d9d-cec0c932ce01',
+        'Ozone Depletion': 'b5c629d6-def3-11e6-bf01-fe55135034f3',
+        'Particulate Matter': 'b5c602c6-def3-11e6-bf01-fe55135034f3',
+        'Photochemical Ozone Formation': 'b5c610fe-def3-11e6-bf01-fe55135034f3',
+        'Resource Use, fossils': 'b2ad6110-c78d-11e6-9d9d-cec0c932ce01',
+        'Resource Use, minerals/metals': 'b2ad6494-c78d-11e6-9d9d-cec0c932ce01',
+        'Water Use/Scarcity (AWARE)': 'b2ad66ce-c78d-11e6-9d9d-cec0c932ce01'
+    };
+})(),
+    
 // ================== JRC REFERENCE TEST VECTORS (EF 3.1) ==================
 // Official test values for software verification
 jrc_test_vectors: {
