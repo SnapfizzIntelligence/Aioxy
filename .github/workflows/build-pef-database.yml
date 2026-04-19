@@ -1,0 +1,48 @@
+name: Build PEF 3.1 Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for rebuild'
+        required: false
+        default: 'Manual trigger'
+
+jobs:
+  build-pef-database:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pandas openpyxl
+      
+      - name: Build PEF 3.1 Database
+        run: python build_database.py
+      
+      - name: Upload database artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aioxy-pef3.1-database
+          path: aioxy_pef3.1_database.js
+          retention-days: 90
+      
+      - name: Commit and push if changed
+        run: |
+          git config user.name "AIOXY Bot"
+          git config user.email "bot@aioxy.ai"
+          git add aioxy_pef3.1_database.js
+          if git diff --staged --quiet; then
+            echo "No changes to database"
+          else
+            git commit -m "chore: update PEF 3.1 database [skip ci]"
+            git push
+          fi
