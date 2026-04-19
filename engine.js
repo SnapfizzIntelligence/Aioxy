@@ -3456,28 +3456,59 @@ return {
     // ================== AIOXY COMPLIANCE ENGINE: EF 3.1 (UI COMPATIBLE) ==================
     function calculatePEFSingleScore(pefResults, productWeightKg) {
         // JRC EF 3.1 NORMALIZATION FACTORS
-        const pefNormalizationFactors = {
-            "Climate Change": 1/7553.08, "Ozone Depletion": 1/0.0523,
-            "Human Toxicity, cancer": 1/0.0000173, "Human Toxicity, non-cancer": 1/0.000129,
-            "Particulate Matter": 1/0.000595, "Ionizing Radiation": 1/4220.16,
-            "Photochemical Ozone Formation": 1/40.86, "Acidification": 1/55.57,
-            "Eutrophication, terrestrial": 1/176.75, "Eutrophication, freshwater": 1/1.61,
-            "Eutrophication, marine": 1/19.55, "Ecotoxicity, freshwater": 1/56716.59,
-            "Land Use": 1/819498.18, "Water Use/Scarcity (AWARE)": 1/11468.71,
-            "Resource Use, minerals/metals": 1/0.0636, "Resource Use, fossils": 1/65004.26
-        };
+// Live data from window.aioxyData.pef_factors.normalization_factors
+const pefNormalizationFactors = (function() {
+    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.pef_factors)
+        ? window.aioxyData.pef_factors.normalization_factors
+        : null;
+    
+    if (live) {
+        // Convert NF values to 1/NF for normalization step
+        const normalized = {};
+        Object.keys(live).forEach(cat => {
+            normalized[cat] = 1 / live[cat];
+        });
+        console.log('✅ [PEF NF] Live normalization factors loaded —', Object.keys(live).length, 'categories');
+        return normalized;
+    }
+    
+    console.warn('⚠️ [PEF NF] Live database not found — using fallback');
+    return {
+        "Climate Change": 1/7553.08, "Ozone Depletion": 1/0.0523,
+        "Human Toxicity, cancer": 1/0.0000173, "Human Toxicity, non-cancer": 1/0.000129,
+        "Particulate Matter": 1/0.000595, "Ionizing Radiation": 1/4220.16,
+        "Photochemical Ozone Formation": 1/40.86, "Acidification": 1/55.57,
+        "Eutrophication, terrestrial": 1/176.75, "Eutrophication, freshwater": 1/1.61,
+        "Eutrophication, marine": 1/19.55, "Ecotoxicity, freshwater": 1/56716.59,
+        "Land Use": 1/819498.18, "Water Use/Scarcity (AWARE)": 1/11468.71,
+        "Resource Use, minerals/metals": 1/0.0636, "Resource Use, fossils": 1/65004.26
+    };
+})();
 
-        // JRC EF 3.1 WEIGHTING FACTORS
-        const pefWeightingFactors = {
-            "Climate Change": 0.2106, "Ozone Depletion": 0.0631,
-            "Human Toxicity, cancer": 0.0213, "Human Toxicity, non-cancer": 0.0184,
-            "Particulate Matter": 0.0896, "Ionizing Radiation": 0.0501,
-            "Photochemical Ozone Formation": 0.0478, "Acidification": 0.0620,
-            "Eutrophication, terrestrial": 0.0371, "Eutrophication, freshwater": 0.0280,
-            "Eutrophication, marine": 0.0296, "Ecotoxicity, freshwater": 0.0192,
-            "Land Use": 0.0794, "Water Use/Scarcity (AWARE)": 0.0851,
-            "Resource Use, minerals/metals": 0.0755, "Resource Use, fossils": 0.0832
-        };
+// JRC EF 3.1 WEIGHTING FACTORS
+// Live data from window.aioxyData.pef_factors.weighting_factors
+const pefWeightingFactors = (function() {
+    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.pef_factors)
+        ? window.aioxyData.pef_factors.weighting_factors
+        : null;
+    
+    if (live) {
+        console.log('✅ [PEF WF] Live weighting factors loaded —', Object.keys(live).length, 'categories');
+        return live;
+    }
+    
+    console.warn('⚠️ [PEF WF] Live database not found — using fallback');
+    return {
+        "Climate Change": 0.2106, "Ozone Depletion": 0.0631,
+        "Human Toxicity, cancer": 0.0213, "Human Toxicity, non-cancer": 0.0184,
+        "Particulate Matter": 0.0896, "Ionizing Radiation": 0.0501,
+        "Photochemical Ozone Formation": 0.0478, "Acidification": 0.0620,
+        "Eutrophication, terrestrial": 0.0371, "Eutrophication, freshwater": 0.0280,
+        "Eutrophication, marine": 0.0296, "Ecotoxicity, freshwater": 0.0192,
+        "Land Use": 0.0794, "Water Use/Scarcity (AWARE)": 0.0851,
+        "Resource Use, minerals/metals": 0.0755, "Resource Use, fossils": 0.0832
+    };
+})();
 
         let weightedScore = 0;
         let normalizedScore = 0;
