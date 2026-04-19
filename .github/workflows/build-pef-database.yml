@@ -26,19 +26,22 @@ jobs:
           pip install pandas openpyxl
       
       - name: Build PEF 3.1 Database
-        run: python build_database.py
+        run: |
+          cd aioxy-pef3.1-database
+          python build_database.py
       
       - name: Upload database artifact
         uses: actions/upload-artifact@v4
         with:
           name: aioxy-pef3.1-database
-          path: aioxy_pef3.1_database.js
+          path: aioxy-pef3.1-database/aioxy_pef3.1_database.js
           retention-days: 90
       
       - name: Commit and push if changed
         run: |
           git config user.name "AIOXY Bot"
           git config user.email "bot@aioxy.ai"
+          cd aioxy-pef3.1-database
           git add aioxy_pef3.1_database.js
           if git diff --staged --quiet; then
             echo "No changes to database"
