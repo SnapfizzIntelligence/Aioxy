@@ -2783,7 +2783,7 @@ if (useEconomicAllocation && primaryData?.coProducts) {
     const coProducts = [
         { 
             mass: quantityKg, 
-            price: getCommodityPrice(ingredientData?.id || ingredientId), 
+            price: getCommodityPrice(ingredientData?.id || 'unknown'), 
             name: ingredientData?.name || 'Main Product' 
         },
         ...primaryData.coProducts
@@ -2845,7 +2845,7 @@ let sensitivityResult = null;
 
 if (useEconomicAllocation && primaryData?.coProducts && primaryData.coProducts.length > 0) {
     const allProducts = [
-        { name: ingredientData?.name || 'Main Product', mass: quantityKg, price: getCommodityPrice(ingredientData?.id || ingredientId) },
+        { name: ingredientData?.name || 'Main Product', mass: quantityKg, price: getCommodityPrice(ingredientData?.id || 'unknown') },
         ...primaryData.coProducts
     ];
     
@@ -2861,7 +2861,7 @@ if (useEconomicAllocation && primaryData?.coProducts && primaryData.coProducts.l
         
 // ========== EUDR COMPLIANCE CHECK (Reg. 2023/1115) ==========
 const eudrCheck = checkEUDRCompliance(
-    ingredientData?.id || ingredientId,
+    ingredientData?.id || 'unknown',
     originCountry,
     primaryData
 );
