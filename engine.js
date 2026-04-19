@@ -1,3 +1,4 @@
+
 // ================== AIOXY CALCULATION ENGINE v3.1 ==================
 // PEF 3.1 Compliant | ISO 14044 Aligned | Audit-Grade Physics
 // This file contains all core LCA calculations, physics constants,
@@ -1508,7 +1509,7 @@ function calculatePesticideToxicity(pesticideName, applicationRateKg) {
     const factors = PHYSICS_DB.usetox_factors;
     
     // Get CFs for this pesticide (fallback to default)
-    const cf = factors[pesticideName?.toLowerCase()] || factors.default;
+    let cf = factors[pesticideName?.toLowerCase()] || factors.default;
     
     // Calculate emissions to each compartment
     const soilMass = applicationRateKg * PEST.SOIL_FRACTION;
@@ -3435,7 +3436,7 @@ else {
         // 🛡️ AUDIT FIX: Ensure Fugitive Emissions are visible in the math trace
         const fugitiveTrace = fugitiveCO2 > 0 ? ` + Fugitive Refrigerant (${fugitiveCO2.toFixed(4)}kg)` : "";
 
-        const energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity} gCO2e/kWh EF [${energyNote}]${scenarioProof}${fugitiveTrace}`;
+        let energyTrace = `${electricityKWh.toFixed(2)} kWh × ${gridIntensity} gCO2e/kWh EF [${energyNote}]${scenarioProof}${fugitiveTrace}`;
 
         // Natural Gas emits ~202g CO2e per MJ
         const gasCO2 = (naturalGasMj * 202) / 1000;
@@ -3633,7 +3634,7 @@ const pefWeightingFactors = (function() {
                 const activeWaterNode = currentWater_Tree?.Ingredients?.components?.find(c => c.id === ing.id);
                 
                 const co2Base = activeCCNode ? activeCCNode.subtotal : (ingredientDB.data.pef["Climate Change"] * ing.quantity || 0);
-                const waterBase = activeWaterNode ? activeWaterNode.subtotal : (ingredientDB.data.pef["Water Use/Scarcity (AWARE)"] * ing.quantity || 0);
+                let waterBase = activeWaterNode ? activeWaterNode.subtotal : (ingredientDB.data.pef["Water Use/Scarcity (AWARE)"] * ing.quantity || 0);
                 
                 const P_unc = ingredientDB.data.metadata?.dqr?.P || 15;
                 const cv = P_unc / 100;
@@ -4230,9 +4231,9 @@ function calculateParametricBaseline(anchorId, targetCountry) {
     if (applicableBAT) {
         // Use JRC BAT processing energy
         const countryData = aioxyDataRef.countries?.[targetCountry] || { electricityCO2: 480 };
-        const gridIntensity = countryData.electricityCO2 || 480;
+        let gridIntensity = countryData.electricityCO2 || 480;
         
-        const electricityKWh = applicableBAT.energy_mwh_per_tonne * 1000;
+        let electricityKWh = applicableBAT.energy_mwh_per_tonne * 1000;
         const elecCO2 = electricityKWh * (gridIntensity / 1000) / 1000;
         const thermalCO2 = (applicableBAT.thermal_mj_per_kg || 0) * 0.202;
         
@@ -4493,7 +4494,7 @@ const totalDLUCCO2 = farmDLUCCO2;
         }
 
         // 2. Safely extract totals
-        const totalCO2 = pefResults?.["Climate Change"]?.total || 0;
+        let totalCO2 = pefResults?.["Climate Change"]?.total || 0;
         const totalWater = pefResults?.["Water Use/Scarcity (AWARE)"]?.total || 0;
         const totalLand = pefResults?.["Land Use"]?.total || 0;
         const totalFossil = pefResults?.["Resource Use, fossils"]?.total || 0;
@@ -4981,7 +4982,7 @@ const productCategory = _p.productCategory
                     const extraKwh = item.quantity * processEnergyKwh;
                     const extraGasMj = item.quantity * processGasMj;
                     
-                    const gridIntensity = aioxyDataRef.countries?.[manufacturingCountryCode]?.electricityCO2 || 480;
+                    let gridIntensity = aioxyDataRef.countries?.[manufacturingCountryCode]?.electricityCO2 || 480;
                     const gasIntensity = 202; // g CO2e per MJ of natural gas (IPCC)
                     
                     const extraCo2 = (extraKwh * (gridIntensity / 1000)) + (extraGasMj * (gasIntensity / 1000));
@@ -5033,7 +5034,7 @@ const productCategory = _p.productCategory
                 // 🛡️ THE ALLOCATION GUARD - Declared ONCE
                 const usePrimary = domGetter('usePrimaryFactoryData');
                 const totalProd = parseFloat(domGetter('factoryTotalOutput', true)) || 1;
-                const allocationFactor = totalProd > 0 ? (massBalanceData.productMass / totalProd) * 100 : 0;
+                let allocationFactor = totalProd > 0 ? (massBalanceData.productMass / totalProd) * 100 : 0;
                 const allocationTrace = usePrimary && totalProd > 0 ? 
                     `Factory Allocation: ${allocationFactor.toFixed(2)}% of total site utility load (${massBalanceData.productMass.toFixed(3)}kg / ${totalProd}kg)` : 
                     "Industry Benchmark Allocation (JRC Default)";
