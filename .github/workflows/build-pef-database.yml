@@ -26,7 +26,7 @@ jobs:
           pip install pandas openpyxl
       
       - name: Build PEF 3.1 Database
-        run: python scripts/build_database.py
+        run: python build_database.py
       
       - name: Upload database artifact
         uses: actions/upload-artifact@v4
