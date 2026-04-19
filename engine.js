@@ -5247,12 +5247,12 @@ const processingMethodForStorage = processingMethod || 'none';
 let storageType = 'ambient';
 if (processingMethodForStorage === 'freezing') {
     storageType = 'frozen';
-} else if (document.getElementById('refrigeratedTransport')?.value === 'yes') {
+} else if (global.document?.getElementById('refrigeratedTransport')?.value === 'yes') {
     storageType = 'chilled';
 }
 
 const gridIntensityForInUse = aioxyDataRef.countries?.[manufacturingCountryCode]?.electricityCO2 || 480;
-const refrigerantType = document.getElementById('refrigerantType')?.value || 'R-404A';
+const refrigerantType = global.document?.getElementById('refrigerantType')?.value || 'R-404A';
 
 const inUseEmissions = calculateInUseEmissions(
     massBalanceData.final_content_weight_kg || 0.2,
