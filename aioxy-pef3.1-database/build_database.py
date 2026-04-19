@@ -29,17 +29,17 @@ def get_base_path():
     # Try script directory first
     script_dir = Path(__file__).resolve().parent
     # Check if our key file exists there
-    if (script_dir / "Normalisation_Weighting_Factors_EF_3_1.xlsx").exists():
+    if (script_dir / "Normalisation_Weighting_Factors_EF_3.1.xlsx").exists():
         print(f"   Base path: {script_dir}")
         return script_dir
     # Try current working directory
     cwd = Path.cwd()
-    if (cwd / "Normalisation_Weighting_Factors_EF_3_1.xlsx").exists():
+    if (cwd / "Normalisation_Weighting_Factors_EF_3.1.xlsx").exists():
         print(f"   Base path (cwd): {cwd}")
         return cwd
     # Try parent of script dir
     parent = script_dir.parent
-    if (parent / "Normalisation_Weighting_Factors_EF_3_1.xlsx").exists():
+    if (parent / "Normalisation_Weighting_Factors_EF_3.1.xlsx").exists():
         print(f"   Base path (parent): {parent}")
         return parent
     # List what we can see for debugging
@@ -57,7 +57,7 @@ def get_base_path():
 # ================================================================
 def build_pef_factors(base_path):
     print("[1/7] Building pef_factors...")
-    fp = base_path / "Normalisation_Weighting_Factors_EF_3_1.xlsx"
+    fp = base_path / "Normalisation_Weighting_Factors_EF_3.1.xlsx"
 
     df_nf = pd.read_excel(fp, sheet_name="NFs EF3.1", header=4)
     nf_data = {}
@@ -329,7 +329,12 @@ def build_usetox(base_path):
     print("[7/7] Building usetox...")
 
     human_fp = base_path / "USEtox_results_organics.csv"
-    eco_fp   = base_path / "USEtox_results_organics__1_.csv"
+    # Handle both: "USEtox_results_organics__1_.csv" and "USEtox_results_organics (1).csv"
+    eco_matches = [f for f in base_path.glob("USEtox_results_organics*.csv") if f.name != "USEtox_results_organics.csv"]
+    if not eco_matches:
+        raise FileNotFoundError(f"USEtox ecotox file not found in {base_path}")
+    eco_fp = eco_matches[0]
+    print(f"   Ecotox file: {eco_fp.name}")
 
     df_h = pd.read_csv(human_fp, header=None, skiprows=4)
     human_tox = {}
