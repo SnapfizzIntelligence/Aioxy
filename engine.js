@@ -502,12 +502,22 @@ capital_goods: {
 // ================== RESIDUAL MIX FACTORS (AIB / PEF 3.1) ==================
 // Multiplier applied to grid intensity when no RECs/GOs are held
 // Residual mix = Grid mix minus sold renewable attributes
-residual_mix_multipliers: {
-    'FR': 1.35, 'DE': 1.25, 'IT': 1.18, 'ES': 1.22, 'NL': 1.15,
-    'BE': 1.20, 'AT': 1.10, 'SE': 1.05, 'DK': 1.08, 'FI': 1.05,
-    'PL': 1.12, 'CZ': 1.15, 'HU': 1.18, 'RO': 1.20, 'BG': 1.25,
-    'default': 1.20
-},
+residual_mix_multipliers: (function() {
+    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.residual_mix)
+        ? window.aioxyData.residual_mix.co2_factors
+        : null;
+    if (live) {
+        console.log('✅ [ResidualMix] Live AIB 2024 database loaded —', Object.keys(live).length, 'countries');
+        return live;
+    }
+    console.warn('⚠️ [ResidualMix] Live database not found — using fallback');
+    return {
+        'FR': 1.35, 'DE': 1.25, 'IT': 1.18, 'ES': 1.22, 'NL': 1.15,
+        'BE': 1.20, 'AT': 1.10, 'SE': 1.05, 'DK': 1.08, 'FI': 1.05,
+        'PL': 1.12, 'CZ': 1.15, 'HU': 1.18, 'RO': 1.20, 'BG': 1.25,
+        'default': 1.20
+    };
+})(),
 // ================== REFRIGERANT GWP100 (IPCC AR6) ==================
 refrigerants: {
     'R-134a': 1530,
