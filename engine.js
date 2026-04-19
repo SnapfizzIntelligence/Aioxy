@@ -4593,17 +4593,37 @@ function getPackagingCarbonSplit(materialName) {
             
             let suggestedWater = 0;
             
-            // 1. GET USER INPUTS
-            const productName = global.document?.getElementById('productName')?.value || 'Unnamed Product';
-            const manufacturingCountryCode = global.document?.getElementById('manufacturingCountry')?.value || 'FR';
-            const processingMethod = global.document?.getElementById('processingMethod')?.value;
-            const transportDistance = parseFloat(global.document?.getElementById('transportDistance')?.value) || 0;
-            const transportMode = global.document?.getElementById('transportMode')?.value;
-            const packagingMaterial = global.document?.getElementById('packagingMaterial')?.value;
-            const packagingWeight = parseFloat(global.document?.getElementById('packagingWeight')?.value) || 0;
-            const recycledContentPercent = parseFloat(global.document?.getElementById('recycledContent')?.value) || 0;
-            const productCategory = global.document?.getElementById('productCategory')?.value || 'auto';
+            // ====== INPUT RESOLUTION (DOM or JSON payload) ======
+// If a payload is injected (e.g. JRC test vectors, API calls),
+// use it directly. Otherwise fall back to DOM as before.
+const _p = global._aioxyPayload || {};
 
+const productName = _p.productName
+    || global.document?.getElementById('productName')?.value
+    || 'Unnamed Product';
+const manufacturingCountryCode = _p.manufacturingCountryCode
+    || global.document?.getElementById('manufacturingCountry')?.value
+    || 'FR';
+const processingMethod = _p.processingMethod
+    || global.document?.getElementById('processingMethod')?.value;
+const transportDistance = _p.transportDistance
+    ?? parseFloat(global.document?.getElementById('transportDistance')?.value)
+    ?? 0;
+const transportMode = _p.transportMode
+    || global.document?.getElementById('transportMode')?.value;
+const packagingMaterial = _p.packagingMaterial
+    || global.document?.getElementById('packagingMaterial')?.value;
+const packagingWeight = _p.packagingWeight
+    ?? parseFloat(global.document?.getElementById('packagingWeight')?.value)
+    ?? 0;
+const recycledContentPercent = _p.recycledContentPercent
+    ?? parseFloat(global.document?.getElementById('recycledContent')?.value)
+    ?? 0;
+const productCategory = _p.productCategory
+    || global.document?.getElementById('productCategory')?.value
+    || 'auto';
+
+    
             // =========== [FEATURE PRESERVED] HYDRATION PHYSICS ===========
             let finalIngredients = [...selectedIngredientsRef];
             let physicsKey = this.detectProductCategory(productName, selectedIngredientsRef, productCategory);
