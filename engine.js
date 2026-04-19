@@ -3440,8 +3440,8 @@ else {
 
         // Natural Gas emits ~202g CO2e per MJ
         const gasCO2 = (naturalGasMj * 202) / 1000;
-        const manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + gasCO2 + fugitiveCO2;
-        
+        let manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + gasCO2 + fugitiveCO2;
+
         // 5. WATER EVAPORATION (Keep for mass balance, but NOT for energy calculation)
         const waterEvaporated = Math.max(0, massInputKg - massOutputKg);
 
