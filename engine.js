@@ -2475,6 +2475,19 @@ const fuelEmissions = massTons * adjustedDistance * adjustedFactor;
             };
         }
         
+                // ================== IMPACT RESULT CONTAINER ==================
+        // Declared here so all blocks inside this function can write to it
+        // before the final return statement assembles it.
+        const impactResult = {
+            freshwaterEutrophication_P: 0,
+            marineEutrophication_N:     0,
+            allocation_hierarchy:       null,
+            eudr_compliant:             true,
+            eudr_flag:                  '✅ COMPLIANT',
+            eudr_reason:                ''
+        };
+        // =============================================================
+
         // ================== PEF 3.1 AUDITOR-GRADE CLIMATE DISAGGREGATION ==================
 // OFFICIAL FIX: Precautionary Principle (PEF 3.1 / ISO 14067)
 // If sub-indicators exist in data → use them
