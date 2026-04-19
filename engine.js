@@ -174,25 +174,35 @@ PESTICIDE: {
     PRECAUTIONARY_MAX_CTUE: 1000,   // Conservative fallback for ecotoxicity
 },
        // ================== BIODIVERSITY LANCA MODEL (PEF 3.1 §4.4.8.3) ==================
-LANCA: {
-    // Characterization factors by land use type (Pt/m²/year)
-    CF_BIOP: {
-        annual_crops: 0.00042,
-        perennial_crops: 0.00018,
-        pasture: 0.00031,
-        forest: 0.00008,
-        urban: 0.00095,
-        default: 0.00042
-    },
-    // Regional multipliers
-    REGIONAL_FACTORS: {
-        tropical: 1.5,
-        temperate: 1.0,
-        boreal: 0.7,
-        arid: 1.3,
-        default: 1.0
+LANCA: (function() {
+    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.lanca_sqi)
+        ? window.aioxyData.lanca_sqi.occupation
+        : null;
+    if (live) {
+        console.log('✅ [LANCA] Live database loaded —', Object.keys(live).length, 'countries');
+    } else {
+        console.warn('⚠️ [LANCA] Live database not found — using fallback CFs');
     }
-},
+    return {
+        CF_BIOP: {
+            annual_crops:    live ? (live['Global'] || 0.00042) : 0.00042,
+            perennial_crops: live ? (live['Global'] || 0.00018) * 0.43 : 0.00018,
+            pasture:         live ? (live['Global'] || 0.00031) * 0.74 : 0.00031,
+            forest:          live ? (live['Global'] || 0.00008) * 0.19 : 0.00008,
+            urban:           live ? (live['Global'] || 0.00095) * 2.26 : 0.00095,
+            default:         live ? (live['Global'] || 0.00042) : 0.00042
+        },
+        REGIONAL_FACTORS: {
+            tropical: 1.5,
+            temperate: 1.0,
+            boreal: 0.7,
+            arid: 1.3,
+            default: 1.0
+        },
+        // Full country-level SQI available for advanced lookups
+        COUNTRY_SQI: live || {}
+    };
+})(),
         // ================== REPORTING STRUCTURE (ISO 14044 §5.2 / PEF 3.1 §7) ==================
 REPORT_CHAPTERS: {
     REQUIRED_SECTIONS: [
