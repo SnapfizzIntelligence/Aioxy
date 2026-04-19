@@ -1,279 +1,411 @@
 """
-AIOXY PEF 3.1 DATABASE BUILDER - ISO 14044 COMPLIANT
-CTO: DeepSeek | Auditor: Gemini | CEO: SnapfizzIntelligence
+AIOXY PEF 3.1 DATABASE BUILDER
+Version: 3 — Final Clean Build
+Auditor: Claude (Anthropic)
+Builder: SnapfizzIntelligence
+
+Place all 8 source files in the SAME folder as this script, then run:
+    python aioxy_pef31_builder.py
+
+Output: aioxy_pef3.1_database.js (ready for browser use)
 """
 
 import pandas as pd
 import json
+import os
 from pathlib import Path
 from collections import defaultdict
 
 OUTPUT_FILE = "aioxy_pef3.1_database.js"
 
 def write_js_object(name, data_dict):
-    js = f"window.aioxyData = window.aioxyData || {{}};\n"
+    js  = "window.aioxyData = window.aioxyData || {};\n"
     js += f"window.aioxyData.{name} = "
     js += json.dumps(data_dict, indent=2, ensure_ascii=False)
     js += ";\n\n"
     return js
 
-def build_pef_factors(filepath):
-    print("[1/8] Building pef_factors...")
-    df_calc = pd.read_excel(filepath, sheet_name='NFs EF3.1_calculation', header=1)
-    nf_columns = {
-        'Climate change': 'AA', 'Ozone depletion': 'AB', 'Human toxicity, cancer': 'AC',
-        'Human toxicity, non-cancer': 'AD', 'EF-particulate matter': 'AE', 'Ionising radiation': 'AF',
-        'Photochemical ozone formation': 'AG', 'Acidification': 'AH', 'Eutrophication, terrestrial': 'AI',
-        'Eutrophication, freshwater': 'AJ', 'Eutrophication, marine': 'AK', 'Land use': 'AL',
-        'Ecotoxicity, freshwater': 'AM', 'Water use': 'AN', 'Resource depletion, fossils': 'AO',
-        'Resource depletion, minerals and metals': 'AP'
-    }
+
+# ================================================================
+# DATABASE 1 — PEF Normalization & Weighting Factors
+# File : Normalisation_Weighting_Factors_EF_3_1.xlsx
+# Sheet: NFs EF3.1  — header row 5, col B = category, col D = NF
+# Sheet: WFs        — header row 5, col B = category, col C = WF %
+# ================================================================
+def build_pef_factors(base_path):
+    print("[1/7] Building pef_factors...")
+    fp = base_path / "Normalisation_Weighting_Factors_EF_3_1.xlsx"
+
+    df_nf = pd.read_excel(fp, sheet_name="NFs EF3.1", header=4)
     nf_data = {}
-    for category, col_letter in nf_columns.items():
-        col_idx = ord(col_letter[0]) - 65
-        if len(col_letter) > 1:
-            col_idx = (col_idx + 1) * 26 + (ord(col_letter[1]) - 65)
-        nf_value = df_calc.iloc[1, col_idx] if col_idx < len(df_calc.columns) else None
-        if nf_value is not None and pd.notna(nf_value):
-            nf_data[category] = float(nf_value)
-    
-    df_wf = pd.read_excel(filepath, sheet_name='WFs', header=None)
+    for _, row in df_nf.iterrows():
+        cat = row.iloc[1]
+        val = row.iloc[3]
+        if pd.notna(cat) and pd.notna(val):
+            nf_data[str(cat).strip().rstrip("*").strip()] = float(val)
+
+    df_wf = pd.read_excel(fp, sheet_name="WFs", header=4)
     wf_data = {}
-    for idx in range(4, 20):
-        category = df_wf.iloc[idx, 0] if idx < len(df_wf) else None
-        wf_percent = df_wf.iloc[idx, 2] if idx < len(df_wf) and len(df_wf.columns) > 2 else None
-        if category and pd.notna(category) and wf_percent and pd.notna(wf_percent):
-            wf_data[str(category).strip()] = float(wf_percent) / 100.0
-    
-    df_summary = pd.read_excel(filepath, sheet_name='NFs EF3.1', header=None)
-    global_pop = df_summary.iloc[3, 5]
+    for _, row in df_wf.iterrows():
+        cat = row.iloc[1]
+        val = row.iloc[2]
+        if pd.notna(cat) and pd.notna(val):
+            wf_data[str(cat).strip()] = round(float(val) / 100.0, 8)
+
+    assert set(nf_data.keys()) == set(wf_data.keys()), \
+        f"NF/WF key mismatch: {set(nf_data.keys()) ^ set(wf_data.keys())}"
+
+    print(f"   ✓ {len(nf_data)} impact categories — NF/WF keys aligned")
     return {
-        "global_population": float(global_pop) if global_pop else 6895889018,
         "normalization_factors": nf_data,
-        "weighting_factors": wf_data,
-        "version": "EF 3.1"
+        "weighting_factors":     wf_data,
+        "global_population":     6895889018,
+        "version":               "EF 3.1",
+        "source":                "European Commission Joint Research Centre"
     }
 
-def build_ilcd_registry(filepath):
-    print("[2/8] Building ilcd_registry...")
-    df = pd.read_csv(filepath)
-    category_mapping = {
-        'ACIDIFICATION': 'Acidification', 'CLIMATE_CHANGE': 'Climate change',
-        'AQUATIC_ECO_TOXICITY': 'Ecotoxicity, freshwater', 'RESPIRATORY_INORGANICS': 'EF-particulate matter',
-        'AQUATIC_EUTROPHICATION': 'Eutrophication, freshwater', 'TERRESTRIAL_EUTROPHICATION': 'Eutrophication, terrestrial',
-        'CANCER_HUMAN_HEALT_EFFECTS': 'Human toxicity, cancer', 'NON_CANCER_HUMAN_HEALT_EFFECTS': 'Human toxicity, non-cancer',
-        'IONIZING_RADIATION': 'Ionising radiation', 'LAND_USE': 'Land use', 'OZONE_DEPLETION': 'Ozone depletion',
-        'PHOTOCHEMICAL_OZONE_CREATION': 'Photochemical ozone formation', 'ABIOTIC_RESOURCE_DEPLETION': 'Resource depletion, fossils',
-        'OTHER': 'Water use'
+
+# ================================================================
+# DATABASE 2 — ILCD UUID Registry
+# File : EF-LCIAMethod_CF_EF-v3_1_.csv
+# Header row 1. Col A = UUID, Col B = name.
+# Sub-variants (-Biogenic, -Fossil, _organics, _inorganics) skipped.
+# Reference units hardcoded from EF 3.1 specification.
+# ================================================================
+def build_ilcd_registry(base_path):
+    print("[2/7] Building ilcd_registry...")
+    fp = base_path / "EF-LCIAMethod_CF_EF-v3_1_.csv"
+    df = pd.read_csv(fp)
+
+    UNITS = {
+        "Acidification":                           "mol H+ eq",
+        "Climate change":                          "kg CO2 eq",
+        "Ecotoxicity, freshwater":                 "CTUe",
+        "EF-particulate matter":                   "disease incidences",
+        "Eutrophication, freshwater":              "kg P eq",
+        "Eutrophication, marine":                  "kg N eq",
+        "Eutrophication, terrestrial":             "mol N eq",
+        "Human toxicity, cancer":                  "CTUh",
+        "Human toxicity, non-cancer":              "CTUh",
+        "Ionising radiation":                      "kBq U-235 eq",
+        "Land use":                                "pt",
+        "Ozone depletion":                         "kg CFC-11 eq",
+        "Photochemical ozone formation":           "kg NMVOC eq",
+        "Resource depletion, fossils":             "MJ",
+        "Resource depletion, minerals and metals": "kg Sb eq",
+        "Water use":                               "m3 world eq",
     }
+
+    # Exact name in CSV → standard PEF 3.1 name
+    NAME_MAP = {
+        "Acidification":                               "Acidification",
+        "Climate change":                              "Climate change",
+        "Ecotoxicity, freshwater":                     "Ecotoxicity, freshwater",
+        "EF-particulate matter":                       "EF-particulate matter",
+        "Eutrophication marine":                       "Eutrophication, marine",
+        "Eutrophication, freshwater":                  "Eutrophication, freshwater",
+        "Eutrophication, terrestrial":                 "Eutrophication, terrestrial",
+        "Human toxicity, cancer":                      "Human toxicity, cancer",
+        "Human toxicity, non-cancer":                  "Human toxicity, non-cancer",
+        "Ionising radiation, human health":            "Ionising radiation",
+        "Land use":                                    "Land use",
+        "Ozone depletion":                             "Ozone depletion",
+        "Photochemical ozone formation - human health":"Photochemical ozone formation",
+        "Resource use, fossils":                       "Resource depletion, fossils",
+        "Resource use, minerals and metals":           "Resource depletion, minerals and metals",
+        "Water use":                                   "Water use",
+    }
+
+    SKIP = ["-Biogenic", "-Fossil", "-Land use", "_inorganics", "_organics"]
+
     registry = {}
     for _, row in df.iterrows():
-        impact_cat = row.iloc[5] if len(row) > 5 else None
-        uuid = row.iloc[0]
-        name = row.iloc[1]
-        indicator = row.iloc[4]
-        if impact_cat and pd.notna(impact_cat):
-            impact_str = str(impact_cat).strip()
-            if 'marine' in name.lower():
-                std_name = 'Eutrophication, marine'
-            elif 'minerals' in name.lower() or 'metals' in name.lower():
-                std_name = 'Resource depletion, minerals and metals'
-            else:
-                std_name = category_mapping.get(impact_str)
-            if std_name:
-                registry[std_name] = {
-                    "uuid": str(uuid).strip(),
-                    "name": str(name).strip(),
-                    "indicator": str(indicator).strip() if pd.notna(indicator) else ""
-                }
-    units = {
-        'Acidification': 'mol H+ eq', 'Climate change': 'kg CO2 eq',
-        'Ecotoxicity, freshwater': 'CTUe', 'EF-particulate matter': 'disease incidences',
-        'Eutrophication, freshwater': 'kg P eq', 'Eutrophication, marine': 'kg N eq',
-        'Eutrophication, terrestrial': 'mol N eq', 'Human toxicity, cancer': 'CTUh',
-        'Human toxicity, non-cancer': 'CTUh', 'Ionising radiation': 'kBq U-235 eq',
-        'Land use': 'pt', 'Ozone depletion': 'kg CFC-11 eq',
-        'Photochemical ozone formation': 'kg NMVOC eq', 'Resource depletion, fossils': 'MJ',
-        'Resource depletion, minerals and metals': 'kg Sb eq', 'Water use': 'm3 world eq'
-    }
-    for cat, unit in units.items():
-        if cat in registry:
-            registry[cat]['unit'] = unit
+        name = str(row.iloc[1]).strip() if pd.notna(row.iloc[1]) else ""
+        if any(s in name for s in SKIP):
+            continue
+        std = NAME_MAP.get(name)
+        if not std:
+            continue
+        registry[std] = {
+            "uuid": str(row.iloc[0]).strip(),
+            "name": name,
+            "unit": UNITS[std],
+        }
+
+    assert len(registry) == 16, f"Expected 16 categories, got {len(registry)}"
+    print(f"   ✓ 16/16 categories — all UUIDs mapped")
     return registry
 
-def build_residual_mix(folder_path):
-    print("[3/8] Building residual_mix...")
-    folder = Path(folder_path)
-    csv_path = None
-    for f in folder.glob("*Residual*mix*.csv"):
-        csv_path = f
-        break
-    if not csv_path:
-        return {"co2_factors": {}, "note": "File not found"}
-    df = pd.read_csv(csv_path, encoding='utf-8', skiprows=3)
-    residual_mix = {}
+
+# ================================================================
+# DATABASE 3 — AIB 2024 Residual Mix CO2
+# File : 2024_Final__Residual_mix_calculation_results_30052025_v1.xlsx
+# Sheet: CO2 — header row 1
+# Col A = Country code (2-letter ISO), Col C = Residual mix CO2 [g CO2/kWh]
+# ================================================================
+def build_residual_mix(base_path):
+    print("[3/7] Building residual_mix...")
+    matches = list(base_path.glob("*Residual_mix_calculation*.xlsx"))
+    if not matches:
+        raise FileNotFoundError("Residual mix file not found")
+
+    df = pd.read_excel(matches[0], sheet_name="CO2", header=0)
+    co2_factors = {}
     for _, row in df.iterrows():
         country = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else None
-        co2 = row.iloc[7] if len(row) > 7 else None
-        if country and co2 and country not in ['nan', 'Country', '']:
+        co2     = row.iloc[2]
+        if country and country not in ["nan", "Country code", ""] and pd.notna(co2):
             try:
-                residual_mix[country] = float(co2)
-            except:
+                co2_factors[country] = round(float(co2), 6)
+            except (ValueError, TypeError):
                 pass
-    return {"co2_factors": residual_mix, "source": "AIB 2024 Residual Mix", "unit": "g CO2/kWh"}
 
-def build_lanca_sqi(filepath):
-    print("[4/8] Building lanca_sqi...")
-    all_sheets = pd.read_excel(filepath, sheet_name=None)
-    lanca_data = {"occupation": {}, "transformation": {}}
-    if 'SQI Occupation' in all_sheets:
-        df_occ = all_sheets['SQI Occupation']
-        for _, row in df_occ.iterrows():
-            country = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else None
-            sqi = row.iloc[2] if len(row) > 2 else None
-            if country and sqi and country not in ['nan', 'Country', 'ISO', '']:
-                try:
-                    lanca_data["occupation"][country] = float(sqi)
-                except:
-                    pass
-    if 'SQI Transformation' in all_sheets:
-        df_trans = all_sheets['SQI Transformation']
-        for _, row in df_trans.iterrows():
-            country = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else None
-            sqi = row.iloc[2] if len(row) > 2 else None
-            if country and sqi and country not in ['nan', 'Country', 'ISO', '']:
-                try:
-                    lanca_data["transformation"][country] = float(sqi)
-                except:
-                    pass
-    lanca_data["source"] = "LANCA v2.5, European Commission JRC"
-    return lanca_data
+    print(f"   ✓ {len(co2_factors)} European countries")
+    return {
+        "co2_factors": co2_factors,
+        "source":      "AIB 2024 European Residual Mixes",
+        "unit":        "g CO2/kWh",
+        "year":        2024,
+    }
 
-def build_crop_yields(filepath):
-    print("[5/8] Building crop_yields...")
-    df = pd.read_csv(filepath, encoding='utf-8')
-    df_yield = df[df['Element'] == 'Yield'].copy()
-    yields_by_crop = defaultdict(lambda: defaultdict(list))
-    for _, row in df_yield.iterrows():
-        country = str(row['Area']).strip()
-        crop = str(row['Item']).strip()
-        year = int(row['Year'])
-        value = row['Value']
-        if pd.notna(value):
-            yields_by_crop[country][crop].append((year, value))
+
+# ================================================================
+# DATABASE 4 — LANCA Soil Quality Index
+# File : N-379310-1.xlsx
+# Sheet: SQI Occupation       — header row 2 (header=1)
+# Sheet: SQI Transformation to — header row 2 (header=1)
+# Filter: Indicator = "Total", Land Use Type = "unspecified"
+# Countries start at column F (index 5)
+# ================================================================
+def build_lanca_sqi(base_path):
+    print("[4/7] Building lanca_sqi...")
+    fp = base_path / "N-379310-1.xlsx"
+
+    def parse_sheet(sheet_name):
+        df   = pd.read_excel(fp, sheet_name=sheet_name, header=1)
+        mask = (df["Indicator"] == "Total") & (df["Land Use Type"] == "unspecified")
+        rows = df[mask]
+        if len(rows) == 0:
+            raise ValueError(f"No Total/unspecified row in sheet '{sheet_name}'")
+        row    = rows.iloc[0]
+        result = {}
+        for i in range(5, len(df.columns)):
+            country = str(df.columns[i]).strip()
+            value   = row.iloc[i]
+            if pd.notna(value) and country not in ["nan", ""]:
+                try:
+                    result[country] = round(float(value), 6)
+                except (ValueError, TypeError):
+                    pass
+        return result
+
+    occ   = parse_sheet("SQI Occupation")
+    trans = parse_sheet("SQI Transformation to")
+
+    print(f"   ✓ Occupation: {len(occ)} countries | Transformation: {len(trans)} countries")
+    return {
+        "occupation":     occ,
+        "transformation": trans,
+        "indicator":      "Soil Quality Index — Total, unspecified land use",
+        "source":         "LANCA v2.5 — Fraunhofer IBP / European Commission JRC",
+        "version":        "EF 3.1",
+    }
+
+
+# ================================================================
+# DATABASE 5 — FAOSTAT Crop & Livestock Yields
+# File : FAOSTAT_data_en_4-19-2026__3_.csv  (use latest file only)
+# Header row 1. Filter: Element IN ['Yield', 'Yield/Carcass Weight']
+# 5-year average (2020-2024) per crop per country
+# Country names normalized to short standard names
+# ================================================================
+def build_crop_yields(base_path):
+    print("[5/7] Building crop_yields...")
+
+    # Use only the most recent FAOSTAT file (highest suffix number)
+    faostat_files = sorted(base_path.glob("FAOSTAT_data_en_*.csv"))
+    if not faostat_files:
+        raise FileNotFoundError("No FAOSTAT file found")
+    fp = faostat_files[-1]          # last = most recent by filename sort
+    df = pd.read_csv(fp, encoding="utf-8")
+    print(f"   Using: {fp.name} ({len(df)} rows)")
+
+    # Accept both crop and livestock yield elements
+    df = df[df["Element"].isin(["Yield", "Yield/Carcass Weight"])].copy()
+
+    # Normalize long FAOSTAT country names → short standard names
+    COUNTRY_MAP = {
+        "Netherlands (Kingdom of the)":                         "Netherlands",
+        "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+        "Türkiye":                                              "Turkey",
+        "Iran (Islamic Republic of)":                           "Iran",
+        "Republic of Korea":                                    "South Korea",
+        "Viet Nam":                                             "Vietnam",
+        "United States of America":                             "USA",
+        "Russian Federation":                                   "Russia",
+        "Czechia":                                              "Czech Republic",
+        "Bolivia (Plurinational State of)":                     "Bolivia",
+        "Venezuela (Bolivarian Republic of)":                   "Venezuela",
+        "Tanzania, United Republic of":                         "Tanzania",
+        "Côte d'Ivoire":                                        "Ivory Coast",
+        "Congo, Democratic Republic of the":                    "DR Congo",
+        "China, mainland":                                      "China",
+    }
+    df["Area"] = df["Area"].replace(COUNTRY_MAP)
+
+    # Build year-value lists per country-crop
+    ybc = defaultdict(lambda: defaultdict(list))
+    for _, row in df.iterrows():
+        if pd.notna(row["Value"]):
+            ybc[str(row["Area"]).strip()][str(row["Item"]).strip().lower()].append(
+                (int(row["Year"]), float(row["Value"]))
+            )
+
+    # 5-year average (most recent 5 years available per crop)
     avg_yields = {}
-    for country, crops in yields_by_crop.items():
+    for country, crops in ybc.items():
         avg_yields[country] = {}
-        for crop, year_values in crops.items():
-            year_values.sort(key=lambda x: x[0], reverse=True)
-            recent_5 = year_values[:5]
-            if recent_5:
-                values = [v for _, v in recent_5]
-                avg_kg_ha = (sum(values) / len(values)) * 0.1
-                avg_yields[country][crop] = round(avg_kg_ha, 2)
-    return {"yields": avg_yields, "source": "FAOSTAT", "unit": "kg/ha"}
+        for crop, yv in crops.items():
+            yv.sort(key=lambda x: x[0], reverse=True)
+            vals = [v for _, v in yv[:5]]
+            avg_yields[country][crop] = round(sum(vals) / len(vals), 2)
 
-def build_aware_20(filepath):
-    print("[6/8] Building aware_20...")
-    all_sheets = pd.read_excel(filepath, sheet_name=None)
-    aware_data = {"agricultural": {}}
-    if 'CFs_agri' in all_sheets:
-        df = all_sheets['CFs_agri']
-        for _, row in df.iterrows():
-            country = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else None
-            cf = row.iloc[1] if len(row) > 1 else None
-            if country and cf and country not in ['nan', 'Country', '']:
-                try:
-                    aware_data["agricultural"][country] = float(cf)
-                except:
-                    pass
-    aware_data["source"] = "AWARE 2.0, WULCA"
-    aware_data["unit"] = "m3 world eq / m3"
-    return aware_data
+    total_pairs = sum(len(v) for v in avg_yields.values())
+    print(f"   ✓ {len(avg_yields)} countries | {total_pairs} crop-country pairs | 2020-2024")
+    return {
+        "yields":    avg_yields,
+        "source":    "FAOSTAT — Crops and Livestock Products",
+        "years":     "2020-2024 (5-year average per crop)",
+        "unit":      "kg/ha",
+        "elements":  ["Yield", "Yield/Carcass Weight"],
+    }
 
-def build_usetox(folder_path):
-    print("[7/8] Building usetox human toxicity...")
-    print("[8/8] Building usetox ecotoxicity...")
-    folder = Path(folder_path)
-    organic_file = None
-    organic2_file = None
-    for f in folder.glob("USEtox_results_organics*.csv"):
-        if "(1)" in f.name:
-            organic2_file = f
-        else:
-            organic_file = f
-    usetox_data = {"human_toxicity": {}, "ecotoxicity": {}}
-    if organic_file and organic_file.exists():
-        df_human = pd.read_csv(organic_file)
-        for _, row in df_human.iterrows():
-            cas = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else None
-            cancer = row.iloc[10] if len(row) > 10 else None
-            noncancer = row.iloc[22] if len(row) > 22 else None
-            if cas and cas not in ['nan', 'CAS', '']:
-                usetox_data["human_toxicity"][cas] = {
-                    "cancer_CTUh_per_kg": float(cancer) if pd.notna(cancer) else 0.0,
-                    "noncancer_CTUh_per_kg": float(noncancer) if pd.notna(noncancer) else 0.0
-                }
-    if organic2_file and organic2_file.exists():
-        df_eco = pd.read_csv(organic2_file)
-        for _, row in df_eco.iterrows():
-            cas = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else None
-            ecotox = row.iloc[6] if len(row) > 6 else None
-            if cas and cas not in ['nan', 'CAS', '']:
-                usetox_data["ecotoxicity"][cas] = float(ecotox) if pd.notna(ecotox) else 0.0
-    usetox_data["source"] = "USEtox 2.14"
-    return usetox_data
 
+# ================================================================
+# DATABASE 6 — AWARE 2.0 Water Scarcity
+# File : AWARE20_Countries_and_Regions.xlsx
+# Sheet: CFs_agri — header row 1
+# Col D (index 3): GLAM_country_name
+# Col I (index 8): Annual CF [m3 world eq / m3]
+# "NotDefined" values excluded (country has insufficient water data)
+# ================================================================
+def build_aware(base_path):
+    print("[6/7] Building aware_20...")
+    fp = base_path / "AWARE20_Countries_and_Regions.xlsx"
+    df = pd.read_excel(fp, sheet_name="CFs_agri", header=0)
+
+    aware_data  = {}
+    not_defined = 0
+    for _, row in df.iterrows():
+        country = str(row.iloc[3]).strip() if pd.notna(row.iloc[3]) else None
+        cf      = row.iloc[8]
+        if not country or country in ["nan", ""]:
+            continue
+        try:
+            aware_data[country] = round(float(cf), 6)
+        except (ValueError, TypeError):
+            not_defined += 1
+
+    print(f"   ✓ {len(aware_data)} countries | {not_defined} excluded (NotDefined annual CF)")
+    return {
+        "agricultural": aware_data,
+        "source":       "AWARE 2.0 — WULCA consensus model",
+        "unit":         "m3 world eq / m3",
+        "sheet":        "CFs_agri — annual characterization factors",
+    }
+
+
+# ================================================================
+# DATABASE 7 — USEtox 2.14 Human Toxicity + Ecotoxicity
+# File 1: USEtox_results_organics.csv
+#   4 merged header rows → skiprows=4, data from row 5
+#   Col B  (index 1):  CAS RN
+#   Col Y  (index 24): Cancer CTUh      — cont. agric. soil, Midpoint
+#   Col Z  (index 25): Non-cancer CTUh  — cont. agric. soil, Midpoint
+# File 2: USEtox_results_organics__1_.csv
+#   4 merged header rows → skiprows=4, data from row 5
+#   Col B  (index 1):  CAS RN
+#   Col K  (index 10): Freshwater Ecotox CTUe — Em.agr.soilC, Midpoint
+# ================================================================
+def build_usetox(base_path):
+    print("[7/7] Building usetox...")
+
+    human_fp = base_path / "USEtox_results_organics.csv"
+    eco_fp   = base_path / "USEtox_results_organics__1_.csv"
+
+    # Human toxicity
+    df_h = pd.read_csv(human_fp, header=None, skiprows=4)
+    print(f"   Cancer non-null:     {df_h.iloc[:,24].notna().sum()}/{len(df_h)}")
+    print(f"   Non-cancer non-null: {df_h.iloc[:,25].notna().sum()}/{len(df_h)}")
+
+    human_tox = {}
+    for _, row in df_h.iterrows():
+        cas = str(row.iloc[1]).strip() if pd.notna(row.iloc[1]) else None
+        if not cas or cas in ["nan", "CAS", ""]:
+            continue
+        human_tox[cas] = {
+            "cancer_CTUh_per_kg":    float(row.iloc[24]) if pd.notna(row.iloc[24]) else 0.0,
+            "noncancer_CTUh_per_kg": float(row.iloc[25]) if pd.notna(row.iloc[25]) else 0.0,
+        }
+
+    # Freshwater ecotoxicity
+    df_e = pd.read_csv(eco_fp, header=None, skiprows=4)
+    print(f"   Ecotox non-null:     {df_e.iloc[:,10].notna().sum()}/{len(df_e)}")
+
+    ecotox = {}
+    for _, row in df_e.iterrows():
+        cas = str(row.iloc[1]).strip() if pd.notna(row.iloc[1]) else None
+        if not cas or cas in ["nan", "CAS", ""]:
+            continue
+        ecotox[cas] = float(row.iloc[10]) if pd.notna(row.iloc[10]) else 0.0
+
+    print(f"   ✓ Human tox: {len(human_tox)} | Ecotox: {len(ecotox)} substances")
+    return {
+        "human_toxicity": human_tox,
+        "ecotoxicity":    ecotox,
+        "compartment":    "Emission to continental agricultural soil",
+        "source":         "USEtox 2.14",
+        "version":        "EF 3.1",
+    }
+
+
+# ================================================================
+# MAIN
+# ================================================================
 def main():
     print("=" * 60)
-    print("AIOXY PEF 3.1 DATABASE BUILDER - ISO 14044 COMPLIANT")
+    print("AIOXY PEF 3.1 DATABASE BUILDER — v3 Final")
     print("=" * 60)
-    BASE_PATH = Path.cwd()
-    all_data = {}
-    
-    pef_file = BASE_PATH / 'Normalisation_Weighting_Factors_EF_3.1.xlsx'
-    if pef_file.exists():
-        all_data['pef_factors'] = build_pef_factors(pef_file)
-        print(f"   ✓ pef_factors: {len(all_data['pef_factors']['normalization_factors'])} categories")
-    
-    ilcd_file = BASE_PATH / 'EF-LCIAMethod_CF(EF-v3.1).csv'
-    if ilcd_file.exists():
-        all_data['ilcd_registry'] = build_ilcd_registry(ilcd_file)
-        print(f"   ✓ ilcd_registry: {len(all_data['ilcd_registry'])} categories")
-    
-    all_data['residual_mix'] = build_residual_mix(BASE_PATH)
-    print(f"   ✓ residual_mix: {len(all_data['residual_mix']['co2_factors'])} countries")
-    
-    lanca_file = BASE_PATH / 'N-379310-1.xlsx'
-    if lanca_file.exists():
-        all_data['lanca_sqi'] = build_lanca_sqi(lanca_file)
-        print(f"   ✓ lanca_sqi: {len(all_data['lanca_sqi']['occupation'])} countries")
-    
-    fao_file = BASE_PATH / 'FAOSTAT_data_en_4-18-2026.csv'
-    if fao_file.exists():
-        all_data['crop_yields'] = build_crop_yields(fao_file)
-        print(f"   ✓ crop_yields: {len(all_data['crop_yields']['yields'])} countries")
-    
-    aware_file = BASE_PATH / 'AWARE20_Countries_and_Regions.xlsx'
-    if aware_file.exists():
-        all_data['aware_20'] = build_aware_20(aware_file)
-        print(f"   ✓ aware_20: {len(all_data['aware_20']['agricultural'])} countries")
-    
-    all_data['usetox'] = build_usetox(BASE_PATH)
-    print(f"   ✓ usetox: {len(all_data['usetox']['human_toxicity'])} human, {len(all_data['usetox']['ecotoxicity'])} eco")
-    
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write("// AIOXY PEF 3.1 DATABASE - ISO 14044 COMPLIANT\n")
-        f.write("// Built: " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S") + "\n")
-        f.write("// Auditor: ISO 14044 Panel (Gemini)\n")
-        f.write("// CTO: DeepSeek\n")
-        f.write("// ==================================================\n\n")
+
+    base_path = Path(__file__).parent   # same folder as this script
+
+    all_data = {
+        "pef_factors":   build_pef_factors(base_path),
+        "ilcd_registry": build_ilcd_registry(base_path),
+        "residual_mix":  build_residual_mix(base_path),
+        "lanca_sqi":     build_lanca_sqi(base_path),
+        "crop_yields":   build_crop_yields(base_path),
+        "aware_20":      build_aware(base_path),
+        "usetox":        build_usetox(base_path),
+    }
+
+    out_path = base_path / OUTPUT_FILE
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write("// AIOXY PEF 3.1 DATABASE — ISO 14044 COMPLIANT\n")
+        f.write(f"// Built: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write("// Sources: EC JRC | AIB 2024 | LANCA v2.5 | FAOSTAT | AWARE 2.0 | USEtox 2.14\n")
+        f.write("// Builder: SnapfizzIntelligence | Auditor: Claude\n")
+        f.write("// " + "=" * 54 + "\n\n")
         for name, data in all_data.items():
             f.write(write_js_object(name, data))
-    
-    print("\n" + "=" * 60)
-    print(f"✅ SUCCESS: {OUTPUT_FILE} generated")
-    print("=" * 60)
+
+    size_kb = os.path.getsize(out_path) / 1024
+    print(f"\n{'=' * 60}")
+    print(f"✅  {OUTPUT_FILE}")
+    print(f"    Size    : {size_kb:.1f} KB")
+    print(f"    Databases: {len(all_data)}/7")
+    print(f"{'=' * 60}")
+
 
 if __name__ == "__main__":
     main()
