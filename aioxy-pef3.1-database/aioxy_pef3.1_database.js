@@ -1,5 +1,5 @@
 // AIOXY PEF 3.1 DATABASE — ISO 14044 COMPLIANT
-// Built: 2026-04-19 08:46:36
+// Built: 2026-04-19 08:48:08
 // Sources: EC JRC | AIB 2024 | LANCA v2.5 | FAOSTAT | AWARE 2.0 | USEtox 2.14
 // Builder: SnapfizzIntelligence | Auditor: Claude
 // ======================================================
