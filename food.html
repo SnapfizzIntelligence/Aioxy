@@ -17,29 +17,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
  
     <!-- AIOXY MODULAR JAVASCRIPT -->
-    <!-- 1. Farm Gate Database (221 ingredients) - MUST LOAD FIRST -->
-    <script src="ingredients_db.js"></script>
-    
-    <!-- 2. Synthese + Physics Database - MUST LOAD SECOND -->
-    <script src="ingredients.js"></script>
-    
-    <!-- 3. Core Engine -->
-    <script src="engine.js"></script>
-    
-    <!-- 4. Main Controller -->
-    <script src="main.js"></script>
-    
-    <!-- 5. UI Layer -->
-    <script src="ui.js"></script>
-    
-    <!-- 6. PDF Generator -->
-    <script src="pdf-generator.js"></script>
-    
-    <!-- 7. Audit Trail & Exports -->
-    <script src="audit-trail.js"></script>
-    
-    <!-- 8. Business Case & ROI -->
-    <script src="business-case.js"></script>
+<!-- 1. Farm Gate Database (221 ingredients) - MUST LOAD FIRST -->
+<script src="ingredients_db.js"></script>
+
+<!-- 2. Synthese + Physics Database - MUST LOAD SECOND -->
+<script src="ingredients.js"></script>
+
+<!-- 3. PEF 3.1 Master Database - MUST LOAD BEFORE ENGINE -->
+<!-- USEtox 2.14 (3077 substances) | AWARE 2.0 (184 countries) -->
+<!-- LANCA SQI (212 countries) | AIB Residual Mix (34 countries) -->
+<!-- FAOSTAT Yields | EF 3.1 NF/WF | ILCD UUIDs -->
+<script src="aioxy_pef3.1_database.js"></script>
+
+<!-- 4. Core Engine -->
+<script src="engine.js"></script>
+
+<!-- 5. Main Controller -->
+<script src="main.js"></script>
+
+<!-- 6. UI Layer -->
+<script src="ui.js"></script>
+
+<!-- 7. PDF Generator -->
+<script src="pdf-generator.js"></script>
+
+<!-- 8. Audit Trail & Exports -->
+<script src="audit-trail.js"></script>
+
+<!-- 9. Business Case & ROI -->
+<script src="business-case.js"></script>
     
     <style>
         * {
