@@ -185,14 +185,27 @@ LANCA: (function() {
         console.warn('⚠️ [LANCA] Live database not found — using fallback CFs');
     }
     return {
-        CF_BIOP: {
-            annual_crops:    live ? (live['Global'] || 0.00042) : 0.00042,
-            perennial_crops: live ? (live['Global'] || 0.00018) * 0.43 : 0.00018,
-            pasture:         live ? (live['Global'] || 0.00031) * 0.74 : 0.00031,
-            forest:          live ? (live['Global'] || 0.00008) * 0.19 : 0.00008,
-            urban:           live ? (live['Global'] || 0.00095) * 2.26 : 0.00095,
-            default:         live ? (live['Global'] || 0.00042) : 0.00042
-        },
+        CF_BIOP: (function() {
+            // BUG 6 FIX: No 'Global' key in database — compute world average from all countries
+            let worldAvg = 0.00042; // fallback
+            if (live && Object.keys(live).length > 0) {
+                const vals = Object.values(live).filter(v => typeof v === 'number' && v > 0 && isFinite(v));
+                if (vals.length > 0) {
+                    worldAvg = vals.reduce((a, b) => a + b, 0) / vals.length / 1000000;
+                    // SQI values are in Pt units — convert to CF_BIOP scale (typical range 0.0001-0.001)
+                    worldAvg = Math.min(Math.max(worldAvg, 0.00001), 0.01);
+                }
+                console.log('✅ [LANCA] World average CF computed from', vals.length, 'countries:', worldAvg.toExponential(3));
+            }
+            return {
+                annual_crops:    live ? worldAvg          : 0.00042,
+                perennial_crops: live ? worldAvg * 0.43   : 0.00018,
+                pasture:         live ? worldAvg * 0.74   : 0.00031,
+                forest:          live ? worldAvg * 0.19   : 0.00008,
+                urban:           live ? worldAvg * 2.26   : 0.00095,
+                default:         live ? worldAvg          : 0.00042
+            };
+        })(),
         REGIONAL_FACTORS: {
             tropical: 1.5,
             temperate: 1.0,
@@ -553,8 +566,26 @@ usetox_factors: (function() {
         ? window.aioxyData.usetox.human_toxicity
         : null;
     if (live) {
-        console.log('✅ [USEtox] Live database loaded —', Object.keys(live).length, 'substances');
-        return live;
+        // BUG 2 FIX: Transform flat Python DB structure into nested soil/air/water
+        // Python DB: { "CAS": { cancer_CTUh_per_kg, noncancer_CTUh_per_kg } }
+        // Engine needs: { "CAS": { soil: { ctu_h_cancer, ctu_h_noncancer, ctu_e } } }
+        const ecoLive = (typeof window !== 'undefined' && window.aioxyData?.usetox?.ecotoxicity) || {};
+        const transformed = {};
+        Object.keys(live).forEach(cas => {
+            const d = live[cas];
+            transformed[cas.toLowerCase()] = {
+                soil:  { ctu_h_cancer: d.cancer_CTUh_per_kg || 0, ctu_h_noncancer: d.noncancer_CTUh_per_kg || 0, ctu_e: ecoLive[cas] || 0 },
+                air:   { ctu_h_cancer: (d.cancer_CTUh_per_kg || 0) * 0.1, ctu_h_noncancer: (d.noncancer_CTUh_per_kg || 0) * 0.1, ctu_e: (ecoLive[cas] || 0) * 0.05 },
+                water: { ctu_h_cancer: (d.cancer_CTUh_per_kg || 0) * 0.5, ctu_h_noncancer: (d.noncancer_CTUh_per_kg || 0) * 0.5, ctu_e: (ecoLive[cas] || 0) * 2.0 }
+            };
+        });
+        transformed['default'] = {
+            soil:  { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
+            air:   { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
+            water: { ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
+        };
+        console.log('✅ [USEtox] Live database transformed —', Object.keys(transformed).length - 1, 'substances with soil/air/water structure');
+        return transformed;
     }
     console.warn('⚠️ [USEtox] Live database not found — using fallback');
     return {
@@ -1816,7 +1847,7 @@ function calculateEntericMethane(animalType, quantityKg, originCountry) {
     }
     
     const ENTERIC = PHYSICS_CONSTANTS.ENTERIC;
-    const GWP_CH4_biogenic = PHYSICS_CONSTANTS.gwp.ch4_biogenic;
+    const GWP_CH4_biogenic = PHYSICS_CONSTANTS.gwp.ch4; // AR6 GWP100 = 27.9 (key was ch4_biogenic, correct key is ch4)
     
     // Get emission factor
     let ef_ch4_per_head = 0;
@@ -2732,7 +2763,7 @@ if (primaryData.waterSource === 'rainfed') {
     universal_adjustments = {
         adjusted_from_country: "Agribalyse Default",
         adjusted_for_country: primaryData.farmRegion || originCountry,
-        multipliers: { co2: 1.0, land: 1.0, water: waterAdjustment, fossil: 1.0 }, // NO ARBITRARY 60/40 SCALING
+        multipliers: { co2: 1.0, land: 1.0, water: 1.0, fossil: 1.0 }, // water=1.0 — AWARE CF already accounts for scarcity
         adder: n2oCO2e, // Foreground N₂O addition
         method: "primary_data_ipcc_tier1",
         baseline_yield: ingredientData.data.metadata?.yield_kg_ha || 5000,
@@ -2896,7 +2927,34 @@ if (useEconomicAllocation && primaryData?.coProducts && primaryData.coProducts.l
         ...primaryData.coProducts
     ];
     
-    sensitivityResult = checkAllocationSensitivity(allProducts);
+    // BUG 7 FIX: checkAllocationSensitivity defined inline
+    sensitivityResult = (function checkAllocationSensitivity(products) {
+        if (!products || products.length < 2) {
+            return { significantDifference: false, note: 'Single product — no co-allocation', differsAt: [] };
+        }
+        const totalMass  = products.reduce((s, p) => s + (p.mass  || 0), 0);
+        const totalValue = products.reduce((s, p) => s + ((p.mass || 0) * (p.price || 0)), 0);
+        const differsAt  = [];
+        products.forEach(p => {
+            const massFactor  = totalMass  > 0 ? (p.mass || 0) / totalMass  : 0;
+            const econFactor  = totalValue > 0 ? ((p.mass || 0) * (p.price || 0)) / totalValue : 0;
+            const diff        = Math.abs(massFactor - econFactor);
+            if (diff > 0.05) { // >5% difference per product
+                differsAt.push({ product: p.name, massFactor: massFactor.toFixed(3), economicFactor: econFactor.toFixed(3), difference: diff.toFixed(3) });
+            }
+        });
+        const significantDifference = differsAt.some(d => parseFloat(d.difference) > 0.25);
+        return {
+            significantDifference,
+            note: significantDifference
+                ? `Allocation methods diverge >25% — ISO 14044 §6.3 sensitivity flag required`
+                : `Mass vs economic allocation within 25% threshold`,
+            differsAt,
+            method_used: 'Economic (ISO 14044 §4.3.4.2)',
+            mass_allocation:     { co2_per_kg: 0 }, // populated by engine when both paths run
+            economic_allocation: { co2_per_kg: 0 }
+        };
+    })(allProducts);
     
     if (sensitivityResult.significantDifference) {
         log.push(`⚠️ [Sensitivity] ${sensitivityResult.note}`);
@@ -3099,7 +3157,13 @@ return {
     waste_allocation_note: wasteAllocationNote || '',
     allocation_sensitivity: sensitivityResult,
     sampling_validation: samplingResult,
-    pesticide_toxicity: pesticideResults,
+    // BUG 9 FIX: pesticideResults is an array — aggregate into single object
+    // PEF loop reads .cancer_CTUh directly — array has no such property
+    pesticide_toxicity: pesticideResults.reduce((acc, r) => ({
+        cancer_CTUh:      (acc.cancer_CTUh      || 0) + (r.cancer_CTUh      || 0),
+        noncancer_CTUh:   (acc.noncancer_CTUh   || 0) + (r.noncancer_CTUh   || 0),
+        ecotoxicity_CTUe: (acc.ecotoxicity_CTUe || 0) + (r.ecotoxicity_CTUe || 0)
+    }), { cancer_CTUh: 0, noncancer_CTUh: 0, ecotoxicity_CTUe: 0 }),
     biodiversity_lanca: biodiversityResult,
     allocation_hierarchy: hierarchyResult   // ← NO COMMA - LAST FIELD
 };
@@ -3212,19 +3276,49 @@ if (eolTarget === 'incinerated') {
 
         // 3. WATERSHED FACTOR RESOLUTION (Crash-Proof Tree Traversal)
         let cf = GLOBAL_DEFAULT_CF;
-        
-        // Safely check for external data
-        const externalData = (typeof global !== 'undefined' && global.aioxyData)
-    ? (global.aioxyData.aware_20?.agricultural      // ✅ New database key
-    || global.aioxyData.aware_factors               // legacy fallback
-    || {})
-    : {};
-if (global.aioxyData?.aware_20?.agricultural) {
-    console.log('✅ [AWARE] Live AWARE 2.0 database loaded —', 
-        Object.keys(global.aioxyData.aware_20.agricultural).length, 'countries');
-} else {
-    console.warn('⚠️ [AWARE] Live database not found — using fallback');
-}
+
+        // BUG 8 FIX: AWARE DB uses country names ("France"), engine uses ISO codes ("FR")
+        // Build ISO→CF lookup map once per call using name→ISO translation
+        const COUNTRY_NAME_TO_ISO = {
+            'Afghanistan':'AF','Albania':'AL','Algeria':'DZ','Andorra':'AD','Angola':'AO',
+            'Argentina':'AR','Armenia':'AM','Australia':'AU','Austria':'AT','Azerbaijan':'AZ',
+            'Bahrain':'BH','Bangladesh':'BD','Belarus':'BY','Belgium':'BE','Bolivia':'BO',
+            'Brazil':'BR','Bulgaria':'BG','Cambodia':'KH','Canada':'CA','Chile':'CL',
+            'China':'CN','Colombia':'CO','Croatia':'HR','Cuba':'CU','Cyprus':'CY',
+            'Czech Republic':'CZ','Denmark':'DK','Ecuador':'EC','Egypt':'EG',
+            'Estonia':'EE','Ethiopia':'ET','Finland':'FI','France':'FR','Georgia':'GE',
+            'Germany':'DE','Ghana':'GH','Greece':'GR','Hungary':'HU','India':'IN',
+            'Indonesia':'ID','Iran (Islamic Republic of)':'IR','Iraq':'IQ','Ireland':'IE',
+            'Israel':'IL','Italy':'IT','Japan':'JP','Jordan':'JO','Kazakhstan':'KZ',
+            'Kenya':'KE','Kuwait':'KW','Latvia':'LV','Lebanon':'LB','Lithuania':'LT',
+            'Luxembourg':'LU','Malaysia':'MY','Mexico':'MX','Moldova':'MD','Morocco':'MA',
+            'Netherlands':'NL','New Zealand':'NZ','Nigeria':'NG','Norway':'NO','Oman':'OM',
+            'Pakistan':'PK','Peru':'PE','Philippines':'PH','Poland':'PL','Portugal':'PT',
+            'Qatar':'QA','Romania':'RO','Russia':'RU','Russian Federation':'RU',
+            'Saudi Arabia':'SA','Serbia':'RS','Slovakia':'SK','Slovenia':'SI',
+            'South Africa':'ZA','South Korea':'KR','Spain':'ES','Sweden':'SE',
+            'Switzerland':'CH','Syria':'SY','Taiwan':'TW','Thailand':'TH','Tunisia':'TN',
+            'Turkey':'TR','Ukraine':'UA','United Arab Emirates':'AE','United Kingdom':'GB',
+            'United States':'US','United States of America':'US','Uruguay':'UY',
+            'Uzbekistan':'UZ','Venezuela':'VE','Vietnam':'VN','Yemen':'YE','Zimbabwe':'ZW'
+        };
+
+        const rawAware = (typeof global !== 'undefined' && global.aioxyData)
+            ? (global.aioxyData.aware_20?.agricultural || global.aioxyData.aware_factors || {})
+            : {};
+
+        // Build ISO-keyed map from country-name-keyed DB
+        const externalData = {};
+        Object.keys(rawAware).forEach(name => {
+            const iso = COUNTRY_NAME_TO_ISO[name];
+            if (iso) externalData[iso] = rawAware[name];
+        });
+
+        if (Object.keys(externalData).length > 0) {
+            console.log('✅ [AWARE] Live AWARE 2.0 ISO-mapped —', Object.keys(externalData).length, 'countries');
+        } else {
+            console.warn('⚠️ [AWARE] Live database not found — using fallback');
+        }
 
         if (externalData[safeCountryCode]) {
             const countryEntry = externalData[safeCountryCode];
@@ -3553,7 +3647,27 @@ const pefNormalizationFactors = (function() {
         Object.keys(live).forEach(cat => {
             normalized[cat] = 1 / live[cat];
         });
-        console.log('✅ [PEF NF] Live normalization factors loaded —', Object.keys(live).length, 'categories');
+        // BUG 5 FIX: Alias Python DB keys → engine pefCategories keys (12/16 mismatched)
+        // Python DB uses EF 3.1 official names; engine uses display names
+        const ALIAS = {
+            'Climate change':                               'Climate Change',
+            'Ozone depletion':                              'Ozone Depletion',
+            'Human toxicity, cancer effects':               'Human Toxicity, cancer',
+            'Human toxicity, non-cancer effects':           'Human Toxicity, non-cancer',
+            'Particulate matter formation':                 'Particulate Matter',
+            'Ionising radiation':                           'Ionizing Radiation',
+            'Photochemical ozone formation, human health':  'Photochemical Ozone Formation',
+            'Land use':                                     'Land Use',
+            'Water use':                                    'Water Use/Scarcity (AWARE)',
+            'Resource use, minerals and metals':            'Resource Use, minerals/metals',
+            'Resource use, fossils':                        'Resource Use, fossils',
+        };
+        Object.keys(ALIAS).forEach(pyKey => {
+            if (normalized[pyKey] !== undefined) {
+                normalized[ALIAS[pyKey]] = normalized[pyKey];
+            }
+        });
+        console.log('✅ [PEF NF] Live normalization factors loaded —', Object.keys(normalized).length, 'categories (aliases applied)');
         return normalized;
     }
     
@@ -3578,8 +3692,28 @@ const pefWeightingFactors = (function() {
         : null;
     
     if (live) {
-        console.log('✅ [PEF WF] Live weighting factors loaded —', Object.keys(live).length, 'categories');
-        return live;
+        const wfNormalized = Object.assign({}, live);
+        // BUG 5 FIX: Alias Python DB keys → engine pefCategories keys
+        const ALIAS_WF = {
+            'Climate change':                               'Climate Change',
+            'Ozone depletion':                              'Ozone Depletion',
+            'Human toxicity, cancer effects':               'Human Toxicity, cancer',
+            'Human toxicity, non-cancer effects':           'Human Toxicity, non-cancer',
+            'Particulate matter formation':                 'Particulate Matter',
+            'Ionising radiation':                           'Ionizing Radiation',
+            'Photochemical ozone formation, human health':  'Photochemical Ozone Formation',
+            'Land use':                                     'Land Use',
+            'Water use':                                    'Water Use/Scarcity (AWARE)',
+            'Resource use, minerals and metals':            'Resource Use, minerals/metals',
+            'Resource use, fossils':                        'Resource Use, fossils',
+        };
+        Object.keys(ALIAS_WF).forEach(pyKey => {
+            if (wfNormalized[pyKey] !== undefined) {
+                wfNormalized[ALIAS_WF[pyKey]] = wfNormalized[pyKey];
+            }
+        });
+        console.log('✅ [PEF WF] Live weighting factors loaded —', Object.keys(wfNormalized).length, 'categories (aliases applied)');
+        return wfNormalized;
     }
     
     console.warn('⚠️ [PEF WF] Live database not found — using fallback');
@@ -5403,35 +5537,35 @@ auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total += waterPkg;
 
             // Particulate Matter
             const foodWastePM = foodWasteKg * FOOD_WASTE_EoL.particulate_matter_disease;
-            if (auditTrail.pefCategories["EF-particulate matter"]) {
-                auditTrail.pefCategories["EF-particulate matter"].contribution_tree = 
-                    auditTrail.pefCategories["EF-particulate matter"].contribution_tree || { Waste: { total: 0, components: [] } };
-                auditTrail.pefCategories["EF-particulate matter"].contribution_tree.Waste = 
-                    auditTrail.pefCategories["EF-particulate matter"].contribution_tree.Waste || { total: 0, components: [] };
-                auditTrail.pefCategories["EF-particulate matter"].contribution_tree.Waste.total += foodWastePM;
-                auditTrail.pefCategories["EF-particulate matter"].total += foodWastePM;
+            if (auditTrail.pefCategories["Particulate Matter"]) {
+                auditTrail.pefCategories["Particulate Matter"].contribution_tree = 
+                    auditTrail.pefCategories["Particulate Matter"].contribution_tree || { Waste: { total: 0, components: [] } };
+                auditTrail.pefCategories["Particulate Matter"].contribution_tree.Waste = 
+                    auditTrail.pefCategories["Particulate Matter"].contribution_tree.Waste || { total: 0, components: [] };
+                auditTrail.pefCategories["Particulate Matter"].contribution_tree.Waste.total += foodWastePM;
+                auditTrail.pefCategories["Particulate Matter"].total += foodWastePM;
             }
 
             // Human Toxicity Cancer
             const foodWasteHTCancer = foodWasteKg * FOOD_WASTE_EoL.human_tox_cancer_CTUh;
-            if (auditTrail.pefCategories["Human toxicity, cancer"]) {
-                auditTrail.pefCategories["Human toxicity, cancer"].contribution_tree = 
-                    auditTrail.pefCategories["Human toxicity, cancer"].contribution_tree || { Waste: { total: 0, components: [] } };
-                auditTrail.pefCategories["Human toxicity, cancer"].contribution_tree.Waste = 
-                    auditTrail.pefCategories["Human toxicity, cancer"].contribution_tree.Waste || { total: 0, components: [] };
-                auditTrail.pefCategories["Human toxicity, cancer"].contribution_tree.Waste.total += foodWasteHTCancer;
-                auditTrail.pefCategories["Human toxicity, cancer"].total += foodWasteHTCancer;
+            if (auditTrail.pefCategories["Human Toxicity, cancer"]) {
+                auditTrail.pefCategories["Human Toxicity, cancer"].contribution_tree = 
+                    auditTrail.pefCategories["Human Toxicity, cancer"].contribution_tree || { Waste: { total: 0, components: [] } };
+                auditTrail.pefCategories["Human Toxicity, cancer"].contribution_tree.Waste = 
+                    auditTrail.pefCategories["Human Toxicity, cancer"].contribution_tree.Waste || { total: 0, components: [] };
+                auditTrail.pefCategories["Human Toxicity, cancer"].contribution_tree.Waste.total += foodWasteHTCancer;
+                auditTrail.pefCategories["Human Toxicity, cancer"].total += foodWasteHTCancer;
             }
 
             // Human Toxicity Non-cancer
             const foodWasteHTNonCancer = foodWasteKg * FOOD_WASTE_EoL.human_tox_noncancer_CTUh;
-            if (auditTrail.pefCategories["Human toxicity, non-cancer"]) {
-                auditTrail.pefCategories["Human toxicity, non-cancer"].contribution_tree = 
-                    auditTrail.pefCategories["Human toxicity, non-cancer"].contribution_tree || { Waste: { total: 0, components: [] } };
-                auditTrail.pefCategories["Human toxicity, non-cancer"].contribution_tree.Waste = 
-                    auditTrail.pefCategories["Human toxicity, non-cancer"].contribution_tree.Waste || { total: 0, components: [] };
-                auditTrail.pefCategories["Human toxicity, non-cancer"].contribution_tree.Waste.total += foodWasteHTNonCancer;
-                auditTrail.pefCategories["Human toxicity, non-cancer"].total += foodWasteHTNonCancer;
+            if (auditTrail.pefCategories["Human Toxicity, non-cancer"]) {
+                auditTrail.pefCategories["Human Toxicity, non-cancer"].contribution_tree = 
+                    auditTrail.pefCategories["Human Toxicity, non-cancer"].contribution_tree || { Waste: { total: 0, components: [] } };
+                auditTrail.pefCategories["Human Toxicity, non-cancer"].contribution_tree.Waste = 
+                    auditTrail.pefCategories["Human Toxicity, non-cancer"].contribution_tree.Waste || { total: 0, components: [] };
+                auditTrail.pefCategories["Human Toxicity, non-cancer"].contribution_tree.Waste.total += foodWasteHTNonCancer;
+                auditTrail.pefCategories["Human Toxicity, non-cancer"].total += foodWasteHTNonCancer;
             }
 
             // Freshwater Ecotoxicity
@@ -5569,6 +5703,17 @@ if (inUseEmissions.totalCO2 > 0) {
             // 🛡️ FIX 3: THE AGGREGATION GUARD
             const totalCC = auditTrail.pefCategories["Climate Change"].total;
             auditTrail.final_scaling_trace = `[Total Batch Impact (${totalCC.toFixed(4)} kg CO2e) ÷ Final Product Weight (${functionalUnitWeight.toFixed(3)} kg)]`;
+
+            // BUG 11 FIX: dnm_alerts and compliance_status never assigned — both needed by PDF/results
+            const dnmResult = foregroundBackground.dnm_result || {};
+            auditTrail.compliance_status = dnmResult.blocked
+                ? 'BLOCKED_POOR_DATA'
+                : (dnmResult.warnings?.length > 0 ? 'WARNING' : 'COMPLIANT');
+            auditTrail.dnm_alerts = [
+                ...(dnmResult.violations || []),
+                ...(dnmResult.warnings   || [])
+            ];
+            auditTrail.hotspot_analysis = foregroundBackground.hotspot_analysis || {};
 
             auditTrail.mass_balance = massBalanceData;
             auditTrail.dqr_summary = { 
@@ -5801,7 +5946,7 @@ let actualFossil = 0;
 let actualBiogenic = 0;
 let actualDLUC = 0;
 
-const stages = ['Ingredients', 'Manufacturing', 'Transport', 'Packaging', 'Upstream', 'Waste'];
+const stages = ['Ingredients', 'Manufacturing', 'Transport', 'Packaging', 'Upstream', 'Waste', 'Use']; // BUG 10 FIX: 'Use' stage added for cold chain products
 
 stages.forEach(stage => {
     const components = auditTrail.pefCategories["Climate Change"].contribution_tree[stage]?.components || [];
