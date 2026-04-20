@@ -582,10 +582,26 @@ ilcd_uuids: (function() {
         
         // Add sub-indicators manually (not in ILCD registry but needed for export)
         uuids['Climate Change - Biogenic'] = uuids['Climate change'] || '706261af-a357-4cc0-a50a-f3033fcbd556';
-        uuids['Climate Change - Fossil'] = uuids['Climate change'] || '7fce5b3a-66b8-4ce1-91e8-a925aee1f186';
+        uuids['Climate Change - Fossil']   = uuids['Climate change'] || '7fce5b3a-66b8-4ce1-91e8-a925aee1f186';
         uuids['Climate Change - Land Use'] = uuids['Climate change'] || '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12';
-        
-        console.log('✅ [ILCD] Live UUID registry loaded —', Object.keys(live).length, 'categories');
+
+        // ✅ ISSUE 1 FIX — Alias map: Python DB keys → engine pefCategories keys
+        // Python DB uses lowercase/EC-format names. Engine pefCategories uses
+        // title-case display names. Without these aliases uuid lookup returns null
+        // for 11 of 16 categories making ilcd_export_ready permanently false.
+        uuids['Climate Change']                    = uuids['Climate change'];
+        uuids['Human Toxicity, cancer']            = uuids['Human toxicity, cancer'];
+        uuids['Human Toxicity, non-cancer']        = uuids['Human toxicity, non-cancer'];
+        uuids['Particulate Matter']                = uuids['EF-particulate matter'];
+        uuids['Ionizing Radiation']                = uuids['Ionising radiation'];
+        uuids['Photochemical Ozone Formation']     = uuids['Photochemical ozone formation'];
+        uuids['Ozone Depletion']                   = uuids['Ozone depletion'];
+        uuids['Land Use']                          = uuids['Land use'];
+        uuids['Resource Use, fossils']             = uuids['Resource depletion, fossils'];
+        uuids['Resource Use, minerals/metals']     = uuids['Resource depletion, minerals and metals'];
+        uuids['Water Use/Scarcity (AWARE)']        = uuids['Water use'];
+
+        console.log('✅ [ILCD] Live UUID registry loaded —', Object.keys(live).length, 'categories | aliases injected for pefCategories');
         return uuids;
     }
     
@@ -1422,7 +1438,15 @@ function generateReportStructure(auditTrail) {
         { name: 'Impact Assessment Results', present: true, source: 'pefCategories' },
         { name: 'Interpretation', present: true, source: 'hotspot_analysis, dnm_result' },
         { name: 'Sensitivity Analysis', present: true, source: 'allocation_sensitivity' },
-        { name: 'Critical Review Statement', present: false, source: 'pending_review' },
+        { name: 'Critical Review Statement',
+          // ✅ ISSUE 3 FIX — Dynamic based on actual panel validation
+          // true  = panel validated (3+ members, chair present, no conflict)
+          // false = pending human reviewer action (not a calculation failure)
+          // PDF generator must treat this as "PENDING HUMAN ACTION" not "BLOCKED"
+          present: (typeof panelValidation !== 'undefined' && panelValidation.valid) || false,
+          source: 'review_panel',
+          pending_human_action: true  // flag for PDF: show "Pending Review" not "Non-Compliant"
+        },
         { name: 'References', present: true, source: 'AGRIBALYSE 3.2, EF 3.1' }
     ];
     
