@@ -3158,7 +3158,7 @@ return {
     universal_adjustments: universal_adjustments,
     is_primary: !!primaryData,
     biogenicRemovals: biogenicRemovals,
-    marineEutrophication_N: marineEutrophication_kg_N || 0,
+    marineEutrophication_N: impactResult.marineEutrophication_N || 0,
     freshwaterEutrophication_P: impactResult.freshwaterEutrophication_P || 0,
     eudr_compliant: impactResult.eudr_compliant !== false,
     eudr_flag: impactResult.eudr_flag || '✅ COMPLIANT',
