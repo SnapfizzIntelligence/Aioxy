@@ -2621,8 +2621,20 @@ let waterBase = ingredientData.data.pef["Water Use/Scarcity (AWARE)"] || 0;
 let landBase = ingredientData.data.pef["Land Use"] || 0;
 let fossilBase = ingredientData.data.pef["Resource Use, fossils"] || 0;
 
+// ✅ BUG 14 FIX: Apply AWARE 2.0 country CF to ALL ingredients, not just primary-data path
+// PEF 3.1 §4.4.5 requires AWARE characterization factors per country of production
+// Agribalyse gives raw water consumption (m3/kg) — multiply by country scarcity CF
+// to get the characterization result in m3 world equivalent
+if (waterBase > 0 && originCountry) {
+    const awareResult = calculateAWARE(waterBase, originCountry);
+    if (awareResult && awareResult.impact > 0) {
+        waterBase = awareResult.impact;
+        // Will be logged after log array is initialized below
+    }
+}
+
 // 🛡️ STRICT SPATIAL AWARE ROUTING (ISO 14046 COMPLIANT)
-// If primary data provides farm region, attempt exact watershed match
+// If primary data provides farm region, attempt exact watershed match (overrides country-level above)
 if (primaryData && primaryData.farmRegion && PHYSICS_DB.watersheds && PHYSICS_DB.watersheds[originCountry]) {
     const watersheds = PHYSICS_DB.watersheds[originCountry];
     const regionKey = Object.keys(watersheds).find(key => 
@@ -2880,7 +2892,7 @@ if (useEconomicAllocation && primaryData?.coProducts) {
 // Calculate final totals with allocation factor
 const totalCO2 = finalCO2 * quantityKg * allocationFactor;
 const totalWater = finalWater * quantityKg * allocationFactor;
-const totalLand = finalLand * quantityKg * allocationFactor;
+let totalLand = finalLand * quantityKg * allocationFactor; // BUG 13 FIX: must be let — LANCA adds to it below
 const totalFossil = finalFossil * quantityKg * allocationFactor;
 
 // 🛡️ REGULATOR FIX: Biogenic removals CANNOT be a flat 20% guess.
@@ -3580,7 +3592,7 @@ else {
 
         // Natural Gas emits ~202g CO2e per MJ
         const gasCO2 = (naturalGasMj * 202) / 1000;
-        const manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + gasCO2 + fugitiveCO2;
+        let manufacturingCO2 = (electricityKWh * (gridIntensity / 1000)) + gasCO2 + fugitiveCO2; // must be let — capital goods amortization adds to it below
         
         // 5. WATER EVAPORATION (Keep for mass balance, but NOT for energy calculation)
         const waterEvaporated = Math.max(0, massInputKg - massOutputKg);
@@ -4353,7 +4365,8 @@ function calculateParametricBaseline(anchorId, targetCountry) {
     const userPkgMaterial = domGetter('packagingMaterial', true) || 'cardboard';
     const userRecycledPct = parseFloat(domGetter('recycledContent', true)) || 30;
     const userEnergySource = domGetter('energySource', true) || 'grid';
-    const eolTargetElement = global.document?.getElementById('packagingEoL');
+    // ✅ BUG 5 (Gemini) FIX: Use payload value if available (headless/API mode)
+    const eolTargetElement = { value: packagingEoLValue || 'eu_average' };
     
     // 🆕 JRC BAT TOGGLE - Check if user wants BAT processing energy
     const useJRCBAT = domGetter('useJRCBAT', false) || false;
@@ -4817,6 +4830,12 @@ const productCategory = _p.productCategory
     || global.document?.getElementById('productCategory')?.value
     || 'auto';
 
+// ✅ BUG 5 (Gemini) FIX: packagingEoL added to payload extraction
+// Previously DOM-only — headless API/batch calls got undefined → wrong CFF math
+const packagingEoLValue = _p.packagingEoL
+    || global.document?.getElementById('packagingEoL')?.value
+    || 'eu_average';
+
     
             // =========== [FEATURE PRESERVED] HYDRATION PHYSICS ===========
             let finalIngredients = [...selectedIngredientsRef];
@@ -5129,7 +5148,7 @@ const productCategory = _p.productCategory
                     // ✅ GAP 1 FIX: USEtox primary data override into PEF matrix
                     // If primary pesticide data was submitted, use calculated CTUh/CTUe
                     // instead of Agribalyse proxy — satisfying primary data hierarchy
-                    else if (cat === "Human toxicity, cancer") {
+                    else if (cat === "Human Toxicity, cancer") { // BUG 16 FIX: capital T to match pefCategories key
                         const tox = impactResult.pesticide_toxicity;
                         if (tox && tox.cancer_CTUh > 0) {
                             impactTotal = tox.cancer_CTUh * (item.allocationFactor || 1.0);
@@ -5138,7 +5157,7 @@ const productCategory = _p.productCategory
                             impactTotal = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
                         }
                     }
-                    else if (cat === "Human toxicity, non-cancer") {
+                    else if (cat === "Human Toxicity, non-cancer") { // BUG 16 FIX: capital T to match pefCategories key
                         const tox = impactResult.pesticide_toxicity;
                         if (tox && tox.noncancer_CTUh > 0) {
                             impactTotal = tox.noncancer_CTUh * (item.allocationFactor || 1.0);
@@ -5154,6 +5173,30 @@ const productCategory = _p.productCategory
                             console.log(`🧪 [USEtox→PEF] ${ing.name} ecotoxicity: ${impactTotal.toExponential(3)} CTUe (primary data override)`);
                         } else {
                             impactTotal = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
+                        }
+                    }
+                    // ✅ BUG 11 FIX: N/P leaching injected into PEF eutrophication categories
+                    // IPCC Tier 1 N leaching → Marine Eutrophication
+                    // SALCA-P P leaching → Freshwater Eutrophication
+                    // Primary data override: use calculated leaching if available, else Agribalyse proxy
+                    else if (cat === "Eutrophication, freshwater") {
+                        const leachedP = impactResult.freshwaterEutrophication_P || 0;
+                        const agriBase = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
+                        impactTotal = leachedP > 0
+                            ? leachedP * (item.allocationFactor || 1.0)
+                            : agriBase;
+                        if (leachedP > 0) {
+                            console.log(`🌊 [SALCA-P→PEF] ${ing.name} freshwater eutrophication: ${impactTotal.toExponential(3)} kg P eq (primary leaching data)`);
+                        }
+                    }
+                    else if (cat === "Eutrophication, marine") {
+                        const leachedN = impactResult.marineEutrophication_N || 0;
+                        const agriBase = grownMass * (ing.data.pef ? ing.data.pef[cat] || 0 : 0);
+                        impactTotal = leachedN > 0
+                            ? leachedN * (item.allocationFactor || 1.0)
+                            : agriBase;
+                        if (leachedN > 0) {
+                            console.log(`🌊 [IPCC-N→PEF] ${ing.name} marine eutrophication: ${impactTotal.toExponential(3)} kg N eq (primary leaching data)`);
                         }
                     }
                     else {
@@ -5430,7 +5473,7 @@ const productCategory = _p.productCategory
             if (packagingWeight > 0) {
                 const packagingData = aioxyDataRef.packaging?.[packagingMaterial];
                 if (packagingData) {
-                    const eolElement = global.document?.getElementById('packagingEoL');
+                    const eolElement = { value: packagingEoLValue || 'eu_average' }; // BUG 5 FIX: payload-aware
                     const cffResult = calculateCFF(packagingData, packagingWeight, recycledContentPercent, eolElement);
                     auditTrail.pefCategories["Climate Change"].contribution_tree.Packaging.calculation_trace = cffResult.calculation_trace;
                     
@@ -5706,7 +5749,9 @@ if (inUseEmissions.totalCO2 > 0) {
 
             // BUG 11 FIX: dnm_alerts and compliance_status never assigned — both needed by PDF/results
             const dnmResult = foregroundBackground.dnm_result || {};
-            auditTrail.compliance_status = dnmResult.blocked
+            // ✅ BUG 4 (Gemini) FIX: evaluateDNM returns .compliant not .blocked
+            // dnmResult.blocked was always undefined → status always 'COMPLIANT' even when violated
+            auditTrail.compliance_status = !dnmResult.compliant
                 ? 'BLOCKED_POOR_DATA'
                 : (dnmResult.warnings?.length > 0 ? 'WARNING' : 'COMPLIANT');
             auditTrail.dnm_alerts = [
@@ -5766,14 +5811,7 @@ const validityCheck = checkExpiration(
 
 auditTrail.validity = validityCheck;
 
-// ========== REPORT STRUCTURE VALIDATION ==========
-const reportStructure = generateReportStructure(auditTrail);
-auditTrail.report_structure = reportStructure;
-
-if (!reportStructure.valid) {
-    auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
-    auditTrail.compliance_warnings.push(reportStructure.note);
-}
+// [REPORT STRUCTURE VALIDATION MOVED BELOW — BUG 12 FIX: must run after panelValidation is defined]
 
             // ========== ILCD UUID MAPPING ==========
 auditTrail.ilcd_metadata = generateILCDMetadata();
@@ -5808,6 +5846,15 @@ const comparativeCheck = checkComparativeAssertion(comparisonBaseline, isPublicC
 
 const panelMembers = global.panelMembers || [];
 const panelValidation = validateReviewPanel(panelMembers, comparativeCheck.requiresReview);
+
+// ✅ BUG 12 FIX: Report Structure Validation AFTER panelValidation is defined
+// Previously ran 40 lines too early — panelValidation was undefined, Critical Review always false
+const reportStructure = generateReportStructure(auditTrail);
+auditTrail.report_structure = reportStructure;
+if (!reportStructure.valid) {
+    auditTrail.compliance_warnings = auditTrail.compliance_warnings || [];
+    auditTrail.compliance_warnings.push(reportStructure.note);
+}
 
 auditTrail.comparative_assertion = comparativeCheck;
 auditTrail.review_panel = {
