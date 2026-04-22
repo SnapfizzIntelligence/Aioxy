@@ -6129,6 +6129,33 @@ function validateEngineVersion() {
             // ================== PEF 3.1 CARBON BREAKDOWN (AUDITOR-READY) ==================
 // Calculate ACTUAL bottom-up sums from contribution tree - NO FAKE PROXIES
 
+// GUARD: Only run if auditTrail and pefCategories are fully initialized
+if (!auditTrail?.pefCategories?.["Climate Change"] || !this.state?.finalPefResults) {
+    console.warn('⚠️ [Carbon Breakdown] Skipping — pefCategories not initialized (early exit path)');
+    
+    // Return minimal results object to prevent downstream crashes
+    const results = {
+        finalPefResults: this.state?.finalPefResults || {},
+        co2PerKg: 0,
+        waterScarcityPerKg: 0,
+        landUsePerKg: 0,
+        fossilPerKg: 0,
+        fossilCO2Breakdown: 0,
+        biogenicCO2Breakdown: 0,
+        dlucCO2Breakdown: 0,
+        overallDQR: 5.0,
+        overallUncertainty: 100,
+        comparison: {
+            baseline: { co2PerKg: 0 },
+            co2SavedPerKg: 0,
+            uplift_applied: { co2: 0 }
+        },
+        auditTrail: auditTrail || {},
+        compliance_status: 'BLOCKED_INCOMPLETE_CALCULATION'
+    };
+    return results;
+}
+
 // 1. Initialize the sub-category objects in finalPefResults (Prevents UI Crash)
 this.state.finalPefResults['Climate Change - Fossil'] = { total: 0, unit: 'kg CO2e' };
 this.state.finalPefResults['Climate Change - Biogenic'] = { total: 0, unit: 'kg CO2e' };
