@@ -1134,8 +1134,8 @@ function updateIngredientList() {
             <div class="ingredient-info">
                 <div class="ingredient-name">${ingredient.name}</div>
                 <div class="ingredient-stats">
-                    ${ingredientData.data.pef["Climate Change"]} kg CO₂e/kg • 
-                    ${ingredientData.data.pef["Water Use/Scarcity (AWARE)"]} m³ water/kg •
+                    ${ingredientData.data?.pef?.["Climate Change"] ?? 'N/A'} kg CO₂e/kg •
+${ingredientData.data?.pef?.["Water Use/Scarcity (AWARE)"] ?? 'N/A'} m³ water/kg •
                     <span class="dqr-badge ${dqrQuality.class}">DQR: ${dqrQuality.level}</span>
                     <span class="badge" style="margin-left: 0.5rem;">±${uncertainty}% uncertainty</span>
                 </div>
