@@ -1715,7 +1715,7 @@ function displayCompleteAuditTrail() {
     let functionalUnitText = "1 kg of final product";
     let nutritionalLCA_HTML = "";
 
-    if (userProtein > 0 && audit.pefCategories["Climate Change"]) {
+    if (userProtein > 0 && audit.pefCategories?.["Climate Change"]) {
         functionalUnitText = "1 kg Mass / 100g Delivered Protein";
         const pWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
         const unifiedCO2 = audit.pefCategories["Climate Change"].total / pWeightKg;
