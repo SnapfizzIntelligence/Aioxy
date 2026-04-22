@@ -1441,13 +1441,14 @@ function getILCD_UUID(categoryName) {
  * @returns {Object} ILCD metadata
  */
 function generateILCDMetadata() {
+    const uuids = PHYSICS_DB?.ilcd_uuids || {};
     return {
         format: 'ILCD 1.1',
         timestamp: new Date().toISOString(),
         uuid_registry: 'EF 3.1 / ILCD Handbook',
-        categories: Object.keys(PHYSICS_DB.ilcd_uuids || {}).map(cat => ({
+        categories: Object.keys(uuids).map(cat => ({
             name: cat,
-            uuid: PHYSICS_DB.ilcd_uuids[cat]
+            uuid: uuids[cat]
         }))
     };
 }
@@ -5949,10 +5950,16 @@ auditTrail.engine_version = PHYSICS_CONSTANTS.VERSION.ENGINE;
 auditTrail.methodology_version = PHYSICS_CONSTANTS.VERSION.METHODOLOGY;
 auditTrail.version_history = VERSION_HISTORY;
 
-// Generate audit trace for key calculations
+// Generate audit trace for key calculations - WITH SAFETY GUARDS
+const climateCategory = auditTrail.pefCategories?.['Climate Change'];
+const landUseCategory = auditTrail.pefCategories?.['Climate Change - Land Use'];
+
 auditTrail.calculation_traces = {
-    dLUC: generateAuditTrace('dLUC', { method: 'PAS 2050-1' }, auditTrail.pefCategories['Climate Change - Land Use']?.total || 0),
-    transport: generateAuditTrace('transport', { mode: transportMode, distance: transportDistance }, auditTrail.pefCategories['Climate Change'].contribution_tree.Transport?.total || 0)
+    dLUC: generateAuditTrace('dLUC', { method: 'PAS 2050-1' }, landUseCategory?.total || 0),
+    transport: generateAuditTrace('transport', 
+        { mode: transportMode, distance: transportDistance }, 
+        climateCategory?.contribution_tree?.Transport?.total || 0
+    )
 };
 
 // Add verification status
