@@ -280,418 +280,423 @@ ILCD_EXPORT: {
     };
 
     // ================== AIOXY MASTER PHYSICS DATABASE (AUDIT GRADE) ==================
-    const PHYSICS_DB = {
-        // 1. INGREDIENT ORIGINS (AGRONOMIC TRUTH)
-        origins: {
-            "beef-cattle-conventional-national-average-at-farm-gate-fr": "FR",
-            "broiler-conventional-at-farm-gate-fr": "FR",
-            "pig-conventional-national-average-at-farm-gate-fr": "FR",
-            "salmon-farmed-conventional-at-farm-gate-no": "NO",
-            "lamb-conventional-indoor-production-system-at-farm-gate-fr": "FR",
-            "turkey-conventional-at-farm-gate-fr": "FR",
-            "small-trout-250-350g-conventional-at-farm-gate-fr": "FR",
-            "mussels-with-shell-at-farm-gate-fr": "FR",
-            "sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr": "FR",
-            "european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr": "FR",
-            "atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl": "NL",
-            "atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl": "NL",
-            "great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr": "FR",
-            "common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr": "FR",
-            "rabbit-conventional-in-cage-at-farm-gate-fr": "FR",
-            "duck-for-roasting-conventional-at-farm-gate-fr": "FR",
-            "fresh-shrimps-china-production-fr": "CN",
-            "broiler-label-rouge-at-farm-gate-fr": "FR",
-            "pig-label-rouge-outdoor-system-at-farm-gate-fr": "FR",
-            "turkey-label-rouge-at-farm-gate-fr": "FR",
-            "cow-milk-conventional-national-average-at-farm-gate-fr": "FR",
-            "sheep-milk-conventional-roquefort-system-at-farm-gate-fr": "FR",
-            "goat-milk-conventional-intensive-forage-area-at-farm-gate-fr": "FR",
-            "durum-wheat-grain-conventional-national-average-at-farm-gate-fr": "FR",
-            "maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr": "FR",
-            "oat-grain-national-average-animal-feed-at-farm-gate-fr": "FR",
-            "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr": "FR",
-            "soybean-national-average-animal-feed-at-farm-gate-fr": "FR",
-            "quinoa-fr-conventional-at-farm-gate-fr-corrected": "FR",
-            "rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": "FR",
-            "sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": "FR",
-            "hemp-grain-champagne-at-farm-gate-fr": "FR",
-            "flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr": "FR",
-            "lupin-conventional-national-average-at-farm-gate-production-fr": "FR",
-            "triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr": "FR",
-            "sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr": "FR",
-            "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr": "FR",
-            "tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr": "FR",
-            "onion-conventional-national-average-at-farm-fr": "FR",
-            "carrot-conventional-national-average-at-farm-gate-fr": "FR",
-            "apple-conventional-national-average-at-orchard-fr": "FR",
-            "banana-mixed-production-west-indies-at-farm-gate-wi": "GP",
-            "strawberry-conventional-national-average-at-farm-gate-fr": "FR",
-            "cauliflower-conventional-national-average-at-farm-gate-fr": "FR",
-            "sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr": "FR",
-            "zucchini-conventional-national-average-at-farm-gate-fr": "FR",
-            "leek-conventional-national-average-at-plant-fr": "FR",
-            "melon-conventional-national-average-at-farm-gate-fr": "FR",
-            "french-bean-conventional-national-average-at-farm-gate-fr": "FR",
-            "chicory-witlof-conventional-national-average-at-farm-gate-fr": "FR",
-            "cauliflower-fresh-eu": "ES",
-            "coffee-bean-robusta-depulped-brazil-at-farm-gate-br": "BR",
-            "black-pepper-conventional-at-farm-gate-vn": "VN",
-            "shea-butter-africa": "GH",
-            "cotton-conv-global": "IN",
-            "polyester-virgin-pet": "CN"
-        },
+const PHYSICS_DB = {
+    // 1. INGREDIENT ORIGINS (AGRONOMIC TRUTH)
+    origins: {
+        "beef-cattle-conventional-national-average-at-farm-gate-fr": "FR",
+        "broiler-conventional-at-farm-gate-fr": "FR",
+        "pig-conventional-national-average-at-farm-gate-fr": "FR",
+        "salmon-farmed-conventional-at-farm-gate-no": "NO",
+        "lamb-conventional-indoor-production-system-at-farm-gate-fr": "FR",
+        "turkey-conventional-at-farm-gate-fr": "FR",
+        "small-trout-250-350g-conventional-at-farm-gate-fr": "FR",
+        "mussels-with-shell-at-farm-gate-fr": "FR",
+        "sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr": "FR",
+        "european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr": "FR",
+        "atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl": "NL",
+        "atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl": "NL",
+        "great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr": "FR",
+        "common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr": "FR",
+        "rabbit-conventional-in-cage-at-farm-gate-fr": "FR",
+        "duck-for-roasting-conventional-at-farm-gate-fr": "FR",
+        "fresh-shrimps-china-production-fr": "CN",
+        "broiler-label-rouge-at-farm-gate-fr": "FR",
+        "pig-label-rouge-outdoor-system-at-farm-gate-fr": "FR",
+        "turkey-label-rouge-at-farm-gate-fr": "FR",
+        "cow-milk-conventional-national-average-at-farm-gate-fr": "FR",
+        "sheep-milk-conventional-roquefort-system-at-farm-gate-fr": "FR",
+        "goat-milk-conventional-intensive-forage-area-at-farm-gate-fr": "FR",
+        "durum-wheat-grain-conventional-national-average-at-farm-gate-fr": "FR",
+        "maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr": "FR",
+        "oat-grain-national-average-animal-feed-at-farm-gate-fr": "FR",
+        "barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr": "FR",
+        "soybean-national-average-animal-feed-at-farm-gate-fr": "FR",
+        "quinoa-fr-conventional-at-farm-gate-fr-corrected": "FR",
+        "rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": "FR",
+        "sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr": "FR",
+        "hemp-grain-champagne-at-farm-gate-fr": "FR",
+        "flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr": "FR",
+        "lupin-conventional-national-average-at-farm-gate-production-fr": "FR",
+        "triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr": "FR",
+        "sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr": "FR",
+        "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr": "FR",
+        "tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr": "FR",
+        "onion-conventional-national-average-at-farm-fr": "FR",
+        "carrot-conventional-national-average-at-farm-gate-fr": "FR",
+        "apple-conventional-national-average-at-orchard-fr": "FR",
+        "banana-mixed-production-west-indies-at-farm-gate-wi": "GP",
+        "strawberry-conventional-national-average-at-farm-gate-fr": "FR",
+        "cauliflower-conventional-national-average-at-farm-gate-fr": "FR",
+        "sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr": "FR",
+        "zucchini-conventional-national-average-at-farm-gate-fr": "FR",
+        "leek-conventional-national-average-at-plant-fr": "FR",
+        "melon-conventional-national-average-at-farm-gate-fr": "FR",
+        "french-bean-conventional-national-average-at-farm-gate-fr": "FR",
+        "chicory-witlof-conventional-national-average-at-farm-gate-fr": "FR",
+        "cauliflower-fresh-eu": "ES",
+        "coffee-bean-robusta-depulped-brazil-at-farm-gate-br": "BR",
+        "black-pepper-conventional-at-farm-gate-vn": "VN",
+        "shea-butter-africa": "GH",
+        "cotton-conv-global": "IN",
+        "polyester-virgin-pet": "CN"
+    },
 
-        // 2. GLEC v3.2 EXACT TRANSPORT FACTORS (kg CO2e / ton-km)
-        glec_factors: {
-            road: {
-                // 34-40t Articulated (hgv) & <3.5t Van (van) EU Averages
-                ambient: { hgv: 0.060, van: 0.842 }, 
-                // GLEC v3.2 mandates +12% uplift for temperature controlled road transport
-                chilled: { hgv: 0.067, van: 0.943 }, 
-                frozen:  { hgv: 0.067, van: 0.943 }
-            },
-            sea: {
-                ambient: 0.0072, // Clean Cargo Industry Avg (Dry)
-                reefer:  0.0142  // Reefer multiplier (x1.98 based on CCWG data)
-            },
-            air: {
-                ambient: 0.788,  // Long-haul >1500km avg
-                reefer:  0.827   // +5% active cooling uplift
-            },
-            rail: {
-                ambient: 0.0184, // EU Avg mixed traction
-                reefer:  0.0206  // +12% uplift for temperature control
-            },
-            // REGULATORY REQUIREMENT: Distance Adjustment Factors (DAF)
-            daf: {
-                road: 1.05, // +5% for routing diversions
-                sea: 1.15,  // +15% for actual vs shortest feasible distance
-                rail: 1.00, // 0% deviation
-                air: 95     // +95km flat addition for maneuvering
-            }
+    // 2. GLEC v3.2 EXACT TRANSPORT FACTORS (kg CO2e / ton-km)
+    glec_factors: {
+        road: {
+            // 34-40t Articulated (hgv) & <3.5t Van (van) EU Averages
+            ambient: { hgv: 0.060, van: 0.842 }, 
+            // GLEC v3.2 mandates +12% uplift for temperature controlled road transport
+            chilled: { hgv: 0.067, van: 0.943 }, 
+            frozen:  { hgv: 0.067, van: 0.943 }
         },
+        sea: {
+            ambient: 0.0072, // Clean Cargo Industry Avg (Dry)
+            reefer:  0.0142  // Reefer multiplier (x1.98 based on CCWG data)
+        },
+        air: {
+            ambient: 0.788,  // Long-haul >1500km avg
+            reefer:  0.827   // +5% active cooling uplift
+        },
+        rail: {
+            ambient: 0.0184, // EU Avg mixed traction
+            reefer:  0.0206  // +12% uplift for temperature control
+        },
+        // REGULATORY REQUIREMENT: Distance Adjustment Factors (DAF)
+        daf: {
+            road: 1.05, // +5% for routing diversions
+            sea: 1.15,  // +15% for actual vs shortest feasible distance
+            rail: 1.00, // 0% deviation
+            air: 95     // +95km flat addition for maneuvering
+        }
+    },
 
-        // 3. WATERSHED AWARE 2.0 FACTORS (m3 world eq / m3)
-        watersheds: {
-            "FR": {
-                "Seine":      { default: 12.0, summer: 38.4, winter: 1.2 },
-                "Loire":      { default: 8.5,  summer: 24.1, winter: 0.9 },
-                "Rhone":      { default: 3.2,  summer: 9.8,  winter: 0.4 },
-                "Adour":      { default: 18.0, summer: 45.0, winter: 2.1 },
-                "NationalAvg": { default: 17.1, summer: 32.0, winter: 2.5 }
-            },
-            "ES": {
-                "Ebro":       { default: 65.0, summer: 98.0, winter: 24.0 },
-                "Segura":     { default: 100.0, summer: 100.0, winter: 95.0 },
-                "Guadalquivir":{ default: 85.0, summer: 100.0, winter: 50.0 },
-                "NationalAvg": { default: 64.7, summer: 90.0, winter: 35.0 }
-            },
-            "IT": {
-                "Po":         { default: 42.0, summer: 80.0, winter: 12.0 },
-                "Tiber":      { default: 35.0, summer: 65.0, winter: 10.0 },
-                "NationalAvg": { default: 49.8, summer: 75.0, winter: 18.0 }
-            },
-            "NL": {
-                "Rhine":      { default: 1.4,  summer: 2.8,  winter: 0.6 },
-                "Meuse":      { default: 1.8,  summer: 3.2,  winter: 0.8 },
-                "NationalAvg": { default: 1.6,  summer: 3.0,  winter: 0.7 }
-            },
-            "BR": {
-                "Amazon":     { default: 0.1,  summer: 0.1,  winter: 0.1 },
-                "Parana":     { default: 1.5,  summer: 3.0,  winter: 0.8 },
-                "NationalAvg": { default: 3.1,  summer: 5.5,  winter: 1.2 }
-            },
-            "CN": {
-                "Yellow":     { default: 95.0, summer: 100.0, winter: 80.0 },
-                "Yangtze":    { default: 22.0, summer: 45.0, winter: 8.0 },
-                "NationalAvg": { default: 41.0, summer: 70.0, winter: 20.0 }
-            }
+    // 3. WATERSHED AWARE 2.0 FACTORS (m3 world eq / m3)
+    watersheds: {
+        "FR": {
+            "Seine":      { default: 12.0, summer: 38.4, winter: 1.2 },
+            "Loire":      { default: 8.5,  summer: 24.1, winter: 0.9 },
+            "Rhone":      { default: 3.2,  summer: 9.8,  winter: 0.4 },
+            "Adour":      { default: 18.0, summer: 45.0, winter: 2.1 },
+            "NationalAvg": { default: 17.1, summer: 32.0, winter: 2.5 }
         },
-        // ================== FERTILIZER COMPOSITION (FAO / Industry Standard) ==================
-// N% and P% for common fertilizers - used for N-leaching and P-leaching calculations
-fertilizer_composition: {
-    'triple_superphosphate': { n_percent: 0, p_percent: 20 },
-    'TSP': { n_percent: 0, p_percent: 20 },
-    'diammonium_phosphate': { n_percent: 18, p_percent: 20 },
-    'DAP': { n_percent: 18, p_percent: 20 },
-    'monoammonium_phosphate': { n_percent: 11, p_percent: 23 },
-    'MAP': { n_percent: 11, p_percent: 23 },
-    'urea': { n_percent: 46, p_percent: 0 },
-    'ammonium_nitrate': { n_percent: 34, p_percent: 0 },
-    'potassium_chloride': { n_percent: 0, p_percent: 0 },
-    'default': { n_percent: 15, p_percent: 10 }  // Conservative default
-},
-    };
+        "ES": {
+            "Ebro":       { default: 65.0, summer: 98.0, winter: 24.0 },
+            "Segura":     { default: 100.0, summer: 100.0, winter: 95.0 },
+            "Guadalquivir":{ default: 85.0, summer: 100.0, winter: 50.0 },
+            "NationalAvg": { default: 64.7, summer: 90.0, winter: 35.0 }
+        },
+        "IT": {
+            "Po":         { default: 42.0, summer: 80.0, winter: 12.0 },
+            "Tiber":      { default: 35.0, summer: 65.0, winter: 10.0 },
+            "NationalAvg": { default: 49.8, summer: 75.0, winter: 18.0 }
+        },
+        "NL": {
+            "Rhine":      { default: 1.4,  summer: 2.8,  winter: 0.6 },
+            "Meuse":      { default: 1.8,  summer: 3.2,  winter: 0.8 },
+            "NationalAvg": { default: 1.6,  summer: 3.0,  winter: 0.7 }
+        },
+        "BR": {
+            "Amazon":     { default: 0.1,  summer: 0.1,  winter: 0.1 },
+            "Parana":     { default: 1.5,  summer: 3.0,  winter: 0.8 },
+            "NationalAvg": { default: 3.1,  summer: 5.5,  winter: 1.2 }
+        },
+        "CN": {
+            "Yellow":     { default: 95.0, summer: 100.0, winter: 80.0 },
+            "Yangtze":    { default: 22.0, summer: 45.0, winter: 8.0 },
+            "NationalAvg": { default: 41.0, summer: 70.0, winter: 20.0 }
+        }
+    },
+    
+    // ================== FERTILIZER COMPOSITION (FAO / Industry Standard) ==================
+    // N% and P% for common fertilizers - used for N-leaching and P-leaching calculations
+    fertilizer_composition: {
+        'triple_superphosphate': { n_percent: 0, p_percent: 20 },
+        'TSP': { n_percent: 0, p_percent: 20 },
+        'diammonium_phosphate': { n_percent: 18, p_percent: 20 },
+        'DAP': { n_percent: 18, p_percent: 20 },
+        'monoammonium_phosphate': { n_percent: 11, p_percent: 23 },
+        'MAP': { n_percent: 11, p_percent: 23 },
+        'urea': { n_percent: 46, p_percent: 0 },
+        'ammonium_nitrate': { n_percent: 34, p_percent: 0 },
+        'potassium_chloride': { n_percent: 0, p_percent: 0 },
+        'default': { n_percent: 15, p_percent: 10 }  // Conservative default
+    },
 
-    // ================== 2025 AIOXY FORMULATION STANDARDS (Oatly-Verified) ==================
-    const FORMULATION_STANDARDS = {
-        'oat-milk': {
-            density: 1.03, // kg/L
-            composition: {
-                'oats': { target_percent: 0.10, processing_yield: 0.85 },
-                'oil':  { target_percent: 0.02, processing_yield: 0.99 },
-                'water':{ target_percent: 0.88, processing_yield: 0.98 }
-            },
-            manufacturing_impact: {
-                electricity_kwh_per_kg: 0.64,
-                note: "Oatly 2024 verified (enzymatic + UHT)"
-            }
-        },
-        'plant-burger': {
-            composition: {
-                'protein': { target_percent: 0.20, processing_yield: 0.95 },
-                'oil':     { target_percent: 0.10, processing_yield: 0.99 },
-                'water':   { target_percent: 0.65, processing_yield: 0.90 },
-                'binder':  { target_percent: 0.05, processing_yield: 1.0 }
-            },
-            manufacturing_impact: {
-                electricity_kwh_per_kg: 1.3,
-                note: "Extrusion average"
-            }
-        },
-        // ================== COUNTRY LUC FALLBACKS (EF 3.1 / WFLDB) ==================
-// Source: PEF 3.1 §4.4.8.1 / Blonk WFLDB
-// Values in kg CO2e per kg of product (20-year amortized)
-country_luc_fallbacks: {
-    // Soybean
-    'soybean-BR': 1.67,
-    'soybean-AR': 0.59,
-    'soybean-US': 0.40,
-    'soybean-PY': 0.55,
-    'soybean-BO': 0.72,
-    // Palm Oil
-    'palmoil-ID': 0.98,
-    'palmoil-MY': 0.71,
-    'palmoil-TH': 0.42,
-    // Cocoa
-    'cocoa-ID': 27.08,
-    'cocoa-CI': 24.46,
-    'cocoa-GH': 6.70,
-    'cocoa-CM': 8.50,
-    // Coffee
-    'coffee-BR': 1.10,
-    'coffee-VN': 0.95,
-    'coffee-CO': 1.30,
-    'coffee-ET': 0.45,
-    // Beef (pasture expansion)
-    'beef-BR': 12.5,
-    'beef-AR': 8.2,
-    'beef-PY': 9.1,
-    // Default for unknown high-risk (precautionary principle)
-    'default_high_risk': 1.67
-},
-// ================== COMMODITY PRICES FOR ECONOMIC ALLOCATION ==================
-// Source: World Bank Commodity Price Data / FAO Stat (USD/kg at factory gate)
-// Used for ISO 14044 §4.3.4.2 economic allocation
-commodity_prices: {
-    // Animal products
-    'beef': 5.20,
-    'milk': 0.42,
-    'cheese': 4.80,
-    'chicken': 2.30,
-    'pork': 2.10,
-    'eggs': 1.80,
-    // Crops
-    'wheat': 0.28,
-    'soybean': 0.52,
-    'soy_oil': 0.95,
-    'soy_meal': 0.48,
-    'palm_oil': 0.85,
-    'rapeseed_oil': 0.95,
-    'sunflower_oil': 0.90,
-    'corn': 0.22,
-    'rice': 0.42,
-    'sugar': 0.38,
-    'coffee': 3.50,
-    'cocoa': 2.80,
-    'default': 0.50
-},
-// ================== CAPITAL GOODS PROXIES (Ecoinvent / Industry) ==================
-// Embedded carbon per unit (kg CO2e)
-capital_goods: {
-    // Processing equipment (kg CO2e per kg capacity per year)
-    'mixer': 0.008,
-    'pasteurizer': 0.015,
-    'fermenter': 0.025,
-    'extruder': 0.020,
-    'spray_dryer': 0.035,
-    'freezer': 0.018,
-    'oven': 0.012,
-    'mill': 0.010,
-    // Building (kg CO2e per m2 per year)
-    'food_plant': 25,
-    'cold_storage': 35,
-    'default': 0.010
-},
+    // ================== COUNTRY LUC FALLBACKS (EF 3.1 / WFLDB) ==================
+    // Source: PEF 3.1 §4.4.8.1 / Blonk WFLDB
+    // Values in kg CO2e per kg of product (20-year amortized)
+    country_luc_fallbacks: {
+        // Soybean
+        'soybean-BR': 1.67,
+        'soybean-AR': 0.59,
+        'soybean-US': 0.40,
+        'soybean-PY': 0.55,
+        'soybean-BO': 0.72,
+        // Palm Oil
+        'palmoil-ID': 0.98,
+        'palmoil-MY': 0.71,
+        'palmoil-TH': 0.42,
+        // Cocoa
+        'cocoa-ID': 27.08,
+        'cocoa-CI': 24.46,
+        'cocoa-GH': 6.70,
+        'cocoa-CM': 8.50,
+        // Coffee
+        'coffee-BR': 1.10,
+        'coffee-VN': 0.95,
+        'coffee-CO': 1.30,
+        'coffee-ET': 0.45,
+        // Beef (pasture expansion)
+        'beef-BR': 12.5,
+        'beef-AR': 8.2,
+        'beef-PY': 9.1,
+        // Default for unknown high-risk (precautionary principle)
+        'default_high_risk': 1.67
+    },
+
+    // ================== COMMODITY PRICES FOR ECONOMIC ALLOCATION ==================
+    // Source: World Bank Commodity Price Data / FAO Stat (USD/kg at factory gate)
+    // Used for ISO 14044 §4.3.4.2 economic allocation
+    commodity_prices: {
+        // Animal products
+        'beef': 5.20,
+        'milk': 0.42,
+        'cheese': 4.80,
+        'chicken': 2.30,
+        'pork': 2.10,
+        'eggs': 1.80,
+        // Crops
+        'wheat': 0.28,
+        'soybean': 0.52,
+        'soy_oil': 0.95,
+        'soy_meal': 0.48,
+        'palm_oil': 0.85,
+        'rapeseed_oil': 0.95,
+        'sunflower_oil': 0.90,
+        'corn': 0.22,
+        'rice': 0.42,
+        'sugar': 0.38,
+        'coffee': 3.50,
+        'cocoa': 2.80,
+        'default': 0.50
+    },
+
+    // ================== CAPITAL GOODS PROXIES (Ecoinvent / Industry) ==================
+    // Embedded carbon per unit (kg CO2e)
+    capital_goods: {
+        // Processing equipment (kg CO2e per kg capacity per year)
+        'mixer': 0.008,
+        'pasteurizer': 0.015,
+        'fermenter': 0.025,
+        'extruder': 0.020,
+        'spray_dryer': 0.035,
+        'freezer': 0.018,
+        'oven': 0.012,
+        'mill': 0.010,
+        // Building (kg CO2e per m2 per year)
+        'food_plant': 25,
+        'cold_storage': 35,
+        'default': 0.010
+    },
+
+    // ================== RESIDUAL MIX FACTORS (AIB / PEF 3.1) ==================
+    // Multiplier applied to grid intensity when no RECs/GOs are held
+    // Residual mix = Grid mix minus sold renewable attributes
+    residual_mix_multipliers: (function() {
+        const live = window.aioxyData?.residual_mix?.co2_factors;
         
-// ================== RESIDUAL MIX FACTORS (AIB / PEF 3.1) ==================
-// Multiplier applied to grid intensity when no RECs/GOs are held
-// Residual mix = Grid mix minus sold renewable attributes
-residual_mix_multipliers: (function() {
-    const live = window.aioxyData?.residual_mix?.co2_factors;
-    
-    const fallback = {
-        'FR': 1.35, 'DE': 1.25, 'IT': 1.18, 'ES': 1.22, 'NL': 1.15,
-        'BE': 1.20, 'AT': 1.10, 'SE': 1.05, 'DK': 1.08, 'FI': 1.05,
-        'PL': 1.12, 'CZ': 1.15, 'HU': 1.18, 'RO': 1.20, 'BG': 1.25,
-        'default': 1.20
-    };
-    
-    if (live && typeof live === 'object' && Object.keys(live).length > 0) {
-        if (!live.default) live.default = 1.20;
-        console.log('✅ [ResidualMix] Live AIB 2024 database loaded —', Object.keys(live).length, 'countries');
-        return live;
-    }
-    
-    console.warn('⚠️ [ResidualMix] Live database not ready — using fallback');
-    return fallback;
-})(),
-        
-// ================== REFRIGERANT GWP100 + ODP (IPCC AR6 / Montreal Protocol) ==================
-// ODP = kg CFC-11 eq per kg refrigerant leaked
-// Source: UNEP 2022 Scientific Assessment Panel / WMO
-refrigerants: {
-    'R-134a': { gwp: 1530,  odp: 0.00014 },  // HFC — near-zero ODP
-    'R-404A': { gwp: 4728,  odp: 0.00014 },  // HFC blend
-    'R-410A': { gwp: 2256,  odp: 0.00014 },  // HFC blend
-    'R-407C': { gwp: 1825,  odp: 0.00014 },  // HFC blend
-    'R-744':  { gwp: 1,     odp: 0.0      },  // CO2
-    'R-717':  { gwp: 0,     odp: 0.0      },  // Ammonia
-    'R-290':  { gwp: 3,     odp: 0.0      },  // Propane
-    'R-22':   { gwp: 1810,  odp: 0.034    },  // HCFC — significant ODP
-    'R-123':  { gwp: 77,    odp: 0.012    },  // HCFC
-    'default':{ gwp: 2000,  odp: 0.00014 }   // Conservative HFC default
-},
-
-// ================== USETOX CHARACTERIZATION FACTORS ==================
-// Live data from window.aioxyData.usetox (USEtox 2.14 — 3,077 substances)
-// Lookup by CAS RN. Soil compartment = continental agricultural soil (PEF 3.1 default)
-usetox_factors: (function() {
-    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.usetox)
-        ? window.aioxyData.usetox.human_toxicity
-        : null;
-    if (live) {
-        // BUG 2 FIX: Transform flat Python DB structure into nested soil/air/water
-        // Python DB: { "CAS": { cancer_CTUh_per_kg, noncancer_CTUh_per_kg } }
-        // Engine needs: { "CAS": { soil: { ctu_h_cancer, ctu_h_noncancer, ctu_e } } }
-        const ecoLive = (typeof window !== 'undefined' && window.aioxyData?.usetox?.ecotoxicity) || {};
-        const transformed = {};
-        Object.keys(live).forEach(cas => {
-            const d = live[cas];
-            transformed[cas.toLowerCase()] = {
-                soil:  { ctu_h_cancer: d.cancer_CTUh_per_kg || 0, ctu_h_noncancer: d.noncancer_CTUh_per_kg || 0, ctu_e: ecoLive[cas] || 0 },
-                air:   { ctu_h_cancer: (d.cancer_CTUh_per_kg || 0) * 0.1, ctu_h_noncancer: (d.noncancer_CTUh_per_kg || 0) * 0.1, ctu_e: (ecoLive[cas] || 0) * 0.05 },
-                water: { ctu_h_cancer: (d.cancer_CTUh_per_kg || 0) * 0.5, ctu_h_noncancer: (d.noncancer_CTUh_per_kg || 0) * 0.5, ctu_e: (ecoLive[cas] || 0) * 2.0 }
-            };
-        });
-        transformed['default'] = {
-            soil:  { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
-            air:   { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
-            water: { ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
+        const fallback = {
+            'FR': 1.35, 'DE': 1.25, 'IT': 1.18, 'ES': 1.22, 'NL': 1.15,
+            'BE': 1.20, 'AT': 1.10, 'SE': 1.05, 'DK': 1.08, 'FI': 1.05,
+            'PL': 1.12, 'CZ': 1.15, 'HU': 1.18, 'RO': 1.20, 'BG': 1.25,
+            'default': 1.20
         };
-        console.log('✅ [USEtox] Live database transformed —', Object.keys(transformed).length - 1, 'substances with soil/air/water structure');
-        return transformed;
-    }
-    console.warn('⚠️ [USEtox] Live database not found — using fallback');
-    return {
-        'default': {
-            soil: { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
-            air:  { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
-            water:{ ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
-        }
-    };
-})(),
-
-// ================== OFFICIAL EF 3.1 ILCD UUIDs (JRC Source) ==================
-// Live data from window.aioxyData.ilcd_registry
-ilcd_uuids: (function() {
-    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.ilcd_registry)
-        ? window.aioxyData.ilcd_registry
-        : null;
-    
-    if (live) {
-        // Extract UUIDs from the registry
-        const uuids = {};
-        Object.keys(live).forEach(cat => {
-            uuids[cat] = live[cat].uuid;
-        });
         
-        // Add sub-indicators manually (not in ILCD registry but needed for export)
-        uuids['Climate Change - Biogenic'] = uuids['Climate change'] || '706261af-a357-4cc0-a50a-f3033fcbd556';
-        uuids['Climate Change - Fossil']   = uuids['Climate change'] || '7fce5b3a-66b8-4ce1-91e8-a925aee1f186';
-        uuids['Climate Change - Land Use'] = uuids['Climate change'] || '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12';
+        if (live && typeof live === 'object' && Object.keys(live).length > 0) {
+            if (!live.default) live.default = 1.20;
+            console.log('✅ [ResidualMix] Live AIB 2024 database loaded —', Object.keys(live).length, 'countries');
+            return live;
+        }
+        
+        console.warn('⚠️ [ResidualMix] Live database not ready — using fallback');
+        return fallback;
+    })(),
 
-        // ✅ ISSUE 1 FIX — Alias map: Python DB keys → engine pefCategories keys
-        // Python DB uses lowercase/EC-format names. Engine pefCategories uses
-        // title-case display names. Without these aliases uuid lookup returns null
-        // for 11 of 16 categories making ilcd_export_ready permanently false.
-        uuids['Climate Change']                    = uuids['Climate change'];
-        uuids['Human Toxicity, cancer']            = uuids['Human toxicity, cancer'];
-        uuids['Human Toxicity, non-cancer']        = uuids['Human toxicity, non-cancer'];
-        uuids['Particulate Matter']                = uuids['EF-particulate matter'];
-        uuids['Ionizing Radiation']                = uuids['Ionising radiation'];
-        uuids['Photochemical Ozone Formation']     = uuids['Photochemical ozone formation'];
-        uuids['Ozone Depletion']                   = uuids['Ozone depletion'];
-        uuids['Land Use']                          = uuids['Land use'];
-        uuids['Resource Use, fossils']             = uuids['Resource depletion, fossils'];
-        uuids['Resource Use, minerals/metals']     = uuids['Resource depletion, minerals and metals'];
-        uuids['Water Use/Scarcity (AWARE)']        = uuids['Water use'];
+    // ================== REFRIGERANT GWP100 + ODP (IPCC AR6 / Montreal Protocol) ==================
+    // ODP = kg CFC-11 eq per kg refrigerant leaked
+    // Source: UNEP 2022 Scientific Assessment Panel / WMO
+    refrigerants: {
+        'R-134a': { gwp: 1530,  odp: 0.00014 },  // HFC — near-zero ODP
+        'R-404A': { gwp: 4728,  odp: 0.00014 },  // HFC blend
+        'R-410A': { gwp: 2256,  odp: 0.00014 },  // HFC blend
+        'R-407C': { gwp: 1825,  odp: 0.00014 },  // HFC blend
+        'R-744':  { gwp: 1,     odp: 0.0      },  // CO2
+        'R-717':  { gwp: 0,     odp: 0.0      },  // Ammonia
+        'R-290':  { gwp: 3,     odp: 0.0      },  // Propane
+        'R-22':   { gwp: 1810,  odp: 0.034    },  // HCFC — significant ODP
+        'R-123':  { gwp: 77,    odp: 0.012    },  // HCFC
+        'default':{ gwp: 2000,  odp: 0.00014 }   // Conservative HFC default
+    },
 
-        console.log('✅ [ILCD] Live UUID registry loaded —', Object.keys(live).length, 'categories | aliases injected for pefCategories');
-        return uuids;
+    // ================== USETOX CHARACTERIZATION FACTORS ==================
+    // Live data from window.aioxyData.usetox (USEtox 2.14 — 3,077 substances)
+    // Lookup by CAS RN. Soil compartment = continental agricultural soil (PEF 3.1 default)
+    usetox_factors: (function() {
+        const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.usetox)
+            ? window.aioxyData.usetox.human_toxicity
+            : null;
+        if (live) {
+            // BUG 2 FIX: Transform flat Python DB structure into nested soil/air/water
+            // Python DB: { "CAS": { cancer_CTUh_per_kg, noncancer_CTUh_per_kg } }
+            // Engine needs: { "CAS": { soil: { ctu_h_cancer, ctu_h_noncancer, ctu_e } } }
+            const ecoLive = (typeof window !== 'undefined' && window.aioxyData?.usetox?.ecotoxicity) || {};
+            const transformed = {};
+            Object.keys(live).forEach(cas => {
+                const d = live[cas];
+                transformed[cas.toLowerCase()] = {
+                    soil:  { ctu_h_cancer: d.cancer_CTUh_per_kg || 0, ctu_h_noncancer: d.noncancer_CTUh_per_kg || 0, ctu_e: ecoLive[cas] || 0 },
+                    air:   { ctu_h_cancer: (d.cancer_CTUh_per_kg || 0) * 0.1, ctu_h_noncancer: (d.noncancer_CTUh_per_kg || 0) * 0.1, ctu_e: (ecoLive[cas] || 0) * 0.05 },
+                    water: { ctu_h_cancer: (d.cancer_CTUh_per_kg || 0) * 0.5, ctu_h_noncancer: (d.noncancer_CTUh_per_kg || 0) * 0.5, ctu_e: (ecoLive[cas] || 0) * 2.0 }
+                };
+            });
+            transformed['default'] = {
+                soil:  { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
+                air:   { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
+                water: { ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
+            };
+            console.log('✅ [USEtox] Live database transformed —', Object.keys(transformed).length - 1, 'substances with soil/air/water structure');
+            return transformed;
+        }
+        console.warn('⚠️ [USEtox] Live database not found — using fallback');
+        return {
+            'default': {
+                soil: { ctu_h_cancer: 1e-6, ctu_h_noncancer: 1e-7, ctu_e: 500 },
+                air:  { ctu_h_cancer: 5e-7, ctu_h_noncancer: 5e-8, ctu_e: 100 },
+                water:{ ctu_h_cancer: 2e-6, ctu_h_noncancer: 2e-7, ctu_e: 1000 }
+            }
+        };
+    })(),
+
+    // ================== OFFICIAL EF 3.1 ILCD UUIDs (JRC Source) ==================
+    // Live data from window.aioxyData.ilcd_registry
+    ilcd_uuids: (function() {
+        const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.ilcd_registry)
+            ? window.aioxyData.ilcd_registry
+            : null;
+        
+        if (live) {
+            // Extract UUIDs from the registry
+            const uuids = {};
+            Object.keys(live).forEach(cat => {
+                uuids[cat] = live[cat].uuid;
+            });
+            
+            // Add sub-indicators manually (not in ILCD registry but needed for export)
+            uuids['Climate Change - Biogenic'] = uuids['Climate change'] || '706261af-a357-4cc0-a50a-f3033fcbd556';
+            uuids['Climate Change - Fossil']   = uuids['Climate change'] || '7fce5b3a-66b8-4ce1-91e8-a925aee1f186';
+            uuids['Climate Change - Land Use'] = uuids['Climate change'] || '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12';
+
+            // ✅ ISSUE 1 FIX — Alias map: Python DB keys → engine pefCategories keys
+            // Python DB uses lowercase/EC-format names. Engine pefCategories uses
+            // title-case display names. Without these aliases uuid lookup returns null
+            // for 11 of 16 categories making ilcd_export_ready permanently false.
+            uuids['Climate Change']                    = uuids['Climate change'];
+            uuids['Human Toxicity, cancer']            = uuids['Human toxicity, cancer'];
+            uuids['Human Toxicity, non-cancer']        = uuids['Human toxicity, non-cancer'];
+            uuids['Particulate Matter']                = uuids['EF-particulate matter'];
+            uuids['Ionizing Radiation']                = uuids['Ionising radiation'];
+            uuids['Photochemical Ozone Formation']     = uuids['Photochemical ozone formation'];
+            uuids['Ozone Depletion']                   = uuids['Ozone depletion'];
+            uuids['Land Use']                          = uuids['Land use'];
+            uuids['Resource Use, fossils']             = uuids['Resource depletion, fossils'];
+            uuids['Resource Use, minerals/metals']     = uuids['Resource depletion, minerals and metals'];
+            uuids['Water Use/Scarcity (AWARE)']        = uuids['Water use'];
+
+            console.log('✅ [ILCD] Live UUID registry loaded —', Object.keys(live).length, 'categories | aliases injected for pefCategories');
+            return uuids;
+        }
+        
+        console.warn('⚠️ [ILCD] Live database not found — using fallback UUIDs');
+        return {
+            'Acidification': 'b5c611c6-def3-11e6-bf01-fe55135034f3',
+            'Climate Change': '6209b35f-9447-40b5-b68c-a1099e3674a0',
+            'Climate Change - Biogenic': '706261af-a357-4cc0-a50a-f3033fcbd556',
+            'Climate Change - Fossil': '7fce5b3a-66b8-4ce1-91e8-a925aee1f186',
+            'Climate Change - Land Use': '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12',
+            'Ecotoxicity, freshwater': '05316e7a-b254-4bea-9cf0-6bf33eb5c630',
+            'Eutrophication, marine': 'b5c619fa-def3-11e6-bf01-fe55135034f3',
+            'Eutrophication, freshwater': 'b53ec18f-7377-4ad3-86eb-cc3f4f276b2b',
+            'Eutrophication, terrestrial': 'b5c614d2-def3-11e6-bf01-fe55135034f3',
+            'Human Toxicity, cancer': '2299222a-bbd8-474f-9d4f-4dd1f18aea7c',
+            'Human Toxicity, non-cancer': '7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8',
+            'Ionizing Radiation': 'b5c632be-def3-11e6-bf01-fe55135034f3',
+            'Land Use': 'b2ad6890-c78d-11e6-9d9d-cec0c932ce01',
+            'Ozone Depletion': 'b5c629d6-def3-11e6-bf01-fe55135034f3',
+            'Particulate Matter': 'b5c602c6-def3-11e6-bf01-fe55135034f3',
+            'Photochemical Ozone Formation': 'b5c610fe-def3-11e6-bf01-fe55135034f3',
+            'Resource Use, fossils': 'b2ad6110-c78d-11e6-9d9d-cec0c932ce01',
+            'Resource Use, minerals/metals': 'b2ad6494-c78d-11e6-9d9d-cec0c932ce01',
+            'Water Use/Scarcity (AWARE)': 'b2ad66ce-c78d-11e6-9d9d-cec0c932ce01'
+        };
+    })(),
+    
+    // ================== JRC REFERENCE TEST VECTORS (EF 3.1) ==================
+    // Official test values for software verification
+    jrc_test_vectors: {
+        'PET_granulates_secondary': {
+            description: '1 kg PET granulates (secondary/recycled)',
+            expected: {
+                'Climate Change': 2.15,        // kg CO2e
+                'Resource Use, fossils': 63.5,  // MJ
+                'Water Use/Scarcity (AWARE)': 0.008
+            }
+        },
+        'cardboard_primary': {
+            description: '1 kg cardboard (virgin)',
+            expected: {
+                'Climate Change': 0.86,
+                'Resource Use, fossils': 18.2
+            }
+        },
+        'glass_bottle': {
+            description: '1 kg glass packaging',
+            expected: {
+                'Climate Change': 1.40,
+                'Resource Use, fossils': 15.8
+            }
+        }
     }
-    
-    console.warn('⚠️ [ILCD] Live database not found — using fallback UUIDs');
-    return {
-        'Acidification': 'b5c611c6-def3-11e6-bf01-fe55135034f3',
-        'Climate Change': '6209b35f-9447-40b5-b68c-a1099e3674a0',
-        'Climate Change - Biogenic': '706261af-a357-4cc0-a50a-f3033fcbd556',
-        'Climate Change - Fossil': '7fce5b3a-66b8-4ce1-91e8-a925aee1f186',
-        'Climate Change - Land Use': '14af9ca7-aa1d-4832-b1d9-ab05a06dcb12',
-        'Ecotoxicity, freshwater': '05316e7a-b254-4bea-9cf0-6bf33eb5c630',
-        'Eutrophication, marine': 'b5c619fa-def3-11e6-bf01-fe55135034f3',
-        'Eutrophication, freshwater': 'b53ec18f-7377-4ad3-86eb-cc3f4f276b2b',
-        'Eutrophication, terrestrial': 'b5c614d2-def3-11e6-bf01-fe55135034f3',
-        'Human Toxicity, cancer': '2299222a-bbd8-474f-9d4f-4dd1f18aea7c',
-        'Human Toxicity, non-cancer': '7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8',
-        'Ionizing Radiation': 'b5c632be-def3-11e6-bf01-fe55135034f3',
-        'Land Use': 'b2ad6890-c78d-11e6-9d9d-cec0c932ce01',
-        'Ozone Depletion': 'b5c629d6-def3-11e6-bf01-fe55135034f3',
-        'Particulate Matter': 'b5c602c6-def3-11e6-bf01-fe55135034f3',
-        'Photochemical Ozone Formation': 'b5c610fe-def3-11e6-bf01-fe55135034f3',
-        'Resource Use, fossils': 'b2ad6110-c78d-11e6-9d9d-cec0c932ce01',
-        'Resource Use, minerals/metals': 'b2ad6494-c78d-11e6-9d9d-cec0c932ce01',
-        'Water Use/Scarcity (AWARE)': 'b2ad66ce-c78d-11e6-9d9d-cec0c932ce01'
-    };
-})(),
-    
-// ================== JRC REFERENCE TEST VECTORS (EF 3.1) ==================
-// Official test values for software verification
-jrc_test_vectors: {
-    'PET_granulates_secondary': {
-        description: '1 kg PET granulates (secondary/recycled)',
-        expected: {
-            'Climate Change': 2.15,        // kg CO2e
-            'Resource Use, fossils': 63.5,  // MJ
-            'Water Use/Scarcity (AWARE)': 0.008
+};
+
+// ================== 2025 AIOXY FORMULATION STANDARDS (Oatly-Verified) ==================
+const FORMULATION_STANDARDS = {
+    'oat-milk': {
+        density: 1.03, // kg/L
+        composition: {
+            'oats': { target_percent: 0.10, processing_yield: 0.85 },
+            'oil':  { target_percent: 0.02, processing_yield: 0.99 },
+            'water':{ target_percent: 0.88, processing_yield: 0.98 }
+        },
+        manufacturing_impact: {
+            electricity_kwh_per_kg: 0.64,
+            note: "Oatly 2024 verified (enzymatic + UHT)"
         }
     },
-    'cardboard_primary': {
-        description: '1 kg cardboard (virgin)',
-        expected: {
-            'Climate Change': 0.86,
-            'Resource Use, fossils': 18.2
-        }
-    },
-    'glass_bottle': {
-        description: '1 kg glass packaging',
-        expected: {
-            'Climate Change': 1.40,
-            'Resource Use, fossils': 15.8
+    'plant-burger': {
+        composition: {
+            'protein': { target_percent: 0.20, processing_yield: 0.95 },
+            'oil':     { target_percent: 0.10, processing_yield: 0.99 },
+            'water':   { target_percent: 0.65, processing_yield: 0.90 },
+            'binder':  { target_percent: 0.05, processing_yield: 1.0 }
+        },
+        manufacturing_impact: {
+            electricity_kwh_per_kg: 1.3,
+            note: "Extrusion average"
         }
     }
-},
-    };
+};
+    
 
     // ================== UNIVERSAL FOOD PHYSICS DATABASE ==================
     const FOOD_PHYSICS_DB = {
