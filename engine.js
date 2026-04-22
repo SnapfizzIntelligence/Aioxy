@@ -1440,7 +1440,7 @@ function generateILCDMetadata() {
         format: 'ILCD 1.1',
         timestamp: new Date().toISOString(),
         uuid_registry: 'EF 3.1 / ILCD Handbook',
-        categories: Object.keys(PHYSICS_DB.ilcd_uuids).map(cat => ({
+        categories: Object.keys(PHYSICS_DB.ilcd_uuids || {}).map(cat => ({
             name: cat,
             uuid: PHYSICS_DB.ilcd_uuids[cat]
         }))
