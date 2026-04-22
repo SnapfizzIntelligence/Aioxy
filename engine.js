@@ -523,25 +523,30 @@ capital_goods: {
     'cold_storage': 35,
     'default': 0.010
 },
+        
 // ================== RESIDUAL MIX FACTORS (AIB / PEF 3.1) ==================
 // Multiplier applied to grid intensity when no RECs/GOs are held
 // Residual mix = Grid mix minus sold renewable attributes
 residual_mix_multipliers: (function() {
-    const live = (typeof window !== 'undefined' && window.aioxyData && window.aioxyData.residual_mix)
-        ? window.aioxyData.residual_mix.co2_factors
-        : null;
-    if (live) {
-        console.log('✅ [ResidualMix] Live AIB 2024 database loaded —', Object.keys(live).length, 'countries');
-        return live;
-    }
-    console.warn('⚠️ [ResidualMix] Live database not found — using fallback');
-    return {
+    const live = window.aioxyData?.residual_mix?.co2_factors;
+    
+    const fallback = {
         'FR': 1.35, 'DE': 1.25, 'IT': 1.18, 'ES': 1.22, 'NL': 1.15,
         'BE': 1.20, 'AT': 1.10, 'SE': 1.05, 'DK': 1.08, 'FI': 1.05,
         'PL': 1.12, 'CZ': 1.15, 'HU': 1.18, 'RO': 1.20, 'BG': 1.25,
         'default': 1.20
     };
+    
+    if (live && typeof live === 'object' && Object.keys(live).length > 0) {
+        if (!live.default) live.default = 1.20;
+        console.log('✅ [ResidualMix] Live AIB 2024 database loaded —', Object.keys(live).length, 'countries');
+        return live;
+    }
+    
+    console.warn('⚠️ [ResidualMix] Live database not ready — using fallback');
+    return fallback;
 })(),
+        
 // ================== REFRIGERANT GWP100 + ODP (IPCC AR6 / Montreal Protocol) ==================
 // ODP = kg CFC-11 eq per kg refrigerant leaked
 // Source: UNEP 2022 Scientific Assessment Panel / WMO
@@ -2020,17 +2025,17 @@ function applyElectricityHierarchy(baseGridIntensity, countryCode, energySource,
     }
     
     // Priority 2: Residual Mix (no certificates = must use residual)
-    if (energySource === 'grid' && !hasRECs) {
-        const multiplier = PHYSICS_DB.residual_mix_multipliers[countryCode] || 
-                          PHYSICS_DB.residual_mix_multipliers.default;
-        const residualIntensity = baseGridIntensity * multiplier;
-        
-        return {
-            intensity: residualIntensity * (1 + T_AND_D),
-            source: `Residual Mix (${countryCode})`,
-            note: `No RECs/GOs - using residual mix (${(multiplier*100-100).toFixed(0)}% higher than grid)`
-        };
-    }
+if (energySource === 'grid' && !hasRECs) {
+    const rm = PHYSICS_DB.residual_mix_multipliers || {};
+    const multiplier = rm[countryCode] || rm.default || 1.2;
+    const residualIntensity = baseGridIntensity * multiplier;
+    
+    return {
+        intensity: residualIntensity * (1 + T_AND_D),
+        source: `Residual Mix (${countryCode})`,
+        note: `No RECs/GOs - using residual mix (${(multiplier*100-100).toFixed(0)}% higher than grid)`
+    };
+                              }
     
     // Priority 3: Consumption Mix (fallback)
     return {
@@ -3551,13 +3556,13 @@ if (hasRECs) {
 // HIERARCHY LEVEL 2: No RECs - check energy source
 else {
     if (energySource === 'renewable') {
-        // Claiming renewable without certificates - MUST use residual mix
-        const multiplier = PHYSICS_DB.residual_mix_multipliers[countryCode] || 
-                          PHYSICS_DB.residual_mix_multipliers.default;
-        gridIntensity = baseGridIntensity * multiplier * (1 + T_AND_D);
-        energyNote = `Residual Mix (${countryCode})`;
-        electricityHierarchyNote = `⚠️ No RECs - using residual mix (${(multiplier*100-100).toFixed(0)}% higher)`;
-        scenarioNote = "";
+    // Claiming renewable without certificates - MUST use residual mix
+    const rm = PHYSICS_DB.residual_mix_multipliers || {};
+    const multiplier = rm[countryCode] || rm.default || 1.2;
+    gridIntensity = baseGridIntensity * multiplier * (1 + T_AND_D);
+    energyNote = `Residual Mix (${countryCode})`;
+    electricityHierarchyNote = `⚠️ No RECs - using residual mix (${(multiplier*100-100).toFixed(0)}% higher)`;
+    scenarioNote = "";
     } else if (energySource === 'natural_gas') {
         gridIntensity = 490 * (1 + T_AND_D);
         energyNote = "Natural Gas (Direct)";
@@ -3565,13 +3570,13 @@ else {
         gridIntensity = 980 * (1 + T_AND_D);
         energyNote = "Coal (Direct)";
     } else {
-        // Grid with no RECs - residual mix applies
-        const multiplier = PHYSICS_DB.residual_mix_multipliers[countryCode] || 
-                          PHYSICS_DB.residual_mix_multipliers.default;
-        gridIntensity = baseGridIntensity * multiplier * (1 + T_AND_D);
-        energyNote = `Residual Mix (${countryCode})`;
-        electricityHierarchyNote = `No RECs - using residual mix per PEF 3.1`;
-    }
+    // Grid with no RECs - residual mix applies
+    const rm = PHYSICS_DB.residual_mix_multipliers || {};
+    const multiplier = rm[countryCode] || rm.default || 1.2;
+    gridIntensity = baseGridIntensity * multiplier * (1 + T_AND_D);
+    energyNote = `Residual Mix (${countryCode})`;
+    electricityHierarchyNote = `No RECs - using residual mix per PEF 3.1`;
+        }
     }
 
         // 🛡️ PEF 3.1 FUGITIVE EMISSIONS MANDATE
