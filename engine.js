@@ -5380,7 +5380,7 @@ const packagingEoLValue = _p.packagingEoL
                 // Ionizing Radiation from electricity: 0.0023 kBq U-235 eq per kWh (EU grid avg)
                 // Terrestrial Eutrophication from manufacturing wastewater: 0.0011 mol N eq per kg output
                 const irFromElectricity = mfgResult.kwh * 0.0023; // kBq U-235 eq
-                const eutTerrestrialFromMfg = (massOutputKg || 1) * 0.0011; // mol N eq
+                const eutTerrestrialFromMfg = (massBalanceData?.productMass || 1) * 0.0011; // mol N eq
 
                 if (irFromElectricity > 0 && auditTrail.pefCategories["Ionizing Radiation"]) {
                     auditTrail.pefCategories["Ionizing Radiation"].contribution_tree = auditTrail.pefCategories["Ionizing Radiation"].contribution_tree || {};
@@ -5398,7 +5398,7 @@ const packagingEoLValue = _p.packagingEoL
                     auditTrail.pefCategories["Eutrophication, terrestrial"].contribution_tree.Manufacturing = auditTrail.pefCategories["Eutrophication, terrestrial"].contribution_tree.Manufacturing || { total: 0, components: [] };
                     auditTrail.pefCategories["Eutrophication, terrestrial"].contribution_tree.Manufacturing.total += eutTerrestrialFromMfg;
                     auditTrail.pefCategories["Eutrophication, terrestrial"].contribution_tree.Manufacturing.components.push({
-                        name: `Manufacturing Wastewater (${(massOutputKg||1).toFixed(2)} kg × 0.0011 mol N/kg)`,
+                        name: `Manufacturing Wastewater (${(massBalanceData?.productMass||1).toFixed(2)} kg × 0.0011 mol N/kg)`,
                         subtotal: eutTerrestrialFromMfg
                     });
                     auditTrail.pefCategories["Eutrophication, terrestrial"].total = (auditTrail.pefCategories["Eutrophication, terrestrial"].total || 0) + eutTerrestrialFromMfg;
@@ -6052,7 +6052,7 @@ const waterResult = auditTrail.pefCategories['Water Use/Scarcity (AWARE)']?.tota
 // GAP 3 FIX: JRC verification only runs on packaging/plastic products, not food
 // PET_granulates is a packaging reference material, not appropriate for food LCAs
 // Running it on food always fails and pollutes the audit trail with spurious failures
-const packagingMaterialForJRC = packagingMaterial || '';
+const packagingMaterialForJRC = (typeof packagingMaterial !== 'undefined' ? packagingMaterial : '') || '';
 const isPackagingProduct = ['PET', 'HDPE', 'PP', 'PS', 'PVC', 'plastic', 'bottle', 'container']
     .some(p => packagingMaterialForJRC.toLowerCase().includes(p.toLowerCase()));
 
