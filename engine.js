@@ -4877,8 +4877,9 @@ const productName = _p.productName
 const manufacturingCountryCode = _p.manufacturingCountryCode
     || global.document?.getElementById('manufacturingCountry')?.value
     || 'FR';
-const processingMethod = _p.processingMethod
+const rawProcessing = _p.processingMethod
     || global.document?.getElementById('processingMethod')?.value;
+const processingMethod = (rawProcessing === 'none' || !rawProcessing) ? null : rawProcessing;
 const transportDistance = _p.transportDistance
     ?? parseFloat(global.document?.getElementById('transportDistance')?.value)
     ?? 0;
