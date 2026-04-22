@@ -3843,12 +3843,15 @@ const pefWeightingFactors = (function() {
                 const activeCCNode = currentCC_Tree.Ingredients?.components?.find(c => c.id === ing.id);
                 const activeWaterNode = currentWater_Tree?.Ingredients?.components?.find(c => c.id === ing.id);
                 
-                const co2Base = activeCCNode ? activeCCNode.subtotal : (ingredientDB.data.pef["Climate Change"] * ing.quantity || 0);
-                // GAP 1 FIX: Apply AWARE CF to Monte Carlo fallback path (not just primary data path)
-                // When no activeWaterNode exists, use Agribalyse base × country AWARE CF
-                const rawWaterBase = activeWaterNode
-                    ? activeWaterNode.subtotal
-                    : (ingredientDB.data.pef["Water Use/Scarcity (AWARE)"] * ing.quantity || 0);
+                const co2Base = activeCCNode 
+    ? activeCCNode.subtotal 
+    : ((ingredientDB.data?.pef?.["Climate Change"] || 0) * ing.quantity);
+
+// GAP 1 FIX: Apply AWARE CF to Monte Carlo fallback path (not just primary data path)
+// When no activeWaterNode exists, use Agribalyse base × country AWARE CF
+const rawWaterBase = activeWaterNode
+    ? activeWaterNode.subtotal
+    : ((ingredientDB.data?.pef?.["Water Use/Scarcity (AWARE)"] || 0) * ing.quantity);
                 // Apply AWARE country factor if we have origin info
                 let waterBase = rawWaterBase;
                 if (!activeWaterNode && rawWaterBase > 0) {
