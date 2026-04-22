@@ -2135,12 +2135,24 @@ function checkEUDRCompliance(ingredientId, originCountry, primaryData) {
 function calculateCapitalGoods(equipmentType, annualOutputKg, equipmentCapacity = 1, lifespanYears = null) {
     if (!annualOutputKg || annualOutputKg <= 0) return 0;
     
+    // SAFETY: If equipmentType is null, undefined, or 'none', return 0
+    if (!equipmentType || equipmentType === 'none') {
+        console.warn('⚠️ [Capital Goods] Invalid equipmentType — returning 0');
+        return 0;
+    }
+    
     const defaults = PHYSICS_CONSTANTS.CAPITAL_GOODS;
     const lifespan = lifespanYears || defaults.DEFAULT_LIFESPAN_YEARS;
     
+    // SAFETY: Hard guard against missing capital_goods
+    const factors = PHYSICS_DB?.capital_goods;
+    if (!factors) {
+        console.error('❌ [Capital Goods] PHYSICS_DB.capital_goods is undefined');
+        return 0;
+    }
+    
     // Get embedded carbon factor
-    const factors = PHYSICS_DB.capital_goods;
-    const embeddedCO2ePerUnit = factors[equipmentType] || factors.default;
+    const embeddedCO2ePerUnit = factors[equipmentType] || factors.default || 0.01;
     
     // Calculate total embedded carbon
     const totalEmbeddedCO2e = embeddedCO2ePerUnit * equipmentCapacity;
@@ -2151,7 +2163,7 @@ function calculateCapitalGoods(equipmentType, annualOutputKg, equipmentCapacity 
     console.log(`🏭 [Capital Goods] ${equipmentType}: ${impactPerKg.toFixed(6)} kg CO2e/kg (${totalEmbeddedCO2e.toFixed(0)} kg CO2e / ${lifespan} yrs / ${annualOutputKg} kg)`);
     
     return impactPerKg;
-}
+            }
 
 /**
  * Check if capital goods must be included per 1% cutoff rule
