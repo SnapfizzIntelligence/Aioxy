@@ -5418,7 +5418,7 @@ const packagingEoLValue = _p.packagingEoL
             finalIngredients.forEach(ing => {
                 if (ing.isVirtual) return;
 
-                let originCountry = effectiveOrigins[ing.id];
+                let originCountry = effectiveOrigins[ing.id] || ing.originCountry || getIngredientOrigin(ing.id);
                 // 🛡️ REGULATOR FIX: Always use strict ISO code to prevent intercontinental sea freight errors
                 if (originCountry === 'PrimaryData') originCountry = ing.originCountry || getIngredientOrigin(ing.id);
 
