@@ -950,7 +950,7 @@ function validateComparativeAssertion(productSystem, baselineSystem, isPublic = 
     const warnings = [];
     
     // Check if actually comparing
-    if (!baselineSystem || !baselineSystem.name || baselineSystem.name === 'None') {
+    if (!baselineSystem || !baselineSystem.name || baselineSystem.name === null) {
         return {
             isComparative: false,
             valid: true,
@@ -1319,7 +1319,7 @@ function generateReviewStatement(panelMembers, studyDate) {
  * @returns {Object} Comparative assertion status
  */
 function checkComparativeAssertion(baseline, isPublic = false) {
-    const isComparative = baseline && baseline.name && baseline.name !== 'None' && 
+    const isComparative = baseline && baseline.name && baseline.name !== null && 
                           !baseline.name.includes('Custom User Baseline');
     
     if (!isComparative) {
@@ -4400,7 +4400,7 @@ function calculateParametricBaseline(anchorId, targetCountry) {
     };
 
     // 5. CLONE SYSTEM BOUNDARIES FROM USER'S PRODUCT CONFIGURATION
-    const userProcessing = domGetter('processingMethod', true) || 'none';
+    const userProcessing = domGetter('processingMethod', true) || null;
     const userTransportDist = parseFloat(domGetter('transportDistance', true)) || 300;
     const userTransportMode = domGetter('transportMode', true) || 'road';
     const userRefrigerated = domGetter('refrigeratedTransport', true) || 'no';
@@ -5362,7 +5362,7 @@ const packagingEoLValue = _p.packagingEoL
 
                 // Add detailed component for audit trail
                 auditTrail.pefCategories["Climate Change"].contribution_tree.Manufacturing.components.push({
-                    name: `Processing (${processingMethod || 'none'})`,
+                    name: `Processing (${processingMethod || 'default'})`,
                     subtotal: mfgResult.co2,
                     details: `${mfgResult.method} - ${mfgResult.kwh.toFixed(4)} kWh${mfgResult.fugitive_co2 > 0 ? ` | Includes ${mfgResult.fugitive_co2.toFixed(4)}kg Fugitive Refrigerant` : ''}`,
                     confidence: mfgResult.confidence,
@@ -5744,7 +5744,7 @@ auditTrail.pefCategories["Water Use/Scarcity (AWARE)"].total += waterPkg;
             console.log(`🗑️ [EoL→PEF] Food waste ${foodWasteKg.toFixed(4)}kg routed to 8 PEF categories`);
 
             // ========== IN-USE EMISSIONS (Retail & Home Cold Chain) ==========
-const processingMethodForStorage = processingMethod || 'none';
+const processingMethodForStorage = processingMethod || null;
 let storageType = 'ambient';
 if (processingMethodForStorage === 'freezing') {
     storageType = 'frozen';
@@ -5994,7 +5994,7 @@ const productSystem = {
 };
 
 const baselineSystem = {
-    name: comparisonBaseline?.name || 'None',
+    name: comparisonBaseline?.name || null,
     functionalUnit: '1 kg',
     boundaries: {
         ingredients: true,
