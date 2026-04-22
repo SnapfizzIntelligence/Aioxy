@@ -3923,7 +3923,7 @@ const pefWeightingFactors = (function() {
         ingredients.forEach(item => {
             const ingredient = aioxyDataRef.ingredients?.[item.id];
             if (!ingredient) return;
-            const impact = item.quantity * (ingredient.data.pef["Climate Change"] || 0);
+            const impact = item.quantity * (ingredient.data?.pef?.["Climate Change"] || 0);
             
             const dqrObj = dqrComponentsList ? dqrComponentsList.find(d => d.name === ingredient.name) : null;
             const rawDqr = dqrObj ? dqrObj.dqr : ingredient.data.metadata?.dqr_overall;
