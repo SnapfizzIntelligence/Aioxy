@@ -292,34 +292,82 @@ function dismissHydrationSuggestion() {
 }
 
 
-// ================== ENGINE BRIDGE (REPLACES OLD engine.js) ==================
+// ================== ENGINE BRIDGE ==================
 window.foodCalculationEngine = {
-    calculateFoodImpact: function () {
-        // Build input from UI/global state
-        const input = {
-            ingredients: selectedIngredients,
-            productName: document.getElementById('productName')?.value,
-            volume: currentAnnualVolume
-        };
-
-        // 1. Run physics
-        const physicsResults = corePhysics.calculateProduct(input);
-
-        // 2. Run compliance
-        const complianceResults = complianceEngine.runCompliance(physicsResults);
-
-        // 3. Run audit/export
-        const auditResults = exportEngine.generateAuditTrail(
-            physicsResults,
-            complianceResults,
-            input
-        );
-
-        return {
-            physicsResults,
-            complianceResults,
-            auditResults
-        };
+    calculateFoodImpact: function() {
+        const db = window.aioxyData;
+        const ingredients = window.selectedIngredients;
+        
+        if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+            return { finalPefResults: {}, co2PerKg: 0, waterScarcityPerKg: 0, landUsePerKg: 0, fossilPerKg: 0, overallDQR: 5, comparison: { baseline: { co2PerKg: 0, waterPerKg: 0 }, co2SavedPerKg: 0 }, auditTrail: {} };
+        }
+        
+        const productWeight = parseFloat(document.getElementById('productWeight').value) || 0.2;
+        const mfgCountry = document.getElementById('manufacturingCountry').value;
+        const processingMethod = document.getElementById('processingMethod').value;
+        const transportDistance = parseFloat(document.getElementById('transportDistance').value) || 300;
+        const transportMode = document.getElementById('transportMode').value;
+        const pkgMaterial = document.getElementById('packagingMaterial').value;
+        const pkgWeight = parseFloat(document.getElementById('packagingWeight').value) || 0.050;
+        const recycledPct = parseFloat(document.getElementById('recycledContent').value) || 30;
+        const productName = document.getElementById('productName').value;
+        
+        var refrigeration = 'ambient';
+        try { if (document.getElementById('refrigeratedTransport').value === 'yes') refrigeration = 'chilled'; } catch(e) {}
+        
+        var ingredientResults = [];
+        for (var i = 0; i < ingredients.length; i++) {
+            var item = ingredients[i];
+            var ingData = db.ingredients[item.id];
+            if (!ingData) continue;
+            var result = corePhysics.calculateIngredientImpact({ ingredientData: ingData, quantityKg: item.quantity, includesEnteric: false, entericParams: null });
+            result.name = ingData.name;
+            result.id = item.id;
+            result.quantityKg = item.quantity;
+            ingredientResults.push(result);
+        }
+        
+        var gridData = db.gridIntensity[mfgCountry] || { electricityCO2: 480 };
+        var benchmark = db.processBenchmarks[processingMethod] || 0.08;
+        var mfgResult = corePhysics.calculateManufacturing({ massOutputKg: productWeight, benchmarkKwhPerKg: benchmark, gridIntensityGPerKwh: gridData.electricityCO2 });
+        var transportResult = corePhysics.calculateTransport({ massKg: productWeight + pkgWeight, distanceKm: transportDistance, mode: transportMode, refrigeration: refrigeration });
+        
+        var pkgData = db.packaging[pkgMaterial];
+        var packagingResult = { totalImpact: 0, fossilImpact: 0, biogenicImpact: 0 };
+        if (pkgData) {
+            packagingResult = corePhysics.calculatePackaging({ weightKg: pkgWeight, ev: pkgData.co2_virgin, erecycled: pkgData.co2_recycled, ed: pkgData.co2_disposal_average, r1: recycledPct / 100, r2: (pkgData.r1_max || 0.8) * (pkgData.r2 || 0.7), aFactor: pkgData.aFactor || 0.5, qs: pkgData.q || 0.9, qp: 1.0, fossilFraction: pkgData.fossilFraction || 1.0 });
+        }
+        
+        var pefResults = corePhysics.aggregateResults({ ingredientResults: ingredientResults, manufacturingResult: mfgResult, transportResult: transportResult, packagingResult: packagingResult });
+        
+        var dqrComponents = ingredientResults.map(function(ing) { return { name: ing.name, dqr: 2.0, contribution: ing.totalCO2 }; });
+        var weightedDQR = complianceEngine.calculateWeightedDQR(dqrComponents);
+        var dnmResult = complianceEngine.evaluateDNM(dqrComponents.map(function(d) { return { name: d.name, impact: d.contribution, dqr: d.dqr, isUnderOperationalControl: false }; }), pefResults['Climate Change'].total);
+        
+        var auditTrail = exportEngine.generateAuditTrail({ physicsResults: { pefResults: pefResults, ingredients: ingredientResults, packaging: packagingResult }, complianceResults: { overallDQR: weightedDQR.overallDQR, qualityLevel: weightedDQR.qualityLevel, dnm: dnmResult }, metadata: { productName: productName, functionalUnitKg: productWeight } });
+        
+        window.finalPefResults = pefResults;
+        window.auditTrailData = auditTrail;
+        window.massBalanceData = { final_content_weight_kg: productWeight, inputMass: productWeight, productMass: productWeight, evaporation: 0, packaging_weight_kg: pkgWeight, final_output_kg: productWeight };
+        
+        var totalCo2 = pefResults['Climate Change'].total;
+        var baseline = window.currentComparisonBaseline || { name: 'Baseline', co2PerKg: totalCo2 / productWeight, waterPerKg: 0 };
+        
+        return { finalPefResults: pefResults, co2PerKg: totalCo2 / productWeight, waterScarcityPerKg: (pefResults['Water Use/Scarcity (AWARE)'].total || 0) / productWeight, landUsePerKg: (pefResults['Land Use'].total || 0) / productWeight, fossilPerKg: (pefResults['Resource Use, fossils'].total || 0) / productWeight, overallDQR: weightedDQR.overallDQR, overallUncertainty: 15, comparison: { baseline: baseline, co2SavedPerKg: baseline.co2PerKg - (totalCo2 / productWeight), uplift_applied: { co2: 0 } }, auditTrail: auditTrail, compliance_status: dnmResult.compliant ? 'COMPLIANT' : 'WARNING', dppId: auditTrail.dppId };
+    },
+    
+    getDQRQualityLevel: function(dqr) {
+        if (dqr <= 1.6) return { level: 'Excellent', class: 'dqr-excellent' };
+        if (dqr <= 2.0) return { level: 'Very Good', class: 'dqr-very-good' };
+        if (dqr <= 3.0) return { level: 'Good', class: 'dqr-good' };
+        return { level: 'Fair/Poor', class: 'dqr-poor' };
+    },
+    
+    calculateUncertainty: function(dqr) {
+        var score = typeof dqr === 'object' ? (dqr.P || 2.0) : (dqr || 2.0);
+        if (score <= 1) return 10;
+        if (score <= 2) return Math.round((10 + 15 * (score - 1)) * 10) / 10;
+        return Math.round((25 + 25 * (score - 2)) * 10) / 10;
     }
 };
                                  
