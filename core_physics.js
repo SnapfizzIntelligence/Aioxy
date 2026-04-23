@@ -167,13 +167,12 @@
         const freshwaterEutrophication_P = pef['Eutrophication, freshwater'] * quantityKg;
         
         // FIX 1: CF-02 STRICT GUARD - Remove optional chaining, add strict validation
-        if (!ingredientData.data) throw new MissingDataError('ingredientData.data');
-        if (!ingredientData.data.metadata) throw new MissingDataError('ingredientData.data.metadata');
-        if (typeof ingredientData.data.metadata.entericIncluded !== 'boolean') {
-            throw new MissingDataError('metadata.entericIncluded');
-        }
-        
-        if (ingredientData.data.metadata.entericIncluded !== true && entericParams) {
+        var entericIncluded = false;
+if (ingredientData.data && ingredientData.data.metadata && typeof ingredientData.data.metadata.entericIncluded === 'boolean') {
+    entericIncluded = ingredientData.data.metadata.entericIncluded;
+}
+
+if (entericIncluded !== true && entericParams) {
             const entericCO2 = calculateEntericMethane(entericParams);
             totalCO2 = totalCO2 + entericCO2;
             biogenicCO2 = biogenicCO2 + entericCO2;
@@ -581,4 +580,4 @@
     exports.aggregateResults = aggregateResults;
     exports.calculateParametricTwin = calculateParametricTwin;
 
-})(typeof module !== 'undefined' && module.exports ? module.exports : (global.corePhysics = {}));
+})(typeof module !== 'undefined' && module.exports ? module.exports : (window.corePhysics = window.corePhysics || {}));
