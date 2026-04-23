@@ -11,8 +11,8 @@
         if (typeof module !== 'undefined' && module.exports) {
             return require('./core_physics').CONSTANTS;
         }
-        if (typeof global !== 'undefined' && global.corePhysics && global.corePhysics.CONSTANTS) {
-            return global.corePhysics.CONSTANTS;
+        if (typeof window !== 'undefined' && window.corePhysics && window.corePhysics.CONSTANTS) {
+    return window.corePhysics.CONSTANTS;
         }
         throw new Error('export_engine: corePhysics.CONSTANTS not found. Load core_physics.js before export_engine.js.');
     })();
@@ -351,4 +351,4 @@
     exports.generateILCDExport = generateILCDExport;
     exports.generateCSVExport = generateCSVExport;
 
-})(typeof module !== 'undefined' && module.exports ? module.exports : (global.exportEngine = {}));
+})(typeof module !== 'undefined' && module.exports ? module.exports : (window.exportEngine = window.exportEngine || {}));
