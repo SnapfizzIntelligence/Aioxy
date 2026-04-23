@@ -627,7 +627,7 @@ async function calculateImpactEnhanced() {
     if (loadingElement) loadingElement.classList.remove('hidden');
     if (resultsContent)  resultsContent.classList.add('hidden');
 
-    setTimeout(() => {
+    setTimeout(async () => {
         try {
             const finalResults = await foodCalculationEngine.calculateFoodImpact();
 updateResultsUI(finalResults);
@@ -667,7 +667,7 @@ updateResultsUI(finalResults);
     }, 100);
 }
 
-function calculateImpact() { calculateImpactEnhanced(); }
+function calculateImpact() { return calculateImpactEnhanced(); }
 
 // ================== WORKFLOW: START NEW AUDIT ==================
 function startNewAudit() {
