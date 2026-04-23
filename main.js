@@ -328,16 +328,16 @@ var result = corePhysics.calculateIngredientImpact({ ingredientData: flatIngData
             ingredientResults.push(result);
         }
         
-        var gridData = db.gridIntensity[mfgCountry] || { electricityCO2: 480 };
-        var benchmark = db.processBenchmarks[processingMethod] || 0.08;
-        var mfgResult = corePhysics.calculateManufacturing({ massOutputKg: productWeight, benchmarkKwhPerKg: benchmark, gridIntensityGPerKwh: gridData.electricityCO2 });
-        var transportResult = corePhysics.calculateTransport({ massKg: productWeight + pkgWeight, distanceKm: transportDistance, mode: transportMode, refrigeration: refrigeration });
-        
-        var pkgData = db.packaging[pkgMaterial];
-        var packagingResult = { totalImpact: 0, fossilImpact: 0, biogenicImpact: 0 };
-        if (pkgData) {
-            packagingResult = corePhysics.calculatePackaging({ weightKg: pkgWeight, ev: pkgData.co2_virgin, erecycled: pkgData.co2_recycled, ed: pkgData.co2_disposal_average, r1: recycledPct / 100, r2: (pkgData.r1_max || 0.8) * (pkgData.r2 || 0.7), aFactor: pkgData.aFactor || 0.5, qs: pkgData.q || 0.9, qp: 1.0, fossilFraction: pkgData.fossilFraction || 1.0 });
-        }
+        var gridData = db.grid_intensity[mfgCountry] || { electricityCO2: 480 };
+var benchmark = (db.processing[processingMethod] && db.processing[processingMethod].kwh_per_kg) || 0.08;
+var mfgResult = corePhysics.calculateManufacturing({ massOutputKg: productWeight, benchmarkKwhPerKg: benchmark, gridIntensityGPerKwh: gridData.electricityCO2 });
+var transportResult = corePhysics.calculateTransport({ massKg: productWeight + pkgWeight, distanceKm: transportDistance, mode: transportMode, refrigeration: refrigeration });
+
+var pkgData = db.packaging[pkgMaterial];
+var packagingResult = { totalImpact: 0, fossilImpact: 0, biogenicImpact: 0 };
+if (pkgData) {
+    packagingResult = corePhysics.calculatePackaging({ weightKg: pkgWeight, ev: pkgData.co2_virgin, erecycled: pkgData.co2_recycled, ed: pkgData.co2_disposal || pkgData.co2_disposal_average || 0.05, r1: recycledPct / 100, r2: (pkgData.r1_max || 0.8) * (pkgData.r2 || 0.7), aFactor: pkgData.aFactor || 0.5, qs: pkgData.q || 0.9, qp: 1.0, fossilFraction: pkgData.fossilFraction || 1.0 });
+}
         
         var pefResults = corePhysics.aggregateResults({ ingredientResults: ingredientResults, manufacturingResult: mfgResult, transportResult: transportResult, packagingResult: packagingResult });
         
