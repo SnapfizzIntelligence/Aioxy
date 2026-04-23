@@ -388,7 +388,7 @@ function dismissHydrationSuggestion() {
 
 // ================== ENGINE BRIDGE ==================
 window.foodCalculationEngine = {
-    calculateFoodImpact: function() {
+    calculateFoodImpact: async function() {
         const db          = window.aioxyData;
         const ingredients = window.selectedIngredients;
 
@@ -542,12 +542,42 @@ window.foodCalculationEngine = {
 
         // ── WRITE GLOBALS ────────────────────────────────────────────────────
         window.finalPefResults = pefResults;
-        window.auditTrailData  = auditTrail;
-        window.massBalanceData = {
-            final_content_weight_kg: productWeight,
-            inputMass:   productWeight, productMass: productWeight,
-            evaporation: 0, packaging_weight_kg: pkgWeight, final_output_kg: productWeight
-        };
+
+window.massBalanceData = {
+    final_content_weight_kg: productWeight,
+    inputMass: productWeight,
+    productMass: productWeight,
+    evaporation: 0,
+    packaging_weight_kg: pkgWeight,
+    final_output_kg: productWeight,
+    raw_input_total_kg: productWeight,
+    final_output_kg: productWeight,
+    evaporation_kg: 0
+};
+
+window.auditTrailData = {
+    pefCategories: pefResults,
+    mass_balance: window.massBalanceData,
+    dqr_summary: {
+        overall_dqr: weightedDQR.overallDQR,
+        dqr_level: weightedDQR.qualityLevel,
+        component_dqrs: dqrComponents.map(function(d) {
+            return { name: d.name, dqr: d.dqr, uncertainty: 15, source: 'AGRIBALYSE 3.2', contribution: d.contribution };
+        })
+    },
+    uncertainty_analysis: { overall_uncertainty: 15, monte_carlo: null },
+    dppId: auditTrail.dppId || ('TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()),
+    auditHash: auditTrail.auditHash || '',
+    productName: productName,
+    calculationTimestamp: new Date().toISOString(),
+    comparison_baseline: window.currentComparisonBaseline || null,
+    ISO_compliance: {
+        compliance_statement: 'Screening-level assessment per ISO 14040:2006 and ISO 14044:2006.',
+        principles: { system_boundary: 'Cradle-to-Retail', functional_unit: productWeight + ' kg', allocation: 'Mass allocation per ISO 14044' }
+    }
+};
+
+window.currentDPPId = window.auditTrailData.dppId;
 
         var totalCo2 = pefResults['Climate Change'].total;
         var baseline = window.currentComparisonBaseline || {
@@ -589,7 +619,7 @@ window.foodCalculationEngine = {
 };
 
 // ================== ENHANCED CALCULATION ENGINE ==================
-function calculateImpactEnhanced() {
+async function calculateImpactEnhanced() {
     if (selectedIngredients.length === 0) { clearResults(); return; }
 
     const loadingElement = document.getElementById('loadingResults');
@@ -599,8 +629,8 @@ function calculateImpactEnhanced() {
 
     setTimeout(() => {
         try {
-            const finalResults = foodCalculationEngine.calculateFoodImpact();
-            updateResultsUI(finalResults);
+            const finalResults = await foodCalculationEngine.calculateFoodImpact();
+updateResultsUI(finalResults);
 
             localStorage.setItem('aioxy_pitch_state', JSON.stringify({
                 ingredients:           selectedIngredients,
