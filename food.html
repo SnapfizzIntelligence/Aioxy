@@ -30,7 +30,11 @@
 <script src="aioxy_pef3.1_database.js"></script>
 
 <!-- 4. Core Engine -->
-<script src="engine.js"></script>
+<!-- OLD: <script src="engine.js"></script> -->
+<!-- NEW: Load the 3 split modules instead -->
+<script src="core_physics.js"></script>
+<script src="compliance_engine.js"></script>
+<script src="export_engine.js"></script>
 
 <!-- 5. Main Controller -->
 <script src="main.js"></script>
