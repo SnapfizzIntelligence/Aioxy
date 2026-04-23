@@ -180,12 +180,21 @@ function updateResultsUI(results) {
     // 1. Force Consistency: Pull the UNIFIED metric directly
     const unifiedCO2 = results.co2PerKg;
     
-    // 🛡️ CRASH FIX: Define baseline variables at the absolute TOP before anything else runs
-    const baselineCO2 = results.comparison?.baseline?.co2PerKg || 0;
-    const baselineWater = results.comparison?.baseline?.waterPerKg || 0;
+    // 🛡️ CRASH FIX 1: Define baseline variables at the absolute TOP before anything else runs
+    // FIX: Use results.comparison.baseline (engine-produced, always valid) as primary source.
+    // Fall back to currentComparisonBaseline only if engine baseline somehow absent.
+    const resolvedBaseline = results.comparison?.baseline || currentComparisonBaseline || {
+        name: 'Benchmark',
+        co2PerKg: unifiedCO2,
+        waterPerKg: 0
+    };
+    const baselineCO2 = resolvedBaseline.co2PerKg || 0;
+    const baselineWater = resolvedBaseline.waterPerKg || 0;
     const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
     const safeBaseWater = baselineWater > 0 ? baselineWater : 1;
-    const baselineName = currentComparisonBaseline ? currentComparisonBaseline.name.replace(' (Cradle-to-Retail)', '') : 'benchmark';
+    const baselineName = resolvedBaseline.name
+        ? resolvedBaseline.name.replace(' (Cradle-to-Retail)', '')
+        : 'benchmark';
 
     // REGULATOR FIX: Custom Baseline Warning
     const resultsContent = document.getElementById('resultsContent');
@@ -263,10 +272,11 @@ function updateResultsUI(results) {
 
     updateMassBalanceDisplay();
     updateDataQualityDisplay(results);
-    updateEnvironmentalStory(results);
+    updateEnvironmentalStory(results, resolvedBaseline);
     
     // 2. Pass the UNIFIED number to the comparison renderer
-    renderUniversalComparisons(unifiedCO2, currentComparisonBaseline);
+    // FIX: Pass resolvedBaseline (always non-null) instead of raw currentComparisonBaseline
+    renderUniversalComparisons(unifiedCO2, resolvedBaseline);
 
     // 3. Update Metric Cards with the UNIFIED numbers
     if(document.getElementById('co2Value')) document.getElementById('co2Value').textContent = unifiedCO2.toFixed(2) + ' kg';
@@ -303,7 +313,7 @@ function updateResultsUI(results) {
     const userProteinPer100g = parseFloat(document.getElementById('proteinContent')?.value) || 0;
     let nutritionalDiv = document.getElementById('nutritionalLCACard');
 
-    if (userProteinPer100g > 0 && currentComparisonBaseline) {
+    if (userProteinPer100g > 0 && resolvedBaseline) {
         const anchorProteinDB = {
             'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
             'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
@@ -311,14 +321,14 @@ function updateResultsUI(results) {
         };
         
         const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-            currentComparisonBaseline.name.includes(ANCHOR_DATASETS[key].name)) || 'default';
+            resolvedBaseline.name && resolvedBaseline.name.includes(ANCHOR_DATASETS[key].name)) || 'default';
         const baselineProteinPer100g = anchorProteinDB[baselineKey] || 10.0;
 
         const userKgNeededFor100gProtein = 100 / (userProteinPer100g * 10);
         const baseKgNeededFor100gProtein = 100 / (baselineProteinPer100g * 10);
 
         const userCo2PerProtein = unifiedCO2 * userKgNeededFor100gProtein;
-        const rawBaseCo2 = safeBaseCO2 / (currentComparisonBaseline?.concentration_ratio || 1);
+        const rawBaseCo2 = safeBaseCO2 / (resolvedBaseline?.concentration_ratio || 1);
         const baseCo2PerProtein = rawBaseCo2 * baseKgNeededFor100gProtein;
 
         if (!nutritionalDiv) {
@@ -328,7 +338,7 @@ function updateResultsUI(results) {
             nutritionalDiv.style.borderLeft = '4px solid #8E44AD';
             nutritionalDiv.style.backgroundColor = '#FDFEFE';
             const resultsGrid = document.querySelector('.results-grid');
-            resultsGrid.parentNode.insertBefore(nutritionalDiv, resultsGrid);
+            if (resultsGrid) resultsGrid.parentNode.insertBefore(nutritionalDiv, resultsGrid);
         }
 
         const rawProteinPct = baseCo2PerProtein > 0 ? ((baseCo2PerProtein - userCo2PerProtein) / baseCo2PerProtein) * 100 : 0;
@@ -359,7 +369,7 @@ function updateResultsUI(results) {
                     <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${userCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
                 </div>
                 <div>
-                    <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${currentComparisonBaseline.name} (~${baselineProteinPer100g}g protein/100g)</div>
+                    <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${resolvedBaseline.name} (~${baselineProteinPer100g}g protein/100g)</div>
                     <div style="font-size: 1.25rem; font-weight: bold; color: var(--gray);">${baseCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
                 </div>
             </div>
@@ -404,7 +414,7 @@ function updateResultsUI(results) {
     }
     
     // === REGULATOR-PROOF EQUIVALENCIES ENGINE ===
-    const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
+    const co2SavedPerKg = results.comparison?.co2SavedPerKg || 0;
     const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
     const treeYears = (co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
     const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
@@ -447,28 +457,29 @@ function updateDataQualityDisplay(results) {
     
     if (!dataQualitySection || !dqrBreakdown || !overallDQRBadge) return;
 
-    if (auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs.length > 0) {
+    if (auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs && auditTrailData.dqr_summary.component_dqrs.length > 0) {
         dataQualitySection.classList.remove('hidden');
         
         let terSum = 0, grSum = 0, tirSum = 0, pSum = 0;
         let count = 0;
         
         auditTrailData.dqr_summary.component_dqrs.forEach(score => {
-            const ingredient = aioxyData.ingredients[selectedIngredients.find(i => i.name === score.name)?.id];
-            if (ingredient) {
-                terSum += ingredient.data.metadata.dqr.TeR;
-                grSum += ingredient.data.metadata.dqr.GR;
-                tirSum += ingredient.data.metadata.dqr.TiR;
-                pSum += ingredient.data.metadata.dqr.P;
+            const match = selectedIngredients.find(i => i.name === score.name);
+            const ingredient = match ? aioxyData.ingredients[match.id] : null;
+            if (ingredient && ingredient.data && ingredient.data.metadata && ingredient.data.metadata.dqr) {
+                terSum += ingredient.data.metadata.dqr.TeR || 0;
+                grSum  += ingredient.data.metadata.dqr.GR  || 0;
+                tirSum += ingredient.data.metadata.dqr.TiR || 0;
+                pSum   += ingredient.data.metadata.dqr.P   || 0;
                 count++;
             }
         });
         
         const avgFactors = {
             TeR: count > 0 ? (terSum / count).toFixed(1) : '1.0',
-            GR: count > 0 ? (grSum / count).toFixed(1) : '1.0',
+            GR:  count > 0 ? (grSum  / count).toFixed(1) : '1.0',
             TiR: count > 0 ? (tirSum / count).toFixed(1) : '1.0',
-            P: count > 0 ? (pSum / count).toFixed(1) : '1.0'
+            P:   count > 0 ? (pSum   / count).toFixed(1) : '1.0'
         };
         
         dqrBreakdown.innerHTML = `
@@ -509,11 +520,11 @@ function updateMassBalanceDisplay() {
     
     if (!massBalanceSection || !massBalanceContent) return;
 
-    if (massBalanceData.raw_input_total_kg > 0) {
+    if (massBalanceData && massBalanceData.raw_input_total_kg > 0) {
         massBalanceSection.classList.remove('hidden');
         
-        const expectedOutput = massBalanceData.raw_input_total_kg - massBalanceData.evaporation_kg;
-        const balanceDifference = Math.abs(expectedOutput - massBalanceData.final_output_kg);
+        const expectedOutput = massBalanceData.raw_input_total_kg - (massBalanceData.evaporation_kg || 0);
+        const balanceDifference = Math.abs(expectedOutput - (massBalanceData.final_output_kg || 0));
         const balanceStatus = balanceDifference < 0.001 ? "✅ Balanced" : "⚠️ Check Required";
 
         massBalanceContent.innerHTML = `
@@ -523,11 +534,11 @@ function updateMassBalanceDisplay() {
             </div>
             <div class="mass-balance-item">
                 <span style="color: #C0392B;">- Water Evaporation:</span>
-                <span style="color: #C0392B;">${massBalanceData.evaporation_kg.toFixed(3)} kg</span>
+                <span style="color: #C0392B;">${(massBalanceData.evaporation_kg || 0).toFixed(3)} kg</span>
             </div>
             <div class="mass-balance-item" style="font-weight: 600;">
                 <span>= Final Product Weight:</span>
-                <span>${massBalanceData.final_output_kg.toFixed(3)} kg</span>
+                <span>${(massBalanceData.final_output_kg || 0).toFixed(3)} kg</span>
             </div>
             <div class="mass-balance-item" style="border-top: 2px solid var(--border); margin-top: 0.5rem; padding-top: 0.5rem;">
                 <span>Mass Balance Status:</span>
@@ -540,27 +551,35 @@ function updateMassBalanceDisplay() {
 }
 
 // ================== UPDATE ENVIRONMENTAL STORY ==================
-function updateEnvironmentalStory(results) {
+// FIX: Accept resolvedBaseline as second param so baseline is never null here
+function updateEnvironmentalStory(results, resolvedBaseline) {
     const environmentalStory = document.getElementById('environmentalStory');
     const storyContent = document.getElementById('storyContent');
     const storyComparison = document.getElementById('storyComparison');
 
     if (!environmentalStory || !storyContent || !storyComparison) return;
 
-    const customerName = document.getElementById('customerName').value || 'Consumer';
-    const baselineName = results.comparison.baseline.name.replace(" (Cradle-to-Retail)", "");
+    // FIX: Guard — if no baseline available at all, hide story and return
+    if (!resolvedBaseline) {
+        environmentalStory.classList.add('hidden');
+        return;
+    }
+
+    const customerName = document.getElementById('customerName')?.value || 'Consumer';
+    // FIX: Use resolvedBaseline.name safely — it is always set
+    const baselineName = (resolvedBaseline.name || 'Benchmark').replace(" (Cradle-to-Retail)", "");
     
-    const co2SavedPerKg = results.comparison.co2SavedPerKg || 0;
+    const co2SavedPerKg = results.comparison?.co2SavedPerKg || 0;
     const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
     const treeYears = (co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
     const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
-    const baselineWater = results.comparison?.baseline?.waterPerKg || 0;
+    const baselineWater = resolvedBaseline.waterPerKg || 0;
     const currentWater = results.waterScarcityPerKg || 0;
     const waterScoreDiff = Math.max(0, baselineWater - currentWater);
 
     const uncertainty = results.overallUncertainty || 15;
-    const rawCo2Pct = results.comparison?.baseline?.co2PerKg > 0 
-        ? ((results.comparison.baseline.co2PerKg - results.co2PerKg) / results.comparison.baseline.co2PerKg) * 100 
+    const rawCo2Pct = resolvedBaseline.co2PerKg > 0 
+        ? ((resolvedBaseline.co2PerKg - results.co2PerKg) / resolvedBaseline.co2PerKg) * 100 
         : 0;
 
     const isBetterEnv = rawCo2Pct >= 0;
@@ -659,15 +678,18 @@ function updateEnvironmentalStory(results) {
 function renderUniversalComparisons(myCo2, baseline) {
     const grid = document.getElementById('universalComparisonGrid');
     if (!grid) return;
+    // FIX: Guard against null baseline — engine always passes resolvedBaseline now,
+    // but defensive check here prevents any future null crash.
+    if (!baseline || typeof baseline.name === 'undefined') return;
     
     grid.innerHTML = "";
     
     const list = [
         {name: `This Product (Modeled: PEF 3.1)`, val: myCo2, highlight: true},
-        {name: `${baseline.name}`, val: baseline.co2PerKg}
+        {name: `${baseline.name}`, val: baseline.co2PerKg || 0}
     ];
 
-    const max = Math.max(...list.map(i=>i.val));
+    const max = Math.max(...list.map(i => i.val));
 
     list.forEach(item => {
         const pct = max > 0 ? (item.val / max) * 100 : 0; 
@@ -680,16 +702,16 @@ function renderUniversalComparisons(myCo2, baseline) {
         `;
     });
 
-    const baselineName = document.getElementById('baselineName');
-    if (baselineName) {
-        baselineName.innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name}</strong>`;
+    const baselineNameEl = document.getElementById('baselineName');
+    if (baselineNameEl) {
+        baselineNameEl.innerHTML = `<i class="fas fa-robot" style="color: var(--primary);"></i> <strong>Comparing against: ${baseline.name}</strong>`;
     }
 }
 
 // ================== UI INTEGRATION: PEF SINGLE SCORE DISPLAY ==================
 function displayPEFSingleScore() {
     const resultsContent = document.getElementById('resultsContent');
-    if (!resultsContent || !finalPefResults) return;
+    if (!resultsContent || !finalPefResults || Object.keys(finalPefResults).length === 0) return;
 
     const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
     const productWeightKg = unified.weightUsed;
@@ -813,7 +835,7 @@ function displayPEFSingleScore() {
                                 <td style="padding: 0.5rem; text-align: right;">${data.raw.toFixed(4)} <span style="color:var(--gray); font-size:0.75rem;">${data.unit}</span></td>
                                 <td style="padding: 0.5rem; text-align: right;">${data.normalized.toExponential(3)}</td>
                                 <td style="padding: 0.5rem; text-align: right;">${data.weighted.toExponential(3)}</td>
-                                <td style="padding: 0.5rem; text-align: right;">${(data.weighted / singleScoreResult.weightedScore * 100).toFixed(1)}%</td>
+                                <td style="padding: 0.5rem; text-align: right;">${singleScoreResult.weightedScore > 0 ? (data.weighted / singleScoreResult.weightedScore * 100).toFixed(1) : '0.0'}%</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1125,8 +1147,11 @@ function updateIngredientList() {
         const ingredientData = aioxyData.ingredients[ingredient.id];
         if (!ingredientData) return;
         
-        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(ingredientData.data.metadata.dqr_overall);
-        const uncertainty = foodCalculationEngine.calculateUncertainty(ingredientData.data.metadata.dqr.P);
+        // FIX: Guard against missing dqr_overall or dqr.P before calling engine methods
+        const dqrOverall = ingredientData.data?.metadata?.dqr_overall || 2.5;
+        const dqrP = ingredientData.data?.metadata?.dqr?.P || 2.0;
+        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(dqrOverall);
+        const uncertainty = foodCalculationEngine.calculateUncertainty(dqrP);
         
         const item = document.createElement('div');
         item.className = 'ingredient-item';
@@ -1135,7 +1160,7 @@ function updateIngredientList() {
                 <div class="ingredient-name">${ingredient.name}</div>
                 <div class="ingredient-stats">
                     ${ingredientData.data?.pef?.["Climate Change"] ?? 'N/A'} kg CO₂e/kg •
-${ingredientData.data?.pef?.["Water Use/Scarcity (AWARE)"] ?? 'N/A'} m³ water/kg •
+                    ${ingredientData.data?.pef?.["Water Use/Scarcity (AWARE)"] ?? 'N/A'} m³ water/kg •
                     <span class="dqr-badge ${dqrQuality.class}">DQR: ${dqrQuality.level}</span>
                     <span class="badge" style="margin-left: 0.5rem;">±${uncertainty}% uncertainty</span>
                 </div>
@@ -1161,7 +1186,7 @@ ${ingredientData.data?.pef?.["Water Use/Scarcity (AWARE)"] ?? 'N/A'} m³ water/k
                     <small style="color: var(--gray); font-size: 0.65rem; display: block; margin-top: 2px;">
                         <i class="fas fa-info-circle"></i> Verbal note only - does not affect calculations
                     </small>
-                    <span class="source-badge">${ingredientData.data.metadata.source_dataset}</span>
+                    <span class="source-badge">${ingredientData.data?.metadata?.source_dataset || 'AGRIBALYSE 3.2'}</span>
                     <button class="btn btn-outline" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.7rem;" 
                             onclick="openSupplierModal(${index})">
                         <i class="fas fa-tractor"></i> Supplier Data?
@@ -1209,14 +1234,13 @@ function setupDemoData() {
     
     const demoIngredientId = plantBasedIds.length > 0 ? plantBasedIds[0] : availableIngredients[0];
     
-    // FIX: Add ALL required fields
     selectedIngredients = [{
         id: demoIngredientId,
         name: window.aioxyData.ingredients[demoIngredientId].name,
         quantity: 0.15,
-        originCountry: 'FR',           // ← ADD THIS
-        processingState: 'raw',        // ← ADD THIS
-        physics_note: ''               // ← ADD THIS
+        originCountry: 'FR',
+        processingState: 'raw',
+        physics_note: ''
     }];
     
     console.log(`✅ [setupDemoData] Demo data set: ${selectedIngredients[0].name} (${demoIngredientId})`);
@@ -1255,11 +1279,12 @@ function openSupplierModal(index) {
         document.getElementById('supplierPractice').value = ingredient.primaryData.farmingPractice || '';
     }
     
-    modal.classList.remove('hidden');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function closeSupplierModal() {
-    document.getElementById('supplierModal').classList.add('hidden');
+    const modal = document.getElementById('supplierModal');
+    if (modal) modal.classList.add('hidden');
     currentIngredientIndex = null;
 }
 
@@ -1294,7 +1319,7 @@ function saveSupplierData() {
     calculateImpact();
     closeSupplierModal();
     
-    console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex].name}`);
+    console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex]?.name}`);
 }
 
 function generateSupplierLink() {
@@ -1401,7 +1426,7 @@ function formatPEFValue(value) {
 // ================== UI INTEGRATION: TEMPORAL DISCOUNTING DISPLAY ==================
 function displayTemporalDiscounting() {
     const methodologyTab = document.getElementById('methodology-tab');
-    if (!methodologyTab || !finalPefResults) return;
+    if (!methodologyTab || !finalPefResults || Object.keys(finalPefResults).length === 0) return;
 
     // Calculate temporal discounting
     const temporalResults = applyTemporalDiscounting(finalPefResults, 100);
@@ -1418,6 +1443,8 @@ function displayTemporalDiscounting() {
         const pefTable = methodologyTab.querySelector('.pef-scorecard');
         if (pefTable) {
             pefTable.parentNode.insertBefore(tempSection, pefTable.nextSibling);
+        } else {
+            methodologyTab.appendChild(tempSection);
         }
     }
 
@@ -1476,6 +1503,9 @@ function displayTemporalDiscounting() {
         const ctx = document.getElementById('temporalChart');
         if (!ctx) return;
         
+        // FIX: Guard if Climate Change key missing from temporalResults
+        if (!temporalResults["Climate Change"]) return;
+        
         const years = Array.from({length: 100}, (_, i) => i + 1);
         const climateData = years.map(year => {
             const base = temporalResults["Climate Change"].base_impact;
@@ -1521,7 +1551,8 @@ function displayTemporalDiscounting() {
             }
         });
     }, 100);
-            }
+}
+
 // ================== UI INTEGRATION: FOREGROUND/BACKGROUND DISPLAY ==================
 function displayForegroundBackground() {
     const transparencyTab = document.getElementById('transparency-tab');
@@ -1567,7 +1598,7 @@ function displayForegroundBackground() {
                 <div style="color: var(--gray); margin-bottom: 1rem;">Measured processes</div>
                 
                 <div style="background: white; border-radius: 8px; padding: 1rem; max-height: 150px; overflow-y: auto;">
-                    ${fb.components.foreground.map(comp => `
+                    ${(fb.components?.foreground || []).map(comp => `
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
                             <div>${comp.name}</div>
                             <div style="font-weight: 600;">${(comp.contribution).toFixed(2)} kg CO₂e</div>
@@ -1591,7 +1622,7 @@ function displayForegroundBackground() {
                 <div style="color: var(--gray); margin-bottom: 1rem;">Industry average data</div>
                 
                 <div style="background: white; border-radius: 8px; padding: 1rem; max-height: 150px; overflow-y: auto;">
-                    ${fb.components.background.map(comp => `
+                    ${(fb.components?.background || []).map(comp => `
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
                             <div>${comp.name}</div>
                             <div style="font-weight: 600;">${(comp.contribution).toFixed(2)} kg CO₂e</div>
@@ -1677,7 +1708,7 @@ function displayISOCompliance() {
                 <i class="fas fa-balance-scale"></i> ISO 14040 Principles
             </h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                ${Object.entries(iso.principles).map(([key, value]) => `
+                ${Object.entries(iso.principles || {}).map(([key, value]) => `
                     <div style="background: white; border-radius: 8px; padding: 1rem; border: 1px solid var(--border);">
                         <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">
                             ${key.replace(/_/g, ' ').toUpperCase()}
@@ -1692,7 +1723,6 @@ function displayISOCompliance() {
     `;
 }
 
-
 // ================== UI INTEGRATION: COMPLETE AUDIT TRAIL ==================
 function displayCompleteAuditTrail() {
     const transparencyTab = document.getElementById('transparency-tab');
@@ -1705,7 +1735,12 @@ function displayCompleteAuditTrail() {
         auditSection.className = 'card';
         auditSection.style.marginTop = '1.5rem';
         
-        transparencyTab.querySelector('.main-content').appendChild(auditSection);
+        const mainContent = transparencyTab.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.appendChild(auditSection);
+        } else {
+            transparencyTab.appendChild(auditSection);
+        }
     }
 
     const audit = auditTrailData;
@@ -1715,14 +1750,14 @@ function displayCompleteAuditTrail() {
     let functionalUnitText = "1 kg of final product";
     let nutritionalLCA_HTML = "";
 
-    if (userProtein > 0 && audit.pefCategories?.["Climate Change"]) {
+    // FIX: Guard audit.pefCategories before accessing
+    if (userProtein > 0 && audit.pefCategories && audit.pefCategories["Climate Change"]) {
         functionalUnitText = "1 kg Mass / 100g Delivered Protein";
         const pWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
         const unifiedCO2 = audit.pefCategories["Climate Change"].total / pWeightKg;
         const kgNeeded = 100 / (userProtein * 10);
         const co2Per100gProtein = unifiedCO2 * kgNeeded;
 
-        // Calculate the Baseline for contrast
         const anchorProteinDB = {
             'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
             'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
@@ -1730,11 +1765,10 @@ function displayCompleteAuditTrail() {
         };
     
         const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-    audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
-const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
-// 🛡️ Divide the scaled CO2 by the ratio so the protein math remains physically accurate
-const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
-const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
+            audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
+        const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
+        const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
+        const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
     
         nutritionalLCA_HTML = `
         <div>
@@ -1795,20 +1829,20 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
                         <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
                     </div>
                     <div>
-    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
-    <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
-</div>
-<div>
-    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
-    <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
-    ${audit.comparison_baseline?.bat_processing_note ? `
-    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #F8FAFC; border-left: 3px solid #0A2540; font-size: 0.75rem; color: var(--gray);">
-        <strong>Baseline Processing:</strong> ${audit.comparison_baseline.bat_processing_note}<br>
-        <strong>Source:</strong> ${audit.comparison_baseline.bat_source || 'JRC BAT (EU) 2019/2031'}<br>
-        <strong>Allocation:</strong> ${audit.comparison_baseline.allocation_note || 'Mass allocation (ISO 14044)'}
-    </div>
-    ` : ''}
-</div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
+                        <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
+                        <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
+                        ${audit.comparison_baseline?.bat_processing_note ? `
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #F8FAFC; border-left: 3px solid #0A2540; font-size: 0.75rem; color: var(--gray);">
+                            <strong>Baseline Processing:</strong> ${audit.comparison_baseline.bat_processing_note}<br>
+                            <strong>Source:</strong> ${audit.comparison_baseline.bat_source || 'JRC BAT (EU) 2019/2031'}<br>
+                            <strong>Allocation:</strong> ${audit.comparison_baseline.allocation_note || 'Mass allocation (ISO 14044)'}
+                        </div>
+                        ` : ''}
+                    </div>
                     <div>
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
                         
@@ -1826,9 +1860,8 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
                                     <div class="dqr-badge" style="background: ${ratingColor}; color: white; display: inline-block; margin-bottom: 0.25rem; font-size: 0.7rem; padding: 0.15rem 0.5rem;">
                                         ${rating} • Person Equivalent Impact
                                     </div>
-                                    
-                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${audit.pef_single_score?.singleScore < 150 ? '#2A9D8F' : audit.pef_single_score?.singleScore < 250 ? '#8AB17D' : audit.pef_single_score?.singleScore < 400 ? '#E9C46A' : audit.pef_single_score?.singleScore < 600 ? '#F4A261' : '#E63946'};">
-                                        Grade ${audit.pef_single_score?.singleScore < 150 ? 'A' : audit.pef_single_score?.singleScore < 250 ? 'B' : audit.pef_single_score?.singleScore < 400 ? 'C' : audit.pef_single_score?.singleScore < 600 ? 'D' : 'E'} 
+                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${score < 150 ? '#2A9D8F' : score < 250 ? '#8AB17D' : score < 400 ? '#E9C46A' : score < 600 ? '#F4A261' : '#E63946'};">
+                                        Grade ${score < 150 ? 'A' : score < 250 ? 'B' : score < 400 ? 'C' : score < 600 ? 'D' : 'E'} 
                                         <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${score.toFixed(1)} µPt)</span>
                                     </div>
                                 </div>
@@ -1842,8 +1875,8 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
                             ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
                         </div>
                         <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">
-    <i class="fas fa-balance-scale"></i> Impact-weighted per PEF 3.1 §6.5
-</div>
+                            <i class="fas fa-balance-scale"></i> Impact-weighted per PEF 3.1 §6.5
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1869,39 +1902,39 @@ const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
                     <div>AWARE 2.0</div>
                 </div>
             </div>
+            
+            <!-- SENSITIVITY ANALYSIS CARD -->
+            <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
+                <i class="fas fa-chart-line"></i> Sensitivity Analysis (ISO 14044 §6.3)
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                ${audit.comparison_baseline?.sensitivity_analysis ? `
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Parameters Tested</div>
+                    <div style="font-size: 0.85rem;">${(audit.comparison_baseline.sensitivity_analysis.parameters_tested || []).join(', ') || 'None specified'}</div>
                 </div>
-        
-        <!-- 🆕 SENSITIVITY ANALYSIS CARD -->
-<h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
-    <i class="fas fa-chart-line"></i> Sensitivity Analysis (ISO 14044 §6.3)
-</h4>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-    ${audit.comparison_baseline?.sensitivity_analysis ? `
-    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-        <div style="font-weight: 600; color: var(--primary);">Parameters Tested</div>
-        <div style="font-size: 0.85rem;">${(audit.comparison_baseline.sensitivity_analysis.parameters_tested || []).join(', ') || 'None specified'}</div>
-    </div>
-    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-        <div style="font-weight: 600; color: var(--primary);">Key Finding</div>
-        <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.key_finding || 'Not available'}</div>
-    </div>
-    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-        <div style="font-weight: 600; color: var(--primary);">Recommendation</div>
-        <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.recommendation || 'Not available'}</div>
-    </div>
-    <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-        <div style="font-weight: 600; color: var(--primary);">Compliance</div>
-        <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.iso_compliance || 'Not available'}</div>
-    </div>
-    ` : `
-    <div style="background: var(--light); border-radius: 8px; padding: 1rem; grid-column: 1/-1;">
-        <div style="font-weight: 600; color: var(--primary);">Sensitivity Analysis</div>
-        <div style="font-size: 0.85rem;">Run calculation to generate sensitivity analysis. Parameters include transport distance, grid intensity, and concentration ratio.</div>
-    </div>
-    `}
-</div>
-    </div>
-`;
-                                 }
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Key Finding</div>
+                    <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.key_finding || 'Not available'}</div>
+                </div>
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Recommendation</div>
+                    <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.recommendation || 'Not available'}</div>
+                </div>
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary);">Compliance</div>
+                    <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.iso_compliance || 'Not available'}</div>
+                </div>
+                ` : `
+                <div style="background: var(--light); border-radius: 8px; padding: 1rem; grid-column: 1/-1;">
+                    <div style="font-weight: 600; color: var(--primary);">Sensitivity Analysis</div>
+                    <div style="font-size: 0.85rem;">Run calculation to generate sensitivity analysis. Parameters include transport distance, grid intensity, and concentration ratio.</div>
+                </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
 // ================== UI.JS LOADED ==================
 console.log("✅ [AIOXY] ui.js loaded - Interface ready");
