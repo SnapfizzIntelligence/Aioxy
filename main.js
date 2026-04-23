@@ -291,6 +291,210 @@ function dismissHydrationSuggestion() {
     if (card) card.classList.add('hidden');
 }
 
+// ================== ENGINE BRIDGE — Connects modular engine to legacy UI ==================
+// Placed in main.js so core_physics/compliance_engine/export_engine remain pure
+(function buildEngineBridge() {
+    'use strict';
+    
+    const corePhysics = global.corePhysics;
+    const complianceEngine = global.complianceEngine;
+    const exportEngine = global.exportEngine;
+    
+    if (!corePhysics) throw new Error('corePhysics module not loaded — check <script> order in HTML');
+    if (!complianceEngine) throw new Error('complianceEngine module not loaded — check <script> order in HTML');
+    if (!exportEngine) throw new Error('exportEngine module not loaded — check <script> order in HTML');
+    
+    const MATH = corePhysics.CONSTANTS.MATH;
+    const PERCENT_MAX = corePhysics.CONSTANTS.UNIT.PERCENT_MAX;
+    const DQR_THRESHOLDS = corePhysics.CONSTANTS.DQR_THRESHOLDS;
+    
+    function readDomNumber(id) {
+        const el = document.getElementById(id);
+        if (!el) throw new Error(`DOM element #${id} not found`);
+        const val = parseFloat(el.value);
+        if (isNaN(val)) throw new Error(`DOM element #${id} is not a valid number: "${el.value}"`);
+        return val;
+    }
+    
+    function readDomString(id) {
+        const el = document.getElementById(id);
+        if (!el) throw new Error(`DOM element #${id} not found`);
+        if (!el.value || el.value.trim() === '') throw new Error(`DOM element #${id} has no value`);
+        return el.value.trim();
+    }
+    
+    window.foodCalculationEngine = {
+        calculateFoodImpact: function() {
+            const db = window.aioxyData;
+            if (!db) throw new Error('aioxyData not loaded');
+            if (!db.ingredients) throw new Error('aioxyData.ingredients missing');
+            if (!db.gridIntensity) throw new Error('aioxyData.gridIntensity missing');
+            if (!db.processBenchmarks) throw new Error('aioxyData.processBenchmarks missing');
+            if (!db.packaging) throw new Error('aioxyData.packaging missing');
+            
+            const ingredients = window.selectedIngredients;
+            if (!ingredients || !Array.isArray(ingredients) || ingredients.length === MATH.ZERO) {
+                return {
+                    finalPefResults: {},
+                    co2PerKg: MATH.ZERO,
+                    waterScarcityPerKg: MATH.ZERO,
+                    landUsePerKg: MATH.ZERO,
+                    fossilPerKg: MATH.ZERO,
+                    overallDQR: 5,
+                    comparison: { baseline: { co2PerKg: MATH.ZERO, waterPerKg: MATH.ZERO }, co2SavedPerKg: MATH.ZERO },
+                    auditTrail: {}
+                };
+            }
+            
+            const productWeight = readDomNumber('productWeight');
+            if (productWeight <= MATH.ZERO) throw new Error('Product weight must be > 0');
+            
+            const mfgCountry = readDomString('manufacturingCountry');
+            const processingMethod = readDomString('processingMethod');
+            const transportDistance = readDomNumber('transportDistance');
+            const transportMode = readDomString('transportMode');
+            const pkgMaterial = readDomString('packagingMaterial');
+            const pkgWeight = readDomNumber('packagingWeight');
+            const recycledPct = readDomNumber('recycledContent');
+            const productName = readDomString('productName');
+            
+            let refrigeration = 'ambient';
+            try {
+                const refrigEl = document.getElementById('refrigeratedTransport');
+                if (refrigEl && refrigEl.value === 'yes') refrigeration = 'chilled';
+            } catch (e) {
+                refrigeration = 'ambient';
+            }
+            
+            // ---- PHYSICS ----
+            const ingredientResults = [];
+            for (const item of ingredients) {
+                const ingData = db.ingredients[item.id];
+                if (!ingData) throw new Error(`Ingredient not found: ${item.id}`);
+                
+                const result = corePhysics.calculateIngredientImpact({
+                    ingredientData: ingData,
+                    quantityKg: item.quantity,
+                    includesEnteric: false,
+                    entericParams: null
+                });
+                result.name = ingData.name;
+                result.id = item.id;
+                result.quantityKg = item.quantity;
+                ingredientResults.push(result);
+            }
+            
+            const gridData = db.gridIntensity[mfgCountry];
+            if (!gridData) throw new Error(`No grid data for ${mfgCountry}`);
+            
+            const benchmark = db.processBenchmarks[processingMethod];
+            if (benchmark === undefined) throw new Error(`No benchmark for ${processingMethod}`);
+            
+            const mfgResult = corePhysics.calculateManufacturing({
+                massOutputKg: productWeight,
+                benchmarkKwhPerKg: benchmark,
+                gridIntensityGPerKwh: gridData.electricityCO2
+            });
+            
+            const transportResult = corePhysics.calculateTransport({
+                massKg: productWeight + pkgWeight,
+                distanceKm: transportDistance,
+                mode: transportMode,
+                refrigeration: refrigeration
+            });
+            
+            const pkgData = db.packaging[pkgMaterial];
+            if (!pkgData) throw new Error(`No packaging data for ${pkgMaterial}`);
+            
+            const packagingResult = corePhysics.calculatePackaging({
+                weightKg: pkgWeight,
+                ev: pkgData.co2_virgin,
+                erecycled: pkgData.co2_recycled,
+                ed: pkgData.co2_disposal_average,
+                r1: recycledPct / PERCENT_MAX,
+                r2: pkgData.r1_max * pkgData.r2,
+                aFactor: pkgData.aFactor,
+                qs: pkgData.q,
+                qp: 1.0,
+                fossilFraction: pkgData.fossilFraction
+            });
+            
+            const pefResults = corePhysics.aggregateResults({
+                ingredientResults: ingredientResults,
+                manufacturingResult: mfgResult,
+                transportResult: transportResult,
+                packagingResult: packagingResult
+            });
+            
+            // ---- COMPLIANCE ----
+            const dqrComponents = ingredientResults.map(function(ing) {
+                return { name: ing.name, dqr: 2.0, contribution: ing.totalCO2 };
+            });
+            
+            const weightedDQR = complianceEngine.calculateWeightedDQR(dqrComponents);
+            
+            const dnmResult = complianceEngine.evaluateDNM(
+                dqrComponents.map(function(d) {
+                    return { name: d.name, impact: d.contribution, dqr: d.dqr, isUnderOperationalControl: false };
+                }),
+                pefResults['Climate Change'].total
+            );
+            
+            // ---- EXPORT ----
+            const auditTrail = exportEngine.generateAuditTrail({
+                physicsResults: { pefResults: pefResults, ingredients: ingredientResults, packaging: packagingResult },
+                complianceResults: { overallDQR: weightedDQR.overallDQR, qualityLevel: weightedDQR.qualityLevel, dnm: dnmResult },
+                metadata: { productName: productName, functionalUnitKg: productWeight }
+            });
+            
+            // ---- SAVE GLOBAL STATE ----
+            window.finalPefResults = pefResults;
+            window.auditTrailData = auditTrail;
+            window.massBalanceData = {
+                final_content_weight_kg: productWeight,
+                inputMass: productWeight,
+                productMass: productWeight,
+                evaporation: MATH.ZERO,
+                packaging_weight_kg: pkgWeight,
+                final_output_kg: productWeight
+            };
+            
+            const totalCo2 = pefResults['Climate Change'].total;
+            const baseline = window.currentComparisonBaseline || { name: 'Baseline', co2PerKg: totalCo2 / productWeight, waterPerKg: MATH.ZERO };
+            
+            return {
+                finalPefResults: pefResults,
+                co2PerKg: totalCo2 / productWeight,
+                waterScarcityPerKg: pefResults['Water Use/Scarcity (AWARE)'].total / productWeight,
+                landUsePerKg: pefResults['Land Use'].total / productWeight,
+                fossilPerKg: pefResults['Resource Use, fossils'].total / productWeight,
+                overallDQR: weightedDQR.overallDQR,
+                overallUncertainty: 15,
+                comparison: { baseline: baseline, co2SavedPerKg: baseline.co2PerKg - (totalCo2 / productWeight), uplift_applied: { co2: MATH.ZERO } },
+                auditTrail: auditTrail,
+                compliance_status: dnmResult.compliant ? 'COMPLIANT' : 'WARNING',
+                dppId: auditTrail.dppId
+            };
+        },
+        
+        getDQRQualityLevel: function(score) {
+            if (score <= DQR_THRESHOLDS.EXCELLENT) return { level: 'Excellent', class: 'dqr-excellent' };
+            if (score <= DQR_THRESHOLDS.VERY_GOOD) return { level: 'Very Good', class: 'dqr-very-good' };
+            if (score <= DQR_THRESHOLDS.GOOD) return { level: 'Good', class: 'dqr-good' };
+            return { level: 'Fair/Poor', class: 'dqr-poor' };
+        },
+        
+        calculateUncertainty: function(dqr) {
+            const score = typeof dqr === 'object' ? dqr.P : dqr;
+            if (score <= 1) return 10;
+            if (score <= 2) return parseFloat((10 + 15 * (score - 1)).toFixed(1));
+            return parseFloat((25 + 25 * (score - 2)).toFixed(1));
+        }
+    };
+    
+    console.log('✅ [Bridge] foodCalculationEngine rebuilt from modular core — UI compatibility restored');
+})();
+                                 
 // ================== ENHANCED CALCULATION ENGINE ==================
 function calculateImpactEnhanced() {
     if (selectedIngredients.length === 0) {
