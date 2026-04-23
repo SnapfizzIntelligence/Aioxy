@@ -14,8 +14,8 @@
             // Node / CommonJS
             return require('./core_physics').CONSTANTS;
         }
-        if (typeof global !== 'undefined' && global.corePhysics && global.corePhysics.CONSTANTS) {
-            return global.corePhysics.CONSTANTS;
+        if (typeof window !== 'undefined' && window.corePhysics && window.corePhysics.CONSTANTS) {
+    return window.corePhysics.CONSTANTS;
         }
         throw new Error('compliance_engine: corePhysics.CONSTANTS not found. Load core_physics.js before compliance_engine.js.');
     })();
@@ -332,4 +332,4 @@
     exports.validateSystemBoundary = validateSystemBoundary;
     exports.calculateSavings = calculateSavings;
 
-})(typeof module !== 'undefined' && module.exports ? module.exports : (global.complianceEngine = {}));
+})(typeof module !== 'undefined' && module.exports ? module.exports : (window.complianceEngine = window.complianceEngine || {}));
