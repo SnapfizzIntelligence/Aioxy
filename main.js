@@ -319,8 +319,9 @@ window.foodCalculationEngine = {
         for (var i = 0; i < ingredients.length; i++) {
             var item = ingredients[i];
             var ingData = db.ingredients[item.id];
-            if (!ingData) continue;
-            var result = corePhysics.calculateIngredientImpact({ ingredientData: ingData, quantityKg: item.quantity, includesEnteric: false, entericParams: null });
+if (!ingData) continue;
+var flatIngData = { pef: ingData.data.pef, data: ingData.data, name: ingData.name };
+var result = corePhysics.calculateIngredientImpact({ ingredientData: flatIngData, quantityKg: item.quantity, includesEnteric: false, entericParams: null });
             result.name = ingData.name;
             result.id = item.id;
             result.quantityKg = item.quantity;
