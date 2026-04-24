@@ -372,8 +372,15 @@ window.foodCalculationEngine = {
 
         // ── DQR ──────────────────────────────────────────────────────────────
         var dqrComponents = ingredientResults.map(function(ing) {
-            return { name: ing.name, dqr: 2.0, contribution: ing.totalCO2 };
+           var ingMeta = db.ingredients[ing.id] && db.ingredients[ing.id].data &&
+                          db.ingredients[ing.id].data.metadata;
+            if (!ingMeta || ingMeta.dqr_overall === undefined || ingMeta.dqr_overall === null) {
+                throw new Error('Missing required field: ingredients["' + ing.id + '"].data.metadata.dqr_overall');
+           }
+           return { name: ing.name, dqr: ingMeta.dqr_overall, contribution: ing.totalCO2 };
         });
+
+
 
         // Guard: calculateWeightedDQR throws if totalWeight === 0
         var weightedDQR;
@@ -431,30 +438,6 @@ window.massBalanceData = {
     final_output_kg: productWeight,
     evaporation_kg: 0
 };
-
-window.auditTrailData = {
-    pefCategories: pefResults,
-    mass_balance: window.massBalanceData,
-    dqr_summary: {
-        overall_dqr: weightedDQR.overallDQR,
-        dqr_level: weightedDQR.qualityLevel,
-        component_dqrs: dqrComponents.map(function(d) {
-            return { name: d.name, dqr: d.dqr, uncertainty: 15, source: 'AGRIBALYSE 3.2', contribution: d.contribution };
-        })
-    },
-    uncertainty_analysis: { overall_uncertainty: 15, monte_carlo: null },
-    dppId: auditTrail.dppId || ('TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()),
-    auditHash: auditTrail.auditHash || '',
-    productName: productName,
-    calculationTimestamp: new Date().toISOString(),
-    comparison_baseline: window.currentComparisonBaseline || null,
-    ISO_compliance: {
-        compliance_statement: 'Screening-level assessment per ISO 14040:2006 and ISO 14044:2006.',
-        principles: { system_boundary: 'Cradle-to-Retail', functional_unit: productWeight + ' kg', allocation: 'Mass allocation per ISO 14044' }
-    }
-};
-
-window.currentDPPId = window.auditTrailData.dppId;
 
         var totalCo2 = pefResults['Climate Change'].total;
         var baseline = window.currentComparisonBaseline || {
