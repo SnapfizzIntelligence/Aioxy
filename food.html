@@ -2238,6 +2238,59 @@
                     </select>
                 </div>
             </div>
+            <div style="background: #FFF8E1; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #FFC107;">
+    <div style="font-weight: 700; color: #F57F17; font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase;">
+        <i class="fas fa-flask"></i> USEtox 2.14 — Substance-Specific Toxicity
+    </div>
+    <small style="color: #795548; display: block; margin-bottom: 0.75rem;">
+        Enter pesticides applied to enable USEtox 2.14 characterization factors instead of Agribalyse averages.
+    </small>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">Pesticide 1 Name</label>
+            <input type="text" id="pesticide1Name" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., Glyphosate">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">CAS Number</label>
+            <input type="text" id="pesticide1CAS" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., 1071-83-6">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">Rate (kg/ha)</label>
+            <input type="number" id="pesticide1Rate" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., 2.5" step="0.01" min="0">
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">Pesticide 2 Name</label>
+            <input type="text" id="pesticide2Name" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., Mancozeb">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">CAS Number</label>
+            <input type="text" id="pesticide2CAS" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., 8018-01-7">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">Rate (kg/ha)</label>
+            <input type="number" id="pesticide2Rate" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., 3.0" step="0.01" min="0">
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">Pesticide 3 Name</label>
+            <input type="text" id="pesticide3Name" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., Lambda-cyhalothrin">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">CAS Number</label>
+            <input type="text" id="pesticide3CAS" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., 91465-08-6">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.25rem;">
+            <label class="form-label" style="font-size: 0.75rem;">Rate (kg/ha)</label>
+            <input type="number" id="pesticide3Rate" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., 0.05" step="0.01" min="0">
+        </div>
+    </div>
+            </div>
             
             <div style="background: #F0F9FF; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #BDE0FE;">
                 <div style="font-size: 0.8rem; color: #084B82;">
