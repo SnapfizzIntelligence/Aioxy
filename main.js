@@ -31,43 +31,40 @@ let currentHydrationSuggestion = null;
 // ui.js, audit-trail.js and business-case.js still call them by name.
 // We re-expose them here from the new engine modules so no other file needs to change.
 
-// ── 1. PHYSICS_CONSTANTS ─────────────────────────────────────────────────────
-// Engine_3 exported window.PHYSICS_CONSTANTS. Used by ui.js for equivalency
-// displays (car-km, tree-years, household-days).
+// ── 1. PHYSICS_CONSTANTS — AR5 values, consistent with core_physics ──────
+// AR6 GWP values (ch4: 27.9) removed. Use core_physics IPCC_AR5_PEF31
+// constants directly. Only equivalency-display constants retained here.
 var PHYSICS_CONSTANTS = {
     TREE_ABSORPTION_KG_YEAR:  22.0,
     CAR_EMISSIONS_KG_PER_KM:  0.150,
     HOUSEHOLD_ELEC_KG_DAY:    2.58,
     WATER_BOTTLE_LITERS:      0.5,
-    SHADOW_PRICE_EUR_TON:     85.0,
-    gwp: { ch4: 27.9, n2o: 273, biogenic_discount: 0.0, ar6_dynamic: true }
+    SHADOW_PRICE_EUR_TON:     85.0
+    // gwp block removed — use window.corePhysics.CONSTANTS.IPCC_AR5_PEF31
 };
 
-// ── 2. pefCategories ─────────────────────────────────────────────────────────
-// Engine_3 exported window.pefCategories. Used by ui.js for unit labels and
-// icons in the single-score breakdown table.
+// ── 2. pefCategories — unit labels and icons used by ui.js ──────────────
+// Unchanged: ui.js reads pefCategories[category].unit for display labels.
 var pefCategories = {
-    "Climate Change":                { unit: "kg CO₂e",      icon: "smog" },
-    "Ozone Depletion":               { unit: "kg CFC11e",     icon: "sun" },
-    "Human Toxicity, non-cancer":    { unit: "CTUh",          icon: "user-slash" },
+    "Climate Change":                { unit: "kg CO₂e",      icon: "smog"         },
+    "Ozone Depletion":               { unit: "kg CFC11e",     icon: "sun"          },
+    "Human Toxicity, non-cancer":    { unit: "CTUh",          icon: "user-slash"   },
     "Human Toxicity, cancer":        { unit: "CTUh",          icon: "user-injured" },
-    "Particulate Matter":            { unit: "disease inc.",  icon: "lungs" },
-    "Ionizing Radiation":            { unit: "kBq U235e",     icon: "radiation" },
-    "Photochemical Ozone Formation": { unit: "kg NMVOCe",     icon: "cloud-sun" },
-    "Acidification":                 { unit: "mol H+e",       icon: "tint" },
-    "Eutrophication, terrestrial":   { unit: "mol N e",       icon: "leaf" },
-    "Eutrophication, freshwater":    { unit: "kg P e",        icon: "water" },
-    "Eutrophication, marine":        { unit: "kg N e",        icon: "fish" },
-    "Ecotoxicity, freshwater":       { unit: "CTUe",          icon: "bug" },
-    "Land Use":                      { unit: "Pt",            icon: "mountain" },
-    "Water Use/Scarcity (AWARE)":    { unit: "m³ world eq.", icon: "tint" },
-    "Resource Use, minerals/metals": { unit: "kg Sb e",       icon: "gem" },
-    "Resource Use, fossils":         { unit: "MJ",            icon: "oil-can" }
+    "Particulate Matter":            { unit: "disease inc.",  icon: "lungs"        },
+    "Ionizing Radiation":            { unit: "kBq U235e",     icon: "radiation"    },
+    "Photochemical Ozone Formation": { unit: "kg NMVOCe",     icon: "cloud-sun"    },
+    "Acidification":                 { unit: "mol H+e",       icon: "tint"         },
+    "Eutrophication, terrestrial":   { unit: "mol N e",       icon: "leaf"         },
+    "Eutrophication, freshwater":    { unit: "kg P e",        icon: "water"        },
+    "Eutrophication, marine":        { unit: "kg N e",        icon: "fish"         },
+    "Ecotoxicity, freshwater":       { unit: "CTUe",          icon: "bug"          },
+    "Land Use":                      { unit: "Pt",            icon: "mountain"     },
+    "Water Use/Scarcity (AWARE)":    { unit: "m³ world eq.",  icon: "tint"         },
+    "Resource Use, minerals/metals": { unit: "kg Sb e",       icon: "gem"          },
+    "Resource Use, fossils":         { unit: "MJ",            icon: "oil-can"      }
 };
 
-// ── 3. ANCHOR_DATASETS ───────────────────────────────────────────────────────
-// Engine_3 exported window.ANCHOR_DATASETS. Used by ui.js for comparison
-// baseline resolution.
+// ── 3. ANCHOR_DATASETS — comparison baseline anchors, used by ui.js ─────
 var ANCHOR_DATASETS = {
     'beef-product':    { id: 'beef-cattle-conventional-national-average-at-farm-gate-fr',  factor: 1.0,  name: 'Beef' },
     'chicken-product': { id: 'broiler-conventional-at-farm-gate-fr',                       factor: 1.0,  name: 'Chicken' },
@@ -79,176 +76,56 @@ var ANCHOR_DATASETS = {
     'default':         { id: 'beef-cattle-conventional-national-average-at-farm-gate-fr',  factor: 1.0,  name: 'Conventional Product' }
 };
 
-// ── 4. calculatePEFSingleScore ───────────────────────────────────────────────
-// Engine_3 exported window.calculatePEFSingleScore(pefResults, productWeightKg).
-// The new core_physics.js has corePhysics.calculateSingleScore({...}) with a
-// different call signature and a reduced return shape.
-//
-// This wrapper:
-//   a) Builds NF/WF tables from live db or hardcoded PEF 3.1 fallback
-//   b) Computes the score manually (same math as Engine_3)
-//   c) Returns the full object shape that ui.js expects:
-//      { singleScore, normalizedScore, weightedScore, breakdown,
-//        unit, organic_bonus_applied, organic_ratio }
-//
+// ── 4. calculatePEFSingleScore — reads from window.auditTrailData ────────
+// Shadow recalculation removed. This wrapper now reads the pre-computed
+// result from auditTrailData so ui.js, audit-trail.js, and pdf-generator.js
+// get a consistent number without recomputing.
 function calculatePEFSingleScore(pefResults, productWeightKg) {
-
-    // --- Normalization Factors (JRC EF 3.1) ---
-    var pefNF = (function() {
-        var live = (window.aioxyData && window.aioxyData.pef_factors)
-            ? window.aioxyData.pef_factors.normalization_factors : null;
-        if (live) {
-            var nf = {};
-            Object.keys(live).forEach(function(cat) { nf[cat] = 1 / live[cat]; });
-            var ALIAS = {
-                'Climate change': 'Climate Change',
-                'Ozone depletion': 'Ozone Depletion',
-                'Human toxicity, cancer effects': 'Human Toxicity, cancer',
-                'Human toxicity, non-cancer effects': 'Human Toxicity, non-cancer',
-                'Particulate matter formation': 'Particulate Matter',
-                'Ionising radiation': 'Ionizing Radiation',
-                'Photochemical ozone formation, human health': 'Photochemical Ozone Formation',
-                'Land use': 'Land Use',
-                'Water use': 'Water Use/Scarcity (AWARE)',
-                'Resource use, minerals and metals': 'Resource Use, minerals/metals',
-                'Resource use, fossils': 'Resource Use, fossils'
-            };
-            Object.keys(ALIAS).forEach(function(k) {
-                if (nf[k] !== undefined) nf[ALIAS[k]] = nf[k];
-            });
-            return nf;
-        }
+    // Primary path: return pre-computed result from the engine
+    if (window.auditTrailData && window.auditTrailData.pef_single_score) {
+        const ps = window.auditTrailData.pef_single_score;
         return {
-            "Climate Change": 1/7553.08,       "Ozone Depletion": 1/0.0523,
-            "Human Toxicity, cancer": 1/0.0000173, "Human Toxicity, non-cancer": 1/0.000129,
-            "Particulate Matter": 1/0.000595,   "Ionizing Radiation": 1/4220.16,
-            "Photochemical Ozone Formation": 1/40.86, "Acidification": 1/55.57,
-            "Eutrophication, terrestrial": 1/176.75,  "Eutrophication, freshwater": 1/1.61,
-            "Eutrophication, marine": 1/19.55,        "Ecotoxicity, freshwater": 1/56716.59,
-            "Land Use": 1/819498.18, "Water Use/Scarcity (AWARE)": 1/11468.71,
-            "Resource Use, minerals/metals": 1/0.0636, "Resource Use, fossils": 1/65004.26
+            singleScore:            ps.singleScore        || 0,
+            normalizedScore:        ps.normalizedScore    || 0,
+            weightedScore:          ps.weightedScore      || 0,
+            breakdown:              ps.breakdown          || {},
+            unit:                   'µPt',
+            organic_bonus_applied:  ps.organic_bonus_applied || false,
+            organic_ratio:          ps.organic_ratio      || 0
         };
-    })();
-
-    // --- Weighting Factors (JRC EF 3.1) ---
-    var pefWF = (function() {
-        var live = (window.aioxyData && window.aioxyData.pef_factors)
-            ? window.aioxyData.pef_factors.weighting_factors : null;
-        if (live) {
-            var wf = Object.assign({}, live);
-            var ALIAS_WF = {
-                'Climate change': 'Climate Change',
-                'Ozone depletion': 'Ozone Depletion',
-                'Human toxicity, cancer effects': 'Human Toxicity, cancer',
-                'Human toxicity, non-cancer effects': 'Human Toxicity, non-cancer',
-                'Particulate matter formation': 'Particulate Matter',
-                'Ionising radiation': 'Ionizing Radiation',
-                'Photochemical ozone formation, human health': 'Photochemical Ozone Formation',
-                'Land use': 'Land Use',
-                'Water use': 'Water Use/Scarcity (AWARE)',
-                'Resource use, minerals and metals': 'Resource Use, minerals/metals',
-                'Resource use, fossils': 'Resource Use, fossils'
-            };
-            Object.keys(ALIAS_WF).forEach(function(k) {
-                if (wf[k] !== undefined) wf[ALIAS_WF[k]] = wf[k];
-            });
-            return wf;
-        }
-        return {
-            "Climate Change": 0.2106,              "Ozone Depletion": 0.0631,
-            "Human Toxicity, cancer": 0.0213,       "Human Toxicity, non-cancer": 0.0184,
-            "Particulate Matter": 0.0896,            "Ionizing Radiation": 0.0501,
-            "Photochemical Ozone Formation": 0.0478, "Acidification": 0.0620,
-            "Eutrophication, terrestrial": 0.0371,   "Eutrophication, freshwater": 0.0280,
-            "Eutrophication, marine": 0.0296,         "Ecotoxicity, freshwater": 0.0192,
-            "Land Use": 0.0794, "Water Use/Scarcity (AWARE)": 0.0851,
-            "Resource Use, minerals/metals": 0.0755,  "Resource Use, fossils": 0.0832
-        };
-    })();
-
-    // --- Compute score ---
-    var weightedScore = 0;
-    var normalizedScore = 0;
-    var singleScoreBreakdown = {};
-    var safeWeight = (typeof productWeightKg === 'number' && productWeightKg > 0) ? productWeightKg : 0.2;
-
-    Object.keys(pefResults).forEach(function(category) {
-        var impact      = pefResults[category].total || 0;
-        var perKg       = impact / safeWeight;
-        var normFactor  = pefNF[category] || 0;
-        var weightFactor= pefWF[category] || 0;
-        var normalized  = perKg * normFactor;
-        var weighted    = normalized * weightFactor;
-        weightedScore  += weighted;
-        normalizedScore += normalized;
-        singleScoreBreakdown[category] = {
-            raw: perKg, normalized: normalized, weighted: weighted,
-            normalizationFactor: normFactor, weightingFactor: weightFactor,
-            unit: (pefCategories[category] && pefCategories[category].unit) || ''
-        };
-    });
-
-    // ADEME organic bonus (prorated by mass fraction of organic ingredients)
-    var organicMass = 0, totalIngredientMass = 0;
-    if (window.selectedIngredients && window.selectedIngredients.length > 0) {
-        window.selectedIngredients.forEach(function(i) {
-            totalIngredientMass += i.quantity;
-            if (i.primaryData && i.primaryData.farmingPractice === 'organic') organicMass += i.quantity;
-        });
     }
-    var organicRatio  = totalIngredientMass > 0 ? (organicMass / totalIngredientMass) : 0;
-    var organicBonus  = 15.0 * organicRatio;
-    var finalMicroPoints = Math.max(0, (weightedScore * 1000000) - organicBonus);
-
+    // Fallback (first render before engine result is ready): return zeros
     return {
-        singleScore:          finalMicroPoints,
-        normalizedScore:      normalizedScore,
-        weightedScore:        weightedScore,
-        breakdown:            singleScoreBreakdown,
-        unit:                 'µPt',
-        organic_bonus_applied: organicRatio > 0,
-        organic_ratio:         organicRatio
+        singleScore: 0, normalizedScore: 0, weightedScore: 0,
+        breakdown: {}, unit: 'µPt', organic_bonus_applied: false, organic_ratio: 0
     };
 }
 
-// ── 5. applyTemporalDiscounting ───────────────────────────────────────────────
-// Called by ui.js displayTemporalDiscounting(). PEF 3.1 compliant — returns
-// un-discounted results (no financial discount rates on physical flows).
+// ── 5. applyTemporalDiscounting — reads from auditTrailData ─────────────
 function applyTemporalDiscounting(pefResults, timeHorizon) {
-    var horizon = timeHorizon || 100;
-    var compliantResults = {};
-    Object.keys(pefResults).forEach(function(category) {
-        var baseImpact = pefResults[category].total || 0;
-        compliantResults[category] = {
-            base_impact: baseImpact, discounted_impact: baseImpact,
-            discount_rate: 0.0, time_horizon: horizon,
-            present_value_equivalent: baseImpact, dynamic_factor: 1.0,
-            note: "Standard GWP100 (No discounting applied per PEF 3.1)"
-        };
-    });
-    return compliantResults;
+    // Temporal discounting is not recalculated here; read from engine output.
+    if (window.auditTrailData && window.auditTrailData.temporal_discounting) {
+        return window.auditTrailData.temporal_discounting;
+    }
+    return null;
 }
 
-// ── 6. getUnifiedMetrics ──────────────────────────────────────────────────────
-// Called by ui.js. Derives consistent per-kg values from pefResults + massData.
+// ── 6. getUnifiedMetrics — reads from engine output ──────────────────────
 function getUnifiedMetrics(pefResults, massData) {
-    var validWeight = 0.2;
-    if (massData && massData.final_content_weight_kg > 0) {
-        validWeight = massData.final_content_weight_kg;
-    } else {
-        var el = document.getElementById('productWeight');
-        var inputVal = el ? parseFloat(el.value) : NaN;
-        if (!isNaN(inputVal) && inputVal > 0) validWeight = inputVal;
+    const weightKg = (massData && massData.final_content_weight_kg) || 0.2;
+    if (!pefResults || !pefResults['Climate Change']) {
+        return { weightUsed: weightKg, co2PerKg: 0, waterScarcityPerKg: 0, landUsePerKg: 0, fossilPerKg: 0 };
     }
-    var s = function(key) { return (pefResults && pefResults[key]) ? (pefResults[key].total || 0) : 0; };
     return {
-        weightUsed:  validWeight,
-        co2PerKg:    s("Climate Change")               / validWeight,
-        waterPerKg:  s("Water Use/Scarcity (AWARE)")   / validWeight,
-        landPerKg:   s("Land Use")                     / validWeight,
-        fossilPerKg: s("Resource Use, fossils")        / validWeight
+        weightUsed:          weightKg,
+        co2PerKg:            (pefResults['Climate Change'].total                || 0) / weightKg,
+        waterScarcityPerKg:  (pefResults['Water Use/Scarcity (AWARE)']?.total   || 0) / weightKg,
+        landUsePerKg:        (pefResults['Land Use']?.total                     || 0) / weightKg,
+        fossilPerKg:         (pefResults['Resource Use, fossils']?.total        || 0) / weightKg
     };
 }
+
+
 
 // ================== FACTORY PRIMARY DATA TOGGLE ==================
 function toggleFactoryInputs() {
@@ -619,7 +496,7 @@ window.currentDPPId = window.auditTrailData.dppId;
 };
 
 // ================== ENHANCED CALCULATION ENGINE ==================
-async function calculateImpactEnhanced() {
+async function calculateImpact() {
     if (selectedIngredients.length === 0) { clearResults(); return; }
 
     const loadingElement = document.getElementById('loadingResults');
@@ -627,47 +504,103 @@ async function calculateImpactEnhanced() {
     if (loadingElement) loadingElement.classList.remove('hidden');
     if (resultsContent)  resultsContent.classList.add('hidden');
 
-    setTimeout(async () => {
-        try {
-            const finalResults = await foodCalculationEngine.calculateFoodImpact();
+    const input = {
+        product: {
+            name:               document.getElementById('productName')?.value || 'Unnamed Product',
+            weightKg:           parseFloat(document.getElementById('productWeight')?.value) || 0.2,
+            proteinContent:     parseFloat(document.getElementById('proteinContent')?.value) || 0,
+            concentrationRatio: parseFloat(document.getElementById('concentrationRatio')?.value) || 1.0
+        },
+        ingredients: selectedIngredients.map(ing => ({
+            id:              ing.id,
+            quantityKg:      ing.quantity,
+            originCountry:   ing.originCountry  || 'FR',
+            processingState: ing.processingState || 'raw',
+            physics_note:    ing.physics_note   || '',
+            primaryData:     ing.primaryData    || null
+        })),
+        manufacturing: {
+            country:              document.getElementById('manufacturingCountry')?.value || 'FR',
+            processingMethod:     document.getElementById('processingMethod')?.value     || 'none',
+            energySource:         document.getElementById('energySource')?.value         || 'grid',
+            usePrimaryFactoryData: document.getElementById('usePrimaryFactoryData')?.checked || false,
+            primaryFactoryData:   document.getElementById('usePrimaryFactoryData')?.checked ? {
+                totalKWh:      parseFloat(document.getElementById('factoryTotalKWh')?.value)    || 0,
+                totalGasM3:    parseFloat(document.getElementById('factoryTotalGas')?.value)    || 0,
+                totalOutputKg: parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1
+            } : null
+        },
+        transport: {
+            mode:          document.getElementById('transportMode')?.value                   || 'road',
+            distanceKm:    parseFloat(document.getElementById('transportDistance')?.value)    || 300,
+            refrigeration: document.getElementById('refrigeratedTransport')?.value === 'yes' ? 'chilled'
+                         : document.getElementById('processingMethod')?.value === 'freezing'  ? 'frozen'
+                         : 'ambient',
+            crisisRouting: document.getElementById('crisisRoutingToggle')?.checked || false
+        },
+        packaging: {
+            material:         document.getElementById('packagingMaterial')?.value             || 'cardboard',
+            weightKg:         parseFloat(document.getElementById('packagingWeight')?.value)   || 0.050,
+            recycledPct:      parseFloat(document.getElementById('recycledContent')?.value)   || 30,
+            eolDestination:   document.getElementById('packagingEoL')?.value                  || 'eu_average'
+        },
+        comparison: {
+            baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
+            customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
+            useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false
+        }
+    };
 
+    try {
+        const result = window.calculationEngine.calculate(input);
+
+        // Write globals — SINGLE SOURCE OF TRUTH, no shadow assembly
+        window.finalPefResults           = result.finalPefResults;
+        window.massBalanceData           = result.massBalanceData;
+        window.auditTrailData            = result.auditTrailData;
+        window.currentComparisonBaseline = result.comparison.baseline;
+        window.currentDPPId              = result.auditTrailData.dppId;
+
+        // Persist session state for business-case tab
+        try {
             localStorage.setItem('aioxy_pitch_state', JSON.stringify({
                 ingredients:           selectedIngredients,
-                productName:           document.getElementById('productName')?.value,
+                productName:           input.product.name,
                 volume:                currentAnnualVolume,
-                manufacturingCountry:  document.getElementById('manufacturingCountry')?.value,
-                processingMethod:      document.getElementById('processingMethod')?.value,
-                transportMode:         document.getElementById('transportMode')?.value,
-                transportDistance:     document.getElementById('transportDistance')?.value,
-                packagingMaterial:     document.getElementById('packagingMaterial')?.value,
-                energySource:          document.getElementById('energySource')?.value,
-                usePrimaryFactoryData: document.getElementById('usePrimaryFactoryData')?.checked,
-                factoryTotalKWh:       document.getElementById('factoryTotalKWh')?.value,
-                factoryTotalOutput:    document.getElementById('factoryTotalOutput')?.value,
-                recycledContent:       document.getElementById('recycledContent')?.value,
-                packagingEoL:          document.getElementById('packagingEoL')?.value,
-                crisisRoutingToggle:   document.getElementById('crisisRoutingToggle')?.checked,
+                manufacturingCountry:  input.manufacturing.country,
+                processingMethod:      input.manufacturing.processingMethod,
+                transportMode:         input.transport.mode,
+                transportDistance:     input.transport.distanceKm,
+                packagingMaterial:     input.packaging.material,
+                energySource:          input.manufacturing.energySource,
+                usePrimaryFactoryData: input.manufacturing.usePrimaryFactoryData,
+                recycledContent:       input.packaging.recycledPct,
+                packagingEoL:          input.packaging.eolDestination,
+                crisisRoutingToggle:   input.transport.crisisRouting,
                 timestamp:             Date.now()
             }));
+        } catch(e) { /* localStorage may be unavailable in some environments */ }
 
-            // Only call updateBusinessCase if business-case.js has loaded it
-            const businessTab = document.getElementById('business-case-tab');
-            if (businessTab && !businessTab.classList.contains('hidden')) {
-                if (typeof updateBusinessCase === 'function') updateBusinessCase();
-            }
+        updateResultsUI(result);
 
-        } catch (error) {
-            console.error('💥 Calculation error:', error);
-            alert('Calculation error: ' + error.message);
-        } finally {
-            if (loadingElement) loadingElement.classList.add('hidden');
-            if (resultsContent)  resultsContent.classList.remove('hidden');
+        // Update business-case if visible
+        const businessTab = document.getElementById('business-case-tab');
+        if (businessTab && !businessTab.classList.contains('hidden')) {
+            if (typeof updateBusinessCase === 'function') updateBusinessCase();
         }
-    }, 100);
-}
 
-function calculateImpact() { return calculateImpactEnhanced(); }
+        return result;
 
+    } catch (error) {
+        console.error('💥 Calculation error:', error);
+        alert('Calculation error: ' + error.message);
+        throw error;
+    } finally {
+        if (loadingElement) loadingElement.classList.add('hidden');
+        if (resultsContent)  resultsContent.classList.remove('hidden');
+    }
+            }
+    
 // ================== WORKFLOW: START NEW AUDIT ==================
 function startNewAudit() {
     if (!confirm("Are you sure you want to start a new audit? This will clear all current data.")) return;
