@@ -898,21 +898,25 @@ window.aioxyData.packaging = {
         co2_virgin: 0.86, 
         co2_recycled: 0.49, 
         co2_disposal_average: 0.05,
-        co2_disposal_landfill: 0.12,     // 🆕 ADD THIS
-        co2_disposal_incineration: 0.08,  // 🆕 ADD THIS (biogenic carbon release)
+        co2_disposal_landfill: 0.12,
+        co2_disposal_incineration: 0.08,
         r1_max: 0.92, 
         r2: 0.85, 
-        q: 0.90 
+        q: 0.90,
+        aFactor: 0.2,          // ← ADD THIS (PEF default for paper/cardboard)
+        fossilFraction: 0.0    // ← ADD THIS (biogenic material)
     },
     "PET": { 
         co2_virgin: 3.10, 
         co2_recycled: 1.50, 
         co2_disposal_average: 0.04,
-        co2_disposal_landfill: 0.02,      // 🆕 ADD THIS (inert in landfill)
-        co2_disposal_incineration: 2.80,  // 🆕 ADD THIS (fossil carbon release)
+        co2_disposal_landfill: 0.02,
+        co2_disposal_incineration: 2.80,
         r1_max: 0.60, 
         r2: 0.50, 
-        q: 0.95 
+        q: 0.95,
+        aFactor: 0.5,          // ← ADD THIS (PEF default for plastics)
+        fossilFraction: 1.0    // ← ADD THIS (fossil-based plastic)
     },
     "rPET": { 
         co2_virgin: 3.10, 
@@ -922,7 +926,9 @@ window.aioxyData.packaging = {
         co2_disposal_incineration: 2.80,
         r1_max: 1.00, 
         r2: 0.60, 
-        q: 0.95 
+        q: 0.95,
+        aFactor: 0.5,
+        fossilFraction: 1.0
     },
     "HDPE": { 
         co2_virgin: 2.60, 
@@ -932,7 +938,9 @@ window.aioxyData.packaging = {
         co2_disposal_incineration: 2.50,
         r1_max: 0.60, 
         r2: 0.50, 
-        q: 0.90 
+        q: 0.90,
+        aFactor: 0.5,
+        fossilFraction: 1.0
     },
     "LDPE": { 
         co2_virgin: 2.40, 
@@ -942,7 +950,9 @@ window.aioxyData.packaging = {
         co2_disposal_incineration: 2.40,
         r1_max: 0.50, 
         r2: 0.40, 
-        q: 0.90 
+        q: 0.90,
+        aFactor: 0.5,
+        fossilFraction: 1.0
     },
     "PP": { 
         co2_virgin: 2.70, 
@@ -952,17 +962,21 @@ window.aioxyData.packaging = {
         co2_disposal_incineration: 2.60,
         r1_max: 0.60, 
         r2: 0.50, 
-        q: 0.90 
+        q: 0.90,
+        aFactor: 0.5,
+        fossilFraction: 1.0
     },
     "glass": { 
         co2_virgin: 1.40, 
         co2_recycled: 0.75, 
         co2_disposal_average: 0.01,
-        co2_disposal_landfill: 0.00,       // 🆕 Inert - no GHG emissions
-        co2_disposal_incineration: 0.00,   // 🆕 Inert - no GHG emissions
+        co2_disposal_landfill: 0.00,
+        co2_disposal_incineration: 0.00,
         r1_max: 0.95, 
         r2: 0.90, 
-        q: 1.00 
+        q: 1.00,
+        aFactor: 0.2,          // ← ADD THIS (PEF default for glass/metals)
+        fossilFraction: 0.0    // ← ADD THIS (inert mineral)
     },
     "aluminum": { 
         co2_virgin: 16.6, 
@@ -972,7 +986,9 @@ window.aioxyData.packaging = {
         co2_disposal_incineration: 0.00,
         r1_max: 0.95, 
         r2: 0.90, 
-        q: 1.00 
+        q: 1.00,
+        aFactor: 0.2,
+        fossilFraction: 0.0
     },
     "steel": { 
         co2_virgin: 2.50, 
@@ -982,30 +998,35 @@ window.aioxyData.packaging = {
         co2_disposal_incineration: 0.00,
         r1_max: 0.95, 
         r2: 0.90, 
-        q: 1.00 
+        q: 1.00,
+        aFactor: 0.2,
+        fossilFraction: 0.0
     },
     "PLA": { 
         co2_virgin: 2.50, 
         co2_recycled: 1.80, 
         co2_disposal_average: 0.00,
-        co2_disposal_landfill: 0.05,       // 🆕 Bioplastic degrades slowly
-        co2_disposal_incineration: 0.10,   // 🆕 Biogenic carbon release
+        co2_disposal_landfill: 0.05,
+        co2_disposal_incineration: 0.10,
         r1_max: 0.10, 
         r2: 0.01, 
-        q: 0.80 
+        q: 0.80,
+        aFactor: 0.5,
+        fossilFraction: 0.0   // ← bioplastic, biogenic carbon
     },
     "paper": { 
         co2_virgin: 1.10, 
         co2_recycled: 0.70, 
         co2_disposal_average: 0.05,
-        co2_disposal_landfill: 0.15,       // 🆕 Methane from decomposition
-        co2_disposal_incineration: 0.08,   // 🆕 Biogenic carbon release
+        co2_disposal_landfill: 0.15,
+        co2_disposal_incineration: 0.08,
         r1_max: 0.80, 
         r2: 0.75, 
-        q: 0.85 
+        q: 0.85,
+        aFactor: 0.2,
+        fossilFraction: 0.0
     }
 };
-
 window.aioxyData.crop_classes = {
     "cereal":   { global_yield: 4100, water_intensity: 0.5, n_demand: 0.025, name: "Cereal (Wheat, Maize, Rice)" },
     "pulse":    { global_yield: 1800, water_intensity: 0.3, n_demand: 0.000, name: "Pulse (Pea, Bean, Soy)" },
