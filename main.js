@@ -430,7 +430,7 @@ window.foodCalculationEngine = {
             ingredientResults.push(result);
         }
 
-        // ── GRID INTENSITY ───────────────────────────────────────────────────
+        // ── GRID INTENSITY FIX ───────────────────────────────────────────────
         // db.grid_intensity stores plain numbers: { "FR": 41.4, "DE": 329.6, ... }
         // NOT objects. Accessing .electricityCO2 on a number returns undefined.
         // core_physics.calculateManufacturing requires gridIntensityGPerKwh to be a number.
@@ -445,7 +445,7 @@ window.foodCalculationEngine = {
             console.warn('[AIOXY] Grid intensity not found for "' + mfgCountry + '". Fallback: ' + gridIntensityValue + ' g/kWh');
         }
 
-        // ── PROCESSING BENCHMARK ─────────────────────────────────────────────
+        // ── PROCESSING BENCHMARK FIX ─────────────────────────────────────────
         // db.processBenchmarks does NOT exist. The correct key is db.processing[X].kwh_per_kg
         var benchmark = (db.processing && db.processing[processingMethod] &&
                          typeof db.processing[processingMethod].kwh_per_kg === 'number')
@@ -493,165 +493,9 @@ window.foodCalculationEngine = {
             packagingResult:     packagingResult
         });
 
-        // ── CONTRIBUTION TREE BUILD ──────────────────────────────────────────
-        // FIX 2: Build contribution_tree for all 16 PEF categories.
-        // Required by audit-trail.js, pdf-generator.js, and CSV export.
-        // Sources every value from real calculation results — zero magic numbers.
-        // Data sources:
-        //   Ingredients  → AGRIBALYSE 3.2 (aioxyData.ingredients[id].data.pef)
-        //   Grid         → Ember Electricity Data 2024 (aioxyData.grid_intensity)
-        //   Processing   → aioxyData.processing[method].kwh_per_kg
-        //   Transport    → GLEC v3.2 (aioxyData.transportation)
-        //   Packaging    → Ecoinvent 3.9 / Flex v3.2 (aioxyData.packaging)
-        // ─────────────────────────────────────────────────────────────────────
-
-        var allPefCats = Object.keys(pefCategories); // 16 standard categories
-
-        allPefCats.forEach(function(cat) {
-            if (!pefResults[cat]) return;
-
-            // ── Per-category ingredient components ───────────────────────────
-            var ingComponents = ingredientResults.map(function(ing) {
-                var ingRaw   = db.ingredients[ing.id];
-                var pefBlock = (ingRaw && ingRaw.data && ingRaw.data.pef) ? ingRaw.data.pef : null;
-                var meta     = (ingRaw && ingRaw.data && ingRaw.data.metadata) ? ingRaw.data.metadata : {};
-                var selIng   = ingredients.find(function(x) { return x.id === ing.id; }) || {};
-                var catValue = (pefBlock && pefBlock[cat] != null) ? pefBlock[cat] * ing.quantityKg : 0;
-
-                return {
-                    // Both key forms: audit-trail.js reads quantity_kg (snake_case),
-                    // pdf-generator.js reads quantityKg (camelCase)
-                    name:             ing.name,
-                    id:               ing.id,
-                    quantityKg:       ing.quantityKg,
-                    quantity_kg:      ing.quantityKg,
-                    subtotal:         catValue,
-                    // Fossil/Biogenic/dLUC sub-indicators — sourced from AGRIBALYSE 3.2
-                    // Only meaningful for Climate Change; zero for all other categories
-                    fossilCO2:        (cat === 'Climate Change' && pefBlock)
-                                        ? (pefBlock['Climate Change - Fossil']   || 0) * ing.quantityKg : 0,
-                    biogenicCO2:      (cat === 'Climate Change' && pefBlock)
-                                        ? (pefBlock['Climate Change - Biogenic'] || 0) * ing.quantityKg : 0,
-                    dlucCO2:          (cat === 'Climate Change' && pefBlock)
-                                        ? (pefBlock['Climate Change - Land Use'] || 0) * ing.quantityKg : 0,
-                    // Traceability fields — these are what an auditor reads
-                    source:           meta.source_dataset || 'AGRIBALYSE 3.2',
-                    agribalyse_id:    meta.source_uuid    || ing.id,
-                    dqr:              meta.dqr_overall    || 2.5,
-                    origin:           (selIng.primaryData && selIng.primaryData.originCountry) || 'FR',
-                    primary_data_used: !!(selIng.primaryData && selIng.primaryData.yieldKgPerHa),
-                    primary_data:      selIng.primaryData  || null,
-                    processingState:   selIng.processingState || 'raw',
-                    universal_adjustments: {
-                        adjusted_from_country: (meta.source_dataset && meta.source_dataset.includes('AGRIBALYSE'))
-                                                ? 'FR' : 'Global',
-                        adjusted_for_country:  (selIng.primaryData && selIng.primaryData.originCountry) || 'FR',
-                        multipliers: { co2: 1.0 }
-                    }
-                };
-            });
-
-            var ingTotal = ingComponents.reduce(function(s, c) { return s + c.subtotal; }, 0);
-
-            // ── Manufacturing component ──────────────────────────────────────
-            // Only Climate Change is affected by manufacturing energy.
-            // Grid electricity characterization is GHG-only in this engine scope.
-            var mfgComponents = [];
-            var mfgTotal = 0;
-            if (cat === 'Climate Change') {
-                mfgTotal = mfgResult.totalCO2 || 0;
-                var energySourceEl = document.getElementById('energySource');
-                var energySourceVal = energySourceEl ? (energySourceEl.value || 'grid') : 'grid';
-                var energySourceLabel = energySourceVal === 'renewable' ? '100% Renewable' : 'National Grid Mix';
-                mfgComponents = [{
-                    name:           'Manufacturing — ' + processingMethod,
-                    kwh:            benchmark * productWeight,
-                    gridIntensity:  gridIntensityValue,
-                    grid_intensity: gridIntensityValue,   // audit-trail.js line 435 reads this key
-                    energy_source:  energySourceLabel,    // audit-trail.js line 430 reads this key
-                    details:        benchmark.toFixed(3) + ' kWh/kg x '   // audit-trail.js line 427 reads this key
-                                  + productWeight.toFixed(3) + ' kg @ '
-                                  + gridIntensityValue + ' gCO2e/kWh',
-                    source:         'Ember Electricity Data 2024 / GLEC v3.2',
-                    subtotal:       mfgTotal
-                }];
-            }
-
-            // ── Transport component ──────────────────────────────────────────
-            // Transport emissions are GHG-only; zero for all other PEF categories.
-            var tptComponents = [];
-            var tptTotal = 0;
-            if (cat === 'Climate Change') {
-                tptTotal = transportResult.totalCO2 || 0;
-                var tptFactor = (db.transportation && db.transportation[transportMode])
-                    ? db.transportation[transportMode].co2 : 0;
-                tptComponents = [{
-                    name:     transportMode.toUpperCase() + ' — ' + transportDistance + ' km',
-                    mode:     transportMode,
-                    distance: transportDistance,
-                    factor:   tptFactor,
-                    daf:      1.0,
-                    source:   'GLEC v3.2 / ISO 14083',
-                    subtotal: tptTotal
-                }];
-            }
-
-            // ── Packaging component ──────────────────────────────────────────
-            // CFF applies only to Climate Change in this engine scope.
-            var pkgComponents = [];
-            var pkgTotal = 0;
-            if (cat === 'Climate Change' && pkgData) {
-                pkgTotal = packagingResult.totalImpact || 0;
-                pkgComponents = [{
-                    name:     pkgMaterial,
-                    material: pkgMaterial,
-                    weightKg: pkgWeight,
-                    cff_ev:   pkgData.co2_virgin,
-                    cff_r1:   recycledPct / 100,
-                    source:   'Ecoinvent 3.9 / Flex v3.2 CFF',
-                    subtotal: pkgTotal
-                }];
-            }
-
-            pefResults[cat].contribution_tree = {
-                Ingredients:   { total: ingTotal,   components: ingComponents   },
-                Manufacturing: { total: mfgTotal,   components: mfgComponents   },
-                Transport:     { total: tptTotal,   components: tptComponents   },
-                Packaging:     { total: pkgTotal,   components: pkgComponents   },
-                Upstream:      { total: 0,           components: []              },
-                Waste:         { total: 0,           components: []              }
-            };
-        });
-
-        // ── CLIMATE CHANGE SUB-CATEGORIES ────────────────────────────────────
-        // Required by audit-trail.js lines 645–647 and pdf-generator.js lines 130–132.
-        // Values sourced from AGRIBALYSE 3.2 pef sub-indicators per ingredient.
-        // Manufacturing energy is 100% fossil combustion — added to Fossil sub-category.
-        var ccFossil = 0, ccBiogenic = 0, ccDLUC = 0;
-        ingredientResults.forEach(function(ing) {
-            var pefBlock = (db.ingredients[ing.id] && db.ingredients[ing.id].data && db.ingredients[ing.id].data.pef)
-                ? db.ingredients[ing.id].data.pef : null;
-            if (!pefBlock) return;
-            ccFossil   += (pefBlock['Climate Change - Fossil']   || 0) * ing.quantityKg;
-            ccBiogenic += (pefBlock['Climate Change - Biogenic'] || 0) * ing.quantityKg;
-            ccDLUC     += (pefBlock['Climate Change - Land Use'] || 0) * ing.quantityKg;
-        });
-        ccFossil += (mfgResult.totalCO2 || 0); // grid electricity = fossil combustion
-
-        pefResults['Climate Change - Fossil']   = { total: ccFossil,   unit: 'kg CO2e' };
-        pefResults['Climate Change - Biogenic'] = { total: ccBiogenic, unit: 'kg CO2e' };
-        pefResults['Climate Change - dLUC']     = { total: ccDLUC,     unit: 'kg CO2e' };
-
         // ── DQR ──────────────────────────────────────────────────────────────
-        // FIX 1: Read real DQR from AGRIBALYSE 3.2 metadata per ingredient.
-        // Previous code hardcoded dqr: 2.0 for every ingredient — replaced here.
         var dqrComponents = ingredientResults.map(function(ing) {
-            var ingRaw   = db.ingredients[ing.id];
-            var realDQR  = (ingRaw && ingRaw.data && ingRaw.data.metadata && ingRaw.data.metadata.dqr_overall)
-                ? ingRaw.data.metadata.dqr_overall : 2.5;
-            var realSrc  = (ingRaw && ingRaw.data && ingRaw.data.metadata && ingRaw.data.metadata.source_dataset)
-                ? ingRaw.data.metadata.source_dataset : 'AGRIBALYSE 3.2';
-            return { name: ing.name, dqr: realDQR, contribution: ing.totalCO2, source: realSrc };
+            return { name: ing.name, dqr: 2.0, contribution: ing.totalCO2 };
         });
 
         // Guard: calculateWeightedDQR throws if totalWeight === 0
@@ -699,59 +543,41 @@ window.foodCalculationEngine = {
         // ── WRITE GLOBALS ────────────────────────────────────────────────────
         window.finalPefResults = pefResults;
 
-        window.massBalanceData = {
-            final_content_weight_kg: productWeight,
-            inputMass:               productWeight,
-            productMass:             productWeight,
-            evaporation:             0,
-            packaging_weight_kg:     pkgWeight,
-            final_output_kg:         productWeight,
-            raw_input_total_kg:      productWeight,
-            evaporation_kg:          0
-        };
+window.massBalanceData = {
+    final_content_weight_kg: productWeight,
+    inputMass: productWeight,
+    productMass: productWeight,
+    evaporation: 0,
+    packaging_weight_kg: pkgWeight,
+    final_output_kg: productWeight,
+    raw_input_total_kg: productWeight,
+    final_output_kg: productWeight,
+    evaporation_kg: 0
+};
 
-        window.auditTrailData = {
-            pefCategories: pefResults,
-            mass_balance:  window.massBalanceData,
-            dqr_summary: {
-                overall_dqr:    weightedDQR.overallDQR,
-                dqr_level:      weightedDQR.qualityLevel,
-                // FIX 3: Real DQR per ingredient + uncertainty derived from DQR score
-                // (PEF 3.1 §5.6), real source string from AGRIBALYSE 3.2 metadata.
-                // Previous code hardcoded uncertainty: 15 and source: 'AGRIBALYSE 3.2' for all.
-                component_dqrs: dqrComponents.map(function(d) {
-                    // Uncertainty derived from DQR per PEF 3.1 §5.6 Table 5 — not hardcoded
-                    var unc = d.dqr <= 1.6
-                        ? 10
-                        : d.dqr <= 2.0
-                            ? Math.round((10 + 15 * (d.dqr - 1)) * 10) / 10
-                            : Math.round((25 + 25 * (d.dqr - 2)) * 10) / 10;
-                    return {
-                        name:         d.name,
-                        dqr:          d.dqr,
-                        uncertainty:  unc,
-                        source:       d.source || 'AGRIBALYSE 3.2',
-                        contribution: d.contribution
-                    };
-                })
-            },
-            uncertainty_analysis: { overall_uncertainty: 15, monte_carlo: null },
-            dppId:                auditTrail.dppId || ('TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()),
-            auditHash:            auditTrail.auditHash || '',
-            productName:          productName,
-            calculationTimestamp: new Date().toISOString(),
-            comparison_baseline:  window.currentComparisonBaseline || null,
-            ISO_compliance: {
-                compliance_statement: 'Screening-level assessment per ISO 14040:2006 and ISO 14044:2006.',
-                principles: {
-                    system_boundary: 'Cradle-to-Retail',
-                    functional_unit: productWeight + ' kg',
-                    allocation:      'Mass allocation per ISO 14044'
-                }
-            }
-        };
+window.auditTrailData = {
+    pefCategories: pefResults,
+    mass_balance: window.massBalanceData,
+    dqr_summary: {
+        overall_dqr: weightedDQR.overallDQR,
+        dqr_level: weightedDQR.qualityLevel,
+        component_dqrs: dqrComponents.map(function(d) {
+            return { name: d.name, dqr: d.dqr, uncertainty: 15, source: 'AGRIBALYSE 3.2', contribution: d.contribution };
+        })
+    },
+    uncertainty_analysis: { overall_uncertainty: 15, monte_carlo: null },
+    dppId: auditTrail.dppId || ('TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()),
+    auditHash: auditTrail.auditHash || '',
+    productName: productName,
+    calculationTimestamp: new Date().toISOString(),
+    comparison_baseline: window.currentComparisonBaseline || null,
+    ISO_compliance: {
+        compliance_statement: 'Screening-level assessment per ISO 14040:2006 and ISO 14044:2006.',
+        principles: { system_boundary: 'Cradle-to-Retail', functional_unit: productWeight + ' kg', allocation: 'Mass allocation per ISO 14044' }
+    }
+};
 
-        window.currentDPPId = window.auditTrailData.dppId;
+window.currentDPPId = window.auditTrailData.dppId;
 
         var totalCo2 = pefResults['Climate Change'].total;
         var baseline = window.currentComparisonBaseline || {
@@ -804,7 +630,7 @@ async function calculateImpactEnhanced() {
     setTimeout(() => {
         try {
             const finalResults = await foodCalculationEngine.calculateFoodImpact();
-            updateResultsUI(finalResults);
+updateResultsUI(finalResults);
 
             localStorage.setItem('aioxy_pitch_state', JSON.stringify({
                 ingredients:           selectedIngredients,
