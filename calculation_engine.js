@@ -647,6 +647,64 @@
                 flatPef['Resource Use, fossils']         *= co2Mult;
             }
 
+            // === USEtox 2.14: Substance-specific pesticide toxicity ===
+if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
+    const usetoxDB = window.aioxyData.usetox;
+    if (usetoxDB && usetoxDB.human_toxicity && usetoxDB.ecotoxicity) {
+        const areaHarvested = ingredient.quantityKg / pd.yieldKgPerHa;
+        
+        let totalCancerCTUh = 0;
+        let totalNonCancerCTUh = 0;
+        let totalEcotoxicityCTUe = 0;
+        const pesticideDetails = [];
+        
+        for (const pesticide of pd.pesticides) {
+            const cas = (pesticide.cas || '').trim();
+            const rate = pesticide.rateKgPerHa || 0;
+            const amountApplied = rate * areaHarvested;
+            
+            const htCF = usetoxDB.human_toxicity[cas];
+            const ecoCF = usetoxDB.ecotoxicity[cas];
+            
+            if (htCF || ecoCF) {
+                const cancer = htCF ? (amountApplied * (htCF.cancer_CTUh_per_kg || 0)) : 0;
+                const noncancer = htCF ? (amountApplied * (htCF.noncancer_CTUh_per_kg || 0)) : 0;
+                const ecotox = ecoCF ? (amountApplied * ecoCF) : 0;
+                
+                totalCancerCTUh += cancer;
+                totalNonCancerCTUh += noncancer;
+                totalEcotoxicityCTUe += ecotox;
+                
+                pesticideDetails.push({
+                    name: pesticide.name || 'Unknown',
+                    cas: cas,
+                    rateKgPerHa: rate,
+                    amountAppliedKg: amountApplied,
+                    cancer_CTUh: cancer,
+                    noncancer_CTUh: noncancer,
+                    ecotoxicity_CTUe: ecotox
+                });
+            }
+        }
+        
+        if (totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0) {
+            flatPef['Human Toxicity, cancer'] = totalCancerCTUh / ingredient.quantityKg;
+            flatPef['Human Toxicity, non-cancer'] = totalNonCancerCTUh / ingredient.quantityKg;
+            flatPef['Ecotoxicity, freshwater'] = totalEcotoxicityCTUe / ingredient.quantityKg;
+        }
+        
+        adjustments.usetox_applied = {
+            applied: totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0,
+            source: 'USEtox 2.14',
+            area_harvested_ha: areaHarvested,
+            total_cancer_CTUh: totalCancerCTUh,
+            total_noncancer_CTUh: totalNonCancerCTUh,
+            total_ecotoxicity_CTUe: totalEcotoxicityCTUe,
+            pesticides: pesticideDetails
+        };
+    }
+}
+
             // 1f. Apply processing archetype
             let processingMultiplier = 1.0;
             if (ingredient.processingState && ingredient.processingState !== 'raw') {
