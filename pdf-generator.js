@@ -149,7 +149,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const hasPrimaryData = ccTree.Ingredients?.components?.some(c => c.primary_data_used);
         
         // PEF Single Score - from engine
-        const singleScorePDF = calculatePEFSingleScore(finalPefResults, pWeightKg);
+        const singleScorePDF = window.auditTrailData?.pef_single_score
+    || calculatePEFSingleScore(finalPefResults, pWeightKg);
         const mPt = singleScorePDF.singleScore;
         let ecoGrade = mPt < 150 ? 'A' : mPt < 250 ? 'B' : mPt < 400 ? 'C' : mPt < 600 ? 'D' : 'E';
         const ecoColor = ecoGrade === 'A' ? '#2A9D8F' : ecoGrade === 'B' ? '#8AB17D' : ecoGrade === 'C' ? '#E9C46A' : ecoGrade === 'D' ? '#F4A261' : '#E63946';
