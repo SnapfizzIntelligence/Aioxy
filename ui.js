@@ -1269,6 +1269,15 @@ function openSupplierModal(index) {
     document.getElementById('primaryYield').value = '';
     document.getElementById('supplierWaterSource').value = '';
     document.getElementById('supplierPractice').value = '';
+    document.getElementById('pesticide1Name').value = '';
+    document.getElementById('pesticide1CAS').value = '';
+    document.getElementById('pesticide1Rate').value = '';
+    document.getElementById('pesticide2Name').value = '';
+    document.getElementById('pesticide2CAS').value = '';
+    document.getElementById('pesticide2Rate').value = '';
+    document.getElementById('pesticide3Name').value = '';
+    document.getElementById('pesticide3CAS').value = '';
+    document.getElementById('pesticide3Rate').value = '';
 
     if (ingredient.primaryData) {
         document.getElementById('supplierFarmRegion').value = ingredient.primaryData.farmRegion || '';
@@ -1278,6 +1287,21 @@ function openSupplierModal(index) {
         document.getElementById('primaryYield').value = ingredient.primaryData.yieldKgPerHa || '';
         document.getElementById('supplierWaterSource').value = ingredient.primaryData.waterSource || '';
         document.getElementById('supplierPractice').value = ingredient.primaryData.farmingPractice || '';
+        // Populate pesticide fields if they exist
+        if (ingredient.primaryData.pesticides) {
+            var pest1 = ingredient.primaryData.pesticides[0] || {};
+            var pest2 = ingredient.primaryData.pesticides[1] || {};
+            var pest3 = ingredient.primaryData.pesticides[2] || {};
+            document.getElementById('pesticide1Name').value = pest1.name || '';
+            document.getElementById('pesticide1CAS').value = pest1.cas || '';
+            document.getElementById('pesticide1Rate').value = pest1.rateKgPerHa || '';
+            document.getElementById('pesticide2Name').value = pest2.name || '';
+            document.getElementById('pesticide2CAS').value = pest2.cas || '';
+            document.getElementById('pesticide2Rate').value = pest2.rateKgPerHa || '';
+            document.getElementById('pesticide3Name').value = pest3.name || '';
+            document.getElementById('pesticide3CAS').value = pest3.cas || '';
+            document.getElementById('pesticide3Rate').value = pest3.rateKgPerHa || '';
+        }
     }
     
     if (modal) modal.classList.remove('hidden');
@@ -1305,6 +1329,17 @@ function saveSupplierData() {
         return;
     }
     
+    // Collect pesticides
+    var pesticides = [];
+    for (var i = 1; i <= 3; i++) {
+        var name = document.getElementById('pesticide' + i + 'Name').value.trim();
+        var cas = document.getElementById('pesticide' + i + 'CAS').value.trim();
+        var rate = parseFloat(document.getElementById('pesticide' + i + 'Rate').value);
+        if (name && cas && !isNaN(rate) && rate > 0) {
+            pesticides.push({ name: name, cas: cas, rateKgPerHa: rate });
+        }
+    }
+
     selectedIngredients[currentIngredientIndex].primaryData = {
         farmRegion,
         geolocation,
@@ -1313,6 +1348,7 @@ function saveSupplierData() {
         yieldKgPerHa: yieldVal,
         waterSource,
         farmingPractice: practice,
+        pesticides: pesticides.length > 0 ? pesticides : null,
         timestamp: new Date().toISOString()
     };
 
@@ -1321,7 +1357,7 @@ function saveSupplierData() {
     closeSupplierModal();
     
     console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex]?.name}`);
-}
+        }
 
 function generateSupplierLink() {
     if (currentIngredientIndex === null) {
