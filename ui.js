@@ -226,8 +226,8 @@ function updateResultsUI(results) {
     // 🚀 FRONT-OF-PACK (FOP) ECO-SCORE ENGINE (ADEME/PEF 3.1)
     // =====================================================================
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
-    const singleScoreData = calculatePEFSingleScore(results.finalPefResults, productWeightKg);
-    const mPtScore = singleScoreData.singleScore; 
+    const singleScoreData = window.auditTrailData?.pef_single_score || { singleScore: 0 };
+    const mPtScore = singleScoreData.singleScore;
 
     // Strictly aligned with ADEME / PEF 3.1 Eco-Score thresholds (µPt per kg)
     let ecoGrade = 'E';
@@ -443,7 +443,11 @@ function updateResultsUI(results) {
     
     // =========== INTEGRATION POINT: CALL ALL FIXES ===========
     displayPEFSingleScore();
+    if (window.auditTrailData?.temporal_discounting) {
+    displayTemporalDiscounting(window.auditTrailData.temporal_discounting);
+} else {
     displayTemporalDiscounting();
+                                     }
     displayForegroundBackground();
     displayCompleteAuditTrail();
     displayISOCompliance();
@@ -713,11 +717,8 @@ function displayPEFSingleScore() {
     const resultsContent = document.getElementById('resultsContent');
     if (!resultsContent || !finalPefResults || Object.keys(finalPefResults).length === 0) return;
 
-    const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
-    const productWeightKg = unified.weightUsed;
+    const singleScoreResult = window.auditTrailData?.pef_single_score || { singleScore: 0 };
     
-    const singleScoreResult = calculatePEFSingleScore(finalPefResults, productWeightKg);
-
     let singleScoreSection = document.getElementById('pefSingleScoreSection');
     if (!singleScoreSection) {
         singleScoreSection = document.createElement('div');
