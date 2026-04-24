@@ -967,38 +967,28 @@ if (ccTree.Ingredients?.components) {
         const processingName = archetype?.name || 'Raw (Farm Gate)';
         const yieldFactor = (ing.yieldFactor || archetype?.yield_factor || 1.0).toFixed(2);
         
-        // Get the FULL PEF data from the original Agribalyse ingredient
-        const ingData = window.aioxyData?.ingredients?.[ing.id];
-        const pef = ingData?.data?.pef || {};
-        
-        // Get multipliers from physics engine (applied when primary data exists)
-        const co2Multiplier = ing.universal_adjustments?.multipliers?.co2 || 1.0;
-        const landMultiplier = ing.universal_adjustments?.multipliers?.land || 1.0;
-        const waterMultiplier = ing.universal_adjustments?.multipliers?.water || 1.0;
-        const fossilMultiplier = ing.universal_adjustments?.multipliers?.fossil || 1.0;
-        
-        // Extract all 16 PEF categories from Agribalyse and apply multipliers
-        const climate = (pef["Climate Change"] || 0) * co2Multiplier * ing.quantity_kg;
-        const ozone = (pef["Ozone Depletion"] || 0) * co2Multiplier * ing.quantity_kg;
-        const htc = (pef["Human Toxicity, cancer"] || 0) * co2Multiplier * ing.quantity_kg;
-        const htnc = (pef["Human Toxicity, non-cancer"] || 0) * co2Multiplier * ing.quantity_kg;
-        const pm = (pef["Particulate Matter"] || 0) * co2Multiplier * ing.quantity_kg;
-        const ir = (pef["Ionizing Radiation"] || 0) * co2Multiplier * ing.quantity_kg;
-        const pof = (pef["Photochemical Ozone Formation"] || 0) * co2Multiplier * ing.quantity_kg;
-        const acid = (pef["Acidification"] || 0) * co2Multiplier * ing.quantity_kg;
-        const eut_t = (pef["Eutrophication, terrestrial"] || 0) * co2Multiplier * ing.quantity_kg;
-        const eut_f = (pef["Eutrophication, freshwater"] || 0) * co2Multiplier * ing.quantity_kg;
-        const eut_m = (pef["Eutrophication, marine"] || 0) * co2Multiplier * ing.quantity_kg;
-        const eco = (pef["Ecotoxicity, freshwater"] || 0) * co2Multiplier * ing.quantity_kg;
-        const land = (pef["Land Use"] || 0) * landMultiplier * ing.quantity_kg;
-        const water = (pef["Water Use/Scarcity (AWARE)"] || 0) * waterMultiplier * ing.quantity_kg;
-        const mineral = (pef["Resource Use, minerals/metals"] || 0) * co2Multiplier * ing.quantity_kg;
-        const fossil = (pef["Resource Use, fossils"] || 0) * fossilMultiplier * ing.quantity_kg;
-        
-        // READ FROM ENGINE - NO RECALCULATION. ZERO IF MISSING.
-const fossilCO2 = ing.fossilCO2 || 0;
+// READ ALL 16 CATEGORY VALUES FROM ENGINE — ZERO SHADOW CALCULATION
+const allCats = ing.allCategoryResults || {};
+
+const climate  = allCats['Climate Change']                || 0;
+const ozone    = allCats['Ozone Depletion']               || 0;
+const htc      = allCats['Human Toxicity, cancer']        || 0;
+const htnc     = allCats['Human Toxicity, non-cancer']    || 0;
+const pm       = allCats['Particulate Matter']            || 0;
+const ir       = allCats['Ionizing Radiation']            || 0;
+const pof      = allCats['Photochemical Ozone Formation'] || 0;
+const acid     = allCats['Acidification']                 || 0;
+const eut_t    = allCats['Eutrophication, terrestrial']   || 0;
+const eut_f    = allCats['Eutrophication, freshwater']    || 0;
+const eut_m    = allCats['Eutrophication, marine']        || 0;
+const eco      = allCats['Ecotoxicity, freshwater']       || 0;
+const land     = allCats['Land Use']                      || 0;
+const water    = allCats['Water Use/Scarcity (AWARE)']    || 0;
+const mineral  = allCats['Resource Use, minerals/metals'] || 0;
+const fossil   = allCats['Resource Use, fossils']         || 0;
+const fossilCO2   = ing.fossilCO2   || 0;
 const biogenicCO2 = ing.biogenicCO2 || 0;
-const dlucCO2 = ing.dlucCO2 || 0;
+const dlucCO2     = ing.dlucCO2     || 0;
         
 addDataRow(
     "Scope 3 Cat 1 (Purchased Goods)", 
