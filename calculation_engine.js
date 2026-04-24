@@ -489,18 +489,22 @@
             };
         }
 
-        // === STEP F: USEtox 2.14 — traceability note only ===
-        traceability.usetox = {
-            status:          'available_but_not_applied',
-            source:          window.aioxyData.usetox && window.aioxyData.usetox.source
-                                 ? window.aioxyData.usetox.source
-                                 : 'USEtox 2.14',
-            version:         window.aioxyData.usetox && window.aioxyData.usetox.version
-                                 ? window.aioxyData.usetox.version
-                                 : 'EF 3.1',
-            reason:          'USEtox 2.14 database loaded but requires substance-specific emission inventory data (kg pesticide applied per hectare by CAS number). Current primary data form does not collect this information. Agribalyse 3.2 composite toxicity factors used instead.',
-            action_required: 'To enable USEtox, add pesticide application rate fields (CAS number + kg/ha) to the supplier primary data form.'
-        };
+        // === STEP F: USEtox 2.14 — applied only if pesticide data provided ===
+// The traceability.usetox object is already set by processIngredients()
+// if pesticides were applied. Only write the fallback note if it wasn't set.
+if (!traceability.usetox) {
+    traceability.usetox = {
+        status:          'available_but_not_applied',
+        source:          window.aioxyData.usetox && window.aioxyData.usetox.source
+                             ? window.aioxyData.usetox.source
+                             : 'USEtox 2.14',
+        version:         window.aioxyData.usetox && window.aioxyData.usetox.version
+                             ? window.aioxyData.usetox.version
+                             : 'EF 3.1',
+        reason:          'No pesticide application data provided by supplier. Agribalyse 3.2 composite toxicity factors used.',
+        action_required: 'To enable USEtox 2.14 substance-specific toxicity, add pesticide application rate fields (CAS number + kg/ha) in the supplier modal.'
+    };
+}
 
         // Write final country_factors to both adjustments and traceability
         adjustments.country_factors = countryFactorsLog;
