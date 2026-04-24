@@ -113,22 +113,23 @@
         const tree = {};
         for (const cat of ALL_CATEGORIES) {
             const ingComponents = ingredientResults.map(ing => ({
-                name:                   ing.name,
-                id:                     ing.id,
-                quantity_kg:            ing.quantityKg,
-                subtotal:               ing.allCategoryResults[cat] || 0,
-                fossilCO2:              ing.fossilCO2,
-                biogenicCO2:            ing.biogenicCO2,
-                dlucCO2:                ing.dlucCO2,
-                dqr:                    ing.dqr,
-                source:                 ing.source,
-                uuid:                   ing.uuid,
-                processingState:        ing.processingState,
-                primary_data_used:      ing.primary_data_used,
-                primary_data:           ing.primary_data,
-                universal_adjustments:  ing.universal_adjustments,
-                yieldFactor:            ing.yieldFactor
-            }));
+    name:                   ing.name,
+    id:                     ing.id,
+    quantity_kg:            ing.quantityKg,
+    subtotal:               ing.allCategoryResults[cat] || 0,
+    fossilCO2:              ing.fossilCO2,
+    biogenicCO2:            ing.biogenicCO2,
+    dlucCO2:                ing.dlucCO2,
+    dqr:                    ing.dqr,
+    source:                 ing.source,
+    uuid:                   ing.uuid,
+    processingState:        ing.processingState,
+    primary_data_used:      ing.primary_data_used,
+    primary_data:           ing.primary_data,
+    universal_adjustments:  ing.universal_adjustments,
+    yieldFactor:            ing.yieldFactor,
+    allCategoryResults:     ing.allCategoryResults   
+}));
 
             const ingTotal = ingComponents.reduce((s, c) => s + c.subtotal, 0);
 
