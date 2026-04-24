@@ -138,16 +138,28 @@
         if (typeof quantityKg !== 'number' || quantityKg <= CONSTANTS.MATH.ZERO) throw new MissingDataError('quantityKg');
         
         const pef = ingredientData.pef;
+
+        // Extended to ALL 16 EF 3.1 categories + 3 Climate Change sub-splits (19 total)
         const required = [
             'Climate Change',
             'Climate Change - Fossil',
             'Climate Change - Biogenic',
             'Climate Change - Land Use',
-            'Water Use/Scarcity (AWARE)',
-            'Land Use',
-            'Resource Use, fossils',
+            'Ozone Depletion',
+            'Human Toxicity, non-cancer',
+            'Human Toxicity, cancer',
+            'Particulate Matter',
+            'Ionizing Radiation',
+            'Photochemical Ozone Formation',
+            'Acidification',
+            'Eutrophication, terrestrial',
+            'Eutrophication, freshwater',
             'Eutrophication, marine',
-            'Eutrophication, freshwater'
+            'Ecotoxicity, freshwater',
+            'Land Use',
+            'Water Use/Scarcity (AWARE)',
+            'Resource Use, minerals/metals',
+            'Resource Use, fossils'
         ];
         
         for (const field of required) {
@@ -156,25 +168,35 @@
             }
         }
         
-        let totalCO2 = pef['Climate Change'] * quantityKg;
-        let fossilCO2 = pef['Climate Change - Fossil'] * quantityKg;
-        let biogenicCO2 = pef['Climate Change - Biogenic'] * quantityKg;
-        const dlucCO2 = pef['Climate Change - Land Use'] * quantityKg;
-        const totalWater = pef['Water Use/Scarcity (AWARE)'] * quantityKg;
-        const totalLand = pef['Land Use'] * quantityKg;
-        const totalFossil = pef['Resource Use, fossils'] * quantityKg;
-        const marineEutrophication_N = pef['Eutrophication, marine'] * quantityKg;
-        const freshwaterEutrophication_P = pef['Eutrophication, freshwater'] * quantityKg;
+        let totalCO2    = pef['Climate Change']              * quantityKg;
+        let fossilCO2   = pef['Climate Change - Fossil']     * quantityKg;
+        let biogenicCO2 = pef['Climate Change - Biogenic']   * quantityKg;
+        const dlucCO2                  = pef['Climate Change - Land Use']        * quantityKg;
+        const totalWater               = pef['Water Use/Scarcity (AWARE)']       * quantityKg;
+        const totalLand                = pef['Land Use']                          * quantityKg;
+        const totalFossil              = pef['Resource Use, fossils']             * quantityKg;
+        const marineEutrophication_N   = pef['Eutrophication, marine']            * quantityKg;
+        const freshwaterEutrophication_P = pef['Eutrophication, freshwater']      * quantityKg;
+        // New: remaining 10 categories
+        const ozoneDepletion           = pef['Ozone Depletion']                  * quantityKg;
+        const humanToxicityNonCancer   = pef['Human Toxicity, non-cancer']       * quantityKg;
+        const humanToxicityCancer      = pef['Human Toxicity, cancer']           * quantityKg;
+        const particulateMatter        = pef['Particulate Matter']               * quantityKg;
+        const ionizingRadiation        = pef['Ionizing Radiation']               * quantityKg;
+        const photochemicalOzoneFormation = pef['Photochemical Ozone Formation'] * quantityKg;
+        const acidification            = pef['Acidification']                    * quantityKg;
+        const eutrophicationTerrestrial = pef['Eutrophication, terrestrial']     * quantityKg;
+        const ecotoxicityFreshwater    = pef['Ecotoxicity, freshwater']          * quantityKg;
+        const resourceUseMineralsMetals = pef['Resource Use, minerals/metals']   * quantityKg;
         
-        // FIX 1: CF-02 STRICT GUARD - Remove optional chaining, add strict validation
+        // FIX 1: CF-02 STRICT GUARD — unchanged
         var entericIncluded = false;
-if (ingredientData.data && ingredientData.data.metadata && typeof ingredientData.data.metadata.entericIncluded === 'boolean') {
-    entericIncluded = ingredientData.data.metadata.entericIncluded;
-}
-
-if (entericIncluded !== true && entericParams) {
+        if (ingredientData.data && ingredientData.data.metadata && typeof ingredientData.data.metadata.entericIncluded === 'boolean') {
+            entericIncluded = ingredientData.data.metadata.entericIncluded;
+        }
+        if (entericIncluded !== true && entericParams) {
             const entericCO2 = calculateEntericMethane(entericParams);
-            totalCO2 = totalCO2 + entericCO2;
+            totalCO2    = totalCO2    + entericCO2;
             biogenicCO2 = biogenicCO2 + entericCO2;
         }
         
@@ -187,10 +209,21 @@ if (entericIncluded !== true && entericParams) {
             totalLand,
             totalFossil,
             marineEutrophication_N,
-            freshwaterEutrophication_P
+            freshwaterEutrophication_P,
+            // New fields — all 10 previously missing categories
+            ozoneDepletion,
+            humanToxicityNonCancer,
+            humanToxicityCancer,
+            particulateMatter,
+            ionizingRadiation,
+            photochemicalOzoneFormation,
+            acidification,
+            eutrophicationTerrestrial,
+            ecotoxicityFreshwater,
+            resourceUseMineralsMetals
         };
     }
-
+    
     function calculateEntericMethane(params) {
         if (!params) throw new MissingDataError('entericParams');
         if (typeof params.animalType !== 'string') throw new MissingDataError('entericParams.animalType');
@@ -402,15 +435,26 @@ if (entericIncluded !== true && entericParams) {
         if (!transport) throw new MissingDataError('transportResult');
         if (!packaging) throw new MissingDataError('packagingResult');
         
-        let sumCO2 = CONSTANTS.MATH.ZERO;
-        let sumFossil = CONSTANTS.MATH.ZERO;
+        let sumCO2     = CONSTANTS.MATH.ZERO;
+        let sumFossil  = CONSTANTS.MATH.ZERO;
         let sumBiogenic = CONSTANTS.MATH.ZERO;
-        let sumDLUC = CONSTANTS.MATH.ZERO;
-        let sumWater = CONSTANTS.MATH.ZERO;
-        let sumLand = CONSTANTS.MATH.ZERO;
+        let sumDLUC    = CONSTANTS.MATH.ZERO;
+        let sumWater   = CONSTANTS.MATH.ZERO;
+        let sumLand    = CONSTANTS.MATH.ZERO;
         let sumFossilMJ = CONSTANTS.MATH.ZERO;
         let sumMarineN = CONSTANTS.MATH.ZERO;
-        let sumFreshP = CONSTANTS.MATH.ZERO;
+        let sumFreshP  = CONSTANTS.MATH.ZERO;
+        // New accumulators for the 10 previously missing categories
+        let sumOzone       = CONSTANTS.MATH.ZERO;
+        let sumHTNC        = CONSTANTS.MATH.ZERO;
+        let sumHTC         = CONSTANTS.MATH.ZERO;
+        let sumPM          = CONSTANTS.MATH.ZERO;
+        let sumIR          = CONSTANTS.MATH.ZERO;
+        let sumPOF         = CONSTANTS.MATH.ZERO;
+        let sumAcid        = CONSTANTS.MATH.ZERO;
+        let sumEutT        = CONSTANTS.MATH.ZERO;
+        let sumEcoFW       = CONSTANTS.MATH.ZERO;
+        let sumMinerals    = CONSTANTS.MATH.ZERO;
         
         for (const ing of ingredients) {
             if (typeof ing.totalCO2 !== 'number') throw new MissingDataError('ingredient.totalCO2');
@@ -423,36 +467,58 @@ if (entericIncluded !== true && entericParams) {
             if (typeof ing.marineEutrophication_N !== 'number') throw new MissingDataError('ingredient.marineEutrophication_N');
             if (typeof ing.freshwaterEutrophication_P !== 'number') throw new MissingDataError('ingredient.freshwaterEutrophication_P');
             
-            sumCO2 = sumCO2 + ing.totalCO2;
-            sumFossil = sumFossil + ing.fossilCO2;
+            sumCO2      = sumCO2      + ing.totalCO2;
+            sumFossil   = sumFossil   + ing.fossilCO2;
             sumBiogenic = sumBiogenic + ing.biogenicCO2;
-            sumDLUC = sumDLUC + ing.dlucCO2;
-            sumWater = sumWater + ing.totalWater;
-            sumLand = sumLand + ing.totalLand;
+            sumDLUC     = sumDLUC     + ing.dlucCO2;
+            sumWater    = sumWater    + ing.totalWater;
+            sumLand     = sumLand     + ing.totalLand;
             sumFossilMJ = sumFossilMJ + ing.totalFossil;
-            sumMarineN = sumMarineN + ing.marineEutrophication_N;
-            sumFreshP = sumFreshP + ing.freshwaterEutrophication_P;
+            sumMarineN  = sumMarineN  + ing.marineEutrophication_N;
+            sumFreshP   = sumFreshP   + ing.freshwaterEutrophication_P;
+            // New: accumulate 10 previously missing categories (graceful if old callers
+            // pass ingredientResults that don't yet have these fields — defaults to 0)
+            sumOzone    = sumOzone    + (ing.ozoneDepletion            || CONSTANTS.MATH.ZERO);
+            sumHTNC     = sumHTNC     + (ing.humanToxicityNonCancer    || CONSTANTS.MATH.ZERO);
+            sumHTC      = sumHTC      + (ing.humanToxicityCancer       || CONSTANTS.MATH.ZERO);
+            sumPM       = sumPM       + (ing.particulateMatter         || CONSTANTS.MATH.ZERO);
+            sumIR       = sumIR       + (ing.ionizingRadiation         || CONSTANTS.MATH.ZERO);
+            sumPOF      = sumPOF      + (ing.photochemicalOzoneFormation || CONSTANTS.MATH.ZERO);
+            sumAcid     = sumAcid     + (ing.acidification             || CONSTANTS.MATH.ZERO);
+            sumEutT     = sumEutT     + (ing.eutrophicationTerrestrial || CONSTANTS.MATH.ZERO);
+            sumEcoFW    = sumEcoFW    + (ing.ecotoxicityFreshwater     || CONSTANTS.MATH.ZERO);
+            sumMinerals = sumMinerals + (ing.resourceUseMineralsMetals || CONSTANTS.MATH.ZERO);
         }
         
-        const mfgFossilCO2 = mfg.co2 * mfg.fossilFraction;
+        const mfgFossilCO2       = mfg.co2 * mfg.fossilFraction;
         const transportFossilCO2 = transport.total * transport.fossilFraction;
         const packagingFossilCO2 = packaging.fossilImpact;
         const packagingBiogenicCO2 = packaging.biogenicImpact;
         
-        const totalCO2 = sumCO2 + mfg.co2 + transport.total + packaging.totalImpact;
-        const totalFossilCO2 = sumFossil + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
+        const totalCO2        = sumCO2 + mfg.co2 + transport.total + packaging.totalImpact;
+        const totalFossilCO2  = sumFossil + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
         const totalBiogenicCO2 = sumBiogenic + packagingBiogenicCO2;
         
         return {
-            'Climate Change': { total: totalCO2, unit: 'kg CO2e' },
-            'Climate Change - Fossil': { total: totalFossilCO2, unit: 'kg CO2e' },
-            'Climate Change - Biogenic': { total: totalBiogenicCO2, unit: 'kg CO2e' },
-            'Climate Change - Land Use': { total: sumDLUC, unit: 'kg CO2e' },
-            'Water Use/Scarcity (AWARE)': { total: sumWater, unit: 'm³ world eq.' },
-            'Land Use': { total: sumLand, unit: 'Pt' },
-            'Resource Use, fossils': { total: sumFossilMJ + (mfg.kwh * CONSTANTS.UNIT.KWH_TO_MJ), unit: 'MJ' },
-            'Eutrophication, marine': { total: sumMarineN, unit: 'kg N eq' },
-            'Eutrophication, freshwater': { total: sumFreshP, unit: 'kg P eq' }
+            'Climate Change':                  { total: totalCO2,                                              unit: 'kg CO2e'       },
+            'Climate Change - Fossil':         { total: totalFossilCO2,                                        unit: 'kg CO2e'       },
+            'Climate Change - Biogenic':       { total: totalBiogenicCO2,                                      unit: 'kg CO2e'       },
+            'Climate Change - Land Use':       { total: sumDLUC,                                               unit: 'kg CO2e'       },
+            'Ozone Depletion':                 { total: sumOzone,                                              unit: 'kg CFC11e'     },
+            'Human Toxicity, non-cancer':      { total: sumHTNC,                                               unit: 'CTUh'          },
+            'Human Toxicity, cancer':          { total: sumHTC,                                                unit: 'CTUh'          },
+            'Particulate Matter':              { total: sumPM,                                                 unit: 'disease inc.'  },
+            'Ionizing Radiation':              { total: sumIR,                                                 unit: 'kBq U235e'     },
+            'Photochemical Ozone Formation':   { total: sumPOF,                                                unit: 'kg NMVOCe'     },
+            'Acidification':                   { total: sumAcid,                                               unit: 'mol H+e'       },
+            'Eutrophication, terrestrial':     { total: sumEutT,                                               unit: 'mol N e'       },
+            'Eutrophication, freshwater':      { total: sumFreshP,                                             unit: 'kg P e'        },
+            'Eutrophication, marine':          { total: sumMarineN,                                            unit: 'kg N e'        },
+            'Ecotoxicity, freshwater':         { total: sumEcoFW,                                              unit: 'CTUe'          },
+            'Land Use':                        { total: sumLand,                                               unit: 'Pt'            },
+            'Water Use/Scarcity (AWARE)':      { total: sumWater,                                              unit: 'm³ world eq.'  },
+            'Resource Use, minerals/metals':   { total: sumMinerals,                                           unit: 'kg Sb e'       },
+            'Resource Use, fossils':           { total: sumFossilMJ + (mfg.kwh * CONSTANTS.UNIT.KWH_TO_MJ),   unit: 'MJ'            }
         };
     }
 
