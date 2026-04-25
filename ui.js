@@ -1834,4 +1834,9 @@ function displayCompleteAuditTrail() {
 }
 
 // ================== UI.JS LOADED ==================
+// F15 AUDIT CHECK (confirmed): Phase 5 cleanup verified — no stale references to
+// temporal discounting or organic bonus found in this file.
+// · displayTemporalDiscounting — not present
+// · organic_bonus_applied      — not present
+// · organic_ratio (display logic) — not present
 console.log("✅ [AIOXY] ui.js loaded - Interface ready");
