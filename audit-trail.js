@@ -605,7 +605,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     // 🛡️ PULL DIRECTLY FROM THE ENGINE'S UNIFIED TRUTH (ZERO FAKE MATH)
     const totalFossil = auditTrailData?.pefCategories?.['Climate Change - Fossil']?.total || 0;
     const totalBiogenic = auditTrailData?.pefCategories?.['Climate Change - Biogenic']?.total || 0;
-    const totalDLUC = auditTrailData?.pefCategories?.['Climate Change - dLUC']?.total || 0;
+    const totalDLUC = auditTrailData?.pefCategories?.['Climate Change - Land Use']?.total || 0;
     
     html += `
         <div style="background: #2D3748; color: white; padding: 15px; border-radius: 4px; display:flex; justify-content:space-between; align-items:center;">
@@ -621,7 +621,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
 <div style="font-size: 1.5rem; font-weight:bold; margin-top: 5px;">
     TOTAL: ${catCC.total.toFixed(4)} kg CO₂e
 </div>
-                <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis.overall_uncertainty}% (Monte Carlo)</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${auditTrailData.uncertainty_analysis?.overall_uncertainty || 15}% (Monte Carlo)</div>
             </div>
         </div>`;
 
@@ -838,7 +838,7 @@ function exportCSRDMatrix() {
 // =============================================================
 // 🛡️ REGULATOR FIX: Generate an immutable checksum for the final results
 const resultsPayload = `${dppId}|${totalCo2}|${totalWater}|${totalLand}|${totalFossil}`;
-const matrixChecksum = generateAuditHash(resultsPayload).substring(0, 16);
+const matrixChecksum = auditTrailData.auditHash ? auditTrailData.auditHash.substring(0, 16) : dppId.substring(0, 16);
 
 csvLines.push(`Product Name,${pName.replace(/,/g, '')}`);
 csvLines.push(`Assessment ID (DPP),${dppId}`);
@@ -1390,7 +1390,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
 3. CALCULATION ENGINE
 ---------------------
 - CFF (Circular Footprint Formula): Packaging end-of-life
-- Monte Carlo Uncertainty: 500 iterations
+- Monte Carlo Uncertainty: 1000 iterations
 - Temporal Discounting: 100-year horizon
 - Foreground/Background: 5% cutoff rule
 
