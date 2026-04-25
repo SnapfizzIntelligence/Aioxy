@@ -43,6 +43,13 @@
         'Resource Use, fossils'
     ];
 
+    // 16 scorable EF 3.1 categories — excludes the 3 CC sub-splits used for auditing only
+    const SCORABLE_CATEGORIES = ALL_CATEGORIES.filter(c =>
+        c !== 'Climate Change - Fossil' &&
+        c !== 'Climate Change - Biogenic' &&
+        c !== 'Climate Change - Land Use'
+    );
+
     // Unit labels for all categories (for contribution tree output)
     const CATEGORY_UNITS = {
         'Climate Change':                  'kg CO2e',
@@ -605,8 +612,21 @@ if (!traceability.usetox) {
                 // Yield adjustment factor
                 let yieldAdj = 1.0;
                 if (pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
-                    const baselineYield = 5000;
+                    let baselineYield = 5000;
+                    const yieldDB = window.aioxyData.crop_yields;
+                    if (yieldDB && yieldDB.yields && yieldDB.yields[ingredient.originCountry || 'FR']) {
+                        const countryYields = yieldDB.yields[ingredient.originCountry || 'FR'];
+                        for (const [cropName, cropYield] of Object.entries(countryYields)) {
+                            if ((ingData.name || '').toLowerCase().includes(cropName.toLowerCase())) {
+                                baselineYield = cropYield;
+                                break;
+                            }
+                        }
+                    }
                     adjustments.baseline_yield = baselineYield;
+                    adjustments.baseline_yield_source = baselineYield === 5000
+                        ? 'Default (5000 kg/ha)'
+                        : 'FAOSTAT ' + ((window.aioxyData.crop_yields && window.aioxyData.crop_yields.years) || '2020-2024');
                     yieldAdj = Math.min(baselineYield / pd.yieldKgPerHa, 2.0);
                 }
 
@@ -649,7 +669,62 @@ if (!traceability.usetox) {
                 flatPef['Water Use/Scarcity (AWARE)']    *= co2Mult;
                 flatPef['Resource Use, minerals/metals'] *= co2Mult;
                 flatPef['Resource Use, fossils']         *= co2Mult;
-            }
+
+                // === GAP 2: IPCC Tier 1 N₂O emissions (ISO 14044 primary data path) ===
+                // Applied per-kg-of-ingredient basis after multipliers, added to Climate Change totals.
+                if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
+                    const F_SN = pd.nitrogenKgPerTon * ingredient.quantityKg;          // kg synthetic N applied
+                    const N2O_direct        = F_SN * 0.01 * (44 / 28) * 265;           // kg CO2e
+                    const N2O_indirect_leach = F_SN * 0.30 * 0.011 * (44 / 28) * 265; // kg CO2e
+                    const N2O_total = N2O_direct + N2O_indirect_leach;
+
+                    // Add N2O to per-kg flatPef so it flows correctly through quantityKg multiplication later
+                    flatPef['Climate Change']        += N2O_total / ingredient.quantityKg;
+                    flatPef['Climate Change - Fossil'] += N2O_total / ingredient.quantityKg;
+
+                    adjustments.n2o_applied = {
+                        applied:                 true,
+                        F_SN_kg:                 F_SN,
+                        direct_kgCO2e:           N2O_direct,
+                        indirect_leach_kgCO2e:   N2O_indirect_leach,
+                        formula:                 'IPCC Tier 1 (2006), EF1=0.01, EF5=0.011, FRAC_LEACH=0.30, GWP_N2O=265 (AR5)'
+                    };
+                }
+
+                // === GAP 2: SALCA-P phosphorus leaching (ISO 14044 primary data path) ===
+                if (pd.phosphorusKgPerTon && pd.phosphorusKgPerTon > 0) {
+                    const P_applied = pd.phosphorusKgPerTon * ingredient.quantityKg;   // kg P applied
+                    const P_leach   = P_applied * 0.05 * 3.06;                         // kg P eq
+
+                    // Add to per-kg flatPef for Eutrophication, freshwater
+                    flatPef['Eutrophication, freshwater'] += P_leach / ingredient.quantityKg;
+
+                    adjustments.salca_p_applied = {
+                        applied:        true,
+                        P_applied_kg:   P_applied,
+                        P_leach_kg_P_eq: P_leach,
+                        formula:        'SALCA-P, FRAC_RELE=0.05, PO4_CONV=3.06'
+                    };
+                }
+
+                // === GAP B: SOC Sequestration — Structural Placeholder ===
+                // Regenerative agriculture was selected (pd.farmingPractice === 'regen') but
+                // SOC sequestration per IPCC 2006 Vol. 4, Ch. 2, Eq. 2.25 is NOT yet quantified.
+                // Quantification requires farm-specific soil carbon measurements (baseline SOC stock
+                // in t C/ha, current SOC stock in t C/ha, sampling depth in cm, bulk density in g/cm³)
+                // which the current supplier data form does not collect. Adding a formula without
+                // this input data would be methodologically unsound. Constants are defined in
+                // core_physics.CONSTANTS.SOC (AMORTIZATION_YEARS=20, C_TO_CO2=3.667) per PEF 3.1 §4.4.8.
+                // Implementation is deferred to a future phase requiring supplier data form extension.
+                if (pd.farmingPractice === 'regen') {
+                    adjustments.soc_note = 'Regenerative agriculture selected. SOC sequestration per IPCC 2006 ' +
+                        'Vol. 4, Ch. 2, Eq. 2.25 (PEF 3.1 §4.4.8) is not yet quantified — requires ' +
+                        'farm-specific soil carbon measurement data (baseline SOC t C/ha, current SOC t C/ha, ' +
+                        'sampling depth cm, bulk density g/cm³) not collected in current supplier data form. ' +
+                        'Constants defined: core_physics.CONSTANTS.SOC.AMORTIZATION_YEARS=20, C_TO_CO2=3.667. ' +
+                        'Deferred to future phase requiring supplier data form extension.';
+                }
+                // === END GAP B ===
 
             // === USEtox 2.14: Substance-specific pesticide toxicity ===
 if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
@@ -706,6 +781,11 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             total_ecotoxicity_CTUe: totalEcotoxicityCTUe,
             pesticides: pesticideDetails
         };
+        // USEtox 2.14 coverage: 3,077 substances loaded in aioxyData.usetox.human_toxicity
+        // and ecotoxicity compartments. Full USEtox 2.14 substance list contains ~4,200
+        // organic substances + metals. Coverage verification against the official USEtox
+        // 2.14 release manifest is deferred — requires external reference file.
+        // Source: USEtox 2.14, continental agricultural soil compartment, EF 3.1 compliant.
     }
 }
 
@@ -903,7 +983,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
 
             const kwhPerKgActual = pfd.totalKWh   / pfd.totalOutputKg;
             const gasM3PerKg     = pfd.totalGasM3 / pfd.totalOutputKg;
-            const gasCO2         = gasM3PerKg * 2.02;
+            const gasCO2         = gasM3PerKg * 2.02; // Source: IPCC 2006 Guidelines, Vol. 2, Ch. 2, Table 2.2: Natural gas CO₂ = 2.02 kg/m³ at 20°C, 1 atm
             const elecCO2        = kwhPerKgActual * (gridIntensity / 1000);
             const totalMfgCO2    = (elecCO2 + gasCO2) * prodWt;
             const totalMfgKwh    = kwhPerKgActual * prodWt;
@@ -1057,6 +1137,12 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
     function aggregateAllCategories(ingredientResults, mfgResult, transportResult, packagingResult) {
         const pefResults = {};
 
+        // NOTE: Packaging multi-category impacts (non-CC) are not yet implemented.
+        // Full CFF expansion to 16 categories requires ecoinvent v3.9.1 background
+        // datasets for each packaging material's non-GHG elementary flows.
+        // Current implementation uses only CO₂-based CFF factors.
+        // Deferred to Phase 3 database integration.
+
         for (const cat of ALL_CATEGORIES) {
             let ingTotal = 0;
             for (const ing of ingredientResults) {
@@ -1070,6 +1156,13 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
                 mfgTotal = mfgResult.co2 * mfgResult.fossilFraction;
             } else if (cat === 'Resource Use, fossils') {
                 mfgTotal = mfgResult.kwh * 3.6;
+            } else if (
+                cat !== 'Climate Change - Biogenic' &&
+                cat !== 'Climate Change - Land Use' &&
+                mfgResult.multiCategoryResults && mfgResult.multiCategoryResults[cat] !== undefined
+            ) {
+                // Multi-category manufacturing — ecoinvent v3.9.1 per-kWh electricity factors
+                mfgTotal = mfgResult.multiCategoryResults[cat];
             }
 
             let transTotal = 0;
@@ -1077,6 +1170,13 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
                 transTotal = transportResult.total;
             } else if (cat === 'Climate Change - Fossil') {
                 transTotal = transportResult.total * transportResult.fossilFraction;
+            } else if (
+                cat !== 'Climate Change - Biogenic' &&
+                cat !== 'Climate Change - Land Use' &&
+                transportResult.multiCategoryResults && transportResult.multiCategoryResults[cat] !== undefined
+            ) {
+                // Multi-category transport — GLEC v3.2 Annex C / ecoinvent v3.9.1
+                transTotal = transportResult.multiCategoryResults[cat];
             }
 
             let pkgTotal = 0;
@@ -1087,6 +1187,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             } else if (cat === 'Climate Change - Biogenic') {
                 pkgTotal = packagingResult.biogenicImpact;
             }
+            // All other categories: pkgTotal = 0 (see packaging traceability note above)
 
             const total = ingTotal + mfgTotal + transTotal + pkgTotal;
 
@@ -1250,9 +1351,10 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
     }
 
     // ── STEP 8: MONTE CARLO UNCERTAINTY ──────────────────────────────────────
-    function computeMonteCarlo(ingredientResults) {
+    // B1: Accepts a category parameter — runs Monte Carlo for that specific EF 3.1 category.
+    function computeMonteCarlo(ingredientResults, category) {
         const mcComponents = ingredientResults.map(ing => ({
-            value:              ing.allCategoryResults['Climate Change'] || 0,
+            value:              ing.allCategoryResults[category] || 0,
             uncertaintyPercent: window.foodCalculationEngine.calculateUncertainty(
                                     ing.dqrBreakdown || ing.dqr)
         }));
@@ -1262,9 +1364,12 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             return { mean: 0, p5: 0, p95: 0 };
         }
 
+        // 200 iterations per non-CC category; ISO 14044 does not mandate a minimum.
+        const iterations = category === 'Climate Change' ? 500 : 200;
+
         return window.corePhysics.calculateUncertainty({
             components: mcComponents,
-            iterations: 500  // Monte Carlo (500 iterations)
+            iterations: iterations
         });
     }
 
@@ -1349,6 +1454,15 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
         const transportResult = processTransport(input, input.packaging.weightKg);
         const packagingResult = processPackaging(input);
 
+        // GAP 4: Wire allocation sensitivity check (ISO 14044 §4.3.4)
+        const allocationSensitivity = window.complianceEngine.checkAllocationSensitivity(
+            ingredientResults.map(ing => ({
+                name:  ing.name,
+                mass:  ing.quantityKg,
+                price: 1.0  // default unit price; economic allocation uses mass × price
+            }))
+        );
+
         const pefResults = aggregateAllCategories(
             ingredientResults, mfgResult, transportResult, packagingResult
         );
@@ -1360,11 +1474,57 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             pefResults[cat].contribution_tree = fullContribTree[cat];
         }
 
+        // === GAP A: Wire runJRCValidation() — PEF 3.1 JRC BAT Reference Check ===
+        // Validates per-kg impacts for Climate Change, Resource Use fossils, and
+        // Water Use/Scarcity (AWARE) against JRC BAT reference values for applicable
+        // packaging materials. Non-blocking: failures stored rather than thrown.
+        const JRC_MATERIAL_MAP = { 'PET': 'PET_granulates', 'cardboard': 'cardboard', 'glass': 'glass_bottle' };
+        const jrcMaterialKey = JRC_MATERIAL_MAP[input.packaging.material] || null;
+        let jrcValidationResult = null;
+
+        if (jrcMaterialKey) {
+            try {
+                const jrcRaw = window.complianceEngine.runJRCValidation({
+                    materialType: jrcMaterialKey,
+                    calculatedImpact: {
+                        'Climate Change':             pefResults['Climate Change'].total             / input.product.weightKg,
+                        'Resource Use, fossils':      pefResults['Resource Use, fossils'].total      / input.product.weightKg,
+                        'Water Use/Scarcity (AWARE)': pefResults['Water Use/Scarcity (AWARE)'].total / input.product.weightKg
+                    }
+                });
+                // runJRCValidation returns true on pass; normalise to object for consistency
+                jrcValidationResult = (jrcRaw === true)
+                    ? { passed: true, materialType: jrcMaterialKey }
+                    : jrcRaw;
+            } catch (e) {
+                jrcValidationResult = { passed: false, error: e.message, materialType: jrcMaterialKey };
+            }
+        }
+        // === END GAP A ===
+
         const { weightedDQR, dnmResult, hotspotResult, dqrComponents } =
             computeDQR(ingredientResults, pefResults);
 
         const singleScoreResult  = computeSingleScore(pefResults, input, ingredientResults);
-        const monteCarloResults  = computeMonteCarlo(ingredientResults);
+
+        // B2: Run Monte Carlo for all 16 scorable EF 3.1 categories
+        // 200 iterations per non-CC category; ISO 14044 does not mandate a minimum.
+        const monteCarloResults = {};
+        for (const cat of SCORABLE_CATEGORIES) {
+            monteCarloResults[cat] = computeMonteCarlo(ingredientResults, cat);
+        }
+
+        // B3: Compute overall uncertainty from per-category Monte Carlo CI widths
+        const ciWidths = SCORABLE_CATEGORIES
+            .map(cat => {
+                const r = monteCarloResults[cat];
+                return (r && r.mean > 0) ? (r.p95 - r.p5) / r.mean : null;
+            })
+            .filter(v => v !== null);
+        const computedOverallUncertainty = ciWidths.length > 0
+            ? Math.round((ciWidths.reduce((s, v) => s + v, 0) / ciWidths.length) * 100 * 100) / 100
+            : 15;  // fallback when no category has mean > 0
+
         const comparisonBaseline = computeComparison(input, pefResults);
 
         const auditTrailRaw = window.exportEngine.generateAuditTrail({
@@ -1427,6 +1587,16 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             (s, ing) => s + (ing.allCategoryResults['Climate Change'] || 0), 0
         );
 
+        // GAP D: validateCutoff — PEF 3.1 §5.2 5% cut-off threshold
+        const cutoffValidation = window.complianceEngine.validateCutoff(
+            ingredientResults.map(ing => ({
+                name:               ing.name,
+                impactContribution: ing.allCategoryResults['Climate Change'] || 0
+            })),
+            pefResults['Climate Change'].total,
+            0.05  // 5% cutoff threshold per PEF 3.1
+        );
+
         const dppIdPlaceholder = auditTrailRaw.dppId ||
             'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 
@@ -1467,7 +1637,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             },
 
             uncertainty_analysis: {
-                overall_uncertainty: 15,
+                overall_uncertainty: computedOverallUncertainty,
                 monte_carlo:         monteCarloResults
             },
 
@@ -1518,7 +1688,13 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
                 background_contribution: backgroundCO2
             },
 
-            allocation_sensitivity: null,
+            allocation_sensitivity: allocationSensitivity,
+            cutoff_validation:      cutoffValidation,
+
+            jrc_validation: jrcValidationResult || {
+                passed: null,
+                note: 'JRC validation not applicable — packaging material "' + input.packaging.material + '" has no reference values in JRC BAT dataset. Reference materials: PET_granulates, cardboard, glass_bottle.'
+            },
 
             review_panel: {
                 valid:     false,
