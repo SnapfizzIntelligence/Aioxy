@@ -726,26 +726,12 @@ Object.assign(window.aioxyData.ingredients, {
 
 });
 
-// ================== PHYSICS CONSTANTS ==================
-// All original data preserved exactly
 
-window.aioxyData.yield_benchmarks = {
-    "wheat":    { "FR": 7340, "DE": 7610, "UK": 7900, "US": 3110, "CN": 5810, "IN": 3500, "Global": 3480 },
-    "corn":     { "US": 11200, "CN": 6700, "BR": 6050, "AR": 7800, "FR": 8920, "UA": 7200, "Global": 5930 },
-    "rice":     { "CN": 7100, "IN": 4200, "VN": 6000, "ID": 5300, "US": 8700, "BR": 6500, "Global": 4610 },
-    "soy":      { "BR": 3640, "US": 3490, "AR": 2900, "CN": 2000, "IN": 1100, "FR": 2750, "PY": 3030, "Global": 2810 },
-    "potato":   { "US": 51000, "DE": 44000, "FR": 42000, "CN": 18000, "IN": 24000, "Global": 21000 },
-    "sugarbeet":{ "FR": 85000, "DE": 78000, "UK": 75000, "US": 68000, "Global": 60000 },
-    "pulse":    { "FR": 3800, "UK": 3600, "CA": 2400, "DE": 3500, "Global": 1800 },
-    "rapeseed": { "DE": 3700, "FR": 3300, "CA": 2300, "CN": 2100, "Global": 2200 },
-    "coffee":   { "BR": 1800, "VN": 2800, "CO": 1100, "ID": 750, "ET": 600, "Global": 1320 },
-    "cocoa":    { "CI": 600,  "GH": 550,  "ID": 700,  "EC": 900,  "BR": 500, "Global": 510 }
-};
 
 window.aioxyData.grid_intensity = {
     "IS": 18, "NO": 28.1, "SE": 35.3, "CH": 39.2, "FR": 41.4, "FI": 57.5, "SK": 94.8,
     "DK": 114.4, "AT": 116.9, "CA": 120, "LU": 123.4, "PT": 127.9, "BR": 135, "LT": 138.4,
-    "LV": 138.8, "BE": 149.8, "ES": 153.6, "HR": 158.5, "HU": 163.0, "SI": 183.3, "UK": 217.4,
+    "LV": 138.8, "BE": 149.8, "ES": 153.6, "HR": 158.5, "HU": 163.0, "SI": 183.3, "GB": 217.4, // ISO 3166-1 alpha-2 standard — "GB" is the correct code for the United Kingdom.
     "RO": 250.8, "NL": 253.6, "IE": 256.5, "ME": 264.2, "BG": 275.6, "IT": 284.8, "GR": 315.1,
     "EE": 319.1, "DE": 329.6, "US": 368, "AU": 380, "CZ": 401.5, "JP": 435, "MK": 441.4,
     "TR": 474.7, "Global": 480, "VN": 482, "MT": 484.0, "CY": 489.0, "BA": 570.6, "CN": 580,
@@ -788,7 +774,7 @@ window.aioxyData.countries = {
     "SE": { "name": "Sweden", "electricityCO2": 35.3, "awareFactor": 1.3 },
     "CH": { "name": "Switzerland", "electricityCO2": 39.2, "awareFactor": null },
     "TR": { "name": "Türkiye", "electricityCO2": 474.7, "awareFactor": null },
-    "UK": { "name": "United Kingdom", "electricityCO2": 217.4, "awareFactor": 22.9 },
+    "GB": { "name": "United Kingdom", "electricityCO2": 217.4, "awareFactor": 22.9 }, // ISO 3166-1 alpha-2 standard — "GB" is the correct code for the United Kingdom.
     "US": { "name": "United States", "electricityCO2": 383, "awareFactor": 33.4 }
 };
 
@@ -1046,12 +1032,6 @@ window.aioxyData.climate_zones = {
     "temperate": ["FR", "DE", "UK", "BE", "NL", "PL", "IT", "PT", "AT", "CH", "CZ", "HU", "DK", "US"]
 };
 
-window.aioxyData.aware_factors = {
-    "EG": 98.2, "SA": 95.5, "ES": 65.4, "IN": 70.1, "PK": 85.0, "CN": 41.2, "TR": 62.0,
-    "US": 33.4, "IT": 49.8, "BE": 42.1, "JP": 36.5, "MX": 42.0,
-    "FR": 17.1, "DE": 24.5, "UK": 22.9, "NL": 33.6, "BR": 3.1,
-    "GR": 61.2, "PT": 43.1, "AT": 2.5, "IE": 1.8, "NO": 0.8, 
-    "SE": 1.3, "FI": 0.5, "CA": 2.2, "Global": 42.0
-};
+
 
 console.log("✅ [AIOXY] Synthese + Physics Database Loaded - Audit Grade");
