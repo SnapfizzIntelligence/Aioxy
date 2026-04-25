@@ -686,17 +686,23 @@ if (!traceability.usetox) {
                 // === GAP 2: IPCC Tier 1 N₂O emissions (ISO 14044 primary data path) ===
                 // Applied per-kg-of-ingredient basis after multipliers, added to Climate Change totals.
                 if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
-                    const F_SN = pd.nitrogenKgPerTon * ingredient.quantityKg;          // kg synthetic N applied
-                    const N2O_direct        = F_SN * 0.01 * (44 / 28) * 265;           // kg CO2e (EF1, direct)
-                    const N2O_indirect_leach = F_SN * 0.30 * 0.011 * (44 / 28) * 265; // kg CO2e (EF5, leaching)
-                    // FRAC_GASF = 0.10  // fraction of applied N that volatilizes as NH3 and NOx (IPCC 2006 Tier 1)
+                    // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
+                    const IPCC = window.corePhysics.CONSTANTS.IPCC_TIER1;
+                    const AR5  = window.corePhysics.CONSTANTS.IPCC_AR5_PEF31;
+
+                    const F_SN = pd.nitrogenKgPerTon * ingredient.quantityKg;                                        // kg synthetic N applied
+                    const N2O_direct         = F_SN * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF1, direct)
+                    const N2O_indirect_leach = F_SN * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF5, leaching)
+                    // FRAC_GASF = 0.10 per IPCC 2006 Vol. 4, Table 11.3 — not yet in core_physics.CONSTANTS
                     // EF4 = 0.01        // kg N2O-N per kg N volatilized (IPCC 2006 Tier 1)
-                    const N2O_volatilization = F_SN * 0.10 * 0.01 * (44 / 28) * 265;  // kg CO2e (EF4, volatilization/atmospheric deposition)
+                    const N2O_volatilization = F_SN * 0.10 * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF4, volatilization/atmospheric deposition)
                     const N2O_total = N2O_direct + N2O_indirect_leach + N2O_volatilization;
 
                     // Add N2O to per-kg flatPef so it flows correctly through quantityKg multiplication later
-                    flatPef['Climate Change']        += N2O_total / ingredient.quantityKg;
-                    flatPef['Climate Change - Fossil'] += N2O_total / ingredient.quantityKg;
+                    flatPef['Climate Change']          += N2O_total / ingredient.quantityKg;
+                    // FIX A [Audit Finding A]: N₂O from synthetic N is agricultural soil emission —
+                    // allocated to CC-Land Use per IPCC 2006 Vol. 4, Ch. 11, not CC-Fossil
+                    flatPef['Climate Change - Land Use'] += N2O_total / ingredient.quantityKg;
 
                     adjustments.n2o_applied = {
                         applied:                 true,
@@ -709,9 +715,10 @@ if (!traceability.usetox) {
                 }
 
                 // === GAP 2: SALCA-P phosphorus leaching (ISO 14044 primary data path) ===
+                // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
                 if (pd.phosphorusKgPerTon && pd.phosphorusKgPerTon > 0) {
                     const P_applied = pd.phosphorusKgPerTon * ingredient.quantityKg;   // kg P applied
-                    const P_leach   = P_applied * 0.05 * 3.06;                         // kg P eq
+                    const P_leach   = P_applied * window.corePhysics.CONSTANTS.SALCA_P.FRAC_RELE * window.corePhysics.CONSTANTS.SALCA_P.PO4_CONVERSION; // kg P eq
 
                     // Add to per-kg flatPef for Eutrophication, freshwater
                     flatPef['Eutrophication, freshwater'] += P_leach / ingredient.quantityKg;
@@ -1372,9 +1379,9 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             return { mean: 0, p5: 0, p95: 0 };
         }
 
-        // 1000 iterations per non-CC category per ISO 14044 Annex A recommendation (≥1000 for stable P5/P95 percentiles).
-        const iterations = category === 'Climate Change' ? 500 : 1000;
-        // ISO 14044 Annex A recommends ≥1000 for stable P5/P95 percentiles
+        // FIX C [Audit Finding C]: Climate Change now uses 1000 iterations per ISO 14044 Annex A
+        // recommendation (≥1000 for stable P5/P95 percentiles). All categories use 1000 iterations.
+        const iterations = category === 'Climate Change' ? 1000 : 1000;
 
         return window.corePhysics.calculateUncertainty({
             components: mcComponents,
