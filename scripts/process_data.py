@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-AIOXY FARM GATE PROCESSOR v8.1 - ONE LINE FIX
-Extracts ALL 222 ingredients (including beef)
-Only changed the egg detection to not skip "Boeuf"
+AIOXY FARM GATE PROCESSOR v9.0 — DQR AUDIT FIX
+Extracts ALL 222 ingredients from Agribalyse 3.2 farm-gate CSV.
+Phase 3 DQR fix: replaces uniform 2.5 with defensible per-category DQR
+per DQR Specification v1.0 based on Agribalyse DQI Matrix evidence.
 """
 
 import json
@@ -28,6 +29,76 @@ def get_safe_float(val, idx):
         return float(val_str)
     except (ValueError, TypeError, IndexError):
         return 0.0
+
+def get_dqr_for_ingredient(lci_name):
+    """
+    Assign DQR per AIOXY DQR Specification v1.0.
+    Based on Agribalyse DQI Matrix — Market mix criterion only (farm-gate scope).
+    
+    Evidence basis:
+    - DQI_Matrix_for_AGRIBALYSE.xlsx, sheet "Matrice DQI pour AGRIBALYSE"
+    - Agribalyse Methodologie de calcul (4-indicator scheme: P, TiR, TeR, GR)
+    - All FR ingredients share identical DQR because they use the same RICA/Agreste
+      statistical methodology, same data vintage (2015-2020), and require no
+      geographic proxies. The DQI Matrix scores data quality — not environmental
+      quality. It has no mechanism to differentiate between FR wheat and FR tomatoes.
+    
+    Returns: (dqr_dict, dqr_overall, dqr_note_or_None)
+    """
+    dqr_note = None
+    
+    # RULE 1: Brazilian soy 2008 cut-off — TiR = 5 (data >10 years old)
+    if "cut-off date 2008" in lci_name.lower():
+        return (
+            {"P": 3, "TiR": 5, "TeR": 3, "GR": 5},
+            4.00,
+            "Brazilian soy 2008 cut-off: TiR=5 per DQI Matrix — data older than "
+            "10 years (2008 vintage, 14 years at Agribalyse 3.2 2022 publication, "
+            "18 years at 2026 deployment)."
+        )
+    
+    # Extract country code from LCI name: {XX}
+    country_match = re.search(r'\{(\w+)\}', lci_name)
+    country = country_match.group(1) if country_match else 'FR'
+    
+    # FR and FR overseas territories (Réunion, West Indies) = best DQR
+    if country in ('FR', 'RE', 'WI'):
+        return (
+            {"P": 2, "TiR": 3, "TeR": 2, "GR": 1},
+            2.00,
+            None  # No special note for standard FR case
+        )
+    
+    # Non-FR EU / European-context countries
+    # ES, PL, NL, IE = EU members. GB = post-Brexit European context.
+    # EU = EU average. NO = EEA (European Economic Area).
+    eu_countries = ('ES', 'PL', 'NL', 'IE', 'GB', 'EU', 'NO')
+    
+    if country in eu_countries:
+        return (
+            {"P": 3, "TiR": 3, "TeR": 3, "GR": 4},
+            3.25,
+            None
+        )
+    
+    # All other non-FR non-EU (MA, BR, VN, US, CI)
+    return (
+        {"P": 3, "TiR": 3, "TeR": 3, "GR": 5},
+        3.50,
+        None
+    )
+
+# DQR methodology note — inserted into every ingredient's metadata for audit traceability
+DQR_METHODOLOGY_NOTE = (
+    "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). "
+    "4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. "
+    "All FR ingredients share identical DQR because they use common statistical methodology "
+    "(RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and "
+    "inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix "
+    "Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — "
+    "Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. "
+    "For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
+)
 
 def generate_db():
     input_file = "data-raw/agribalyse_farm_gate.csv"
@@ -66,6 +137,9 @@ def generate_db():
     skipped_empty = 0
     skipped_eggs = 0
     
+    # DQR distribution counters for summary
+    dqr_counts = {}
+    
     for i, row in enumerate(rows[data_start:]):
         # Check if row has any data
         if not row or all(cell == '' or cell is None for cell in row):
@@ -76,7 +150,7 @@ def generate_db():
         name_fr = row[0].strip() if len(row) > 0 and row[0] else ''
         name_en = row[1].strip() if len(row) > 1 and row[1] else name_fr
         
-        # FIX: Only skip actual egg rows (starts with "Oeuf"), not "Boeuf"
+        # Skip actual egg rows (starts with "Oeuf"), not "Boeuf"
         if name_fr.startswith('Oeuf') or name_fr == '':
             skipped_eggs += 1
             continue
@@ -113,6 +187,27 @@ def generate_db():
         
         single_score = get_safe_float(row, 4)
         
+        # === PHASE 3 DQR FIX ===
+        dqr_values, dqr_overall, dqr_note = get_dqr_for_ingredient(name_en)
+        
+        # Track distribution
+        dqr_label = str(dqr_overall)
+        dqr_counts[dqr_label] = dqr_counts.get(dqr_label, 0) + 1
+        
+        # Build metadata
+        metadata = {
+            "source_dataset": "AGRIBALYSE 3.2",
+            "source_activity": f"{name_en} {{FR}} U",
+            "source_uuid": f"agb-3.2-{item_id}",
+            "allocation_method": "Economic Allocation",
+            "dqr": dqr_values,
+            "dqr_overall": dqr_overall,
+            "single_score_mpt": single_score,
+            "dqr_methodology": DQR_METHODOLOGY_NOTE
+        }
+        if dqr_note:
+            metadata["dqr_note"] = dqr_note
+        
         db[item_id] = {
             "name": name_en,
             "name_fr": name_fr,
@@ -120,20 +215,7 @@ def generate_db():
             "processing_yield": 1.0,
             "data": {
                 "pef": pef_data,
-                "metadata": {
-                    "source_dataset": "AGRIBALYSE 3.2",
-                    "source_activity": f"{name_en} {{FR}} U",
-                    "source_uuid": f"agb-3.2-{item_id}",
-                    "allocation_method": "Economic Allocation",
-                    "dqr": {
-                        "TeR": 3.0,
-                        "GR": 2.0,
-                        "TiR": 3.0,
-                        "P": 2.0
-                    },
-                    "dqr_overall": 2.5,
-                    "single_score_mpt": single_score
-                }
+                "metadata": metadata
             }
         }
         count += 1
@@ -146,12 +228,20 @@ def generate_db():
     print(f"   Ingredients extracted: {count}")
     print(f"   Skipped empty rows: {skipped_empty}")
     print(f"   Skipped eggs: {skipped_eggs}")
+    print(f"\n📊 DQR Distribution:")
+    for dqr_val in sorted(dqr_counts.keys()):
+        print(f"   DQR {dqr_val}: {dqr_counts[dqr_val]} ingredients")
 
     # Write output
     js_output = f"""// AIOXY FARM GATE DATABASE | AUDIT-GRADE
 // Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 // Total Ingredients: {count}
-// DQR: 2.5 (PEF 3.1 Secondary Data Standard)
+// DQR: Per-category scoring based on Agribalyse DQI Matrix v3.0.1 (Market mix criterion)
+//       FR ingredients: DQR 2.00 (P=2, TiR=3, TeR=2, GR=1)
+//       Non-FR EU:      DQR 3.25 (P=3, TiR=3, TeR=3, GR=4)
+//       Non-FR non-EU:  DQR 3.50 (P=3, TiR=3, TeR=3, GR=5)
+//       BR Soy 2008:    DQR 4.00 (P=3, TiR=5, TeR=3, GR=5)
+// Methodology: 4-indicator (P+TiR+TeR+GR)/4 per ADEME/INRAE
 // Allocation: Economic (Agribalyse Official)
 // ===============================================================
 
