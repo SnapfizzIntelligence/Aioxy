@@ -1422,7 +1422,8 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             breakdown[cat] = {
                 raw: perKg, normalized, weighted,
                 normalizationFactor: normFactor,
-                weightingFactor:     weightFactor
+                weightingFactor:     weightFactor,
+                unit: CATEGORY_UNITS[cat] || ''
             };
         }
 
@@ -1819,6 +1820,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             landUsePerKg:       pefResults['Land Use'].total                      / input.product.weightKg,
             fossilPerKg:        pefResults['Resource Use, fossils'].total         / input.product.weightKg,
             overallDQR:         weightedDQR.overallDQR,
+            overallUncertainty: computedOverallUncertainty,
 
             comparison: {
                 baseline:      comparisonBaseline,
