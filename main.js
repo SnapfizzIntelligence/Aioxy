@@ -89,25 +89,14 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
             normalizedScore:        ps.normalizedScore    || 0,
             weightedScore:          ps.weightedScore      || 0,
             breakdown:              ps.breakdown          || {},
-            unit:                   'µPt',
-            organic_bonus_applied:  ps.organic_bonus_applied || false,
-            organic_ratio:          ps.organic_ratio      || 0
+            unit:                   'µPt'
         };
     }
     // Fallback (first render before engine result is ready): return zeros
     return {
         singleScore: 0, normalizedScore: 0, weightedScore: 0,
-        breakdown: {}, unit: 'µPt', organic_bonus_applied: false, organic_ratio: 0
+        breakdown: {}, unit: 'µPt'
     };
-}
-
-// ── 5. applyTemporalDiscounting — reads from auditTrailData ─────────────
-function applyTemporalDiscounting(pefResults, timeHorizon) {
-    // Temporal discounting is not recalculated here; read from engine output.
-    if (window.auditTrailData && window.auditTrailData.temporal_discounting) {
-        return window.auditTrailData.temporal_discounting;
-    }
-    return null;
 }
 
 // ── 6. getUnifiedMetrics — reads from engine output ──────────────────────
