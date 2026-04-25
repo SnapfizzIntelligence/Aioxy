@@ -22,7 +22,9 @@ function showTab(tabName, event) {
     }
     
     if (tabName === 'results') {
-        calculateImpact();
+        if (selectedIngredients.length > 0) {
+            calculateImpact();
+        }
     }
     if (tabName === 'business-case') {
         if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
@@ -712,7 +714,7 @@ function displayPEFSingleScore() {
     const resultsContent = document.getElementById('resultsContent');
     if (!resultsContent || !finalPefResults || Object.keys(finalPefResults).length === 0) return;
 
-    const singleScoreResult = window.auditTrailData?.pef_single_score || { singleScore: 0 };
+    const singleScoreResult = window.auditTrailData?.pef_single_score || { singleScore: 0, normalizedScore: 0, weightedScore: 0, breakdown: {} };
     
     let singleScoreSection = document.getElementById('pefSingleScoreSection');
     if (!singleScoreSection) {
@@ -775,22 +777,34 @@ function displayPEFSingleScore() {
             ${auditTrailData?.uncertainty_analysis?.monte_carlo ? `
                 <div style="max-height: 200px; overflow-y: auto;">
                     <div style="margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>Climate Change:</span>
-                            <span>±${auditTrailData.uncertainty_analysis.monte_carlo.co2.range.toFixed(2)} kg</span>
-                        </div>
-                        <div style="font-size: 0.8rem; color: var(--gray);">
-                            90% confidence: ${auditTrailData.uncertainty_analysis.monte_carlo.co2.p5.toFixed(2)} to ${auditTrailData.uncertainty_analysis.monte_carlo.co2.p95.toFixed(2)} kg
-                        </div>
+                        ${(() => {
+                            const cc = auditTrailData.uncertainty_analysis.monte_carlo['Climate Change'];
+                            if (!cc || cc.mean === 0) return '<div style="color:var(--gray);">Climate Change: N/A</div>';
+                            const range = (cc.p95 - cc.p5);
+                            return `
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Climate Change:</span>
+                                <span>±${range.toFixed(2)} kg</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--gray);">
+                                90% confidence: ${cc.p5.toFixed(2)} to ${cc.p95.toFixed(2)} kg
+                            </div>`;
+                        })()}
                     </div>
                     <div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>Water Scarcity:</span>
-                            <span>±${auditTrailData.uncertainty_analysis.monte_carlo.water.range.toFixed(2)} m³</span>
-                        </div>
-                        <div style="font-size: 0.8rem; color: var(--gray);">
-                            90% confidence: ${auditTrailData.uncertainty_analysis.monte_carlo.water.p5.toFixed(2)} to ${auditTrailData.uncertainty_analysis.monte_carlo.water.p95.toFixed(2)} m³
-                        </div>
+                        ${(() => {
+                            const wa = auditTrailData.uncertainty_analysis.monte_carlo['Water Use/Scarcity (AWARE)'];
+                            if (!wa || wa.mean === 0) return '<div style="color:var(--gray);">Water Scarcity: N/A</div>';
+                            const range = (wa.p95 - wa.p5);
+                            return `
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Water Scarcity:</span>
+                                <span>±${range.toFixed(2)} m³</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--gray);">
+                                90% confidence: ${wa.p5.toFixed(2)} to ${wa.p95.toFixed(2)} m³
+                            </div>`;
+                        })()}
                     </div>
                 </div>
             ` : `
@@ -823,7 +837,7 @@ function displayPEFSingleScore() {
                         ${Object.entries(singleScoreResult.breakdown).map(([cat, data]) => `
                             <tr style="border-bottom: 1px solid var(--border);">
                                 <td style="padding: 0.5rem;"><strong>${cat}</strong></td>
-                                <td style="padding: 0.5rem; text-align: right;">${data.raw.toFixed(4)} <span style="color:var(--gray); font-size:0.75rem;">${data.unit}</span></td>
+                                <td style="padding: 0.5rem; text-align: right;">${data.raw.toFixed(4)} <span style="color:var(--gray); font-size:0.75rem;">${data.unit || ''}</span></td>
                                 <td style="padding: 0.5rem; text-align: right;">${data.normalized.toExponential(3)}</td>
                                 <td style="padding: 0.5rem; text-align: right;">${data.weighted.toExponential(3)}</td>
                                 <td style="padding: 0.5rem; text-align: right;">${singleScoreResult.weightedScore > 0 ? (data.weighted / singleScoreResult.weightedScore * 100).toFixed(1) : '0.0'}%</td>
@@ -841,9 +855,6 @@ function populateIngredientSelect() {
     // This function is now replaced by searchable typeahead
     // We keep it for backward compatibility but it does nothing
     console.log('📦 [populateIngredientSelect] Using searchable typeahead instead');
-    
-    // Setup the new search functionality
-    setupIngredientSearch();
 }
 
 // ================== SEARCHABLE INGREDIENT TYPEAHEAD ==================
@@ -1136,7 +1147,10 @@ function updateIngredientList() {
     
     selectedIngredients.forEach((ingredient, index) => {
         const ingredientData = aioxyData.ingredients[ingredient.id];
-        if (!ingredientData) return;
+        if (!ingredientData) {
+            console.warn('Ingredient not found in database:', ingredient.id);
+            return;
+        }
         
         // FIX: Guard against missing dqr_overall or dqr.P before calling engine methods
         const dqrOverall = ingredientData.data?.metadata?.dqr_overall || 2.5;
@@ -1543,7 +1557,7 @@ function displayForegroundBackground() {
                 </div>
                 <div style="text-align: right;">
                     <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">
-                        ${((fb.foreground_contribution / (fb.foreground_contribution + fb.background_contribution)) * 100).toFixed(1)}%
+                        ${(() => { const denom = fb.foreground_contribution + fb.background_contribution; const fgPct = denom > 0 ? ((fb.foreground_contribution / denom) * 100).toFixed(1) : '0.0'; return fgPct; })()}%
                     </div>
                     <div style="color: var(--gray); font-size: 0.9rem;">of impact in foreground</div>
                 </div>
