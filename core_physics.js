@@ -64,7 +64,11 @@
                 road: 1.05,
                 sea: 1.15,
                 rail: 1.00,
-                air: 95.0
+                // FIX E [Audit Finding E]: GLEC v3.2 air freight DAF is a multiplicative uplift factor of 1.09,
+                // not a 95.0 km additive detour constant. Crisis routing (1.40×) handles actual detour distances.
+                // Source: GLEC Framework v3.2 (2023), Section 3.2.1 — Aviation uplift factor 1.09 for
+                // short-haul air freight (distance correction for takeoff/landing cycles, not detour routing)
+                air: 1.09
             }),
             REFRIGERANT_LEAKAGE: Object.freeze({
                 frozen: 0.012,
@@ -298,7 +302,10 @@
         }
         
         const daf = glec.DAF[mode];
-        const adjustedDistance = (mode === 'air') ? distanceKm + daf : distanceKm * daf;
+        // FIX E [Audit Finding E]: All modes (including air) now use multiplicative DAF.
+        // DAF.air = 1.09 (GLEC v3.2 §3.2.1 aviation uplift factor). Previous additive treatment
+        // (distanceKm + 95.0) was methodologically incorrect — 95.0 was a mislabeled distance constant.
+        const adjustedDistance = distanceKm * daf;
         
         let payloadMultiplier = CONSTANTS.MATH.ONE;
         if (mode === 'road' || mode === 'sea') {
