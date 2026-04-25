@@ -1,3 +1,4 @@
+
 // ================== AIOXY MAIN CONTROLLER v3.0 ==================
 // Global State, Initialization, and Core Application Flow
 // ===================================================================
@@ -329,7 +330,9 @@ async function calculateImpact() {
     };
 
     try {
-        const result = window.calculationEngine.calculate(input);
+        // F7 FIX: await the async calculate() so the SHA-256 DPP ID is resolved
+        // before updateResultsUI() runs. Previously missing await caused placeholder ID in UI.
+        const result = await window.calculationEngine.calculate(input);
 
         // Write globals — SINGLE SOURCE OF TRUTH, no shadow assembly
         window.finalPefResults           = result.finalPefResults;
@@ -479,18 +482,23 @@ function initApp() {
     function proceedWithInitialization() {
         console.log('📊 [AIOXY] Starting full initialization...');
 
-        if (window.aioxyData.yield_benchmarks && window.aioxyData.grid_intensity) {
+        // F11 FIX: was window.aioxyData.yield_benchmarks which does not exist.
+        // Crop yield data is stored under window.aioxyData.crop_yields (aioxy_pef31_database.js).
+        // The false condition always triggered the legacy mode warning and injected a banner.
+        if (window.aioxyData.crop_yields && window.aioxyData.grid_intensity) {
             console.log('✅ Universal Physics Engine Ready:', {
-                crops:         Object.keys(window.aioxyData.yield_benchmarks).length,
+                crops:         Object.keys(window.aioxyData.crop_yields).length,
                 countries:     Object.keys(window.aioxyData.grid_intensity).length,
-                aware_factors: Object.keys(window.aioxyData.aware_factors).length
+                // F13 FIX: was window.aioxyData.aware_factors (does not exist).
+                // AWARE 2.0 data is stored under window.aioxyData.aware_20.agricultural.
+                aware_factors: Object.keys(window.aioxyData.aware_20?.agricultural || {}).length
             });
         } else {
-            console.warn('⚠️ Universal physics data not found. Using legacy mode.');
+            console.warn('⚠️ Universal physics data not found (crop_yields or grid_intensity missing). Using legacy mode.');
             if (window.aioxyData.ingredients) {
                 const w = document.createElement('div');
                 w.style.cssText = 'background:#FFF3E0;padding:0.75rem;margin:0.5rem 0;border-radius:6px;border-left:4px solid #FF9800';
-                w.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#FF9800"></i> <strong>Universal Physics Data Missing</strong><br><small>Using legacy calculations. Ensure ingredients.js includes yield_benchmarks, grid_intensity, aware_factors.</small>';
+                w.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#FF9800"></i> <strong>Universal Physics Data Missing</strong><br><small>Using legacy calculations. Ensure ingredients.js includes crop_yields, grid_intensity, aware_20.</small>';
                 const fc = document.querySelector('.card');
                 if (fc) fc.parentNode.insertBefore(w, fc);
             }
