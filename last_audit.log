@@ -16,4 +16,10 @@
    Skipped empty rows: 0
    Skipped eggs: 5
 
+📊 DQR Distribution:
+   DQR 2.0: 202 ingredients
+   DQR 3.25: 9 ingredients
+   DQR 3.5: 10 ingredients
+   DQR 4.0: 1 ingredients
+
 📄 Generated: ingredients_db.js

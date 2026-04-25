@@ -1,7 +1,12 @@
 // AIOXY FARM GATE DATABASE | AUDIT-GRADE
-// Generated: 2026-04-16 17:25:38
+// Generated: 2026-04-25 03:35:31
 // Total Ingredients: 222
-// DQR: 2.5 (PEF 3.1 Secondary Data Standard)
+// DQR: Per-category scoring based on Agribalyse DQI Matrix v3.0.1 (Market mix criterion)
+//       FR ingredients: DQR 2.00 (P=2, TiR=3, TeR=2, GR=1)
+//       Non-FR EU:      DQR 3.25 (P=3, TiR=3, TeR=3, GR=4)
+//       Non-FR non-EU:  DQR 3.50 (P=3, TiR=3, TeR=3, GR=5)
+//       BR Soy 2008:    DQR 4.00 (P=3, TiR=5, TeR=3, GR=5)
+// Methodology: 4-indicator (P+TiR+TeR+GR)/4 per ADEME/INRAE
 // Allocation: Economic (Agribalyse Official)
 // ===============================================================
 
@@ -40,13 +45,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-apricot-conventional-national-average-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.1
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.1,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -84,13 +90,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lamb-conventional-indoor-production-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.99
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.99,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -128,13 +135,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lamb-conventional-roquefort-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.628
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.628,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -172,13 +180,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-seaweed-non-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.122
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.122,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -216,13 +225,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0117
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0117,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -260,13 +270,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pineapple-mixed-production-reunion-island-average-at-production-site-re-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.121
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.121,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -304,13 +315,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-european-anchovy-engraulis-encrasicolus-eca-seine-average-at-landing-ma-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0918
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.0918,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -348,13 +360,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-oat-grain-national-average-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0796
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0796,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -392,13 +405,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-banana-mixed-production-west-indies-at-farm-gate-wi-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0402
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0402,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -436,13 +450,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.737
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.737,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -480,13 +495,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-beetroot-for-juice-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0112
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0112,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -524,13 +540,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.00597
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.00597,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -568,13 +585,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-durum-wheat-grain-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0914
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0914,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -612,13 +630,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soft-wheat-grain-conventional-protein-improved-quality-15-moisture-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0839
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0839,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -656,13 +675,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soft-wheat-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0642
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0642,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -700,13 +720,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soft-wheat-grain-conventional-breadmaking-quality-15-moisture-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0643
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0643,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -744,13 +765,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soft-wheat-grain-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0602
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0602,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -788,13 +810,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soft-wheat-grain-protein-crop-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0589
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0589,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -832,13 +855,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soft-wheat-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0605
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0605,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -876,13 +900,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-beef-cattle-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.35
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.35,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -920,13 +945,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-ewe-conventional-indoor-production-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 2.04
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 2.04,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -964,13 +990,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-ewe-conventional-roquefort-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.03
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.03,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1008,13 +1035,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-duck-for-roasting-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.464
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.464,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1052,13 +1080,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-fattening-duck-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.556
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.556,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1096,13 +1125,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0175
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0175,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1140,13 +1170,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-fall-creances-lower-normandie-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.00785
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.00785,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1184,13 +1215,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-fall-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.00709
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.00709,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1228,13 +1260,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-fall-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.00723
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.00723,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1272,13 +1305,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-main-season-aquitaine-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0148
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0148,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1316,13 +1350,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-winter-aquitaine-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0153
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0153,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1360,13 +1395,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-winter-creances-lower-normandie-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0311
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0311,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1404,13 +1440,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-winter-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0104
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0104,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1448,13 +1485,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-winter-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.00906
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.00906,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1492,13 +1530,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-carrot-conventional-early-aquitaine-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0226
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0226,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1536,13 +1575,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cherry-conventional-national-average-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.174
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.174,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1580,13 +1620,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-hemp-straw-ret-champagne-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0292
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0292,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1624,13 +1665,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-kid-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.378
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.378,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1668,13 +1710,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.27
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.27,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1712,13 +1755,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-season-conventional-refrigerant-loss-300-storage-and-forcing-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0436
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0436,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1756,13 +1800,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cauliflower-summer-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0294
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0294,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1800,13 +1845,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cauliflower-winter-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0317
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0317,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1844,13 +1890,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cauliflower-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0315
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0315,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1888,13 +1935,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-clementine-export-quality-souss-at-orchard-ma-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.34
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.34,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1932,13 +1980,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.156
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.156,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -1976,13 +2025,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-rapeseed-systematic-covercropping-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.133
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.133,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2020,13 +2070,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-rapeseed-protein-crop-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.136
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.136,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2064,13 +2115,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-rapeseed-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.136
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.136,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2108,13 +2160,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.133
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.133,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2152,13 +2205,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-zucchini-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0423
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0423,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2196,13 +2250,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-zucchini-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0241
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0241,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2240,13 +2295,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-zucchini-open-field-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0213
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0213,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2284,13 +2340,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-zucchini-springtime-under-tunnel-conventionel-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0243
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0243,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2328,13 +2385,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-fresh-shrimps-china-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.35
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.35,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2372,13 +2430,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-turkey-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.486
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.486,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2416,13 +2475,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-turkey-label-rouge-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.718
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.718,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2460,13 +2520,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-early-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0456
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0456,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2504,13 +2565,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-season-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0353
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0353,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2548,13 +2610,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-late-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0633
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0633,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2592,13 +2655,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0486
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0486,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2636,13 +2700,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-spring-faba-bean-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0462
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0462,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2680,13 +2745,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-spring-faba-bean-conventional-reduced-protection-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.045
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.045,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2724,13 +2790,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-hemp-fibre-without-processing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0708
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0708,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2768,13 +2835,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-frost-protection-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.118
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.118,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2812,13 +2880,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-heated-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.289
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.289,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2856,13 +2925,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-soilless-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.127
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.127,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2900,13 +2970,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.129
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.129,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2944,13 +3015,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-open-field-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0509
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0509,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -2988,13 +3060,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-soil-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0719
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0719,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3032,13 +3105,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-es-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.132
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.132,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3076,13 +3150,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-ma-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.132
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.132,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3120,13 +3195,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-strawberry-for-processing-open-field-conventional-at-farm-gate-pl-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0551
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.0551,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3164,13 +3240,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-gadidae-celticsea-bottom-trawl-average-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.625
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.625,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3208,13 +3285,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-suckler-heifer-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.72
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.72,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3252,13 +3330,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-coffee-bean-robusta-depulped-brazil-at-farm-gate-br-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.525
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.525,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3296,13 +3375,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-hemp-grain-champagne-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.162
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.162,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3340,13 +3420,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.129
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.129,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3384,13 +3465,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sunflower-grain-systematic-covercropping-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.109
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.109,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3428,13 +3510,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sunflower-grain-protein-crop-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.116
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.116,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3472,13 +3555,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sunflower-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.115
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.115,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3516,13 +3600,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.171
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.171,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3560,13 +3645,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-flaxseed-straw-ret-normandie-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0409
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0409,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3604,13 +3690,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-large-trout-2-4kg-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.589
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.589,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3648,13 +3735,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0954
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.0954,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3692,13 +3780,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-french-bean-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.038
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.038,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3736,13 +3825,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lobster-1-kg-of-product-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 2.71
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 2.71,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3780,13 +3870,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-kiwi-fr-conventional-national-average-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0535
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0535,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3824,13 +3915,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-wool-conventional-roquefort-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.612
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.612,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3868,13 +3960,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-wool-conventional-indoor-production-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.481
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.481,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3912,13 +4005,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sheep-milk-conventional-roquefort-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.241
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.241,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -3956,13 +4050,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-goat-milk-conventional-intensive-forage-area-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.172
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.172,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4000,13 +4095,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cow-milk-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.105
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.105,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4044,13 +4140,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.107
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.107,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4088,13 +4185,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.111
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.111,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4132,13 +4230,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cow-milk-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0993
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0993,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4176,13 +4275,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cow-milk-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.13
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.13,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4220,13 +4320,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lettuce-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0199
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0199,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4264,13 +4365,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lettuce-winter-under-tunnel-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0242
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0242,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4308,13 +4410,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lettuce-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0204
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0204,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4352,13 +4455,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lettuce-open-field-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0181
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0181,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4396,13 +4500,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-rabbit-conventional-in-cage-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.704
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.704,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4440,13 +4545,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-rabbit-conventional-in-cage-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.264
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.264,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4484,13 +4590,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-spring-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.121
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.121,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4528,13 +4635,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-spring-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.248
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.248,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4572,13 +4680,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-winter-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0879
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0879,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4616,13 +4725,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-winter-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0865
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0865,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4660,13 +4770,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-lupin-conventional-national-average-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.115
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.115,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4704,13 +4815,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-alfalfa-dehydrated-100-biomass-energy-process-conventional-at-feed-plant-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0417
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0417,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4748,13 +4860,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-alfalfa-dehydrated-with-new-energies-process-conventional-at-feed-plant-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0615
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0615,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4792,13 +4905,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-alfalfa-conventional-for-dehydration-animal-feed-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0245
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0245,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4836,13 +4950,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-alfalfa-conventional-for-animal-feeding-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0253
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0253,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4880,13 +4995,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-alfalfa-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0251
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0251,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4924,13 +5040,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.065
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.065,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -4968,13 +5085,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-maize-grain-conventional-28-moisture-national-average-with-water-footprint-animal-feed-at-farm-gate--raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0653
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0653,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5012,13 +5130,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-grain-maize-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0738
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0738,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5056,13 +5175,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-grain-maize-protein-crop-scenario-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0719
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0719,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5100,13 +5220,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-grain-maize-basis-scenario-without-lever-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0764
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0764,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5144,13 +5265,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0965
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.0965,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5188,13 +5310,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-melon-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0314
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0314,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5232,13 +5355,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-melon-open-field-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0289
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0289,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5276,13 +5400,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-melon-under-low-tunnel-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0422
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0422,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5320,13 +5445,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-melon-protected-crop-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0453
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0453,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5364,13 +5490,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-mussels-with-shell-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0567
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0567,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5408,13 +5535,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-walnut-dried-inshell-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.239
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.239,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5452,13 +5580,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-walnut-dried-inshell-varieties-with-lateral-fructification-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.172
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.172,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5496,13 +5625,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-walnut-dried-inshell-traditional-varieties-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.262
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.262,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5540,13 +5670,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-onion-short-day-sown-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0154
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0154,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5584,13 +5715,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-onion-long-day-planted-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0381
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0381,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5628,13 +5760,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-onion-long-day-sown-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0143
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0143,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5672,13 +5805,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-onion-conventional-national-average-at-farm-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0168
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0168,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5716,13 +5850,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-spring-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0666
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0666,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5760,13 +5895,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-spring-barley-conventional-downgraded-quality-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0699
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0699,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5804,13 +5940,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-winter-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0597
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0597,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5848,13 +5985,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-barley-feed-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0608
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0608,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5892,13 +6030,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-peach-conventional-national-average-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0562
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0562,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5936,13 +6075,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-annual-vining-pea-for-industry-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.056
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.056,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -5980,13 +6120,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-small-trout-250-350g-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.44
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.44,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6024,13 +6165,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pear-conventional-national-average-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.02
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.02,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6068,13 +6210,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pear-at-farm-nl-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0235
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.0235,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6112,13 +6255,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-autumn-irrigated-leek-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0308
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0308,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6156,13 +6300,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-leek-winter-non-irrigated-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0223
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0223,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6200,13 +6345,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-leek-conventional-national-average-at-plant-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0275
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0275,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6244,13 +6390,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-leek-early-planted-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0374
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0374,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6288,13 +6435,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-leek-early-sown-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0384
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0384,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6332,13 +6480,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0551
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0551,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6376,13 +6525,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-winter-pea-conventional-15-moisture-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.064
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.064,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6420,13 +6570,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-black-pepper-conventional-at-farm-gate-vn-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.299
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.299,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6464,13 +6615,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cider-apple-conventional-national-average-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0135
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0135,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6508,13 +6660,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-apple-conventional-national-average-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0158
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0158,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6552,13 +6705,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-apple-conventional-non-scab-tolerant-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0158
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0158,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6596,13 +6750,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-apple-conventional-scab-tolerant-at-orchard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0152
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0152,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6640,13 +6795,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-starch-potato-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0113
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0113,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6684,13 +6840,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-ware-potato-conventional-for-industrial-use-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0134
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0134,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6728,13 +6885,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.013
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.013,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6772,13 +6930,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-ware-potato-conventional-for-fresh-market-other-varieties-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0135
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0135,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6816,13 +6975,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-ware-potato-conventional-for-fresh-market-firm-flesh-varieties-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0156
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0156,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6860,13 +7020,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pig-label-rouge-outdoor-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.417
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.417,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6904,13 +7065,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pig-conventional-porc-bien-etre-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.343
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.343,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6948,13 +7110,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pig-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.371
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.371,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -6992,13 +7155,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pig-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.352
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.352,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7036,13 +7200,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-mixt-pig-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.393
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.393,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7080,13 +7245,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pig-label-rouge-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.469
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.469,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7124,13 +7290,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-mixt-pig-label-rouge-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.513
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.513,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7168,13 +7335,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-pig-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.522
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.522,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7212,13 +7380,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-hen-conventional-indoor-system-non-cage-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7256,13 +7425,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-hen-conventional-indoor-production-cage-2012-rules-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7300,13 +7470,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-hen-conventional-indoor-system-cage-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7344,13 +7515,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-hen-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7388,13 +7560,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-hen-conventional-outdoor-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7432,13 +7605,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-broiler-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.386
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.386,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7476,13 +7650,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-broiler-label-rouge-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.464
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.464,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7520,13 +7695,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-broiler-production-mix-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.396
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.396,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7564,13 +7740,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-early-conventional-root-production-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0174
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0174,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7608,13 +7785,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-season-conventional-root-production-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0101
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0101,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7652,13 +7830,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-witloof-late-conventional-root-production-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0106
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0106,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7696,13 +7875,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-quinoa-fr-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.35
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.35,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7740,13 +7920,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-chicory-roots-conventional-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0125
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0125,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7784,13 +7965,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-grapefruit-for-juice-conventional-at-farm-gate-us-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.377
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.377,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7828,13 +8010,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-grape-integrated-french-mix-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0762
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0762,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7872,13 +8055,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-grape-integrated-aoc-beaujolais-at-vineyard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.132
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.132,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7916,13 +8100,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-grape-integrated-variety-mix-languedoc-roussillon-at-vineyard-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0743
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0743,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -7960,13 +8145,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-saithe-pollachius-virens-northsea-bottom-trawl-average-frozen-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.772
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.772,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8004,13 +8190,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-saithe-pollachius-virens-northsea-bottom-trawl-average-fresh-at-landing-eu-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.397
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.397,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8048,13 +8235,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0276
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0276,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8092,13 +8280,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-european-pilchard-sardina-pilchardus-bbiscay-seine-average-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0671
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0671,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8136,13 +8325,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-salmon-farmed-conventional-at-farm-gate-no-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.31
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.31,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8180,13 +8370,15 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soybean-cut-off-date-2008-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 5,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0869
+                            "dqr_overall": 4.0,
+                            "single_score_mpt": 0.0869,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5.",
+                            "dqr_note": "Brazilian soy 2008 cut-off: TiR=5 per DQI Matrix — data older than 10 years (2008 vintage, 14 years at Agribalyse 3.2 2022 publication, 18 years at 2026 deployment)."
                     }
             }
     },
@@ -8224,13 +8416,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soybean-cut-off-date-2020-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.115
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.115,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8268,13 +8461,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soybean-not-associated-to-deforestation-br-market-for-soybean-without-transport-cut-off-u-adapted-fr-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0804
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.0804,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8312,13 +8506,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-soybean-national-average-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0634
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0634,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8356,13 +8551,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.451
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.451,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8400,13 +8596,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-silage-sorghum-national-average-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0346
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0346,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8444,13 +8641,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0536
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0536,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8488,13 +8686,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-young-suckler-bull-conventional-fattening-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.66
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.66,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8532,13 +8731,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-young-suckler-bull-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.49
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.49,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8576,13 +8776,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-young-dairy-bull-conventional-fattening-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.728
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.728,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8620,13 +8821,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-albacore-thunnus-alalunga-nea-pelagic-trawl-average-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.814
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.814,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8664,13 +8866,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-yellowfin-tuna-thunnus-albacares-eca-seine-average-at-landing-ci-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.365
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.365,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8708,13 +8911,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-skipjack-tuna-katsuwonus-pelamis-eca-seine-average-at-landing-ci-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 5
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.363
+                            "dqr_overall": 3.5,
+                            "single_score_mpt": 0.363,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8752,13 +8956,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-bluefin-tuna-thunnus-thynnus-medsea-longline-average-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.395
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.395,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8796,13 +9001,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-bluefin-tuna-thunnus-thynnus-medsea-seine-average-at-cage-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.247
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.247,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8840,13 +9046,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-tomato-medium-size-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0205
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0205,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8884,13 +9091,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-tomato-medium-size-conventional-heated-greenhouse-at-greenhouse-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.125
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.125,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8928,13 +9136,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.177
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.177,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -8972,13 +9181,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-tomato-average-basket-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0213
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0213,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9016,13 +9226,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-gb-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.85
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.85,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9060,13 +9271,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.485
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.485,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9104,13 +9316,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-brown-crab-1-kg-of-product-at-landing-ie-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 3,
+                                    "TiR": 3,
+                                    "TeR": 3,
+                                    "GR": 4
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.753
+                            "dqr_overall": 3.25,
+                            "single_score_mpt": 0.753,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9148,13 +9361,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.0682
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.0682,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9192,13 +9406,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-sow-conventional-porc-bien-etre-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.55
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.55,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9236,13 +9451,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-sow-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.76
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.76,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9280,13 +9496,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-sow-conventional-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.71
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.71,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9324,13 +9541,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-sow-label-rouge-national-average-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.92
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.92,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9368,13 +9586,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-sow-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.9
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.9,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9412,13 +9631,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-sow-label-rouge-outdoor-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.95
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.95,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9456,13 +9676,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-suckler-cull-cow-conventional-suckler-cow-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.87
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.87,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9500,13 +9721,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-suckler-cull-cow-conventional-suckler-cow-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.58
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.58,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9544,13 +9766,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-cow-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.3
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.3,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9588,13 +9811,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.06
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.06,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9632,13 +9856,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.32
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.32,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9676,13 +9901,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-cull-cow-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 0.831
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 0.831,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
@@ -9720,13 +9946,14 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
                             "source_uuid": "agb-3.2-veal-conventional-fattening-system-calves-from-lowland-milk-system-at-farm-gate-fr-u-raw",
                             "allocation_method": "Economic Allocation",
                             "dqr": {
-                                    "TeR": 3.0,
-                                    "GR": 2.0,
-                                    "TiR": 3.0,
-                                    "P": 2.0
+                                    "P": 2,
+                                    "TiR": 3,
+                                    "TeR": 2,
+                                    "GR": 1
                             },
-                            "dqr_overall": 2.5,
-                            "single_score_mpt": 1.17
+                            "dqr_overall": 2.0,
+                            "single_score_mpt": 1.17,
+                            "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 — Market mix criterion only (farm-gate scope). 4-indicator scheme (TeR + TiR + GR + P) / 4 per ADEME/INRAE methodology. All FR ingredients share identical DQR because they use common statistical methodology (RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
                     }
             }
     },
