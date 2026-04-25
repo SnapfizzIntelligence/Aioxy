@@ -211,10 +211,8 @@ ingredients.forEach(ing => {
 
     let bridgeHTML = '';
 
-    if (adj.method === "eudr_dluc_penalty") {
-        bridgeHTML = `<span style="color:#C0392B; font-weight:bold;">[🛑 EUDR MARKET BLOCK]</span><br>Unverified high-risk origin. Illegal for EU Market (+50% dLUC applied).`;
-
-    } else if (isPrimary && ing.primary_data) {
+    // EUDR deforestation-risk screening not implemented. Requires TRASE/Global Forest Watch integration. Deferred.
+    if (isPrimary && ing.primary_data) {
         const pd = ing.primary_data;
         const ddsText = pd.ddsReference ? ` | DDS: ${pd.ddsReference}` : '';
         const farmRegionText = pd.farmRegion ? pd.farmRegion : 'Not specified';
@@ -235,7 +233,6 @@ ingredients.forEach(ing => {
         // Build adjustment summary
         let adjustmentSummary = '';
         if (pd.waterSource === 'rainfed') adjustmentSummary += '💧 Rainfed (-95% water) | ';
-        if (pd.farmingPractice === 'organic') adjustmentSummary += '🌱 Organic (-15 µPt) | ';
         if (pd.farmingPractice === 'regen') adjustmentSummary += '🌍 Regen Ag (+20% soil C) | ';
         if (adjustmentSummary.endsWith(' | ')) adjustmentSummary = adjustmentSummary.slice(0, -3);
         
@@ -636,18 +633,13 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     if (qrBox && typeof QRCode !== 'undefined') {
         qrBox.innerHTML = '';
         
-        // 🛡️ REGULATORY FIX: Dynamic Legal Status Binding
-        const isEudrViolation = auditTrailData.pefCategories["Climate Change"].contribution_tree.Ingredients?.components?.some(c => c.universal_adjustments?.method === "eudr_dluc_penalty");
-        const eudrStatusText = isEudrViolation ? 'NON-COMPLIANT (HIGH RISK)' : 'COMPLIANT';
-        
         const qrTextPayload = `AIOXY VERIFIED AUDIT
 -------------------------
 DPP ID: ${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
 Product: ${productName}
 Impact: ${totalImpact.toFixed(4)} kg CO₂e/kg
 Method: PEF 3.1 / CSRD
-Date: ${dateStr}
-Status: EUDR ${eudrStatusText}`;
+Date: ${dateStr}`;
 
         new QRCode(qrBox, {
             text: qrTextPayload,
