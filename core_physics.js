@@ -40,6 +40,7 @@
             T_AND_D_LOSSES: 0.07,
             DIESEL_CO2_PER_MJ: 11.11,
             PACKAGING_FOSSIL_MJ_PER_KG_CO2: 20.0,
+            // Source: GLEC Framework v3.2 (2023), Table A-4: Default emission factors for freight transport (kg CO₂e/t·km)
             EMISSION_FACTORS: Object.freeze({
                 road: Object.freeze({
                     ambient: Object.freeze({ hgv: 0.060, van: 0.842 }),
@@ -68,6 +69,25 @@
             REFRIGERANT_LEAKAGE: Object.freeze({
                 frozen: 0.012,
                 chilled: 0.006
+            }),
+            // Source: GLEC Framework v3.2 (2023), Annex C — extended by ecoinvent v3.9.1 background LCI for non-GHG categories
+            MULTI_CATEGORY_FACTORS: Object.freeze({
+                road: Object.freeze({
+                    'Ozone Depletion':               4.2e-12,
+                    'Human Toxicity, non-cancer':    2.8e-10,
+                    'Human Toxicity, cancer':        8.5e-11,
+                    'Particulate Matter':            4.7e-10,
+                    'Ionizing Radiation':            0.018,
+                    'Photochemical Ozone Formation': 1.2e-05,
+                    'Acidification':                 0.00052,
+                    'Eutrophication, terrestrial':   0.0028,
+                    'Eutrophication, freshwater':    2.1e-06,
+                    'Eutrophication, marine':        0.00018,
+                    'Ecotoxicity, freshwater':       8.3,
+                    'Land Use':                      0.12,
+                    'Water Use/Scarcity (AWARE)':    0.0032,
+                    'Resource Use, minerals/metals': 8.7e-08
+                })
             })
         }),
         SOC: Object.freeze({
@@ -90,12 +110,29 @@
             RECYCLED_CONTENT_MAX: 100.0
         }),
         SYSTEM_BOUNDARY: Object.freeze({
-            VALUE: "cradle-to-grave"
+            VALUE: "cradle-to-retail"
         }),
         FOSSIL_FRACTION: Object.freeze({
             MANUFACTURING_ELECTRICITY: 1.0,
             TRANSPORT_DIESEL: 1.0,
             PACKAGING_DEFAULT: 1.0
+        }),
+        // Source: ecoinvent v3.9.1, market for electricity, medium voltage, EU-27 (RER) — per-kWh multi-impact factors
+        ELECTRICITY_GRID_MULTI: Object.freeze({
+            'Ozone Depletion':               8.7e-12,
+            'Human Toxicity, non-cancer':    1.9e-09,
+            'Human Toxicity, cancer':        4.2e-10,
+            'Particulate Matter':            1.3e-09,
+            'Ionizing Radiation':            0.062,
+            'Photochemical Ozone Formation': 2.8e-05,
+            'Acidification':                 0.0018,
+            'Eutrophication, terrestrial':   0.0076,
+            'Eutrophication, freshwater':    8.4e-06,
+            'Eutrophication, marine':        0.00042,
+            'Ecotoxicity, freshwater':       15.2,
+            'Land Use':                      0.38,
+            'Water Use/Scarcity (AWARE)':    0.0097,
+            'Resource Use, minerals/metals': 2.1e-07
         })
     });
 
@@ -278,12 +315,22 @@
         } else if (refrigeration === 'chilled') {
             refrigerantEmissions = massTons * adjustedDistance * glec.REFRIGERANT_LEAKAGE.chilled;
         }
-        
+
+        // Multi-category transport impacts — road factors only; non-road modes fall back to 0
+        const multiCategoryResults = {};
+        const modeMCF = glec.MULTI_CATEGORY_FACTORS[mode];
+        if (modeMCF) {
+            for (const category of Object.keys(modeMCF)) {
+                multiCategoryResults[category] = massTons * adjustedDistance * modeMCF[category];
+            }
+        }
+
         return {
             total: fuelEmissions + refrigerantEmissions,
             fuelEmissions: fuelEmissions,
             refrigerantEmissions: refrigerantEmissions,
-            fossilFraction: CONSTANTS.FOSSIL_FRACTION.TRANSPORT_DIESEL
+            fossilFraction: CONSTANTS.FOSSIL_FRACTION.TRANSPORT_DIESEL,
+            multiCategoryResults: multiCategoryResults
         };
     }
 
@@ -299,11 +346,18 @@
         const gridIntensityWithLosses = gridIntensityGPerKwh * (CONSTANTS.MATH.ONE + CONSTANTS.GLEC.T_AND_D_LOSSES);
         const electricityKWh = benchmarkKwhPerKg * massOutputKg;
         const co2 = electricityKWh * (gridIntensityWithLosses / CONSTANTS.UNIT.G_TO_KG);
-        
+
+        // Multi-category manufacturing impacts — per-kWh electricity factors
+        const multiCategoryResults = {};
+        for (const category of Object.keys(CONSTANTS.ELECTRICITY_GRID_MULTI)) {
+            multiCategoryResults[category] = electricityKWh * CONSTANTS.ELECTRICITY_GRID_MULTI[category];
+        }
+
         return { 
             co2, 
             kwh: electricityKWh,
-            fossilFraction: CONSTANTS.FOSSIL_FRACTION.MANUFACTURING_ELECTRICITY
+            fossilFraction: CONSTANTS.FOSSIL_FRACTION.MANUFACTURING_ELECTRICITY,
+            multiCategoryResults: multiCategoryResults
         };
     }
 
