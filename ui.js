@@ -443,11 +443,6 @@ function updateResultsUI(results) {
     
     // =========== INTEGRATION POINT: CALL ALL FIXES ===========
     displayPEFSingleScore();
-    if (window.auditTrailData?.temporal_discounting) {
-    displayTemporalDiscounting(window.auditTrailData.temporal_discounting);
-} else {
-    displayTemporalDiscounting();
-                                     }
     displayForegroundBackground();
     displayCompleteAuditTrail();
     displayISOCompliance();
@@ -766,11 +761,6 @@ function displayPEFSingleScore() {
             <div class="dqr-badge" style="background: ${ratingColor}; color: white;">
                 ${rating} • Person Equivalent Impact
             </div>
-            ${singleScoreResult.organic_bonus_applied ? `
-            <div style="margin-top: 0.75rem; display: inline-block; background: #E6FFFA; color: #2C7A7B; border: 1px solid #81E6D9; padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">
-                <i class="fas fa-seedling"></i> ADEME Organic Bonus: -${(15.0 * singleScoreResult.organic_ratio).toFixed(1)} µPt (${(singleScoreResult.organic_ratio * 100).toFixed(0)}% formulation)
-            </div>
-            ` : ''}
             <div style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray);">
                 <div><strong>Normalized Score:</strong> ${singleScoreResult.normalizedScore.toExponential(3)}</div>
                 <div><strong>Weighted Score:</strong> ${singleScoreResult.weightedScore.toExponential(3)}</div>
@@ -1458,136 +1448,6 @@ function formatPEFValue(value) {
     if (Math.abs(value) < 1) return value.toFixed(5);
     if (Math.abs(value) < 1000) return value.toFixed(2);
     return value.toFixed(1);
-}
-
-// ================== UI INTEGRATION: TEMPORAL DISCOUNTING DISPLAY ==================
-function displayTemporalDiscounting() {
-    const methodologyTab = document.getElementById('methodology-tab');
-    if (!methodologyTab || !finalPefResults || Object.keys(finalPefResults).length === 0) return;
-
-    // Calculate temporal discounting
-    const temporalResults = applyTemporalDiscounting(finalPefResults, 100);
-    
-    // Create section
-    let tempSection = document.getElementById('temporalDiscountingSection');
-    if (!tempSection) {
-        tempSection = document.createElement('div');
-        tempSection.id = 'temporalDiscountingSection';
-        tempSection.className = 'card';
-        tempSection.style.marginTop = '1.5rem';
-        
-        // Insert after PEF categories table
-        const pefTable = methodologyTab.querySelector('.pef-scorecard');
-        if (pefTable) {
-            pefTable.parentNode.insertBefore(tempSection, pefTable.nextSibling);
-        } else {
-            methodologyTab.appendChild(tempSection);
-        }
-    }
-
-    tempSection.innerHTML = `
-        <div class="card-header">
-            <div class="card-title">
-                <div class="card-icon" style="background: var(--gradient-accent);">
-                    <i class="fas fa-clock"></i>
-                </div>
-                Temporal Discounting & Dynamic LCIA
-            </div>
-            <div class="badge">
-                <i class="fas fa-chart-line"></i>
-                Time-Adjusted Impacts • 100-Year Horizon
-            </div>
-        </div>
-        
-        <div style="margin: 1.5rem 0;">
-            <p style="color: var(--gray); margin-bottom: 1rem;">
-                <i class="fas fa-info-circle"></i> 
-                Long-term environmental impacts are discounted based on category-specific rates 
-                (PEF 3.1 guidance). Climate change impacts increase 2% per decade.
-            </p>
-            
-            <div style="background: white; border-radius: 10px; padding: 1.5rem; margin-top: 1rem;">
-                <h4 style="margin-bottom: 1rem; color: var(--primary);">Discount Rates by Category</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    ${Object.entries(temporalResults).slice(0, 8).map(([cat, data]) => `
-                        <div style="background: var(--light); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--secondary);">
-                            <div style="font-weight: 600; margin-bottom: 0.5rem;">${cat}</div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <div style="font-size: 0.85rem; color: var(--gray);">Discount Rate:</div>
-                                <div style="font-weight: 700;">${(data.discount_rate * 100).toFixed(1)}%</div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
-                                <div style="font-size: 0.85rem; color: var(--gray);">Present Value:</div>
-                                <div style="font-weight: 700;">${formatPEFValue(data.present_value_equivalent)}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            
-            <!-- CHART FOR TEMPORAL DISCOUNTING -->
-            <div style="margin-top: 1.5rem;">
-                <h4 style="margin-bottom: 1rem; color: var(--primary);">Climate Change Impact Over Time</h4>
-                <div style="height: 200px; position: relative;">
-                    <canvas id="temporalChart"></canvas>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Create temporal discounting chart
-    setTimeout(() => {
-        const ctx = document.getElementById('temporalChart');
-        if (!ctx) return;
-        
-        // FIX: Guard if Climate Change key missing from temporalResults
-        if (!temporalResults["Climate Change"]) return;
-        
-        const years = Array.from({length: 100}, (_, i) => i + 1);
-        const climateData = years.map(year => {
-            const base = temporalResults["Climate Change"].base_impact;
-            const rate = temporalResults["Climate Change"].discount_rate;
-            const dynamic = Math.pow(1.02, year / 10);
-            return base * dynamic * Math.exp(-rate * year);
-        });
-
-        new Chart(ctx.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: years.filter((_, i) => i % 10 === 0),
-                datasets: [{
-                    label: 'Discounted Climate Impact',
-                    data: climateData.filter((_, i) => i % 10 === 0),
-                    borderColor: '#FF6B6B',
-                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => `Year ${context.label}: ${context.raw.toExponential(3)} kg CO₂e`
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: { display: true, text: 'Years from now' }
-                    },
-                    y: {
-                        title: { display: true, text: 'Discounted Impact (kg CO₂e)' },
-                        type: 'logarithmic'
-                    }
-                }
-            }
-        });
-    }, 100);
 }
 
 // ================== UI INTEGRATION: FOREGROUND/BACKGROUND DISPLAY ==================
