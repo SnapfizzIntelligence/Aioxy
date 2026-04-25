@@ -212,11 +212,73 @@
     //   traceability  — traceability entry for this ingredient; gains .country_factors
     //                   and .usetox
     // =========================================================================
+
+    // ── BUG FIX (Phase 2): ISO code → full country name resolver ─────────────
+    // BUG: aioxy_pef31_database.js stores AWARE 2.0, LANCA v2.5, and FAOSTAT
+    // data keyed by full country names (e.g. "France", "Germany"), but
+    // applyCountrySpecificFactors() was passing 2-letter ISO 3166-1 alpha-2
+    // codes (e.g. "FR", "DE"), causing every lookup to return undefined and
+    // silently skipping ALL country-specific adjustments since Phase 2 launched.
+    // This resolver translates ISO codes to the exact key strings used in the
+    // database, fixing AWARE 2.0, LANCA v2.5, and FAOSTAT lookups in one place.
+    function resolveCountryCode(isoCode) {
+        // Maps ISO 3166-1 alpha-2 codes to the full names used by:
+        // AWARE 2.0 (WULCA consortium), LANCA v2.5 (Fraunhofer IBP / JRC),
+        // FAOSTAT (Crops and Livestock Products)
+        // Sources for country names: the exact key strings used in
+        // aioxy_pef31_database.js
+        const MAP = {
+            "AL": "Albania",        "AT": "Austria",          "BA": "Bosnia and Herzegovina",
+            "BE": "Belgium",        "BG": "Bulgaria",         "BR": "Brazil",
+            "CA": "Canada",         "CH": "Switzerland",      "CI": "Côte d'Ivoire",
+            "CN": "China",          "CY": "Cyprus",           "CZ": "Czechia",
+            "DE": "Germany",        "DK": "Denmark",          "EE": "Estonia",
+            "ES": "Spain",          "FI": "Finland",          "FR": "France",
+            "GB": "United Kingdom of Great Britain & Northern Ireland",
+            "GR": "Greece",         "HR": "Croatia",          "HU": "Hungary",
+            "IE": "Ireland",        "IN": "India",            "IS": "Iceland",
+            "IT": "Italy",          "JP": "Japan",            "LT": "Lithuania",
+            "LU": "Luxembourg",     "LV": "Latvia",           "MA": "Morocco",
+            "MD": "Moldova",        "ME": "Montenegro",       "MK": "North Macedonia",
+            "MT": "Malta",          "NL": "Netherlands",      "NO": "Norway",
+            "PL": "Poland",         "PT": "Portugal",         "RO": "Romania",
+            "RS": "Serbia",         "SE": "Sweden",           "SI": "Slovenia",
+            "SK": "Slovakia",       "TR": "Turkey",           "US": "United States of America",
+            "VN": "Viet Nam",       "AR": "Argentina",        "AU": "Australia",
+            "ID": "Indonesia",      "PK": "Pakistan",         "NG": "Nigeria",
+            "EG": "Egypt",          "ZA": "South Africa",     "MX": "Mexico",
+            "RU": "Russian Federation", "UA": "Ukraine",      "KR": "Republic of Korea",
+            "KE": "Kenya",          "ET": "Ethiopia",         "GH": "Ghana",
+            "CM": "Cameroon",       "PE": "Peru",
+            "CL": "Chile",          "CO": "Colombia",         "UY": "Uruguay",
+            "MY": "Malaysia",       "PH": "Philippines",      "TH": "Thailand",
+            "BD": "Bangladesh",     "NP": "Nepal",            "LK": "Sri Lanka",
+            "IR": "Iran (Islamic Republic of)", "IQ": "Iraq",
+            "SA": "Saudi Arabia",   "AE": "United Arab Emirates",
+            "RE": "France",          // Réunion is FR overseas — uses FR as proxy
+            "WI": "France",          // West Indies (FR Antilles) — uses FR as proxy
+            "EU": "France",          // EU aggregate — uses FR as conservative proxy
+            "XK": "Serbia"           // Kosovo — nearest neighbor proxy
+        };
+
+        if (MAP[isoCode]) return MAP[isoCode];
+
+        // Fallback: log warning, return original code (will fail gracefully in caller)
+        console.warn('[AIOXY] No country name mapping for ISO code: ' + isoCode +
+                     '. AWARE/LANCA/FAOSTAT adjustments will be skipped for this country.');
+        return isoCode;
+    }
+
     function applyCountrySpecificFactors(flatPef, ingredient, ingData, adjustments, traceability) {
 
         // === STEP A: Determine reference country ===
         const REFERENCE_COUNTRY = 'FR';
         const originCountry = ingredient.originCountry || REFERENCE_COUNTRY;
+
+        // Resolve ISO codes to the full country name strings used as keys in
+        // aioxy_pef31_database.js (AWARE 2.0, LANCA v2.5, FAOSTAT).
+        const refName    = resolveCountryCode(REFERENCE_COUNTRY);
+        const originName = resolveCountryCode(originCountry);
 
         // If origin is FR, no adjustment needed — Agribalyse already reflects FR conditions
         if (originCountry === REFERENCE_COUNTRY) {
@@ -265,8 +327,8 @@
                     reason:  'window.aioxyData.aware_20.agricultural not loaded'
                 };
             } else {
-                const refAWARE    = awareData.agricultural[REFERENCE_COUNTRY];
-                const originAWARE = awareData.agricultural[originCountry];
+                const refAWARE    = awareData.agricultural[refName];
+                const originAWARE = awareData.agricultural[originName];
 
                 if (refAWARE === undefined || refAWARE === null) {
                     countryFactorsLog.aware = {
@@ -321,8 +383,8 @@
                     reason:  'window.aioxyData.lanca_sqi.occupation not loaded'
                 };
             } else {
-                const refOccupation    = lancaData.occupation[REFERENCE_COUNTRY];
-                const originOccupation = lancaData.occupation[originCountry];
+                const refOccupation    = lancaData.occupation[refName];
+                const originOccupation = lancaData.occupation[originName];
 
                 if (refOccupation === undefined || refOccupation === null) {
                     countryFactorsLog.lanca = {
@@ -347,8 +409,8 @@
                     let originTransformation = null;
 
                     if (lancaData.transformation) {
-                        refTransformation    = lancaData.transformation[REFERENCE_COUNTRY];
-                        originTransformation = lancaData.transformation[originCountry];
+                        refTransformation    = lancaData.transformation[refName];
+                        originTransformation = lancaData.transformation[originName];
                     }
 
                     if (
@@ -405,7 +467,7 @@
                 yieldData &&
                 yieldData.yields
             ) {
-                const countryYields = yieldData.yields[originCountry];
+                const countryYields = yieldData.yields[originName];
                 if (!countryYields) {
                     countryFactorsLog.faostat = {
                         applied:          false,
@@ -614,8 +676,9 @@ if (!traceability.usetox) {
                 if (pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
                     let baselineYield = 5000;
                     const yieldDB = window.aioxyData.crop_yields;
-                    if (yieldDB && yieldDB.yields && yieldDB.yields[ingredient.originCountry || 'FR']) {
-                        const countryYields = yieldDB.yields[ingredient.originCountry || 'FR'];
+                    const yieldLookupName = resolveCountryCode(ingredient.originCountry || 'FR');
+                    if (yieldDB && yieldDB.yields && yieldDB.yields[yieldLookupName]) {
+                        const countryYields = yieldDB.yields[yieldLookupName];
                         for (const [cropName, cropYield] of Object.entries(countryYields)) {
                             if ((ingData.name || '').toLowerCase().includes(cropName.toLowerCase())) {
                                 baselineYield = cropYield;
@@ -687,15 +750,14 @@ if (!traceability.usetox) {
                 // Applied per-kg-of-ingredient basis after multipliers, added to Climate Change totals.
                 if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
                     // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
-                    const IPCC = window.corePhysics.CONSTANTS.IPCC_TIER1;
-                    const AR5  = window.corePhysics.CONSTANTS.IPCC_AR5_PEF31;
+                    const IPCC  = window.corePhysics.CONSTANTS.IPCC_TIER1;
+                    const AR5   = window.corePhysics.CONSTANTS.IPCC_AR5_PEF31;
+                    const SALCA = window.corePhysics.CONSTANTS.SALCA_P;
 
-                    const F_SN = pd.nitrogenKgPerTon * ingredient.quantityKg;                                        // kg synthetic N applied
-                    const N2O_direct         = F_SN * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF1, direct)
+                    const F_SN = pd.nitrogenKgPerTon * ingredient.quantityKg;                                                              // kg synthetic N applied
+                    const N2O_direct         = F_SN * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;                      // kg CO2e (EF1, direct)
                     const N2O_indirect_leach = F_SN * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF5, leaching)
-                    // FRAC_GASF = 0.10 per IPCC 2006 Vol. 4, Table 11.3 — not yet in core_physics.CONSTANTS
-                    // EF4 = 0.01        // kg N2O-N per kg N volatilized (IPCC 2006 Tier 1)
-                    const N2O_volatilization = F_SN * 0.10 * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF4, volatilization/atmospheric deposition)
+                    const N2O_volatilization = F_SN * IPCC.FRAC_GASF * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF4, volatilization/atmospheric deposition)
                     const N2O_total = N2O_direct + N2O_indirect_leach + N2O_volatilization;
 
                     // Add N2O to per-kg flatPef so it flows correctly through quantityKg multiplication later
@@ -710,7 +772,7 @@ if (!traceability.usetox) {
                         direct_kgCO2e:           N2O_direct,
                         indirect_leach_kgCO2e:   N2O_indirect_leach,
                         volatilization_kgCO2e:   N2O_volatilization,
-                        formula:                 'IPCC Tier 1 (2006), EF1=0.01, EF5=0.011, FRAC_LEACH=0.30, EF4=0.01, FRAC_GASF=0.10 (volatilization/atmospheric deposition), GWP_N2O=265 (AR5)'
+                        formula:                 'IPCC Tier 1 (2006), EF1=IPCC.EF1_DIRECT_N2O, EF5=IPCC.EF5_INDIRECT_N2O, FRAC_LEACH=IPCC.FRAC_LEACH, EF4=IPCC.EF4_VOLATILIZATION, FRAC_GASF=IPCC.FRAC_GASF (volatilization/atmospheric deposition), GWP_N2O=AR5.GWP_N2O'
                     };
                 }
 
@@ -718,7 +780,7 @@ if (!traceability.usetox) {
                 // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
                 if (pd.phosphorusKgPerTon && pd.phosphorusKgPerTon > 0) {
                     const P_applied = pd.phosphorusKgPerTon * ingredient.quantityKg;   // kg P applied
-                    const P_leach   = P_applied * window.corePhysics.CONSTANTS.SALCA_P.FRAC_RELE * window.corePhysics.CONSTANTS.SALCA_P.PO4_CONVERSION; // kg P eq
+                    const P_leach   = P_applied * SALCA.FRAC_RELE * SALCA.PO4_CONVERSION; // kg P eq
 
                     // Add to per-kg flatPef for Eutrophication, freshwater
                     flatPef['Eutrophication, freshwater'] += P_leach / ingredient.quantityKg;
@@ -727,7 +789,7 @@ if (!traceability.usetox) {
                         applied:        true,
                         P_applied_kg:   P_applied,
                         P_leach_kg_P_eq: P_leach,
-                        formula:        'SALCA-P, FRAC_RELE=0.05, PO4_CONV=3.06'
+                        formula:        'SALCA-P, FRAC_RELE=SALCA.FRAC_RELE, PO4_CONV=SALCA.PO4_CONVERSION'
                     };
                 }
 
@@ -1381,7 +1443,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
 
         // FIX C [Audit Finding C]: Climate Change now uses 1000 iterations per ISO 14044 Annex A
         // recommendation (≥1000 for stable P5/P95 percentiles). All categories use 1000 iterations.
-        const iterations = category === 'Climate Change' ? 1000 : 1000;
+        const iterations = 1000;  // ISO 14044 Annex A recommends ≥1000 for stable P5/P95 percentiles
 
         return window.corePhysics.calculateUncertainty({
             components: mcComponents,
@@ -1532,7 +1594,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
         const singleScoreResult  = computeSingleScore(pefResults, input, ingredientResults);
 
         // B2: Run Monte Carlo for all 16 scorable EF 3.1 categories
-        // 1000 iterations per non-CC category per ISO 14044 Annex A recommendation (≥1000 for stable P5/P95 percentiles).
+        // 1000 iterations for all categories per ISO 14044 Annex A recommendation (≥1000 for stable P5/P95 percentiles).
         const monteCarloResults = {};
         for (const cat of SCORABLE_CATEGORIES) {
             monteCarloResults[cat] = computeMonteCarlo(ingredientResults, cat);
