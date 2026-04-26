@@ -35,6 +35,16 @@ function displayFullPefScorecard() {
         </td>
     `;
     tbody.appendChild(disclaimerRow);
+
+    // Bug 7 fix: show empty-state message if no calculation data yet
+    if (Object.keys(finalPefResults).length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `<td colspan="6" style="text-align:center; padding: 2rem; color: #718096;">
+            <i class="fas fa-info-circle"></i> No calculation data yet. Run an impact calculation to populate the PEF scorecard.
+        </td>`;
+        tbody.appendChild(emptyRow);
+        return;
+    }
     
     // =========== FIX: USE SINGLE SOURCE OF TRUTH ===========
     const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
@@ -1452,4 +1462,5 @@ function formatPEFValue(value) {
 }
 
 // ================== AUDIT TRAIL LOADED ==================
+window.exportCSRDMatrix = exportCSRDMatrix;
 console.log("✅ [AIOXY] audit-trail.js loaded - Transparency ready");
