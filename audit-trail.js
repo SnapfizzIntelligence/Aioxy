@@ -78,7 +78,7 @@ function displayFullPefScorecard() {
                         <div style="font-size: 0.8rem; color: var(--gray);">${score.source}</div>
                     </div>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <span class="dqr-badge ${dqrQuality.class}">DQR: ${score.dqr.toFixed(1)}</span>
+                        <span class="dqr-badge ${dqrQuality.class}">DQR: ${(score.dqr ?? 2.5).toFixed(1)}</span>
                         <span class="badge">±${score.uncertainty}% uncertainty</span>
                     </div>
                 </div>
@@ -102,6 +102,18 @@ function displayAuditTrail() {
     const catCC = auditTrailData.pefCategories["Climate Change"];
     const mb = auditTrailData.mass_balance;
     const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'FR';
+    
+    // 🛡️ BUG #7 GUARD: catCC.total must be a number
+    if (typeof catCC?.total !== 'number') {
+        auditContent.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Audit Data Incomplete</h3><p>Climate Change total is missing or malformed. Re-run calculation.</p></div>';
+        return;
+    }
+
+    // 🛡️ BUG #4 GUARD: contribution_tree.Ingredients.components must exist and be an array
+    if (!catCC || !catCC.contribution_tree || !catCC.contribution_tree.Ingredients || !Array.isArray(catCC.contribution_tree.Ingredients.components)) {
+        auditContent.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Contribution Tree Not Available</h3><p>No lifecycle stage breakdown available. Re-run calculation.</p></div>';
+        return;
+    }
     
     // Helper: Country Name Resolver
     const getCtry = (code) => (window.aioxyData?.countries?.[code]?.name || code);
@@ -278,12 +290,12 @@ const archetype = archetypes[processState];
 // Build the PROCESSING column display
 let processingDisplay = 'Raw (1.00x)';
 if (archetype && processState !== 'raw') {
-    processingDisplay = `${archetype.name} (${archetype.yield_factor.toFixed(2)}x)`;
+    processingDisplay = `${archetype.name} (${(archetype?.yield_factor ?? 1.0).toFixed(2)}x)`;
 }
 
 if (archetype && processState !== 'raw') {
     bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">
-        ⚙️ [Physics Flag] ${archetype.name} (Yield: ${archetype.yield_factor.toFixed(2)}x)
+        ⚙️ [Physics Flag] ${archetype.name} (Yield: ${(archetype?.yield_factor ?? 1.0).toFixed(2)}x)
     </span>`;
     
     // Add energy details if significant
@@ -799,16 +811,21 @@ function exportCSRDMatrix() {
 
     const pName = document.getElementById('productName')?.value || 'Product';
     const ccTree = auditTrailData.pefCategories["Climate Change"].contribution_tree;
-    const waterTree = auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"].contribution_tree;
-    const fossilTree = auditTrailData.pefCategories["Resource Use, fossils"].contribution_tree;
-    const landTree = auditTrailData.pefCategories["Land Use"].contribution_tree; // 🛡️ NEW: E4
+    const waterTree = auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.contribution_tree;
+    const fossilTree = auditTrailData.pefCategories["Resource Use, fossils"]?.contribution_tree;
+    const landTree = auditTrailData.pefCategories["Land Use"]?.contribution_tree; // 🛡️ NEW: E4
+
+    if (!waterTree || !fossilTree || !landTree) {
+        alert('Export aborted: one or more required impact category trees (Water, Fossil, Land) are missing. Re-run the calculation.');
+        return;
+    }
     
     const mb = auditTrailData.mass_balance;
     const dppId = auditTrailData.dppId || 'N/A';
-    const totalCo2 = auditTrailData.pefCategories["Climate Change"].total.toFixed(6);
-    const totalWater = (auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.total || 0).toFixed(6);
-    const totalFossil = (auditTrailData.pefCategories["Resource Use, fossils"]?.total || 0).toFixed(6);
-    const totalLand = (auditTrailData.pefCategories["Land Use"]?.total || 0).toFixed(6); // 🛡️ NEW: E4
+    const totalCo2 = (auditTrailData.pefCategories["Climate Change"]?.total ?? 0).toFixed(6);
+    const totalWater = (auditTrailData.pefCategories["Water Use/Scarcity (AWARE)"]?.total ?? 0).toFixed(6);
+    const totalFossil = (auditTrailData.pefCategories["Resource Use, fossils"]?.total ?? 0).toFixed(6);
+    const totalLand = (auditTrailData.pefCategories["Land Use"]?.total ?? 0).toFixed(6); // 🛡️ NEW: E4
     
     const volume = document.getElementById('annualVolume')?.value || 0;
     const dqrOverall = auditTrailData.dqr_summary?.overall_dqr?.toFixed(2) || '1.5';
