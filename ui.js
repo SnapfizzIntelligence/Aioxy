@@ -34,7 +34,9 @@ function showTab(tabName, event) {
             } else {
                 calculateImpact();
             }
-            setTimeout(updateBusinessCase, 200);
+            if (typeof updateBusinessCase === 'function') {
+                setTimeout(updateBusinessCase, 200);
+            }
         } else {
             updateBusinessCase();
         }
@@ -43,7 +45,11 @@ function showTab(tabName, event) {
         generateDPP();
     }
     if (tabName === 'pef-scorecard') {
-        displayFullPefScorecard();
+        if (typeof displayFullPefScorecard === 'function') {
+            displayFullPefScorecard();
+        } else {
+            console.warn('displayFullPefScorecard is not available. PEF Scorecard will not render.');
+        }
     }
     if (tabName === 'transparency') {
         displayAuditTrail();
@@ -82,6 +88,16 @@ function createEmissionChart(results) {
     
     if (currentChart) {
         currentChart.destroy();
+    }
+
+    // Bug 10 fix: if no valid calculation data, destroy any existing chart and return
+    const hasData = auditTrailData?.pefCategories?.["Climate Change"]?.total > 0;
+    if (!hasData) {
+        if (currentChart) {
+            currentChart.destroy();
+            currentChart = null;
+        }
+        return;
     }
     
     const ingredientsCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Ingredients?.total || 0;
@@ -231,7 +247,9 @@ function updateResultsUI(results) {
     // =====================================================================
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     const singleScoreData = window.auditTrailData?.pef_single_score || { singleScore: 0 };
-    const mPtScore = singleScoreData.singleScore;
+    const mPtScore = (typeof singleScoreData.singleScore === 'number' && isFinite(singleScoreData.singleScore))
+        ? singleScoreData.singleScore
+        : 0;
 
     // Strictly aligned with ADEME / PEF 3.1 Eco-Score thresholds (µPt per kg)
     let ecoGrade = 'E';
@@ -472,6 +490,10 @@ function updateDataQualityDisplay(results) {
                 (i.id && score.name && score.name.includes(i.name && i.name.substring(0, 10)))
             );
             const ingredient = match ? aioxyData.ingredients[match.id] : null;
+            // Bug 4 fix: skip ingredients with missing DQR data
+            if (!ingredient || !ingredient.data || !ingredient.data.metadata || !ingredient.data.metadata.dqr) {
+                return;
+            }
             if (ingredient && ingredient.data && ingredient.data.metadata && ingredient.data.metadata.dqr) {
                 terSum += ingredient.data.metadata.dqr.TeR || 0;
                 grSum  += ingredient.data.metadata.dqr.GR  || 0;
@@ -1647,6 +1669,13 @@ function displayISOCompliance() {
 function displayCompleteAuditTrail() {
     const transparencyTab = document.getElementById('transparency-tab');
     if (!transparencyTab || !auditTrailData) return;
+
+    // Bug 3 fix: guard against empty auditTrailData (before any calculation has run)
+    if (!auditTrailData || !auditTrailData.pefCategories) {
+        const section = document.getElementById('completeAuditTrailSection');
+        if (section) section.innerHTML = '';
+        return;
+    }
 
     let auditSection = document.getElementById('completeAuditTrailSection');
     if (!auditSection) {
