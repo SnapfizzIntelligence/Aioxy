@@ -1543,7 +1543,7 @@ function displayForegroundBackground() {
                     ${(fb.components?.foreground || []).map(comp => `
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
                             <div>${comp.name}</div>
-                            <div style="font-weight: 600;">${(comp.contribution).toFixed(2)} kg CO₂e</div>
+                            <div style="font-weight: 600;">${(comp.co2 ?? 0).toFixed(2)} kg CO₂e</div>
                         </div>
                     `).join('')}
                 </div>
@@ -1567,7 +1567,7 @@ function displayForegroundBackground() {
                     ${(fb.components?.background || []).map(comp => `
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
                             <div>${comp.name}</div>
-                            <div style="font-weight: 600;">${(comp.contribution).toFixed(2)} kg CO₂e</div>
+                            <div style="font-weight: 600;">${(comp.co2 ?? 0).toFixed(2)} kg CO₂e</div>
                         </div>
                     `).join('')}
                 </div>
