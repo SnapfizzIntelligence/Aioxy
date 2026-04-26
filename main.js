@@ -385,7 +385,7 @@ async function calculateImpact() {
 function startNewAudit() {
     if (!confirm("Are you sure you want to start a new audit? This will clear all current data.")) return;
     localStorage.removeItem('aioxy_pitch_state');
-    selectedIngredients = []; currentDPPId = null; finalPefResults = {}; massBalanceData = {}; auditTrailData = {};
+    selectedIngredients = []; currentDPPId = null; finalPefResults = {}; massBalanceData = {}; auditTrailData = {}; currentComparisonBaseline = null;
 
     const fields = [
         {id:'productName',val:'New Product'},{id:'productWeight',val:'0.200'},
