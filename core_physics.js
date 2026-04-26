@@ -623,12 +623,22 @@
             if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${cloned.processingMethod}`);
             
             const grid = db.gridIntensity[cloned.countryCode];
-            if (!grid) throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
-            
+            if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
+
+            // Bug 4 fix: grid may be a number (from grid_intensity db) or an object (from countries db)
+            let gridValue;
+            if (typeof grid === 'number') {
+                gridValue = grid;
+            } else if (grid && typeof grid.electricityCO2 === 'number') {
+                gridValue = grid.electricityCO2;
+            } else {
+                throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
+            }
+
             const mfg = calculateManufacturing({
                 massOutputKg: ratio,
                 benchmarkKwhPerKg: benchmark,
-                gridIntensityGPerKwh: grid.electricityCO2
+                gridIntensityGPerKwh: gridValue
             });
             mfgCO2 = mfg.co2;
             mfgKwh = mfg.kwh;
