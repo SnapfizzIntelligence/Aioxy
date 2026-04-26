@@ -1508,12 +1508,29 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             }
         }
 
+        // Bug 1 fix: verify all scorable categories have both nf and wf entries before passing to calculateSingleScore
+        for (const cat of Object.keys(scorablePefResults)) {
+            if (nf[cat] === undefined) {
+                console.warn('[AIOXY] computeSingleScore: missing normalization factor for category "' + cat + '". Skipping from single score.');
+                delete scorablePefResults[cat];
+            } else if (wf[cat] === undefined) {
+                console.warn('[AIOXY] computeSingleScore: missing weighting factor for category "' + cat + '". Skipping from single score.');
+                delete scorablePefResults[cat];
+            }
+        }
+
         const singleScoreResult = window.corePhysics.calculateSingleScore({
             pefResults:           scorablePefResults,
             productWeightKg:      input.product.weightKg,
             normalizationFactors: nf,
             weightingFactors:     wf
         });
+
+        // Bug 1 fix: guard against NaN or Infinity in singleScore
+        if (!isFinite(singleScoreResult.singleScore) || isNaN(singleScoreResult.singleScore)) {
+            console.warn('[AIOXY] computeSingleScore: singleScore is not finite (' + singleScoreResult.singleScore + '). Setting to 0.');
+            singleScoreResult.singleScore = 0;
+        }
 
         const breakdown = {};
         for (const cat of Object.keys(scorablePefResults)) {
@@ -1740,6 +1757,14 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             computeDQR(ingredientResults, pefResults);
 
         const singleScoreResult  = computeSingleScore(pefResults, input, ingredientResults);
+
+        // Bug 8 fix: guard against non-finite values from computeSingleScore
+        if (!isFinite(singleScoreResult.finalMicroPoints)) {
+            console.warn('[AIOXY] calculate(): PEF Single Score computation produced non-finite value. Setting to 0.');
+            singleScoreResult.finalMicroPoints = 0;
+            singleScoreResult.normalizedScore = 0;
+            singleScoreResult.weightedScore = 0;
+        }
 
         // B2: Run Monte Carlo for all 16 scorable EF 3.1 categories
         // 1000 iterations for all categories per ISO 14044 Annex A recommendation (≥1000 for stable P5/P95 percentiles).
