@@ -172,7 +172,9 @@
                 Ingredients:   { total: ingTotal,   components: ingComponents },
                 Manufacturing: { total: mfgTotal,   components: [] },
                 Transport:     { total: transTotal,  components: [] },
-                Packaging:     { total: pkgTotal,   components: [] }
+                Packaging:     { total: pkgTotal,   components: [] },
+                Upstream:      { total: 0,           components: [] },
+                Waste:         { total: 0,           components: [] }
             };
         }
         return tree;
