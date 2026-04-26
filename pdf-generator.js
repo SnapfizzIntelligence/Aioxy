@@ -1308,7 +1308,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     };
     
     const twinGlecEF = twinGlecFactors[twinTransportMode]?.[twinTransportTemp === 'frozen' ? 'frozen' : (twinTransportTemp === 'chilled' ? 'chilled' : 'ambient')] || 0.060;
-    const twinDaf = twinTransportMode === 'sea' ? 1.15 : (twinTransportMode === 'air' ? 95 : 1.05);
+    const twinDaf = twinTransportMode === 'sea' ? 1.15 : (twinTransportMode === 'air' ? 1.09 : 1.05);
     const twinPkgMaterial = cloned.packaging_material || 'cardboard';
     const twinPkgWeight = cloned.packaging_weight_kg || 0.050;
     const twinRecycledPct = cloned.recycled_content_pct || 30;
