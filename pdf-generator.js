@@ -129,7 +129,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // READ ACTUAL BREAKDOWN FROM ENGINE
         const fossilTotal = audit.pefCategories?.["Climate Change - Fossil"]?.total || 0;
         const biogenicTotal = audit.pefCategories?.["Climate Change - Biogenic"]?.total || 0;
-        const dlucTotal = audit.pefCategories?.["Climate Change - dLUC"]?.total || 0;
+        const dlucTotal = audit.pefCategories?.["Climate Change - Land Use"]?.total || 0;
     
         const mb = audit.mass_balance;
         const pWeightKg = mb?.final_content_weight_kg || parseFloat(document.getElementById('productWeight')?.value) || 0.2;
@@ -1554,7 +1554,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
             return {
                 fossil:   stageCats['Climate Change - Fossil']?.total   || 0,
                 biogenic: stageCats['Climate Change - Biogenic']?.total || 0,
-                dluc:     stageCats['Climate Change - dLUC']?.total     || 0,
+                dluc:     stageCats['Climate Change - Land Use']?.total     || 0,
             };
         };
 
