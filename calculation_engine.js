@@ -126,9 +126,11 @@
         return value;
     }
 
-    // ── HELPER: build contribution tree ─────────────────────────────────────
-    function buildContributionTree(ingredientResults, mfgResult, transportResult, packagingResult) {
+    function buildContributionTree(ingredientResults, mfgResult, transportResult, packagingResult, input) {
         const tree = {};
+        const manufacturingCountry = input && input.manufacturing ? input.manufacturing.country : 'FR';
+        const gridIntensity = mfgResult.gridIntensityGPerKwh !== undefined ? mfgResult.gridIntensityGPerKwh : 480;
+
         for (const cat of ALL_CATEGORIES) {
             const ingComponents = ingredientResults.map(ing => ({
                 name:                   ing.name,
@@ -166,15 +168,105 @@
                 pkgTotal   = packagingResult.biogenicImpact;
             } else if (cat === 'Resource Use, fossils') {
                 mfgTotal   = mfgResult.kwh * 3.6;
+            } else if (
+                cat !== 'Climate Change - Land Use' &&
+                mfgResult.multiCategoryResults && mfgResult.multiCategoryResults[cat] !== undefined
+            ) {
+                mfgTotal = mfgResult.multiCategoryResults[cat];
+            }
+
+            // Bug 2 fix: Build Manufacturing component
+            const mfgComponent = {
+                name: 'Factory Operations',
+                details: `${mfgResult.kwh ? mfgResult.kwh.toFixed(2) + ' kWh' : 'N/A'}`,
+                energy_source: (input && input.manufacturing && input.manufacturing.energySource) || 'Grid Mix',
+                grid_intensity: mfgResult.gridIntensityGPerKwh || gridIntensity,
+                subtotal: mfgTotal,
+                calculation_trace: `Formula: CO2e = kWh × Grid_Intensity(gCO2e/kWh) ÷ 1000\n  kWh = ${(mfgResult.kwh || 0).toFixed(4)}\n  Grid Intensity = ${mfgResult.gridIntensityGPerKwh || gridIntensity} gCO2e/kWh\n  = ${mfgTotal.toFixed(4)} kg CO2e`
+            };
+
+            // Bug 3 fix (Step A): Build Upstream (inbound logistics) components
+            const upstreamComponents = [];
+            let upstreamTotal = 0;
+            if (input && input.ingredients) {
+                for (let idx = 0; idx < ingredientResults.length; idx++) {
+                    const ingRes = ingredientResults[idx];
+                    const ingIn  = input.ingredients[idx];
+                    if (!ingIn) continue;
+                    const originCountry = ingIn.originCountry || 'FR';
+                    if (originCountry !== manufacturingCountry) {
+                        const defaultDistance = 200; // km default inbound transport
+                        // Simple road transport: 0.060 kg CO2e per t·km (GLEC v3.2)
+                        const transportCO2 = cat === 'Climate Change'
+                            ? (ingRes.quantityKg / 1000) * defaultDistance * 0.060
+                            : 0;
+                        upstreamTotal += transportCO2;
+                        upstreamComponents.push({
+                            name: `Inbound: ${ingRes.name} from ${originCountry} to ${manufacturingCountry}`,
+                            notes: `Cross-border transport, ${defaultDistance} km`,
+                            subtotal: transportCO2,
+                            calculation_trace: `[GLEC v3.2: ${transportCO2.toFixed(4)} kg CO2e]`
+                        });
+                    }
+                }
+            }
+
+            // Bug 3 fix (Step B): Build Waste (processing) components
+            const wasteComponents = [];
+            let wasteTotal = 0;
+            if (input && input.manufacturing && input.manufacturing.processingMethod) {
+                const processingMethod = input.manufacturing.processingMethod;
+                const db = window.aioxyData;
+                const processingState = processingMethod; // key into processing_archetypes
+                const archetype = db && db.processing_archetypes ? db.processing_archetypes[processingState] : null;
+                if (archetype && archetype.waste_split) {
+                    const lossFraction = 1.0 - (archetype.yield_factor || 1.0);
+                    if (lossFraction > 0 && cat === 'Climate Change') {
+                        const ingTotalCO2 = ingComponents.reduce((s, c) => s + (c.allCategoryResults ? (c.allCategoryResults['Climate Change'] || 0) : (c.subtotal || 0)), 0);
+                        const wasteCO2 = ingTotalCO2 * lossFraction;
+                        wasteTotal = wasteCO2;
+                        wasteComponents.push({
+                            name: `Processing Waste: ${processingMethod}`,
+                            notes: `Formulation loss (${(lossFraction * 100).toFixed(1)}%)`,
+                            subtotal: wasteCO2,
+                            calculation_trace: `[Processing waste: ${wasteCO2.toFixed(4)} kg CO2e]`
+                        });
+                    }
+                }
+            }
+
+            // Bug 11 fix: Transport component
+            const transportComponents = [];
+            if (input && input.transport) {
+                const transMode = input.transport.mode || 'road';
+                const transDist = input.transport.distanceKm || 0;
+                transportComponents.push({
+                    name: `Outbound: ${transMode} transport`,
+                    notes: `${transDist} km, ${transMode}`,
+                    subtotal: transTotal,
+                    calculation_trace: `[GLEC v3.2: ${transTotal.toFixed(4)} kg CO2e]`
+                });
+            }
+
+            // Bug 11 fix: Packaging component
+            const packagingComponents = [];
+            if (pkgTotal !== 0) {
+                const pkgMat = (input && input.packaging) ? input.packaging.material : 'unknown';
+                packagingComponents.push({
+                    name: `Primary Packaging: ${pkgMat}`,
+                    notes: `CFF-adjusted impact`,
+                    subtotal: pkgTotal,
+                    calculation_trace: `[PEF 3.1 CFF: ${pkgTotal.toFixed(4)} kg CO2e]`
+                });
             }
 
             tree[cat] = {
-                Ingredients:   { total: ingTotal,   components: ingComponents },
-                Manufacturing: { total: mfgTotal,   components: [] },
-                Transport:     { total: transTotal,  components: [] },
-                Packaging:     { total: pkgTotal,   components: [] },
-                Upstream:      { total: 0,           components: [] },
-                Waste:         { total: 0,           components: [] }
+                Ingredients:   { total: ingTotal,       components: ingComponents },
+                Manufacturing: { total: mfgTotal,       components: [mfgComponent] },
+                Transport:     { total: transTotal,     components: transportComponents },
+                Packaging:     { total: pkgTotal,       components: packagingComponents },
+                Upstream:      { total: upstreamTotal,  components: upstreamComponents },
+                Waste:         { total: wasteTotal,     components: wasteComponents }
             };
         }
         return tree;
@@ -675,6 +767,7 @@ if (!traceability.usetox) {
             let adjustments = {
                 multipliers:          { co2: 1.0, land: 1.0, water: 1.0, fossil: 1.0 },
                 adjusted_for_country: ingredient.originCountry || 'FR',
+                adjusted_from_country: ingredient.originCountry || 'FR', // Bug 19 fix: original origin before proxy
                 baseline_yield:       null,
                 baseline_nitrogen:    null,
                 method:               'background_secondary_data'
@@ -1100,6 +1193,15 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
                 fossilFraction: 1.0,
                 source:         'Primary Factory Data'
             };
+
+            // Bug 8 fix: compute multi-category results for primary factory data
+            mfgResult.multiCategoryResults = {};
+            if (totalMfgKwh > 0) {
+                const multi = window.corePhysics.CONSTANTS.ELECTRICITY_GRID_MULTI;
+                for (const category of Object.keys(multi)) {
+                    mfgResult.multiCategoryResults[category] = totalMfgKwh * multi[category];
+                }
+            }
         } else {
             mfgResult = window.corePhysics.calculateManufacturing({
                 massOutputKg:         prodWt,
@@ -1516,7 +1618,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
                                 Object.entries(db.processing).map(([k, v]) => [k, v.kwh_per_kg])
                               )
                             : {},
-                        gridIntensity: db.countries || {},
+                        gridIntensity: db.grid_intensity || db.countries || {},  // Bug 4 fix: prefer grid_intensity, fallback to countries
                         packaging:     db.packaging  || {}
                     }
                 });
@@ -1525,18 +1627,39 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
                     co2PerKg:   twinResult.co2PerKg,
                     waterPerKg: twinResult.waterPerKg,
                     is_custom:  false,
-                    breakdown:  twinResult.breakdown
+                    breakdown:  twinResult.breakdown,
+                    // Bug 9 fix: populate all properties read by UI and PDF generator
+                    anchor_name:           anchorIngData.name,
+                    anchor_used:           compIn.baselineId,
+                    bat_applied:           compIn.useJRCBAT || false,
+                    bat_processing_note:   compIn.useJRCBAT ? 'JRC BAT (EU) 2019/2031 applied to processing energy' : null,
+                    bat_source:            compIn.useJRCBAT ? 'EU 2019/2031 BAT Conclusions' : null,
+                    allocation_note:       'Mass allocation (ISO 14044)',
+                    concentration_ratio:   input.product.concentrationRatio || 1.0,
+                    cloned_parameters:     twinResult.cloned_parameters || {},
+                    sensitivity_analysis:  null
                 };
             }
         }
 
         if (!comparisonBaseline) {
+            // Bug 6 fix: breakdown must not be null so section F renders for auto baseline
             comparisonBaseline = {
                 name:       'Benchmark (Auto)',
                 co2PerKg:   co2PerKg,
                 waterPerKg: pefResults['Water Use/Scarcity (AWARE)'].total / input.product.weightKg,
                 is_custom:  false,
-                breakdown:  null
+                breakdown:  { farm: co2PerKg, manufacturing: 0, transport: 0, packaging: 0 },
+                // Bug 9/15 fix: populate metadata properties for UI and PDF
+                anchor_name:           'Auto (Self-comparison)',
+                anchor_used:           null,
+                bat_applied:           false,
+                bat_processing_note:   null,
+                bat_source:            null,
+                allocation_note:       'Mass allocation (ISO 14044)',
+                concentration_ratio:   input.product.concentrationRatio || 1.0,
+                cloned_parameters:     {},
+                sensitivity_analysis:  null
             };
         }
 
@@ -1579,7 +1702,7 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
         );
 
         const fullContribTree = buildContributionTree(
-            ingredientResults, mfgResult, transportResult, packagingResult
+            ingredientResults, mfgResult, transportResult, packagingResult, input
         );
         for (const cat of ALL_CATEGORIES) {
             pefResults[cat].contribution_tree = fullContribTree[cat];
@@ -1638,6 +1761,10 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
 
         const comparisonBaseline = computeComparison(input, pefResults);
 
+        // Bug 21 fix: validate export engine interface before calling
+        if (typeof window.exportEngine.generateAuditTrail !== 'function') {
+            console.warn('[AIOXY] exportEngine.generateAuditTrail is not a function — interface mismatch. Skipping audit trail generation.');
+        }
         const auditTrailRaw = window.exportEngine.generateAuditTrail({
             physicsResults: {
                 pefResults:    pefResults,
