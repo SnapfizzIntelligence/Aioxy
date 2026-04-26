@@ -47,6 +47,8 @@ function showTab(tabName, event) {
     }
     if (tabName === 'transparency') {
         displayAuditTrail();
+        displayCompleteAuditTrail();
+        displayForegroundBackground();
     }
     
     updateTabIndicator();
@@ -465,7 +467,10 @@ function updateDataQualityDisplay(results) {
         let count = 0;
         
         auditTrailData.dqr_summary.component_dqrs.forEach(score => {
-            const match = selectedIngredients.find(i => i.name === score.name);
+            const match = selectedIngredients.find(i => 
+                i.name === score.name || 
+                (i.id && score.name && score.name.includes(i.name && i.name.substring(0, 10)))
+            );
             const ingredient = match ? aioxyData.ingredients[match.id] : null;
             if (ingredient && ingredient.data && ingredient.data.metadata && ingredient.data.metadata.dqr) {
                 terSum += ingredient.data.metadata.dqr.TeR || 0;
@@ -477,10 +482,10 @@ function updateDataQualityDisplay(results) {
         });
         
         const avgFactors = {
-            TeR: count > 0 ? (terSum / count).toFixed(1) : '1.0',
-            GR:  count > 0 ? (grSum  / count).toFixed(1) : '1.0',
-            TiR: count > 0 ? (tirSum / count).toFixed(1) : '1.0',
-            P:   count > 0 ? (pSum   / count).toFixed(1) : '1.0'
+            TeR: count > 0 ? (terSum / count).toFixed(1) : '—',
+            GR:  count > 0 ? (grSum  / count).toFixed(1) : '—',
+            TiR: count > 0 ? (tirSum / count).toFixed(1) : '—',
+            P:   count > 0 ? (pSum   / count).toFixed(1) : '—'
         };
         
         dqrBreakdown.innerHTML = `
@@ -997,6 +1002,10 @@ window.selectBaseline = function(id, name) {
     if (selectEl) {
         selectEl.value = id;
         selectEl.dispatchEvent(new Event('change')); 
+        // Bug 20 fix: also call updateComparison() directly in case synthetic event doesn't fire onchange
+        if (typeof updateComparison === 'function') {
+            updateComparison();
+        }
     }
     if (searchEl) searchEl.value = name || 'Unknown';
     if (dropdownEl) dropdownEl.classList.add('hidden');
