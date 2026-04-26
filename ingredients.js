@@ -890,7 +890,8 @@ window.aioxyData.packaging = {
         r2: 0.85, 
         q: 0.90,
         aFactor: 0.2,          // ← ADD THIS (PEF default for paper/cardboard)
-        fossilFraction: 0.0    // ← ADD THIS (biogenic material)
+        fossilFraction: 0.0,   // ← ADD THIS (biogenic material)
+        materialClass: "paper" // Bug 1 fix: required by core_physics.js line 659
     },
     "PET": { 
         co2_virgin: 3.10, 
@@ -902,7 +903,8 @@ window.aioxyData.packaging = {
         r2: 0.50, 
         q: 0.95,
         aFactor: 0.5,          // ← ADD THIS (PEF default for plastics)
-        fossilFraction: 1.0    // ← ADD THIS (fossil-based plastic)
+        fossilFraction: 1.0,   // ← ADD THIS (fossil-based plastic)
+        materialClass: "plastic" // Bug 1 fix
     },
     "rPET": { 
         co2_virgin: 3.10, 
@@ -914,7 +916,8 @@ window.aioxyData.packaging = {
         r2: 0.60, 
         q: 0.95,
         aFactor: 0.5,
-        fossilFraction: 1.0
+        fossilFraction: 1.0,
+        materialClass: "plastic" // Bug 1 fix
     },
     "HDPE": { 
         co2_virgin: 2.60, 
@@ -926,7 +929,8 @@ window.aioxyData.packaging = {
         r2: 0.50, 
         q: 0.90,
         aFactor: 0.5,
-        fossilFraction: 1.0
+        fossilFraction: 1.0,
+        materialClass: "plastic" // Bug 1 fix
     },
     "LDPE": { 
         co2_virgin: 2.40, 
@@ -938,7 +942,8 @@ window.aioxyData.packaging = {
         r2: 0.40, 
         q: 0.90,
         aFactor: 0.5,
-        fossilFraction: 1.0
+        fossilFraction: 1.0,
+        materialClass: "plastic" // Bug 1 fix
     },
     "PP": { 
         co2_virgin: 2.70, 
@@ -950,7 +955,8 @@ window.aioxyData.packaging = {
         r2: 0.50, 
         q: 0.90,
         aFactor: 0.5,
-        fossilFraction: 1.0
+        fossilFraction: 1.0,
+        materialClass: "plastic" // Bug 1 fix
     },
     "glass": { 
         co2_virgin: 1.40, 
@@ -962,7 +968,8 @@ window.aioxyData.packaging = {
         r2: 0.90, 
         q: 1.00,
         aFactor: 0.2,          // ← ADD THIS (PEF default for glass/metals)
-        fossilFraction: 0.0    // ← ADD THIS (inert mineral)
+        fossilFraction: 0.0,   // ← ADD THIS (inert mineral)
+        materialClass: "glass" // Bug 1 fix
     },
     "aluminum": { 
         co2_virgin: 16.6, 
@@ -974,7 +981,8 @@ window.aioxyData.packaging = {
         r2: 0.90, 
         q: 1.00,
         aFactor: 0.2,
-        fossilFraction: 0.0
+        fossilFraction: 0.0,
+        materialClass: "metal" // Bug 1 fix
     },
     "steel": { 
         co2_virgin: 2.50, 
@@ -986,7 +994,8 @@ window.aioxyData.packaging = {
         r2: 0.90, 
         q: 1.00,
         aFactor: 0.2,
-        fossilFraction: 0.0
+        fossilFraction: 0.0,
+        materialClass: "metal" // Bug 1 fix
     },
     "PLA": { 
         co2_virgin: 2.50, 
@@ -998,7 +1007,8 @@ window.aioxyData.packaging = {
         r2: 0.01, 
         q: 0.80,
         aFactor: 0.5,
-        fossilFraction: 0.0   // ← bioplastic, biogenic carbon
+        fossilFraction: 0.0,   // ← bioplastic, biogenic carbon
+        materialClass: "plastic" // Bug 1 fix
     },
     "paper": { 
         co2_virgin: 1.10, 
@@ -1010,19 +1020,9 @@ window.aioxyData.packaging = {
         r2: 0.75, 
         q: 0.85,
         aFactor: 0.2,
-        fossilFraction: 0.0
+        fossilFraction: 0.0,
+        materialClass: "paper" // Bug 1 fix
     }
-};
-window.aioxyData.crop_classes = {
-    "cereal":   { global_yield: 4100, water_intensity: 0.5, n_demand: 0.025, name: "Cereal (Wheat, Maize, Rice)" },
-    "pulse":    { global_yield: 1800, water_intensity: 0.3, n_demand: 0.000, name: "Pulse (Pea, Bean, Soy)" },
-    "tuber":    { global_yield: 21000, water_intensity: 0.4, n_demand: 0.015, name: "Root/Tuber (Potato, Cassava)" },
-    "oilseed":  { global_yield: 3200, water_intensity: 0.8, n_demand: 0.035, name: "Oilseed (Rapeseed, Sunflower)" },
-    "vegetable":{ global_yield: 19000, water_intensity: 1.2, n_demand: 0.020, name: "Vegetable (Tomato, Leafy)" },
-    "fruit":    { global_yield: 14000, water_intensity: 0.9, n_demand: 0.015, name: "Fruit (Apple, Berry)" },
-    "sugarbeet":{ global_yield: 60000, water_intensity: 0.4, n_demand: 0.015, name: "Sugar Beet" },
-    "tropical": { global_yield: 11000, water_intensity: 1.5, n_demand: 0.020, name: "Tropical (Banana, Coffee, Cocoa)" },
-    "fiber":    { global_yield: 1000, water_intensity: 4.5, n_demand: 0.040, name: "Fiber (Cotton, Hemp)" }
 };
 
 window.aioxyData.climate_zones = {
