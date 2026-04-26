@@ -1039,7 +1039,13 @@ addDataRow(
     // =============================================================
 // FLAG REMOVALS (Biogenic carbon sequestration)
 // =============================================================
-const biogenicRemovals = auditTrailData.pefCategories["Climate Change"].biogenic_removals;
+// Bug 10 fix: biogenic_removals does not exist on the CC category object.
+// Check Climate Change - Biogenic total; if negative it indicates net removals.
+const biogenicCCBiogenic = auditTrailData.pefCategories["Climate Change - Biogenic"]?.total;
+const biogenicRemovals = (typeof biogenicCCBiogenic === 'number' && biogenicCCBiogenic < 0)
+    ? Math.abs(biogenicCCBiogenic)
+    : 0;
+// FLAG reporting requires primary soil carbon data for positive removals (IPCC 2006 Vol. 4, Ch. 2, Eq. 2.25 / PEF 3.1 §4.4.8)
 if (biogenicRemovals && biogenicRemovals > 0) {
     addDataRow(
     "Scope 3 Cat 1 (FLAG)", 
@@ -1408,7 +1414,6 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
 ---------------------
 - CFF (Circular Footprint Formula): Packaging end-of-life
 - Monte Carlo Uncertainty: 1000 iterations
-- Temporal Discounting: 100-year horizon
 - Foreground/Background: 5% cutoff rule
 
 4. PHYSICS-BASED SCENARIOS
@@ -1416,7 +1421,7 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
 - Renewable Energy: -95% manufacturing emissions
 - Local Sourcing: Transport capped at 50km
 - Lightweight Packaging: -20% packaging weight
-- Regenerative Agriculture: Soil carbon credits
+- Regenerative Agriculture: Soil carbon sequestration placeholder (requires farm-specific soil measurements for quantification per IPCC 2006 Vol. 4, Ch. 2, Eq. 2.25 / PEF 3.1 §4.4.8)
 - Zero Waste Manufacturing: +10% yield efficiency
 - Bulk Shipping: Modal shift to sea/rail
 - Circular Packaging: Closed loop cycles
