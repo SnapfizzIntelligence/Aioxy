@@ -520,7 +520,10 @@ function calculateScalableBusinessCase(results, annualVolume) {
     const carbonSavings = (totalCarbonReduction * carbonPrice) / 1000;
 
     const priceInput = document.getElementById('wholesalePrice');
-    const basePricePerKg = priceInput ? parseFloat(priceInput.value) || 10 : 10;
+    if (!priceInput) {
+        console.warn('Element #wholesalePrice not found in DOM. Using default wholesale price of €10/kg.');
+    }
+    const basePricePerKg = priceInput ? (parseFloat(priceInput.value) || 10) : 10;
 
     const premiumRevenue = (premiumPotential / 100) * (annualVolume * basePricePerKg);
     const totalMarketSize = annualVolume * 10;
