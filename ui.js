@@ -281,10 +281,10 @@ function updateResultsUI(results) {
     renderUniversalComparisons(unifiedCO2, resolvedBaseline);
 
     // 3. Update Metric Cards with the UNIFIED numbers
-    if(document.getElementById('co2Value')) document.getElementById('co2Value').textContent = unifiedCO2.toFixed(2) + ' kg';
-    if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = results.waterScarcityPerKg.toFixed(4) + ' m³';
-    if(document.getElementById('landValue')) document.getElementById('landValue').textContent = results.landUsePerKg.toFixed(0) + ' Pt';
-    if(document.getElementById('fossilValue')) document.getElementById('fossilValue').textContent = results.fossilPerKg.toFixed(1) + ' MJ';
+    if(document.getElementById('co2Value')) document.getElementById('co2Value').textContent = (unifiedCO2 ?? 0).toFixed(2) + ' kg';
+    if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = (results.waterScarcityPerKg ?? 0).toFixed(4) + ' m³';
+    if(document.getElementById('landValue')) document.getElementById('landValue').textContent = (results.landUsePerKg ?? 0).toFixed(0) + ' Pt';
+    if(document.getElementById('fossilValue')) document.getElementById('fossilValue').textContent = (results.fossilPerKg ?? 0).toFixed(1) + ' MJ';
 
     // REGULATOR UI FIX: Display Separated Biogenic Removals if Regen Ag is active
     let removalsDiv = document.getElementById('biogenicRemovalsDisplay');
@@ -508,7 +508,7 @@ function updateDataQualityDisplay(results) {
         
         const dqrQuality = foodCalculationEngine.getDQRQualityLevel(results.overallDQR);
         overallDQRBadge.className = `dqr-badge ${dqrQuality.class}`;
-        overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${dqrQuality.level} (DQR: ${results.overallDQR.toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
+        overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${dqrQuality.level} (DQR: ${(results.overallDQR ?? 2.5).toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
     } else {
         dataQualitySection.classList.add('hidden');
     }
@@ -634,7 +634,7 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                         </li>
                         <li style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem;">
                             <span style="color: #4299E1;">🔹</span>
-                            <div><strong>Quality & Uncertainty:</strong> DQR ${results.overallDQR.toFixed(1)}/5.0 (High) with ±${results.overallUncertainty}% modeled uncertainty.</div>
+                            <div><strong>Quality & Uncertainty:</strong> DQR ${(results.overallDQR ?? 2.5).toFixed(1)}/5.0 (High) with ±${results.overallUncertainty}% modeled uncertainty.</div>
                         </li>
                     </ul>
 
