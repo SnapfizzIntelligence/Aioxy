@@ -1289,7 +1289,6 @@
             
             const pkg = db.packaging[cloned.packagingMaterial];
             if (!pkg) throw new MissingDataError(`packaging.${cloned.packagingMaterial}`);
-            if (typeof pkg.materialClass !== 'string') throw new MissingDataError('packaging.materialClass');
             if (typeof pkg.aFactor !== 'number') throw new MissingDataError('packaging.aFactor');
             if (typeof pkg.fossilFraction !== 'number') throw new MissingDataError('packaging.fossilFraction');
             
