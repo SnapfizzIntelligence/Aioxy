@@ -1147,11 +1147,19 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
         // 2b. Determine grid intensity
         let gridIntensity;
         if (mfgIn.energySource === 'renewable') {
-            gridIntensity = 0;
+    // CoM 2024 Table 3: Wind LCA = 0.036 t CO2-eq/MWh = 36 g CO2/kWh
+    // Source: European Commission, Covenant of Mayors, Emission Factors
+    //   for Local Energy Use, 2024 Edition, JRC
+    gridIntensity = 36;
         } else if (mfgIn.energySource === 'natural_gas') {
             gridIntensity = 490; // Source: IPCC 2006 Vol. 2, Ch. 2, Table 2.2: Natural gas CO₂ = 56,100 kg/TJ. At 42% electrical efficiency: 56,100 × 0.0036 / 0.42 ≈ 481 ≈ 490 g CO₂/kWh (rounded per IEA 2023 convention)
         } else if (mfgIn.energySource === 'coal') {
-            gridIntensity = 950; // Source: IPCC 2006 Vol. 2, Ch. 2, Table 2.2: Anthracite CO₂ = 98,300 kg/TJ. At 36% electrical efficiency: 98,300 × 0.0036 / 0.36 ≈ 983 ≈ 950 g CO₂/kWh (rounded per IEA 2023 convention)
+    // CoM 2024 Table 1: Anthracite = 0.35388 t CO2/MWh direct combustion
+    // At 36% electrical efficiency: 0.35388 ÷ 0.36 × 1,000 = 983 g/kWh
+    // Rounded to 980 per IEA convention for industrial coal-fired generation
+    // Source: European Commission, Covenant of Mayors, Emission Factors
+    //   for Local Energy Use, 2024 Edition, JRC
+    gridIntensity = 980;
         } else {
             // Grid: read from database
             if (db.grid_intensity && typeof db.grid_intensity[mfgIn.country] === 'number') {
@@ -1182,7 +1190,12 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
 
             const kwhPerKgActual = pfd.totalKWh   / pfd.totalOutputKg;
             const gasM3PerKg     = pfd.totalGasM3 / pfd.totalOutputKg;
-            const gasCO2         = gasM3PerKg * 2.02; // Source: IPCC 2006 Guidelines, Vol. 2, Ch. 2, Table 2.2: Natural gas CO₂ = 2.02 kg/m³ at 20°C, 1 atm
+            // CoM 2024 Table 1: Natural gas = 0.20196 t CO2/MWh (activity-based)
+// 1 m³ gas ≈ 0.01056 MWh (38 MJ/m³ ÷ 3,600 MJ/MWh)
+// ∴ 0.20196 × 0.01056 × 1,000 = 2.13 kg CO2/m³
+// Source: European Commission, Covenant of Mayors, Emission Factors
+//   for Local Energy Use, 2024 Edition, JRC
+const gasCO2 = gasM3PerKg * 2.13;
             const elecCO2        = kwhPerKgActual * (gridIntensity / 1000);
             const totalMfgCO2    = (elecCO2 + gasCO2) * prodWt;
             const totalMfgKwh    = kwhPerKgActual * prodWt;
