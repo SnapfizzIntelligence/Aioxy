@@ -258,7 +258,51 @@ ingredients.forEach(ing => {
         if (pd.farmingPractice === 'regen') adjustmentSummary += '🌍 Regen Ag (+20% soil C) | ';
         if (adjustmentSummary.endsWith(' | ')) adjustmentSummary = adjustmentSummary.slice(0, -3);
         
-        bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
+        if (pd.animalType) {
+            // Animal primary data branch
+            const animalTypeLabels = {
+                dairy: 'Dairy Cow', beef: 'Beef Cattle', pig: 'Pig',
+                poultry: 'Poultry', sheep: 'Sheep', goat: 'Goat'
+            };
+            const productionSystemLabels = {
+                intensive_indoor: 'Intensive Indoor', free_range: 'Free Range',
+                organic: 'Organic', pasture_fed: 'Pasture-Fed', mixed: 'Mixed'
+            };
+            const manureLabels = {
+                lagoon: 'Lagoon', pit_storage: 'Pit Storage', dry_lot: 'Dry Lot',
+                pasture: 'Pasture', digester: 'Digester'
+            };
+            const animalLabel = animalTypeLabels[pd.animalType] || pd.animalType;
+            const systemLabel = productionSystemLabels[pd.productionSystem] || pd.productionSystem || 'Not specified';
+            const manureLabel = manureLabels[pd.manureSystem] || pd.manureSystem || 'Not specified';
+            const productivity = pd.productivityKgPerAnimalYear != null ? `${pd.productivityKgPerAnimalYear} kg/animal/year` : 'Not specified';
+
+            // Read IPCC values stored by processIngredients() under universal_adjustments
+            const ua = ing.universal_adjustments || {};
+            const entericApplied = ua.adjustments?.enteric_applied != null ? ua.adjustments.enteric_applied.toFixed(4) : 'N/A';
+            const manureApplied  = ua.adjustments?.manure_n2o_applied != null ? ua.adjustments.manure_n2o_applied.toFixed(4) : 'N/A';
+
+            // Derive EF display values from primaryData entericParams if present
+            const ep = pd.entericParams || {};
+            const entericEF  = ep.emissionFactor != null ? ep.emissionFactor : 'N/A';
+            const manureEF   = ep.manureN2OEF   != null ? ep.manureN2OEF   : 'N/A';
+
+            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
+                <span style="font-size:0.85em; color: #555;">
+                🐄 Animal: ${animalLabel}<br>
+                🏠 System: ${systemLabel}<br>
+                📈 Productivity: ${productivity}<br>
+                💩 Manure: ${manureLabel}<br>
+                📍 Farm: ${farmRegionText}<br>
+                🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
+                📋 ${ddsText || 'DDS: Not provided'}<br>
+                <span style="color:#2C7A7B;">⚙️ IPCC Tier 1 Applied:</span><br>
+                &nbsp;&nbsp;- Enteric CH₄: ${entericApplied} kg CO₂e (EF: ${entericEF} kg CH₄/head/yr × GWP 28)<br>
+                &nbsp;&nbsp;- Manure N₂O: ${manureApplied} kg CO₂e (EF: ${manureEF} kg N₂O-N/kg N)
+                </span>`;
+        } else {
+            // Crop primary data branch (original, unchanged)
+            bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
             <span style="font-size:0.85em; color: #555;">
             📍 Farm: ${farmRegionText}<br>
             🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
@@ -267,6 +311,7 @@ ingredients.forEach(ing => {
             📋 ${ddsText || 'DDS: Not provided'}<br>
             ${adjustmentSummary ? `<span style="color:#2C7A7B;">⚙️ ${adjustmentSummary}</span>` : ''}
             </span>`;
+        }
         
     } else if (isPrimary) {
         bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA]</span> Adjusted x${adj.multipliers?.co2?.toFixed(2) || '1.00'}`;
