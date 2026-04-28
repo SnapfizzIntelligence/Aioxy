@@ -1188,6 +1188,17 @@ function updateIngredientList() {
         const dqrP = ingredientData.data?.metadata?.dqr?.P || 2.0;
         const dqrQuality = foodCalculationEngine.getDQRQualityLevel(dqrOverall);
         const uncertainty = foodCalculationEngine.calculateUncertainty(dqrP);
+
+        // Counterpart column: show mapped name or "Map counterpart →" link
+        const counterpart = ingredient.conventionalCounterpart;
+        const counterpartCell = counterpart
+            ? `<span style="color: #27AE60; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">
+                   <i class="fas fa-check-circle"></i> ${counterpart.name}
+               </span>`
+            : `<a href="#" onclick="openCounterpartModal(${index}); return false;"
+                  style="color: var(--gray); font-size: 0.8rem; text-decoration: none; white-space: nowrap;">
+                   Map counterpart →
+               </a>`;
         
         const item = document.createElement('div');
         item.className = 'ingredient-item';
@@ -1234,7 +1245,16 @@ function updateIngredientList() {
                     ` : ''}
                 </div>
             </div>
-            <div class="ingredient-actions">
+            <div class="ingredient-actions" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; min-width: 140px;">
+                    <span style="font-size: 0.65rem; color: var(--gray); text-transform: uppercase; font-weight: 600;">Conventional counterpart</span>
+                    ${counterpartCell}
+                    ${counterpart ? `
+                    <a href="#" onclick="openCounterpartModal(${index}); return false;"
+                       style="font-size: 0.7rem; color: var(--gray); text-decoration: none;">
+                        ✎ Edit mapping
+                    </a>` : ''}
+                </div>
                 <input type="number" class="quantity-input" value="${ingredient.quantity}" step="0.001" min="0" 
                        onchange="updateIngredientQuantity(${index}, this.value)">
                 <button class="remove-btn" onclick="removeIngredient(${index})">
@@ -1883,6 +1903,223 @@ function displayCompleteAuditTrail() {
             </div>
         </div>
     `;
+}
+
+// ================== PARAMETRIC TWIN: COUNTERPART MODAL ==================
+
+// Module-level state for the counterpart modal
+let _counterpartIngredientIndex = null;
+let _counterpartSelectedId      = null;
+let _counterpartSelectedName    = null;
+let _counterpartSelectedPef     = null;
+
+/**
+ * openCounterpartModal(index)
+ * Opens the counterpart search modal for the ingredient at `index`.
+ */
+function openCounterpartModal(index) {
+    _counterpartIngredientIndex = index;
+    _counterpartSelectedId      = null;
+    _counterpartSelectedName    = null;
+    _counterpartSelectedPef     = null;
+
+    const ingredient = selectedIngredients[index];
+    const modal      = document.getElementById('counterpartModal');
+    if (!modal) { console.error('counterpartModal not found in DOM'); return; }
+
+    // Fill header labels
+    const nameEl = document.getElementById('counterpartAssessedName');
+    const qtyEl  = document.getElementById('counterpartAssessedQty');
+    if (nameEl) nameEl.textContent = ingredient.name;
+    if (qtyEl)  qtyEl.textContent  = ingredient.quantity.toFixed(3) + ' kg';
+
+    // Pre-fill conventional quantity with assessed quantity
+    const qtyInput = document.getElementById('counterpartConventionalQty');
+    if (qtyInput) qtyInput.value = ingredient.conventionalQuantity || ingredient.quantity;
+
+    // Clear search + results
+    const searchInput = document.getElementById('counterpartSearch');
+    if (searchInput) searchInput.value = '';
+    const resultsList = document.getElementById('counterpartResults');
+    if (resultsList) resultsList.innerHTML = '<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">Start typing to search…</li>';
+
+    // Restore previous selection highlight if one exists
+    if (ingredient.conventionalCounterpart) {
+        _counterpartSelectedId   = ingredient.conventionalCounterpart.id;
+        _counterpartSelectedName = ingredient.conventionalCounterpart.name;
+        _counterpartSelectedPef  = ingredient.conventionalCounterpart.pef;
+        _renderCounterpartSelection(_counterpartSelectedId, _counterpartSelectedName, _counterpartSelectedPef);
+    } else {
+        _clearCounterpartSelection();
+    }
+
+    // Show modal (matches pattern of supplierModal — remove hidden, set flex)
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+}
+
+/**
+ * closeCounterpartModal()
+ * Closes without saving.
+ */
+function closeCounterpartModal() {
+    const modal = document.getElementById('counterpartModal');
+    if (modal) { modal.classList.add('hidden'); modal.style.display = ''; }
+    _counterpartIngredientIndex = null;
+    _counterpartSelectedId      = null;
+    _counterpartSelectedName    = null;
+    _counterpartSelectedPef     = null;
+}
+
+/**
+ * searchCounterpartDatabase(query)
+ * Filters window.aioxyData.ingredients by name match.
+ * Returns up to 20 results with id, name, co2, dqr, source.
+ */
+function searchCounterpartDatabase(query) {
+    const q = (query || '').toLowerCase().trim();
+    if (q.length < 2) return [];
+    const ingredients = window.aioxyData?.ingredients || {};
+    return Object.entries(ingredients)
+        .filter(([id, data]) => (data.name || '').toLowerCase().includes(q))
+        .slice(0, 20)
+        .map(([id, data]) => ({
+            id,
+            name:   data.name || 'Unknown',
+            co2:    data.data?.pef?.['Climate Change'] || 0,
+            dqr:    data.data?.metadata?.dqr_overall  || 2.5,
+            source: data.data?.metadata?.source_dataset || 'AGRIBALYSE 3.2',
+            pef:    data.data?.pef
+        }));
+}
+
+/**
+ * selectCounterpart(id, name, pef)
+ * Called when a result row is clicked. Highlights it and stores the selection.
+ */
+function selectCounterpart(id, name, pef) {
+    _counterpartSelectedId   = id;
+    _counterpartSelectedName = name;
+    _counterpartSelectedPef  = pef;
+    _renderCounterpartSelection(id, name, pef);
+}
+
+/**
+ * saveCounterpartMapping()
+ * Saves the selected counterpart to selectedIngredients[index] and closes the modal.
+ */
+function saveCounterpartMapping() {
+    if (_counterpartIngredientIndex === null) return;
+    if (!_counterpartSelectedId) {
+        alert('Please select a conventional counterpart from the search results first.');
+        return;
+    }
+
+    const qtyInput = document.getElementById('counterpartConventionalQty');
+    const conventionalQty = parseFloat(qtyInput?.value);
+    const assessedQty     = selectedIngredients[_counterpartIngredientIndex].quantity;
+
+    selectedIngredients[_counterpartIngredientIndex].conventionalCounterpart = {
+        id:   _counterpartSelectedId,
+        name: _counterpartSelectedName,
+        pef:  _counterpartSelectedPef   // direct reference to database pef object
+    };
+    selectedIngredients[_counterpartIngredientIndex].conventionalQuantity =
+        (!isNaN(conventionalQty) && conventionalQty > 0) ? conventionalQty : assessedQty;
+
+    console.log(`✅ [ParametricTwin] Mapped ${selectedIngredients[_counterpartIngredientIndex].name} → ${_counterpartSelectedName}`);
+
+    updateIngredientList();
+    calculateImpact();
+    closeCounterpartModal();
+}
+
+/**
+ * setSameAsAssessed()
+ * Copies the assessed ingredient's own database entry as the conventional counterpart.
+ */
+function setSameAsAssessed() {
+    if (_counterpartIngredientIndex === null) return;
+    const ingredient     = selectedIngredients[_counterpartIngredientIndex];
+    const ingredientData = window.aioxyData?.ingredients?.[ingredient.id];
+    if (!ingredientData) return;
+
+    _counterpartSelectedId   = ingredient.id;
+    _counterpartSelectedName = ingredient.name;
+    _counterpartSelectedPef  = ingredientData.data?.pef; // live reference — rule 4
+
+    _renderCounterpartSelection(_counterpartSelectedId, _counterpartSelectedName, _counterpartSelectedPef);
+
+    const qtyInput = document.getElementById('counterpartConventionalQty');
+    if (qtyInput) qtyInput.value = ingredient.quantity;
+}
+
+// ── Private helpers ──────────────────────────────────────────────────────────
+
+function _renderCounterpartSelection(id, name, pef) {
+    const selBox = document.getElementById('counterpartSelectedBox');
+    const co2    = pef?.['Climate Change'] ?? 0;
+    const dqr    = window.aioxyData?.ingredients?.[id]?.data?.metadata?.dqr_overall ?? 2.5;
+    if (selBox) {
+        selBox.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.75rem;
+                        background: #F0FFF4; border: 1.5px solid #27AE60; border-radius: 8px;">
+                <i class="fas fa-check-circle" style="color: #27AE60;"></i>
+                <div>
+                    <div style="font-weight: 600; font-size: 0.85rem; color: var(--primary);">${name}</div>
+                    <div style="font-size: 0.75rem; color: var(--gray);">
+                        CO₂e: ${co2.toFixed(2)} kg/kg | DQR: ${dqr.toFixed(1)}
+                    </div>
+                </div>
+            </div>`;
+    }
+    // Highlight matching row in results list
+    document.querySelectorAll('#counterpartResults li[data-id]').forEach(li => {
+        li.style.background = li.dataset.id === id ? '#EBF8F0' : '';
+        li.style.borderLeft = li.dataset.id === id ? '3px solid #27AE60' : '3px solid transparent';
+    });
+}
+
+function _clearCounterpartSelection() {
+    const selBox = document.getElementById('counterpartSelectedBox');
+    if (selBox) selBox.innerHTML = '';
+}
+
+// Wire up the search input listener (called once from setupIngredientSearch-equivalent setup in initApp)
+function setupCounterpartSearch() {
+    const searchInput = document.getElementById('counterpartSearch');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', (e) => {
+        const query   = e.target.value;
+        const results = searchCounterpartDatabase(query);
+        const ul      = document.getElementById('counterpartResults');
+        if (!ul) return;
+
+        if (query.trim().length < 2) {
+            ul.innerHTML = '<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">Start typing to search…</li>';
+            return;
+        }
+        if (results.length === 0) {
+            ul.innerHTML = '<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">❌ No ingredients found</li>';
+            return;
+        }
+
+        ul.innerHTML = results.map(r => {
+            const safeName = r.name.replace(/'/g, "\\'");
+            const isSelected = r.id === _counterpartSelectedId;
+            return `<li data-id="${r.id}"
+                        onclick="selectCounterpart('${r.id}', '${safeName}', window.aioxyData.ingredients['${r.id}'].data.pef)"
+                        style="padding: 0.6rem 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border);
+                               border-left: 3px solid ${isSelected ? '#27AE60' : 'transparent'};
+                               background: ${isSelected ? '#EBF8F0' : 'white'};">
+                        <div style="font-weight: 600; font-size: 0.85rem;">${r.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--gray);">
+                            CO₂e: ${r.co2.toFixed(2)} kg/kg | DQR: ${r.dqr.toFixed(1)} | ${r.source}
+                        </div>
+                    </li>`;
+        }).join('');
+    });
 }
 
 // ================== UI.JS LOADED ==================
