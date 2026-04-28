@@ -1609,48 +1609,123 @@ const gasCO2 = gasM3PerKg * 2.13;
     }
 
     // ── STEP 9: COMPARISON BASELINE ──────────────────────────────────────────
+    // Three paths, evaluated in priority order:
+    //   1. customBaselineCO2 set and > 0  → custom user baseline (unchanged)
+    //   2. ingredientMappings present      → new full-recipe twin path
+    //   3. baselineId set and !== 'auto'   → legacy single-ingredient twin (unchanged)
+    //   4. fallthrough                     → auto self-comparison baseline (unchanged)
     function computeComparison(input, pefResults) {
         const db         = window.aioxyData;
         const compIn     = input.comparison;
         const productCO2 = pefResults['Climate Change'].total;
         const co2PerKg   = productCO2 / input.product.weightKg;
 
+        // ── Shared databases object (reused by both twin paths) ───────────────
+        const twinDatabases = {
+            processBenchmarks: db.processing
+                ? Object.fromEntries(
+                    Object.entries(db.processing).map(([k, v]) => [k, v.kwh_per_kg])
+                  )
+                : {},
+            gridIntensity: db.grid_intensity || db.countries || {},  // Bug 4 fix: prefer grid_intensity, fallback to countries
+            packaging:     db.packaging || {}
+        };
+
+        // ── Shared params extracted from the current product inputs ───────────
+        const sharedParams = {
+            processingMethod:       input.manufacturing.processingMethod,
+            countryCode:            input.manufacturing.country,
+            transportDistance:      input.transport.distanceKm,
+            transportMode:          input.transport.mode,
+            refrigeration:          input.transport.refrigeration || 'ambient',
+            packagingMaterial:      input.packaging.material,
+            packagingWeightKg:      input.packaging.weightKg,
+            recycledContentPercent: input.packaging.recycledPct
+        };
+
         let comparisonBaseline = null;
 
+        // ── PATH 1: Custom user baseline ─────────────────────────────────────
         if (compIn.customBaselineCO2 && compIn.customBaselineCO2 > 0) {
             comparisonBaseline = {
-                name:      'Custom User Baseline',
-                co2PerKg:  compIn.customBaselineCO2,
+                name:       'Custom User Baseline',
+                co2PerKg:   compIn.customBaselineCO2,
                 waterPerKg: 0,
-                is_custom: true,
-                breakdown: { farm: compIn.customBaselineCO2, manufacturing: 0, transport: 0, packaging: 0 }
+                is_custom:  true,
+                breakdown:  { farm: compIn.customBaselineCO2, manufacturing: 0, transport: 0, packaging: 0 }
             };
+
+        // ── PATH 2: Full-recipe twin (ingredientMappings present) ────────────
+        } else if (
+            compIn.ingredientMappings &&
+            Array.isArray(compIn.ingredientMappings) &&
+            compIn.ingredientMappings.length > 0
+        ) {
+            // Build assessedRecipe and conventionalRecipe from the mappings.
+            // Each mapping entry:
+            //   {
+            //     assessed:     { id, name, quantityKg, pef, entericParams }
+            //     conventional: { id, name, quantityKg, pef, entericParams } | null
+            //   }
+            const assessedRecipe     = compIn.ingredientMappings.map(m => m.assessed);
+            const conventionalRecipe = compIn.ingredientMappings.map(m => m.conventional || null);
+
+            const twinResult = window.corePhysics.calculateParametricTwin({
+                assessedRecipe,
+                conventionalRecipe,
+                sharedParams,
+                databases: twinDatabases
+            });
+
+            // Build flat name lists for anchor_name / anchor_used
+            const conventionalNames = twinResult.ingredientPairs
+                .map(p => p.conventional || p.assessed)
+                .join(', ');
+            const conventionalIds = compIn.ingredientMappings
+                .map(m => m.conventional ? (m.conventional.id || m.conventional.name) : (m.assessed.id || m.assessed.name))
+                .join(', ');
+
+            comparisonBaseline = {
+                name:            `Recipe Twin: ${conventionalNames}`,
+                co2PerKg:        twinResult.conventionalTotal.co2PerKg,
+                waterPerKg:      twinResult.conventionalTotal.waterPerKg,
+                is_custom:       false,
+                breakdown:       twinResult.conventionalTotal.breakdown,
+                ingredientPairs: twinResult.ingredientPairs,
+                anchor_name:     conventionalNames,
+                anchor_used:     conventionalIds,
+                bat_applied:           compIn.useJRCBAT || false,
+                bat_processing_note:   compIn.useJRCBAT ? 'JRC BAT (EU) 2019/2031 applied to processing energy' : null,
+                bat_source:            compIn.useJRCBAT ? 'EU 2019/2031 BAT Conclusions' : null,
+                allocation_note:       'Mass allocation (ISO 14044)',
+                concentration_ratio:   input.product.concentrationRatio || 1.0,
+                cloned_parameters:     sharedParams,
+                sensitivity_analysis:  null,
+                // Expose assessed side for downstream UI/PDF delta rendering
+                assessed_co2PerKg:   twinResult.assessedTotal.co2PerKg,
+                assessed_waterPerKg: twinResult.assessedTotal.waterPerKg,
+                delta:               twinResult.delta
+            };
+
+        // ── PATH 3: Legacy single-ingredient twin ─────────────────────────────
         } else if (compIn.baselineId && compIn.baselineId !== 'auto') {
             const anchorIngData = db.ingredients[compIn.baselineId];
             if (anchorIngData && anchorIngData.data && anchorIngData.data.pef) {
                 const anchorPef  = anchorIngData.data.pef;
                 const twinResult = window.corePhysics.calculateParametricTwin({
-                    anchorIngredient: { pef: anchorPef, name: anchorIngData.name },
+                    anchorIngredient:   { pef: anchorPef, name: anchorIngData.name },
                     concentrationRatio: input.product.concentrationRatio || 1.0,
                     clonedParams: {
-                        processingMethod:       input.manufacturing.processingMethod,
-                        countryCode:            input.manufacturing.country,
-                        transportDistance:      input.transport.distanceKm,
-                        transportMode:          input.transport.mode,
-                        refrigeration:          input.transport.refrigeration,
-                        packagingMaterial:      input.packaging.material,
-                        packagingWeightKg:      input.packaging.weightKg,
-                        recycledContentPercent: input.packaging.recycledPct
+                        processingMethod:       sharedParams.processingMethod,
+                        countryCode:            sharedParams.countryCode,
+                        transportDistance:      sharedParams.transportDistance,
+                        transportMode:          sharedParams.transportMode,
+                        refrigeration:          sharedParams.refrigeration,
+                        packagingMaterial:      sharedParams.packagingMaterial,
+                        packagingWeightKg:      sharedParams.packagingWeightKg,
+                        recycledContentPercent: sharedParams.recycledContentPercent
                     },
-                    databases: {
-                        processBenchmarks: db.processing
-                            ? Object.fromEntries(
-                                Object.entries(db.processing).map(([k, v]) => [k, v.kwh_per_kg])
-                              )
-                            : {},
-                        gridIntensity: db.grid_intensity || db.countries || {},  // Bug 4 fix: prefer grid_intensity, fallback to countries
-                        packaging:     db.packaging  || {}
-                    }
+                    databases: twinDatabases
                 });
                 comparisonBaseline = {
                     name:       anchorIngData.name,
@@ -1672,6 +1747,7 @@ const gasCO2 = gasM3PerKg * 2.13;
             }
         }
 
+        // ── PATH 4: Auto self-comparison fallback ─────────────────────────────
         if (!comparisonBaseline) {
             // Bug 6 fix: breakdown must not be null so section F renders for auto baseline
             comparisonBaseline = {
