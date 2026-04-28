@@ -182,7 +182,7 @@
             TWO: 2
         }),
         IPCC_AR5_PEF31: Object.freeze({
-            GWP_CH4_BIOGENIC: 25.0,
+            GWP_CH4_BIOGENIC: 28.0, // IPCC AR5 (2013), Table 8.7 — GWP100 for CH4, no climate-carbon feedback. Used for enteric fermentation per PEF 3.1.
             GWP_CH4_FOSSIL: 28.0,
             GWP_N2O: 265.0
         }),
