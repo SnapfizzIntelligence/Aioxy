@@ -300,6 +300,102 @@ function updateResultsUI(results) {
     // FIX: Pass resolvedBaseline (always non-null) instead of raw currentComparisonBaseline
     renderUniversalComparisons(unifiedCO2, resolvedBaseline);
 
+    // =====================================================================
+    // PARAMETRIC TWIN — Per-Ingredient Breakdown (FIX 3)
+    // Only renders when a full recipe swap has been computed (ingredientPairs present)
+    // =====================================================================
+    const twinContainer = document.getElementById('parametricTwinBreakdown') || (() => {
+        const div = document.createElement('div');
+        div.id = 'parametricTwinBreakdown';
+        div.className = 'card';
+        div.style.borderLeft = '4px solid #2C7A7B';
+        div.style.marginTop = '1.5rem';
+        // Insert after the resultsContent div's first non-hidden sibling, below charts
+        const resultsContentEl = document.getElementById('resultsContent');
+        if (resultsContentEl) resultsContentEl.appendChild(div);
+        return div;
+    })();
+
+    const pairs = resolvedBaseline?.ingredientPairs;
+    if (pairs && pairs.length > 0) {
+        const assessedTotal  = resolvedBaseline.assessed_co2PerKg  ?? 0;
+        const conventTotal   = resolvedBaseline.co2PerKg           ?? 0;
+        const netDelta       = resolvedBaseline.delta               ?? (assessedTotal - conventTotal);
+        const deltaPct       = conventTotal > 0 ? ((netDelta / conventTotal) * 100).toFixed(1) : '0.0';
+        const deltaPctAbs    = Math.abs(parseFloat(deltaPct)).toFixed(1);
+        const deltaSign      = netDelta <= 0 ? '↓' : '↑';
+        const deltaColor     = netDelta <= 0 ? '#27AE60' : '#E63946';
+
+        // Build ingredient pair rows
+        let pairRows = '';
+        pairs.forEach(pair => {
+            const pairDelta = pair.delta ?? 0;
+            const isSame    = pair.same || Math.abs(pairDelta) < 0.00001;
+            const pairColor = pairDelta < 0 ? '#27AE60' : pairDelta > 0 ? '#E63946' : '#718096';
+            const pairSign  = pairDelta > 0 ? '+' : '';
+            const assessedLabel  = `${pair.assessed?.name || '—'} (${pair.assessed?.quantityKg?.toFixed(3) || '?'}kg)`;
+            const conventLabel   = isSame
+                ? `<em style="color:#718096;">(same — no difference)</em>`
+                : `${pair.conventional?.name || '—'} (${pair.conventional?.quantityKg?.toFixed(3) || '?'}kg)`;
+            const deltaDisplay   = isSame
+                ? `<span style="color:#718096;">0 kg</span>`
+                : `<span style="color:${pairColor}; font-weight:bold;">${pairSign}${pairDelta.toFixed(4)} kg</span>`;
+
+            pairRows += `
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:8px 10px;">${assessedLabel}</td>
+                    <td style="padding:8px 10px;">${conventLabel}</td>
+                    <td style="padding:8px 10px; text-align:right;">${deltaDisplay}</td>
+                </tr>`;
+        });
+
+        twinContainer.innerHTML = `
+            <div style="padding: 1rem 1.25rem;">
+                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                    <div style="background:#2C7A7B; color:white; width:30px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3 style="margin:0; color:#2C7A7B; font-size:1.1rem;">Parametric Twin — Ingredient Comparison</h3>
+                </div>
+                <div style="font-size:0.8rem; color:var(--gray); margin-bottom:0.75rem;">
+                    Conventional Baseline: ${resolvedBaseline.name || 'Conventional Recipe'}
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:0.85rem; border:1px solid var(--border);">
+                    <thead style="background:#E8F8F5;">
+                        <tr>
+                            <th style="text-align:left; padding:8px 10px; color:#2C7A7B; font-weight:bold;">Assessed Ingredient</th>
+                            <th style="text-align:left; padding:8px 10px; color:#2C7A7B; font-weight:bold;">Conventional</th>
+                            <th style="text-align:right; padding:8px 10px; color:#2C7A7B; font-weight:bold;">CO₂ Delta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pairRows}
+                    </tbody>
+                    <tfoot style="background:#f8f9fa; border-top:2px solid var(--border);">
+                        <tr>
+                            <td colspan="2" style="padding:8px 10px; font-weight:bold;">Total Assessed</td>
+                            <td style="padding:8px 10px; text-align:right; font-weight:bold;">${assessedTotal.toFixed(4)} kg CO₂e</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding:8px 10px; font-weight:bold;">Total Conventional</td>
+                            <td style="padding:8px 10px; text-align:right; font-weight:bold;">${conventTotal.toFixed(4)} kg CO₂e</td>
+                        </tr>
+                        <tr style="background:#E8F8F5;">
+                            <td colspan="2" style="padding:8px 10px; font-weight:bold;">Net Delta</td>
+                            <td style="padding:8px 10px; text-align:right; font-weight:bold; color:${deltaColor};">
+                                ${deltaSign} ${Math.abs(netDelta).toFixed(4)} kg CO₂e (${deltaPctAbs}% ${netDelta <= 0 ? 'lower' : 'higher'})
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        `;
+        twinContainer.style.display = '';
+    } else {
+        // No pairs — hide the section (legacy single-ingredient or auto baseline)
+        twinContainer.style.display = 'none';
+    }
+
     // 3. Update Metric Cards with the UNIFIED numbers
     if(document.getElementById('co2Value')) document.getElementById('co2Value').textContent = (unifiedCO2 ?? 0).toFixed(2) + ' kg';
     if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = (results.waterScarcityPerKg ?? 0).toFixed(4) + ' m³';
