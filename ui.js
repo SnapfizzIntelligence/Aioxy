@@ -1312,51 +1312,228 @@ function setupDemoData() {
 // ================== SUPPLIER DATA MODAL ==================
 let currentIngredientIndex = null;
 
+// ── Animal ingredient detection ───────────────────────────────────────────────
+// Keywords matched against ingredient name (lower-cased) to detect animal products.
+// Also falls back to checking the FAOSTAT livestock yield table.
+const ANIMAL_KEYWORDS = [
+    'beef','cattle','cow','veal',
+    'lamb','sheep','goat',
+    'pig','pork','swine',
+    'chicken','broiler','hen','poultry',
+    'turkey','duck','rabbit',
+    'salmon','trout','sea bass','sea bream','tuna',
+    'shrimp','prawn','mussel','oyster','scallop','crab','lobster',
+    'milk','dairy','cream','butter','cheese','yogurt','whey',
+    'egg','eggs'
+];
+
+/**
+ * isAnimalIngredient(ingredient)
+ * Returns true if the ingredient (from selectedIngredients) is animal-based.
+ * Detection: keyword match on name → FAOSTAT livestock yield lookup.
+ */
+function isAnimalIngredient(ingredient) {
+    if (!ingredient) return false;
+    const nameLower = (ingredient.name || '').toLowerCase();
+
+    // 1. Keyword match
+    for (const kw of ANIMAL_KEYWORDS) {
+        if (nameLower.includes(kw)) return true;
+    }
+
+    // 2. FAOSTAT livestock yield check — if country yields contain a livestock
+    //    entry for this ingredient name, it's animal-based.
+    try {
+        const yieldDB = window.aioxyData && window.aioxyData.crop_yields;
+        const ingData = window.aioxyData && window.aioxyData.ingredients && window.aioxyData.ingredients[ingredient.id];
+        if (ingData && ingData.data && ingData.data.metadata && ingData.data.metadata.entericIncluded === true) {
+            return true; // AGRIBALYSE metadata explicitly marks enteric as included → animal
+        }
+        if (yieldDB && yieldDB.livestock_yields) {
+            const country = ingredient.originCountry || 'FR';
+            const livestock = yieldDB.livestock_yields[country] || yieldDB.livestock_yields['FR'] || {};
+            for (const productName of Object.keys(livestock)) {
+                if (nameLower.includes(productName.toLowerCase()) ||
+                    productName.toLowerCase().includes(nameLower.split(' ')[0])) {
+                    return true;
+                }
+            }
+        }
+    } catch (e) {
+        // Non-critical — detection falls through to keyword result (false)
+    }
+
+    return false;
+}
+
+/**
+ * updateProductivityLabel()
+ * Called when supplierAnimalType dropdown changes.
+ * Updates the productivity label text and FAOSTAT country average hint.
+ */
+function updateProductivityLabel() {
+    const animalType = document.getElementById('supplierAnimalType') &&
+                       document.getElementById('supplierAnimalType').value;
+    const labelEl    = document.getElementById('supplierProductivityLabel');
+    const hintEl     = document.getElementById('supplierProductivityHint');
+    const fishNote   = document.getElementById('farmedFishNote');
+
+    const labels = {
+        'dairy_cow':   'Milk yield (kg per cow per year)',
+        'beef_cattle': 'Carcass weight (kg per animal)',
+        'pig':         'Carcass weight (kg per animal)',
+        'sheep':       'Carcass weight (kg per animal)',
+        'goat':        'Carcass weight (kg per animal)',
+        'broiler':     'Live weight at slaughter (kg) × cycles per year',
+        'layer_hen':   'Eggs per hen per year (kg)',
+        'turkey':      'Live weight at slaughter (kg) × cycles per year',
+        'farmed_fish': 'Harvest weight (kg) × cycles per year'
+    };
+
+    if (labelEl && animalType) {
+        labelEl.textContent = labels[animalType] || 'Productivity (per animal per year)';
+    }
+
+    // Show/hide the farmed fish note
+    if (fishNote) {
+        fishNote.style.display = (animalType === 'farmed_fish') ? 'inline' : 'none';
+    }
+
+    // Look up FAOSTAT country average for this animal
+    if (hintEl) {
+        try {
+            const ingredient = (currentIngredientIndex !== null)
+                ? selectedIngredients[currentIngredientIndex] : null;
+            const country = (ingredient && ingredient.originCountry) || 'FR';
+            const yieldDB = window.aioxyData && window.aioxyData.crop_yields;
+
+            let faostatVal = null;
+            if (yieldDB && yieldDB.yields && animalType) {
+                const countryKey  = country; // may be ISO2 or full name depending on database
+                const countryData = yieldDB.yields[countryKey] || {};
+                // Try to match product name via IPCC_TIER1_LIVESTOCK entericEF key
+                // e.g., 'dairy_cow' → look for 'milk', 'cow milk', etc.
+                const productNameMap = {
+                    'dairy_cow':   ['cow milk', 'milk, whole', 'milk'],
+                    'beef_cattle': ['beef and veal', 'cattle meat', 'beef'],
+                    'pig':         ['pig meat', 'pork', 'swine'],
+                    'sheep':       ['sheep meat', 'lamb'],
+                    'goat':        ['goat meat', 'goat'],
+                    'broiler':     ['chicken meat', 'poultry', 'broiler'],
+                    'layer_hen':   ['eggs', 'hen eggs'],
+                    'turkey':      ['turkey meat', 'turkey'],
+                    'farmed_fish': ['salmon', 'trout', 'fish']
+                };
+                const searchTerms = productNameMap[animalType] || [];
+                for (const [cropKey, cropVal] of Object.entries(countryData)) {
+                    for (const term of searchTerms) {
+                        if (cropKey.toLowerCase().includes(term)) {
+                            faostatVal = cropVal;
+                            break;
+                        }
+                    }
+                    if (faostatVal !== null) break;
+                }
+            }
+
+            hintEl.textContent = faostatVal
+                ? `Country average: ${faostatVal.toLocaleString()} kg/animal/year`
+                : 'Country average: not found in FAOSTAT database';
+        } catch (e) {
+            hintEl.textContent = 'Country average: unavailable';
+        }
+    }
+}
+
 function openSupplierModal(index) {
     currentIngredientIndex = index;
     const ingredient = selectedIngredients[index];
     const modal = document.getElementById('supplierModal');
-    
-    document.getElementById('supplierFarmRegion').value = '';
-    document.getElementById('supplierGeolocation').value = '';
-    document.getElementById('supplierDDS').value = '';
-    document.getElementById('primaryNitrogen').value = '';
-    document.getElementById('primaryYield').value = '';
-    document.getElementById('supplierWaterSource').value = '';
-    document.getElementById('supplierPractice').value = '';
-    document.getElementById('pesticide1Name').value = '';
-    document.getElementById('pesticide1CAS').value = '';
-    document.getElementById('pesticide1Rate').value = '';
-    document.getElementById('pesticide2Name').value = '';
-    document.getElementById('pesticide2CAS').value = '';
-    document.getElementById('pesticide2Rate').value = '';
-    document.getElementById('pesticide3Name').value = '';
-    document.getElementById('pesticide3CAS').value = '';
-    document.getElementById('pesticide3Rate').value = '';
 
+    // ── Reset ALL fields (common + crop + animal) ──────────────────────────
+    document.getElementById('supplierFarmRegion').value  = '';
+    document.getElementById('supplierGeolocation').value = '';
+    document.getElementById('supplierDDS').value         = '';
+    // Crop fields
+    document.getElementById('primaryNitrogen').value     = '';
+    document.getElementById('primaryYield').value        = '';
+    document.getElementById('supplierWaterSource').value = '';
+    document.getElementById('supplierPractice').value    = '';
+    document.getElementById('pesticide1Name').value      = '';
+    document.getElementById('pesticide1CAS').value       = '';
+    document.getElementById('pesticide1Rate').value      = '';
+    document.getElementById('pesticide2Name').value      = '';
+    document.getElementById('pesticide2CAS').value       = '';
+    document.getElementById('pesticide2Rate').value      = '';
+    document.getElementById('pesticide3Name').value      = '';
+    document.getElementById('pesticide3CAS').value       = '';
+    document.getElementById('pesticide3Rate').value      = '';
+    // Animal fields
+    const animalTypeEl     = document.getElementById('supplierAnimalType');
+    const prodSystemEl     = document.getElementById('supplierProductionSystem');
+    const productivityEl   = document.getElementById('supplierProductivity');
+    const manureSystemEl   = document.getElementById('supplierManureSystem');
+    if (animalTypeEl)   animalTypeEl.value   = '';
+    if (prodSystemEl)   prodSystemEl.value   = '';
+    if (productivityEl) productivityEl.value = '';
+    if (manureSystemEl) manureSystemEl.value = '';
+
+    // ── Detect ingredient type and show the correct section ───────────────
+    const animalIngredient = isAnimalIngredient(ingredient);
+    const cropSection      = document.getElementById('supplierCropSection');
+    const animalSection    = document.getElementById('supplierAnimalSection');
+    // Also update the modal title icon to reflect type
+    const modalTitle       = document.querySelector('#supplierModal h3');
+
+    if (animalIngredient) {
+        if (cropSection)   cropSection.style.display   = 'none';
+        if (animalSection) animalSection.style.display = 'block';
+        if (modalTitle)    modalTitle.innerHTML = '<i class="fas fa-horse"></i> Primary Livestock Data';
+    } else {
+        if (cropSection)   cropSection.style.display   = 'block';
+        if (animalSection) animalSection.style.display = 'none';
+        if (modalTitle)    modalTitle.innerHTML = '<i class="fas fa-tractor"></i> Primary Farm Data';
+    }
+
+    // ── Restore existing primary data ─────────────────────────────────────
     if (ingredient.primaryData) {
-        document.getElementById('supplierFarmRegion').value = ingredient.primaryData.farmRegion || '';
-        document.getElementById('supplierGeolocation').value = ingredient.primaryData.geolocation || '';
-        document.getElementById('supplierDDS').value = ingredient.primaryData.ddsReference || '';
-        document.getElementById('primaryNitrogen').value = ingredient.primaryData.nitrogenKgPerTon || '';
-        document.getElementById('primaryYield').value = ingredient.primaryData.yieldKgPerHa || '';
-        document.getElementById('supplierWaterSource').value = ingredient.primaryData.waterSource || '';
-        document.getElementById('supplierPractice').value = ingredient.primaryData.farmingPractice || '';
-        // Populate pesticide fields if they exist
-        if (ingredient.primaryData.pesticides) {
-            var pest1 = ingredient.primaryData.pesticides[0] || {};
-            var pest2 = ingredient.primaryData.pesticides[1] || {};
-            var pest3 = ingredient.primaryData.pesticides[2] || {};
-            document.getElementById('pesticide1Name').value = pest1.name || '';
-            document.getElementById('pesticide1CAS').value = pest1.cas || '';
-            document.getElementById('pesticide1Rate').value = pest1.rateKgPerHa || '';
-            document.getElementById('pesticide2Name').value = pest2.name || '';
-            document.getElementById('pesticide2CAS').value = pest2.cas || '';
-            document.getElementById('pesticide2Rate').value = pest2.rateKgPerHa || '';
-            document.getElementById('pesticide3Name').value = pest3.name || '';
-            document.getElementById('pesticide3CAS').value = pest3.cas || '';
-            document.getElementById('pesticide3Rate').value = pest3.rateKgPerHa || '';
+        const pd = ingredient.primaryData;
+        document.getElementById('supplierFarmRegion').value  = pd.farmRegion    || '';
+        document.getElementById('supplierGeolocation').value = pd.geolocation   || '';
+        document.getElementById('supplierDDS').value         = pd.ddsReference  || '';
+
+        if (animalIngredient) {
+            // Restore animal fields
+            if (animalTypeEl   && pd.animalType)         animalTypeEl.value   = pd.animalType;
+            if (prodSystemEl   && pd.productionSystem)   prodSystemEl.value   = pd.productionSystem;
+            if (productivityEl && pd.productivityMetric) productivityEl.value = pd.productivityMetric;
+            if (manureSystemEl && pd.manureSystem)       manureSystemEl.value = pd.manureSystem;
+            // Update label + FAOSTAT hint for the restored animal type
+            updateProductivityLabel();
+        } else {
+            // Restore crop fields
+            document.getElementById('primaryNitrogen').value     = pd.nitrogenKgPerTon || '';
+            document.getElementById('primaryYield').value        = pd.yieldKgPerHa     || '';
+            document.getElementById('supplierWaterSource').value = pd.waterSource       || '';
+            document.getElementById('supplierPractice').value    = pd.farmingPractice  || '';
+            if (pd.pesticides) {
+                var pest1 = pd.pesticides[0] || {};
+                var pest2 = pd.pesticides[1] || {};
+                var pest3 = pd.pesticides[2] || {};
+                document.getElementById('pesticide1Name').value  = pest1.name        || '';
+                document.getElementById('pesticide1CAS').value   = pest1.cas         || '';
+                document.getElementById('pesticide1Rate').value  = pest1.rateKgPerHa || '';
+                document.getElementById('pesticide2Name').value  = pest2.name        || '';
+                document.getElementById('pesticide2CAS').value   = pest2.cas         || '';
+                document.getElementById('pesticide2Rate').value  = pest2.rateKgPerHa || '';
+                document.getElementById('pesticide3Name').value  = pest3.name        || '';
+                document.getElementById('pesticide3CAS').value   = pest3.cas         || '';
+                document.getElementById('pesticide3Rate').value  = pest3.rateKgPerHa || '';
+            }
         }
+    } else if (animalIngredient) {
+        // No saved data yet — trigger FAOSTAT hint update with current country
+        updateProductivityLabel();
     }
     
     if (modal) modal.classList.remove('hidden');
@@ -1370,49 +1547,122 @@ function closeSupplierModal() {
 
 function saveSupplierData() {
     if (currentIngredientIndex === null) return;
-    
-    const farmRegion = document.getElementById('supplierFarmRegion').value.trim();
-    const geolocation = document.getElementById('supplierGeolocation').value.trim();
-    const ddsRef = document.getElementById('supplierDDS').value.trim();
-    const nitrogen = parseFloat(document.getElementById('primaryNitrogen').value);
-    const yieldVal = parseFloat(document.getElementById('primaryYield').value);
-    const waterSource = document.getElementById('supplierWaterSource').value;
-    const practice = document.getElementById('supplierPractice').value;
 
-    if (!farmRegion || isNaN(nitrogen) || isNaN(yieldVal)) {
-        alert('Please fill in required fields: Farm Region, Nitrogen, and Yield');
+    const ingredient   = selectedIngredients[currentIngredientIndex];
+    const animalIngredient = isAnimalIngredient(ingredient);
+
+    // Common fields (present for all ingredient types)
+    const farmRegion  = document.getElementById('supplierFarmRegion').value.trim();
+    const geolocation = document.getElementById('supplierGeolocation').value.trim();
+    const ddsRef      = document.getElementById('supplierDDS').value.trim();
+
+    if (!farmRegion) {
+        alert('Please fill in the required field: Farm Region/Country');
         return;
     }
-    
-    // Collect pesticides
-    var pesticides = [];
-    for (var i = 1; i <= 3; i++) {
-        var name = document.getElementById('pesticide' + i + 'Name').value.trim();
-        var cas = document.getElementById('pesticide' + i + 'CAS').value.trim();
-        var rate = parseFloat(document.getElementById('pesticide' + i + 'Rate').value);
-        if (name && cas && !isNaN(rate) && rate > 0) {
-            pesticides.push({ name: name, cas: cas, rateKgPerHa: rate });
-        }
-    }
 
-    selectedIngredients[currentIngredientIndex].primaryData = {
-        farmRegion,
-        geolocation,
-        ddsReference: ddsRef,
-        nitrogenKgPerTon: nitrogen,
-        yieldKgPerHa: yieldVal,
-        waterSource,
-        farmingPractice: practice,
-        pesticides: pesticides.length > 0 ? pesticides : null,
-        timestamp: new Date().toISOString()
-    };
+    if (animalIngredient) {
+        // ── ANIMAL PRIMARY DATA PATH ──────────────────────────────────────────
+        const animalType        = document.getElementById('supplierAnimalType')        ? document.getElementById('supplierAnimalType').value        : '';
+        const productionSystem  = document.getElementById('supplierProductionSystem')  ? document.getElementById('supplierProductionSystem').value  : '';
+        const productivityMetric = document.getElementById('supplierProductivity')
+            ? parseFloat(document.getElementById('supplierProductivity').value)
+            : NaN;
+        const manureSystem      = document.getElementById('supplierManureSystem')      ? document.getElementById('supplierManureSystem').value      : '';
+
+        if (!animalType) {
+            alert('Please select an Animal Type');
+            return;
+        }
+        if (isNaN(productivityMetric) || productivityMetric <= 0) {
+            alert('Please enter a valid Productivity value (per animal per year)');
+            return;
+        }
+
+        // Look up IPCC Tier 1 EF values from core_physics CONSTANTS
+        const TIER1     = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
+        const animalRow = TIER1.entericEF[animalType] || { ef_ch4: 0, n_excretion: 0 };
+
+        selectedIngredients[currentIngredientIndex].primaryData = {
+            // Common fields
+            farmRegion,
+            geolocation,
+            ddsReference: ddsRef,
+            timestamp: new Date().toISOString(),
+
+            // Animal-specific fields
+            animalType,
+            productionSystem,
+            productivityMetric,
+            manureSystem: manureSystem || 'pasture',  // safe default
+
+            // Pre-computed entericParams (convenience — engine also builds these itself)
+            entericParams: {
+                animalType,
+                efCh4PerHead:         animalRow.ef_ch4,
+                nExcretionPerHead:    animalRow.n_excretion,
+                productPerHeadPerYear: productivityMetric
+            },
+
+            // Null out crop-specific fields so engine never mis-reads them
+            nitrogenKgPerTon: null,
+            yieldKgPerHa:     null,
+            waterSource:      null,
+            farmingPractice:  null,
+            pesticides:       null
+        };
+
+        console.log(`✅ [Supplier-Animal] Primary livestock data saved for ${ingredient.name} — type: ${animalType}, productivity: ${productivityMetric}, manure: ${manureSystem}`);
+
+    } else {
+        // ── CROP PRIMARY DATA PATH (unchanged) ────────────────────────────────
+        const nitrogen = parseFloat(document.getElementById('primaryNitrogen').value);
+        const yieldVal = parseFloat(document.getElementById('primaryYield').value);
+        const waterSource = document.getElementById('supplierWaterSource').value;
+        const practice    = document.getElementById('supplierPractice').value;
+
+        if (isNaN(nitrogen) || isNaN(yieldVal)) {
+            alert('Please fill in required fields: Nitrogen Fertilizer and Yield');
+            return;
+        }
+
+        // Collect pesticides
+        var pesticides = [];
+        for (var i = 1; i <= 3; i++) {
+            var name = document.getElementById('pesticide' + i + 'Name').value.trim();
+            var cas  = document.getElementById('pesticide' + i + 'CAS').value.trim();
+            var rate = parseFloat(document.getElementById('pesticide' + i + 'Rate').value);
+            if (name && cas && !isNaN(rate) && rate > 0) {
+                pesticides.push({ name, cas, rateKgPerHa: rate });
+            }
+        }
+
+        selectedIngredients[currentIngredientIndex].primaryData = {
+            farmRegion,
+            geolocation,
+            ddsReference:     ddsRef,
+            nitrogenKgPerTon: nitrogen,
+            yieldKgPerHa:     yieldVal,
+            waterSource,
+            farmingPractice:  practice,
+            pesticides:       pesticides.length > 0 ? pesticides : null,
+            timestamp:        new Date().toISOString(),
+
+            // Null out animal-specific fields
+            animalType:        null,
+            productionSystem:  null,
+            productivityMetric: null,
+            manureSystem:      null,
+            entericParams:     null
+        };
+
+        console.log(`✅ [Supplier-Crop] Primary data saved for ${ingredient.name}`);
+    }
 
     updateIngredientList();
     calculateImpact();
     closeSupplierModal();
-    
-    console.log(`✅ [Supplier] Primary data saved for ${selectedIngredients[currentIngredientIndex]?.name}`);
-        }
+}
 
 function generateSupplierLink() {
     if (currentIngredientIndex === null) {
@@ -1446,15 +1696,28 @@ function decodeSupplierToken() {
         const jsonStr = decodeURIComponent(escape(atob(base64Data)));
         const data = JSON.parse(jsonStr);
 
-        document.getElementById('supplierFarmRegion').value = data.r || '';
-        document.getElementById('supplierGeolocation').value = data.g || '';
-        document.getElementById('supplierDDS').value = data.dds || '';
-        document.getElementById('primaryNitrogen').value = data.n || '';
-        document.getElementById('primaryYield').value = data.y || '';
+        // Common fields
+        document.getElementById('supplierFarmRegion').value  = data.r   || '';
+        document.getElementById('supplierGeolocation').value = data.g   || '';
+        document.getElementById('supplierDDS').value         = data.dds || '';
+
+        // Crop fields (only populate if present in token)
+        document.getElementById('primaryNitrogen').value     = data.n || '';
+        document.getElementById('primaryYield').value        = data.y || '';
         document.getElementById('supplierWaterSource').value = data.w || '';
-        document.getElementById('supplierPractice').value = data.p || '';
-        
-        document.getElementById('supplierTokenInput').value = ''; 
+        document.getElementById('supplierPractice').value    = data.p || '';
+
+        // Animal fields (only populate if present in token)
+        const animalTypeEl   = document.getElementById('supplierAnimalType');
+        const prodSystemEl   = document.getElementById('supplierProductionSystem');
+        const productivityEl = document.getElementById('supplierProductivity');
+        const manureEl       = document.getElementById('supplierManureSystem');
+        if (animalTypeEl   && data.at)  { animalTypeEl.value   = data.at;  updateProductivityLabel(); }
+        if (prodSystemEl   && data.ps)    prodSystemEl.value   = data.ps;
+        if (productivityEl && data.pm)    productivityEl.value = data.pm;
+        if (manureEl       && data.ms)    manureEl.value       = data.ms;
+
+        document.getElementById('supplierTokenInput').value = '';
         alert('✅ Supplier data successfully decoded and imported!\n\nReview the inputs, then click "Save Primary Data" to lock it into the audit trail.');
     } catch (e) {
         console.error("Token Decode Error:", e);
