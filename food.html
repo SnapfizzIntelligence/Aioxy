@@ -2310,5 +2310,88 @@
             </div>
         </div>
     </div>
+    <!-- ========== PARAMETRIC TWIN: COUNTERPART SEARCH MODAL ========== -->
+    <div id="counterpartModal" class="hidden"
+         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); z-index: 10000;
+                align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 2rem;
+                    width: 90%; max-width: 540px; max-height: 90vh; overflow-y: auto;">
+
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="color: var(--primary); margin: 0;">
+                    <i class="fas fa-exchange-alt"></i> Map Conventional Counterpart
+                </h3>
+                <button onclick="closeCounterpartModal()"
+                        style="background: none; border: none; font-size: 1.5rem; color: var(--gray); cursor: pointer;">×</button>
+            </div>
+
+            <!-- Assessed ingredient info -->
+            <div style="background: var(--light); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem;
+                        border-left: 4px solid var(--secondary);">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray); text-transform: uppercase; margin-bottom: 0.25rem;">
+                    Assessed ingredient
+                </div>
+                <div style="font-weight: 600; color: var(--primary);" id="counterpartAssessedName">—</div>
+                <div style="font-size: 0.8rem; color: var(--gray);">
+                    Quantity: <span id="counterpartAssessedQty">—</span>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+                <label class="form-label">Search conventional counterpart:</label>
+                <div style="position: relative;">
+                    <input type="text" id="counterpartSearch" class="form-control"
+                           placeholder="e.g., soy protein, pea flour…"
+                           style="padding-right: 2.5rem;">
+                    <i class="fas fa-search"
+                       style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+                              color: var(--gray); pointer-events: none;"></i>
+                </div>
+            </div>
+
+            <!-- Results list -->
+            <ul id="counterpartResults"
+                style="list-style: none; padding: 0; margin: 0 0 1rem 0;
+                       max-height: 220px; overflow-y: auto;
+                       border: 1px solid var(--border); border-radius: 8px;">
+                <li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">
+                    Start typing to search…
+                </li>
+            </ul>
+
+            <!-- Currently selected counterpart -->
+            <div id="counterpartSelectedBox" style="margin-bottom: 1rem;"></div>
+
+            <!-- Conventional quantity -->
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label">Conventional quantity (kg):</label>
+                <input type="number" id="counterpartConventionalQty" class="form-control"
+                       step="0.001" min="0" placeholder="0.000">
+            </div>
+
+            <!-- Same-as-assessed shortcut -->
+            <button onclick="setSameAsAssessed()"
+                    class="btn btn-outline"
+                    style="width: 100%; margin-bottom: 1.25rem; font-size: 0.85rem; justify-content: center;">
+                <i class="fas fa-clone"></i> Same as assessed — no difference
+            </button>
+
+            <!-- Footer actions -->
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-outline" onclick="closeCounterpartModal()" style="flex: 1;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn" onclick="saveCounterpartMapping()"
+                        style="flex: 1; background: var(--gradient-secondary);">
+                    <i class="fas fa-save"></i> Save Mapping
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ========== END COUNTERPART MODAL ========== -->
+
 </body>
     </html>
