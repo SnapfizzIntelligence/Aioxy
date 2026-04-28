@@ -325,7 +325,27 @@ async function calculateImpact() {
         comparison: {
             baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
             customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
-            useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false
+            useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false,
+
+            // PARAMETRIC TWIN: build ingredientMappings from selectedIngredients
+            ingredientMappings: selectedIngredients
+                .filter(ing => ing.conventionalCounterpart !== undefined && ing.conventionalCounterpart !== null)
+                .map(ing => ({
+                    assessed: {
+                        id:            ing.id,
+                        name:          ing.name,
+                        quantityKg:    ing.quantity,
+                        pef:           window.aioxyData.ingredients[ing.id].data.pef,
+                        entericParams: ing.entericParams || null
+                    },
+                    conventional: {
+                        id:            ing.conventionalCounterpart.id,
+                        name:          ing.conventionalCounterpart.name,
+                        quantityKg:    ing.conventionalQuantity || ing.quantity,
+                        pef:           ing.conventionalCounterpart.pef,
+                        entericParams: null
+                    }
+                }))
         }
     };
 
@@ -509,6 +529,7 @@ function initApp() {
         populateCountrySelect();
         setupIngredientSearch();
         setupBaselineSearch();
+        setupCounterpartSearch();
         setupDemoData();
         updateTabIndicator();
 
