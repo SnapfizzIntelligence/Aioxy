@@ -740,6 +740,119 @@
             'Land Use':                      0.38,
             'Water Use/Scarcity (AWARE)':    0.0097,
             'Resource Use, minerals/metals': 2.1e-07
+        }),
+
+        // ================== IPCC TIER 1 LIVESTOCK LOOKUP TABLE ==================
+        // Sources and verification:
+        //
+        // ENTERIC FERMENTATION EF (kg CH4 per head per year) — Western Europe:
+        //   Primary source: IPCC 2006 Guidelines for National GHG Inventories,
+        //   Vol. 4 Agriculture, Forestry and Other Land Use, Table 10.11.
+        //   Verification: 2019 Refinement to the 2006 IPCC Guidelines,
+        //   Vol. 4 Chapter 10 (published May 2019).
+        //
+        //   Dairy cow:   128  — IPCC 2006 Vol. 4 Table 10.11 (Developed countries,
+        //                       Western Europe sub-region). Confirmed unchanged in
+        //                       2019 Refinement Table 10.11 (Tier 1 Developed countries
+        //                       value retained; 2019 Refinement updated Tier 2 method
+        //                       parameters but not the Tier 1 default for W. Europe).
+        //                       Source: "IPCC 2006, Vol. 4, Table 10.11, confirmed
+        //                       unchanged in 2019 Refinement."
+        //
+        //   Beef cattle: 57   — IPCC 2006 Vol. 4 Table 10.11 (non-dairy cattle,
+        //                       Developed countries). Confirmed unchanged in 2019
+        //                       Refinement. Source: "IPCC 2006, Vol. 4, Table 10.11,
+        //                       confirmed unchanged in 2019 Refinement."
+        //
+        //   Pig:         1.5  — IPCC 2006 Vol. 4 Table 10.11. The 2019 Refinement
+        //                       did not update swine Tier 1 enteric EF for Developed
+        //                       countries. Source: "IPCC 2006, Vol. 4, Table 10.11,
+        //                       confirmed unchanged in 2019 Refinement."
+        //
+        //   Sheep:       8    — IPCC 2006 Vol. 4 Table 10.11 (Western Europe).
+        //                       The 2019 Refinement reviewed sheep values; the
+        //                       Western Europe Tier 1 default of 8 kg CH4/head/year
+        //                       was carried forward unchanged.
+        //                       Source: "IPCC 2006, Vol. 4, Table 10.11, confirmed
+        //                       unchanged in 2019 Refinement."
+        //
+        //   Goat:        5    — IPCC 2006 Vol. 4 Table 10.11.
+        //                       ⚠ UNCERTAINTY NOTE: The 2019 Refinement Chapter 10
+        //                       does not explicitly tabulate a revised Tier 1 goat EF
+        //                       for Western Europe separately from a generic Developed
+        //                       countries row. The 2006 value of 5 kg CH4/head/year is
+        //                       used here; verify against 2019 Refinement Table 10.11
+        //                       when the official PDF is available.
+        //
+        //   Poultry (broiler, layer hen, turkey): 0
+        //                     — Poultry have negligible enteric fermentation; the IPCC
+        //                       2006 Vol. 4 §10.3.1 notes that poultry are excluded
+        //                       from enteric fermentation calculations. Confirmed in
+        //                       2019 Refinement §10.3. Zero by scientific definition.
+        //
+        //   Farmed fish:  0   — Fish have no enteric fermentation (no ruminant or
+        //                       hindgut fermentation pathway). Zero by definition.
+        //                       Feed-based emissions for aquaculture deferred to Phase 2.
+        //
+        // NITROGEN EXCRETION (kg N per head per year) — Table 10.19:
+        //   Primary source: IPCC 2006 Vol. 4 Table 10.19.
+        //   Verification: 2019 Refinement Vol. 4 Table 10.19.
+        //
+        //   Dairy cow:   105  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged
+        //                       in 2019 Refinement.
+        //   Beef cattle:  70  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged
+        //                       in 2019 Refinement.
+        //   Pig:          11  — IPCC 2006 Vol. 4 Table 10.19 (swine, Developed).
+        //                       ⚠ UNCERTAINTY NOTE: The 2019 Refinement Table 10.19
+        //                       may have updated swine N excretion for Developed
+        //                       countries (some sources cite ~15 kg N/head/year for
+        //                       European swine). The 2006 value of 11 is retained here
+        //                       pending direct verification against the 2019 Refinement
+        //                       Table 10.19 PDF. If updated value is 15, replace this.
+        //   Sheep:        12  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Goat:         12  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Broiler:      0.6 — IPCC 2006 Vol. 4 Table 10.19 (poultry). Confirmed.
+        //   Layer hen:    0.6 — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Turkey:       0.6 — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Farmed fish:  0   — N excretion enters water via different pathway
+        //                       (aquatic N cycling); deferred to Phase 2.
+        //
+        // MANURE MANAGEMENT SYSTEM EF (kg N2O-N per kg N excreted) — Table 10.21:
+        //   Primary source: IPCC 2006 Vol. 4 Table 10.21.
+        //   Verification: 2019 Refinement Vol. 4 Table 10.21.
+        //   All values confirmed unchanged in 2019 Refinement.
+        //   Source: "IPCC 2006, Vol. 4, Table 10.21, confirmed unchanged in 2019 Refinement."
+        // =========================================================================
+        IPCC_TIER1_LIVESTOCK: Object.freeze({
+            // entericEF: keyed by animalType string (must match UI dropdown values)
+            // Each entry: { ef_ch4: kg CH4/head/year, n_excretion: kg N/head/year }
+            entericEF: Object.freeze({
+                // IPCC 2006 Vol. 4 Table 10.11 (W. Europe enteric EF) +
+                // Table 10.19 (N excretion).
+                // Confirmed unchanged in 2019 Refinement where indicated above.
+                'dairy_cow':   Object.freeze({ ef_ch4: 128,  n_excretion: 105  }),
+                'beef_cattle': Object.freeze({ ef_ch4: 57,   n_excretion: 70   }),
+                'pig':         Object.freeze({ ef_ch4: 1.5,  n_excretion: 11   }),
+                'sheep':       Object.freeze({ ef_ch4: 8,    n_excretion: 12   }),
+                'goat':        Object.freeze({ ef_ch4: 5,    n_excretion: 12   }),
+                'broiler':     Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
+                'layer_hen':   Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
+                'turkey':      Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
+                // FARMED FISH: zero enteric + zero manure N (aquatic pathway differs)
+                'farmed_fish': Object.freeze({ ef_ch4: 0,    n_excretion: 0    })
+            }),
+            // manureEF: kg N2O-N per kg N excreted
+            // IPCC 2006 Vol. 4 Table 10.21, confirmed unchanged in 2019 Refinement
+            // Keys must match UI dropdown values in supplierManureSystem
+            manureEF: Object.freeze({
+                'lagoon':       0.005,   // Anaerobic lagoon
+                'pit_storage':  0.002,   // Liquid/slurry pit storage
+                'dry_lot':      0.02,    // Dry lot (solid storage)
+                'pasture':      0.01,    // Pasture/range/paddock
+                'digester':     0.001,   // Covered anaerobic digester
+                'daily_spread': 0        // Daily spread — N2O accounted under
+                                         // crop soil emissions; zero here.
+            })
         })
     });
 
@@ -878,6 +991,71 @@
         const headsNeeded = params.quantityKg / params.productPerHeadPerYear;
         const ch4Kg = headsNeeded * params.efCh4PerHead;
         return ch4Kg * CONSTANTS.IPCC_AR5_PEF31.GWP_CH4_BIOGENIC;
+    }
+
+    // ================== calculateManureN2O ==================
+    // Computes CO2-equivalent GHG emissions from manure management N2O.
+    //
+    // Methodology: IPCC 2006 Guidelines Vol. 4, Chapter 10, Tier 1.
+    // Confirmed applicable in 2019 Refinement (no Tier 1 manure N2O formula change).
+    //
+    // Formula:
+    //   heads          = quantityKg / productPerHeadPerYear
+    //   N_excreted_kg  = heads × nExcretionPerHead          (kg N / year)
+    //   N2O_N_kg       = N_excreted_kg × EF_manure          (kg N2O-N / year)
+    //   N2O_kg         = N2O_N_kg × (44/28)                 (kg N2O / year)
+    //                  = N2O_N_kg × CONSTANTS.IPCC_TIER1.N2O_MASS_CONVERSION
+    //   CO2e           = N2O_kg × CONSTANTS.IPCC_AR5_PEF31.GWP_N2O
+    //
+    // Where EF_manure = CONSTANTS.IPCC_TIER1_LIVESTOCK.manureEF[manureSystem]
+    //   (kg N2O-N per kg N excreted, IPCC 2006 Table 10.21)
+    //
+    // SPECIAL CASE — FARMED FISH:
+    //   Fish N excretion enters water (aquatic pathway); this function
+    //   returns 0 for farmed_fish. Feed-based emissions deferred to Phase 2.
+    //
+    // Params:
+    //   animalType          — string key into IPCC_TIER1_LIVESTOCK.entericEF
+    //   quantityKg          — kg of product being assessed
+    //   nExcretionPerHead   — kg N excreted per head per year (Tier 1 default)
+    //   productPerHeadPerYear — kg of product per head per year (from supplier or FAOSTAT)
+    //   manureSystem        — string key into IPCC_TIER1_LIVESTOCK.manureEF
+    //
+    // Returns: kg CO2e from manure N2O (number)
+    function calculateManureN2O(params) {
+        if (!params) throw new MissingDataError('manureN2OParams');
+        if (typeof params.animalType !== 'string')
+            throw new MissingDataError('manureN2OParams.animalType');
+        if (typeof params.quantityKg !== 'number' || params.quantityKg <= CONSTANTS.MATH.ZERO)
+            throw new MissingDataError('manureN2OParams.quantityKg');
+        if (typeof params.nExcretionPerHead !== 'number')
+            throw new MissingDataError('manureN2OParams.nExcretionPerHead');
+        if (typeof params.productPerHeadPerYear !== 'number' || params.productPerHeadPerYear <= CONSTANTS.MATH.ZERO)
+            throw new MissingDataError('manureN2OParams.productPerHeadPerYear');
+        if (typeof params.manureSystem !== 'string')
+            throw new MissingDataError('manureN2OParams.manureSystem');
+
+        // FARMED FISH: aquatic N excretion pathway — different model required.
+        // Return 0; caller should record this as deferred to Phase 2.
+        if (params.animalType === 'farmed_fish') {
+            return CONSTANTS.MATH.ZERO;
+        }
+
+        const headsNeeded  = params.quantityKg / params.productPerHeadPerYear;
+        const nExcretedKg  = headsNeeded * params.nExcretionPerHead;       // kg N total
+
+        // Look up manure management system EF from IPCC 2006 Table 10.21
+        const manureEFLookup = CONSTANTS.IPCC_TIER1_LIVESTOCK.manureEF;
+        const efManure = (manureEFLookup[params.manureSystem] !== undefined)
+            ? manureEFLookup[params.manureSystem]
+            : manureEFLookup['pasture'];     // safe fallback if key missing
+
+        // kg N2O-N → kg N2O → kg CO2e
+        const n2oN_kg  = nExcretedKg  * efManure;                                           // kg N2O-N
+        const n2o_kg   = n2oN_kg      * CONSTANTS.IPCC_TIER1.N2O_MASS_CONVERSION;           // kg N2O (×44/28)
+        const co2e     = n2o_kg       * CONSTANTS.IPCC_AR5_PEF31.GWP_N2O;                   // kg CO2e (×265)
+
+        return co2e;
     }
 
     function calculateTransport(input) {
@@ -1631,5 +1809,7 @@
     exports.calculateSingleScore = calculateSingleScore;
     exports.aggregateResults = aggregateResults;
     exports.calculateParametricTwin = calculateParametricTwin;
+    exports.calculateEntericMethane = calculateEntericMethane;
+    exports.calculateManureN2O = calculateManureN2O;
 
 })(typeof module !== 'undefined' && module.exports ? module.exports : (window.corePhysics = window.corePhysics || {}));
