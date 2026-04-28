@@ -1895,6 +1895,107 @@ const outboundData = [
 // ============================================================
 if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdown) {
     const b = window.currentComparisonBaseline;
+
+    // ── RECIPE SWAP MODE: full per-ingredient pairs ──────────────────────
+    if (b.ingredientPairs && b.ingredientPairs.length > 0) {
+        const pairs         = b.ingredientPairs;
+        const assessedTotal = b.assessed_co2PerKg ?? 0;
+        const conventTotal  = b.co2PerKg          ?? 0;
+        const netDelta      = b.delta              ?? (assessedTotal - conventTotal);
+        const deltaPct      = conventTotal > 0 ? ((netDelta / conventTotal) * 100).toFixed(1) : '0.0';
+        const deltaPctAbs   = Math.abs(parseFloat(deltaPct)).toFixed(1);
+        const deltaSign     = netDelta <= 0 ? '-' : '+';
+
+        doc.addPage();
+        currentY = margin;
+
+        setH2();
+        doc.text("F. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2)", margin, currentY);
+        currentY += 7;
+
+        setNormal();
+        const methodLines = doc.splitTextToSize(
+            "Methodology: Full recipe swap — each assessed ingredient mapped to a conventional counterpart. " +
+            "Manufacturing, transport, and packaging parameters cloned from assessed product.",
+            pageWidth - margin * 2
+        );
+        methodLines.forEach(l => { doc.text(l, margin, currentY); currentY += 4; });
+        currentY += 2;
+
+        // Anchor recipe line
+        const anchorNames = pairs.map(p => p.conventional?.name || '—').join(', ');
+        const anchorLine = doc.splitTextToSize(`Anchor Recipe: ${anchorNames}`, pageWidth - margin * 2);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8);
+        anchorLine.forEach(l => { doc.text(l, margin, currentY); currentY += 3.5; });
+        currentY += 3;
+
+        // Build table body
+        const tableBody = pairs.map(pair => {
+            const isSame     = pair.same || Math.abs(pair.delta ?? 0) < 0.00001;
+            const pairDelta  = pair.delta ?? 0;
+            const pairSign   = pairDelta > 0 ? '+' : '';
+            const assessName = `${pair.assessed?.name || '—'} (${(pair.assessed?.quantityKg ?? 0).toFixed(3)} kg)`;
+            const convName   = isSame
+                ? `${pair.conventional?.name || '—'} (same — no difference)`
+                : `${pair.conventional?.name || '—'} (${(pair.conventional?.quantityKg ?? 0).toFixed(3)} kg)`;
+            const deltaStr   = isSame ? '0 kg' : `${pairSign}${pairDelta.toFixed(4)} kg`;
+            return [
+                { content: assessName, styles: { fontSize: 7 } },
+                { content: `→ ${convName}`, styles: { fontSize: 7 } },
+                { content: deltaStr, styles: { fontSize: 7, halign: 'right' } }
+            ];
+        });
+
+        // Footer rows
+        tableBody.push([
+            { content: 'TOTAL ASSESSED', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 7, fillColor: [232, 248, 245] } },
+            { content: `${assessedTotal.toFixed(4)} kg CO2e`, styles: { fontStyle: 'bold', fontSize: 7, halign: 'right', fillColor: [232, 248, 245] } }
+        ]);
+        tableBody.push([
+            { content: 'TOTAL CONVENTIONAL', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 7 } },
+            { content: `${conventTotal.toFixed(4)} kg CO2e`, styles: { fontStyle: 'bold', fontSize: 7, halign: 'right' } }
+        ]);
+        tableBody.push([
+            { content: 'NET DELTA', colSpan: 2, styles: { fontStyle: 'bold', fontSize: 7, fillColor: COLORS.primary, textColor: [255,255,255] } },
+            { content: `${deltaSign}${Math.abs(netDelta).toFixed(4)} kg CO2e (${deltaPctAbs}% ${netDelta <= 0 ? 'lower' : 'higher'})`, styles: { fontStyle: 'bold', fontSize: 7, halign: 'right', fillColor: COLORS.primary, textColor: [255,255,255] } }
+        ]);
+
+        doc.autoTable({
+            head: [[
+                { content: 'Assessed Ingredient', styles: { fontSize: 7 } },
+                { content: 'Conventional Counterpart', styles: { fontSize: 7 } },
+                { content: 'CO2e Delta', styles: { fontSize: 7, halign: 'right' } }
+            ]],
+            body: tableBody,
+            startY: currentY,
+            ...standardTableStyles,
+            margin: { left: margin, right: margin },
+            styles: { cellPadding: 2, overflow: 'linebreak', fontSize: 7 },
+            columnStyles: {
+                0: { cellWidth: 65 },
+                1: { cellWidth: 85 },
+                2: { cellWidth: 30, halign: 'right' }
+            }
+        });
+
+        currentY = doc.lastAutoTable.finalY + 8;
+        checkPageBreak(15);
+
+        // Compliance footer
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+        doc.setTextColor(40, 167, 69);
+        doc.text("✓ Functional Equivalence Verified per ISO 14044 §4.2.3.2", margin, currentY);
+        currentY += 4;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(...COLORS.dark);
+        doc.text("Both systems assessed per 100g finished product. Shared: manufacturing, transport, packaging parameters.", margin, currentY);
+        currentY += 10;
+
+    } else {
+    // ── SINGLE-ANCHOR MODE: existing reconstruction (unchanged) ─────────
     const bd = b.breakdown;
     const cloned = b.cloned_parameters || {};
     
@@ -2128,6 +2229,8 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     doc.setTextColor(40, 167, 69);
     doc.text("✓ Functional Equivalence Verified per ISO 14044 §4.2.3.2", margin, currentY);
     currentY += 10;
+}
+// End of single-anchor else block
 }
 
 
