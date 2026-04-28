@@ -1211,121 +1211,410 @@
     }
 
     function calculateParametricTwin(input) {
-        const anchor = input.anchorIngredient;
-        const ratio = input.concentrationRatio;
-        const cloned = input.clonedParams;
-        const db = input.databases;
-        
-        if (!anchor) throw new MissingDataError('anchorIngredient');
-        if (!anchor.pef) throw new MissingDataError('anchorIngredient.pef');
-        if (typeof ratio !== 'number') throw new MissingDataError('concentrationRatio');
-        if (!cloned) throw new MissingDataError('clonedParams');
-        
-        const pef = anchor.pef;
-        const required = ['Climate Change', 'Climate Change - Fossil', 'Climate Change - Biogenic', 'Climate Change - Land Use', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils'];
-        for (const f of required) {
-            if (pef[f] === undefined) throw new MissingDataError(`anchor.pef.${f}`);
+        // ── MODE DETECTION ────────────────────────────────────────────────────
+        // Legacy single-ingredient path: input.anchorIngredient present
+        // New full-recipe path:          input.assessedRecipe present
+        // Neither:                       throw MissingDataError
+        if (!input.anchorIngredient && !input.assessedRecipe) {
+            throw new MissingDataError('anchorIngredient or assessedRecipe');
         }
-        
-        const farmCO2 = pef['Climate Change'] * ratio;
-        const farmFossil = pef['Climate Change - Fossil'] * ratio;
-        const farmBiogenic = pef['Climate Change - Biogenic'] * ratio;
-        const farmDLUC = pef['Climate Change - Land Use'] * ratio;
-        const farmWater = pef['Water Use/Scarcity (AWARE)'] * ratio;
-        const farmLand = pef['Land Use'] * ratio;
-        const farmFossilMJ = pef['Resource Use, fossils'] * ratio;
-        
-        let mfgCO2 = CONSTANTS.MATH.ZERO;
-        let mfgKwh = CONSTANTS.MATH.ZERO;
-        let mfgFossilCO2 = CONSTANTS.MATH.ZERO;
-        if (cloned.processingMethod) {
-            if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
-            if (!db.gridIntensity) throw new MissingDataError('databases.gridIntensity');
-            
-            const benchmark = db.processBenchmarks[cloned.processingMethod];
-            if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${cloned.processingMethod}`);
-            
-            const grid = db.gridIntensity[cloned.countryCode];
-            if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
 
-            // Bug 4 fix: grid may be a number (from grid_intensity db) or an object (from countries db)
+        // =====================================================================
+        // LEGACY SINGLE-INGREDIENT PATH (unchanged)
+        // =====================================================================
+        if (input.anchorIngredient) {
+            const anchor = input.anchorIngredient;
+            const ratio  = input.concentrationRatio;
+            const cloned = input.clonedParams;
+            const db     = input.databases;
+
+            if (!anchor.pef) throw new MissingDataError('anchorIngredient.pef');
+            if (typeof ratio !== 'number') throw new MissingDataError('concentrationRatio');
+            if (!cloned) throw new MissingDataError('clonedParams');
+
+            const pef = anchor.pef;
+            const required = ['Climate Change', 'Climate Change - Fossil', 'Climate Change - Biogenic', 'Climate Change - Land Use', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils'];
+            for (const f of required) {
+                if (pef[f] === undefined) throw new MissingDataError(`anchor.pef.${f}`);
+            }
+
+            const farmCO2      = pef['Climate Change']              * ratio;
+            const farmFossil   = pef['Climate Change - Fossil']     * ratio;
+            const farmBiogenic = pef['Climate Change - Biogenic']   * ratio;
+            const farmDLUC     = pef['Climate Change - Land Use']   * ratio;
+            const farmWater    = pef['Water Use/Scarcity (AWARE)']  * ratio;
+            const farmLand     = pef['Land Use']                    * ratio;
+            const farmFossilMJ = pef['Resource Use, fossils']       * ratio;
+
+            let mfgCO2 = CONSTANTS.MATH.ZERO;
+            let mfgKwh = CONSTANTS.MATH.ZERO;
+            let mfgFossilCO2 = CONSTANTS.MATH.ZERO;
+            if (cloned.processingMethod) {
+                if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
+                if (!db.gridIntensity) throw new MissingDataError('databases.gridIntensity');
+
+                const benchmark = db.processBenchmarks[cloned.processingMethod];
+                if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${cloned.processingMethod}`);
+
+                const grid = db.gridIntensity[cloned.countryCode];
+                if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
+
+                // Bug 4 fix: grid may be a number (from grid_intensity db) or an object (from countries db)
+                let gridValue;
+                if (typeof grid === 'number') {
+                    gridValue = grid;
+                } else if (grid && typeof grid.electricityCO2 === 'number') {
+                    gridValue = grid.electricityCO2;
+                } else {
+                    throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
+                }
+
+                const mfg = calculateManufacturing({
+                    massOutputKg:         ratio,
+                    benchmarkKwhPerKg:    benchmark,
+                    gridIntensityGPerKwh: gridValue
+                });
+                mfgCO2       = mfg.co2;
+                mfgKwh       = mfg.kwh;
+                mfgFossilCO2 = mfgCO2 * mfg.fossilFraction;
+            }
+
+            let transportCO2       = CONSTANTS.MATH.ZERO;
+            let transportFossilCO2 = CONSTANTS.MATH.ZERO;
+            if (cloned.transportDistance !== undefined && cloned.transportMode) {
+                const t = calculateTransport({
+                    massKg:       ratio,
+                    distanceKm:   cloned.transportDistance,
+                    mode:         cloned.transportMode,
+                    refrigeration: cloned.refrigeration
+                });
+                transportCO2       = t.total;
+                transportFossilCO2 = transportCO2 * t.fossilFraction;
+            }
+
+            let packagingCO2       = CONSTANTS.MATH.ZERO;
+            let packagingFossilCO2 = CONSTANTS.MATH.ZERO;
+            let packagingBiogenicCO2 = CONSTANTS.MATH.ZERO;
+            if (cloned.packagingMaterial && cloned.packagingWeightKg !== undefined) {
+                if (!db.packaging) throw new MissingDataError('databases.packaging');
+
+                const pkg = db.packaging[cloned.packagingMaterial];
+                if (!pkg) throw new MissingDataError(`packaging.${cloned.packagingMaterial}`);
+                if (typeof pkg.aFactor !== 'number') throw new MissingDataError('packaging.aFactor');
+                if (typeof pkg.fossilFraction !== 'number') throw new MissingDataError('packaging.fossilFraction');
+                // NOTE: materialClass check intentionally absent — field does not
+                // exist in the database and is never used downstream.
+
+                const recycledContentPercent = cloned.recycledContentPercent;
+                if (typeof recycledContentPercent !== 'number') throw new MissingDataError('cloned.recycledContentPercent');
+
+                const cff = calculatePackaging({
+                    weightKg:       cloned.packagingWeightKg,
+                    ev:             pkg.co2_virgin,
+                    erecycled:      pkg.co2_recycled,
+                    ed:             pkg.co2_disposal_average,
+                    r1:             recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX,
+                    r2:             pkg.r1_max * pkg.r2,
+                    aFactor:        pkg.aFactor,
+                    qs:             pkg.q,
+                    qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
+                    fossilFraction: pkg.fossilFraction
+                });
+                packagingCO2        = cff.totalImpact;
+                packagingFossilCO2  = cff.fossilImpact;
+                packagingBiogenicCO2 = cff.biogenicImpact;
+            }
+
+            const totalCO2        = farmCO2      + mfgCO2      + transportCO2      + packagingCO2;
+            const totalFossilCO2  = farmFossil   + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
+            const totalBiogenicCO2 = farmBiogenic + packagingBiogenicCO2;
+
+            return {
+                name:            `Parametric Twin: ${anchor.name}`,
+                co2PerKg:        totalCO2,
+                waterPerKg:      farmWater,
+                landUsePerKg:    farmLand,
+                fossilPerKg:     farmFossilMJ + (mfgKwh * CONSTANTS.UNIT.KWH_TO_MJ) + (transportCO2 * CONSTANTS.GLEC.DIESEL_CO2_PER_MJ) + (packagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2),
+                fossilCO2PerKg:  totalFossilCO2,
+                biogenicCO2PerKg: totalBiogenicCO2,
+                dlucCO2PerKg:    farmDLUC,
+                breakdown:       { farm: farmCO2, manufacturing: mfgCO2, transport: transportCO2, packaging: packagingCO2 }
+            };
+        }
+
+        // =====================================================================
+        // NEW FULL-RECIPE PATH
+        // =====================================================================
+        const assessedRecipe     = input.assessedRecipe;
+        const conventionalRecipe = input.conventionalRecipe;
+        const sharedParams       = input.sharedParams;
+        const db                 = input.databases;
+
+        if (!Array.isArray(assessedRecipe) || assessedRecipe.length === 0) {
+            throw new MissingDataError('assessedRecipe');
+        }
+        if (!Array.isArray(conventionalRecipe)) {
+            throw new MissingDataError('conventionalRecipe');
+        }
+        if (!sharedParams) throw new MissingDataError('sharedParams');
+
+        // ── Helper: zero-initialised totals accumulator ──────────────────────
+        function zeroTotals() {
+            return {
+                totalCO2:     CONSTANTS.MATH.ZERO,
+                fossilCO2:    CONSTANTS.MATH.ZERO,
+                biogenicCO2:  CONSTANTS.MATH.ZERO,
+                dlucCO2:      CONSTANTS.MATH.ZERO,
+                totalWater:   CONSTANTS.MATH.ZERO,
+                totalLand:    CONSTANTS.MATH.ZERO,
+                totalFossil:  CONSTANTS.MATH.ZERO,
+                marineEutrophication_N:      CONSTANTS.MATH.ZERO,
+                freshwaterEutrophication_P:  CONSTANTS.MATH.ZERO,
+                ozoneDepletion:              CONSTANTS.MATH.ZERO,
+                humanToxicityNonCancer:      CONSTANTS.MATH.ZERO,
+                humanToxicityCancer:         CONSTANTS.MATH.ZERO,
+                particulateMatter:           CONSTANTS.MATH.ZERO,
+                ionizingRadiation:           CONSTANTS.MATH.ZERO,
+                photochemicalOzoneFormation: CONSTANTS.MATH.ZERO,
+                acidification:               CONSTANTS.MATH.ZERO,
+                eutrophicationTerrestrial:   CONSTANTS.MATH.ZERO,
+                ecotoxicityFreshwater:       CONSTANTS.MATH.ZERO,
+                resourceUseMineralsMetals:   CONSTANTS.MATH.ZERO
+            };
+        }
+
+        // ── Helper: accumulate a calculateIngredientImpact() result ──────────
+        function accumulateImpact(totals, r) {
+            totals.totalCO2     += r.totalCO2;
+            totals.fossilCO2    += r.fossilCO2;
+            totals.biogenicCO2  += r.biogenicCO2;
+            totals.dlucCO2      += r.dlucCO2;
+            totals.totalWater   += r.totalWater;
+            totals.totalLand    += r.totalLand;
+            totals.totalFossil  += r.totalFossil;
+            totals.marineEutrophication_N     += (r.marineEutrophication_N     || CONSTANTS.MATH.ZERO);
+            totals.freshwaterEutrophication_P += (r.freshwaterEutrophication_P || CONSTANTS.MATH.ZERO);
+            totals.ozoneDepletion              += (r.ozoneDepletion              || CONSTANTS.MATH.ZERO);
+            totals.humanToxicityNonCancer      += (r.humanToxicityNonCancer      || CONSTANTS.MATH.ZERO);
+            totals.humanToxicityCancer         += (r.humanToxicityCancer         || CONSTANTS.MATH.ZERO);
+            totals.particulateMatter           += (r.particulateMatter           || CONSTANTS.MATH.ZERO);
+            totals.ionizingRadiation           += (r.ionizingRadiation           || CONSTANTS.MATH.ZERO);
+            totals.photochemicalOzoneFormation += (r.photochemicalOzoneFormation || CONSTANTS.MATH.ZERO);
+            totals.acidification               += (r.acidification               || CONSTANTS.MATH.ZERO);
+            totals.eutrophicationTerrestrial   += (r.eutrophicationTerrestrial   || CONSTANTS.MATH.ZERO);
+            totals.ecotoxicityFreshwater       += (r.ecotoxicityFreshwater       || CONSTANTS.MATH.ZERO);
+            totals.resourceUseMineralsMetals   += (r.resourceUseMineralsMetals   || CONSTANTS.MATH.ZERO);
+        }
+
+        // ── STEP 1: Assessed recipe ingredient totals ────────────────────────
+        const assessedTotals = zeroTotals();
+        const assessedPerIngredient = [];   // for ingredientPairs
+
+        for (const ing of assessedRecipe) {
+            if (!ing) throw new MissingDataError('assessedRecipe contains null entry');
+            if (!ing.pef) throw new MissingDataError(`assessedRecipe ingredient "${ing.name || ing.id}" missing pef`);
+            const r = calculateIngredientImpact({
+                ingredientData: { pef: ing.pef, data: { metadata: { entericIncluded: true } } },
+                quantityKg:     ing.quantityKg,
+                entericParams:  ing.entericParams || null
+            });
+            accumulateImpact(assessedTotals, r);
+            assessedPerIngredient.push(r.totalCO2);
+        }
+
+        // ── STEP 2: Conventional recipe ingredient totals ────────────────────
+        const conventionalTotals = zeroTotals();
+        const conventionalPerIngredient = [];  // for ingredientPairs
+
+        for (let i = 0; i < assessedRecipe.length; i++) {
+            const counterpart = conventionalRecipe[i];
+            if (counterpart == null || counterpart === undefined) {
+                // null mapping → same as assessed ingredient (zero delta)
+                const assessedIng = assessedRecipe[i];
+                const r = calculateIngredientImpact({
+                    ingredientData: { pef: assessedIng.pef, data: { metadata: { entericIncluded: true } } },
+                    quantityKg:     assessedIng.quantityKg,
+                    entericParams:  assessedIng.entericParams || null
+                });
+                accumulateImpact(conventionalTotals, r);
+                conventionalPerIngredient.push(r.totalCO2);
+            } else {
+                if (!counterpart.pef) throw new MissingDataError(`conventionalRecipe[${i}] ingredient "${counterpart.name || counterpart.id}" missing pef`);
+                const r = calculateIngredientImpact({
+                    ingredientData: { pef: counterpart.pef, data: { metadata: { entericIncluded: true } } },
+                    quantityKg:     counterpart.quantityKg,
+                    entericParams:  counterpart.entericParams || null
+                });
+                accumulateImpact(conventionalTotals, r);
+                conventionalPerIngredient.push(r.totalCO2);
+            }
+        }
+
+        // ── STEP 3: Shared manufacturing (added identically to both sides) ───
+        let sharedMfgCO2        = CONSTANTS.MATH.ZERO;
+        let sharedMfgKwh        = CONSTANTS.MATH.ZERO;
+        let sharedMfgFossilCO2  = CONSTANTS.MATH.ZERO;
+        let sharedMfgFossilMJ   = CONSTANTS.MATH.ZERO;
+
+        if (sharedParams.processingMethod) {
+            if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
+            if (!db.gridIntensity)      throw new MissingDataError('databases.gridIntensity');
+
+            const benchmark = db.processBenchmarks[sharedParams.processingMethod];
+            if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${sharedParams.processingMethod}`);
+
+            const grid = db.gridIntensity[sharedParams.countryCode];
+            if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${sharedParams.countryCode}`);
+
             let gridValue;
             if (typeof grid === 'number') {
                 gridValue = grid;
             } else if (grid && typeof grid.electricityCO2 === 'number') {
                 gridValue = grid.electricityCO2;
             } else {
-                throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
+                throw new MissingDataError(`gridIntensity.${sharedParams.countryCode}`);
             }
 
+            // Use total assessed recipe mass as the manufacturing output mass
+            const totalRecipeMassKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
             const mfg = calculateManufacturing({
-                massOutputKg: ratio,
-                benchmarkKwhPerKg: benchmark,
+                massOutputKg:         totalRecipeMassKg,
+                benchmarkKwhPerKg:    benchmark,
                 gridIntensityGPerKwh: gridValue
             });
-            mfgCO2 = mfg.co2;
-            mfgKwh = mfg.kwh;
-            mfgFossilCO2 = mfgCO2 * mfg.fossilFraction;
+            sharedMfgCO2       = mfg.co2;
+            sharedMfgKwh       = mfg.kwh;
+            sharedMfgFossilCO2 = sharedMfgCO2 * mfg.fossilFraction;
+            sharedMfgFossilMJ  = sharedMfgKwh * CONSTANTS.UNIT.KWH_TO_MJ;
         }
-        
-        let transportCO2 = CONSTANTS.MATH.ZERO;
-        let transportFossilCO2 = CONSTANTS.MATH.ZERO;
-        if (cloned.transportDistance !== undefined && cloned.transportMode) {
+
+        // ── STEP 4: Shared transport ─────────────────────────────────────────
+        let sharedTransportCO2      = CONSTANTS.MATH.ZERO;
+        let sharedTransportFossilCO2 = CONSTANTS.MATH.ZERO;
+        let sharedTransportFossilMJ  = CONSTANTS.MATH.ZERO;
+
+        if (sharedParams.transportDistance !== undefined && sharedParams.transportMode) {
+            const totalRecipeMassKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
             const t = calculateTransport({
-                massKg: ratio,
-                distanceKm: cloned.transportDistance,
-                mode: cloned.transportMode,
-                refrigeration: cloned.refrigeration
+                massKg:        totalRecipeMassKg,
+                distanceKm:    sharedParams.transportDistance,
+                mode:          sharedParams.transportMode,
+                refrigeration: sharedParams.refrigeration || 'ambient'
             });
-            transportCO2 = t.total;
-            transportFossilCO2 = transportCO2 * t.fossilFraction;
+            sharedTransportCO2       = t.total;
+            sharedTransportFossilCO2 = sharedTransportCO2 * t.fossilFraction;
+            sharedTransportFossilMJ  = sharedTransportCO2 * CONSTANTS.GLEC.DIESEL_CO2_PER_MJ;
         }
-        
-        let packagingCO2 = CONSTANTS.MATH.ZERO;
-        let packagingFossilCO2 = CONSTANTS.MATH.ZERO;
-        let packagingBiogenicCO2 = CONSTANTS.MATH.ZERO;
-        if (cloned.packagingMaterial && cloned.packagingWeightKg !== undefined) {
+
+        // ── STEP 5: Shared packaging ─────────────────────────────────────────
+        let sharedPackagingCO2        = CONSTANTS.MATH.ZERO;
+        let sharedPackagingFossilCO2  = CONSTANTS.MATH.ZERO;
+        let sharedPackagingBiogenicCO2 = CONSTANTS.MATH.ZERO;
+        let sharedPackagingFossilMJ   = CONSTANTS.MATH.ZERO;
+
+        if (sharedParams.packagingMaterial && sharedParams.packagingWeightKg !== undefined) {
             if (!db.packaging) throw new MissingDataError('databases.packaging');
-            
-            const pkg = db.packaging[cloned.packagingMaterial];
-            if (!pkg) throw new MissingDataError(`packaging.${cloned.packagingMaterial}`);
+
+            const pkg = db.packaging[sharedParams.packagingMaterial];
+            if (!pkg) throw new MissingDataError(`packaging.${sharedParams.packagingMaterial}`);
             if (typeof pkg.aFactor !== 'number') throw new MissingDataError('packaging.aFactor');
             if (typeof pkg.fossilFraction !== 'number') throw new MissingDataError('packaging.fossilFraction');
-            
-            const recycledContentPercent = cloned.recycledContentPercent;
-            if (typeof recycledContentPercent !== 'number') throw new MissingDataError('cloned.recycledContentPercent');
-            
+            // NOTE: materialClass check intentionally absent — field does not
+            // exist in the database and is never used downstream.
+
+            if (typeof sharedParams.recycledContentPercent !== 'number') {
+                throw new MissingDataError('sharedParams.recycledContentPercent');
+            }
+
             const cff = calculatePackaging({
-                weightKg: cloned.packagingWeightKg,
-                ev: pkg.co2_virgin,
-                erecycled: pkg.co2_recycled,
-                ed: pkg.co2_disposal_average,
-                r1: recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX,
-                r2: pkg.r1_max * pkg.r2,
-                aFactor: pkg.aFactor,
-                qs: pkg.q,
-                qp: CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
+                weightKg:       sharedParams.packagingWeightKg,
+                ev:             pkg.co2_virgin,
+                erecycled:      pkg.co2_recycled,
+                ed:             pkg.co2_disposal_average,
+                r1:             sharedParams.recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX,
+                r2:             pkg.r1_max * pkg.r2,
+                aFactor:        pkg.aFactor,
+                qs:             pkg.q,
+                qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
                 fossilFraction: pkg.fossilFraction
             });
-            packagingCO2 = cff.totalImpact;
-            packagingFossilCO2 = cff.fossilImpact;
-            packagingBiogenicCO2 = cff.biogenicImpact;
+            sharedPackagingCO2         = cff.totalImpact;
+            sharedPackagingFossilCO2   = cff.fossilImpact;
+            sharedPackagingBiogenicCO2 = cff.biogenicImpact;
+            sharedPackagingFossilMJ    = sharedPackagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2;
         }
-        
-        const totalCO2 = farmCO2 + mfgCO2 + transportCO2 + packagingCO2;
-        const totalFossilCO2 = farmFossil + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
-        const totalBiogenicCO2 = farmBiogenic + packagingBiogenicCO2;
-        
+
+        // ── STEP 6: Combine ingredient totals + shared overheads ─────────────
+        // Shared manufacturing, transport, and packaging are added identically
+        // to both sides. The delta therefore reflects only ingredient differences.
+
+        const assessedCO2Total      = assessedTotals.totalCO2      + sharedMfgCO2 + sharedTransportCO2 + sharedPackagingCO2;
+        const assessedFossilCO2     = assessedTotals.fossilCO2     + sharedMfgFossilCO2 + sharedTransportFossilCO2 + sharedPackagingFossilCO2;
+        const assessedBiogenicCO2   = assessedTotals.biogenicCO2   + sharedPackagingBiogenicCO2;
+        const assessedFossilMJ      = assessedTotals.totalFossil   + sharedMfgFossilMJ + sharedTransportFossilMJ + sharedPackagingFossilMJ;
+
+        const conventionalCO2Total  = conventionalTotals.totalCO2  + sharedMfgCO2 + sharedTransportCO2 + sharedPackagingCO2;
+        const conventionalFossilCO2 = conventionalTotals.fossilCO2 + sharedMfgFossilCO2 + sharedTransportFossilCO2 + sharedPackagingFossilCO2;
+        const conventionalBiogenicCO2 = conventionalTotals.biogenicCO2 + sharedPackagingBiogenicCO2;
+        const conventionalFossilMJ  = conventionalTotals.totalFossil + sharedMfgFossilMJ + sharedTransportFossilMJ + sharedPackagingFossilMJ;
+
+        // ── STEP 7: Build ingredientPairs array ──────────────────────────────
+        const ingredientPairs = assessedRecipe.map((ing, i) => {
+            const conv   = conventionalRecipe[i] || null;
+            const aCO2   = assessedPerIngredient[i]      || CONSTANTS.MATH.ZERO;
+            const cCO2   = conventionalPerIngredient[i]  || CONSTANTS.MATH.ZERO;
+            return {
+                assessed:        ing.name || ing.id,
+                conventional:    conv ? (conv.name || conv.id) : null,
+                assessedCO2:     aCO2,
+                conventionalCO2: cCO2,
+                deltaCO2:        cCO2 - aCO2
+            };
+        });
+
+        // ── STEP 8: Build structured totals for return ───────────────────────
+        const assessedBreakdown = {
+            farm:          assessedTotals.totalCO2,
+            manufacturing: sharedMfgCO2,
+            transport:     sharedTransportCO2,
+            packaging:     sharedPackagingCO2
+        };
+        const conventionalBreakdown = {
+            farm:          conventionalTotals.totalCO2,
+            manufacturing: sharedMfgCO2,
+            transport:     sharedTransportCO2,
+            packaging:     sharedPackagingCO2
+        };
+
         return {
-            name: `Parametric Twin: ${anchor.name}`,
-            co2PerKg: totalCO2,
-            waterPerKg: farmWater,
-            landUsePerKg: farmLand,
-            fossilPerKg: farmFossilMJ + (mfgKwh * CONSTANTS.UNIT.KWH_TO_MJ) + (transportCO2 * CONSTANTS.GLEC.DIESEL_CO2_PER_MJ) + (packagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2),
-            fossilCO2PerKg: totalFossilCO2,
-            biogenicCO2PerKg: totalBiogenicCO2,
-            dlucCO2PerKg: farmDLUC,
-            breakdown: { farm: farmCO2, manufacturing: mfgCO2, transport: transportCO2, packaging: packagingCO2 }
+            name: `Parametric Twin: ${assessedRecipe.map(i => i.name || i.id).join(', ')} vs Conventional`,
+            assessedTotal: {
+                co2PerKg:        assessedCO2Total,
+                waterPerKg:      assessedTotals.totalWater,
+                landUsePerKg:    assessedTotals.totalLand,
+                fossilPerKg:     assessedFossilMJ,
+                fossilCO2PerKg:  assessedFossilCO2,
+                biogenicCO2PerKg: assessedBiogenicCO2,
+                dlucCO2PerKg:    assessedTotals.dlucCO2,
+                breakdown:       assessedBreakdown
+            },
+            conventionalTotal: {
+                co2PerKg:        conventionalCO2Total,
+                waterPerKg:      conventionalTotals.totalWater,
+                landUsePerKg:    conventionalTotals.totalLand,
+                fossilPerKg:     conventionalFossilMJ,
+                fossilCO2PerKg:  conventionalFossilCO2,
+                biogenicCO2PerKg: conventionalBiogenicCO2,
+                dlucCO2PerKg:    conventionalTotals.dlucCO2,
+                breakdown:       conventionalBreakdown
+            },
+            delta: {
+                co2Delta:    conventionalCO2Total  - assessedCO2Total,
+                waterDelta:  conventionalTotals.totalWater - assessedTotals.totalWater,
+                landDelta:   conventionalTotals.totalLand  - assessedTotals.totalLand,
+                fossilDelta: conventionalFossilMJ  - assessedFossilMJ
+            },
+            ingredientPairs
         };
     }
 
