@@ -100,6 +100,12 @@ DQR_METHODOLOGY_NOTE = (
     "For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
 )
 
+# Animal ingredient keywords — ingredients matching any of these get entericIncluded=true
+ANIMAL_KEYWORDS = [
+    'beef', 'cattle', 'cow', 'veal', 'lamb', 'sheep', 'goat', 'pig', 'pork',
+    'chicken', 'broiler', 'hen', 'poultry', 'turkey', 'duck', 'rabbit'
+]
+
 def generate_db():
     input_file = "data-raw/agribalyse_farm_gate.csv"
     output_file = "ingredients_db.js"
@@ -136,6 +142,7 @@ def generate_db():
     count = 0
     skipped_empty = 0
     skipped_eggs = 0
+    animal_count = 0
     
     # DQR distribution counters for summary
     dqr_counts = {}
@@ -208,6 +215,12 @@ def generate_db():
         if dqr_note:
             metadata["dqr_note"] = dqr_note
         
+        # === ANIMAL DETECTION — enteric methane flag ===
+        is_animal = any(keyword in name_en.lower() for keyword in ANIMAL_KEYWORDS)
+        if is_animal:
+            metadata["entericIncluded"] = True
+            animal_count += 1
+        
         db[item_id] = {
             "name": name_en,
             "name_fr": name_fr,
@@ -228,6 +241,7 @@ def generate_db():
     print(f"   Ingredients extracted: {count}")
     print(f"   Skipped empty rows: {skipped_empty}")
     print(f"   Skipped eggs: {skipped_eggs}")
+    print(f"   Animal ingredients flagged (entericIncluded): {animal_count}")
     print(f"\n📊 DQR Distribution:")
     for dqr_val in sorted(dqr_counts.keys()):
         print(f"   DQR {dqr_val}: {dqr_counts[dqr_val]} ingredients")
