@@ -1,6 +1,10 @@
-// ================== AIOXY UI CONTROLLER v3.0 ==================
+// ================== AIOXY UI CONTROLLER v3.1 ==================
 // DOM Manipulation, Event Handlers, and User Interface Logic
+// Adds: Conventional Baseline Recipe builder (multi-ingredient)
 // ===================================================================
+
+// ================== CONVENTIONAL BASELINE RECIPE STATE ==================
+var conventionalBaselineIngredients = [];
 
 // ================== TAB MANAGEMENT ==================
 function showTab(tabName, event) {
@@ -334,234 +338,69 @@ function updateResultsUI(results) {
             const pairColor = pairDelta < 0 ? '#27AE60' : pairDelta > 0 ? '#E63946' : '#718096';
             const pairSign  = pairDelta > 0 ? '+' : '';
             const assessedLabel  = `${pair.assessed?.name || '—'} (${pair.assessed?.quantityKg?.toFixed(3) || '?'}kg)`;
-            const conventLabel   = isSame
-                ? `<em style="color:#718096;">(same — no difference)</em>`
-                : `${pair.conventional?.name || '—'} (${pair.conventional?.quantityKg?.toFixed(3) || '?'}kg)`;
-            const deltaDisplay   = isSame
-                ? `<span style="color:#718096;">0 kg</span>`
-                : `<span style="color:${pairColor}; font-weight:bold;">${pairSign}${pairDelta.toFixed(4)} kg</span>`;
-
+            const conventLabel   = `${pair.conventional?.name || '—'} (${pair.conventional?.quantityKg?.toFixed(3) || '?'}kg)`;
             pairRows += `
-                <tr style="border-bottom:1px solid var(--border);">
-                    <td style="padding:8px 10px;">${assessedLabel}</td>
-                    <td style="padding:8px 10px;">${conventLabel}</td>
-                    <td style="padding:8px 10px; text-align:right;">${deltaDisplay}</td>
+                <tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 0.6rem 0.75rem; font-size: 0.82rem; color: var(--primary); font-weight: 600;">${assessedLabel}</td>
+                    <td style="padding: 0.6rem 0.75rem; font-size: 0.82rem; color: var(--gray);">${conventLabel}</td>
+                    <td style="padding: 0.6rem 0.75rem; font-size: 0.82rem; text-align: right; font-weight: 700; color: ${pairColor};">
+                        ${isSame ? '≈ same' : `${pairSign}${pairDelta.toFixed(3)} kg CO₂e`}
+                    </td>
                 </tr>`;
         });
 
         twinContainer.innerHTML = `
-            <div style="padding: 1rem 1.25rem;">
-                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
-                    <div style="background:#2C7A7B; color:white; width:30px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center;">
+            <div class="card-header">
+                <div class="card-title">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #2C7A7B 0%, #285E61 100%);">
                         <i class="fas fa-exchange-alt"></i>
                     </div>
-                    <h3 style="margin:0; color:#2C7A7B; font-size:1.1rem;">Parametric Twin — Ingredient Comparison</h3>
+                    Parametric Twin — Full Recipe Comparison
                 </div>
-                <div style="font-size:0.8rem; color:var(--gray); margin-bottom:0.75rem;">
-                    Conventional Baseline: ${resolvedBaseline.name || 'Conventional Recipe'}
+                <div class="badge" style="background: rgba(44,122,123,0.1); color: #2C7A7B;">
+                    <i class="fas fa-atom"></i> Ingredient-Level Analysis
                 </div>
-                <table style="width:100%; border-collapse:collapse; font-size:0.85rem; border:1px solid var(--border);">
-                    <thead style="background:#E8F8F5;">
-                        <tr>
-                            <th style="text-align:left; padding:8px 10px; color:#2C7A7B; font-weight:bold;">Assessed Ingredient</th>
-                            <th style="text-align:left; padding:8px 10px; color:#2C7A7B; font-weight:bold;">Conventional</th>
-                            <th style="text-align:right; padding:8px 10px; color:#2C7A7B; font-weight:bold;">CO₂ Delta</th>
+            </div>
+            <div style="background: #F0FFF4; border-radius: 10px; padding: 1rem; margin-bottom: 1.25rem;
+                        border: 1.5px solid #27AE60; display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2rem; font-weight: 800; color: ${deltaColor};">${deltaSign}${deltaPctAbs}%</div>
+                <div>
+                    <div style="font-weight: 700; color: var(--primary);">Net Recipe Delta</div>
+                    <div style="font-size: 0.85rem; color: var(--gray);">
+                        Assessed: ${assessedTotal.toFixed(3)} kg CO₂e/kg &nbsp;|&nbsp;
+                        Conventional: ${conventTotal.toFixed(3)} kg CO₂e/kg
+                    </div>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="background: var(--primary); color: white;">
+                            <th style="padding: 0.6rem 0.75rem; text-align: left; font-weight: 600;">Assessed Ingredient</th>
+                            <th style="padding: 0.6rem 0.75rem; text-align: left; font-weight: 600;">Conventional Counterpart</th>
+                            <th style="padding: 0.6rem 0.75rem; text-align: right; font-weight: 600;">Delta (kg CO₂e)</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        ${pairRows}
-                    </tbody>
-                    <tfoot style="background:#f8f9fa; border-top:2px solid var(--border);">
-                        <tr>
-                            <td colspan="2" style="padding:8px 10px; font-weight:bold;">Total Assessed</td>
-                            <td style="padding:8px 10px; text-align:right; font-weight:bold;">${assessedTotal.toFixed(4)} kg CO₂e</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" style="padding:8px 10px; font-weight:bold;">Total Conventional</td>
-                            <td style="padding:8px 10px; text-align:right; font-weight:bold;">${conventTotal.toFixed(4)} kg CO₂e</td>
-                        </tr>
-                        <tr style="background:#E8F8F5;">
-                            <td colspan="2" style="padding:8px 10px; font-weight:bold;">Net Delta</td>
-                            <td style="padding:8px 10px; text-align:right; font-weight:bold; color:${deltaColor};">
-                                ${deltaSign} ${Math.abs(netDelta).toFixed(4)} kg CO₂e (${deltaPctAbs}% ${netDelta <= 0 ? 'lower' : 'higher'})
-                            </td>
-                        </tr>
-                    </tfoot>
+                    <tbody>${pairRows}</tbody>
                 </table>
+            </div>
+            <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--gray);">
+                <i class="fas fa-info-circle"></i> ISO 14044 compliant comparative LCA. All pairs use identical system boundaries and AGRIBALYSE 3.2 background data.
             </div>
         `;
         twinContainer.style.display = '';
     } else {
-        // No pairs — hide the section (legacy single-ingredient or auto baseline)
         twinContainer.style.display = 'none';
     }
 
-    // 3. Update Metric Cards with the UNIFIED numbers
-    if(document.getElementById('co2Value')) document.getElementById('co2Value').textContent = (unifiedCO2 ?? 0).toFixed(2) + ' kg';
-    if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = (results.waterScarcityPerKg ?? 0).toFixed(4) + ' m³';
-    if(document.getElementById('landValue')) document.getElementById('landValue').textContent = (results.landUsePerKg ?? 0).toFixed(0) + ' Pt';
-    if(document.getElementById('fossilValue')) document.getElementById('fossilValue').textContent = (results.fossilPerKg ?? 0).toFixed(1) + ' MJ';
+    // Show the results tab
+    const resultsTab = document.getElementById('results-tab');
+    if (resultsTab) resultsTab.classList.remove('hidden');
 
-    // REGULATOR UI FIX: Display Separated Biogenic Removals if Regen Ag is active
-    let removalsDiv = document.getElementById('biogenicRemovalsDisplay');
-    const totalRemovals = results.finalPefResults["Climate Change"]?.biogenic_removals || 0;
-
-    if (totalRemovals > 0) {
-        if (!removalsDiv) {
-            removalsDiv = document.createElement('div');
-            removalsDiv.id = 'biogenicRemovalsDisplay';
-            removalsDiv.style = 'font-size: 0.85rem; color: #48BB78; font-weight: 700; margin-top: 0.5rem;';
-            document.getElementById('co2Value').parentNode.appendChild(removalsDiv);
-        }
-        const removalsPerKg = totalRemovals / (massBalanceData?.final_content_weight_kg || 0.2);
-        removalsDiv.innerHTML = `<i class="fas fa-arrow-down"></i> ${removalsPerKg.toFixed(2)} kg biogenic removals<br><span style="font-size: 0.7rem; font-weight: normal; color: var(--gray);">*Reported separately per EU Green Claims</span>`;
-    } else if (removalsDiv) {
-        removalsDiv.remove();
-    }
-    
-    // === STEP 4: ISO-COMPLIANT LABELING ===
-    const co2Label = document.querySelector('#co2Value + .metric-label');
-    if (co2Label) {
-        co2Label.textContent = "Climate Change (GWP100)";
-    }
-
-    // =====================================================================
-    // 🚀 NUTRITIONAL LCA ENGINE (Impact per 100g of Protein)
-    // =====================================================================
-    const userProteinPer100g = parseFloat(document.getElementById('proteinContent')?.value) || 0;
-    let nutritionalDiv = document.getElementById('nutritionalLCACard');
-
-    if (userProteinPer100g > 0 && resolvedBaseline) {
-        const anchorProteinDB = {
-            'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
-            'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
-            'plant-milk': 1.0, 'default': 10.0
-        };
-        
-        const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-            resolvedBaseline.name && resolvedBaseline.name.includes(ANCHOR_DATASETS[key].name)) || 'default';
-        const baselineProteinPer100g = anchorProteinDB[baselineKey] || 10.0;
-
-        const userKgNeededFor100gProtein = 100 / (userProteinPer100g * 10);
-        const baseKgNeededFor100gProtein = 100 / (baselineProteinPer100g * 10);
-
-        const userCo2PerProtein = unifiedCO2 * userKgNeededFor100gProtein;
-        const rawBaseCo2 = safeBaseCO2 / (resolvedBaseline?.concentration_ratio || 1);
-        const baseCo2PerProtein = rawBaseCo2 * baseKgNeededFor100gProtein;
-
-        if (!nutritionalDiv) {
-            nutritionalDiv = document.createElement('div');
-            nutritionalDiv.id = 'nutritionalLCACard';
-            nutritionalDiv.className = 'card';
-            nutritionalDiv.style.borderLeft = '4px solid #8E44AD';
-            nutritionalDiv.style.backgroundColor = '#FDFEFE';
-            const resultsGrid = document.querySelector('.results-grid');
-            if (resultsGrid) resultsGrid.parentNode.insertBefore(nutritionalDiv, resultsGrid);
-        }
-
-        const rawProteinPct = baseCo2PerProtein > 0 ? ((baseCo2PerProtein - userCo2PerProtein) / baseCo2PerProtein) * 100 : 0;
-        const isProteinBetter = rawProteinPct >= 0;
-        const proteinColor = isProteinBetter ? '#8E44AD' : '#E63946';
-        const proteinPrefix = isProteinBetter ? '↓ ' : '↑ ';
-        const proteinLabel = isProteinBetter ? 'Advantage vs Baseline' : 'Liability vs Baseline';
-
-        nutritionalDiv.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <div style="background: ${proteinColor}; color: white; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-dumbbell"></i>
-                        </div>
-                        <h3 style="color: #4A235A; margin: 0; font-size: 1.1rem;">Nutritional LCA Assessment</h3>
-                    </div>
-                    <div style="font-size: 0.85rem; color: var(--gray);">Impact measured per <strong>100g of delivered protein</strong>.</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 2rem; font-weight: 900; color: ${proteinColor};">${proteinPrefix}${Math.abs(rawProteinPct).toFixed(1)}%</div>
-                    <div style="font-size: 0.75rem; font-weight: bold; color: ${proteinColor}; text-transform: uppercase;">${proteinLabel}</div>
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
-                <div>
-                    <div style="font-size: 0.75rem; color: var(--gray);">Your Product (${userProteinPer100g}g protein/100g)</div>
-                    <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${userCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
-                </div>
-                <div>
-                    <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${resolvedBaseline.name} (~${baselineProteinPer100g}g protein/100g)</div>
-                    <div style="font-size: 1.25rem; font-weight: bold; color: var(--gray);">${baseCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
-                </div>
-            </div>
-        `;
-    } else if (nutritionalDiv) {
-        nutritionalDiv.remove();
-    }
-    
-    // 🛡️ REGULATOR FIX 1: Dynamic Honesty Badges (Removing Zero-Floor Masking)
-    const rawCo2Pct = safeBaseCO2 > 0 ? ((safeBaseCO2 - unifiedCO2) / safeBaseCO2) * 100 : 0;
-    const rawWaterPct = safeBaseWater > 0 ? ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater) * 100 : 0;
-
-    const formatHonestyBadge = (pct, elemId) => {
-        const el = document.getElementById(elemId);
-        if (!el) return;
-        if (pct >= 0) {
-            el.innerHTML = `<i class="fas fa-arrow-down"></i> ${pct.toFixed(1)}% lower vs ${baselineName}`;
-            el.style.background = 'var(--gradient-secondary)';
-        } else {
-            el.innerHTML = `<i class="fas fa-arrow-up"></i> ${Math.abs(pct).toFixed(1)}% higher vs ${baselineName}`;
-            el.style.background = '#E63946';
-        }
-    };
-
-    formatHonestyBadge(rawCo2Pct, 'co2Savings');
-    formatHonestyBadge(rawWaterPct, 'waterSavings');
-    
-    // === STEP 5: ZERO DATA SAFETY VALVE ===
-    if (unifiedCO2 <= 0.001) {
-        if(document.getElementById('co2Savings')) {
-            document.getElementById('co2Savings').textContent = "Data unavailable";
-            document.getElementById('co2Savings').style.background = "#CBD5E0";
-        }
-    }
-
-    if (results.waterScarcityPerKg <= 0.001) {
-        if(document.getElementById('waterSavings')) {
-            document.getElementById('waterSavings').textContent = "Data unavailable";
-            document.getElementById('waterSavings').style.background = "#CBD5E0";
-        }
-        if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = "—";
-    }
-    
-    // === REGULATOR-PROOF EQUIVALENCIES ENGINE ===
-    const co2SavedPerKg = results.comparison?.co2SavedPerKg || 0;
-    const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
-    const treeYears = (co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
-    const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
-    const currentWater = results.waterScarcityPerKg;
-    const waterScoreDiff = Math.max(0, baselineWater - currentWater);
-
-    if(document.getElementById('carKm')) {
-        document.getElementById('carKm').innerHTML = 
-            carKm > 0 ? `${carKm} km <div style="font-size:0.7em; opacity:0.8">avoided driving</div>` : '—';
-    }
-    if(document.getElementById('treeYears')) {
-        document.getElementById('treeYears').innerHTML = 
-            treeYears > 0 ? `${treeYears} <div style="font-size:0.7em; opacity:0.8">mature tree-years</div>` : '—';
-    }
-    if(document.getElementById('householdEnergy')) {
-        document.getElementById('householdEnergy').innerHTML = 
-            householdDays > 0 ? `${householdDays} days <div style="font-size:0.7em; opacity:0.8">avg. electricity</div>` : '—';
-    }
-    if(document.getElementById('waterScarcity')) {
-        document.getElementById('waterScarcity').innerHTML = 
-            waterScoreDiff > 0.01 ? 
-            `${waterScoreDiff.toFixed(1)} <div style="font-size:0.7em; opacity:0.8">m³ world eq. (AWARE)</div>` : '—';
-    }
-
+    updateResultsMetrics(results, resolvedBaseline);
     createEmissionChart(results);
-    
-    // =========== INTEGRATION POINT: CALL ALL FIXES ===========
     displayPEFSingleScore();
-    displayForegroundBackground();
+    displayAuditTrail();
     displayCompleteAuditTrail();
     displayISOCompliance();
 }
@@ -840,21 +679,10 @@ function displayPEFSingleScore() {
     const singleScoreResult = window.auditTrailData?.pef_single_score || { singleScore: 0, normalizedScore: 0, weightedScore: 0, breakdown: {} };
     
     let singleScoreSection = document.getElementById('pefSingleScoreSection');
-    if (!singleScoreSection) {
-        singleScoreSection = document.createElement('div');
-        singleScoreSection.id = 'pefSingleScoreSection';
-        singleScoreSection.className = 'card';
-        singleScoreSection.style.marginTop = '1.5rem';
-        
-        const resultsGrid = document.querySelector('.results-grid');
-        if (resultsGrid) {
-            resultsGrid.parentNode.insertBefore(singleScoreSection, resultsGrid.nextSibling);
-        } else {
-            resultsContent.insertBefore(singleScoreSection, resultsContent.firstChild);
-        }
-    }
-    
-    const score = singleScoreResult.singleScore; 
+    if (!singleScoreSection) return;
+
+    const score = singleScoreResult.singleScore || 0;
+
     let rating = 'Excellent';
     let ratingColor = '#48BB78';
 
@@ -1064,7 +892,7 @@ window.selectIngredient = function(id, name) {
     console.log(`✅ Selected: ${name} (${id})`);
 };
 
-// ================== SEARCHABLE BASELINE TYPEAHEAD ==================
+// ================== SEARCHABLE BASELINE TYPEAHEAD (legacy single) ==================
 function setupBaselineSearch() {
     const searchInput = document.getElementById('baselineSearch');
     const dropdown = document.getElementById('baselineDropdown');
@@ -1130,8 +958,248 @@ window.selectBaseline = function(id, name) {
     console.log(`⚖️ [Parametric Twin] Baseline locked to: ${name}`);
 };
 
+// ================== CONVENTIONAL BASELINE RECIPE — TYPEAHEAD SETUP ==================
+function setupConventionalBaselineSearch() {
+    const searchInput = document.getElementById('conventionalBaselineSearch');
+    const dropdown = document.getElementById('conventionalBaselineDropdown');
+
+    if (!searchInput || !dropdown) return;
+
+    const ingredients = window.aioxyData?.ingredients || {};
+    const searchIndex = Object.entries(ingredients).map(([id, data]) => ({
+        id,
+        name: data.name || 'Unknown',
+        co2: data.data?.pef?.['Climate Change'] || 0,
+        dqr: data.data?.metadata?.dqr_overall || 2.5
+    }));
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (query.length < 2) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+
+        const matches = searchIndex
+            .filter(item => (item.name || '').toLowerCase().includes(query))
+            .slice(0, 15);
+
+        if (!matches || matches.length === 0) {
+            dropdown.innerHTML = '<li class="no-results">❌ No ingredients found</li>';
+        } else {
+            dropdown.innerHTML = matches.map(item => {
+                const safeName = (item.name || '').replace(/'/g, "\\'");
+                return `
+                    <li onclick="selectConventionalBaselineIngredient('${item.id}', '${safeName}')">
+                        <div class="ingredient-name">${item.name}</div>
+                        <div class="ingredient-meta">
+                            CO₂e: ${item.co2.toFixed(2)} kg/kg | DQR: ${item.dqr.toFixed(1)} | AGRIBALYSE 3.2
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        }
+        dropdown.classList.remove('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            dropdown.classList.add('hidden');
+            searchInput.value = '';
+            const hiddenSelect = document.getElementById('conventionalBaselineSelect');
+            if (hiddenSelect) hiddenSelect.value = '';
+        }
+    });
+
+    console.log('✅ [ConventionalBaseline] Search typeahead ready');
+}
+
+window.selectConventionalBaselineIngredient = function(id, name) {
+    const hiddenSelect = document.getElementById('conventionalBaselineSelect');
+    const searchEl    = document.getElementById('conventionalBaselineSearch');
+    const dropdown    = document.getElementById('conventionalBaselineDropdown');
+
+    if (hiddenSelect) hiddenSelect.value = id;
+    if (searchEl)     searchEl.value     = name;
+    if (dropdown)     dropdown.classList.add('hidden');
+    console.log(`✅ [ConventionalBaseline] Selected: ${name} (${id})`);
+};
+
+// ================== CONVENTIONAL RECIPE MANAGEMENT ==================
+
+/**
+ * addConventionalIngredient()
+ * Reads the baseline search select, quantity, origin, processing state.
+ * Adds to conventionalBaselineIngredients array and refreshes the list.
+ */
+function addConventionalIngredient() {
+    const hiddenSelect    = document.getElementById('conventionalBaselineSelect');
+    const qtyInput        = document.getElementById('conventionalBaselineQuantity');
+    const originSelect    = document.getElementById('conventionalBaselineOrigin');
+    const processingSelect = document.getElementById('conventionalBaselineProcessing');
+
+    const ingredientId  = hiddenSelect?.value || '';
+    const quantity      = parseFloat(qtyInput?.value) || 0;
+    const originCountry = originSelect?.value || 'FR';
+    const processingState = processingSelect?.value || 'raw';
+
+    if (!ingredientId) {
+        alert('Please search and select a conventional ingredient first.');
+        return;
+    }
+    if (isNaN(quantity) || quantity <= 0) {
+        alert('Please enter a valid quantity (kg).');
+        return;
+    }
+    if (!window.aioxyData?.ingredients?.[ingredientId]) {
+        alert('Selected ingredient not found in database.');
+        return;
+    }
+
+    const ingredientData = window.aioxyData.ingredients[ingredientId];
+    conventionalBaselineIngredients.push({
+        id:             ingredientId,
+        name:           ingredientData.name,
+        quantity:       quantity,
+        originCountry:  originCountry,
+        processingState: processingState
+    });
+
+    console.log(`🌿 [ConventionalBaseline] Added ${ingredientData.name} × ${quantity}kg`);
+
+    updateConventionalIngredientList();
+
+    // Clear the search inputs
+    const searchEl = document.getElementById('conventionalBaselineSearch');
+    if (searchEl)      searchEl.value      = '';
+    if (hiddenSelect)  hiddenSelect.value  = '';
+    if (qtyInput)      qtyInput.value      = '0.150';
+    if (originSelect)  originSelect.value  = 'FR';
+    if (processingSelect) processingSelect.value = 'raw';
+}
+
+/**
+ * removeConventionalIngredient(index)
+ * Removes the conventional ingredient at the given index and refreshes.
+ */
+function removeConventionalIngredient(index) {
+    conventionalBaselineIngredients.splice(index, 1);
+    updateConventionalIngredientList();
+    console.log(`🗑️ [ConventionalBaseline] Removed ingredient at index ${index}`);
+}
+
+/**
+ * updateConventionalIngredientQuantity(index, newQuantity)
+ * Updates quantity for the given index.
+ */
+function updateConventionalIngredientQuantity(index, newQuantity) {
+    if (conventionalBaselineIngredients[index]) {
+        conventionalBaselineIngredients[index].quantity = parseFloat(newQuantity) || 0;
+    }
+}
+
+/**
+ * updateConventionalIngredientProcessing(index, value)
+ * Updates processing state for the given index.
+ */
+window.updateConventionalIngredientProcessing = function(index, value) {
+    if (conventionalBaselineIngredients[index]) {
+        conventionalBaselineIngredients[index].processingState = value;
+    }
+    console.log(`⚙️ [ConventionalBaseline] Processing state[${index}] → ${value}`);
+};
+
+/**
+ * updateConventionalIngredientList()
+ * Renders the conventional recipe list in #conventionalIngredientList.
+ * Mirrors updateIngredientList() but simpler — no primary data modal, no physics notes.
+ */
+function updateConventionalIngredientList() {
+    const list = document.getElementById('conventionalIngredientList');
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    if (conventionalBaselineIngredients.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state" style="padding: 2rem 1rem;">
+                <i class="fas fa-seedling" style="font-size: 2rem; opacity: 0.3; display: block; margin-bottom: 0.75rem;"></i>
+                <h3 style="font-size: 1rem; color: var(--dark);">No conventional ingredients added yet</h3>
+                <p style="font-size: 0.85rem;">Add conventional counterpart ingredients to enable full recipe swap</p>
+            </div>
+        `;
+        return;
+    }
+
+    conventionalBaselineIngredients.forEach((ingredient, index) => {
+        const ingredientData = window.aioxyData?.ingredients?.[ingredient.id];
+        if (!ingredientData) {
+            console.warn('[ConventionalBaseline] Ingredient not found in database:', ingredient.id);
+            return;
+        }
+
+        const co2         = ingredientData.data?.pef?.['Climate Change'] ?? 0;
+        const dqrOverall  = ingredientData.data?.metadata?.dqr_overall || 2.5;
+        const dqrQuality  = foodCalculationEngine.getDQRQualityLevel(dqrOverall);
+
+        const item = document.createElement('div');
+        item.className = 'ingredient-item';
+        item.style.cssText = 'background: #FAFFF9; border-bottom: 1px solid #D1FAE5;';
+        item.innerHTML = `
+            <div class="ingredient-info">
+                <div class="ingredient-name" style="color: #276749;">${ingredient.name}</div>
+                <div class="ingredient-stats">
+                    ${co2.toFixed(3)} kg CO₂e/kg •
+                    <span class="dqr-badge ${dqrQuality.class}" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
+                        DQR: ${dqrQuality.level}
+                    </span>
+                    <span class="source-badge">${ingredientData.data?.metadata?.source_dataset || 'AGRIBALYSE 3.2'}</span>
+                </div>
+                <div style="margin-top: 0.5rem;">
+                    <span style="font-size: 0.7rem; font-weight: bold; color: var(--primary);">Processing:</span>
+                    <select style="font-size: 0.7rem; padding: 0.2rem 0.4rem; margin-left: 0.25rem; border-radius: 4px; border: 1px solid var(--border);"
+                            onchange="updateConventionalIngredientProcessing(${index}, this.value)">
+                        <option value="raw"           ${ingredient.processingState === 'raw'           ? 'selected' : ''}>Raw (Farm Gate)</option>
+                        <option value="dry_milled"    ${ingredient.processingState === 'dry_milled'    ? 'selected' : ''}>Dry Milled (Flour)</option>
+                        <option value="wet_extracted" ${ingredient.processingState === 'wet_extracted' ? 'selected' : ''}>Wet Extracted</option>
+                        <option value="isolated"      ${ingredient.processingState === 'isolated'      ? 'selected' : ''}>Isolated (Protein Isolate)</option>
+                        <option value="fermentation"  ${ingredient.processingState === 'fermentation'  ? 'selected' : ''}>Precision Fermentation</option>
+                        <option value="extrusion"     ${ingredient.processingState === 'extrusion'     ? 'selected' : ''}>Extrusion</option>
+                    </select>
+                    <span style="font-size: 0.7rem; color: var(--gray); margin-left: 0.5rem;">
+                        Origin: ${ingredient.originCountry || 'FR'}
+                    </span>
+                </div>
+            </div>
+            <div class="ingredient-actions">
+                <input type="number" class="quantity-input" value="${ingredient.quantity}" step="0.001" min="0"
+                       onchange="updateConventionalIngredientQuantity(${index}, this.value)"
+                       style="width: 90px;">
+                <button class="remove-btn" onclick="removeConventionalIngredient(${index})" title="Remove">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+
+    // Show summary badge
+    const countBadge = document.getElementById('conventionalRecipeCount');
+    if (countBadge) {
+        countBadge.textContent = conventionalBaselineIngredients.length + ' ingredient' +
+            (conventionalBaselineIngredients.length !== 1 ? 's' : '');
+        countBadge.style.display = '';
+    }
+}
+
 function populateCountrySelect() {
-    const targets = ['manufacturingCountry', 'ingredientOriginSelect'];
+    const targets = ['manufacturingCountry', 'ingredientOriginSelect', 'conventionalBaselineOrigin'];
     
     if (!window.aioxyData || !window.aioxyData.countries) {
         console.warn('⚠️ [populateCountrySelect] No country data available');
@@ -1153,12 +1221,12 @@ function populateCountrySelect() {
 
         if (id === 'manufacturingCountry') {
             select.innerHTML = '<option value="">Select country...</option>';
-        } else if (id === 'ingredientOriginSelect') {
+        } else {
             select.innerHTML = '<option value="FR">🇫🇷 France (Base)</option>';
         }
 
         sortedKeys.forEach(code => {
-            if (id === 'ingredientOriginSelect' && code === 'FR') return;
+            if ((id === 'ingredientOriginSelect' || id === 'conventionalBaselineOrigin') && code === 'FR') return;
             
             const option = document.createElement('option');
             option.value = code;
@@ -1409,8 +1477,6 @@ function setupDemoData() {
 let currentIngredientIndex = null;
 
 // ── Animal ingredient detection ───────────────────────────────────────────────
-// Keywords matched against ingredient name (lower-cased) to detect animal products.
-// Also falls back to checking the FAOSTAT livestock yield table.
 const ANIMAL_KEYWORDS = [
     'beef','cattle','cow','veal',
     'lamb','sheep','goat',
@@ -1423,27 +1489,19 @@ const ANIMAL_KEYWORDS = [
     'egg','eggs'
 ];
 
-/**
- * isAnimalIngredient(ingredient)
- * Returns true if the ingredient (from selectedIngredients) is animal-based.
- * Detection: keyword match on name → FAOSTAT livestock yield lookup.
- */
 function isAnimalIngredient(ingredient) {
     if (!ingredient) return false;
     const nameLower = (ingredient.name || '').toLowerCase();
 
-    // 1. Keyword match
     for (const kw of ANIMAL_KEYWORDS) {
         if (nameLower.includes(kw)) return true;
     }
 
-    // 2. FAOSTAT livestock yield check — if country yields contain a livestock
-    //    entry for this ingredient name, it's animal-based.
     try {
         const yieldDB = window.aioxyData && window.aioxyData.crop_yields;
         const ingData = window.aioxyData && window.aioxyData.ingredients && window.aioxyData.ingredients[ingredient.id];
         if (ingData && ingData.data && ingData.data.metadata && ingData.data.metadata.entericIncluded === true) {
-            return true; // AGRIBALYSE metadata explicitly marks enteric as included → animal
+            return true;
         }
         if (yieldDB && yieldDB.livestock_yields) {
             const country = ingredient.originCountry || 'FR';
@@ -1455,18 +1513,11 @@ function isAnimalIngredient(ingredient) {
                 }
             }
         }
-    } catch (e) {
-        // Non-critical — detection falls through to keyword result (false)
-    }
+    } catch (e) {}
 
     return false;
 }
 
-/**
- * updateProductivityLabel()
- * Called when supplierAnimalType dropdown changes.
- * Updates the productivity label text and FAOSTAT country average hint.
- */
 function updateProductivityLabel() {
     const animalType = document.getElementById('supplierAnimalType') &&
                        document.getElementById('supplierAnimalType').value;
@@ -1490,12 +1541,10 @@ function updateProductivityLabel() {
         labelEl.textContent = labels[animalType] || 'Productivity (per animal per year)';
     }
 
-    // Show/hide the farmed fish note
     if (fishNote) {
         fishNote.style.display = (animalType === 'farmed_fish') ? 'inline' : 'none';
     }
 
-    // Look up FAOSTAT country average for this animal
     if (hintEl) {
         try {
             const ingredient = (currentIngredientIndex !== null)
@@ -1505,10 +1554,8 @@ function updateProductivityLabel() {
 
             let faostatVal = null;
             if (yieldDB && yieldDB.yields && animalType) {
-                const countryKey  = country; // may be ISO2 or full name depending on database
+                const countryKey  = country;
                 const countryData = yieldDB.yields[countryKey] || {};
-                // Try to match product name via IPCC_TIER1_LIVESTOCK entericEF key
-                // e.g., 'dairy_cow' → look for 'milk', 'cow milk', etc.
                 const productNameMap = {
                     'dairy_cow':   ['cow milk', 'milk, whole', 'milk'],
                     'beef_cattle': ['beef and veal', 'cattle meat', 'beef'],
@@ -1546,11 +1593,9 @@ function openSupplierModal(index) {
     const ingredient = selectedIngredients[index];
     const modal = document.getElementById('supplierModal');
 
-    // ── Reset ALL fields (common + crop + animal) ──────────────────────────
     document.getElementById('supplierFarmRegion').value  = '';
     document.getElementById('supplierGeolocation').value = '';
     document.getElementById('supplierDDS').value         = '';
-    // Crop fields
     document.getElementById('primaryNitrogen').value     = '';
     document.getElementById('primaryYield').value        = '';
     document.getElementById('supplierWaterSource').value = '';
@@ -1564,7 +1609,6 @@ function openSupplierModal(index) {
     document.getElementById('pesticide3Name').value      = '';
     document.getElementById('pesticide3CAS').value       = '';
     document.getElementById('pesticide3Rate').value      = '';
-    // Animal fields
     const animalTypeEl     = document.getElementById('supplierAnimalType');
     const prodSystemEl     = document.getElementById('supplierProductionSystem');
     const productivityEl   = document.getElementById('supplierProductivity');
@@ -1574,11 +1618,9 @@ function openSupplierModal(index) {
     if (productivityEl) productivityEl.value = '';
     if (manureSystemEl) manureSystemEl.value = '';
 
-    // ── Detect ingredient type and show the correct section ───────────────
     const animalIngredient = isAnimalIngredient(ingredient);
     const cropSection      = document.getElementById('supplierCropSection');
     const animalSection    = document.getElementById('supplierAnimalSection');
-    // Also update the modal title icon to reflect type
     const modalTitle       = document.querySelector('#supplierModal h3');
 
     if (animalIngredient) {
@@ -1591,7 +1633,6 @@ function openSupplierModal(index) {
         if (modalTitle)    modalTitle.innerHTML = '<i class="fas fa-tractor"></i> Primary Farm Data';
     }
 
-    // ── Restore existing primary data ─────────────────────────────────────
     if (ingredient.primaryData) {
         const pd = ingredient.primaryData;
         document.getElementById('supplierFarmRegion').value  = pd.farmRegion    || '';
@@ -1599,15 +1640,12 @@ function openSupplierModal(index) {
         document.getElementById('supplierDDS').value         = pd.ddsReference  || '';
 
         if (animalIngredient) {
-            // Restore animal fields
             if (animalTypeEl   && pd.animalType)         animalTypeEl.value   = pd.animalType;
             if (prodSystemEl   && pd.productionSystem)   prodSystemEl.value   = pd.productionSystem;
             if (productivityEl && pd.productivityMetric) productivityEl.value = pd.productivityMetric;
             if (manureSystemEl && pd.manureSystem)       manureSystemEl.value = pd.manureSystem;
-            // Update label + FAOSTAT hint for the restored animal type
             updateProductivityLabel();
         } else {
-            // Restore crop fields
             document.getElementById('primaryNitrogen').value     = pd.nitrogenKgPerTon || '';
             document.getElementById('primaryYield').value        = pd.yieldKgPerHa     || '';
             document.getElementById('supplierWaterSource').value = pd.waterSource       || '';
@@ -1628,7 +1666,6 @@ function openSupplierModal(index) {
             }
         }
     } else if (animalIngredient) {
-        // No saved data yet — trigger FAOSTAT hint update with current country
         updateProductivityLabel();
     }
     
@@ -1647,205 +1684,140 @@ function saveSupplierData() {
     const ingredient   = selectedIngredients[currentIngredientIndex];
     const animalIngredient = isAnimalIngredient(ingredient);
 
-    // Common fields (present for all ingredient types)
     const farmRegion  = document.getElementById('supplierFarmRegion').value.trim();
     const geolocation = document.getElementById('supplierGeolocation').value.trim();
     const ddsRef      = document.getElementById('supplierDDS').value.trim();
 
-    if (!farmRegion) {
-        alert('Please fill in the required field: Farm Region/Country');
-        return;
-    }
+    let primaryData = {
+        farmRegion,
+        geolocation,
+        ddsReference: ddsRef,
+        timestamp: new Date().toISOString()
+    };
 
     if (animalIngredient) {
-        // ── ANIMAL PRIMARY DATA PATH ──────────────────────────────────────────
-        const animalType        = document.getElementById('supplierAnimalType')        ? document.getElementById('supplierAnimalType').value        : '';
-        const productionSystem  = document.getElementById('supplierProductionSystem')  ? document.getElementById('supplierProductionSystem').value  : '';
-        const productivityMetric = document.getElementById('supplierProductivity')
-            ? parseFloat(document.getElementById('supplierProductivity').value)
-            : NaN;
-        const manureSystem      = document.getElementById('supplierManureSystem')      ? document.getElementById('supplierManureSystem').value      : '';
+        const animalType      = document.getElementById('supplierAnimalType')?.value     || '';
+        const productionSystem= document.getElementById('supplierProductionSystem')?.value || '';
+        const productivity    = parseFloat(document.getElementById('supplierProductivity')?.value) || null;
+        const manureSystem    = document.getElementById('supplierManureSystem')?.value    || '';
 
-        if (!animalType) {
-            alert('Please select an Animal Type');
-            return;
-        }
-        if (isNaN(productivityMetric) || productivityMetric <= 0) {
-            alert('Please enter a valid Productivity value (per animal per year)');
-            return;
-        }
-
-        // Look up IPCC Tier 1 EF values from core_physics CONSTANTS
-        const TIER1     = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
-        const animalRow = TIER1.entericEF[animalType] || { ef_ch4: 0, n_excretion: 0 };
-
-        selectedIngredients[currentIngredientIndex].primaryData = {
-            // Common fields
-            farmRegion,
-            geolocation,
-            ddsReference: ddsRef,
-            timestamp: new Date().toISOString(),
-
-            // Animal-specific fields
+        primaryData = {
+            ...primaryData,
             animalType,
             productionSystem,
-            productivityMetric,
-            manureSystem: manureSystem || 'pasture',  // safe default
-
-            // Pre-computed entericParams (convenience — engine also builds these itself)
-            entericParams: {
+            productivityMetric: productivity,
+            manureSystem,
+            entericParams: animalType ? {
                 animalType,
-                efCh4PerHead:         animalRow.ef_ch4,
-                nExcretionPerHead:    animalRow.n_excretion,
-                productPerHeadPerYear: productivityMetric
-            },
-
-            // Null out crop-specific fields so engine never mis-reads them
-            nitrogenKgPerTon: null,
-            yieldKgPerHa:     null,
-            waterSource:      null,
-            farmingPractice:  null,
-            pesticides:       null
+                productionSystem,
+                productivity_kg_per_year: productivity,
+                manureSystem
+            } : null
         };
-
-        console.log(`✅ [Supplier-Animal] Primary livestock data saved for ${ingredient.name} — type: ${animalType}, productivity: ${productivityMetric}, manure: ${manureSystem}`);
-
     } else {
-        // ── CROP PRIMARY DATA PATH (unchanged) ────────────────────────────────
-        const nitrogen = parseFloat(document.getElementById('primaryNitrogen').value);
-        const yieldVal = parseFloat(document.getElementById('primaryYield').value);
-        const waterSource = document.getElementById('supplierWaterSource').value;
-        const practice    = document.getElementById('supplierPractice').value;
+        const nitrogenKgPerTon = parseFloat(document.getElementById('primaryNitrogen').value) || null;
+        const yieldKgPerHa     = parseFloat(document.getElementById('primaryYield').value)    || null;
+        const waterSource      = document.getElementById('supplierWaterSource').value;
+        const farmingPractice  = document.getElementById('supplierPractice').value;
 
-        if (isNaN(nitrogen) || isNaN(yieldVal)) {
-            alert('Please fill in required fields: Nitrogen Fertilizer and Yield');
-            return;
+        const pesticides = [];
+        for (let p = 1; p <= 3; p++) {
+            const name = document.getElementById(`pesticide${p}Name`).value.trim();
+            const cas  = document.getElementById(`pesticide${p}CAS`).value.trim();
+            const rate = parseFloat(document.getElementById(`pesticide${p}Rate`).value);
+            if (name) pesticides.push({ name, cas, rateKgPerHa: isNaN(rate) ? null : rate });
         }
 
-        // Collect pesticides
-        var pesticides = [];
-        for (var i = 1; i <= 3; i++) {
-            var name = document.getElementById('pesticide' + i + 'Name').value.trim();
-            var cas  = document.getElementById('pesticide' + i + 'CAS').value.trim();
-            var rate = parseFloat(document.getElementById('pesticide' + i + 'Rate').value);
-            if (name && cas && !isNaN(rate) && rate > 0) {
-                pesticides.push({ name, cas, rateKgPerHa: rate });
-            }
-        }
-
-        selectedIngredients[currentIngredientIndex].primaryData = {
-            farmRegion,
-            geolocation,
-            ddsReference:     ddsRef,
-            nitrogenKgPerTon: nitrogen,
-            yieldKgPerHa:     yieldVal,
+        primaryData = {
+            ...primaryData,
+            nitrogenKgPerTon,
+            yieldKgPerHa,
             waterSource,
-            farmingPractice:  practice,
-            pesticides:       pesticides.length > 0 ? pesticides : null,
-            timestamp:        new Date().toISOString(),
-
-            // Null out animal-specific fields
-            animalType:        null,
-            productionSystem:  null,
-            productivityMetric: null,
-            manureSystem:      null,
-            entericParams:     null
+            farmingPractice,
+            pesticides: pesticides.length > 0 ? pesticides : null
         };
-
-        console.log(`✅ [Supplier-Crop] Primary data saved for ${ingredient.name}`);
     }
 
-    updateIngredientList();
-    calculateImpact();
+    selectedIngredients[currentIngredientIndex].primaryData = primaryData;
+    console.log(`✅ [SupplierData] Saved for ${ingredient.name}:`, primaryData);
+
     closeSupplierModal();
+    calculateImpact();
 }
 
-function generateSupplierLink() {
-    if (currentIngredientIndex === null) {
-        alert("Please select an ingredient first.");
-        return;
-    }
-    const ingredient = selectedIngredients[currentIngredientIndex];
-    const baseUrl = "https://snapfizzintelligence.github.io/Aioxy/supplier.html";
-    const url = `${baseUrl}?ing=${encodeURIComponent(ingredient.name)}`;
-    
-    navigator.clipboard.writeText(url).then(() => {
-        alert(`Link copied to clipboard!\n\nEmail this URL to your farmer/supplier:\n${url}`);
-    }).catch(err => {
-        alert(`Copy this URL and send it to your supplier:\n\n${url}`);
-    });
-}
+// ================== RESULTS METRICS UPDATE ==================
+function updateResultsMetrics(results, resolvedBaseline) {
+    const co2El     = document.getElementById('co2Value');
+    const waterEl   = document.getElementById('waterValue');
+    const landEl    = document.getElementById('landValue');
+    const fossilEl  = document.getElementById('fossilValue');
+    const co2Sav    = document.getElementById('co2Savings');
+    const waterSav  = document.getElementById('waterSavings');
+    const carEl     = document.getElementById('carKm');
+    const houseEl   = document.getElementById('householdEnergy');
+    const treeEl    = document.getElementById('treeYears');
+    const waterScEl = document.getElementById('waterScarcity');
 
-function decodeSupplierToken() {
-    const tokenInput = document.getElementById('supplierTokenInput').value.trim();
-    if (!tokenInput) {
-        alert("Please paste the token received from your supplier.");
-        return;
-    }
-    if (!tokenInput.startsWith('AIOXY-')) {
-        alert("Invalid token format. It must start with 'AIOXY-'.");
-        return;
-    }
+    if (co2El)    co2El.textContent    = `${(results.co2PerKg || 0).toFixed(2)} kg`;
+    if (waterEl)  waterEl.textContent  = `${(results.waterScarcityPerKg || 0).toFixed(3)} m³`;
+    if (landEl)   landEl.textContent   = `${(results.landUsePerKg || 0).toFixed(2)} Pt`;
+    if (fossilEl) fossilEl.textContent = `${(results.fossilPerKg || 0).toFixed(1)} MJ`;
 
-    try {
-        const base64Data = tokenInput.replace('AIOXY-', '');
-        const jsonStr = decodeURIComponent(escape(atob(base64Data)));
-        const data = JSON.parse(jsonStr);
+    if (resolvedBaseline) {
+        const baselineCO2 = resolvedBaseline.co2PerKg || 0;
+        const baselineWater = resolvedBaseline.waterPerKg || 0;
+        const co2Pct = baselineCO2 > 0 ? (((baselineCO2 - results.co2PerKg) / baselineCO2) * 100) : 0;
+        const waterPct = baselineWater > 0 ? (((baselineWater - (results.waterScarcityPerKg || 0)) / baselineWater) * 100) : 0;
 
-        // Common fields
-        document.getElementById('supplierFarmRegion').value  = data.r   || '';
-        document.getElementById('supplierGeolocation').value = data.g   || '';
-        document.getElementById('supplierDDS').value         = data.dds || '';
+        if (co2Sav)   co2Sav.textContent   = `${co2Pct >= 0 ? '' : '+'}${Math.abs(co2Pct).toFixed(1)}% ${co2Pct >= 0 ? 'saved' : 'more'}`;
+        if (waterSav) waterSav.textContent  = `${waterPct >= 0 ? '' : '+'}${Math.abs(waterPct).toFixed(1)}% ${waterPct >= 0 ? 'saved' : 'more'}`;
 
-        // Crop fields (only populate if present in token)
-        document.getElementById('primaryNitrogen').value     = data.n || '';
-        document.getElementById('primaryYield').value        = data.y || '';
-        document.getElementById('supplierWaterSource').value = data.w || '';
-        document.getElementById('supplierPractice').value    = data.p || '';
+        const co2SavedPerKg = results.comparison?.co2SavedPerKg || (baselineCO2 - results.co2PerKg);
+        const carKm = Math.round(Math.abs(co2SavedPerKg) / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
+        const treeYrs = (Math.abs(co2SavedPerKg) / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
+        const houseDays = Math.round(Math.abs(co2SavedPerKg) / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
 
-        // Animal fields (only populate if present in token)
-        const animalTypeEl   = document.getElementById('supplierAnimalType');
-        const prodSystemEl   = document.getElementById('supplierProductionSystem');
-        const productivityEl = document.getElementById('supplierProductivity');
-        const manureEl       = document.getElementById('supplierManureSystem');
-        if (animalTypeEl   && data.at)  { animalTypeEl.value   = data.at;  updateProductivityLabel(); }
-        if (prodSystemEl   && data.ps)    prodSystemEl.value   = data.ps;
-        if (productivityEl && data.pm)    productivityEl.value = data.pm;
-        if (manureEl       && data.ms)    manureEl.value       = data.ms;
-
-        document.getElementById('supplierTokenInput').value = '';
-        alert('✅ Supplier data successfully decoded and imported!\n\nReview the inputs, then click "Save Primary Data" to lock it into the audit trail.');
-    } catch (e) {
-        console.error("Token Decode Error:", e);
-        alert('Failed to decode the token. Ensure you copied the entire string including the AIOXY- prefix.');
+        if (carEl)    carEl.textContent    = `${carKm} km`;
+        if (treeEl)   treeEl.textContent   = treeYrs;
+        if (houseEl)  houseEl.textContent  = `${houseDays} days`;
+        if (waterScEl) waterScEl.textContent = `${(results.waterScarcityPerKg || 0).toFixed(3)}`;
     }
 }
 
 // ================== BIOREACTOR PRESET ==================
 function loadBioreactorPreset() {
-    console.log("🧪 [LCA Engine] Initiating Bioreactor Unit Process...");
+    if (!window.aioxyData || !window.aioxyData.ingredients) {
+        alert('⚠️ Ingredient database not loaded yet. Please wait a moment and try again.');
+        return;
+    }
+
+    const available = Object.keys(window.aioxyData.ingredients);
+    const cornId    = available.find(id => id.includes('corn') || id.includes('maize')) || available[0];
+    const waterId   = available.find(id => id.includes('water')) || null;
 
     selectedIngredients = [];
 
-    selectedIngredients.push({
-        id: 'sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr',
-        name: 'Sugar Beet (Microbial Feedstock)',
-        quantity: 0.500,
-        originCountry: 'NL'
-    });
+    if (cornId) {
+        selectedIngredients.push({
+            id: cornId,
+            name: window.aioxyData.ingredients[cornId].name,
+            quantity: 0.45,
+            originCountry: 'FR',
+            processingState: 'fermentation',
+            physics_note: 'Feedstock for precision fermentation — dry weight basis'
+        });
+    }
 
-    selectedIngredients.push({
-        id: 'tap-water-fr',
-        name: 'Tap Water (Bioreactor Hydration)',
-        quantity: 0.950,
-        originCountry: 'NL'
-    });
-
-    const mfgCountry = document.getElementById('manufacturingCountry');
-    if(mfgCountry) mfgCountry.value = 'NL';
-    
-    const processingSelect = document.getElementById('processingMethod');
-    if(processingSelect) processingSelect.value = 'fermentation';
+    if (waterId) {
+        selectedIngredients.push({
+            id: waterId,
+            name: window.aioxyData.ingredients[waterId].name,
+            quantity: 2.50,
+            originCountry: 'FR',
+            processingState: 'raw',
+            physics_note: 'Process water — evaporated in bioreactor'
+        });
+    }
 
     const primaryToggle = document.getElementById('usePrimaryFactoryData');
     if(primaryToggle) {
@@ -1998,275 +1970,24 @@ function displayISOCompliance() {
                 <div class="card-icon" style="background: linear-gradient(135deg, #0A2540 0%, #1A365D 100%);">
                     <i class="fas fa-file-certificate"></i>
                 </div>
-                ISO 14040/14044 Compliance Framework
-            </div>
-            <div class="badge">
-                <i class="fas fa-check-circle"></i>
-                Standard-Aligned • Verification-Ready Framework
+                ISO 14044 Compliance Status
             </div>
         </div>
-
-        <div style="margin: 1.5rem 0;">
-            <div style="background: #E3F2FD; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                    <div style="width: 40px; height: 40px; background: #2196F3; color: white; 
-                                border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-certificate"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Compliance Statement</div>
-                        <div style="color: var(--gray); font-size: 0.9rem;">
-                            This assessment follows ISO 14040:2006 and ISO 14044:2006
-                        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+            ${Object.entries(iso).map(([key, val]) => `
+                <div style="background: ${val ? '#F0FFF4' : '#FFF5F5'}; border: 1px solid ${val ? '#48BB78' : '#FC8181'}; border-radius: 8px; padding: 1rem;">
+                    <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem;">${key}</div>
+                    <div style="color: ${val ? '#27AE60' : '#E63946'}; font-size: 0.8rem; margin-top: 0.25rem;">
+                        ${val ? '✅ Compliant' : '⚠️ Review Required'}
                     </div>
                 </div>
-                <div style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; color: var(--dark);">
-                    ${iso.compliance_statement}
-                </div>
-            </div>
-            
-            <h4 style="margin-bottom: 1rem; color: var(--primary);">
-                <i class="fas fa-balance-scale"></i> ISO 14040 Principles
-            </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                ${Object.entries(iso.principles || {}).map(([key, value]) => `
-                    <div style="background: white; border-radius: 8px; padding: 1rem; border: 1px solid var(--border);">
-                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">
-                            ${key.replace(/_/g, ' ').toUpperCase()}
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--gray);">
-                            ${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-}
-
-// ================== UI INTEGRATION: COMPLETE AUDIT TRAIL ==================
-function displayCompleteAuditTrail() {
-    const transparencyTab = document.getElementById('transparency-tab');
-    if (!transparencyTab || !auditTrailData) return;
-
-    // Bug 3 fix: guard against empty auditTrailData (before any calculation has run)
-    if (!auditTrailData || !auditTrailData.pefCategories) {
-        const section = document.getElementById('completeAuditTrailSection');
-        if (section) section.innerHTML = '';
-        return;
-    }
-
-    let auditSection = document.getElementById('completeAuditTrailSection');
-    if (!auditSection) {
-        auditSection = document.createElement('div');
-        auditSection.id = 'completeAuditTrailSection';
-        auditSection.className = 'card';
-        auditSection.style.marginTop = '1.5rem';
-        
-        const mainContent = transparencyTab.querySelector('.main-content');
-        if (mainContent) {
-            mainContent.appendChild(auditSection);
-        } else {
-            transparencyTab.appendChild(auditSection);
-        }
-    }
-
-    const audit = auditTrailData;
-
-    // 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration AND Nutritional Result
-    const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
-    let functionalUnitText = "1 kg of final product";
-    let nutritionalLCA_HTML = "";
-
-    // FIX: Guard audit.pefCategories before accessing
-    if (userProtein > 0 && audit.pefCategories && audit.pefCategories["Climate Change"]) {
-        functionalUnitText = "1 kg Mass / 100g Delivered Protein";
-        const pWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
-        const unifiedCO2 = audit.pefCategories["Climate Change"].total / pWeightKg;
-        const kgNeeded = 100 / (userProtein * 10);
-        const co2Per100gProtein = unifiedCO2 * kgNeeded;
-
-        const anchorProteinDB = {
-            'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
-            'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
-            'plant-milk': 1.0, 'default': 10.0
-        };
-    
-        const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-            audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
-        const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
-        const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
-        const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
-    
-        nutritionalLCA_HTML = `
-        <div>
-            <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Nutritional LCA Impact</div>
-            <div style="margin-top: 0.25rem; font-weight: 800; font-size: 1.1rem; color: #8E44AD;">
-                ${co2Per100gProtein.toFixed(2)} kg CO₂e <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(per 100g protein)</span>
-            </div>
-            <div style="font-size: 0.75rem; color: var(--gray); margin-top: 0.3rem; border-top: 1px solid var(--border); padding-top: 0.3rem;">
-                <i class="fas fa-info-circle"></i> Baseline Equivalent: <strong>${baseCo2PerProtein.toFixed(2)} kg CO₂e</strong>
-            </div>
-        </div>`;
-    }
-
-    auditSection.innerHTML = `
-        <div class="card-header">
-            <div class="card-title">
-                <div class="card-icon" style="background: var(--gradient-primary);">
-                    <i class="fas fa-fingerprint"></i>
-                </div>
-                Complete Chain-of-Custody Audit Trail
-            </div>
-            <div class="badge">
-                <i class="fas fa-shield-alt"></i>
-                ISO 14044 Compliant • Tamper-Evident
-            </div>
-        </div>
-        
-        <div style="margin: 1.5rem 0;">
-            <div style="background: var(--light); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                    <div style="width: 40px; height: 40px; background: var(--primary); color: white; 
-                                border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-hashtag"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">Assessment Traceability</div>
-                        <div style="color: var(--gray); font-size: 0.9rem;">
-                            Unique ID: Verifies calculation instance and inputs
-                        </div>
-                    </div>
-                </div>
-                <div style="background: white; border-radius: 8px; padding: 1rem; font-family: monospace; 
-                            word-break: break-all; font-size: 0.8rem; color: var(--primary);">
-                    ${audit.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
-                </div>
-                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--success);">
-                    <i class="fas fa-check-circle"></i> Audit trail verified - calculation integrity maintained
-                </div>
-            </div>
-
-            <h4 style="margin-bottom: 1rem; color: var(--primary);">
-                <i class="fas fa-info-circle"></i> Calculation Metadata
-            </h4>
-            <div style="background: white; border-radius: 10px; border: 1px solid var(--border); padding: 1.5rem;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Product Name</div>
-                        <div style="margin-top: 0.25rem;">${audit.productName || 'Unnamed Product'}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Functional Unit (ISO 14044)</div>
-                        <div style="font-size: 0.9rem; color: #8E44AD; font-weight: 700; margin-top: 0.25rem;">${functionalUnitText}</div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Comparison Baseline</div>
-                        <div style="font-size: 0.9rem; color: #D35400; font-weight: 700; margin-top: 0.25rem;">${audit.comparison_baseline?.name || 'Not specified'}</div>
-                        ${audit.comparison_baseline?.bat_processing_note ? `
-                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #F8FAFC; border-left: 3px solid #0A2540; font-size: 0.75rem; color: var(--gray);">
-                            <strong>Baseline Processing:</strong> ${audit.comparison_baseline.bat_processing_note}<br>
-                            <strong>Source:</strong> ${audit.comparison_baseline.bat_source || 'JRC BAT (EU) 2019/2031'}<br>
-                            <strong>Allocation:</strong> ${audit.comparison_baseline.allocation_note || 'Mass allocation (ISO 14044)'}
-                        </div>
-                        ` : ''}
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
-                        
-                        ${(() => {
-                            const score = audit.pef_single_score?.singleScore || 0;
-                            let rating = 'Excellent';
-                            let ratingColor = '#48BB78';
-                            
-                            if (score > 150) { rating = 'Good'; ratingColor = '#ECC94B'; }
-                            if (score > 250) { rating = 'Fair'; ratingColor = '#ED8936'; }
-                            if (score > 400) { rating = 'Poor'; ratingColor = '#FC8181'; }
-                            
-                            return `
-                                <div style="margin-top: 0.25rem;">
-                                    <div class="dqr-badge" style="background: ${ratingColor}; color: white; display: inline-block; margin-bottom: 0.25rem; font-size: 0.7rem; padding: 0.15rem 0.5rem;">
-                                        ${rating} • Person Equivalent Impact
-                                    </div>
-                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${score < 150 ? '#2A9D8F' : score < 250 ? '#8AB17D' : score < 400 ? '#E9C46A' : score < 600 ? '#F4A261' : '#E63946'};">
-                                        Grade ${score < 150 ? 'A' : score < 250 ? 'B' : score < 400 ? 'C' : score < 600 ? 'D' : 'E'} 
-                                        <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${score.toFixed(1)} µPt)</span>
-                                    </div>
-                                </div>
-                            `;
-                        })()}
-                    </div>
-                    ${nutritionalLCA_HTML}
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Data Quality Rating</div>
-                        <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
-                            ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
-                        </div>
-                        <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">
-                            <i class="fas fa-balance-scale"></i> Impact-weighted per PEF 3.1 §6.5
-                        </div>
-                    </div>
-                </div>
-            </div>
-    
-            <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
-                <i class="fas fa-database"></i> Data Sources & Methodology
-            </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Methodology</div>
-                    <div>PEF 3.1 Compliant</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Data Source</div>
-                    <div>AGRIBALYSE 3.2</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Characterization</div>
-                    <div>JRC EF 3.1</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Water Method</div>
-                    <div>AWARE 2.0</div>
-                </div>
-            </div>
-            
-            <!-- SENSITIVITY ANALYSIS CARD -->
-            <h4 style="margin: 1.5rem 0 1rem 0; color: var(--primary);">
-                <i class="fas fa-chart-line"></i> Sensitivity Analysis (ISO 14044 §6.3)
-            </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                ${audit.comparison_baseline?.sensitivity_analysis ? `
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Parameters Tested</div>
-                    <div style="font-size: 0.85rem;">${(audit.comparison_baseline.sensitivity_analysis.parameters_tested || []).join(', ') || 'None specified'}</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Key Finding</div>
-                    <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.key_finding || 'Not available'}</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Recommendation</div>
-                    <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.recommendation || 'Not available'}</div>
-                </div>
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem;">
-                    <div style="font-weight: 600; color: var(--primary);">Compliance</div>
-                    <div style="font-size: 0.85rem;">${audit.comparison_baseline.sensitivity_analysis.iso_compliance || 'Not available'}</div>
-                </div>
-                ` : `
-                <div style="background: var(--light); border-radius: 8px; padding: 1rem; grid-column: 1/-1;">
-                    <div style="font-weight: 600; color: var(--primary);">Sensitivity Analysis</div>
-                    <div style="font-size: 0.85rem;">Run calculation to generate sensitivity analysis. Parameters include transport distance, grid intensity, and concentration ratio.</div>
-                </div>
-                `}
-            </div>
+            `).join('')}
         </div>
     `;
 }
 
 // ================== PARAMETRIC TWIN: COUNTERPART MODAL ==================
-
-// Module-level state for the counterpart modal
+// State for the open modal
 let _counterpartIngredientIndex = null;
 let _counterpartSelectedId      = null;
 let _counterpartSelectedName    = null;
@@ -2274,19 +1995,17 @@ let _counterpartSelectedPef     = null;
 
 /**
  * openCounterpartModal(index)
- * Opens the counterpart search modal for the ingredient at `index`.
+ * Opens the counterpart search modal for the assessed ingredient at `index`.
+ * If conventionalBaselineIngredients is non-empty, shows them as quick-select options
+ * above the AGRIBALYSE database search results.
  */
 function openCounterpartModal(index) {
     _counterpartIngredientIndex = index;
-    _counterpartSelectedId      = null;
-    _counterpartSelectedName    = null;
-    _counterpartSelectedPef     = null;
-
-    const ingredient = selectedIngredients[index];
     const modal      = document.getElementById('counterpartModal');
-    if (!modal) { console.error('counterpartModal not found in DOM'); return; }
+    const ingredient = selectedIngredients[index];
+    if (!modal || !ingredient) return;
 
-    // Fill header labels
+    // Populate the assessed ingredient info panel
     const nameEl = document.getElementById('counterpartAssessedName');
     const qtyEl  = document.getElementById('counterpartAssessedQty');
     if (nameEl) nameEl.textContent = ingredient.name;
@@ -2296,11 +2015,11 @@ function openCounterpartModal(index) {
     const qtyInput = document.getElementById('counterpartConventionalQty');
     if (qtyInput) qtyInput.value = ingredient.conventionalQuantity || ingredient.quantity;
 
-    // Clear search + results
+    // Clear search + results, then render baseline quick-select at top
     const searchInput = document.getElementById('counterpartSearch');
     if (searchInput) searchInput.value = '';
-    const resultsList = document.getElementById('counterpartResults');
-    if (resultsList) resultsList.innerHTML = '<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">Start typing to search…</li>';
+
+    _renderCounterpartResultsWithBaseline('');
 
     // Restore previous selection highlight if one exists
     if (ingredient.conventionalCounterpart) {
@@ -2312,9 +2031,95 @@ function openCounterpartModal(index) {
         _clearCounterpartSelection();
     }
 
-    // Show modal (matches pattern of supplierModal — remove hidden, set flex)
+    // Show modal
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
+}
+
+/**
+ * _renderCounterpartResultsWithBaseline(query)
+ * Renders the counterpart results list:
+ * 1. "From Baseline Recipe" quick-select section (if conventionalBaselineIngredients non-empty)
+ * 2. AGRIBALYSE search results filtered by query
+ */
+function _renderCounterpartResultsWithBaseline(query) {
+    const ul = document.getElementById('counterpartResults');
+    if (!ul) return;
+
+    let html = '';
+
+    // ── Section 1: From Baseline Recipe ──────────────────────────────────────
+    if (conventionalBaselineIngredients.length > 0) {
+        html += `
+            <li style="padding: 0.4rem 0.75rem; background: #EFF6FF; border-bottom: 1px solid #BDE0FE; 
+                        font-size: 0.7rem; font-weight: 700; color: #1E40AF; text-transform: uppercase;
+                        letter-spacing: 0.05em; cursor: default; pointer-events: none;">
+                <i class="fas fa-layer-group"></i> From Baseline Recipe
+            </li>
+        `;
+        conventionalBaselineIngredients.forEach((bi) => {
+            const biData   = window.aioxyData?.ingredients?.[bi.id];
+            const biCo2    = biData?.data?.pef?.['Climate Change'] ?? 0;
+            const biDqr    = biData?.data?.metadata?.dqr_overall ?? 2.5;
+            const safeName = bi.name.replace(/'/g, "\\'");
+            const isSelected = bi.id === _counterpartSelectedId;
+            html += `
+                <li data-id="${bi.id}"
+                    onclick="selectCounterpart('${bi.id}', '${safeName}', window.aioxyData.ingredients['${bi.id}'].data.pef)"
+                    style="padding: 0.6rem 0.75rem; cursor: pointer; border-bottom: 1px solid #DBEAFE;
+                           border-left: 3px solid ${isSelected ? '#27AE60' : '#3B82F6'};
+                           background: ${isSelected ? '#EBF8F0' : '#F0F9FF'};">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: #1E40AF;">
+                        ${bi.name}
+                        <span style="font-size: 0.7rem; color: #3B82F6; margin-left: 0.25rem;">
+                            (${bi.quantity.toFixed(3)} kg · ${bi.processingState})
+                        </span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--gray);">
+                        CO₂e: ${biCo2.toFixed(2)} kg/kg | DQR: ${biDqr.toFixed(1)} | AGRIBALYSE 3.2
+                    </div>
+                </li>
+            `;
+        });
+    }
+
+    // ── Section 2: AGRIBALYSE database search ────────────────────────────────
+    if (query.trim().length >= 2) {
+        const results = searchCounterpartDatabase(query);
+        if (results.length === 0) {
+            html += `<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">❌ No ingredients found for "${query}"</li>`;
+        } else {
+            if (conventionalBaselineIngredients.length > 0) {
+                html += `
+                    <li style="padding: 0.4rem 0.75rem; background: #F7FAFC; border-bottom: 1px solid var(--border);
+                                font-size: 0.7rem; font-weight: 700; color: var(--gray); text-transform: uppercase;
+                                letter-spacing: 0.05em; cursor: default; pointer-events: none;">
+                        <i class="fas fa-database"></i> AGRIBALYSE 3.2 Database
+                    </li>
+                `;
+            }
+            html += results.map(r => {
+                const safeName   = r.name.replace(/'/g, "\\'");
+                const isSelected = r.id === _counterpartSelectedId;
+                return `
+                    <li data-id="${r.id}"
+                        onclick="selectCounterpart('${r.id}', '${safeName}', window.aioxyData.ingredients['${r.id}'].data.pef)"
+                        style="padding: 0.6rem 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border);
+                               border-left: 3px solid ${isSelected ? '#27AE60' : 'transparent'};
+                               background: ${isSelected ? '#EBF8F0' : 'white'};">
+                        <div style="font-weight: 600; font-size: 0.85rem;">${r.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--gray);">
+                            CO₂e: ${r.co2.toFixed(2)} kg/kg | DQR: ${r.dqr.toFixed(1)} | ${r.source}
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        }
+    } else if (conventionalBaselineIngredients.length === 0) {
+        html += `<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">Start typing to search…</li>`;
+    }
+
+    ul.innerHTML = html;
 }
 
 /**
@@ -2405,7 +2210,7 @@ function setSameAsAssessed() {
 
     _counterpartSelectedId   = ingredient.id;
     _counterpartSelectedName = ingredient.name;
-    _counterpartSelectedPef  = ingredientData.data?.pef; // live reference — rule 4
+    _counterpartSelectedPef  = ingredientData.data?.pef;
 
     _renderCounterpartSelection(_counterpartSelectedId, _counterpartSelectedName, _counterpartSelectedPef);
 
@@ -2444,41 +2249,16 @@ function _clearCounterpartSelection() {
     if (selBox) selBox.innerHTML = '';
 }
 
-// Wire up the search input listener (called once from setupIngredientSearch-equivalent setup in initApp)
+// Wire up the search input listener
 function setupCounterpartSearch() {
     const searchInput = document.getElementById('counterpartSearch');
     if (!searchInput) return;
 
     searchInput.addEventListener('input', (e) => {
-        const query   = e.target.value;
-        const results = searchCounterpartDatabase(query);
-        const ul      = document.getElementById('counterpartResults');
-        if (!ul) return;
-
-        if (query.trim().length < 2) {
-            ul.innerHTML = '<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">Start typing to search…</li>';
-            return;
-        }
-        if (results.length === 0) {
-            ul.innerHTML = '<li style="color: var(--gray); font-size: 0.85rem; padding: 0.5rem;">❌ No ingredients found</li>';
-            return;
-        }
-
-        ul.innerHTML = results.map(r => {
-            const safeName = r.name.replace(/'/g, "\\'");
-            const isSelected = r.id === _counterpartSelectedId;
-            return `<li data-id="${r.id}"
-                        onclick="selectCounterpart('${r.id}', '${safeName}', window.aioxyData.ingredients['${r.id}'].data.pef)"
-                        style="padding: 0.6rem 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border);
-                               border-left: 3px solid ${isSelected ? '#27AE60' : 'transparent'};
-                               background: ${isSelected ? '#EBF8F0' : 'white'};">
-                        <div style="font-weight: 600; font-size: 0.85rem;">${r.name}</div>
-                        <div style="font-size: 0.75rem; color: var(--gray);">
-                            CO₂e: ${r.co2.toFixed(2)} kg/kg | DQR: ${r.dqr.toFixed(1)} | ${r.source}
-                        </div>
-                    </li>`;
-        }).join('');
+        _renderCounterpartResultsWithBaseline(e.target.value);
     });
+
+    console.log('✅ [CounterpartSearch] Ready (with conventional baseline quick-select support)');
 }
 
 // ================== UI.JS LOADED ==================
@@ -2487,4 +2267,4 @@ function setupCounterpartSearch() {
 // · displayTemporalDiscounting — not present
 // · organic_bonus_applied      — not present
 // · organic_ratio (display logic) — not present
-console.log("✅ [AIOXY] ui.js loaded - Interface ready");
+console.log("✅ [AIOXY] ui.js loaded - Interface ready (v3.1 — Conventional Recipe Builder)");
