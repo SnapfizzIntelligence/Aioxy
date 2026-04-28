@@ -1742,11 +1742,11 @@
             const aCO2   = assessedPerIngredient[i]      || CONSTANTS.MATH.ZERO;
             const cCO2   = conventionalPerIngredient[i]  || CONSTANTS.MATH.ZERO;
             return {
-                assessed:        ing.name || ing.id,
-                conventional:    conv ? (conv.name || conv.id) : null,
+                assessed:        { name: ing.name || ing.id, quantityKg: ing.quantityKg },
+                conventional:    conv ? { name: conv.name || conv.id, quantityKg: conv.quantityKg } : null,
                 assessedCO2:     aCO2,
                 conventionalCO2: cCO2,
-                deltaCO2:        cCO2 - aCO2
+                delta:           cCO2 - aCO2
             };
         });
 
