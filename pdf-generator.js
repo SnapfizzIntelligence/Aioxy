@@ -379,7 +379,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             if (enteric && enteric > 0) {
                 trace += `ENTERIC FERMENTATION (IPCC Tier 1)\n`;
                 trace += `  Formula: CH4 = EF_enteric × livestock_units\n`;
-                trace += `  CH4 × GWP100(CH4=27.9 AR6) = ${enteric.toFixed(4)} kg CO2e\n\n`;
+                trace += `  CH4 × GWP100(CH4=28.0, IPCC AR5, per PEF 3.1) = ${enteric.toFixed(4)} kg CO2e\n\n`;
             }
 
             // SOC Sequestration
@@ -456,6 +456,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             trace += `  Formula: mass_tonnes x adjusted_distance_km x adjusted_EF\n`;
             trace += `  = ${massTonnes.toFixed(6)} t x ${adjustedDist.toFixed(1)} km x ${adjustedEF.toFixed(5)} kg CO2e/tkm\n`;
             trace += `  = ${safeFix(component.subtotal, 4)} kg CO2e`;
+            if (isRoad) {
+                trace += `\n\nNote: Road freight emission factor = 0.060 kg CO2e/tkm (GLEC v3.2, artic truck, full-load scenario). The EU logistics average is 0.089 kg CO2e/tkm (GLEC Module 2, 60% load factor). The 0.060 value assumes fully-loaded zero-empty-return operations, appropriate for dedicated food logistics fleets. For general logistics, use 0.089.`;
+            }
             return trace;
         };
 
@@ -2012,11 +2015,13 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         road: { ambient: 0.060, chilled: 0.067, frozen: 0.067 },
         sea: { ambient: 0.0072, reefer: 0.0142 },
         rail: { ambient: 0.0184, reefer: 0.0206 },
-        air: { ambient: 0.788, reefer: 0.827 }
+        air: { ambient: 0.788 }
+        // Air reefer: GLEC v3.2 provides no temperature-controlled air freight factor. Using ambient (0.788) consistent with core engine.
     };
     
     const twinGlecEF = twinGlecFactors[twinTransportMode]?.[twinTransportTemp === 'frozen' ? 'frozen' : (twinTransportTemp === 'chilled' ? 'chilled' : 'ambient')] || 0.060;
-    const twinDaf = twinTransportMode === 'sea' ? 1.15 : (twinTransportMode === 'air' ? 1.09 : 1.05);
+    // Engine uses additive +95km for air DAF per GLEC v3.2
+    const twinDaf = twinTransportMode === 'sea' ? 1.15 : (twinTransportMode === 'air' ? null : 1.05);
     const twinPkgMaterial = cloned.packaging_material || 'cardboard';
     const twinPkgWeight = cloned.packaging_weight_kg || 0.050;
     const twinRecycledPct = cloned.recycled_content_pct || 30;
@@ -2141,20 +2146,29 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     // 3. LOGISTICS
     const inboundMass = (b.concentration_ratio || 1.0) / 1000;
     const outboundMass = 1.0 / 1000;
-    const inboundCO2 = inboundMass * 200 * twinGlecEF * twinDaf;
-    const outboundCO2 = outboundMass * twinTransportDist * twinGlecEF * twinDaf;
+    // For air DAF: GLEC v3.2 additive +95 km (not multiplicative)
+    const inboundAdjustedDistance = twinTransportMode === 'air' ? 200 + 95 : 200 * twinDaf;
+    const outboundAdjustedDistance = twinTransportMode === 'air' ? twinTransportDist + 95 : twinTransportDist * twinDaf;
+    const inboundCO2 = inboundMass * inboundAdjustedDistance * twinGlecEF;
+    const outboundCO2 = outboundMass * outboundAdjustedDistance * twinGlecEF;
     
     const logisticsLines = [
         `Mode: ${twinTransportMode.toUpperCase()} (cloned) | Temp: ${twinTransportTemp}`,
-        `GLEC EF: ${twinGlecEF} kg CO2e/tkm | DAF: ${twinDaf}x`,
+        twinTransportMode === 'air' 
+            ? `GLEC EF: ${twinGlecEF} kg CO2e/tkm | DAF: +95km (GLEC v3.2 additive, air)`
+            : `GLEC EF: ${twinGlecEF} kg CO2e/tkm | DAF: ${twinDaf}x`,
         ``,
         `INBOUND (Farm -> Factory): 200 km`,
         `Mass: ${inboundMass.toFixed(6)} t`,
-        `= ${inboundMass.toFixed(6)} x 200 x ${twinGlecEF} x ${twinDaf.toFixed(2)} = ${inboundCO2.toFixed(4)}`,
+        twinTransportMode === 'air'
+            ? `= ${inboundMass.toFixed(6)} x (200+95) km x ${twinGlecEF} = ${inboundCO2.toFixed(4)}`
+            : `= ${inboundMass.toFixed(6)} x 200 x ${twinGlecEF} x ${twinDaf.toFixed(2)} = ${inboundCO2.toFixed(4)}`,
         ``,
         `OUTBOUND (Factory -> Retail): ${twinTransportDist} km`,
         `Mass: ${outboundMass.toFixed(6)} t`,
-        `= ${outboundMass.toFixed(6)} x ${twinTransportDist} x ${twinGlecEF} x ${twinDaf.toFixed(2)} = ${outboundCO2.toFixed(4)}`,
+        twinTransportMode === 'air'
+            ? `= ${outboundMass.toFixed(6)} x (${twinTransportDist}+95) km x ${twinGlecEF} = ${outboundCO2.toFixed(4)}`
+            : `= ${outboundMass.toFixed(6)} x ${twinTransportDist} x ${twinGlecEF} x ${twinDaf.toFixed(2)} = ${outboundCO2.toFixed(4)}`,
         ``,
         `${inboundCO2.toFixed(4)} + ${outboundCO2.toFixed(4)}`,
     ];
