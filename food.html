@@ -2212,30 +2212,96 @@
                     </div>
                 </div>
                 
+                <!-- ═══ FIELDS COMMON TO ALL INGREDIENT TYPES ═══ -->
                 <div class="form-group"><label class="form-label">Farm Region/Country</label><input type="text" id="supplierFarmRegion" class="form-control" placeholder="e.g., Normandy, France"></div>
                 <div class="form-group"><label class="form-label"><i class="fas fa-map-marker-alt"></i> Primary Origin Geolocation (EUDR Mandate)</label><input type="text" id="supplierGeolocation" class="form-control" placeholder="e.g., 43.6045, 1.4442"></div>
                 <div class="form-group"><label>EUDR Due Diligence Statement (DDS) Reference</label><input type="text" id="supplierDDS" placeholder="e.g., EUDR-2026-ABC12345"></div>
-                <div class="form-group"><label>Nitrogen Fertilizer (kg per ton of crop)</label><input type="number" id="primaryNitrogen" placeholder="e.g. 15"></div>
-                <div class="form-group"><label>Yield (kg per hectare)</label><input type="number" id="primaryYield" placeholder="e.g. 5000"></div>
-                <div class="form-group">
-                    <label class="form-label">Irrigation Water Source</label>
-                    <select id="supplierWaterSource" class="form-control">
-                        <option value="">Select...</option>
-                        <option value="rainfed">Rainfed (no irrigation)</option>
-                        <option value="surface">Surface water (river, lake)</option>
-                        <option value="groundwater">Groundwater (well)</option>
-                        <option value="mixed">Mixed irrigation</option>
-                    </select>
+
+                <!-- ═══ CROP-SPECIFIC FIELDS (hidden when animal ingredient) ═══ -->
+                <div id="supplierCropSection">
+                    <div class="form-group"><label>Nitrogen Fertilizer (kg per ton of crop)</label><input type="number" id="primaryNitrogen" placeholder="e.g. 15"></div>
+                    <div class="form-group"><label>Yield (kg per hectare)</label><input type="number" id="primaryYield" placeholder="e.g. 5000"></div>
+                    <div class="form-group">
+                        <label class="form-label">Irrigation Water Source</label>
+                        <select id="supplierWaterSource" class="form-control">
+                            <option value="">Select...</option>
+                            <option value="rainfed">Rainfed (no irrigation)</option>
+                            <option value="surface">Surface water (river, lake)</option>
+                            <option value="groundwater">Groundwater (well)</option>
+                            <option value="mixed">Mixed irrigation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Farming Practice</label>
+                        <select id="supplierPractice" class="form-control">
+                            <option value="">Select...</option>
+                            <option value="conventional">Conventional</option>
+                            <option value="organic">Organic Certified</option>
+                            <option value="regen">Regenerative Agriculture</option>
+                            <option value="precision">Precision Farming</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Farming Practice</label>
-                    <select id="supplierPractice" class="form-control">
-                        <option value="">Select...</option>
-                        <option value="conventional">Conventional</option>
-                        <option value="organic">Organic Certified</option>
-                        <option value="regen">Regenerative Agriculture</option>
-                        <option value="precision">Precision Farming</option>
-                    </select>
+
+                <!-- ═══ ANIMAL-SPECIFIC FIELDS (hidden when crop ingredient) ═══
+                     IPCC Tier 1 methodology: IPCC 2006 Vol. 4, Ch. 10, confirmed in 2019 Refinement.
+                     Enteric CH4: Table 10.11 | N excretion: Table 10.19 | Manure EF: Table 10.21  -->
+                <div id="supplierAnimalSection" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-paw"></i> Animal Type</label>
+                        <select id="supplierAnimalType" class="form-control" onchange="updateProductivityLabel()">
+                            <option value="">Select animal type…</option>
+                            <option value="dairy_cow">Dairy Cow</option>
+                            <option value="beef_cattle">Beef Cattle</option>
+                            <option value="pig">Pig (Swine)</option>
+                            <option value="sheep">Sheep / Lamb</option>
+                            <option value="goat">Goat</option>
+                            <option value="broiler">Broiler Chicken</option>
+                            <option value="layer_hen">Layer Hen</option>
+                            <option value="turkey">Turkey</option>
+                            <option value="farmed_fish">Farmed Fish (Salmon / Trout)</option>
+                            <option value="farmed_fish">Farmed Fish (Other)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Production System</label>
+                        <select id="supplierProductionSystem" class="form-control">
+                            <option value="">Select…</option>
+                            <option value="intensive">Intensive Indoor</option>
+                            <option value="free_range">Free Range</option>
+                            <option value="organic">Organic</option>
+                            <option value="pasture_fed">Pasture-Fed / Grass-Fed</option>
+                            <option value="mixed">Mixed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" id="supplierProductivityLabel">Productivity (per animal per year)</label>
+                        <input type="number" id="supplierProductivity" class="form-control" placeholder="e.g. 7000" step="0.1" min="0">
+                        <small id="supplierProductivityHint" style="color: var(--gray); font-size: 0.8rem; display: block; margin-top: 0.3rem;">
+                            Country average: — (select country and animal type)
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Manure Management System</label>
+                        <select id="supplierManureSystem" class="form-control">
+                            <option value="">Select…</option>
+                            <option value="lagoon">Anaerobic Lagoon — EF 0.005 kg N₂O-N/kg N</option>
+                            <option value="pit_storage">Liquid / Pit Storage — EF 0.002</option>
+                            <option value="dry_lot">Dry Lot — EF 0.020</option>
+                            <option value="pasture">Pasture / Range / Paddock — EF 0.010</option>
+                            <option value="digester">Anaerobic Digester — EF 0.001</option>
+                            <option value="daily_spread">Daily Spread (field-applied) — EF 0</option>
+                        </select>
+                        <small style="color: var(--gray); font-size: 0.8rem; margin-top: 0.3rem; display: block;">
+                            Source: IPCC 2006 Vol. 4 Table 10.21, confirmed unchanged in 2019 Refinement.
+                        </small>
+                    </div>
+                    <!-- Compliance badge for animal section -->
+                    <div style="background: #E8F5E9; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #A5D6A7; margin-top: 0.75rem; font-size: 0.8rem; color: #1B5E20;">
+                        <i class="fas fa-leaf"></i>
+                        <strong>IPCC Tier 1 Animal Emissions:</strong> Enteric CH4 (Table 10.11) + Manure N₂O (Table 10.21) will be calculated using your primary data and applied as adjustments to Agribalyse 3.2 background values.
+                        <span id="farmedFishNote" style="display:none; color: #0277BD; font-style: italic;"> Farmed fish: feed-driven emissions model deferred to Phase 2. Primary data stored for audit trail.</span>
+                    </div>
                 </div>
             </div>
             <div style="background: #FFF8E1; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #FFC107;">
