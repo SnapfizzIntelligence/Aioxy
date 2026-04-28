@@ -782,6 +782,175 @@ if (!traceability.usetox) {
                 const IPCC  = window.corePhysics.CONSTANTS.IPCC_TIER1;
                 const AR5   = window.corePhysics.CONSTANTS.IPCC_AR5_PEF31;
 
+                // =====================================================================
+                // === ANIMAL PRIMARY DATA PATH =========================================
+                // =====================================================================
+                // If animalType is set, this is livestock primary data.
+                // Apply IPCC Tier 1 enteric CH4 and manure N2O adjustments.
+                // The crop-specific block (yield/N adjustments) is NOT applied.
+                // =====================================================================
+                if (pd.animalType) {
+                    // FARMED FISH: feed-driven emissions model required. Deferred to Phase 2.
+                    // Primary data is stored for audit trail and future use.
+                    // Do NOT apply enteric or manure calculations for farmed_fish.
+                    if (pd.animalType === 'farmed_fish') {
+                        adjustments.method = 'animal_primary_data_stored';
+                        adjustments.farmed_fish_note =
+                            'FARMED FISH: feed-driven emissions model required. ' +
+                            'Enteric CH4 = 0 (no enteric fermentation in fish). ' +
+                            'Manure/N excretion into water uses aquatic pathway — ' +
+                            'deferred to Phase 2. Primary data stored for future use.';
+                        // // FARMED FISH: feed-driven emissions model required. Deferred to Phase 2.
+                        // Primary data stored for audit trail only — no flatPef adjustments.
+
+                    } else {
+                        // ── Lookup IPCC Tier 1 values from core_physics CONSTANTS ─────────
+                        const TIER1     = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
+                        const animalRow = TIER1.entericEF[pd.animalType] || { ef_ch4: 0, n_excretion: 0 };
+
+                        // ── FAOSTAT fallback for productivity if user didn't provide it ───
+                        let productPerHeadPerYear = pd.productivityMetric || 0;
+                        if (!productPerHeadPerYear || productPerHeadPerYear <= 0) {
+                            // Try FAOSTAT livestock yield lookup
+                            try {
+                                const yieldDB  = window.aioxyData.crop_yields;
+                                const country  = ingredient.originCountry || 'FR';
+                                if (yieldDB && yieldDB.yields && yieldDB.yields[country]) {
+                                    const countryYields = yieldDB.yields[country];
+                                    for (const [cropKey, cropVal] of Object.entries(countryYields)) {
+                                        if (pd.animalType.replace('_', ' ').includes(cropKey.toLowerCase()) ||
+                                            cropKey.toLowerCase().includes(pd.animalType.split('_')[0])) {
+                                            productPerHeadPerYear = cropVal;
+                                            break;
+                                        }
+                                    }
+                                }
+                            } catch (e) { /* non-critical */ }
+
+                            // Final fallback — use a safe default so heads calculation doesn't divide by 0
+                            if (!productPerHeadPerYear || productPerHeadPerYear <= 0) {
+                                productPerHeadPerYear = 1000; // 1 tonne per head — conservative
+                            }
+                        }
+
+                        // ── Enteric methane (CH4) ─────────────────────────────────────────
+                        // Formula: heads = quantityKg / productPerHeadPerYear
+                        //          CH4_kg = heads × efCh4PerHead
+                        //          CO2e = CH4_kg × GWP_CH4_BIOGENIC (25, per IPCC AR5 / PEF 3.1)
+                        const entericCO2e = window.corePhysics.calculateEntericMethane({
+                            animalType:          pd.animalType,
+                            quantityKg:          ingredient.quantityKg,
+                            efCh4PerHead:        animalRow.ef_ch4,
+                            productPerHeadPerYear
+                        });
+
+                        // ── Check whether AGRIBALYSE already embeds enteric in its PEF values ──
+                        const ingDataMeta = ingData && ingData.data && ingData.data.metadata;
+                        const entericAlreadyIncluded = (ingDataMeta && ingDataMeta.entericIncluded === true);
+
+                        if (entericAlreadyIncluded) {
+                            // AGRIBALYSE embeds its own default enteric EF.
+                            // We must replace it with the supplier's actual value.
+                            // Compute AGRIBALYSE embedded enteric using the same formula with
+                            // the Tier 1 default productivity (productPerHeadPerYear as fallback).
+                            // Delta = supplierActual - agribalyseDefault
+                            // Since we don't have the AGRIBALYSE enteric split separately,
+                            // we apply a net adjustment by adding the delta to CC-Biogenic.
+                            // Conservative approach: net adjustment only if supplier EF differs.
+                            // For Tier 1 defaults matched exactly, delta = 0 (no change).
+                            // Note: Full delta calculation requires the AGRIBALYSE embedded EF
+                            // value per kg — deferred to Phase 2 when that data is available.
+                            adjustments.enteric_applied = {
+                                applied:                  false,
+                                reason:                   'entericIncluded=true in AGRIBALYSE. ' +
+                                    'Delta adjustment deferred to Phase 2 ' +
+                                    '(requires AGRIBALYSE per-product embedded enteric EF).',
+                                supplier_enteric_co2e:    entericCO2e,
+                                ipcc_source:              'IPCC 2006 Vol. 4 Table 10.11, confirmed 2019 Refinement'
+                            };
+                        } else {
+                            // AGRIBALYSE does NOT embed enteric — add the supplier's value directly.
+                            // Applied to CC-Biogenic (enteric CH4 is biogenic carbon).
+                            const entericPerKg = entericCO2e / ingredient.quantityKg;
+                            flatPef['Climate Change']            += entericPerKg;
+                            flatPef['Climate Change - Biogenic'] += entericPerKg;
+
+                            adjustments.enteric_applied = {
+                                applied:               true,
+                                animal_type:           pd.animalType,
+                                ef_ch4_per_head:       animalRow.ef_ch4,
+                                product_per_head_yr:   productPerHeadPerYear,
+                                enteric_co2e_total:    entericCO2e,
+                                enteric_co2e_per_kg:   entericPerKg,
+                                gwp_used:              'GWP_CH4_BIOGENIC = 25 (IPCC AR5, PEF 3.1)',
+                                ipcc_source:           'IPCC 2006 Vol. 4 Table 10.11, confirmed 2019 Refinement'
+                            };
+                        }
+
+                        // ── Manure N2O ────────────────────────────────────────────────────
+                        const manureSystem = pd.manureSystem || 'pasture';
+                        const manureN2OCO2e = window.corePhysics.calculateManureN2O({
+                            animalType:          pd.animalType,
+                            quantityKg:          ingredient.quantityKg,
+                            nExcretionPerHead:   animalRow.n_excretion,
+                            productPerHeadPerYear,
+                            manureSystem
+                        });
+
+                        const TIER1_CONST   = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
+                        const manureEF      = TIER1_CONST.manureEF[manureSystem] || 0;
+                        const manureN2OPerKg = manureN2OCO2e / ingredient.quantityKg;
+
+                        // Apply manure N2O to Climate Change total
+                        flatPef['Climate Change']            += manureN2OPerKg;
+                        // Manure N2O is from agricultural N management — allocate to CC-Land Use
+                        flatPef['Climate Change - Land Use'] += manureN2OPerKg;
+
+                        // ── Eutrophication, terrestrial: N volatilization from manure ─────
+                        // Methodology: IPCC Tier 1 simplified — 15% of N excretion
+                        // volatilizes as NH3/NOx; EF4_VOLATILIZATION = 0.01 kg N2O-N/kg N volatilized
+                        // Formula per spec: 15% × N_excretion_per_kg × 0.01 × 44/28 × 265
+                        // Note: Units are kg CO2e here; applied as a proxy additional eutrophication
+                        // load (simplified methodology). Full mol N-eq characterization requires
+                        // NH3 EF 3.1 CFs — deferred to Phase 2.
+                        const nExcretionPerKg = animalRow.n_excretion / productPerHeadPerYear; // kg N / kg product
+                        const eutrophTerrestrial = 0.15 * nExcretionPerKg *
+                            IPCC.EF4_VOLATILIZATION *
+                            IPCC.N2O_MASS_CONVERSION *
+                            AR5.GWP_N2O;
+                        flatPef['Eutrophication, terrestrial'] += eutrophTerrestrial;
+
+                        // ── Acidification: NH3 volatilization from manure ────────────────
+                        // 50% of excreted N volatilizes as NH3 (simplified Tier 1 assumption).
+                        // NH3 kg/kg product = 0.5 × nExcretionPerKg × (17/14) [N→NH3 mass ratio]
+                        // CF: 0.0184 mol H+e per g NH3 (EF 3.1 acidification characterization)
+                        // = 0.5 × nExcretionPerKg × (17/14) × 1000 g/kg × 0.0184 mol H+e/g NH3
+                        const nh3PerKgProduct = 0.5 * nExcretionPerKg * (17 / 14); // kg NH3/kg product
+                        const acidificationAdd = nh3PerKgProduct * 1000 * 0.0184;   // mol H+e / kg product
+                        flatPef['Acidification'] += acidificationAdd;
+
+                        adjustments.manure_n2o_applied = {
+                            applied:                true,
+                            animal_type:            pd.animalType,
+                            manure_system:          manureSystem,
+                            ef_manure:              manureEF,
+                            n_excretion_per_head:   animalRow.n_excretion,
+                            manure_n2o_co2e_total:  manureN2OCO2e,
+                            manure_n2o_per_kg:      manureN2OPerKg,
+                            eutrophication_add:     eutrophTerrestrial,
+                            acidification_add:      acidificationAdd,
+                            gwp_used:               'GWP_N2O = 265 (IPCC AR5, PEF 3.1)',
+                            ipcc_source:            'IPCC 2006 Vol. 4 Tables 10.19 & 10.21, confirmed 2019 Refinement'
+                        };
+
+                        adjustments.method = 'animal_primary_data_ipcc_tier1';
+                    }
+
+                } else {
+                // =====================================================================
+                // === CROP PRIMARY DATA PATH (existing logic — unchanged) ==============
+                // =====================================================================
+
                 // Yield adjustment factor
                 let yieldAdj = 1.0;
                 if (pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
@@ -985,8 +1154,8 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
         // Source: USEtox 2.14, continental agricultural soil compartment, EF 3.1 compliant.
     }
 }
-            } // F2 FIX: closing brace for if (ingredient.primaryData) { opened at line 671.
-              // Previously missing — caused JavaScript SyntaxError preventing IIFE from parsing.
+                } // end else (crop primary data path)
+            } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (ingredient.primaryData)
 
             // 1f. Apply processing archetype
             let processingMultiplier = 1.0;
