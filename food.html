@@ -1258,19 +1258,100 @@
 
                     
                     
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <!-- CONVENTIONAL BASELINE RECIPE BUILDER                   -->
+                    <!-- Replaces single-ingredient baseline with full recipe    -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
                     <div class="form-group">
-    <label class="form-label">Compare Against</label>
-    <div class="searchable-select">
-        <input type="text" 
-               id="baselineSearch" 
-               class="form-control" 
-               placeholder="Search 221 ingredients for exact baseline..."
-               autocomplete="off">
-        <ul id="baselineDropdown" class="search-dropdown hidden"></ul>
-        <input type="hidden" id="comparisonBaseline" value="auto" onchange="updateComparison()">
-    </div>
-    <small style="color: var(--gray); font-size: 0.7rem;">Creates a Parametric Twin using identical system boundaries (ISO 14044).</small>
+                        <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-balance-scale" style="color: var(--secondary);"></i>
+                            Conventional Baseline Recipe
+                            <span id="conventionalRecipeCount"
+                                  style="display: none; font-size: 0.72rem; font-weight: 700;
+                                         background: var(--secondary); color: white;
+                                         padding: 0.15rem 0.55rem; border-radius: 10px;">
+                            </span>
+                        </label>
+                        <small style="color: var(--gray); font-size: 0.72rem; display: block; margin-bottom: 0.75rem;">
+                            Build a full conventional recipe to compare against. Each assessed ingredient can then be
+                            mapped to its conventional counterpart — enabling a full-recipe Parametric Twin (ISO 14044).
+                        </small>
+
+                        <!-- Search row -->
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <div class="searchable-select" style="flex: 1 1 200px; min-width: 180px; position: relative;">
+                                <input type="text"
+                                       id="conventionalBaselineSearch"
+                                       class="form-control"
+                                       placeholder="Search conventional counterpart ingredients..."
+                                       autocomplete="off">
+                                <ul id="conventionalBaselineDropdown" class="search-dropdown hidden"></ul>
+                                <input type="hidden" id="conventionalBaselineSelect" value="">
+                            </div>
+
+                            <!-- Quantity -->
+                            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                <label style="font-size: 0.68rem; color: var(--gray); font-weight: 600; text-transform: uppercase;">Qty (kg)</label>
+                                <input type="number"
+                                       id="conventionalBaselineQuantity"
+                                       class="form-control"
+                                       value="0.150"
+                                       step="0.001"
+                                       min="0"
+                                       style="width: 90px;">
+                            </div>
+
+                            <!-- Origin -->
+                            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                <label style="font-size: 0.68rem; color: var(--gray); font-weight: 600; text-transform: uppercase;">Origin</label>
+                                <select id="conventionalBaselineOrigin" class="form-control" style="min-width: 120px;">
+                                    <option value="FR">🇫🇷 France</option>
+                                </select>
+                            </div>
+
+                            <!-- Processing state -->
+                            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                <label style="font-size: 0.68rem; color: var(--gray); font-weight: 600; text-transform: uppercase;">Processing</label>
+                                <select id="conventionalBaselineProcessing" class="form-control" style="min-width: 140px;">
+                                    <option value="raw">Raw (Farm Gate)</option>
+                                    <option value="dry_milled">Dry Milled (Flour)</option>
+                                    <option value="wet_extracted">Wet Extracted</option>
+                                    <option value="isolated">Isolated (Protein Isolate)</option>
+                                    <option value="fermentation">Precision Fermentation</option>
+                                    <option value="extrusion">Extrusion</option>
+                                </select>
+                            </div>
+
+                            <!-- Add button -->
+                            <div style="display: flex; flex-direction: column; justify-content: flex-end;">
+                                <button class="btn btn-success" onclick="addConventionalIngredient()"
+                                        style="white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.82rem;">
+                                    <i class="fas fa-plus"></i> Add to Baseline
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Conventional recipe list -->
+                        <div id="conventionalIngredientList"
+                             style="border: 1px solid #D1FAE5; border-radius: 8px; overflow: hidden; margin-top: 0.5rem; background: #FAFFF9;">
+                            <div class="empty-state" style="padding: 1.5rem 1rem; text-align: center;">
+                                <i class="fas fa-seedling" style="font-size: 1.5rem; opacity: 0.3; display: block; margin-bottom: 0.5rem;"></i>
+                                <p style="font-size: 0.82rem; color: var(--gray); margin: 0;">
+                                    No conventional ingredients added yet.<br>
+                                    Add ingredients above, then map each assessed ingredient to its counterpart.
+                                </p>
+                            </div>
+                        </div>
+
+                        <small style="color: var(--gray); font-size: 0.7rem; display: block; margin-top: 0.4rem;">
+                            <i class="fas fa-info-circle"></i>
+                            After adding conventional ingredients, click <strong>Map counterpart →</strong> on each
+                            assessed ingredient to link them. The engine calculates the full recipe delta.
+                        </small>
                     </div>
+
+                    <!-- Legacy single-ingredient hidden select — kept for backward-compat with auto-detect path -->
+                    <input type="hidden" id="comparisonBaseline" value="auto" onchange="updateComparison()">
 
                     <div class="form-group" style="margin-top: 1rem;">
     <div style="display: flex; align-items: center; gap: 0.5rem;">
