@@ -282,6 +282,13 @@ async function calculateImpact() {
     if (loadingElement) loadingElement.classList.remove('hidden');
     if (resultsContent)  resultsContent.classList.add('hidden');
 
+    // Lift entericParams from primaryData so twin can access them
+    selectedIngredients.forEach(ing => {
+        if (ing.primaryData && ing.primaryData.entericParams && !ing.entericParams) {
+            ing.entericParams = ing.primaryData.entericParams;
+        }
+    });
+
     const input = {
         product: {
             name:               document.getElementById('productName')?.value || 'Unnamed Product',
