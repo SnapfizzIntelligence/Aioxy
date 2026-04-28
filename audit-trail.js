@@ -279,8 +279,8 @@ ingredients.forEach(ing => {
 
             // Read IPCC values stored by processIngredients() under universal_adjustments
             const ua = ing.universal_adjustments || {};
-            const entericApplied = ua.adjustments?.enteric_applied != null ? ua.adjustments.enteric_applied.toFixed(4) : 'N/A';
-            const manureApplied  = ua.adjustments?.manure_n2o_applied != null ? ua.adjustments.manure_n2o_applied.toFixed(4) : 'N/A';
+            const entericApplied = ua.enteric_applied != null ? ua.enteric_applied.toFixed(4) : 'N/A';
+            const manureApplied  = ua.manure_n2o_applied != null ? ua.manure_n2o_applied.toFixed(4) : 'N/A';
 
             // Derive EF display values from primaryData entericParams if present
             const ep = pd.entericParams || {};
