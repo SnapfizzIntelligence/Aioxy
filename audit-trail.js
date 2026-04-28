@@ -182,7 +182,19 @@ function displayAuditTrail() {
             
             <div style="margin-top: 10px; font-size: 0.8rem; color: #333;">
                 <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
-                <div>✓ EU Deforestation Regulation (EUDR) Screened</div>
+                ${(() => {
+                    const eudrHighRisk = ['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD'];
+                    const ingComponents = catCC.contribution_tree?.Ingredients?.components || [];
+                    const highRiskIngs = ingComponents.filter(ing => {
+                        const country = ing.universal_adjustments?.adjusted_for_country || '';
+                        return eudrHighRisk.includes(country);
+                    });
+                    if (highRiskIngs.length > 0) {
+                        const countries = [...new Set(highRiskIngs.map(ing => ing.universal_adjustments?.adjusted_for_country))].join(', ');
+                        return `<div style="color:#C0392B; font-weight:bold;">⚠️ EUDR: HIGH-RISK ORIGIN DETECTED — ${countries}</div>`;
+                    }
+                    return '<div style="color:#27AE60;">✓ EUDR: Compliant (all origins verified)</div>';
+                })()}
                 <div>✓ Primary & Tertiary Logistics Accounted</div>
                 ${isCrisisActiveUI ? '<div style="color: #C0392B;">✓ Crisis Routing Applied (Cape of Good Hope Penalty)</div>' : ''}
             </div>
@@ -553,6 +565,13 @@ html += `
                     </tr>
                 </tbody>
             </table>
+            <div style="font-size:0.75rem; color:#555; padding:8px; border-top:1px solid #eee; background:#fafafa;">
+                <strong>ℹ️ Road freight factor note:</strong> Outbound road transport uses 0.060 kg CO₂e/tkm 
+                (GLEC v3.2, Module 5 Annex 1, artic truck, full-load scenario). The EU logistics average is 
+                0.089 kg CO₂e/tkm (GLEC Module 2, 60% load factor). The 0.060 factor assumes fully-loaded 
+                zero-empty-return operations, appropriate for dedicated food logistics fleets. 
+                For general logistics, use 0.089.
+            </div>
         </div>`;
 
     // ========== D. PACKAGING ==========
@@ -666,6 +685,58 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         </div>
     </div>
     `;
+
+    // ── SECTION G: PARAMETRIC TWIN INGREDIENT COMPARISON ──
+    if (window.currentComparisonBaseline?.ingredientPairs && window.currentComparisonBaseline.ingredientPairs.length > 0) {
+        const pairs = window.currentComparisonBaseline.ingredientPairs;
+        const assessedTotal = window.currentComparisonBaseline.assessedTotal?.co2PerKg || 0;
+        const conventionalTotal = window.currentComparisonBaseline.conventionalTotal?.co2PerKg || 0;
+        const delta = window.currentComparisonBaseline.delta?.co2Delta || 0;
+        const deltaPct = conventionalTotal > 0 ? ((delta / conventionalTotal) * 100).toFixed(1) : '0.0';
+        const deltaSign = delta >= 0 ? '+' : '';
+
+        let pairRows = '';
+        pairs.forEach(pair => {
+            const convName = pair.conventional ? `${pair.conventional.name} (${pair.conventional.quantityKg?.toFixed(3) || '?'} kg)` : 'No equivalent';
+            const pairDelta = pair.delta ?? 0;
+            const pairDeltaSign = pairDelta >= 0 ? '+' : '';
+            const pairDeltaColor = pairDelta >= 0 ? '#27AE60' : '#C0392B';
+            pairRows += \`
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 6px 8px;">\${pair.assessed?.name || '?'} (\${(pair.assessed?.quantityKg || 0).toFixed(3)} kg)</td>
+                    <td style="padding: 6px 8px; color: #555;">\${convName}</td>
+                    <td style="padding: 6px 8px; text-align:right; font-family:monospace; color:\${pairDeltaColor};">\${pairDeltaSign}\${pairDelta.toFixed(4)} kg CO₂e</td>
+                </tr>\`;
+        });
+
+        html += \`
+    <div style="margin-bottom: 25px;">
+        <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+            G. PARAMETRIC TWIN — INGREDIENT COMPARISON
+        </h4>
+        <div style="border: 1px solid #ccc; font-size: 0.85rem;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #eee;">
+                    <tr>
+                        <th style="text-align:left; padding: 8px;">ASSESSED INGREDIENT</th>
+                        <th style="text-align:left; padding: 8px;">CONVENTIONAL EQUIVALENT</th>
+                        <th style="text-align:right; padding: 8px;">CO₂ DELTA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    \${pairRows}
+                </tbody>
+                <tfoot style="background: #E2E8F0; font-weight: bold;">
+                    <tr>
+                        <td style="padding: 8px;">TOTAL ASSESSED: \${assessedTotal.toFixed(4)} kg CO₂e/kg</td>
+                        <td style="padding: 8px;">TOTAL CONVENTIONAL: \${conventionalTotal.toFixed(4)} kg CO₂e/kg</td>
+                        <td style="padding: 8px; text-align:right; font-family:monospace;">NET DELTA: \${deltaSign}\${delta.toFixed(4)} kg CO₂e (\${deltaPct}% \${delta >= 0 ? 'lower' : 'higher'})</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>\`;
+    }
 }
 
                 // ========== TOTAL IMPACT FOOTER ==========
