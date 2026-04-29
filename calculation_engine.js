@@ -1855,7 +1855,7 @@ const gasCO2 = gasM3PerKg * 2.13;
                 .join(', ');
 
             comparisonBaseline = {
-                name:            `Recipe Twin: ${conventionalNames}`,
+                name:            compIn.conventionalBaselineName || `Recipe Twin: ${conventionalNames}`,
                 co2PerKg:        twinResult.conventionalTotal.co2PerKg,
                 waterPerKg:      twinResult.conventionalTotal.waterPerKg,
                 is_custom:       false,
