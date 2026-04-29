@@ -565,12 +565,21 @@ function updateResultsUI(results) {
     displayCompleteAuditTrail();
     displayISOCompliance();
 
-    // FIX 5: Refresh PEF Scoreboard if it's currently visible
-    const scorecardTab = document.getElementById('pef-scorecard-tab');
-    if (scorecardTab && !scorecardTab.classList.contains('hidden')) {
-        if (typeof displayFullPefScorecard === 'function') {
-            displayFullPefScorecard();
-        }
+    // FIX 1: Refresh Transparency Log whenever new results arrive,
+    // regardless of which tab is currently visible.
+    if (typeof displayAuditTrail === 'function' && auditTrailData && Object.keys(auditTrailData).length > 0) {
+        displayAuditTrail();
+    }
+
+    // FIX 2: Refresh PEF Scoreboard unconditionally (not only when the tab is visible).
+    if (typeof displayFullPefScorecard === 'function' && finalPefResults && Object.keys(finalPefResults).length > 0) {
+        displayFullPefScorecard();
+    }
+
+    // FIX 3: Refresh DPP tab content whenever new results arrive,
+    // regardless of which tab is currently visible.
+    if (typeof generateDPP === 'function' && currentDPPId !== null) {
+        generateDPP();
     }
 }
 
