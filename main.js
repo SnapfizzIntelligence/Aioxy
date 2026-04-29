@@ -330,7 +330,21 @@ async function calculateImpact() {
             recycledPct:      parseFloat(document.getElementById('recycledContent')?.value)   || 30,
             eolDestination:   document.getElementById('packagingEoL')?.value                  || 'eu_average'
         },
-        comparison: {
+        comparison: (() => {
+            // FIX 1: Auto-match conventionalBaselineIngredients to selectedIngredients by index
+            for (let i = 0; i < selectedIngredients.length; i++) {
+                const ing = selectedIngredients[i];
+                if (!ing.conventionalCounterpart && conventionalBaselineIngredients[i]) {
+                    const cbi = conventionalBaselineIngredients[i];
+                    ing.conventionalCounterpart = {
+                        id:   cbi.id,
+                        name: cbi.name,
+                        pef:  window.aioxyData.ingredients[cbi.id]?.data?.pef || null
+                    };
+                    ing.conventionalQuantity = cbi.quantity || ing.quantity;
+                }
+            }
+            return {
             baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
             customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
             useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false,
@@ -354,7 +368,8 @@ async function calculateImpact() {
                         entericParams: null
                     }
                 }))
-        }
+            };
+        })()
     };
 
     try {
