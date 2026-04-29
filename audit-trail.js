@@ -50,7 +50,12 @@ function displayFullPefScorecard() {
     const unified = getUnifiedMetrics(finalPefResults, massBalanceData);
     const totalWeight = unified.weightUsed;
     
-    for (const category in finalPefResults) {
+    const SCORABLE_CATEGORIES = Object.keys(finalPefResults).filter(cat =>
+        cat !== 'Climate Change - Fossil' &&
+        cat !== 'Climate Change - Biogenic' &&
+        cat !== 'Climate Change - Land Use'
+    );
+    for (const category of SCORABLE_CATEGORIES) {
         const row = document.createElement('tr');
         const unit = pefCategories[category]?.unit || finalPefResults[category]?.unit || '';
         const perKgValue = totalWeight > 0 ? finalPefResults[category].total / totalWeight : 0;
@@ -684,7 +689,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
                 </tr>
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 6px 0;"><strong>3. Cloned Logistics</strong></td>
-                    <td style="text-align: right; font-family: monospace;">${bd.logistics ? bd.logistics.toFixed(4) : '0.0000'} kg CO₂e</td>
+                    <td style="text-align: right; font-family: monospace;">${bd.transport ? bd.transport.toFixed(4) : '0.0000'} kg CO₂e</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 6px 0;"><strong>4. Cloned Packaging</strong></td>
@@ -706,9 +711,9 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     // ── SECTION G: PARAMETRIC TWIN INGREDIENT COMPARISON ──
     if (window.currentComparisonBaseline?.ingredientPairs && window.currentComparisonBaseline.ingredientPairs.length > 0) {
         const pairs = window.currentComparisonBaseline.ingredientPairs;
-        const assessedTotal = window.currentComparisonBaseline.assessedTotal?.co2PerKg || 0;
+        const assessedTotal = window.currentComparisonBaseline.assessed_co2PerKg || 0;
         const conventionalTotal = window.currentComparisonBaseline.conventionalTotal?.co2PerKg || 0;
-        const delta = window.currentComparisonBaseline.delta?.co2Delta || 0;
+        const delta = window.currentComparisonBaseline.delta || 0;
         const deltaPct = conventionalTotal > 0 ? ((delta / conventionalTotal) * 100).toFixed(1) : '0.0';
         const deltaSign = delta >= 0 ? '+' : '';
 
@@ -839,7 +844,14 @@ function generateDPP() {
 
     // FIX 3: Render environmental metrics on DPP tab
     if (finalPefResults && Object.keys(finalPefResults).length > 0) {
+    // FIX 7: Remove any existing metrics container to prevent duplicates on tab re-visit
+        const existingMetrics = document.getElementById('dpp-metrics-container');
+        if (existingMetrics) {
+            existingMetrics.remove();
+        }
+
         const metricsContainer = document.createElement('div');
+        metricsContainer.id = 'dpp-metrics-container';
         metricsContainer.style.cssText = 'margin-top:1.5rem;padding:1rem;background:#f8f9fa;border-radius:8px;';
 
         const co2   = finalPefResults?.['Climate Change']?.total                  || 0;
