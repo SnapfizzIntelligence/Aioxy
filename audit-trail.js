@@ -67,7 +67,7 @@ function displayFullPefScorecard() {
             <td class="pef-unit">${unit}</td>
             <td class="pef-value">${perKgDisplay}</td>
             <td>
-                <span class="dqr-badge ${dqrQuality.class}">
+                <span class="dqr-badge ${dqrQuality.class}" title="Overall DQR: ${(auditTrailData.dqr_summary?.overall_dqr || 0).toFixed(2)}">
                     <i class="fas fa-star"></i>
                     ${dqrQuality.level}
                 </span>
@@ -76,6 +76,12 @@ function displayFullPefScorecard() {
         `;
         tbody.appendChild(row);
     }
+
+    // FIX 7: Add footnote clarifying that DQR shown is product-level, not per-category
+    const footnote = document.createElement('div');
+    footnote.style.cssText = 'font-size:0.7rem;color:#718096;margin-top:0.5rem;font-style:italic;';
+    footnote.textContent = 'DQR shown is the overall product-level Data Quality Rating. Per-category DQR is not available from AGRIBALYSE 3.2 background data. For audit-grade assessments, primary data with per-category DQR scoring is recommended.';
+    tbody.parentNode.parentNode.appendChild(footnote);
     
     if (ingredientDataQuality && auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs) {
         let qualityHTML = '';
@@ -633,6 +639,17 @@ if (allEoL.length > 0) {
             `).join('')}
         </div>
     </div>`;
+    } else {
+    // FIX 6: Show empty-state indicator so auditors know EoL was considered
+    html += `
+    <div style="margin-bottom: 25px;">
+        <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+            E. END-OF-LIFE TREATMENT (GHG Protocol: Scope 3 Cat 12)
+        </h4>
+        <div style="border: 1px solid #ccc; padding: 10px; font-size: 0.8rem; color: #718096; font-style: italic;">
+            No end-of-life treatment applicable for this product configuration.
+        </div>
+    </div>`;
     }
     
 // ============================================================
@@ -766,12 +783,9 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     // Render HTML to page
     auditContent.innerHTML = html;
 
-    // Generate QR Code and add to placeholder
-    const qrBox = document.getElementById('dpp-qr-code');
-    if (qrBox && typeof QRCode !== 'undefined') {
-        qrBox.innerHTML = '';
-        
-        const qrTextPayload = `AIOXY VERIFIED AUDIT
+    // FIX 2: Generate QR code for audit trail header's dpp-qr-code element
+    // Build qrTextPayload before setTimeout so it captures current closure values
+    const qrTextPayload = `AIOXY VERIFIED AUDIT
 -------------------------
 DPP ID: ${auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
 Product: ${productName}
@@ -779,15 +793,20 @@ Impact: ${totalImpact.toFixed(4)} kg CO₂e/kg
 Method: PEF 3.1 / CSRD
 Date: ${dateStr}`;
 
-        new QRCode(qrBox, {
-            text: qrTextPayload,
-            width: 120,
-            height: 120,
-            colorDark: "#0A2540",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
-        });
-    }
+    setTimeout(() => {
+        const qrBox = document.getElementById('dpp-qr-code');
+        if (qrBox && typeof QRCode !== 'undefined') {
+            qrBox.innerHTML = '';
+            new QRCode(qrBox, {
+                text: qrTextPayload,
+                width: 120,
+                height: 120,
+                colorDark: "#0A2540",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+    }, 100);
         }
 
 // ================== DIGITAL TRANSPARENCY CARD ==================
@@ -817,7 +836,33 @@ function generateDPP() {
     };
     
     console.log("📦 DPP Data Ready for Backend Storage:", transparencyData);
-    
+
+    // FIX 3: Render environmental metrics on DPP tab
+    if (finalPefResults && Object.keys(finalPefResults).length > 0) {
+        const metricsContainer = document.createElement('div');
+        metricsContainer.style.cssText = 'margin-top:1.5rem;padding:1rem;background:#f8f9fa;border-radius:8px;';
+
+        const co2   = finalPefResults?.['Climate Change']?.total                  || 0;
+        const water = finalPefResults?.['Water Use/Scarcity (AWARE)']?.total      || 0;
+        const land  = finalPefResults?.['Land Use']?.total                        || 0;
+        const dqr   = auditTrailData?.dqr_summary?.overall_dqr                    || 0;
+
+        metricsContainer.innerHTML = `
+            <h4 style="margin:0 0 1rem 0;color:#0A2540;">Environmental Metrics</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                <div><strong>Climate Change:</strong> ${co2.toFixed(4)} kg CO2e</div>
+                <div><strong>Water Scarcity:</strong> ${water.toFixed(4)} m³ world eq.</div>
+                <div><strong>Land Use:</strong> ${land.toFixed(2)} Pt</div>
+                <div><strong>Data Quality:</strong> DQR ${dqr.toFixed(2)}</div>
+            </div>
+        `;
+
+        const qrContainer = document.getElementById('qrcode')?.parentNode;
+        if (qrContainer) {
+            qrContainer.appendChild(metricsContainer);
+        }
+    }
+
     const qrElement = document.getElementById('qrcode');
     if (!qrElement) return;
     
