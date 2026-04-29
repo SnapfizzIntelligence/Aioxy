@@ -1764,26 +1764,31 @@
             packaging:     sharedPackagingCO2
         };
 
+        // FIX 4: Compute total recipe mass so that absolute batch totals can be
+        // converted to per-kg values before being stored in the *PerKg fields.
+        const totalRecipeMassKgForPerKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
+        const safeMassKg = totalRecipeMassKgForPerKg > CONSTANTS.MATH.ZERO ? totalRecipeMassKgForPerKg : 1;
+
         return {
             name: `Parametric Twin: ${assessedRecipe.map(i => i.name || i.id).join(', ')} vs Conventional`,
             assessedTotal: {
-                co2PerKg:        assessedCO2Total,
-                waterPerKg:      assessedTotals.totalWater,
-                landUsePerKg:    assessedTotals.totalLand,
-                fossilPerKg:     assessedFossilMJ,
-                fossilCO2PerKg:  assessedFossilCO2,
-                biogenicCO2PerKg: assessedBiogenicCO2,
-                dlucCO2PerKg:    assessedTotals.dlucCO2,
+                co2PerKg:        assessedCO2Total      / safeMassKg,
+                waterPerKg:      assessedTotals.totalWater / safeMassKg,
+                landUsePerKg:    assessedTotals.totalLand  / safeMassKg,
+                fossilPerKg:     assessedFossilMJ       / safeMassKg,
+                fossilCO2PerKg:  assessedFossilCO2      / safeMassKg,
+                biogenicCO2PerKg: assessedBiogenicCO2   / safeMassKg,
+                dlucCO2PerKg:    assessedTotals.dlucCO2  / safeMassKg,
                 breakdown:       assessedBreakdown
             },
             conventionalTotal: {
-                co2PerKg:        conventionalCO2Total,
-                waterPerKg:      conventionalTotals.totalWater,
-                landUsePerKg:    conventionalTotals.totalLand,
-                fossilPerKg:     conventionalFossilMJ,
-                fossilCO2PerKg:  conventionalFossilCO2,
-                biogenicCO2PerKg: conventionalBiogenicCO2,
-                dlucCO2PerKg:    conventionalTotals.dlucCO2,
+                co2PerKg:        conventionalCO2Total       / safeMassKg,
+                waterPerKg:      conventionalTotals.totalWater / safeMassKg,
+                landUsePerKg:    conventionalTotals.totalLand  / safeMassKg,
+                fossilPerKg:     conventionalFossilMJ        / safeMassKg,
+                fossilCO2PerKg:  conventionalFossilCO2       / safeMassKg,
+                biogenicCO2PerKg: conventionalBiogenicCO2    / safeMassKg,
+                dlucCO2PerKg:    conventionalTotals.dlucCO2   / safeMassKg,
                 breakdown:       conventionalBreakdown
             },
             delta: conventionalCO2Total - assessedCO2Total,
