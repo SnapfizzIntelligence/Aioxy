@@ -1786,7 +1786,8 @@
                 dlucCO2PerKg:    conventionalTotals.dlucCO2,
                 breakdown:       conventionalBreakdown
             },
-            delta: {
+            delta: conventionalCO2Total - assessedCO2Total,
+            deltaBreakdown: {
                 co2Delta:    conventionalCO2Total  - assessedCO2Total,
                 waterDelta:  conventionalTotals.totalWater - assessedTotals.totalWater,
                 landDelta:   conventionalTotals.totalLand  - assessedTotals.totalLand,
