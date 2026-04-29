@@ -5,6 +5,7 @@
 
 // ================== GLOBAL VARIABLES ==================
 var selectedIngredients = [];
+var conventionalBaselineIngredients = []; // Conventional baseline recipe (full recipe swap)
 var currentChart = null;
 var currentDPPId = null;
 var finalPefResults = {};
@@ -371,20 +372,21 @@ async function calculateImpact() {
         // Persist session state for business-case tab
         try {
             localStorage.setItem('aioxy_pitch_state', JSON.stringify({
-                ingredients:           selectedIngredients,
-                productName:           input.product.name,
-                volume:                currentAnnualVolume,
-                manufacturingCountry:  input.manufacturing.country,
-                processingMethod:      input.manufacturing.processingMethod,
-                transportMode:         input.transport.mode,
-                transportDistance:     input.transport.distanceKm,
-                packagingMaterial:     input.packaging.material,
-                energySource:          input.manufacturing.energySource,
-                usePrimaryFactoryData: input.manufacturing.usePrimaryFactoryData,
-                recycledContent:       input.packaging.recycledPct,
-                packagingEoL:          input.packaging.eolDestination,
-                crisisRoutingToggle:   input.transport.crisisRouting,
-                timestamp:             Date.now()
+                ingredients:                     selectedIngredients,
+                conventionalBaselineIngredients: conventionalBaselineIngredients,
+                productName:                     input.product.name,
+                volume:                          currentAnnualVolume,
+                manufacturingCountry:            input.manufacturing.country,
+                processingMethod:                input.manufacturing.processingMethod,
+                transportMode:                   input.transport.mode,
+                transportDistance:               input.transport.distanceKm,
+                packagingMaterial:               input.packaging.material,
+                energySource:                    input.manufacturing.energySource,
+                usePrimaryFactoryData:           input.manufacturing.usePrimaryFactoryData,
+                recycledContent:                 input.packaging.recycledPct,
+                packagingEoL:                    input.packaging.eolDestination,
+                crisisRoutingToggle:             input.transport.crisisRouting,
+                timestamp:                       Date.now()
             }));
         } catch(e) { /* localStorage may be unavailable in some environments */ }
 
@@ -412,6 +414,9 @@ async function calculateImpact() {
 function startNewAudit() {
     if (!confirm("Are you sure you want to start a new audit? This will clear all current data.")) return;
     localStorage.removeItem('aioxy_pitch_state');
+    conventionalBaselineIngredients = [];
+    window.conventionalBaselineIngredients = conventionalBaselineIngredients;
+    if (typeof updateConventionalIngredientList === 'function') updateConventionalIngredientList();
     selectedIngredients = []; currentDPPId = null; finalPefResults = {}; massBalanceData = {}; auditTrailData = {}; currentComparisonBaseline = null;
 
     const fields = [
@@ -537,6 +542,8 @@ function initApp() {
         setupIngredientSearch();
         setupBaselineSearch();
         setupCounterpartSearch();
+        if (typeof setupConventionalSearch === 'function') setupConventionalSearch();
+        if (typeof populateConventionalCountrySelect === 'function') populateConventionalCountrySelect();
         setupDemoData();
         updateTabIndicator();
 
@@ -546,6 +553,12 @@ function initApp() {
                 const p = JSON.parse(savedState);
                 if (Date.now() - p.timestamp < 43200000) {
                     selectedIngredients = p.ingredients || [];
+                    if (p.conventionalBaselineIngredients && p.conventionalBaselineIngredients.length > 0) {
+                        conventionalBaselineIngredients = p.conventionalBaselineIngredients;
+                        window.conventionalBaselineIngredients = conventionalBaselineIngredients;
+                        if (typeof updateConventionalIngredientList === 'function') updateConventionalIngredientList();
+                        console.log('✅ [ConvBaseline] Restored ' + conventionalBaselineIngredients.length + ' conventional ingredients');
+                    }
                     if (p.productName)           document.getElementById('productName').value           = p.productName;
                     if (p.manufacturingCountry)  document.getElementById('manufacturingCountry').value  = p.manufacturingCountry;
                     if (p.processingMethod)      document.getElementById('processingMethod').value      = p.processingMethod;
