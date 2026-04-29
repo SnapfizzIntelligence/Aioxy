@@ -345,6 +345,7 @@ async function calculateImpact() {
                 }
             }
             return {
+            conventionalBaselineName: document.getElementById('conventionalBaselineName')?.value?.trim() || null,
             baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
             customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
             useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false,
