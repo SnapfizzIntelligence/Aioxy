@@ -2276,7 +2276,7 @@ let _counterpartSelectedPef     = null;
  * openCounterpartModal(index)
  * Opens the counterpart search modal for the ingredient at `index`.
  */
-function openCounterpartModal(index) {
+function openCounterpartModal(index) { /* original */
     _counterpartIngredientIndex = index;
     _counterpartSelectedId      = null;
     _counterpartSelectedName    = null;
@@ -2315,6 +2315,11 @@ function openCounterpartModal(index) {
     // Show modal (matches pattern of supplierModal — remove hidden, set flex)
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
+
+    // Inject conventional baseline quick-select if baseline ingredients exist
+    if (typeof _injectBaselineQuickPicks === 'function') {
+        _injectBaselineQuickPicks();
+    }
 }
 
 /**
@@ -2487,4 +2492,339 @@ function setupCounterpartSearch() {
 // · displayTemporalDiscounting — not present
 // · organic_bonus_applied      — not present
 // · organic_ratio (display logic) — not present
+
+// ================== CONVENTIONAL BASELINE RECIPE MANAGEMENT ==================
+// Global array — mirrors selectedIngredients but for the conventional side
+var conventionalBaselineIngredients = [];
+
+// ── Add conventional ingredient from UI ──────────────────────────────────────
+function addConventionalIngredient() {
+    const idInput   = document.getElementById('conventionalSelect');
+    const qtyInput  = document.getElementById('conventionalQuantity');
+    const originSel = document.getElementById('conventionalOriginSelect');
+    const searchEl  = document.getElementById('conventionalSearch');
+
+    const ingredientId = idInput ? idInput.value : '';
+    const quantity     = parseFloat(qtyInput ? qtyInput.value : '0');
+    const origin       = originSel ? originSel.value : 'FR';
+
+    if (!ingredientId) {
+        alert('Please search and select a conventional ingredient first.');
+        return;
+    }
+    if (isNaN(quantity) || quantity <= 0) {
+        alert('Please enter a valid quantity (kg).');
+        return;
+    }
+
+    const db = window.aioxyData && window.aioxyData.ingredients;
+    if (!db || !db[ingredientId]) {
+        alert('Ingredient not found in database.');
+        return;
+    }
+
+    const ingData = db[ingredientId];
+    conventionalBaselineIngredients.push({
+        id:              ingredientId,
+        name:            ingData.name || 'Unknown',
+        quantity:        quantity,
+        originCountry:   origin,
+        processingState: 'raw',
+        co2PerKg:        ingData.data?.pef?.['Climate Change'] || 0,
+        dqr:             ingData.data?.metadata?.dqr_overall   || 2.5
+    });
+
+    console.log(`✅ [ConvBaseline] Added: ${ingData.name} × ${quantity} kg from ${origin}`);
+
+    updateConventionalIngredientList();
+
+    if (idInput)   idInput.value   = '';
+    if (searchEl)  searchEl.value  = '';
+    if (qtyInput)  qtyInput.value  = '0.150';
+    if (originSel) originSel.value = 'FR';
+}
+
+// ── Remove ────────────────────────────────────────────────────────────────────
+function removeConventionalIngredient(index) {
+    conventionalBaselineIngredients.splice(index, 1);
+    updateConventionalIngredientList();
+    console.log(`🗑️ [ConvBaseline] Removed index ${index}`);
+}
+
+// ── Update quantity ───────────────────────────────────────────────────────────
+window.updateConventionalIngredientQuantity = function(index, newQuantity) {
+    if (conventionalBaselineIngredients[index]) {
+        conventionalBaselineIngredients[index].quantity = parseFloat(newQuantity) || 0;
+    }
+};
+
+// ── Update processing state ───────────────────────────────────────────────────
+window.updateConventionalIngredientProcessing = function(index, value) {
+    if (conventionalBaselineIngredients[index]) {
+        conventionalBaselineIngredients[index].processingState = value;
+    }
+    console.log(`⚙️ [ConvBaseline] Processing → ${value}`);
+};
+
+// ── Update origin country ─────────────────────────────────────────────────────
+window.updateConventionalIngredientOrigin = function(index, value) {
+    if (conventionalBaselineIngredients[index]) {
+        conventionalBaselineIngredients[index].originCountry = value;
+    }
+};
+
+// ── Render the conventional list in the UI ────────────────────────────────────
+function updateConventionalIngredientList() {
+    const list = document.getElementById('conventionalIngredientList');
+    if (!list) return;
+
+    if (conventionalBaselineIngredients.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 1.25rem; color: var(--gray); font-size: 0.85rem;">
+                <i class="fas fa-plus-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; opacity: 0.4;"></i>
+                No conventional ingredients yet — add them above, then map counterparts in your recipe
+            </div>`;
+        return;
+    }
+
+    function buildOriginOptions(currentOrigin) {
+        const countries = window.aioxyData?.countries || {};
+        const sorted = Object.keys(countries).sort((a, b) =>
+            countries[a].name.localeCompare(countries[b].name));
+        const frFirst = sorted.filter(c => c === 'FR');
+        const rest    = sorted.filter(c => c !== 'FR');
+        return [...frFirst, ...rest].map(code => {
+            const sel = code === (currentOrigin || 'FR') ? 'selected' : '';
+            const flag = (() => {
+                try { return String.fromCodePoint(...code.toUpperCase().split('').map(c => 127397 + c.charCodeAt())); }
+                catch(e) { return ''; }
+            })();
+            return `<option value="${code}" ${sel}>${flag} ${countries[code]?.name || code}</option>`;
+        }).join('');
+    }
+
+    list.innerHTML = conventionalBaselineIngredients.map((ing, index) => {
+        const dqrClass = ing.dqr <= 1.6 ? 'dqr-excellent'
+                       : ing.dqr <= 2.0 ? 'dqr-very-good'
+                       : ing.dqr <= 3.0 ? 'dqr-good'
+                       : 'dqr-poor';
+        const dqrLabel = ing.dqr <= 1.6 ? 'Excellent'
+                       : ing.dqr <= 2.0 ? 'Very Good'
+                       : ing.dqr <= 3.0 ? 'Good'
+                       : 'Fair/Poor';
+
+        return `
+        <div class="ingredient-item" style="border-bottom: 1px solid #B2DFDB; padding: 0.9rem 1rem;">
+            <div class="ingredient-info" style="flex: 1;">
+                <div class="ingredient-name" style="color: #2C7A7B; font-weight: 700;">${ing.name}</div>
+                <div class="ingredient-stats" style="font-size: 0.78rem; color: var(--gray); margin-top: 0.2rem;">
+                    ${ing.co2PerKg.toFixed(3)} kg CO₂e/kg
+                    <span class="dqr-badge ${dqrClass}" style="margin-left: 0.5rem; font-size: 0.7rem;">DQR: ${dqrLabel}</span>
+                </div>
+                <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                    <div>
+                        <span style="font-size: 0.7rem; font-weight: bold; color: var(--primary);">Processing:</span>
+                        <select style="font-size: 0.7rem; padding: 0.2rem 0.4rem; margin-left: 0.2rem; border-radius: 4px; border: 1px solid var(--border);"
+                                onchange="updateConventionalIngredientProcessing(${index}, this.value)">
+                            <option value="raw"           ${ing.processingState === 'raw'           ? 'selected' : ''}>Raw (Farm Gate)</option>
+                            <option value="dry_milled"    ${ing.processingState === 'dry_milled'    ? 'selected' : ''}>Dry Milled (Flour)</option>
+                            <option value="wet_extracted" ${ing.processingState === 'wet_extracted' ? 'selected' : ''}>Wet Extracted</option>
+                            <option value="isolated"      ${ing.processingState === 'isolated'      ? 'selected' : ''}>Isolated (Protein Isolate)</option>
+                            <option value="fermentation"  ${ing.processingState === 'fermentation'  ? 'selected' : ''}>Precision Fermentation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.7rem; font-weight: bold; color: var(--primary);">Origin:</span>
+                        <select style="font-size: 0.7rem; padding: 0.2rem 0.4rem; margin-left: 0.2rem; border-radius: 4px; border: 1px solid var(--border);"
+                                onchange="updateConventionalIngredientOrigin(${index}, this.value)">
+                            ${buildOriginOptions(ing.originCountry)}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="ingredient-actions" style="align-items: center; gap: 0.5rem;">
+                <input type="number" class="quantity-input"
+                       value="${ing.quantity}" step="0.001" min="0"
+                       style="width: 85px;"
+                       onchange="updateConventionalIngredientQuantity(${index}, this.value)">
+                <button class="remove-btn" onclick="removeConventionalIngredient(${index})" title="Remove">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Keep window reference in sync (for main.js localStorage save)
+    window.conventionalBaselineIngredients = conventionalBaselineIngredients;
+}
+
+// ── Typeahead search for #conventionalSearch ──────────────────────────────────
+function setupConventionalSearch() {
+    const searchInput = document.getElementById('conventionalSearch');
+    const dropdown    = document.getElementById('conventionalDropdown');
+    const hiddenSel   = document.getElementById('conventionalSelect');
+
+    if (!searchInput || !dropdown) {
+        console.warn('⚠️ [ConvBaseline] Search elements not found — skipping setup');
+        return;
+    }
+
+    const ingredients = window.aioxyData?.ingredients || {};
+    const searchIndex = Object.entries(ingredients).map(([id, data]) => ({
+        id,
+        name:    data.name     || 'Unknown',
+        name_fr: data.name_fr  || '',
+        co2:     data.data?.pef?.['Climate Change'] || 0,
+        dqr:     data.data?.metadata?.dqr_overall   || 2.5
+    }));
+
+    console.log(`🔍 [ConvBaseline] Indexed ${searchIndex.length} ingredients`);
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (query.length < 2) { dropdown.classList.add('hidden'); return; }
+
+        const matches = searchIndex
+            .filter(item =>
+                (item.name   || '').toLowerCase().includes(query) ||
+                (item.name_fr || '').toLowerCase().includes(query))
+            .slice(0, 15);
+
+        if (!matches.length) {
+            dropdown.innerHTML = '<li class="no-results">❌ No ingredients found</li>';
+        } else {
+            dropdown.innerHTML = matches.map(item => {
+                const safeName = (item.name || 'Unknown').replace(/'/g, "\'");
+                return `
+                <li onclick="selectConventionalIngredient('${item.id}', '${safeName}')">
+                    <div class="ingredient-name">${item.name}</div>
+                    <div class="ingredient-meta">
+                        CO₂e: ${item.co2.toFixed(3)} kg/kg | DQR: ${item.dqr.toFixed(1)}
+                        ${item.name_fr ? ' | ' + item.name_fr.substring(0, 40) : ''}
+                    </div>
+                </li>`;
+            }).join('');
+        }
+        dropdown.classList.remove('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            dropdown.classList.add('hidden');
+            searchInput.value = '';
+            if (hiddenSel) hiddenSel.value = '';
+        }
+    });
+}
+
+window.selectConventionalIngredient = function(id, name) {
+    const sel    = document.getElementById('conventionalSelect');
+    const search = document.getElementById('conventionalSearch');
+    const drop   = document.getElementById('conventionalDropdown');
+    if (sel)    sel.value    = id;
+    if (search) search.value = name;
+    if (drop)   drop.classList.add('hidden');
+    console.log(`⚖️ [ConvBaseline] Selected: ${name} (${id})`);
+};
+
+// ── Populate #conventionalOriginSelect ────────────────────────────────────────
+function populateConventionalCountrySelect() {
+    const sel = document.getElementById('conventionalOriginSelect');
+    if (!sel) return;
+    const countries = window.aioxyData?.countries || {};
+    const sorted = Object.keys(countries)
+        .sort((a, b) => countries[a].name.localeCompare(countries[b].name))
+        .filter(c => c !== 'FR'); // FR already in HTML as default
+
+    sorted.forEach(code => {
+        const flag = (() => {
+            try { return String.fromCodePoint(...code.toUpperCase().split('').map(c => 127397 + c.charCodeAt())); }
+            catch(e) { return ''; }
+        })();
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = `${flag} ${countries[code].name}`;
+        sel.appendChild(opt);
+    });
+    console.log(`✅ [ConvBaseline] Country select populated (${sorted.length + 1} countries)`);
+}
+
+// ── Patch openCounterpartModal to show baseline quick-select at top ────────────
+(function patchOpenCounterpartModal() {
+    const _original = window.openCounterpartModal;
+    if (typeof _original !== 'function') {
+        // openCounterpartModal is defined later in the same file; retry once DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const _late = window.openCounterpartModal;
+            if (typeof _late === 'function' && !_late._patched) {
+                applyCounterpartPatch(_late);
+            }
+        });
+        return;
+    }
+    applyCounterpartPatch(_original);
+})();
+
+function applyCounterpartPatch(originalFn) {
+    if (originalFn._patched) return;
+    window.openCounterpartModal = function(index) {
+        originalFn(index);
+        _injectBaselineQuickPicks();
+    };
+    window.openCounterpartModal._patched = true;
+    console.log('✅ [ConvBaseline] openCounterpartModal patched with baseline quick-select');
+}
+
+function _injectBaselineQuickPicks() {
+    if (conventionalBaselineIngredients.length === 0) return;
+
+    // Remove any previous quick-pick section
+    const old = document.getElementById('baselineQuickPicks');
+    if (old) old.remove();
+
+    const ul = document.getElementById('counterpartResults');
+    if (!ul) return;
+
+    const section = document.createElement('div');
+    section.id = 'baselineQuickPicks';
+    section.style.cssText = 'margin-bottom: 0.75rem; border: 1.5px solid #2C7A7B; border-radius: 8px; overflow: hidden;';
+
+    const rows = conventionalBaselineIngredients.map((ing) => {
+        const safeName = ing.name.replace(/'/g, "\'");
+        return `
+        <li onclick="selectCounterpart('${ing.id}', '${safeName}', window.aioxyData.ingredients['${ing.id}'].data.pef)"
+            style="padding: 0.6rem 0.75rem; cursor: pointer; border-bottom: 1px solid #E8F5F3;
+                   background: white; list-style: none; transition: background 0.15s;"
+            onmouseover="this.style.background='#E0F2F1'"
+            onmouseout="this.style.background='white'">
+            <div style="font-weight: 600; font-size: 0.85rem; color: var(--primary);">${ing.name}</div>
+            <div style="font-size: 0.75rem; color: var(--gray);">
+                ${ing.quantity} kg | CO₂e: ${ing.co2PerKg.toFixed(3)} kg/kg | ${ing.originCountry} | ${ing.processingState}
+            </div>
+        </li>`;
+    }).join('');
+
+    section.innerHTML = `
+        <div style="background: #F0FDFA; padding: 0.5rem 0.75rem; border-bottom: 1px solid #B2DFDB;
+                    font-size: 0.75rem; font-weight: 700; color: #2C7A7B; text-transform: uppercase; letter-spacing: 0.05em;">
+            <i class="fas fa-list-check"></i> From Baseline Recipe — Quick Select
+        </div>
+        <ul style="list-style: none; padding: 0; margin: 0; max-height: 160px; overflow-y: auto;">
+            ${rows}
+        </ul>`;
+
+    ul.parentNode.insertBefore(section, ul);
+}
+
+// Expose array on window so main.js can reference it for localStorage save
+window.conventionalBaselineIngredients = conventionalBaselineIngredients;
+
+// ================== END CONVENTIONAL BASELINE RECIPE MANAGEMENT ==================
+
 console.log("✅ [AIOXY] ui.js loaded - Interface ready");
