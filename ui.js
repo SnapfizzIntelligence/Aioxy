@@ -564,6 +564,14 @@ function updateResultsUI(results) {
     displayForegroundBackground();
     displayCompleteAuditTrail();
     displayISOCompliance();
+
+    // FIX 5: Refresh PEF Scoreboard if it's currently visible
+    const scorecardTab = document.getElementById('pef-scorecard-tab');
+    if (scorecardTab && !scorecardTab.classList.contains('hidden')) {
+        if (typeof displayFullPefScorecard === 'function') {
+            displayFullPefScorecard();
+        }
+    }
 }
 
 // ================== UPDATE DATA QUALITY DISPLAY ==================
