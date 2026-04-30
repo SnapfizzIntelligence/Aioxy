@@ -32,7 +32,7 @@ from datetime import date
 #   aioxy_derived_db.js    (output, repo root)
 # ─────────────────────────────────────────────────────────────
 RAW          = "aioxy_nutrition_db"
-CIQUAL_XLS   = os.path.join(RAW, "Table_Ciqual_2020_FR_2020_07_07.xls")
+CIQUAL_XLS = os.path.join(RAW, "Table Ciqual 2020_FR_2020 07 07.xls")
 FOOD_CSV     = os.path.join(RAW, "food.csv")
 NUTRIENT_CSV = os.path.join(RAW, "food_nutrient.csv")
 CMO_XLSX     = os.path.join(RAW, "CMO-Historical-Data-Annual.xlsx")
