@@ -794,14 +794,82 @@ if (!traceability.usetox) {
                     // Primary data is stored for audit trail and future use.
                     // Do NOT apply enteric or manure calculations for farmed_fish.
                     if (pd.animalType === 'farmed_fish') {
-                        adjustments.method = 'animal_primary_data_stored';
-                        adjustments.farmed_fish_note =
-                            'FARMED FISH: feed-driven emissions model required. ' +
-                            'Enteric CH4 = 0 (no enteric fermentation in fish). ' +
-                            'Manure/N excretion into water uses aquatic pathway — ' +
-                            'deferred to Phase 2. Primary data stored for future use.';
-                        // // FARMED FISH: feed-driven emissions model required. Deferred to Phase 2.
-                        // Primary data stored for audit trail only — no flatPef adjustments.
+                        // BUGFIX FARMED_FISH: Feed-driven emissions model for farmed fish.
+                        adjustments.method = 'farmed_fish_feed_model'; // BUGFIX FARMED_FISH
+
+                        // BUGFIX FARMED_FISH: Enteric CH4 = 0. Fish have no enteric fermentation.
+                        // BUGFIX FARMED_FISH: Manure N2O = 0. N excretion handled by aquatic pathway (not modelled here).
+
+                        try { // BUGFIX FARMED_FISH
+                            // BUGFIX FARMED_FISH: Determine species key — use animalType or 'farmed_fish' default.
+                            const fishSpecies = (pd.fishSpecies || pd.animalType || 'farmed_fish'); // BUGFIX FARMED_FISH
+
+                            // BUGFIX FARMED_FISH: Look up aquaculture feed parameters from database.
+                            const aquaFeeds = window.aioxyData && window.aioxyData.aquaculture_feeds; // BUGFIX FARMED_FISH
+                            const feedParams = (aquaFeeds && (aquaFeeds[fishSpecies] || aquaFeeds['farmed_fish'])) || null; // BUGFIX FARMED_FISH
+
+                            if (feedParams) { // BUGFIX FARMED_FISH
+                                const fcr            = feedParams.FCR            || 1.5; // BUGFIX FARMED_FISH: feed conversion ratio
+                                const fishmealPct    = feedParams.fishmeal_pct   || 20;  // BUGFIX FARMED_FISH
+                                const fishOilPct     = feedParams.fish_oil_pct   || 5;   // BUGFIX FARMED_FISH
+
+                                // BUGFIX FARMED_FISH: Resolve fishmeal CO2 proxy — look up anchovy or sardine in ingredients DB.
+                                let fishmealCO2PerKg = 0; // BUGFIX FARMED_FISH
+                                const ingDB = window.aioxyData && window.aioxyData.ingredients; // BUGFIX FARMED_FISH
+                                if (ingDB) { // BUGFIX FARMED_FISH
+                                    // BUGFIX FARMED_FISH: Search ingredients by name for anchovy or sardine as proxy.
+                                    for (const [key, entry] of Object.entries(ingDB)) { // BUGFIX FARMED_FISH
+                                        const entryName = (entry.name || key).toLowerCase(); // BUGFIX FARMED_FISH
+                                        if (entryName.includes('anchovy') || entryName.includes('sardine')) { // BUGFIX FARMED_FISH
+                                            const proxyPef = entry.data && entry.data.pef; // BUGFIX FARMED_FISH
+                                            if (proxyPef && proxyPef['Climate Change'] !== undefined) { // BUGFIX FARMED_FISH
+                                                fishmealCO2PerKg = proxyPef['Climate Change']; // BUGFIX FARMED_FISH
+                                            } // BUGFIX FARMED_FISH
+                                            break; // BUGFIX FARMED_FISH
+                                        } // BUGFIX FARMED_FISH
+                                    } // BUGFIX FARMED_FISH
+                                } // BUGFIX FARMED_FISH
+
+                                // BUGFIX FARMED_FISH: Fish oil proxy = fishmeal × 1.5 (higher refining footprint).
+                                const fishOilCO2PerKg = fishmealCO2PerKg * 1.5; // BUGFIX FARMED_FISH
+
+                                // BUGFIX FARMED_FISH: Feed CO2 = FCR × (fishmeal_fraction × fishmeal_CO2 + fish_oil_fraction × fish_oil_CO2)
+                                const feedCO2PerKgFish = fcr * ( // BUGFIX FARMED_FISH
+                                    (fishmealPct / 100) * fishmealCO2PerKg + // BUGFIX FARMED_FISH
+                                    (fishOilPct  / 100) * fishOilCO2PerKg   // BUGFIX FARMED_FISH
+                                ); // BUGFIX FARMED_FISH
+
+                                // BUGFIX FARMED_FISH: Apply feed CO2 to Climate Change categories.
+                                flatPef['Climate Change']           = (flatPef['Climate Change']           || 0) + feedCO2PerKgFish; // BUGFIX FARMED_FISH
+                                flatPef['Climate Change - Biogenic'] = (flatPef['Climate Change - Biogenic'] || 0) + feedCO2PerKgFish; // BUGFIX FARMED_FISH
+
+                                // BUGFIX FARMED_FISH: Store full calculation trace for auditors.
+                                adjustments.farmed_fish_feed = { // BUGFIX FARMED_FISH
+                                    species:              fishSpecies, // BUGFIX FARMED_FISH
+                                    FCR:                  fcr, // BUGFIX FARMED_FISH
+                                    fishmeal_pct:         fishmealPct, // BUGFIX FARMED_FISH
+                                    fish_oil_pct:         fishOilPct, // BUGFIX FARMED_FISH
+                                    fishmeal_CO2_per_kg:  fishmealCO2PerKg, // BUGFIX FARMED_FISH
+                                    fish_oil_CO2_per_kg:  fishOilCO2PerKg, // BUGFIX FARMED_FISH
+                                    feed_CO2_per_kg_fish: feedCO2PerKgFish, // BUGFIX FARMED_FISH
+                                    enteric_CH4:          0, // BUGFIX FARMED_FISH: zero — no enteric fermentation in fish
+                                    manure_N2O:           0, // BUGFIX FARMED_FISH: zero — N excretion via aquatic pathway
+                                    source:               'BUGFIX FARMED_FISH: FCR×(fishmeal_pct×fishmeal_CO2 + fish_oil_pct×fish_oil_CO2×1.5)' // BUGFIX FARMED_FISH
+                                }; // BUGFIX FARMED_FISH
+                            } else { // BUGFIX FARMED_FISH
+                                // BUGFIX FARMED_FISH: No aquaculture_feeds entry found — store warning, no flatPef change.
+                                adjustments.farmed_fish_feed = { // BUGFIX FARMED_FISH
+                                    warning: 'No aquaculture_feeds entry found for species "' + fishSpecies + // BUGFIX FARMED_FISH
+                                             '" or default "farmed_fish". Feed emissions not calculated.', // BUGFIX FARMED_FISH
+                                    enteric_CH4: 0, // BUGFIX FARMED_FISH
+                                    manure_N2O:  0  // BUGFIX FARMED_FISH
+                                }; // BUGFIX FARMED_FISH
+                            } // BUGFIX FARMED_FISH
+                        } catch (e) { // BUGFIX FARMED_FISH
+                            // BUGFIX FARMED_FISH: Non-fatal — store error, leave flatPef unmodified.
+                            adjustments.farmed_fish_feed = { error: e.message }; // BUGFIX FARMED_FISH
+                            console.warn('[BUGFIX FARMED_FISH] Feed emission calculation failed:', e); // BUGFIX FARMED_FISH
+                        } // BUGFIX FARMED_FISH
 
                     } else {
                         // ── Lookup IPCC Tier 1 values from core_physics CONSTANTS ─────────
@@ -1988,20 +2056,37 @@ const gasCO2 = gasM3PerKg * 2.13;
         const transportResult = processTransport(input, input.packaging.weightKg);
         const packagingResult = processPackaging(input);
 
-        // ALLOCATION SENSITIVITY — uses unit price = 1.0 as placeholder
-        // This renders mass and economic allocation ratios identical, producing
-        // no sensitivity. For meaningful sensitivity analysis, actual commodity
-        // prices (€/kg) per ingredient are required. This is deferred to a
-        // future database update with market price integration.
-        // Current output is for structural verification only — an auditor can
-        // confirm the function executes correctly, but results are uninformative
-        // until real prices are supplied.
+        // BUGFIX B12: Lookup function maps ingredient names to commodity price categories from window.aioxyData.
+        function getIngredientPrice(ingredientName, ingredientId) { // BUGFIX B12
+            var nameLower = (ingredientName || '').toLowerCase(); // BUGFIX B12
+            var commodityKey = null; // BUGFIX B12
+
+            if      (nameLower.includes('beef')    || nameLower.includes('cattle') || nameLower.includes('cow'))    commodityKey = 'beef';      // BUGFIX B12
+            else if (nameLower.includes('chicken') || nameLower.includes('broiler') || nameLower.includes('poultry')) commodityKey = 'chicken';   // BUGFIX B12
+            else if (nameLower.includes('wheat'))                                                                     commodityKey = 'wheat';     // BUGFIX B12
+            else if (nameLower.includes('maize')   || nameLower.includes('corn'))                                    commodityKey = 'maize';     // BUGFIX B12
+            else if (nameLower.includes('soy'))                                                                       commodityKey = 'soybeans';  // BUGFIX B12
+            else if (nameLower.includes('palm'))                                                                      commodityKey = 'palm_oil';  // BUGFIX B12
+            else if (nameLower.includes('fish'))                                                                      commodityKey = 'fish_meal'; // BUGFIX B12
+
+            if (commodityKey && window.aioxyData && window.aioxyData.commodity_prices && // BUGFIX B12
+                    window.aioxyData.commodity_prices[commodityKey]) { // BUGFIX B12
+                var price = window.aioxyData.commodity_prices[commodityKey].price_eur_per_kg; // BUGFIX B12
+                if (price !== null && price !== undefined && price > 0) return price; // BUGFIX B12
+            } // BUGFIX B12
+
+            return 1.0; // BUGFIX B12: fallback — no commodity price found
+        } // BUGFIX B12
+
+        // ALLOCATION SENSITIVITY — uses commodity prices from aioxyData where available (BUGFIX B12)
+        // Previously hardcoded price: 1.0 for all ingredients, making mass and economic allocation
+        // ratios identical and producing no sensitivity signal. Now wired to real market prices.
         // GAP 4: Wire allocation sensitivity check (ISO 14044 §4.3.4)
         const allocationSensitivity = window.complianceEngine.checkAllocationSensitivity(
             ingredientResults.map(ing => ({
                 name:  ing.name,
                 mass:  ing.quantityKg,
-                price: 1.0  // default unit price; economic allocation uses mass × price
+                price: getIngredientPrice(ing.name, ing.id)  // BUGFIX B12: was hardcoded 1.0
             }))
         );
 
