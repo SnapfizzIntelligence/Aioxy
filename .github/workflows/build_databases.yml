@@ -1,0 +1,38 @@
+name: Build AIOXY Derived Databases
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'raw_data/**'
+      - 'scripts/build_aioxy_derived_db.py'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas openpyxl xlrd
+
+      - name: Build derived database
+        run: |
+          python scripts/build_aioxy_derived_db.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add aioxy_derived_db.js
+          git diff --staged --quiet || (git commit -m "Auto-build: aioxy_derived_db.js regenerated" && git push)
