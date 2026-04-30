@@ -432,15 +432,28 @@ function updateResultsUI(results) {
     let nutritionalDiv = document.getElementById('nutritionalLCACard');
 
     if (userProteinPer100g > 0 && resolvedBaseline) {
-        const anchorProteinDB = {
-            'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
-            'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
-            'plant-milk': 1.0, 'default': 10.0
-        };
-        
-        const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-            resolvedBaseline.name && resolvedBaseline.name.includes(ANCHOR_DATASETS[key].name)) || 'default';
-        const baselineProteinPer100g = anchorProteinDB[baselineKey] || 10.0;
+        // BUGFIX B22: Old anchorProteinDB replaced by aioxyData.nutrition lookup. Old values retained for reference.
+        // const anchorProteinDB = {
+        //     'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
+        //     'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
+        //     'plant-milk': 1.0, 'default': 10.0
+        // };
+
+        // BUGFIX B22: Reads protein from window.aioxyData.nutrition instead of hardcoded map.
+        function getProteinForIngredient(ingredientId, ingredientName) { // BUGFIX B22
+            if (window.aioxyData && window.aioxyData.nutrition && // BUGFIX B22
+                    ingredientId && window.aioxyData.nutrition[ingredientId]) { // BUGFIX B22
+                return window.aioxyData.nutrition[ingredientId].protein_g_per_100g; // BUGFIX B22
+            } // BUGFIX B22
+            // BUGFIX B22: No match found — log warning and return default.
+            console.warn('[BUGFIX B22] No nutrition entry for ingredientId:', ingredientId, // BUGFIX B22
+                '/ ingredientName:', ingredientName, '— using default 10.0 g/100g'); // BUGFIX B22
+            return 10.0; // BUGFIX B22: default fallback
+        } // BUGFIX B22
+
+        const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => // BUGFIX B22
+            resolvedBaseline.name && resolvedBaseline.name.includes(ANCHOR_DATASETS[key].name)) || 'default'; // BUGFIX B22
+        const baselineProteinPer100g = getProteinForIngredient(baselineKey, resolvedBaseline.name); // BUGFIX B22
 
         const userKgNeededFor100gProtein = 100 / (userProteinPer100g * 10);
         const baseKgNeededFor100gProtein = 100 / (baselineProteinPer100g * 10);
@@ -2103,15 +2116,28 @@ function displayCompleteAuditTrail() {
         const kgNeeded = 100 / (userProtein * 10);
         const co2Per100gProtein = unifiedCO2 * kgNeeded;
 
-        const anchorProteinDB = {
-            'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
-            'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
-            'plant-milk': 1.0, 'default': 10.0
-        };
-    
-        const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => 
-            audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default';
-        const baselineProtein = anchorProteinDB[baselineKey] || 10.0;
+        // BUGFIX B22: Old anchorProteinDB replaced by aioxyData.nutrition lookup. Old values retained for reference.
+        // const anchorProteinDB = {
+        //     'beef-product': 26.0, 'chicken-product': 27.0, 'pork-product': 27.0,
+        //     'milk-product': 3.4, 'cheese-product': 25.0, 'plant-burger': 15.0,
+        //     'plant-milk': 1.0, 'default': 10.0
+        // };
+
+        // BUGFIX B22: Reads protein from window.aioxyData.nutrition instead of hardcoded map.
+        function getProteinForIngredient_audit(ingredientId, ingredientName) { // BUGFIX B22
+            if (window.aioxyData && window.aioxyData.nutrition && // BUGFIX B22
+                    ingredientId && window.aioxyData.nutrition[ingredientId]) { // BUGFIX B22
+                return window.aioxyData.nutrition[ingredientId].protein_g_per_100g; // BUGFIX B22
+            } // BUGFIX B22
+            // BUGFIX B22: No match found — log warning and return default.
+            console.warn('[BUGFIX B22] Audit trail: No nutrition entry for ingredientId:', ingredientId, // BUGFIX B22
+                '/ ingredientName:', ingredientName, '— using default 10.0 g/100g'); // BUGFIX B22
+            return 10.0; // BUGFIX B22: default fallback
+        } // BUGFIX B22
+
+        const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => // BUGFIX B22
+            audit.comparison_baseline?.name?.includes(ANCHOR_DATASETS[key].name)) || 'default'; // BUGFIX B22
+        const baselineProtein = getProteinForIngredient_audit(baselineKey, audit.comparison_baseline?.name); // BUGFIX B22
         const rawBaseCo2 = (audit.comparison_baseline?.co2PerKg || 1) / (audit.comparison_baseline?.concentration_ratio || 1);
         const baseCo2PerProtein = rawBaseCo2 * (100 / (baselineProtein * 10));
     
