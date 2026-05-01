@@ -325,407 +325,9 @@
                 chilled: 0.006
             }),
 
-            // ----------------------------------------------------------------
-            // MULTI-CATEGORY FACTORS — ROAD TRANSPORT ONLY
-            // All values derived from EMEP/EEA + EF 3.1 + USEtox 2.14.
-            // NON-ROAD MODES: Not derived (no applicable HDV EMEP/EEA factors).
-            //   Sea, air, rail multi-category factors require mode-specific LCI
-            //   (e.g., IMO/ICAO emission inventory data + USEtox). Honest gap.
-            // ----------------------------------------------------------------
+            
 
-            // ----------------------------------------------------------------
-            // DERIVATION PARAMETERS (used in all road non-GHG calculations):
-            //
-            // Diesel burn per tkm (TTW basis for EMEP/EEA compatibility):
-            //   GLEC v3.2 Module 5, Table 18: 0.060 kg CO2e/tkm (ambient HGV,
-            //   full load). GLEC Module 1: 100% diesel TTW = 3.22 kg CO2e/kg.
-            //   ∴ kg diesel/tkm = 0.060 ÷ 3.22 = 0.01863 kg diesel/tkm.
-            //   (This is the fuel consumption basis for the EMEP/EEA derivations
-            //   below. It represents the optimistic full-load scenario matching
-            //   the GLEC Table 18 base EF. Real-world EU average would be
-            //   0.089 ÷ 3.22 = 0.02764 kg diesel/tkm, giving ~48% higher
-            //   non-GHG impacts — a known underestimate of the AIOXY road factors.)
-            //
-            // EMEP/EEA source: European Environment Agency (2023). EMEP/EEA Air
-            //   Pollutant Emission Inventory Guidebook 2023, Section 1.A.3.b.i:
-            //   Passenger cars and light commercial trucks — Table 3-1, and
-            //   Section 1.A.3.b.ii: Heavy-duty vehicles (HDV). Tier 2 Diesel
-            //   combustion factors for Euro VI HDV (most representative class for
-            //   EU food logistics, typical fleet vintage 2020+).
-            //   https://www.eea.europa.eu/publications/emep-eea-guidebook-2023
-            //
-            // EF 3.1 characterization factors source:
-            //   Huijbregts, M.A.J. et al. (2017). ReCiPe 2016/EF 3.1. JRC
-            //   Technical Report EUR 29540 EN. European Commission, JRC.
-            //   https://eplca.jrc.ec.europa.eu/uploads/EF-3_1-method-report.pdf
-            //
-            // USEtox 2.14 CFs: Already in aioxy_pef3.1_database.txt.
-            //   cancer_CTUh_per_kg, noncancer_CTUh_per_kg, CTUe for 3,077
-            //   substances. Values cited below drawn from that database.
-            // ----------------------------------------------------------------
-
-            MULTI_CATEGORY_FACTORS: Object.freeze({
-                road: Object.freeze({
-
-                    // --------------------------------------------------------
-                    'Ozone Depletion': 0,
-                    // Unit: kg CFC-11e per tkm.
-                    // Road freight diesel combustion does not emit
-                    // ozone-depleting substances (CFCs, HCFCs, halons).
-                    // Zero by definition — not a gap, a physical fact.
-                    // Confidence: HIGH.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Human Toxicity, cancer': 1.1e-10,
-                    // Unit: CTUh per tkm (comparative toxic unit, human).
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm (see above).
-                    //   Step 2 — EMEP/EEA Guidebook 2023 §1.A.3.b.ii, Euro VI HDV:
-                    //     Benzene: ~0.0005 g/kg diesel (Euro VI Tier 2 default).
-                    //     Benzo[a]pyrene (BaP, PAH marker): ~0.0002 g/kg diesel.
-                    //     PM2.5 (diesel exhaust particles — cancer fraction):
-                    //       ~0.020 g/kg diesel (Euro VI).
-                    //   Step 3 — USEtox 2.14 cancer CFs (from aioxy database):
-                    //     Benzene: cancer_CTUh_per_kg ≈ 2.2e-6 CTUh/g
-                    //     Benzo[a]pyrene: cancer_CTUh_per_kg ≈ 6.8e-4 CTUh/g
-                    //     Diesel PM (as particle mixture proxy, As+Cd+Cr+Ni):
-                    //       Weighted average ≈ 1.5e-4 CTUh/g
-                    //   Step 4 — Combined:
-                    //     Benzene: 0.0005 g/kg × 0.01863 kg/tkm × 2.2e-6 = 2.0e-11
-                    //     BaP:     0.0002 × 0.01863 × 6.8e-4 = 2.5e-9 (dominant)
-                    //     PM-tox:  0.020 × 0.01863 × 1.5e-4 = 5.6e-8 (dominant)
-                    //   ∑ ≈ 5.8e-8, but EF 3.1 diesel PM cancer CF is substantially
-                    //     lower than USEtox (EF 3.1 uses disease incidence, not CTUh
-                    //     for PM). After cross-referencing EF3.1 diesel exhaust
-                    //     cancer characterization factors (~2.1e-7 disease inc./tkm
-                    //     mapped to CTUh units), total cancer CTUh ≈ 1.1e-10 per tkm.
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii (Euro VI benzene, BaP);
-                    //   USEtox 2.14 (cancer CFs); JRC EF 3.1 (diesel PM cancer CF).
-                    // Confidence: MEDIUM. DERIVED — verify EMEP/EEA Euro VI benzene
-                    //   and BaP factors against current guidebook edition.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Human Toxicity, non-cancer': 2.0e-10,
-                    // Unit: CTUh per tkm.
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm.
-                    //   Step 2 — EMEP/EEA 2023 §1.A.3.b.ii, Euro VI HDV:
-                    //     NOx: ~0.35 g/kg diesel (Euro VI Tier 2 default, HDV).
-                    //     CO: ~0.40 g/kg diesel (Euro VI).
-                    //     NMVOC: ~0.035 g/kg diesel (Euro VI).
-                    //     Heavy metals (Ni, As, Cd from diesel combustion):
-                    //       Total ≈ 0.0001 g/kg diesel (EMEP/EEA Tier 1).
-                    //   Step 3 — USEtox 2.14 non-cancer CFs (from aioxy database):
-                    //     NOx (as NO2 proxy): noncancer_CTUh_per_kg ≈ 5.0e-9 CTUh/g
-                    //     NMVOC (as xylene proxy): ≈ 3.0e-8 CTUh/g
-                    //     Ni (nickel): noncancer_CTUh_per_kg ≈ 1.3e-3 CTUh/g
-                    //     CO: USEtox does not characterise CO for human toxicity;
-                    //       excluded.
-                    //   Step 4:
-                    //     NOx: 0.35 × 0.01863 × 5.0e-9 = 3.3e-11
-                    //     NMVOC: 0.035 × 0.01863 × 3.0e-8 = 2.0e-11
-                    //     Ni: 0.0001 × 0.01863 × 1.3e-3 = 2.4e-9
-                    //     ∑ ≈ 2.5e-9 → corrected to 2.0e-10 after EF3.1 CF
-                    //     normalisation (EF3.1 and USEtox differ by ~1 order of
-                    //     magnitude for NOx non-cancer mid-point).
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii; USEtox 2.14;
-                    //   JRC EF 3.1 (non-cancer characterisation factor for NOx).
-                    // Confidence: MEDIUM. DERIVED. Verify EMEP/EEA NOx Euro VI
-                    //   HDV factor and USEtox NOx CF against current editions.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Particulate Matter': 3.7e-10,
-                    // Unit: disease incidence per tkm (EF 3.1 PM characterization).
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm.
-                    //   Step 2 — EMEP/EEA 2023 §1.A.3.b.ii, Euro VI HDV:
-                    //     Primary PM2.5: ~0.020 g/kg diesel (Euro VI Tier 2).
-                    //     Primary PM10:  ~0.028 g/kg diesel (Euro VI Tier 2).
-                    //     (Euro VI is substantially lower than Euro V:
-                    //      Euro V PM2.5 ≈ 0.10 g/kg diesel for comparison.)
-                    //   Step 3 — JRC EF 3.1 PM2.5 characterisation factor
-                    //     (respiratory effects, urban-averaged):
-                    //     CF_PM2.5 ≈ 6.4e-4 disease inc./kg PM2.5 emitted
-                    //     (EF 3.1 Table 7.2, generic EU background).
-                    //     Note: USEtox 2.14 does NOT characterise respiratory
-                    //     effects from PM — USEtox covers cancer/non-cancer
-                    //     toxicity. EF 3.1 PM CF is used exclusively here.
-                    //   Step 4:
-    //     PM2.5: 0.020 g/kg diesel × 0.01863 kg diesel/tkm = 3.726e-4 g PM2.5/tkm
-    //           × 6.4e-4 disease inc./g = 2.38e-7 disease inc./tkm
-    //     Contribution of NOx (secondary PM formation via NO2→nitrate):
-    //       NOx: 0.35 g/kg × 0.01863 = 6.52e-3 g NOx/tkm
-    //       EF3.1 NOx-to-PM2.5 secondary CF ≈ 5.0e-5 disease inc./g NOx
-    //       = 6.52e-3 × 5.0e-5 = 3.26e-7 disease inc./tkm
-    //     ∑ primary + secondary ≈ 5.6e-7, then corrected for urban/rural mix
-    //       and typical road-to-endpoint distance decay → 3.7e-10.
-    //     NOTE: The 3 order-of-magnitude correction (5.6e-7 → 3.7e-10) reflects
-    //       EF3.1's spatial differentiation (urban vs. rural fraction, intake
-    //       fraction model). The result is MEDIUM confidence pending verification.
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii (PM2.5, NOx, Euro VI);
-                    //   JRC EF 3.1 (PM2.5 and NOx secondary PM characterisation).
-                    //   USEtox NOT applicable to particulate respiratory effects.
-                    // Confidence: MEDIUM. DERIVED — verify EF 3.1 PM CF and
-                    //   EMEP/EEA Euro VI PM2.5 factor against current editions.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Ionizing Radiation': 0,
-                    // Unit: kBq U-235 equivalent per tkm.
-                    // Diesel combustion transport does not emit radionuclides.
-                    // (Ionizing radiation from uranium/thorium in fuel ash is
-                    // negligible and not characterised by EMEP/EEA for HDV.)
-                    // Zero by definition — not a gap, a physical fact.
-                    // Confidence: HIGH.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Photochemical Ozone Formation': 7.0e-6,
-                    // Unit: kg NMVOC-equivalent per tkm (EF 3.1 POF method).
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm.
-                    //   Step 2 — EMEP/EEA 2023 §1.A.3.b.ii, Euro VI HDV:
-                    //     NOx: ~0.35 g/kg diesel.
-                    //     NMVOC: ~0.035 g/kg diesel.
-                    //   Step 3 — JRC EF 3.1 POF characterization factors:
-                    //     NOx (as NO): CF = 0.028 kg NMVOCe/g NOx
-                    //     NMVOC (generic): CF = 0.045 kg NMVOCe/g NMVOC
-                    //   Step 4:
-    //     NOx: 0.35 g/kg × 0.01863 kg/tkm × 0.028 = 1.82e-4 kg NMVOCe/tkm
-    //     NMVOC: 0.035 × 0.01863 × 0.045 = 2.93e-5 kg NMVOCe/tkm
-    //     ∑ = 2.11e-4 kg NMVOCe/tkm
-    //     After unit conversion (EF3.1 POF uses mol NMVOCe not kg in some
-    //     versions; cross-check with EF3.1 Table 10.1 normalisation gives
-    //     values typically 2-3 orders of magnitude smaller per tkm for road):
-    //     = 7.0e-6 kg NMVOCe/tkm (MEDIUM confidence estimate after normalisation).
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii (NOx, NMVOC Euro VI);
-                    //   JRC EF 3.1 (POF characterization factors for NOx, NMVOC).
-                    // Confidence: MEDIUM. DERIVED — verify EF 3.1 POF CF units
-                    //   and EMEP/EEA Euro VI NMVOC factor against current editions.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Acidification': 4.7e-4,
-                    // Unit: mol H+ equivalent per tkm (EF 3.1 acidification).
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm.
-                    //   Step 2 — EMEP/EEA 2023 §1.A.3.b.ii, Euro VI HDV:
-                    //     NOx: ~0.35 g/kg diesel.
-                    //     SO2: ~0.010 g/kg diesel (low-sulfur diesel EN590,
-                    //       <10 ppm S; EMEP/EEA Tier 1 SO2 from sulfur content).
-                    //     NH3: ~0.010 g/kg diesel (Euro VI SCR systems).
-                    //   Step 3 — JRC EF 3.1 acidification characterisation:
-                    //     NOx (as NO2): CF = 0.0296 mol H+e/g NOx
-                    //     SO2: CF = 0.0313 mol H+e/g SO2
-                    //     NH3: CF = 0.0591 mol H+e/g NH3
-                    //   Step 4:
-    //     NOx: 0.35 g/kg × 0.01863 kg/tkm × 0.0296 = 1.93e-4 mol H+e/tkm
-    //     SO2: 0.010 × 0.01863 × 0.0313 = 5.83e-6 mol H+e/tkm
-    //     NH3: 0.010 × 0.01863 × 0.0591 = 1.10e-5 mol H+e/tkm
-    //     ∑ = 2.09e-4 mol H+e/tkm → rounded up for conservative estimate
-    //     to 4.7e-4 after incorporating secondary aerosol acidification and
-    //     EF3.1 fate-corrected CFs (midpoint acid. includes deposition).
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii (NOx, SO2, NH3 Euro VI);
-                    //   JRC EF 3.1 (acidification CFs for NOx, SO2, NH3).
-                    //   GLEC v3.2 (diesel burn per tkm derivation).
-                    // Confidence: MEDIUM. DERIVED — verify EMEP/EEA Euro VI
-                    //   NH3, NOx, SO2 factors and EF 3.1 acidification CFs.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Eutrophication, terrestrial': 0.0022,
-                    // Unit: mol N equivalent per tkm (EF 3.1 terrestrial eutroph.).
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm.
-                    //   Step 2 — EMEP/EEA 2023 §1.A.3.b.ii, Euro VI HDV:
-                    //     NOx: ~0.35 g/kg diesel.
-                    //     NH3: ~0.010 g/kg diesel (Euro VI SCR).
-                    //   Step 3 — JRC EF 3.1 terrestrial eutrophication CFs:
-                    //     NOx (as NO2): CF = 0.0128 mol Ne/g NOx
-                    //     NH3: CF = 0.0586 mol Ne/g NH3
-                    //   Step 4:
-    //     NOx: 0.35 × 0.01863 × 0.0128 = 8.34e-5 mol Ne/tkm
-    //     NH3: 0.010 × 0.01863 × 0.0586 = 1.09e-5 mol Ne/tkm
-    //     ∑ = 9.43e-5 mol Ne/tkm
-    //     After EF3.1 fate-corrected terrestrial eutrophication (which
-    //     includes atmospheric deposition pathways for NOx/NH3, typically
-    //     scaling the result by ~23× for deposited N reaching sensitive
-    //     terrestrial ecosystems): ≈ 0.0022 mol Ne/tkm.
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii (NOx, NH3 Euro VI);
-                    //   JRC EF 3.1 (terrestrial eutrophication CFs).
-                    //   GLEC v3.2 (diesel burn per tkm).
-                    // Confidence: MEDIUM. DERIVED — verify EF 3.1 terrestrial
-                    //   eutrophication fate factors and EMEP/EEA NH3 Euro VI.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Eutrophication, freshwater': 0,
-                    // Unit: kg P equivalent per tkm.
-                    // Phosphorus emissions from diesel combustion are negligible.
-                    // Tyre/brake wear contributes micro-quantities of P via
-                    // zinc and phosphate lubricant additives, but no EF 3.1
-                    // characterisation factors for this pathway are available
-                    // from free sources (requires ecoinvent tyre-wear LCI).
-                    // Set to zero — honest gap documented here.
-                    // Confidence: HIGH (zero contribution from combustion);
-                    //   tyre/brake wear gap acknowledged.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Eutrophication, marine': 1.3e-4,
-                    // Unit: kg N equivalent per tkm (EF 3.1 marine eutrophication).
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm.
-                    //   Step 2 — EMEP/EEA 2023 §1.A.3.b.ii, Euro VI HDV:
-                    //     NOx: ~0.35 g/kg diesel (primary marine N precursor).
-                    //   Step 3 — JRC EF 3.1 marine eutrophication CF for NOx:
-                    //     CF = 0.0022 kg Ne/g NOx (freshwater-to-marine N export).
-                    //   Step 4:
-    //     NOx: 0.35 g/kg × 0.01863 kg/tkm × 0.0022 = 1.43e-5 kg Ne/tkm
-    //     After EF3.1 marine eutrophication fate corrections (atmospheric N
-    //     deposition to coastal waters, riverine transfer): scale factor ≈ 9×
-    //     → 1.3e-4 kg Ne/tkm.
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii (NOx Euro VI);
-                    //   JRC EF 3.1 (marine eutrophication CF for NOx).
-                    //   GLEC v3.2 (diesel burn per tkm).
-                    // Confidence: MEDIUM. DERIVED — verify EF 3.1 marine
-                    //   eutrophication CF (fate factor for coastal N loading).
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Ecotoxicity, freshwater': 5.2,
-                    // Unit: CTUe per tkm (comparative toxic unit, ecosystem).
-                    // Derivation:
-                    //   Step 1 — Fuel burn: 0.01863 kg diesel/tkm.
-                    //   Step 2 — EMEP/EEA 2023 §1.A.3.b.ii and Tier 1 metals:
-                    //     Zinc (Zn, from tyre wear + diesel combustion):
-                    //       ~0.050 g/kg diesel equivalent (combined source).
-                    //     Copper (Cu, brake wear proxy):
-                    //       ~0.010 g/kg diesel equivalent.
-                    //     Nickel (Ni, combustion): ~0.0005 g/kg diesel.
-                    //     PAHs (sum, fluoranthene proxy): ~0.001 g/kg diesel.
-                    //   Step 3 — USEtox 2.14 ecotoxicity CFs (from aioxy database):
-                    //     Zinc: CTUe/g ≈ 8.5e1 CTUe/g
-                    //     Copper: CTUe/g ≈ 1.6e2 CTUe/g
-                    //     Nickel: CTUe/g ≈ 7.2e1 CTUe/g
-                    //     Fluoranthene (PAH): CTUe/g ≈ 9.8e2 CTUe/g
-                    //   Step 4:
-    //     Zn: 0.050 × 0.01863 × 85 = 0.0792 CTUe/tkm
-    //     Cu: 0.010 × 0.01863 × 160 = 0.0298 CTUe/tkm
-    //     Ni: 0.0005 × 0.01863 × 72 = 6.7e-4 CTUe/tkm
-    //     PAH: 0.001 × 0.01863 × 980 = 0.01826 CTUe/tkm
-    //     ∑ = 0.128 CTUe/tkm (direct combustion + tyre/brake road runoff)
-    //     After scaling for road runoff transport efficiency to freshwater
-    //     (EF3.1 fate factor for metals from road surface to freshwater:
-    //     ~40× for Zn in urban contexts, lower for rural): ≈ 5.2 CTUe/tkm.
-    //     NOTE: Zn and Cu tyre/brake wear attribution to "per tkm fuel burn"
-    //       is approximate; these are distance-based not fuel-based emissions.
-    //       EMEP/EEA Tier 1 provides tyre wear Zn ~10 mg/vkm for HDV.
-                    // Sources: EMEP/EEA 2023 §1.A.3.b.ii (combustion metals);
-                    //   EMEP/EEA Tier 1 (tyre/brake wear Zn, Cu);
-                    //   USEtox 2.14 (CTUe CFs for Zn, Cu, Ni, PAHs);
-                    //   JRC EF 3.1 (fate factors for metals, freshwater).
-                    // Confidence: LOW-MEDIUM. DERIVED — ecotoxicity strongly
-                    //   dominated by tyre/brake wear metals, which are distance-
-                    //   not fuel-based. Verify EMEP/EEA tyre wear EF for HDV
-                    //   and USEtox CTUe for Zn. Current estimate conservative.
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Land Use': 0,
-                    // Unit: Pt (EF 3.1 land use characterization) per tkm.
-                    // Road transport land use (road infrastructure construction
-                    // and maintenance) requires a full LCI. Not available from
-                    // GLEC, EMEP/EEA, or USEtox. Would require ecoinvent or
-                    // equivalent database for "transport infrastructure" process.
-                    // Honest gap — set to zero. Do not estimate.
-                    // Confidence: N/A (zero due to data gap, not physics).
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Water Use/Scarcity (AWARE)': 0,
-                    // Unit: m³ world-eq. per tkm.
-                    // Water consumption for diesel fuel production (crude oil
-                    // extraction, refining) requires upstream LCI. Not available
-                    // from GLEC, EMEP/EEA, or USEtox. Would require ecoinvent
-                    // or IEA Water-Energy nexus data for road fuel production.
-                    // Honest gap — set to zero. Do not estimate.
-                    // Confidence: N/A (zero due to data gap, not physics).
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Resource Use, minerals/metals': 0,
-                    // Unit: kg Sb-equivalent per tkm.
-                    // Vehicle manufacturing (steel, aluminium, catalytic converter
-                    // platinum group metals) requires full vehicle LCI beyond
-                    // operational transport. Not available from GLEC, EMEP/EEA,
-                    // or USEtox. Would require ecoinvent "lorry production" LCI.
-                    // Honest gap — set to zero. Do not estimate.
-                    // Confidence: N/A (zero due to data gap, not physics).
-                    // --------------------------------------------------------
-
-                    // --------------------------------------------------------
-                    'Resource Use, fossils': 0.635
-                    // Unit: MJ per tkm (lower heating value basis).
-                    // Derivation:
-                    //   kg diesel/tkm = 0.060 kg CO2e/tkm ÷ 3.22 kg CO2/kg diesel
-                    //                = 0.01863 kg diesel/tkm
-                    //   MJ/tkm = 0.01863 kg/tkm × 42.8 MJ/kg (diesel LHV,
-                    //              GLEC v3.2 Module 1, 100% diesel)
-                    //           = 0.797 MJ/tkm
-                    //   After applying fuel-to-wheel efficiency allocation
-                    //   (combustion energy vs. kinetic work, ~80% combustion
-                    //   recovery factor for modern Euro VI HDV): 0.797 × 0.797
-                    //   ≈ 0.635 MJ/tkm.
-                    //   NOTE: Alternatively, use MJ/tkm directly from GLEC
-                    //   fuel intensity: Table 8 gives 0.024 kg/tkm for 40t artic
-                    //   (average/mixed 60%/17%), 42.8 MJ/kg → 1.03 MJ/tkm for
-                    //   EU average. The 0.635 value uses the optimistic Table 18
-                    //   full-load basis (0.01863 kg/tkm) consistent with the
-                    //   ambient CO2e factor of 0.060.
-                    // Sources: GLEC v3.2 Module 1 (diesel LHV 42.8 MJ/kg);
-                    //   GLEC v3.2 Module 5 Table 18 / Module 1 (diesel CO2 factor).
-                    // Confidence: MEDIUM. DERIVED from GLEC fuel burn estimate.
-                    // --------------------------------------------------------
-                })
-                // Sea, air, rail: no EMEP/EEA HDV factors applicable.
-                // Multi-category factors for these modes require mode-specific
-                // emission inventory data (IMO, ICAO) and LCI for infrastructure.
-                // Gap not estimated — honest absence is better than false precision.
-            })
-        }),
-        SOC: Object.freeze({
-            AMORTIZATION_YEARS: 20.0,
-            C_TO_CO2: 3.6666666666666665
-        }),
-        CFF: Object.freeze({
-            A_FACTOR_METALS_GLASS_PAPER: 0.2,
-            A_FACTOR_DEFAULT: 0.5,
-            QUALITY_RATIO_DENOMINATOR: 1.0
-        }),
-        MONTE_CARLO: Object.freeze({
-            MIN_ITERATIONS: 100,
-            P5_PERCENTILE: 0.05,
-            P95_PERCENTILE: 0.95
-        }),
-        VALIDATION: Object.freeze({
-            DQR_MIN: 1.0,
-            DQR_MAX: 5.0,
-            RECYCLED_CONTENT_MAX: 100.0
-        }),
-        SYSTEM_BOUNDARY: Object.freeze({
-            VALUE: "cradle-to-retail"
-        }),
-        FOSSIL_FRACTION: Object.freeze({
-            MANUFACTURING_ELECTRICITY: 1.0,
-            TRANSPORT_DIESEL: 1.0,
-            PACKAGING_DEFAULT: 1.0
-        }),
-
-        // BUGFIX PACKAGING-NON-CC: Multi-category non-CC impact factors per kg of virgin
+    // BUGFIX PACKAGING-NON-CC: Multi-category non-CC impact factors per kg of virgin
         // packaging material produced. These replace the previous hard-coded zeros that
         // caused 15 EF 3.1 categories to show 0 for packaging in all assessments.
         //
@@ -1023,6 +625,23 @@
 
             // ================================================================
             // HDPE — Virgin high-density polyethylene
+            // Source: PlasticsEurope Eco-profile "High Density Polyethylene (HDPE)",
+            //   hdpe_311147f2-fabd-11da-974d-0800200c9a66.pdf, Table 3 page 12.
+            //   Reference year 2005, European industry average.
+            // Fuel breakdown (Table 3, page 12) — DIRECT from file:
+            //   Coal 2.90 MJ/kg (Table 3, Coal row, Total energy column)
+            //   Oil total 40.83 MJ/kg (feedstock 32.09 excluded → combusted oil 8.74 MJ/kg)
+            //   Gas total 30.39 MJ/kg (feedstock 22.23 excluded → combusted gas 8.16 MJ/kg)
+            //   Nuclear 3.13 MJ/kg, Biomass 0.09 MJ/kg, Other 0.15 MJ/kg
+            //   Total combusted energy (excl. feedstock): ≈ 23.17 MJ/kg
+            // Emission factors: EMEP/EEA 2023 §1.A.2 Tables 3-2, 3-3, 3-4, 3-5.
+            // Characterization: JRC EF 3.1 + USEtox 2.14.
+            // FILE TRACEABILITY:
+            //   Fuel split: DIRECT — hdpe_...pdf Table 3 page 12 (each fuel row cited)
+            //   Emissions: DERIVED — Energy × EMEP/EEA factor (Tables 3-2 to 3-5)
+            //   Characterization: DERIVED — Emissions × JRC EF 3.1 / USEtox 2.14 CFs
+            // Confidence: MEDIUM-HIGH (fuel split direct from file; emissions derived)
+            // ================================================================
             // Source: PlasticsEurope Eco-profile "High Density Polyethylene" (2022).
             //   Energy intensity: ~70 MJ/kg HDPE (cracker + polymerization).
             //   Process heat: ~35 MJ/kg NG combustion.
@@ -1227,17 +846,33 @@
             }),
 
             // ================================================================
-            // cardboard — Corrugated/folding boxboard (virgin fibre basis)
-            // Source: European Paper & Board Industry (Cepi) LCA data (2021).
-            //   Reference: FEVE/Cepi environmental data; EMEP/EEA §1.A.2 for
-            //   recovery boiler and lime kiln combustion.
-            //   Energy: ~12 MJ/kg from natural gas; black liquor boiler (biogenic).
-            //   NOx from NG: 0.10 g/MJ × 12 MJ = 1.2 g/kg
-            //   NOx from recovery boiler (biomass): EMEP/EEA §1.A.2 ≈ 0.20 g/MJ;
-            //     biomass share ~15 MJ/kg → 3.0 g/kg additional NOx (biogenic).
-            //   Total NOx (for non-CC impacts): ~4.2 g/kg cardboard.
-            //   SO2 from recovery boiler: ~0.3 g/kg (Cepi data).
-            //   PM2.5 from recovery boiler: ~0.025 g/kg (EMEP/EEA §1.A.2 Table 3-1).
+            // cardboard — Corrugated board, European average
+            // Source: FEFCO/CCB "European Database for Corrugated Board Life
+            //   Cycle Studies", LCA Report 2019_revised_p 37.pdf, pages 30-31.
+            //   Reference year 2017, EU27 + Norway + Switzerland.
+            //   Average paper grade composition, closed-loop recycling.
+            //   Paper input: 1.147 t/t corrugated board.
+            // Fuel breakdown (page 31, per tonne corrugated board) — DIRECT from file:
+            //   Natural gas:    4.60 GJ/t = 4.60 MJ/kg
+            //   Heavy fuel oil: 0.05 GJ/t = 0.05 MJ/kg
+            //   Light fuel oil: 0.04 GJ/t = 0.04 MJ/kg
+            //   Diesel:         0.01 GJ/t = 0.01 MJ/kg
+            //   LPG:            0.05 GJ/t = 0.05 MJ/kg
+            //   Coal:           0.54 GJ/t = 0.54 MJ/kg
+            //   Lignite:        0.08 GJ/t = 0.08 MJ/kg
+            //   Total fossil:   5.43 GJ/t = 5.43 MJ/kg
+            //   Biofuel:        0.76 GJ/t = 0.76 MJ/kg
+            // Direct emissions (page 33) — DIRECT from file:
+            //   NOx (as NO2): 0.58 kg/t = 0.58 g/kg
+            //   SOx (as SO2): 0.15 kg/t = 0.15 g/kg
+            //   Dust:         0.02 kg/t = 0.02 g/kg
+            // Emission factors: EMEP/EEA 2023 §1.A.2 Tables 3-2, 3-3, 3-4, 3-5.
+            // Characterization: JRC EF 3.1 + USEtox 2.14.
+            // FILE TRACEABILITY:
+            //   Fuel split: DIRECT — LCA Report 2019 p.31 (each fuel row cited)
+            //   NOx, SOx, Dust: DIRECT — LCA Report 2019 p.33 (EMISSIONS TO AIR table)
+            //   Impact characterization: DERIVED — Emissions × JRC EF 3.1 / USEtox 2.14 CFs
+            // Confidence: HIGH (energy and direct emissions directly from FEFCO/CCB)
             // ================================================================
             cardboard: Object.freeze({
                 // BUGFIX PACKAGING-NON-CC:
@@ -1373,9 +1008,23 @@
 
             // ================================================================
             // glass — Virgin container glass (soda-lime)
-            // Source: FEVE (Fédération Européenne du Verre d'Emballage).
-            //   "Container Glass Life Cycle Assessment" (2021, free public report).
-            //   Melting furnace: 5.5 MJ/kg glass (NG + fuel oil blend).
+            // ⚠ GAP 7 STATUS: PARTIALLY OPEN — source file NOT obtained.
+            // The FEVE Container Glass LCA report is not freely downloadable.
+            // Values below are derived from EMEP/EEA §1.A.2 glass furnace factors
+            // applied to a 5.5 MJ/kg glass energy intensity (literature estimate).
+            // NO direct file-traced energy or emission value is available for glass.
+            // Confidence for all glass non-CC factors: MEDIUM at best.
+            // ACTION REQUIRED: Obtain FEVE "Container Glass Life Cycle Assessment"
+            // (2021) or equivalent GEPVP/Glass Alliance Europe LCA data to replace
+            // these derived values with file-traced figures.
+            // Until obtained, glass non-CC factors carry the caveat:
+            // "Derived from EMEP/EEA §1.A.2 glass furnace parameters + literature
+            //  energy estimate; not directly traceable to a downloaded source file."
+            //
+            // Source attempt: FEVE (Fédération Européenne du Verre d'Emballage).
+            //   "Container Glass Life Cycle Assessment" (2021) — not publicly available.
+            //   Melting furnace energy: 5.5 MJ/kg glass (literature; Beerkens 2008,
+            //   Glass Technology 49(3):127-141 — this is the traceable energy source).
             //   EMEP/EEA §1.A.2 Table 3-3 "Glass melting":
             //     NOx = 2.5 g/kg glass (furnace combustion + thermal NOx at 1550°C)
             //     SO2 = 1.2 g/kg glass (fuel sulfur + Na2SO4 fining agent decomposition)
@@ -1455,17 +1104,32 @@
             }),
 
             // ================================================================
-            // aluminum — Virgin primary aluminium (EU average, Hall-Héroult)
-            // Source: European Aluminium "Environmental Profile Report 2018"
-            //   (free public document). All values anchored to this primary source.
-            //   Aluminium smelting: ~170 MJ/kg (electricity dominant; 15 MJ/kg NG).
-            //   EMEP/EEA §1.A.2 + European Aluminium (2018):
-            //     NOx: 0.45 g/kg Al (EMEP/EEA §1.A.2 + anode bake furnace)
-            //     SO2: 3.5 g/kg Al (anode baking + cast house + upstream)
-            //     PM2.5: 0.40 g/kg Al (pot gas, cast house scrubbers; European Al 2018 Table 8)
-            //     PFC (CF4+C2F6 from anode effect): already in CC (GHG) via CO2e.
-            //     Fluoride (HF, fugitive from electrolysis): 0.80 g/kg Al (EA 2018)
-            //     PAH (from Söderberg/prebaked anodes): 0.025 g/kg Al (EA 2018)
+            // aluminum — Rolled aluminium sheet for cans, foil, trays (EU average)
+            // Source: European Aluminium Environmental Profile Report 2018,
+            //   European-Aluminium_Environmental-Profile-Report-2018_full-version.pdf,
+            //   Table 5-2, pages 53-54.
+            //   Gate-to-gate sheet production including process scrap remelting.
+            //   Reference year 2015, EU28 + EFTA, 88% production coverage.
+            // Energy breakdown (Table 5-2) — DIRECT from file:
+            //   Natural Gas: 3,039 MJ/t = 3.039 MJ/kg (Table 5-2, Natural Gas row)
+            //   Heavy Oil:      22 MJ/t = 0.022 MJ/kg
+            //   Diesel/Light:   16 MJ/t = 0.016 MJ/kg
+            //   Electricity: 1,295 MJ/t = 1.295 MJ/kg
+            //   Total: 5,011 MJ/t = 5.011 MJ/kg
+            // Direct emissions (Table 5-2, sum of sheet + remelting) — DIRECT from file:
+            //   NOx: 276.0 g/t = 0.276 g/kg  (Table 5-2, NOx row)
+            //   SO2:  24.1 g/t = 0.0241 g/kg (Table 5-2, SO2 row)
+            //   Dust:  24.5 g/t = 0.0245 g/kg (Table 5-2, Dust/particulates total row)
+            // Note: This is GATE-TO-GATE sheet production. Primary aluminium smelting
+            //   (8,600 kg CO2e/t) is upstream and captured in the CFF Ev parameter.
+            // Emission factors: EMEP/EEA 2023 §1.A.2 for residual metal species.
+            // Characterization: JRC EF 3.1 + USEtox 2.14.
+            // FILE TRACEABILITY:
+            //   Energy: DIRECT — European Aluminium 2018 Table 5-2 pp.53-54
+            //   NOx, SO2, PM: DIRECT — European Aluminium 2018 Table 5-2 pp.53-54
+            //   Impact characterization: DERIVED — Direct emissions × JRC EF 3.1 CFs
+            //   Heavy metal impacts: DERIVED — EMEP/EEA §1.A.2 + USEtox 2.14
+            // Confidence: HIGH (energy and direct emissions directly from EA 2018)
             // ================================================================
             aluminum: Object.freeze({
                 // BUGFIX PACKAGING-NON-CC:
@@ -1541,16 +1205,30 @@
             }),
 
             // ================================================================
-            // steel — Virgin steel (blast furnace / basic oxygen furnace route)
-            // Source: World Steel Association LCI (2021, free public data).
-            //   "Steel Statistical Yearbook" + LCI data sheet for BF-BOF route.
-            //   BF-BOF route EU average: ~20 GJ/t steel.
-            //   EMEP/EEA §1.A.2 + World Steel (2021):
-            //     NOx: 0.60 g/kg steel (combined blast furnace gas combustion,
-            //       hot-stove, sinter plant, coke oven; WS LCI data)
-            //     SO2: 1.8 g/kg steel (coke oven + sinter plant; WS LCI)
-            //     PM2.5: 0.30 g/kg steel (BOF converter, sinter, cast house; WS LCI)
-            //     Heavy metals: Cr, Ni, Cd, Pb from coke oven (EMEP/EEA §1.A.2)
+            // steel — Electrolytic tinplate for food cans (global industry average)
+            // Source: World Steel Association LCA eco-profile,
+            //   worldsteel_eco-profiles_global-Tinplate-2022_Construction.pdf,
+            //   Table 2, page 4.
+            //   Cradle-to-gate (A1-A3), global industry average.
+            // Energy — DIRECT from file:
+            //   Non-renewable primary energy (PED): 30.03 GJ/t = 30.03 MJ/kg
+            //   (worldsteel_eco-profiles_global-Tinplate-2022 Table 2, PED row)
+            //   Production route: BOF and EAF, global average.
+            // Fuel split — DERIVED (documented weakness):
+            //   World Steel tinplate eco-profile provides total PED (30.03 GJ/t)
+            //   but NOT a per-fuel breakdown for tinplate specifically.
+            //   Fuel split derived from World Steel 2021-LCA-Study-Report.pdf §5.2.1
+            //   Fig 3 global steel energy mix: hard coal ~59-77%, natural gas ~10-16%,
+            //   renewables ~2-5%. This is a global average, not tinplate-specific.
+            //   Confidence for fuel split: MEDIUM (weakest link in steel derivation).
+            // Emission factors: EMEP/EEA 2023 §1.A.2 Tables 3-2, 3-3, 3-4.
+            // Characterization: JRC EF 3.1 + USEtox 2.14.
+            // FILE TRACEABILITY:
+            //   Total PED: DIRECT — worldsteel_eco-profiles Tinplate-2022 Table 2 p.4
+            //   Fuel split: DERIVED — World Steel 2021 LCA Study Report §5.2.1 Fig 3
+            //   Emissions: DERIVED — Energy × EMEP/EEA factor
+            //   Impact characterization: DERIVED — Emissions × JRC EF 3.1 / USEtox 2.14
+            // Confidence: MEDIUM (total energy direct; fuel split from global average)
             // ================================================================
             steel: Object.freeze({
                 // BUGFIX PACKAGING-NON-CC:
@@ -1698,6 +1376,43 @@
             })
         }),
 
+        
+            
+        SOC: Object.freeze({
+            AMORTIZATION_YEARS: 20.0,
+            C_TO_CO2: 3.6666666666666665
+        }),
+        CFF: Object.freeze({
+            A_FACTOR_METALS_GLASS_PAPER: 0.2,
+            A_FACTOR_DEFAULT: 0.5,
+            QUALITY_RATIO_DENOMINATOR: 1.0
+        }),
+        MONTE_CARLO: Object.freeze({
+            MIN_ITERATIONS: 100,
+            P5_PERCENTILE: 0.05,
+            P95_PERCENTILE: 0.95
+        }),
+        VALIDATION: Object.freeze({
+            DQR_MIN: 1.0,
+            DQR_MAX: 5.0,
+            RECYCLED_CONTENT_MAX: 100.0
+        }),
+        SYSTEM_BOUNDARY: Object.freeze({
+            VALUE: "cradle-to-retail"
+        }),
+        FOSSIL_FRACTION: Object.freeze({
+            MANUFACTURING_ELECTRICITY: 1.0,
+            TRANSPORT_DIESEL: 1.0,
+            PACKAGING_DEFAULT: 1.0
+        }),
+
+
+
+        tulasI
+            tulasI pariyar
+
+
+    
         // Source: ecoinvent v3.9.1, market for electricity, medium voltage, EU-27 (RER) — per-kWh multi-impact factors
         ELECTRICITY_GRID_MULTI: Object.freeze({
             'Ozone Depletion':               8.7e-12,
@@ -1772,83 +1487,264 @@
         //   Primary source: IPCC 2006 Vol. 4 Table 10.19.
         //   Verification: 2019 Refinement Vol. 4 Table 10.19.
         //
-        // [IPCC_TIER1_LIVESTOCK table continues unchanged from original file]
-        // NOTE: The full IPCC_TIER1_LIVESTOCK constant block is not reproduced here
-        // to avoid length — it is unchanged from the original core_physics.js and
-        // must be kept verbatim. Only PACKAGING_MULTI_CATEGORY and calculatePackaging()
-        // differ in this BUGFIX PACKAGING-NON-CC revision.
+        //   Dairy cow:   105  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged
+        //                       in 2019 Refinement.
+        //   Beef cattle:  70  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged
+        //                       in 2019 Refinement.
+        //   Pig:          11  — IPCC 2006 Vol. 4 Table 10.19 (swine, Developed).
+        //                       ⚠ UNCERTAINTY NOTE: The 2019 Refinement Table 10.19
+        //                       may have updated swine N excretion for Developed
+        //                       countries (some sources cite ~15 kg N/head/year for
+        //                       European swine). The 2006 value of 11 is retained here
+        //                       pending direct verification against the 2019 Refinement
+        //                       Table 10.19 PDF. If updated value is 15, replace this.
+        //   Sheep:        12  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Goat:         12  — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Broiler:      0.6 — IPCC 2006 Vol. 4 Table 10.19 (poultry). Confirmed.
+        //   Layer hen:    0.6 — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Turkey:       0.6 — IPCC 2006 Vol. 4 Table 10.19. Confirmed unchanged.
+        //   Farmed fish:  0   — N excretion enters water via different pathway
+        //                       (aquatic N cycling); deferred to Phase 2.
         //
-        // IMPORTANT FOR INTEGRATION: Copy the full IPCC_TIER1_LIVESTOCK block from the
-        // original core_physics.js verbatim immediately after this comment block and
-        // before the closing }); of the CONSTANTS declaration. All other constants
-        // (MULTI_CATEGORY_FACTORS, SOC, CFF, MONTE_CARLO, VALIDATION, etc.) remain
-        // identical to the original file.
-
-    }); // end CONSTANTS
-
-    // ── PRIVATE HELPERS ──────────────────────────────────────────────────────
+        // MANURE MANAGEMENT SYSTEM EF (kg N2O-N per kg N excreted) — Table 10.21:
+        //   Primary source: IPCC 2006 Vol. 4 Table 10.21.
+        //   Verification: 2019 Refinement Vol. 4 Table 10.21.
+        //   All values confirmed unchanged in 2019 Refinement.
+        //   Source: "IPCC 2006, Vol. 4, Table 10.21, confirmed unchanged in 2019 Refinement."
+        // =========================================================================
+        IPCC_TIER1_LIVESTOCK: Object.freeze({
+            // entericEF: keyed by animalType string (must match UI dropdown values)
+            // Each entry: { ef_ch4: kg CH4/head/year, n_excretion: kg N/head/year }
+            entericEF: Object.freeze({
+                // IPCC 2006 Vol. 4 Table 10.11 (W. Europe enteric EF) +
+                // Table 10.19 (N excretion).
+                // Confirmed unchanged in 2019 Refinement where indicated above.
+                'dairy_cow':   Object.freeze({ ef_ch4: 128,  n_excretion: 105  }),
+                'beef_cattle': Object.freeze({ ef_ch4: 57,   n_excretion: 70   }),
+                'pig':         Object.freeze({ ef_ch4: 1.5,  n_excretion: 11   }),
+                'sheep':       Object.freeze({ ef_ch4: 8,    n_excretion: 12   }),
+                'goat':        Object.freeze({ ef_ch4: 5,    n_excretion: 12   }),
+                'broiler':     Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
+                'layer_hen':   Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
+                'turkey':      Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
+                // FARMED FISH: zero enteric + zero manure N (aquatic pathway differs)
+                'farmed_fish': Object.freeze({ ef_ch4: 0,    n_excretion: 0    })
+            }),
+            // manureEF: kg N2O-N per kg N excreted
+            // IPCC 2006 Vol. 4 Table 10.21, confirmed unchanged in 2019 Refinement
+            // Keys must match UI dropdown values in supplierManureSystem
+            manureEF: Object.freeze({
+                'lagoon':       0.005,   // Anaerobic lagoon
+                'pit_storage':  0.002,   // Liquid/slurry pit storage
+                'dry_lot':      0.02,    // Dry lot (solid storage)
+                'pasture':      0.01,    // Pasture/range/paddock
+                'digester':     0.001,   // Covered anaerobic digester
+                'daily_spread': 0        // Daily spread — N2O accounted under
+                                         // crop soil emissions; zero here.
+            })
+        })
+    });
 
     class PhysicsError extends Error {
-        constructor(message) { super(message); this.name = 'PhysicsError'; }
+        constructor(message, code, context) {
+            super(message);
+            this.name = 'PhysicsError';
+            this.code = code;
+            this.context = context;
+        }
     }
+
     class MissingDataError extends PhysicsError {
-        constructor(field) { super('Missing required field: ' + field); this.name = 'MissingDataError'; }
+        constructor(field) {
+            super(`Required data missing: ${field}`, 'MISSING_DATA', { field });
+        }
     }
+
     class ValidationError extends PhysicsError {
-        constructor(message) { super(message); this.name = 'ValidationError'; }
+        constructor(message) {
+            super(message, 'VALIDATION_ERROR', {});
+        }
     }
 
     function randomNormal() {
-        let u = 0, v = 0;
-        while (u === 0) u = Math.random();
-        while (v === 0) v = Math.random();
+        let u = CONSTANTS.MATH.ZERO;
+        let v = CONSTANTS.MATH.ZERO;
+        while (u === CONSTANTS.MATH.ZERO) u = Math.random();
+        while (v === CONSTANTS.MATH.ZERO) v = Math.random();
         return Math.sqrt(-CONSTANTS.MATH.BOX_MULLER_CONSTANT * Math.log(u)) * Math.cos(CONSTANTS.MATH.BOX_MULLER_CONSTANT * Math.PI * v);
     }
 
-    // ── PUBLIC PHYSICS FUNCTIONS ──────────────────────────────────────────────
-    // NOTE: calculateIngredientImpact, calculateTransport, calculateManufacturing,
-    //       calculateAWARE, calculateUncertainty, calculateSingleScore,
-    //       aggregateResults, calculateParametricTwin, calculateEntericMethane,
-    //       calculateManureN2O — all unchanged from original file.
-    //       Only calculatePackaging() is modified below.
-
     function calculateIngredientImpact(input) {
-        // [Unchanged from original — not modified in this bugfix]
         const ingredientData = input.ingredientData;
-        const quantityKg     = input.quantityKg;
+        const quantityKg = input.quantityKg;
+        const entericParams = input.entericParams;
+        
         if (!ingredientData) throw new MissingDataError('ingredientData');
+        if (!ingredientData.pef) throw new MissingDataError('ingredientData.pef');
         if (typeof quantityKg !== 'number' || quantityKg <= CONSTANTS.MATH.ZERO) throw new MissingDataError('quantityKg');
+        
         const pef = ingredientData.pef;
-        if (!pef) throw new MissingDataError('ingredientData.pef');
-        const cc  = pef['Climate Change'];
-        const ccf = pef['Climate Change - Fossil'];
-        const ccb = pef['Climate Change - Biogenic'];
-        const ccd = pef['Climate Change - Land Use'];
-        const ws  = pef['Water Use/Scarcity (AWARE)'];
-        const lu  = pef['Land Use'];
-        const rf  = pef['Resource Use, fossils'];
-        const mn  = pef['Eutrophication, marine'];
-        const fp  = pef['Eutrophication, freshwater'];
-        if (typeof cc  !== 'number') throw new MissingDataError('pef.Climate Change');
-        if (typeof ccf !== 'number') throw new MissingDataError('pef.Climate Change - Fossil');
-        if (typeof ccb !== 'number') throw new MissingDataError('pef.Climate Change - Biogenic');
-        if (typeof ccd !== 'number') throw new MissingDataError('pef.Climate Change - Land Use');
-        if (typeof ws  !== 'number') throw new MissingDataError('pef.Water Use/Scarcity (AWARE)');
-        if (typeof lu  !== 'number') throw new MissingDataError('pef.Land Use');
-        if (typeof rf  !== 'number') throw new MissingDataError('pef.Resource Use, fossils');
-        if (typeof mn  !== 'number') throw new MissingDataError('pef.Eutrophication, marine');
-        if (typeof fp  !== 'number') throw new MissingDataError('pef.Eutrophication, freshwater');
+
+        // Extended to ALL 16 EF 3.1 categories + 3 Climate Change sub-splits (19 total)
+        const required = [
+            'Climate Change',
+            'Climate Change - Fossil',
+            'Climate Change - Biogenic',
+            'Climate Change - Land Use',
+            'Ozone Depletion',
+            'Human Toxicity, non-cancer',
+            'Human Toxicity, cancer',
+            'Particulate Matter',
+            'Ionizing Radiation',
+            'Photochemical Ozone Formation',
+            'Acidification',
+            'Eutrophication, terrestrial',
+            'Eutrophication, freshwater',
+            'Eutrophication, marine',
+            'Ecotoxicity, freshwater',
+            'Land Use',
+            'Water Use/Scarcity (AWARE)',
+            'Resource Use, minerals/metals',
+            'Resource Use, fossils'
+        ];
+        
+        for (const field of required) {
+            if (pef[field] === undefined || pef[field] === null) {
+                throw new MissingDataError(`pef.${field}`);
+            }
+        }
+        
+        let totalCO2    = pef['Climate Change']              * quantityKg;
+        let fossilCO2   = pef['Climate Change - Fossil']     * quantityKg;
+        let biogenicCO2 = pef['Climate Change - Biogenic']   * quantityKg;
+        const dlucCO2                  = pef['Climate Change - Land Use']        * quantityKg;
+        const totalWater               = pef['Water Use/Scarcity (AWARE)']       * quantityKg;
+        const totalLand                = pef['Land Use']                          * quantityKg;
+        const totalFossil              = pef['Resource Use, fossils']             * quantityKg;
+        const marineEutrophication_N   = pef['Eutrophication, marine']            * quantityKg;
+        const freshwaterEutrophication_P = pef['Eutrophication, freshwater']      * quantityKg;
+        // New: remaining 10 categories
+        const ozoneDepletion           = pef['Ozone Depletion']                  * quantityKg;
+        const humanToxicityNonCancer   = pef['Human Toxicity, non-cancer']       * quantityKg;
+        const humanToxicityCancer      = pef['Human Toxicity, cancer']           * quantityKg;
+        const particulateMatter        = pef['Particulate Matter']               * quantityKg;
+        const ionizingRadiation        = pef['Ionizing Radiation']               * quantityKg;
+        const photochemicalOzoneFormation = pef['Photochemical Ozone Formation'] * quantityKg;
+        const acidification            = pef['Acidification']                    * quantityKg;
+        const eutrophicationTerrestrial = pef['Eutrophication, terrestrial']     * quantityKg;
+        const ecotoxicityFreshwater    = pef['Ecotoxicity, freshwater']          * quantityKg;
+        const resourceUseMineralsMetals = pef['Resource Use, minerals/metals']   * quantityKg;
+        
+        // FIX 1: CF-02 STRICT GUARD — unchanged
+        var entericIncluded = false;
+        if (ingredientData.data && ingredientData.data.metadata && typeof ingredientData.data.metadata.entericIncluded === 'boolean') {
+            entericIncluded = ingredientData.data.metadata.entericIncluded;
+        }
+        if (entericIncluded !== true && entericParams) {
+            const entericCO2 = calculateEntericMethane(entericParams);
+            totalCO2    = totalCO2    + entericCO2;
+            biogenicCO2 = biogenicCO2 + entericCO2;
+        }
+        
         return {
-            totalCO2:                    cc  * quantityKg,
-            fossilCO2:                   ccf * quantityKg,
-            biogenicCO2:                 ccb * quantityKg,
-            dlucCO2:                     ccd * quantityKg,
-            totalWater:                  ws  * quantityKg,
-            totalLand:                   lu  * quantityKg,
-            totalFossil:                 rf  * quantityKg,
-            marineEutrophication_N:      mn  * quantityKg,
-            freshwaterEutrophication_P:  fp  * quantityKg
+            totalCO2,
+            fossilCO2,
+            biogenicCO2,
+            dlucCO2,
+            totalWater,
+            totalLand,
+            totalFossil,
+            marineEutrophication_N,
+            freshwaterEutrophication_P,
+            // New fields — all 10 previously missing categories
+            ozoneDepletion,
+            humanToxicityNonCancer,
+            humanToxicityCancer,
+            particulateMatter,
+            ionizingRadiation,
+            photochemicalOzoneFormation,
+            acidification,
+            eutrophicationTerrestrial,
+            ecotoxicityFreshwater,
+            resourceUseMineralsMetals
         };
+    }
+    
+    function calculateEntericMethane(params) {
+        if (!params) throw new MissingDataError('entericParams');
+        if (typeof params.animalType !== 'string') throw new MissingDataError('entericParams.animalType');
+        if (typeof params.quantityKg !== 'number') throw new MissingDataError('entericParams.quantityKg');
+        if (typeof params.efCh4PerHead !== 'number') throw new MissingDataError('entericParams.efCh4PerHead');
+        if (typeof params.productPerHeadPerYear !== 'number') throw new MissingDataError('entericParams.productPerHeadPerYear');
+        
+        const headsNeeded = params.quantityKg / params.productPerHeadPerYear;
+        const ch4Kg = headsNeeded * params.efCh4PerHead;
+        return ch4Kg * CONSTANTS.IPCC_AR5_PEF31.GWP_CH4_BIOGENIC;
+    }
+
+    // ================== calculateManureN2O ==================
+    // Computes CO2-equivalent GHG emissions from manure management N2O.
+    //
+    // Methodology: IPCC 2006 Guidelines Vol. 4, Chapter 10, Tier 1.
+    // Confirmed applicable in 2019 Refinement (no Tier 1 manure N2O formula change).
+    //
+    // Formula:
+    //   heads          = quantityKg / productPerHeadPerYear
+    //   N_excreted_kg  = heads × nExcretionPerHead          (kg N / year)
+    //   N2O_N_kg       = N_excreted_kg × EF_manure          (kg N2O-N / year)
+    //   N2O_kg         = N2O_N_kg × (44/28)                 (kg N2O / year)
+    //                  = N2O_N_kg × CONSTANTS.IPCC_TIER1.N2O_MASS_CONVERSION
+    //   CO2e           = N2O_kg × CONSTANTS.IPCC_AR5_PEF31.GWP_N2O
+    //
+    // Where EF_manure = CONSTANTS.IPCC_TIER1_LIVESTOCK.manureEF[manureSystem]
+    //   (kg N2O-N per kg N excreted, IPCC 2006 Table 10.21)
+    //
+    // SPECIAL CASE — FARMED FISH:
+    //   Fish N excretion enters water (aquatic pathway); this function
+    //   returns 0 for farmed_fish. Feed-based emissions deferred to Phase 2.
+    //
+    // Params:
+    //   animalType          — string key into IPCC_TIER1_LIVESTOCK.entericEF
+    //   quantityKg          — kg of product being assessed
+    //   nExcretionPerHead   — kg N excreted per head per year (Tier 1 default)
+    //   productPerHeadPerYear — kg of product per head per year (from supplier or FAOSTAT)
+    //   manureSystem        — string key into IPCC_TIER1_LIVESTOCK.manureEF
+    //
+    // Returns: kg CO2e from manure N2O (number)
+    function calculateManureN2O(params) {
+        if (!params) throw new MissingDataError('manureN2OParams');
+        if (typeof params.animalType !== 'string')
+            throw new MissingDataError('manureN2OParams.animalType');
+        if (typeof params.quantityKg !== 'number' || params.quantityKg <= CONSTANTS.MATH.ZERO)
+            throw new MissingDataError('manureN2OParams.quantityKg');
+        if (typeof params.nExcretionPerHead !== 'number')
+            throw new MissingDataError('manureN2OParams.nExcretionPerHead');
+        if (typeof params.productPerHeadPerYear !== 'number' || params.productPerHeadPerYear <= CONSTANTS.MATH.ZERO)
+            throw new MissingDataError('manureN2OParams.productPerHeadPerYear');
+        if (typeof params.manureSystem !== 'string')
+            throw new MissingDataError('manureN2OParams.manureSystem');
+
+        // FARMED FISH: aquatic N excretion pathway — different model required.
+        // Return 0; caller should record this as deferred to Phase 2.
+        if (params.animalType === 'farmed_fish') {
+            return CONSTANTS.MATH.ZERO;
+        }
+
+        const headsNeeded  = params.quantityKg / params.productPerHeadPerYear;
+        const nExcretedKg  = headsNeeded * params.nExcretionPerHead;       // kg N total
+
+        // Look up manure management system EF from IPCC 2006 Table 10.21
+        const manureEFLookup = CONSTANTS.IPCC_TIER1_LIVESTOCK.manureEF;
+        const efManure = (manureEFLookup[params.manureSystem] !== undefined)
+            ? manureEFLookup[params.manureSystem]
+            : manureEFLookup['pasture'];     // safe fallback if key missing
+
+        // kg N2O-N → kg N2O → kg CO2e
+        const n2oN_kg  = nExcretedKg  * efManure;                                           // kg N2O-N
+        const n2o_kg   = n2oN_kg      * CONSTANTS.IPCC_TIER1.N2O_MASS_CONVERSION;           // kg N2O (×44/28)
+        const co2e     = n2o_kg       * CONSTANTS.IPCC_AR5_PEF31.GWP_N2O;                   // kg CO2e (×265)
+
+        return co2e;
     }
 
     function calculateTransport(input) {
@@ -1856,56 +1752,72 @@
         const distanceKm = input.distanceKm;
         const mode = input.mode;
         const refrigeration = input.refrigeration;
+        
         if (typeof massKg !== 'number' || massKg <= CONSTANTS.MATH.ZERO) throw new MissingDataError('massKg');
         if (typeof distanceKm !== 'number' || distanceKm < CONSTANTS.MATH.ZERO) throw new MissingDataError('distanceKm');
         if (!mode) throw new MissingDataError('mode');
-        if (!['road', 'sea', 'air', 'rail'].includes(mode)) throw new ValidationError('Invalid mode: ' + mode);
+        if (!['road', 'sea', 'air', 'rail'].includes(mode)) throw new ValidationError(`Invalid mode: ${mode}`);
         if (!refrigeration) throw new MissingDataError('refrigeration');
-        if (!['ambient', 'chilled', 'frozen'].includes(refrigeration)) throw new ValidationError('Invalid refrigeration: ' + refrigeration);
+        if (!['ambient', 'chilled', 'frozen'].includes(refrigeration)) throw new ValidationError(`Invalid refrigeration: ${refrigeration}`);
+        
         const glec = CONSTANTS.GLEC;
         const modeEFs = glec.EMISSION_FACTORS[mode];
+
+        // ⚠️  AIR MODE: Validate that caller is not requesting reefer for air.
+        // GLEC v3.2 provides no air reefer factor. Air reefer uses ambient EF.
         if (mode === 'air' && (refrigeration === 'chilled' || refrigeration === 'frozen')) {
-            // No separate reefer EF for air; fall through to ambient.
+            // No separate reefer EF exists for air in GLEC v3.2.
+            // Fall through to ambient EF — refrigerant leakage is still charged
+            // below via REFRIGERANT_LEAKAGE if applicable.
+            // callers should be aware this may underestimate air reefer emissions.
         }
+        
         let factor;
         if (mode === 'road') {
             factor = modeEFs[refrigeration].hgv;
         } else if (mode === 'air') {
+            // Only ambient exists for air (reefer removed — no GLEC source).
             factor = modeEFs.ambient;
         } else {
             const tempType = (refrigeration === 'chilled' || refrigeration === 'frozen') ? 'reefer' : 'ambient';
             factor = modeEFs[tempType];
         }
+        
+        // ----------------------------------------------------------------
+        // DISTANCE ADJUSTMENT — GLEC v3.2 METHOD
+        // Road, sea, rail: multiplicative DAF (×1.05, ×1.15, ×1.00).
+        // Air: ADDITIVE +95 km (GLEC v3.2 Module 2, air section, p. 94).
+        //   "Air Freight emission intensity values include a +95km distance
+        //   conversion." This is NOT a multiplier — it is an additive constant.
+        // ----------------------------------------------------------------
         let adjustedDistance;
         if (mode === 'air') {
+            // GLEC v3.2 additive DAF for air: actual = GCD + 95 km.
             adjustedDistance = distanceKm + glec.AIR_DAF_KM;
         } else {
             const daf = glec.DAF[mode];
+            // DAF.air is null (sentinel) — this branch never reaches it.
             adjustedDistance = distanceKm * daf;
         }
+        
         let payloadMultiplier = CONSTANTS.MATH.ONE;
-        if (mode === 'road') {
-            // GAP 2 FIX: payloadMultiplier applies to road ONLY.
-            // Source: GLEC v3.2 Module 2, Table 8 (EU artic truck, Average/mixed):
-            //   Load Factor = 60%, Empty Running = 17%.
-            // Road EFs in Table 18 are published on a full-load reference basis and
-            // require this correction to reflect real-world average utilization.
-            // Sea EFs in Table 18 are "industry average" values that already incorporate
-            // average vessel utilization across the global container fleet (GLEC v3.2
-            // Module 2, Table 18 preamble). Applying the road load factor to sea was
-            // incorrect — it would double-count the utilization adjustment.
-            // Rail and air: no payload multiplier per GLEC v3.2.
+        if (mode === 'road' || mode === 'sea') {
             payloadMultiplier = (CONSTANTS.MATH.ONE / glec.LOAD_FACTOR) * (CONSTANTS.MATH.ONE + glec.EMPTY_RETURN_RATE);
         }
+        
         const adjustedFactor = factor * payloadMultiplier;
         const massTons = massKg / CONSTANTS.UNIT.KG_TO_TON;
         const fuelEmissions = massTons * adjustedDistance * adjustedFactor;
+        
         let refrigerantEmissions = CONSTANTS.MATH.ZERO;
         if (refrigeration === 'frozen') {
             refrigerantEmissions = massTons * adjustedDistance * glec.REFRIGERANT_LEAKAGE.frozen;
         } else if (refrigeration === 'chilled') {
             refrigerantEmissions = massTons * adjustedDistance * glec.REFRIGERANT_LEAKAGE.chilled;
         }
+
+        // Multi-category transport impacts — road factors only.
+        // Non-road modes have no MULTI_CATEGORY_FACTORS entry → empty object.
         const multiCategoryResults = {};
         const modeMCF = glec.MULTI_CATEGORY_FACTORS[mode];
         if (modeMCF) {
@@ -1913,6 +1825,7 @@
                 multiCategoryResults[category] = massTons * adjustedDistance * modeMCF[category];
             }
         }
+
         return {
             total: fuelEmissions + refrigerantEmissions,
             fuelEmissions: fuelEmissions,
@@ -1926,44 +1839,41 @@
         const massOutputKg = input.massOutputKg;
         const benchmarkKwhPerKg = input.benchmarkKwhPerKg;
         const gridIntensityGPerKwh = input.gridIntensityGPerKwh;
+        
         if (typeof massOutputKg !== 'number' || massOutputKg <= CONSTANTS.MATH.ZERO) throw new MissingDataError('massOutputKg');
         if (typeof benchmarkKwhPerKg !== 'number' || benchmarkKwhPerKg < CONSTANTS.MATH.ZERO) throw new MissingDataError('benchmarkKwhPerKg');
         if (typeof gridIntensityGPerKwh !== 'number' || gridIntensityGPerKwh < CONSTANTS.MATH.ZERO) throw new MissingDataError('gridIntensityGPerKwh');
+        
         const gridIntensityWithLosses = gridIntensityGPerKwh * (CONSTANTS.MATH.ONE + CONSTANTS.GLEC.T_AND_D_LOSSES);
         const electricityKWh = benchmarkKwhPerKg * massOutputKg;
         const co2 = electricityKWh * (gridIntensityWithLosses / CONSTANTS.UNIT.G_TO_KG);
+
+        // Multi-category manufacturing impacts — per-kWh electricity factors
         const multiCategoryResults = {};
         for (const category of Object.keys(CONSTANTS.ELECTRICITY_GRID_MULTI)) {
             multiCategoryResults[category] = electricityKWh * CONSTANTS.ELECTRICITY_GRID_MULTI[category];
         }
-        return {
-            co2,
+
+        return { 
+            co2, 
             kwh: electricityKWh,
             fossilFraction: CONSTANTS.FOSSIL_FRACTION.MANUFACTURING_ELECTRICITY,
             multiCategoryResults: multiCategoryResults
         };
     }
 
-    // BUGFIX PACKAGING-NON-CC: calculatePackaging() now accepts an optional
-    // `materialKey` field and returns `multiCategoryResults` for all 9
-    // non-CC derivable impact categories plus zeros for the 6 honest gaps.
-    // Climate Change is NOT included here — it is already returned via
-    // totalImpact / fossilImpact / biogenicImpact (the CFF formula result).
     function calculatePackaging(input) {
-        const weightKg       = input.weightKg;
-        const ev             = input.ev;
-        const erecycled      = input.erecycled;
-        const ed             = input.ed;
-        const r1             = input.r1;
-        const r2             = input.r2;
-        const aFactor        = input.aFactor;
-        const qs             = input.qs;
-        const qp             = input.qp;
+        const weightKg = input.weightKg;
+        const ev = input.ev;
+        const erecycled = input.erecycled;
+        const ed = input.ed;
+        const r1 = input.r1;
+        const r2 = input.r2;
+        const aFactor = input.aFactor;
+        const qs = input.qs;
+        const qp = input.qp;
         const fossilFraction = input.fossilFraction;
-        // BUGFIX PACKAGING-NON-CC: materialKey is optional; if absent, multiCategoryResults
-        // will be an object with all-zero values (honest gap for unknown material).
-        const materialKey    = input.materialKey || null;
-
+        
         if (typeof weightKg !== 'number' || weightKg <= CONSTANTS.MATH.ZERO) throw new MissingDataError('weightKg');
         if (typeof ev !== 'number') throw new MissingDataError('ev');
         if (typeof erecycled !== 'number') throw new MissingDataError('erecycled');
@@ -1974,127 +1884,46 @@
         if (typeof qs !== 'number') throw new MissingDataError('qs');
         if (typeof qp !== 'number') throw new MissingDataError('qp');
         if (typeof fossilFraction !== 'number') throw new MissingDataError('fossilFraction');
-
-        const qualityRatio      = qs / qp;
-        const term1             = (CONSTANTS.MATH.ONE - r1) * ev;
-        const term2             = r1 * (aFactor * erecycled + (CONSTANTS.MATH.ONE - aFactor) * ev * qualityRatio);
+        
+        const qualityRatio = qs / qp;
+        const term1 = (CONSTANTS.MATH.ONE - r1) * ev;
+        const term2 = r1 * (aFactor * erecycled + (CONSTANTS.MATH.ONE - aFactor) * ev * qualityRatio);
         const burdenAcquisition = term1 + term2;
-
-        // GAP 3 FIX: CFF sign convention — notation clarification.
-        // PEF CFF formula (EC Recommendation 2021/2279, Annex I):
-        //   Impact = (1-R1)×Ev + R1×(A×Erec + (1-A)×Ev×Qs/Qp)
-        //            + (1-R2)×Ed − R2×(1-A)×(Erec − Ev×Qs/Qp)
-        //
-        // The PEF notation subtracts the end-of-life credit term.
-        // This code adds creditEoL, which is mathematically equivalent because:
-        //   creditEoL = R2 × (1-A) × (Erec - Ev×Qs/Qp)
-        //
-        // In the normal case (Erec < Ev, i.e. recycling saves emissions):
-        //   (erecycled - ev × qualityRatio) is NEGATIVE
-        //   → creditEoL is NEGATIVE
-        //   → adding a negative = subtracting the absolute value → CORRECT
-        //
-        // In the edge case (Erec > Ev, i.e. recycling has higher burden than virgin):
-        //   (erecycled - ev × qualityRatio) is POSITIVE
-        //   → creditEoL is POSITIVE
-        //   → adding a positive increases total burden → CORRECT (recycling is a burden)
-        //
-        // The computation is equivalent to the PEF notation in all cases.
-        // No numerical change — documentation fix only.
-        // Verify: if adding a new material where Erec > Ev, confirm this behaviour
-        // is intentional and documented in the packaging data source.
-        const creditEoL         = r2 * (CONSTANTS.MATH.ONE - aFactor) * (erecycled - ev * qualityRatio);
-        const burdenDisposal    = (CONSTANTS.MATH.ONE - r2) * ed;
-        const impactPerKg       = burdenAcquisition + creditEoL + burdenDisposal;
-        const totalImpact       = impactPerKg * weightKg;
-
-        // BUGFIX PACKAGING-NON-CC: Compute multi-category results from
-        // PACKAGING_MULTI_CATEGORY factors × weightKg.
-        // Uses virgin-material factors as a conservative proxy for blended
-        // virgin+recycled content (full CFF expansion to non-CC categories
-        // requires recycled-content-specific LCI data not yet available from
-        // free sources; using virgin factors is conservative and documented).
-        const multiCategoryResults = {};
-        const NON_CC_CATEGORIES = [
-            'Ozone Depletion',
-            'Human Toxicity, cancer',
-            'Human Toxicity, non-cancer',
-            'Particulate Matter',
-            'Ionizing Radiation',
-            'Photochemical Ozone Formation',
-            'Acidification',
-            'Eutrophication, terrestrial',
-            'Eutrophication, freshwater',
-            'Eutrophication, marine',
-            'Ecotoxicity, freshwater',
-            'Land Use',
-            'Water Use/Scarcity (AWARE)',
-            'Resource Use, minerals/metals'
-        ];
-
-        // BUGFIX PACKAGING-NON-CC: Look up per-kg factors for this material.
-        const materialFactors = materialKey
-            ? (CONSTANTS.PACKAGING_MULTI_CATEGORY[materialKey] || null)
-            : null;
-
-        for (const cat of NON_CC_CATEGORIES) {
-            if (materialFactors && materialFactors[cat] !== undefined) {
-                // BUGFIX PACKAGING-NON-CC: factor × weightKg → category impact.
-                multiCategoryResults[cat] = materialFactors[cat] * weightKg;
-            } else {
-                // BUGFIX PACKAGING-NON-CC: material not in lookup table (e.g. unknown
-                // material key) — set to zero and allow caller to log if needed.
-                multiCategoryResults[cat] = CONSTANTS.MATH.ZERO;
-            }
-        }
-
+        const creditEoL = r2 * (CONSTANTS.MATH.ONE - aFactor) * (erecycled - ev * qualityRatio);
+        const burdenDisposal = (CONSTANTS.MATH.ONE - r2) * ed;
+        const impactPerKg = burdenAcquisition + creditEoL + burdenDisposal;
+        const totalImpact = impactPerKg * weightKg;
+        
         return {
-            totalImpact:          totalImpact,
-            impactPerKg:          impactPerKg,
-            fossilImpact:         totalImpact * fossilFraction,
-            biogenicImpact:       totalImpact * (CONSTANTS.MATH.ONE - fossilFraction),
-            // BUGFIX PACKAGING-NON-CC: multiCategoryResults now populated for all
-            // 14 non-CC categories. Previously this key was absent, causing zeros
-            // in aggregateAllCategories() for all non-CC packaging contributions.
-            multiCategoryResults: multiCategoryResults
+            totalImpact: totalImpact,
+            impactPerKg: impactPerKg,
+            fossilImpact: totalImpact * fossilFraction,
+            biogenicImpact: totalImpact * (CONSTANTS.MATH.ONE - fossilFraction)
         };
     }
 
-    // GAP 6 FIX: calculateAWARE() — Reference implementation. NOT called in the active pipeline.
-    //
-    // The active AWARE adjustment uses a ratio method in calculation_engine.js
-    // (applyCountrySpecificFactors, STEP B):
-    //   flatPef['Water Use/Scarcity (AWARE)'] *= (originAWARE / refAWARE)
-    // This adjusts the AGRIBALYSE 3.2 AWARE-characterised value (which already
-    // incorporates water consumption × CF for FR conditions per ADEME methodology)
-    // by the ratio of the origin country's agricultural AWARE CF to the FR reference CF.
-    //
-    // calculateAWARE() below implements the direct method: waterConsumptionM3 × awareCF.
-    // This direct method requires raw water consumption inventory data (m³/kg) per ingredient.
-    // AGRIBALYSE 3.2 does not expose this inventory — it exposes the characterised result
-    // (m³ world-eq/kg product). Therefore the ratio method is the correct approach for
-    // AGRIBALYSE inputs and this function is retained for Phase 3 (primary data water
-    // inventory path, when suppliers provide water withdrawal data directly).
-    //
-    // Source: AWARE 2.0 — Boulay et al. (2018), Int J Life Cycle Assess 23:2027–2042.
-    // AGRIBALYSE 3.2 applies AWARE at the characterization step internally (§4.3).
     function calculateAWARE(input) {
         const waterConsumptionM3 = input.waterConsumptionM3;
         const awareCF = input.awareCF;
+        
         if (typeof waterConsumptionM3 !== 'number' || waterConsumptionM3 < CONSTANTS.MATH.ZERO) throw new MissingDataError('waterConsumptionM3');
         if (typeof awareCF !== 'number') throw new MissingDataError('awareCF');
+        
         return { impact: waterConsumptionM3 * awareCF };
     }
 
     function calculateUncertainty(input) {
         const components = input.components;
         const iterations = input.iterations;
+        
         if (!components || components.length === CONSTANTS.MATH.ZERO) throw new MissingDataError('components');
         if (typeof iterations !== 'number' || iterations < CONSTANTS.MONTE_CARLO.MIN_ITERATIONS) throw new MissingDataError('iterations');
+        
         for (const comp of components) {
             if (typeof comp.value !== 'number') throw new MissingDataError('component.value');
             if (typeof comp.uncertaintyPercent !== 'number') throw new MissingDataError('component.uncertaintyPercent');
         }
+        
         const results = [];
         for (let i = CONSTANTS.MATH.ZERO; i < iterations; i = i + CONSTANTS.MATH.ONE) {
             let total = CONSTANTS.MATH.ZERO;
@@ -2108,185 +1937,574 @@
             }
             results.push(total);
         }
+        
         results.sort((a, b) => a - b);
+        
         return {
             mean: results.reduce((a, b) => a + b, CONSTANTS.MATH.ZERO) / iterations,
-            p5:   results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P5_PERCENTILE)],
-            p95:  results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P95_PERCENTILE)]
+            p5: results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P5_PERCENTILE)],
+            p95: results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P95_PERCENTILE)]
         };
     }
 
     function calculateSingleScore(input) {
-        const pefResults       = input.pefResults;
-        const productWeightKg  = input.productWeightKg;
-        const nf               = input.normalizationFactors;
-        const wf               = input.weightingFactors;
+        const pefResults = input.pefResults;
+        const productWeightKg = input.productWeightKg;
+        const nf = input.normalizationFactors;
+        const wf = input.weightingFactors;
+        
         if (!pefResults) throw new MissingDataError('pefResults');
         if (typeof productWeightKg !== 'number' || productWeightKg <= CONSTANTS.MATH.ZERO) throw new MissingDataError('productWeightKg');
         if (!nf) throw new MissingDataError('normalizationFactors');
         if (!wf) throw new MissingDataError('weightingFactors');
+        
         let weightedScore = CONSTANTS.MATH.ZERO;
+        
         for (const category in pefResults) {
             const impact = pefResults[category].total;
-            if (typeof impact !== 'number') throw new MissingDataError('pefResults.' + category + '.total');
-            const normFactor   = nf[category];
+            if (typeof impact !== 'number') throw new MissingDataError(`pefResults.${category}.total`);
+            
+            const normFactor = nf[category];
             const weightFactor = wf[category];
-            if (normFactor   === undefined) throw new MissingDataError('nf.'  + category);
-            if (weightFactor === undefined) throw new MissingDataError('wf.'  + category);
+            
+            if (normFactor === undefined) throw new MissingDataError(`nf.${category}`);
+            if (weightFactor === undefined) throw new MissingDataError(`wf.${category}`);
+            
             weightedScore = weightedScore + (impact / productWeightKg) * normFactor * weightFactor;
         }
+        
         return {
             singleScore: weightedScore * CONSTANTS.UNIT.MICROPOINT_SCALING,
             unit: '\u00B5Pt'
         };
     }
 
-    // GAP 5 FIX: aggregateResults() — DEPRECATED. Do not use in new code.
-    //
-    // This function is exported for backward compatibility only. It is NOT called
-    // anywhere in the active calculation pipeline. The active aggregation function
-    // is calculation_engine.aggregateAllCategories().
-    //
-    // STRUCTURAL MISMATCH (audit finding): This function reads the following
-    // properties from each ingredient result object:
-    //   ing.ozoneDepletion, ing.humanToxicityNonCancer, ing.humanToxicityCancer,
-    //   ing.particulateMatter, ing.ionizingRadiation, ing.photochemicalOzoneFormation,
-    //   ing.acidification, ing.eutrophicationTerrestrial, ing.ecotoxicityFreshwater,
-    //   ing.resourceUseMineralsMetals
-    // However, calculateIngredientImpact() does NOT return any of these properties.
-    // It returns only: totalCO2, fossilCO2, biogenicCO2, dlucCO2, totalWater,
-    //   totalLand, totalFossil, marineEutrophication_N, freshwaterEutrophication_P.
-    // Consequence: if this function were ever called, all 10 non-CC non-core
-    // categories from ingredients would be ZERO. This would silently understate
-    // environmental impact. The || 0 fallback masks the error.
-    //
-    // Use calculation_engine.aggregateAllCategories() which reads ing.allCategoryResults[cat]
-    // and correctly handles all 19 PEF sub-categories.
-    //
-    // This function will be removed in a future major version.
-    /** @deprecated Use calculation_engine.aggregateAllCategories() instead. */
     function aggregateResults(input) {
-        console.warn(
-            '[AIOXY] aggregateResults() is deprecated and will be removed in a future release. ' +
-            'Use calculation_engine.aggregateAllCategories() instead. ' +
-            'STRUCTURAL MISMATCH: This function returns zero for all non-CC non-core ' +
-            'ingredient categories (Ozone Depletion, Human Toxicity cancer/non-cancer, ' +
-            'Particulate Matter, Ionizing Radiation, Photochemical Ozone Formation, ' +
-            'Acidification, Eutrophication terrestrial, Ecotoxicity freshwater, ' +
-            'Resource Use minerals/metals) because calculateIngredientImpact() does not ' +
-            'return these properties. Results would be materially understated.'
-        );
         const ingredients = input.ingredientResults;
-        const mfg         = input.manufacturingResult;
-        const transport   = input.transportResult;
-        const packaging   = input.packagingResult;
+        const mfg = input.manufacturingResult;
+        const transport = input.transportResult;
+        const packaging = input.packagingResult;
+        
         if (!ingredients) throw new MissingDataError('ingredientResults');
-        if (!mfg)         throw new MissingDataError('manufacturingResult');
-        if (!transport)   throw new MissingDataError('transportResult');
-        if (!packaging)   throw new MissingDataError('packagingResult');
-
-        let sumCO2      = CONSTANTS.MATH.ZERO;
-        let sumFossil   = CONSTANTS.MATH.ZERO;
+        if (!mfg) throw new MissingDataError('manufacturingResult');
+        if (!transport) throw new MissingDataError('transportResult');
+        if (!packaging) throw new MissingDataError('packagingResult');
+        
+        let sumCO2     = CONSTANTS.MATH.ZERO;
+        let sumFossil  = CONSTANTS.MATH.ZERO;
         let sumBiogenic = CONSTANTS.MATH.ZERO;
-        let sumDLUC     = CONSTANTS.MATH.ZERO;
-        let sumWater    = CONSTANTS.MATH.ZERO;
-        let sumLand     = CONSTANTS.MATH.ZERO;
+        let sumDLUC    = CONSTANTS.MATH.ZERO;
+        let sumWater   = CONSTANTS.MATH.ZERO;
+        let sumLand    = CONSTANTS.MATH.ZERO;
         let sumFossilMJ = CONSTANTS.MATH.ZERO;
-        let sumMarineN  = CONSTANTS.MATH.ZERO;
-        let sumFreshP   = CONSTANTS.MATH.ZERO;
-        let sumOzone    = CONSTANTS.MATH.ZERO;
-        let sumHTNC     = CONSTANTS.MATH.ZERO;
-        let sumHTC      = CONSTANTS.MATH.ZERO;
-        let sumPM       = CONSTANTS.MATH.ZERO;
-        let sumIR       = CONSTANTS.MATH.ZERO;
-        let sumPOF      = CONSTANTS.MATH.ZERO;
-        let sumAcid     = CONSTANTS.MATH.ZERO;
-        let sumEutT     = CONSTANTS.MATH.ZERO;
-        let sumEcoFW    = CONSTANTS.MATH.ZERO;
-        let sumMinerals = CONSTANTS.MATH.ZERO;
-
+        let sumMarineN = CONSTANTS.MATH.ZERO;
+        let sumFreshP  = CONSTANTS.MATH.ZERO;
+        // New accumulators for the 10 previously missing categories
+        let sumOzone       = CONSTANTS.MATH.ZERO;
+        let sumHTNC        = CONSTANTS.MATH.ZERO;
+        let sumHTC         = CONSTANTS.MATH.ZERO;
+        let sumPM          = CONSTANTS.MATH.ZERO;
+        let sumIR          = CONSTANTS.MATH.ZERO;
+        let sumPOF         = CONSTANTS.MATH.ZERO;
+        let sumAcid        = CONSTANTS.MATH.ZERO;
+        let sumEutT        = CONSTANTS.MATH.ZERO;
+        let sumEcoFW       = CONSTANTS.MATH.ZERO;
+        let sumMinerals    = CONSTANTS.MATH.ZERO;
+        
         for (const ing of ingredients) {
-            if (typeof ing.totalCO2              !== 'number') throw new MissingDataError('ingredient.totalCO2');
-            if (typeof ing.fossilCO2             !== 'number') throw new MissingDataError('ingredient.fossilCO2');
-            if (typeof ing.biogenicCO2           !== 'number') throw new MissingDataError('ingredient.biogenicCO2');
-            if (typeof ing.dlucCO2               !== 'number') throw new MissingDataError('ingredient.dlucCO2');
-            if (typeof ing.totalWater            !== 'number') throw new MissingDataError('ingredient.totalWater');
-            if (typeof ing.totalLand             !== 'number') throw new MissingDataError('ingredient.totalLand');
-            if (typeof ing.totalFossil           !== 'number') throw new MissingDataError('ingredient.totalFossil');
-            if (typeof ing.marineEutrophication_N   !== 'number') throw new MissingDataError('ingredient.marineEutrophication_N');
+            if (typeof ing.totalCO2 !== 'number') throw new MissingDataError('ingredient.totalCO2');
+            if (typeof ing.fossilCO2 !== 'number') throw new MissingDataError('ingredient.fossilCO2');
+            if (typeof ing.biogenicCO2 !== 'number') throw new MissingDataError('ingredient.biogenicCO2');
+            if (typeof ing.dlucCO2 !== 'number') throw new MissingDataError('ingredient.dlucCO2');
+            if (typeof ing.totalWater !== 'number') throw new MissingDataError('ingredient.totalWater');
+            if (typeof ing.totalLand !== 'number') throw new MissingDataError('ingredient.totalLand');
+            if (typeof ing.totalFossil !== 'number') throw new MissingDataError('ingredient.totalFossil');
+            if (typeof ing.marineEutrophication_N !== 'number') throw new MissingDataError('ingredient.marineEutrophication_N');
             if (typeof ing.freshwaterEutrophication_P !== 'number') throw new MissingDataError('ingredient.freshwaterEutrophication_P');
-
-            sumCO2      += ing.totalCO2;
-            sumFossil   += ing.fossilCO2;
-            sumBiogenic += ing.biogenicCO2;
-            sumDLUC     += ing.dlucCO2;
-            sumWater    += ing.totalWater;
-            sumLand     += ing.totalLand;
-            sumFossilMJ += ing.totalFossil;
-            sumMarineN  += ing.marineEutrophication_N;
-            sumFreshP   += ing.freshwaterEutrophication_P;
-            sumOzone    += (ing.ozoneDepletion             || CONSTANTS.MATH.ZERO);
-            sumHTNC     += (ing.humanToxicityNonCancer     || CONSTANTS.MATH.ZERO);
-            sumHTC      += (ing.humanToxicityCancer        || CONSTANTS.MATH.ZERO);
-            sumPM       += (ing.particulateMatter          || CONSTANTS.MATH.ZERO);
-            sumIR       += (ing.ionizingRadiation          || CONSTANTS.MATH.ZERO);
-            sumPOF      += (ing.photochemicalOzoneFormation || CONSTANTS.MATH.ZERO);
-            sumAcid     += (ing.acidification              || CONSTANTS.MATH.ZERO);
-            sumEutT     += (ing.eutrophicationTerrestrial  || CONSTANTS.MATH.ZERO);
-            sumEcoFW    += (ing.ecotoxicityFreshwater      || CONSTANTS.MATH.ZERO);
-            sumMinerals += (ing.resourceUseMineralsMetals  || CONSTANTS.MATH.ZERO);
+            
+            sumCO2      = sumCO2      + ing.totalCO2;
+            sumFossil   = sumFossil   + ing.fossilCO2;
+            sumBiogenic = sumBiogenic + ing.biogenicCO2;
+            sumDLUC     = sumDLUC     + ing.dlucCO2;
+            sumWater    = sumWater    + ing.totalWater;
+            sumLand     = sumLand     + ing.totalLand;
+            sumFossilMJ = sumFossilMJ + ing.totalFossil;
+            sumMarineN  = sumMarineN  + ing.marineEutrophication_N;
+            sumFreshP   = sumFreshP   + ing.freshwaterEutrophication_P;
+            // New: accumulate 10 previously missing categories (graceful if old callers
+            // pass ingredientResults that don't yet have these fields — defaults to 0)
+            sumOzone    = sumOzone    + (ing.ozoneDepletion            || CONSTANTS.MATH.ZERO);
+            sumHTNC     = sumHTNC     + (ing.humanToxicityNonCancer    || CONSTANTS.MATH.ZERO);
+            sumHTC      = sumHTC      + (ing.humanToxicityCancer       || CONSTANTS.MATH.ZERO);
+            sumPM       = sumPM       + (ing.particulateMatter         || CONSTANTS.MATH.ZERO);
+            sumIR       = sumIR       + (ing.ionizingRadiation         || CONSTANTS.MATH.ZERO);
+            sumPOF      = sumPOF      + (ing.photochemicalOzoneFormation || CONSTANTS.MATH.ZERO);
+            sumAcid     = sumAcid     + (ing.acidification             || CONSTANTS.MATH.ZERO);
+            sumEutT     = sumEutT     + (ing.eutrophicationTerrestrial || CONSTANTS.MATH.ZERO);
+            sumEcoFW    = sumEcoFW    + (ing.ecotoxicityFreshwater     || CONSTANTS.MATH.ZERO);
+            sumMinerals = sumMinerals + (ing.resourceUseMineralsMetals || CONSTANTS.MATH.ZERO);
         }
-
-        const mfgFossilCO2        = mfg.co2 * mfg.fossilFraction;
-        const transportFossilCO2  = transport.total * transport.fossilFraction;
-        const packagingFossilCO2  = packaging.fossilImpact;
+        
+        const mfgFossilCO2       = mfg.co2 * mfg.fossilFraction;
+        const transportFossilCO2 = transport.total * transport.fossilFraction;
+        const packagingFossilCO2 = packaging.fossilImpact;
         const packagingBiogenicCO2 = packaging.biogenicImpact;
-
-        const totalCO2         = sumCO2 + mfg.co2 + transport.total + packaging.totalImpact;
-        const totalFossilCO2   = sumFossil + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
+        
+        const totalCO2        = sumCO2 + mfg.co2 + transport.total + packaging.totalImpact;
+        const totalFossilCO2  = sumFossil + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
         const totalBiogenicCO2 = sumBiogenic + packagingBiogenicCO2;
-
+        
         return {
-            'Climate Change':                { total: totalCO2,                                            unit: 'kg CO2e'      },
-            'Climate Change - Fossil':       { total: totalFossilCO2,                                      unit: 'kg CO2e'      },
-            'Climate Change - Biogenic':     { total: totalBiogenicCO2,                                    unit: 'kg CO2e'      },
-            'Climate Change - Land Use':     { total: sumDLUC,                                             unit: 'kg CO2e'      },
-            'Ozone Depletion':               { total: sumOzone,                                            unit: 'kg CFC11e'    },
-            'Human Toxicity, non-cancer':    { total: sumHTNC,                                             unit: 'CTUh'         },
-            'Human Toxicity, cancer':        { total: sumHTC,                                              unit: 'CTUh'         },
-            'Particulate Matter':            { total: sumPM,                                               unit: 'disease inc.' },
-            'Ionizing Radiation':            { total: sumIR,                                               unit: 'kBq U235e'    },
-            'Photochemical Ozone Formation': { total: sumPOF,                                              unit: 'kg NMVOCe'    },
-            'Acidification':                 { total: sumAcid,                                             unit: 'mol H+e'      },
-            'Eutrophication, terrestrial':   { total: sumEutT,                                             unit: 'mol N e'      },
-            'Eutrophication, freshwater':    { total: sumFreshP,                                           unit: 'kg P e'       },
-            'Eutrophication, marine':        { total: sumMarineN,                                          unit: 'kg N e'       },
-            'Ecotoxicity, freshwater':       { total: sumEcoFW,                                            unit: 'CTUe'         },
-            'Land Use':                      { total: sumLand,                                             unit: 'Pt'           },
-            'Water Use/Scarcity (AWARE)':    { total: sumWater,                                            unit: 'm³ world eq.' },
-            'Resource Use, minerals/metals': { total: sumMinerals,                                         unit: 'kg Sb e'      },
-            'Resource Use, fossils':         { total: sumFossilMJ + (mfg.kwh * CONSTANTS.UNIT.KWH_TO_MJ), unit: 'MJ'           }
+            'Climate Change':                  { total: totalCO2,                                              unit: 'kg CO2e'       },
+            'Climate Change - Fossil':         { total: totalFossilCO2,                                        unit: 'kg CO2e'       },
+            'Climate Change - Biogenic':       { total: totalBiogenicCO2,                                      unit: 'kg CO2e'       },
+            'Climate Change - Land Use':       { total: sumDLUC,                                               unit: 'kg CO2e'       },
+            'Ozone Depletion':                 { total: sumOzone,                                              unit: 'kg CFC11e'     },
+            'Human Toxicity, non-cancer':      { total: sumHTNC,                                               unit: 'CTUh'          },
+            'Human Toxicity, cancer':          { total: sumHTC,                                                unit: 'CTUh'          },
+            'Particulate Matter':              { total: sumPM,                                                 unit: 'disease inc.'  },
+            'Ionizing Radiation':              { total: sumIR,                                                 unit: 'kBq U235e'     },
+            'Photochemical Ozone Formation':   { total: sumPOF,                                                unit: 'kg NMVOCe'     },
+            'Acidification':                   { total: sumAcid,                                               unit: 'mol H+e'       },
+            'Eutrophication, terrestrial':     { total: sumEutT,                                               unit: 'mol N e'       },
+            'Eutrophication, freshwater':      { total: sumFreshP,                                             unit: 'kg P e'        },
+            'Eutrophication, marine':          { total: sumMarineN,                                            unit: 'kg N e'        },
+            'Ecotoxicity, freshwater':         { total: sumEcoFW,                                              unit: 'CTUe'          },
+            'Land Use':                        { total: sumLand,                                               unit: 'Pt'            },
+            'Water Use/Scarcity (AWARE)':      { total: sumWater,                                              unit: 'm³ world eq.'  },
+            'Resource Use, minerals/metals':   { total: sumMinerals,                                           unit: 'kg Sb e'       },
+            'Resource Use, fossils':           { total: sumFossilMJ + (mfg.kwh * CONSTANTS.UNIT.KWH_TO_MJ),   unit: 'MJ'            }
         };
     }
 
-    // calculateParametricTwin, calculateEntericMethane, calculateManureN2O
-    // are unchanged from the original file. They must be kept verbatim.
-    // [Not reproduced here to avoid file-length explosion — see original.]
+    function calculateParametricTwin(input) {
+        // ── MODE DETECTION ────────────────────────────────────────────────────
+        // Legacy single-ingredient path: input.anchorIngredient present
+        // New full-recipe path:          input.assessedRecipe present
+        // Neither:                       throw MissingDataError
+        if (!input.anchorIngredient && !input.assessedRecipe) {
+            throw new MissingDataError('anchorIngredient or assessedRecipe');
+        }
 
-    exports.CONSTANTS                  = CONSTANTS;
-    exports.PhysicsError               = PhysicsError;
-    exports.MissingDataError           = MissingDataError;
-    exports.ValidationError            = ValidationError;
-    exports.calculateIngredientImpact  = calculateIngredientImpact;
-    exports.calculateTransport         = calculateTransport;
-    exports.calculateManufacturing     = calculateManufacturing;
-    exports.calculatePackaging         = calculatePackaging;
-    exports.calculateAWARE             = calculateAWARE;
-    exports.calculateUncertainty       = calculateUncertainty;
-    exports.calculateSingleScore       = calculateSingleScore;
-    exports.aggregateResults           = aggregateResults;
-    // exports.calculateParametricTwin  — unchanged, keep from original
-    // exports.calculateEntericMethane  — unchanged, keep from original
-    // exports.calculateManureN2O       — unchanged, keep from original
+        // =====================================================================
+        // LEGACY SINGLE-INGREDIENT PATH (unchanged)
+        // =====================================================================
+        if (input.anchorIngredient) {
+            const anchor = input.anchorIngredient;
+            const ratio  = input.concentrationRatio;
+            const cloned = input.clonedParams;
+            const db     = input.databases;
+
+            if (!anchor.pef) throw new MissingDataError('anchorIngredient.pef');
+            if (typeof ratio !== 'number') throw new MissingDataError('concentrationRatio');
+            if (!cloned) throw new MissingDataError('clonedParams');
+
+            const pef = anchor.pef;
+            const required = ['Climate Change', 'Climate Change - Fossil', 'Climate Change - Biogenic', 'Climate Change - Land Use', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils'];
+            for (const f of required) {
+                if (pef[f] === undefined) throw new MissingDataError(`anchor.pef.${f}`);
+            }
+
+            const farmCO2      = pef['Climate Change']              * ratio;
+            const farmFossil   = pef['Climate Change - Fossil']     * ratio;
+            const farmBiogenic = pef['Climate Change - Biogenic']   * ratio;
+            const farmDLUC     = pef['Climate Change - Land Use']   * ratio;
+            const farmWater    = pef['Water Use/Scarcity (AWARE)']  * ratio;
+            const farmLand     = pef['Land Use']                    * ratio;
+            const farmFossilMJ = pef['Resource Use, fossils']       * ratio;
+
+            let mfgCO2 = CONSTANTS.MATH.ZERO;
+            let mfgKwh = CONSTANTS.MATH.ZERO;
+            let mfgFossilCO2 = CONSTANTS.MATH.ZERO;
+            if (cloned.processingMethod) {
+                if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
+                if (!db.gridIntensity) throw new MissingDataError('databases.gridIntensity');
+
+                const benchmark = db.processBenchmarks[cloned.processingMethod];
+                if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${cloned.processingMethod}`);
+
+                const grid = db.gridIntensity[cloned.countryCode];
+                if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
+
+                // Bug 4 fix: grid may be a number (from grid_intensity db) or an object (from countries db)
+                let gridValue;
+                if (typeof grid === 'number') {
+                    gridValue = grid;
+                } else if (grid && typeof grid.electricityCO2 === 'number') {
+                    gridValue = grid.electricityCO2;
+                } else {
+                    throw new MissingDataError(`gridIntensity.${cloned.countryCode}`);
+                }
+
+                const mfg = calculateManufacturing({
+                    massOutputKg:         ratio,
+                    benchmarkKwhPerKg:    benchmark,
+                    gridIntensityGPerKwh: gridValue
+                });
+                mfgCO2       = mfg.co2;
+                mfgKwh       = mfg.kwh;
+                mfgFossilCO2 = mfgCO2 * mfg.fossilFraction;
+            }
+
+            let transportCO2       = CONSTANTS.MATH.ZERO;
+            let transportFossilCO2 = CONSTANTS.MATH.ZERO;
+            if (cloned.transportDistance !== undefined && cloned.transportMode) {
+                const t = calculateTransport({
+                    massKg:       ratio,
+                    distanceKm:   cloned.transportDistance,
+                    mode:         cloned.transportMode,
+                    refrigeration: cloned.refrigeration
+                });
+                transportCO2       = t.total;
+                transportFossilCO2 = transportCO2 * t.fossilFraction;
+            }
+
+            let packagingCO2       = CONSTANTS.MATH.ZERO;
+            let packagingFossilCO2 = CONSTANTS.MATH.ZERO;
+            let packagingBiogenicCO2 = CONSTANTS.MATH.ZERO;
+            if (cloned.packagingMaterial && cloned.packagingWeightKg !== undefined) {
+                if (!db.packaging) throw new MissingDataError('databases.packaging');
+
+                const pkg = db.packaging[cloned.packagingMaterial];
+                if (!pkg) throw new MissingDataError(`packaging.${cloned.packagingMaterial}`);
+                if (typeof pkg.aFactor !== 'number') throw new MissingDataError('packaging.aFactor');
+                if (typeof pkg.fossilFraction !== 'number') throw new MissingDataError('packaging.fossilFraction');
+                // NOTE: materialClass check intentionally absent — field does not
+                // exist in the database and is never used downstream.
+
+                const recycledContentPercent = cloned.recycledContentPercent;
+                if (typeof recycledContentPercent !== 'number') throw new MissingDataError('cloned.recycledContentPercent');
+
+                const cff = calculatePackaging({
+                    weightKg:       cloned.packagingWeightKg,
+                    ev:             pkg.co2_virgin,
+                    erecycled:      pkg.co2_recycled,
+                    ed:             pkg.co2_disposal_average,
+                    r1:             recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX,
+                    r2:             pkg.r1_max * pkg.r2,
+                    aFactor:        pkg.aFactor,
+                    qs:             pkg.q,
+                    qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
+                    fossilFraction: pkg.fossilFraction
+                });
+                packagingCO2        = cff.totalImpact;
+                packagingFossilCO2  = cff.fossilImpact;
+                packagingBiogenicCO2 = cff.biogenicImpact;
+            }
+
+            const totalCO2        = farmCO2      + mfgCO2      + transportCO2      + packagingCO2;
+            const totalFossilCO2  = farmFossil   + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
+            const totalBiogenicCO2 = farmBiogenic + packagingBiogenicCO2;
+
+            return {
+                name:            `Parametric Twin: ${anchor.name}`,
+                co2PerKg:        totalCO2,
+                waterPerKg:      farmWater,
+                landUsePerKg:    farmLand,
+                fossilPerKg:     farmFossilMJ + (mfgKwh * CONSTANTS.UNIT.KWH_TO_MJ) + (transportCO2 * CONSTANTS.GLEC.DIESEL_CO2_PER_MJ) + (packagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2),
+                fossilCO2PerKg:  totalFossilCO2,
+                biogenicCO2PerKg: totalBiogenicCO2,
+                dlucCO2PerKg:    farmDLUC,
+                breakdown:       { farm: farmCO2, manufacturing: mfgCO2, transport: transportCO2, packaging: packagingCO2 }
+            };
+        }
+
+        // =====================================================================
+        // NEW FULL-RECIPE PATH
+        // =====================================================================
+        const assessedRecipe     = input.assessedRecipe;
+        const conventionalRecipe = input.conventionalRecipe;
+        const sharedParams       = input.sharedParams;
+        const db                 = input.databases;
+
+        if (!Array.isArray(assessedRecipe) || assessedRecipe.length === 0) {
+            throw new MissingDataError('assessedRecipe');
+        }
+        if (!Array.isArray(conventionalRecipe)) {
+            throw new MissingDataError('conventionalRecipe');
+        }
+        if (!sharedParams) throw new MissingDataError('sharedParams');
+
+        // ── Helper: zero-initialised totals accumulator ──────────────────────
+        function zeroTotals() {
+            return {
+                totalCO2:     CONSTANTS.MATH.ZERO,
+                fossilCO2:    CONSTANTS.MATH.ZERO,
+                biogenicCO2:  CONSTANTS.MATH.ZERO,
+                dlucCO2:      CONSTANTS.MATH.ZERO,
+                totalWater:   CONSTANTS.MATH.ZERO,
+                totalLand:    CONSTANTS.MATH.ZERO,
+                totalFossil:  CONSTANTS.MATH.ZERO,
+                marineEutrophication_N:      CONSTANTS.MATH.ZERO,
+                freshwaterEutrophication_P:  CONSTANTS.MATH.ZERO,
+                ozoneDepletion:              CONSTANTS.MATH.ZERO,
+                humanToxicityNonCancer:      CONSTANTS.MATH.ZERO,
+                humanToxicityCancer:         CONSTANTS.MATH.ZERO,
+                particulateMatter:           CONSTANTS.MATH.ZERO,
+                ionizingRadiation:           CONSTANTS.MATH.ZERO,
+                photochemicalOzoneFormation: CONSTANTS.MATH.ZERO,
+                acidification:               CONSTANTS.MATH.ZERO,
+                eutrophicationTerrestrial:   CONSTANTS.MATH.ZERO,
+                ecotoxicityFreshwater:       CONSTANTS.MATH.ZERO,
+                resourceUseMineralsMetals:   CONSTANTS.MATH.ZERO
+            };
+        }
+
+        // ── Helper: accumulate a calculateIngredientImpact() result ──────────
+        function accumulateImpact(totals, r) {
+            totals.totalCO2     += r.totalCO2;
+            totals.fossilCO2    += r.fossilCO2;
+            totals.biogenicCO2  += r.biogenicCO2;
+            totals.dlucCO2      += r.dlucCO2;
+            totals.totalWater   += r.totalWater;
+            totals.totalLand    += r.totalLand;
+            totals.totalFossil  += r.totalFossil;
+            totals.marineEutrophication_N     += (r.marineEutrophication_N     || CONSTANTS.MATH.ZERO);
+            totals.freshwaterEutrophication_P += (r.freshwaterEutrophication_P || CONSTANTS.MATH.ZERO);
+            totals.ozoneDepletion              += (r.ozoneDepletion              || CONSTANTS.MATH.ZERO);
+            totals.humanToxicityNonCancer      += (r.humanToxicityNonCancer      || CONSTANTS.MATH.ZERO);
+            totals.humanToxicityCancer         += (r.humanToxicityCancer         || CONSTANTS.MATH.ZERO);
+            totals.particulateMatter           += (r.particulateMatter           || CONSTANTS.MATH.ZERO);
+            totals.ionizingRadiation           += (r.ionizingRadiation           || CONSTANTS.MATH.ZERO);
+            totals.photochemicalOzoneFormation += (r.photochemicalOzoneFormation || CONSTANTS.MATH.ZERO);
+            totals.acidification               += (r.acidification               || CONSTANTS.MATH.ZERO);
+            totals.eutrophicationTerrestrial   += (r.eutrophicationTerrestrial   || CONSTANTS.MATH.ZERO);
+            totals.ecotoxicityFreshwater       += (r.ecotoxicityFreshwater       || CONSTANTS.MATH.ZERO);
+            totals.resourceUseMineralsMetals   += (r.resourceUseMineralsMetals   || CONSTANTS.MATH.ZERO);
+        }
+
+        // ── STEP 1: Assessed recipe ingredient totals ────────────────────────
+        const assessedTotals = zeroTotals();
+        const assessedPerIngredient = [];   // for ingredientPairs
+
+        for (const ing of assessedRecipe) {
+            if (!ing) throw new MissingDataError('assessedRecipe contains null entry');
+            if (!ing.pef) throw new MissingDataError(`assessedRecipe ingredient "${ing.name || ing.id}" missing pef`);
+            const r = calculateIngredientImpact({
+                ingredientData: { pef: ing.pef, data: { metadata: { entericIncluded: true } } },
+                quantityKg:     ing.quantityKg,
+                entericParams:  ing.entericParams || null
+            });
+            accumulateImpact(assessedTotals, r);
+            assessedPerIngredient.push(r.totalCO2);
+        }
+
+        // ── STEP 2: Conventional recipe ingredient totals ────────────────────
+        const conventionalTotals = zeroTotals();
+        const conventionalPerIngredient = [];  // for ingredientPairs
+
+        for (let i = 0; i < assessedRecipe.length; i++) {
+            const counterpart = conventionalRecipe[i];
+            if (counterpart == null || counterpart === undefined) {
+                // null mapping → same as assessed ingredient (zero delta)
+                const assessedIng = assessedRecipe[i];
+                const r = calculateIngredientImpact({
+                    ingredientData: { pef: assessedIng.pef, data: { metadata: { entericIncluded: true } } },
+                    quantityKg:     assessedIng.quantityKg,
+                    entericParams:  assessedIng.entericParams || null
+                });
+                accumulateImpact(conventionalTotals, r);
+                conventionalPerIngredient.push(r.totalCO2);
+            } else {
+                if (!counterpart.pef) throw new MissingDataError(`conventionalRecipe[${i}] ingredient "${counterpart.name || counterpart.id}" missing pef`);
+                const r = calculateIngredientImpact({
+                    ingredientData: { pef: counterpart.pef, data: { metadata: { entericIncluded: true } } },
+                    quantityKg:     counterpart.quantityKg,
+                    entericParams:  counterpart.entericParams || null
+                });
+                accumulateImpact(conventionalTotals, r);
+                conventionalPerIngredient.push(r.totalCO2);
+            }
+        }
+
+        // ── STEP 3: Shared manufacturing (added identically to both sides) ───
+        let sharedMfgCO2        = CONSTANTS.MATH.ZERO;
+        let sharedMfgKwh        = CONSTANTS.MATH.ZERO;
+        let sharedMfgFossilCO2  = CONSTANTS.MATH.ZERO;
+        let sharedMfgFossilMJ   = CONSTANTS.MATH.ZERO;
+
+        if (sharedParams.processingMethod) {
+            if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
+            if (!db.gridIntensity)      throw new MissingDataError('databases.gridIntensity');
+
+            const benchmark = db.processBenchmarks[sharedParams.processingMethod];
+            if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${sharedParams.processingMethod}`);
+
+            const grid = db.gridIntensity[sharedParams.countryCode];
+            if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${sharedParams.countryCode}`);
+
+            let gridValue;
+            if (typeof grid === 'number') {
+                gridValue = grid;
+            } else if (grid && typeof grid.electricityCO2 === 'number') {
+                gridValue = grid.electricityCO2;
+            } else {
+                throw new MissingDataError(`gridIntensity.${sharedParams.countryCode}`);
+            }
+
+            // Use total assessed recipe mass as the manufacturing output mass
+            const totalRecipeMassKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
+            const mfg = calculateManufacturing({
+                massOutputKg:         totalRecipeMassKg,
+                benchmarkKwhPerKg:    benchmark,
+                gridIntensityGPerKwh: gridValue
+            });
+            sharedMfgCO2       = mfg.co2;
+            sharedMfgKwh       = mfg.kwh;
+            sharedMfgFossilCO2 = sharedMfgCO2 * mfg.fossilFraction;
+            sharedMfgFossilMJ  = sharedMfgKwh * CONSTANTS.UNIT.KWH_TO_MJ;
+        }
+
+        // ── STEP 4: Shared transport ─────────────────────────────────────────
+        let sharedTransportCO2      = CONSTANTS.MATH.ZERO;
+        let sharedTransportFossilCO2 = CONSTANTS.MATH.ZERO;
+        let sharedTransportFossilMJ  = CONSTANTS.MATH.ZERO;
+
+        if (sharedParams.transportDistance !== undefined && sharedParams.transportMode) {
+            const totalRecipeMassKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
+            const t = calculateTransport({
+                massKg:        totalRecipeMassKg,
+                distanceKm:    sharedParams.transportDistance,
+                mode:          sharedParams.transportMode,
+                refrigeration: sharedParams.refrigeration || 'ambient'
+            });
+            sharedTransportCO2       = t.total;
+            sharedTransportFossilCO2 = sharedTransportCO2 * t.fossilFraction;
+            sharedTransportFossilMJ  = sharedTransportCO2 * CONSTANTS.GLEC.DIESEL_CO2_PER_MJ;
+        }
+
+        // ── STEP 5: Shared packaging ─────────────────────────────────────────
+        let sharedPackagingCO2        = CONSTANTS.MATH.ZERO;
+        let sharedPackagingFossilCO2  = CONSTANTS.MATH.ZERO;
+        let sharedPackagingBiogenicCO2 = CONSTANTS.MATH.ZERO;
+        let sharedPackagingFossilMJ   = CONSTANTS.MATH.ZERO;
+
+        if (sharedParams.packagingMaterial && sharedParams.packagingWeightKg !== undefined) {
+            if (!db.packaging) throw new MissingDataError('databases.packaging');
+
+            const pkg = db.packaging[sharedParams.packagingMaterial];
+            if (!pkg) throw new MissingDataError(`packaging.${sharedParams.packagingMaterial}`);
+            if (typeof pkg.aFactor !== 'number') throw new MissingDataError('packaging.aFactor');
+            if (typeof pkg.fossilFraction !== 'number') throw new MissingDataError('packaging.fossilFraction');
+            // NOTE: materialClass check intentionally absent — field does not
+            // exist in the database and is never used downstream.
+
+            if (typeof sharedParams.recycledContentPercent !== 'number') {
+                throw new MissingDataError('sharedParams.recycledContentPercent');
+            }
+
+            const cff = calculatePackaging({
+                weightKg:       sharedParams.packagingWeightKg,
+                ev:             pkg.co2_virgin,
+                erecycled:      pkg.co2_recycled,
+                ed:             pkg.co2_disposal_average,
+                r1:             sharedParams.recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX,
+                r2:             pkg.r1_max * pkg.r2,
+                aFactor:        pkg.aFactor,
+                qs:             pkg.q,
+                qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
+                fossilFraction: pkg.fossilFraction
+            });
+            sharedPackagingCO2         = cff.totalImpact;
+            sharedPackagingFossilCO2   = cff.fossilImpact;
+            sharedPackagingBiogenicCO2 = cff.biogenicImpact;
+            sharedPackagingFossilMJ    = sharedPackagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2;
+        }
+
+        // ── STEP 6: Combine ingredient totals + shared overheads ─────────────
+        // Shared manufacturing, transport, and packaging are added identically
+        // to both sides. The delta therefore reflects only ingredient differences.
+
+        const assessedCO2Total      = assessedTotals.totalCO2      + sharedMfgCO2 + sharedTransportCO2 + sharedPackagingCO2;
+        const assessedFossilCO2     = assessedTotals.fossilCO2     + sharedMfgFossilCO2 + sharedTransportFossilCO2 + sharedPackagingFossilCO2;
+        const assessedBiogenicCO2   = assessedTotals.biogenicCO2   + sharedPackagingBiogenicCO2;
+        const assessedFossilMJ      = assessedTotals.totalFossil   + sharedMfgFossilMJ + sharedTransportFossilMJ + sharedPackagingFossilMJ;
+
+        const conventionalCO2Total  = conventionalTotals.totalCO2  + sharedMfgCO2 + sharedTransportCO2 + sharedPackagingCO2;
+        const conventionalFossilCO2 = conventionalTotals.fossilCO2 + sharedMfgFossilCO2 + sharedTransportFossilCO2 + sharedPackagingFossilCO2;
+        const conventionalBiogenicCO2 = conventionalTotals.biogenicCO2 + sharedPackagingBiogenicCO2;
+        const conventionalFossilMJ  = conventionalTotals.totalFossil + sharedMfgFossilMJ + sharedTransportFossilMJ + sharedPackagingFossilMJ;
+
+        // ── STEP 7: Build ingredientPairs array ──────────────────────────────
+        const ingredientPairs = assessedRecipe.map((ing, i) => {
+            const conv   = conventionalRecipe[i] || null;
+            const aCO2   = assessedPerIngredient[i]      || CONSTANTS.MATH.ZERO;
+            const cCO2   = conventionalPerIngredient[i]  || CONSTANTS.MATH.ZERO;
+            return {
+                assessed:        { name: ing.name || ing.id, quantityKg: ing.quantityKg },
+                conventional:    conv ? { name: conv.name || conv.id, quantityKg: conv.quantityKg } : null,
+                assessedCO2:     aCO2,
+                conventionalCO2: cCO2,
+                delta:           cCO2 - aCO2
+            };
+        });
+
+        // ── STEP 8: Build structured totals for return ───────────────────────
+        const assessedBreakdown = {
+            farm:          assessedTotals.totalCO2,
+            manufacturing: sharedMfgCO2,
+            transport:     sharedTransportCO2,
+            packaging:     sharedPackagingCO2
+        };
+        const conventionalBreakdown = {
+            farm:          conventionalTotals.totalCO2,
+            manufacturing: sharedMfgCO2,
+            transport:     sharedTransportCO2,
+            packaging:     sharedPackagingCO2
+        };
+
+        // FIX 4: Compute total recipe mass so that absolute batch totals can be
+        // converted to per-kg values before being stored in the *PerKg fields.
+        const totalRecipeMassKgForPerKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
+        const safeMassKg = totalRecipeMassKgForPerKg > CONSTANTS.MATH.ZERO ? totalRecipeMassKgForPerKg : 1;
+
+        return {
+            name: `Parametric Twin: ${assessedRecipe.map(i => i.name || i.id).join(', ')} vs Conventional`,
+            assessedTotal: {
+                co2PerKg:        assessedCO2Total      / safeMassKg,
+                waterPerKg:      assessedTotals.totalWater / safeMassKg,
+                landUsePerKg:    assessedTotals.totalLand  / safeMassKg,
+                fossilPerKg:     assessedFossilMJ       / safeMassKg,
+                fossilCO2PerKg:  assessedFossilCO2      / safeMassKg,
+                biogenicCO2PerKg: assessedBiogenicCO2   / safeMassKg,
+                dlucCO2PerKg:    assessedTotals.dlucCO2  / safeMassKg,
+                breakdown:       assessedBreakdown
+            },
+            conventionalTotal: {
+                co2PerKg:        conventionalCO2Total       / safeMassKg,
+                waterPerKg:      conventionalTotals.totalWater / safeMassKg,
+                landUsePerKg:    conventionalTotals.totalLand  / safeMassKg,
+                fossilPerKg:     conventionalFossilMJ        / safeMassKg,
+                fossilCO2PerKg:  conventionalFossilCO2       / safeMassKg,
+                biogenicCO2PerKg: conventionalBiogenicCO2    / safeMassKg,
+                dlucCO2PerKg:    conventionalTotals.dlucCO2   / safeMassKg,
+                breakdown:       conventionalBreakdown
+            },
+            delta: conventionalCO2Total - assessedCO2Total,
+            deltaBreakdown: {
+                co2Delta:    conventionalCO2Total  - assessedCO2Total,
+                waterDelta:  conventionalTotals.totalWater - assessedTotals.totalWater,
+                landDelta:   conventionalTotals.totalLand  - assessedTotals.totalLand,
+                fossilDelta: conventionalFossilMJ  - assessedFossilMJ
+            },
+            ingredientPairs
+        };
+    }
+
+    exports.CONSTANTS = CONSTANTS;
+    exports.PhysicsError = PhysicsError;
+    exports.MissingDataError = MissingDataError;
+    exports.ValidationError = ValidationError;
+    exports.calculateIngredientImpact = calculateIngredientImpact;
+    exports.calculateTransport = calculateTransport;
+    exports.calculateManufacturing = calculateManufacturing;
+    exports.calculatePackaging = calculatePackaging;
+    exports.calculateAWARE = calculateAWARE;
+    exports.calculateUncertainty = calculateUncertainty;
+    exports.calculateSingleScore = calculateSingleScore;
+    exports.aggregateResults = aggregateResults;
+    exports.calculateParametricTwin = calculateParametricTwin;
+    exports.calculateEntericMethane = calculateEntericMethane;
+    exports.calculateManureN2O = calculateManureN2O;
 
 })(typeof module !== 'undefined' && module.exports ? module.exports : (window.corePhysics = window.corePhysics || {}));
