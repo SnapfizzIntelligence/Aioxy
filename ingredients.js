@@ -580,8 +580,19 @@ window.aioxyData.countries = {
 };
 
 // ================== FOOD PROCESSING ENERGY INTENSITY ==================
-// Derivation: Thermodynamic first principles + published engineering benchmarks
-// Report: food_processing_energy_intensity.md (April 2026)
+// GAP 10 FIX: PROCESSING ENERGY ARCHETYPES — METHODOLOGY NOTE
+//
+// No separate derivation report exists for these values.
+// The previous reference to "food_processing_energy_intensity.md" was incorrect —
+// no such report file exists. The methodology IS self-documenting in this file:
+// each archetype entry contains inline thermodynamic derivations with inline
+// citations to published food engineering references. These inline citations
+// ARE the traceability record per ISO 14044 §4.2.3.3 — traceability is
+// satisfied by a documented calculation method and cited primary sources;
+// a separate report is not required.
+//
+// An external auditor can independently reproduce any archetype value from
+// the formula and published parameters cited in each method's comments.
 //
 // METHODOLOGY:
 // Thermal processes (pasteurization, sterilization, UHT, baking, roasting,
@@ -920,6 +931,45 @@ window.aioxyData.transportation = {
 // AIOXY does not hold an ecoinvent licence. All values are sourced from PEF Annex C
 // and publicly available literature. For audit-grade LCA, confirm against licensed
 // EF-compliant LCI datasets (ecoinvent ≥3.9 or GaBi / Sphera EF3.1 dataset).
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// GAP 11 FIX: FORMAL LIMITATION STATEMENT — Packaging Ev and Erec values
+// ─────────────────────────────────────────────────────────────────────────────
+// Virgin production (Ev) and recycled content (Erec) GHG factors used in this
+// file are sourced from public industry association documents:
+//   PlasticsEurope eco-profiles, ICE Database v3.0, FEVE, European Aluminium
+//   Environmental Profile 2018, World Steel LCI 2021, Cepi LCA 2021.
+//
+// These are NOT EF 3.1 compliant datasets.
+// PEF Annex C v2.1, sheet "Formula" rows 26–29, explicitly requires that Ev
+// and Erec come from "EF-compliant datasets listed by the PEFCR/OEFSR."
+// No PEFCR-compliant source is publicly available free of charge for these
+// packaging materials as of the date of this file.
+//
+// CONSEQUENCE FOR AIOXY OUTPUT:
+//   Packaging Climate Change impacts are suitable for screening-level assessment.
+//   They are NOT suitable for EPD (ISO 14025), Type III Environmental Declaration,
+//   or any certified comparative assertion requiring EF 3.1 compliant data.
+//
+// UPGRADE PATH — if audit-grade packaging data is required:
+//   PRIMARY OPTION: ecoinvent v3.9 or later with the EF 3.1 LCIA method applied.
+//     License: commercial annual subscription (~EUR 1,500–3,000 depending on tier).
+//     Access: https://ecoinvent.org/the-ecoinvent-database/
+//     Process examples: "market for corrugated board box {RER}",
+//                       "market for packaging glass, white {RER}",
+//                       "market for aluminium, wrought alloy {RER}"
+//   SECONDARY OPTION: Sphera (GaBi) EF 3.1 datasets — commercial license.
+//   FREE OPTION: None currently provides EF 3.1 compliant Ev/Erec for all
+//     packaging materials in a single free dataset. PlasticsEurope eco-profiles
+//     are the closest free alternative but use different system boundaries and
+//     predate EF 3.1 characterization factor alignment.
+//   MONITOR: EC EPLCA node (eplca.jrc.ec.europa.eu) for future free EF 3.1
+//     dataset releases under the EU Environmental Footprint pilot outcomes.
+//
+// Until EF 3.1 compliant data is licensed, all AIOXY packaging outputs must
+// carry the caveat: "Packaging Ev/Erec based on public industry sources; not
+// EF 3.1 compliant datasets. Suitable for screening; not for EPD or certified
+// claims." This caveat is surfaced in the PDF report methodology section.
 // ============================================================================
 
 
