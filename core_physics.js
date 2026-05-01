@@ -1801,7 +1801,7 @@
         }
         
         let payloadMultiplier = CONSTANTS.MATH.ONE;
-        if (mode === 'road' || mode === 'sea') {
+        if (mode === 'road') {
             payloadMultiplier = (CONSTANTS.MATH.ONE / glec.LOAD_FACTOR) * (CONSTANTS.MATH.ONE + glec.EMPTY_RETURN_RATE);
         }
         
