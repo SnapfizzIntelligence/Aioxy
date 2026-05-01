@@ -2213,6 +2213,7 @@ return {
                     qs:             pkg.q,
                     qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
                     fossilFraction: pkg.fossilFraction
+                    materialKey:    cloned.packagingMaterial
                 });
                 packagingCO2        = cff.totalImpact;
                 packagingFossilCO2  = cff.fossilImpact;
@@ -2431,6 +2432,7 @@ return {
                 qs:             pkg.q,
                 qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
                 fossilFraction: pkg.fossilFraction
+                materialKey:    sharedParams.packagingMaterial
             });
             sharedPackagingCO2         = cff.totalImpact;
             sharedPackagingFossilCO2   = cff.fossilImpact;
