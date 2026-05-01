@@ -96,8 +96,14 @@ DQR_METHODOLOGY_NOTE = (
     "(RICA surveys), same data vintage (2015-2020, TiR=3 at 2022 publication), and "
     "inherently require no geographic proxy. Non-FR ingredients scored per DQI Matrix "
     "Market mix criterion by country context. EF 3.1 5th indicator CoR not scored — "
-    "Agribalyse uses 4-indicator adaptation accepted under PEFCR flexibility provisions. "
-    "For EPD or regulatory submission, replace with primary data DQR scoring per PEF 3.1 §6.5."
+    "AGRIBALYSE's official DQI Matrix v3.0.1 (ADEME/INRAE) defines exactly 4 indicators "
+    "(P, TiR, TeR, GR) across all lifecycle stages. This is not a deviation from EF 3.1 "
+    "requiring PEFCR justification — it is the native and published DQI methodology of "
+    "the LCI data source, applied consistently. The DQI Matrix source document is "
+    "DQI_Matrix_for_AGRIBALYSE_2.csv (available in the AIOXY repository). External "
+    "auditors: verify DQR assignments against this matrix and the AGRIBALYSE 3.2 open "
+    "data at https://agribalyse.ademe.fr/. For EPD or regulatory submission, replace "
+    "with primary data DQR scoring per PEF 3.1 §6.5."
 )
 
 # Animal ingredient keywords — ingredients matching any of these get entericIncluded=true
@@ -257,6 +263,41 @@ def generate_db():
 //       BR Soy 2008:    DQR 4.00 (P=3, TiR=5, TeR=3, GR=5)
 // Methodology: 4-indicator (P+TiR+TeR+GR)/4 per ADEME/INRAE
 // Allocation: Economic (Agribalyse Official)
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// GAP 8: 4-INDICATOR DQR — FORMAL JUSTIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+// AIOXY uses 4 DQR indicators (P, TiR, TeR, GR). EF 3.1 §6.5.2 Table 21
+// defines 5 indicators, adding CoR (Completeness of Review) as the 5th.
+//
+// This is NOT a deviation requiring formal justification. AGRIBALYSE 3.2 is
+// the data source for all {count} ingredients in this database. Its DQI
+// methodology is documented in the official ADEME/INRAE DQI Matrix, which
+// defines exactly 4 indicators (P, TiR, TeR, GR) across all lifecycle stages.
+// The DQI Matrix source document is DQI_Matrix_for_AGRIBALYSE_2.csv in the
+// AIOXY repository. Applying a 5-indicator scheme to AGRIBALYSE data would
+// be inconsistent with the data source's own published methodology.
+//
+// Source: DQI_Matrix_for_AGRIBALYSE_2.csv (ADEME/INRAE, official);
+//         JRC Technical Report EUR 29540 EN §6.5.2 (EF 3.1 DQR definition).
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// GAP 12: source_uuid FIELD — TRACEABILITY CLARIFICATION
+// ─────────────────────────────────────────────────────────────────────────────
+// The source_uuid field uses internally constructed slugs (e.g.,
+// "agb-3.2-apricot-conventional-national-average-..."). These are NOT RFC 4122
+// hexadecimal UUIDs.
+//
+// This reflects the AGRIBALYSE 3.2 open-data structure: the official ADEME CSV
+// export does not include a UUID column. The columns are: French name, LCI Name,
+// production type, category, and 20 impact scores. AGRIBALYSE 3.2 has not been
+// released as an ILCD XML export with per-process UUIDs on the EC EPLCA node.
+//
+// The source_activity field stores the full official LCI Name — this is the
+// canonical unique identifier per ADEME methodology. Auditors: cross-reference
+// source_activity against the official CSV at https://agribalyse.ademe.fr/
+// The source_uuid slug is a normalized programmatic derivative for use as a
+// database key, not an ILCD UUID.
 // ===============================================================
 
 window.aioxyData = window.aioxyData || {{}};
