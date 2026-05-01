@@ -1406,13 +1406,6 @@
             PACKAGING_DEFAULT: 1.0
         }),
 
-
-
-        tulasI
-            tulasI pariyar
-
-
-    
         // Source: ecoinvent v3.9.1, market for electricity, medium voltage, EU-27 (RER) — per-kWh multi-impact factors
         ELECTRICITY_GRID_MULTI: Object.freeze({
             'Ozone Depletion':               8.7e-12,
@@ -1873,6 +1866,7 @@
         const qs = input.qs;
         const qp = input.qp;
         const fossilFraction = input.fossilFraction;
+        const materialKey = input.materialKey || null;
         
         if (typeof weightKg !== 'number' || weightKg <= CONSTANTS.MATH.ZERO) throw new MissingDataError('weightKg');
         if (typeof ev !== 'number') throw new MissingDataError('ev');
@@ -1893,13 +1887,46 @@
         const burdenDisposal = (CONSTANTS.MATH.ONE - r2) * ed;
         const impactPerKg = burdenAcquisition + creditEoL + burdenDisposal;
         const totalImpact = impactPerKg * weightKg;
-        
-        return {
-            totalImpact: totalImpact,
-            impactPerKg: impactPerKg,
-            fossilImpact: totalImpact * fossilFraction,
-            biogenicImpact: totalImpact * (CONSTANTS.MATH.ONE - fossilFraction)
-        };
+
+// BUGFIX PACKAGING-NON-CC: Compute multi-category results from
+// PACKAGING_MULTI_CATEGORY factors × weightKg.
+const multiCategoryResults = {};
+const NON_CC_CATEGORIES = [
+    'Ozone Depletion',
+    'Human Toxicity, cancer',
+    'Human Toxicity, non-cancer',
+    'Particulate Matter',
+    'Ionizing Radiation',
+    'Photochemical Ozone Formation',
+    'Acidification',
+    'Eutrophication, terrestrial',
+    'Eutrophication, freshwater',
+    'Eutrophication, marine',
+    'Ecotoxicity, freshwater',
+    'Land Use',
+    'Water Use/Scarcity (AWARE)',
+    'Resource Use, minerals/metals'
+];
+
+const materialFactors = materialKey
+    ? (CONSTANTS.PACKAGING_MULTI_CATEGORY[materialKey] || null)
+    : null;
+
+for (const cat of NON_CC_CATEGORIES) {
+    if (materialFactors && materialFactors[cat] !== undefined) {
+        multiCategoryResults[cat] = materialFactors[cat] * weightKg;
+    } else {
+        multiCategoryResults[cat] = CONSTANTS.MATH.ZERO;
+    }
+}
+
+return {
+    totalImpact: totalImpact,
+    impactPerKg: impactPerKg,
+    fossilImpact: totalImpact * fossilFraction,
+    biogenicImpact: totalImpact * (CONSTANTS.MATH.ONE - fossilFraction),
+    multiCategoryResults: multiCategoryResults
+};
     }
 
     function calculateAWARE(input) {
