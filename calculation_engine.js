@@ -185,31 +185,30 @@
                 calculation_trace: `Formula: CO2e = kWh × Grid_Intensity(gCO2e/kWh) ÷ 1000\n  kWh = ${(mfgResult.kwh || 0).toFixed(4)}\n  Grid Intensity = ${mfgResult.gridIntensityGPerKwh || gridIntensity} gCO2e/kWh\n  = ${mfgTotal.toFixed(4)} kg CO2e`
             };
 
-            // Bug 3 fix (Step A): Build Upstream (inbound logistics) components
+            // GAP 4 FIX: Inbound upstream transport shadow calculation REMOVED.
+            //
+            // The previous implementation computed inbound transport as:
+            //   transportCO2 = (ingRes.quantityKg / 1000) * 200 * 0.060
+            // using a hardcoded 200 km default distance and 0.060 kgCO2e/tkm EF.
+            // This was a shadow calculation: it bypassed calculateTransport() in
+            // core_physics.js, used an undocumented assumption (200 km), applied
+            // only to Climate Change (zeroing all other categories), and was NOT
+            // covered by the audit hash or included in pefResults.
+            //
+            // The correct treatment: AGRIBALYSE 3.2 farm-gate data includes
+            // representative French market transport in its system boundary
+            // (AGRIBALYSE 3.2 documentation §3.2). Cross-border transport
+            // adjustments require primary supplier data (actual origin distances)
+            // and must be modelled as an explicit transport leg through the
+            // processTransport() pathway with user-supplied distance input.
+            //
+            // System boundary declaration: inbound ingredient transport beyond
+            // the AGRIBALYSE 3.2 farm-gate boundary is excluded from the current
+            // cradle-to-retail system boundary. This exclusion is documented here
+            // per ISO 14044 §4.2.3.3 (system boundary definition must be explicit).
+            // Phase 3 will add a per-ingredient origin transport input field.
             const upstreamComponents = [];
-            let upstreamTotal = 0;
-            if (input && input.ingredients) {
-                for (let idx = 0; idx < ingredientResults.length; idx++) {
-                    const ingRes = ingredientResults[idx];
-                    const ingIn  = input.ingredients[idx];
-                    if (!ingIn) continue;
-                    const originCountry = ingIn.originCountry || 'FR';
-                    if (originCountry !== manufacturingCountry) {
-                        const defaultDistance = 200; // km default inbound transport
-                        // Simple road transport: 0.060 kg CO2e per t·km (GLEC v3.2)
-                        const transportCO2 = cat === 'Climate Change'
-                            ? (ingRes.quantityKg / 1000) * defaultDistance * 0.060
-                            : 0;
-                        upstreamTotal += transportCO2;
-                        upstreamComponents.push({
-                            name: `Inbound: ${ingRes.name} from ${originCountry} to ${manufacturingCountry}`,
-                            notes: `Cross-border transport, ${defaultDistance} km`,
-                            subtotal: transportCO2,
-                            calculation_trace: `[GLEC v3.2: ${transportCO2.toFixed(4)} kg CO2e]`
-                        });
-                    }
-                }
-            }
+            const upstreamTotal = 0;
 
             // Bug 3 fix (Step B): Build Waste (processing) components
             const wasteComponents = [];
