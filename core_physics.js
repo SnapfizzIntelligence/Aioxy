@@ -1156,9 +1156,22 @@
 
             // ================================================================
             // PP — Virgin polypropylene
-            // Source: PlasticsEurope Eco-profile "Polypropylene" (2022).
-            //   Energy intensity: ~72 MJ/kg PP (propylene polymerization).
-            //   Process heat: ~36 MJ/kg NG combustion.
+            // Source: PlasticsEurope EPD "Polypropylene (PP)", epd2.pdf page 3
+            //   Reference year 2005, updated 2006, European industry average.
+            //   Energy for energy: 20.4 MJ non-renewable + 0.4 MJ renewable = 20.8 MJ/kg.
+            //   Feedstock energy (52.6 MJ/kg) excluded — embedded in polymer, not combusted.
+            // Fuel breakdown derived from PlasticsEurope HDPE eco-profile Table 3
+            //   (same programme, same methodology for polyolefins):
+            //   Coal 4.76 MJ/kg, Oil 2.83 MJ/kg, Gas 4.89 MJ/kg, Nuclear 6.66 MJ/kg,
+            //   Biomass/other 1.66 MJ/kg.
+            // Emission factors: EMEP/EEA 2023 §1.A.2 Tables 3-2, 3-3, 3-4, 3-5.
+            // Characterization: JRC EF 3.1 + USEtox 2.14.
+            // FILE TRACEABILITY:
+            //   PP energy (20.4 MJ/kg): DIRECT — epd2.pdf p.3, "Non-renewable energy for energy"
+            //   PP fuel split: DERIVED — HDPE eco-profile Table 3 (polyolefin proxy)
+            //   Emissions: DERIVED — Energy × EMEP/EEA factor (Tables 3-2 to 3-5)
+            //   Characterization: DERIVED — Emissions × JRC EF 3.1 / USEtox 2.14 CFs
+            // Confidence: MEDIUM (energy direct; fuel split from HDPE proxy; emissions derived)
             // ================================================================
             PP: Object.freeze({
                 // BUGFIX PACKAGING-NON-CC:
@@ -1871,7 +1884,17 @@
             adjustedDistance = distanceKm * daf;
         }
         let payloadMultiplier = CONSTANTS.MATH.ONE;
-        if (mode === 'road' || mode === 'sea') {
+        if (mode === 'road') {
+            // GAP 2 FIX: payloadMultiplier applies to road ONLY.
+            // Source: GLEC v3.2 Module 2, Table 8 (EU artic truck, Average/mixed):
+            //   Load Factor = 60%, Empty Running = 17%.
+            // Road EFs in Table 18 are published on a full-load reference basis and
+            // require this correction to reflect real-world average utilization.
+            // Sea EFs in Table 18 are "industry average" values that already incorporate
+            // average vessel utilization across the global container fleet (GLEC v3.2
+            // Module 2, Table 18 preamble). Applying the road load factor to sea was
+            // incorrect — it would double-count the utilization adjustment.
+            // Rail and air: no payload multiplier per GLEC v3.2.
             payloadMultiplier = (CONSTANTS.MATH.ONE / glec.LOAD_FACTOR) * (CONSTANTS.MATH.ONE + glec.EMPTY_RETURN_RATE);
         }
         const adjustedFactor = factor * payloadMultiplier;
@@ -1956,6 +1979,30 @@
         const term1             = (CONSTANTS.MATH.ONE - r1) * ev;
         const term2             = r1 * (aFactor * erecycled + (CONSTANTS.MATH.ONE - aFactor) * ev * qualityRatio);
         const burdenAcquisition = term1 + term2;
+
+        // GAP 3 FIX: CFF sign convention — notation clarification.
+        // PEF CFF formula (EC Recommendation 2021/2279, Annex I):
+        //   Impact = (1-R1)×Ev + R1×(A×Erec + (1-A)×Ev×Qs/Qp)
+        //            + (1-R2)×Ed − R2×(1-A)×(Erec − Ev×Qs/Qp)
+        //
+        // The PEF notation subtracts the end-of-life credit term.
+        // This code adds creditEoL, which is mathematically equivalent because:
+        //   creditEoL = R2 × (1-A) × (Erec - Ev×Qs/Qp)
+        //
+        // In the normal case (Erec < Ev, i.e. recycling saves emissions):
+        //   (erecycled - ev × qualityRatio) is NEGATIVE
+        //   → creditEoL is NEGATIVE
+        //   → adding a negative = subtracting the absolute value → CORRECT
+        //
+        // In the edge case (Erec > Ev, i.e. recycling has higher burden than virgin):
+        //   (erecycled - ev × qualityRatio) is POSITIVE
+        //   → creditEoL is POSITIVE
+        //   → adding a positive increases total burden → CORRECT (recycling is a burden)
+        //
+        // The computation is equivalent to the PEF notation in all cases.
+        // No numerical change — documentation fix only.
+        // Verify: if adding a new material where Erec > Ev, confirm this behaviour
+        // is intentional and documented in the packaging data source.
         const creditEoL         = r2 * (CONSTANTS.MATH.ONE - aFactor) * (erecycled - ev * qualityRatio);
         const burdenDisposal    = (CONSTANTS.MATH.ONE - r2) * ed;
         const impactPerKg       = burdenAcquisition + creditEoL + burdenDisposal;
@@ -2013,6 +2060,24 @@
         };
     }
 
+    // GAP 6 FIX: calculateAWARE() — Reference implementation. NOT called in the active pipeline.
+    //
+    // The active AWARE adjustment uses a ratio method in calculation_engine.js
+    // (applyCountrySpecificFactors, STEP B):
+    //   flatPef['Water Use/Scarcity (AWARE)'] *= (originAWARE / refAWARE)
+    // This adjusts the AGRIBALYSE 3.2 AWARE-characterised value (which already
+    // incorporates water consumption × CF for FR conditions per ADEME methodology)
+    // by the ratio of the origin country's agricultural AWARE CF to the FR reference CF.
+    //
+    // calculateAWARE() below implements the direct method: waterConsumptionM3 × awareCF.
+    // This direct method requires raw water consumption inventory data (m³/kg) per ingredient.
+    // AGRIBALYSE 3.2 does not expose this inventory — it exposes the characterised result
+    // (m³ world-eq/kg product). Therefore the ratio method is the correct approach for
+    // AGRIBALYSE inputs and this function is retained for Phase 3 (primary data water
+    // inventory path, when suppliers provide water withdrawal data directly).
+    //
+    // Source: AWARE 2.0 — Boulay et al. (2018), Int J Life Cycle Assess 23:2027–2042.
+    // AGRIBALYSE 3.2 applies AWARE at the characterization step internally (§4.3).
     function calculateAWARE(input) {
         const waterConsumptionM3 = input.waterConsumptionM3;
         const awareCF = input.awareCF;
@@ -2076,7 +2141,41 @@
         };
     }
 
+    // GAP 5 FIX: aggregateResults() — DEPRECATED. Do not use in new code.
+    //
+    // This function is exported for backward compatibility only. It is NOT called
+    // anywhere in the active calculation pipeline. The active aggregation function
+    // is calculation_engine.aggregateAllCategories().
+    //
+    // STRUCTURAL MISMATCH (audit finding): This function reads the following
+    // properties from each ingredient result object:
+    //   ing.ozoneDepletion, ing.humanToxicityNonCancer, ing.humanToxicityCancer,
+    //   ing.particulateMatter, ing.ionizingRadiation, ing.photochemicalOzoneFormation,
+    //   ing.acidification, ing.eutrophicationTerrestrial, ing.ecotoxicityFreshwater,
+    //   ing.resourceUseMineralsMetals
+    // However, calculateIngredientImpact() does NOT return any of these properties.
+    // It returns only: totalCO2, fossilCO2, biogenicCO2, dlucCO2, totalWater,
+    //   totalLand, totalFossil, marineEutrophication_N, freshwaterEutrophication_P.
+    // Consequence: if this function were ever called, all 10 non-CC non-core
+    // categories from ingredients would be ZERO. This would silently understate
+    // environmental impact. The || 0 fallback masks the error.
+    //
+    // Use calculation_engine.aggregateAllCategories() which reads ing.allCategoryResults[cat]
+    // and correctly handles all 19 PEF sub-categories.
+    //
+    // This function will be removed in a future major version.
+    /** @deprecated Use calculation_engine.aggregateAllCategories() instead. */
     function aggregateResults(input) {
+        console.warn(
+            '[AIOXY] aggregateResults() is deprecated and will be removed in a future release. ' +
+            'Use calculation_engine.aggregateAllCategories() instead. ' +
+            'STRUCTURAL MISMATCH: This function returns zero for all non-CC non-core ' +
+            'ingredient categories (Ozone Depletion, Human Toxicity cancer/non-cancer, ' +
+            'Particulate Matter, Ionizing Radiation, Photochemical Ozone Formation, ' +
+            'Acidification, Eutrophication terrestrial, Ecotoxicity freshwater, ' +
+            'Resource Use minerals/metals) because calculateIngredientImpact() does not ' +
+            'return these properties. Results would be materially understated.'
+        );
         const ingredients = input.ingredientResults;
         const mfg         = input.manufacturingResult;
         const transport   = input.transportResult;
