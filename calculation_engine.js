@@ -1574,8 +1574,10 @@ const gasCO2 = gasM3PerKg * 2.13;
             );
         }
 
+        // BUGFIX PACKAGING-NON-CC: pass materialKey so calculatePackaging()
+        // can look up PACKAGING_MULTI_CATEGORY for non-CC impact categories.
         const packagingResult = window.corePhysics.calculatePackaging({
-            weightKg: pkgIn.weightKg,
+            weightKg:    pkgIn.weightKg,
             ev,
             erecycled,
             ed,
@@ -1584,7 +1586,8 @@ const gasCO2 = gasM3PerKg * 2.13;
             aFactor,
             qs,
             qp,
-            fossilFraction
+            fossilFraction,
+            materialKey: pkgIn.material  // BUGFIX PACKAGING-NON-CC
         });
 
         packagingResult.source = 'PEF 3.1 CFF / Ecoinvent';
@@ -1595,11 +1598,9 @@ const gasCO2 = gasM3PerKg * 2.13;
     function aggregateAllCategories(ingredientResults, mfgResult, transportResult, packagingResult) {
         const pefResults = {};
 
-        // NOTE: Packaging multi-category impacts (non-CC) are not yet implemented.
-        // Full CFF expansion to 16 categories requires ecoinvent v3.9.1 background
-        // datasets for each packaging material's non-GHG elementary flows.
-        // Current implementation uses only CO₂-based CFF factors.
-        // Deferred to Phase 3 database integration.
+        // BUGFIX PACKAGING-NON-CC: Packaging non-CC multi-category impacts are
+        // now computed via PACKAGING_MULTI_CATEGORY in calculatePackaging().
+        // The previous "deferred to Phase 3" note is resolved.
 
         for (const cat of ALL_CATEGORIES) {
             let ingTotal = 0;
@@ -1644,8 +1645,18 @@ const gasCO2 = gasM3PerKg * 2.13;
                 pkgTotal = packagingResult.fossilImpact;
             } else if (cat === 'Climate Change - Biogenic') {
                 pkgTotal = packagingResult.biogenicImpact;
+            } else if (
+                // BUGFIX PACKAGING-NON-CC: Read non-CC packaging impacts from
+                // multiCategoryResults populated by calculatePackaging() via
+                // PACKAGING_MULTI_CATEGORY. Mirrors the pattern used for
+                // mfgResult.multiCategoryResults and transportResult.multiCategoryResults.
+                // Climate Change - Land Use has no packaging dLUC component; stays 0.
+                cat !== 'Climate Change - Land Use' &&
+                packagingResult.multiCategoryResults &&
+                packagingResult.multiCategoryResults[cat] !== undefined
+            ) {
+                pkgTotal = packagingResult.multiCategoryResults[cat]; // BUGFIX PACKAGING-NON-CC
             }
-            // All other categories: pkgTotal = 0 (see packaging traceability note above)
 
             const total = ingTotal + mfgTotal + transTotal + pkgTotal;
 
