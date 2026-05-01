@@ -151,6 +151,13 @@
             throw new ValidationError('complianceResults.dnm.compliant must be a boolean');
         }
 
+        // GAP 1 FIX: Expanded hashPayload to cover ALL calculation inputs, not just outputs.
+        // ISO 14044 §4.2.3.3 requires traceability of all inputs that affect the result.
+        // ISO 14044 §4.5 requires that results be reproducible from the audit record.
+        // Previously, the hash covered only pefResults (outputs) + DQR + product name/weight.
+        // An adversary could change ingredient IDs, quantities, transport mode, packaging
+        // material, etc. and produce the same hash if the final pefResults happened to match.
+        // The inputs block below ensures every calculation-affecting field is hash-covered.
         const hashPayload = JSON.stringify({
             physics: physicsResults.pefResults,
             compliance: {
@@ -160,6 +167,34 @@
             metadata: {
                 productName: metadata.productName,
                 functionalUnitKg: metadata.functionalUnitKg
+            },
+            // GAP 1 FIX: All calculation inputs — ISO 14044 §4.2.3.3 / §4.5
+            inputs: {
+                ingredients: (metadata.ingredients || []).map(i => ({
+                    id:              i.id,
+                    quantityKg:      i.quantityKg,
+                    originCountry:   i.originCountry   || 'FR',
+                    processingState: i.processingState || 'raw',
+                    primaryData:     i.primaryData     || null
+                })),
+                manufacturing: {
+                    country:               (metadata.manufacturing || {}).country              || null,
+                    processingMethod:      (metadata.manufacturing || {}).processingMethod     || null,
+                    energySource:          (metadata.manufacturing || {}).energySource         || null,
+                    usePrimaryFactoryData: (metadata.manufacturing || {}).usePrimaryFactoryData || false,
+                    primaryFactoryData:    (metadata.manufacturing || {}).primaryFactoryData   || null
+                },
+                transport: {
+                    mode:          (metadata.transport || {}).mode          || null,
+                    distanceKm:    (metadata.transport || {}).distanceKm    || null,
+                    refrigeration: (metadata.transport || {}).refrigeration || null
+                },
+                packaging: {
+                    material:       (metadata.packaging || {}).material      || null,
+                    weightKg:       (metadata.packaging || {}).weightKg      || null,
+                    recycledPct:    (metadata.packaging || {}).recycledPct   || null,
+                    eolDestination: (metadata.packaging || {}).eolDestination || null
+                }
             }
         });
 
