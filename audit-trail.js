@@ -116,7 +116,32 @@ function displayFullPefScorecard() {
 
 // ================== REGULATORY AUDIT TRAIL ENGINE (ISO 14044) ==================
 function displayAuditTrail() {
-    const auditContent = document.getElementById('auditTrailContent');
+    // FIX: DOM ID mismatch — getElementById('auditTrailContent') may return null if called
+    // before the transparency-tab is rendered or if the element is temporarily detached.
+    // Fallback: locate by selector inside the transparency tab, then create dynamically.
+    let auditContent = document.getElementById('auditTrailContent');
+    if (!auditContent) {
+        // FIX: DOM ID mismatch — search inside transparency-tab as secondary lookup
+        const transparencyTab = document.getElementById('transparency-tab');
+        if (transparencyTab) {
+            auditContent = transparencyTab.querySelector('.audit-trail-section');
+        }
+    }
+    if (!auditContent) {
+        // FIX: DOM ID mismatch — element missing entirely; create it dynamically inside transparency-tab
+        const transparencyTab = document.getElementById('transparency-tab');
+        if (!transparencyTab) return;
+        auditContent = document.createElement('div');
+        auditContent.id = 'auditTrailContent';
+        auditContent.className = 'audit-trail-section';
+        // Insert before action-buttons if present, otherwise append
+        const actionButtons = transparencyTab.querySelector('.action-buttons');
+        if (actionButtons) {
+            transparencyTab.querySelector('.card')?.insertBefore(auditContent, actionButtons);
+        } else {
+            transparencyTab.appendChild(auditContent);
+        }
+    }
     if (!auditContent) return;
 
     if (!auditTrailData || !auditTrailData.pefCategories) {
@@ -879,12 +904,17 @@ function generateDPP() {
             </div>
         `;
 
-        // FIX: Bug #4 — #qrcode's parentNode (.qrcode-container) may be null if generateDPP()
-        // is called while the dpp-tab is hidden or #qrcode hasn't rendered yet.
-        // Use #dpp-tab as the guaranteed-existing anchor instead.
-        const dppTabContainer = document.getElementById('dpp-tab');
-        if (dppTabContainer) {
-            dppTabContainer.appendChild(metricsContainer);
+        // FIX: DOM ID mismatch — previous code appended metricsContainer as a direct child of
+        // #dpp-tab (the outer tab wrapper), placing it outside the styled card and .dpp-section.
+        // Correct anchor: the .dpp-section inside the card, found via #dppId's parent chain.
+        // Fallback chain: .dpp-section → first .card inside #dpp-tab → #dpp-tab itself.
+        const dppIdEl = document.getElementById('dppId');
+        const dppSection = dppIdEl?.closest('.dpp-section')
+            || document.querySelector('#dpp-tab .dpp-section')
+            || document.querySelector('#dpp-tab .card')
+            || document.getElementById('dpp-tab');
+        if (dppSection) {
+            dppSection.appendChild(metricsContainer);
         }
     }
 
