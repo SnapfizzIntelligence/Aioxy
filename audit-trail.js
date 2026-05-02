@@ -82,11 +82,21 @@ function displayFullPefScorecard() {
         tbody.appendChild(row);
     }
 
-    // FIX 7: Add footnote clarifying that DQR shown is product-level, not per-category
-    const footnote = document.createElement('div');
-    footnote.style.cssText = 'font-size:0.7rem;color:#718096;margin-top:0.5rem;font-style:italic;';
-    footnote.textContent = 'DQR shown is the overall product-level Data Quality Rating. Per-category DQR is not available from AGRIBALYSE 3.2 background data. For audit-grade assessments, primary data with per-category DQR scoring is recommended.';
-    tbody.parentNode.parentNode.appendChild(footnote);
+    // FIX 6: Remove any footnote from a previous render before appending a new one,
+    // preventing accumulating duplicates on repeated tab visits.
+    // Wrapped in try/catch: if tbody.parentNode.parentNode resolves unexpectedly
+    // (different HTML nesting), the table body content already rendered is not lost.
+    try {
+        const existingFootnote = document.getElementById('pefScorecardFootnote');
+        if (existingFootnote) existingFootnote.remove();
+        const footnote = document.createElement('div');
+        footnote.id = 'pefScorecardFootnote';
+        footnote.style.cssText = 'font-size:0.7rem;color:#718096;margin-top:0.5rem;font-style:italic;';
+        footnote.textContent = 'DQR shown is the overall product-level Data Quality Rating. Per-category DQR is not available from AGRIBALYSE 3.2 background data. For audit-grade assessments, primary data with per-category DQR scoring is recommended.';
+        tbody.parentNode.parentNode.appendChild(footnote);
+    } catch (e) {
+        console.warn('[displayFullPefScorecard] Could not append footnote:', e);
+    }
     
     if (ingredientDataQuality && auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs) {
         let qualityHTML = '';
@@ -115,7 +125,15 @@ function displayAuditTrail() {
     if (!auditContent) return;
 
     if (!auditTrailData || !auditTrailData.pefCategories) {
-        auditContent.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><h3>Awaiting Calculation Data</h3><p>Run impact analysis to generate audit log.</p></div>`;
+        // Only inject the empty-state if the container still holds the static placeholder
+        // (i.e. no successful render has run yet). This prevents overwriting real content
+        // if this function is called a second time before auditTrailData is ready.
+        const hasRealContent = auditContent.querySelector('h3[style]') ||
+                               auditContent.querySelector('table') ||
+                               auditContent.querySelector('.compliance-notice');
+        if (!hasRealContent) {
+            auditContent.innerHTML = `<div class="empty-state"><i class="fas fa-search"></i><h3>Awaiting Calculation Data</h3><p>Run impact analysis to generate audit log.</p></div>`;
+        }
         return;
     }
 
@@ -817,8 +835,14 @@ Date: ${dateStr}`;
 // ================== DIGITAL TRANSPARENCY CARD ==================
 function generateDPP() {
     const productName = document.getElementById('productName').value || 'Unnamed Product';
-    const dppId = currentDPPId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    currentDPPId = dppId;
+    // FIX 5: Read window.currentDPPId explicitly to avoid any closure-scope shadowing.
+    // Only generate a random fallback if the engine has not yet written a real ID.
+    // Do NOT write the random fallback back into window.currentDPPId — that would
+    // overwrite the real SHA-256 ID that calculateImpact() sets after await resolves.
+    const dppId = window.currentDPPId || ('TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase());
+    if (!window.currentDPPId) {
+        window.currentDPPId = dppId; // persist only if nothing was set yet
+    }
     
     document.getElementById('dppId').textContent = dppId;
     
@@ -842,13 +866,14 @@ function generateDPP() {
     
     console.log("📦 DPP Data Ready for Backend Storage:", transparencyData);
 
-    // FIX 3: Render environmental metrics on DPP tab
+    // FIX 4: Previously appended metricsContainer to document.getElementById('qrcode')?.parentNode.
+    // If #qrcode was null (hidden tab, timing issue, or DOM removal), parentNode was undefined,
+    // the if(qrContainer) guard silently skipped the append, and metrics never appeared.
+    // Fix: locate the nearest reliable ancestor — the .dpp-section wrapper — which is always
+    // present in dpp-tab's static HTML. Fall back to the tab div itself if .dpp-section is absent.
     if (finalPefResults && Object.keys(finalPefResults).length > 0) {
-    // FIX 7: Remove any existing metrics container to prevent duplicates on tab re-visit
         const existingMetrics = document.getElementById('dpp-metrics-container');
-        if (existingMetrics) {
-            existingMetrics.remove();
-        }
+        if (existingMetrics) existingMetrics.remove();
 
         const metricsContainer = document.createElement('div');
         metricsContainer.id = 'dpp-metrics-container';
@@ -869,9 +894,12 @@ function generateDPP() {
             </div>
         `;
 
-        const qrContainer = document.getElementById('qrcode')?.parentNode;
-        if (qrContainer) {
-            qrContainer.appendChild(metricsContainer);
+        // Prefer the .dpp-section wrapper; fall back to dpp-tab card; last resort body append.
+        const dppTab     = document.getElementById('dpp-tab');
+        const dppSection = dppTab && dppTab.querySelector('.dpp-section');
+        const insertTarget = dppSection || dppTab;
+        if (insertTarget) {
+            insertTarget.appendChild(metricsContainer);
         }
     }
 
