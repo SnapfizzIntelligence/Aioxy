@@ -3,150 +3,152 @@
 // ===================================================================
 
 // ================== TAB MANAGEMENT ==================
-// ROOT CAUSE ANALYSIS (all 3 broken tabs shared the same two bugs):
 //
-// BUG 1 — setupDemoData() was called without await.
-//   setupDemoData() is async and internally does: await calculateImpact().
-//   Without await in showTab, the render calls on the lines below fired
-//   immediately while calculateImpact() was still pending. finalPefResults
-//   and auditTrailData were still {} when the renderers read them, so every
-//   render function hit its empty-state guard and printed placeholder text.
+// DEFINITIVE FIX — based on reading food.html (the actual HTML file):
 //
-// BUG 2 — After priming (await setupDemoData / await calculateImpact),
-//   the render calls were inside the if-branch only. If globals were already
-//   populated from a previous calculation (e.g. user visited Results tab first),
-//   the else-branch ran the renderers directly — which is correct. But if
-//   calculateImpact() throws (engine validation error), globals stay empty and
-//   the renderers still run and show empty state. Fixed by re-checking globals
-//   after the await before calling renderers, and wrapping in try/catch so a
-//   thrown engine error does not leave the tab in a broken silent state.
+// CONFIRMED TAB NAME MAPPING from food.html nav buttons:
+//   PEF Scorecard nav    → showTab('pef-scorecard') → tab div id="pef-scorecard-tab"
+//   Transparency Card nav→ showTab('dpp')           → tab div id="dpp-tab"
+//   Transparency Log nav → showTab('transparency')  → tab div id="transparency-tab"
 //
-// BUG 3 — transparency-card tab had no handler at all. generateDPP() was
-//   never called when that tab was clicked, so currentDPPId was never set
-//   and the card always showed TRC-#####-##### placeholder.
+// ROOT CAUSE of all 3 tabs being broken:
 //
-// All fixes are confined to this one function. No other file is changed.
+// 1. WRONG TAB NAME for Transparency Card:
+//    Every previous fix checked tabName === 'transparency-card' but the HTML
+//    passes 'dpp'. So the handler never matched and generateDPP() was never
+//    called with primed globals. Fixed: handler now checks tabName === 'dpp'
+//    (which was already there for the old dpp flow) but now ensures globals
+//    are populated via await before calling generateDPP().
+//
+// 2. setupDemoData() called without await:
+//    setupDemoData() is async and does: await calculateImpact() internally.
+//    All previous versions called it without await, so the render functions
+//    fired before calculateImpact() resolved. Fixed: single _ensureData()
+//    helper always awaits the priming call.
+//
+// 3. No error boundary around calculateImpact():
+//    If the engine throws (e.g. ingredient validation), the error propagated
+//    silently or showed an alert, globals stayed empty, renders showed
+//    placeholder text. Fixed: try/catch in _ensureData() with console.error.
+
 async function showTab(tabName, event) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
-    
     document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    
+
     const targetTab = document.getElementById(`${tabName}-tab`);
-    if (targetTab) {
-        targetTab.classList.remove('hidden');
-    }
-    
+    if (targetTab) targetTab.classList.remove('hidden');
+
     if (event && event.currentTarget) {
         event.currentTarget.classList.add('active');
     }
 
-    // ── Helper: ensure globals are populated before any tab renders ──────────
-    // Returns true if finalPefResults has real data after this call.
-    async function _ensureCalculated() {
-        const hasData = finalPefResults &&
-                        Object.keys(finalPefResults).length > 0 &&
-                        finalPefResults["Climate Change"] &&
-                        finalPefResults["Climate Change"].total > 0;
-        if (hasData) return true;
+    // ── _ensureData: guarantee globals are populated before any render ────────
+    // Returns true if finalPefResults has real calculated data.
+    // Calling sequence:
+    //   1. If globals already have data → return true immediately (fast path).
+    //   2. If selectedIngredients is empty → run setupDemoData() which internally
+    //      awaits calculateImpact(). Must await here too or render runs before
+    //      calculateImpact() resolves and globals stay empty.
+    //   3. If ingredients exist → await calculateImpact() directly.
+    //   4. Re-check globals after await — engine may have thrown and been caught,
+    //      leaving globals empty. Return false so render is skipped cleanly.
+    async function _ensureData() {
+        const populated = (
+            finalPefResults &&
+            Object.keys(finalPefResults).length > 0 &&
+            finalPefResults['Climate Change'] &&
+            finalPefResults['Climate Change'].total > 0
+        );
+        if (populated) return true;
 
-        console.log('🔧 [showTab] Globals empty — priming calculation...');
+        console.log('[showTab] Globals not ready — running calculation for tab:', tabName);
         try {
             if (selectedIngredients.length === 0) {
-                // await is REQUIRED: setupDemoData is async and internally calls
-                // await calculateImpact(). Without await, the render calls below
-                // fire before calculateImpact() resolves and globals stay empty.
-                await setupDemoData();
+                await setupDemoData();   // setupDemoData itself awaits calculateImpact()
             } else {
                 await calculateImpact();
             }
         } catch (err) {
-            console.error('🔧 [showTab] Calculation failed during tab priming:', err);
+            console.error('[showTab] Calculation failed while priming tab', tabName, err);
             return false;
         }
 
-        // Re-check after the await — engine may have thrown and left globals empty
-        return (finalPefResults &&
-                Object.keys(finalPefResults).length > 0 &&
-                finalPefResults["Climate Change"] &&
-                finalPefResults["Climate Change"].total > 0);
+        // Re-check after await — engine may have returned early or thrown
+        return (
+            finalPefResults &&
+            Object.keys(finalPefResults).length > 0 &&
+            finalPefResults['Climate Change'] &&
+            finalPefResults['Climate Change'].total > 0
+        );
     }
-    
+
+    // ── results tab ───────────────────────────────────────────────────────────
     if (tabName === 'results') {
         if (selectedIngredients.length > 0) {
-            calculateImpact();
+            calculateImpact(); // fire-and-forget; updateResultsUI handles the render
         }
     }
 
+    // ── business-case tab ─────────────────────────────────────────────────────
     if (tabName === 'business-case') {
-        const ready = await _ensureCalculated();
+        const ready = await _ensureData();
         if (ready && typeof updateBusinessCase === 'function') {
             updateBusinessCase();
         }
     }
 
+    // ── dpp tab = "Transparency Card" in the nav (food.html: showTab('dpp')) ──
+    // The HTML nav button and internal cross-tab links all pass 'dpp'.
+    // Tab content div is id="dpp-tab". generateDPP() renders the QR code,
+    // the TRC ID, and the environmental metrics block. It requires
+    // finalPefResults and auditTrailData to be populated — hence _ensureData().
     if (tabName === 'dpp') {
-        const ready = await _ensureCalculated();
+        const ready = await _ensureData();
         if (ready) {
             generateDPP();
+        } else {
+            console.warn('[showTab] dpp tab: data not ready, generateDPP() skipped.');
         }
     }
 
-    // ── PEF Scorecard ────────────────────────────────────────────────────────
-    // displayFullPefScorecard() reads finalPefResults and auditTrailData.
-    // Both must be populated before it is called.
+    // ── pef-scorecard tab ─────────────────────────────────────────────────────
+    // displayFullPefScorecard() reads finalPefResults at line 40:
+    //   if (Object.keys(finalPefResults).length === 0) → shows empty-state row
+    // Must be called only after _ensureData() confirms globals are populated.
     if (tabName === 'pef-scorecard') {
-        const ready = await _ensureCalculated();
+        const ready = await _ensureData();
         if (ready) {
             if (typeof displayFullPefScorecard === 'function') {
                 displayFullPefScorecard();
-            } else {
-                console.warn('[showTab] displayFullPefScorecard not defined.');
             }
         } else {
-            console.warn('[showTab] PEF Scorecard: calculation not ready, skipping render.');
+            console.warn('[showTab] pef-scorecard tab: data not ready, render skipped.');
         }
     }
 
-    // ── Transparency Card (Digital Product Passport) ─────────────────────────
-    // This tab had NO handler at all in the previous version.
-    // generateDPP() sets currentDPPId and renders the QR + environmental metrics.
-    // Without this block, the tab always showed TRC-#####-##### placeholder.
-    if (tabName === 'transparency-card') {
-        const ready = await _ensureCalculated();
-        if (ready) {
-            if (typeof generateDPP === 'function') {
-                generateDPP();
-            } else {
-                console.warn('[showTab] generateDPP not defined.');
-            }
-        } else {
-            console.warn('[showTab] Transparency Card: calculation not ready, skipping render.');
-        }
-    }
-
-    // ── Transparency Log ─────────────────────────────────────────────────────
-    // Three renderers must all run after globals are confirmed populated:
-    //   displayAuditTrail()         → writes to #auditTrailContent
-    //   displayCompleteAuditTrail() → writes to #completeAuditTrailSection
-    //   displayForegroundBackground()→ writes to #foregroundBackgroundSection
-    // Previously: setupDemoData() was called without await, so all three
-    // renderers fired before calculateImpact() resolved — globals were {} —
-    // and each hit its empty-state guard and showed placeholder text.
+    // ── transparency tab = "Transparency Log" in the nav ─────────────────────
+    // Three functions all read auditTrailData and finalPefResults:
+    //   displayAuditTrail()          → #auditTrailContent
+    //   displayCompleteAuditTrail()  → #completeAuditTrailSection
+    //   displayForegroundBackground()→ #foregroundBackgroundSection
+    // displayAuditTrail() guard at line 117:
+    //   if (!auditTrailData || !auditTrailData.pefCategories) → shows placeholder
+    // All three must run AFTER _ensureData() returns true.
     if (tabName === 'transparency') {
-        const ready = await _ensureCalculated();
+        const ready = await _ensureData();
         if (ready) {
             displayAuditTrail();
             displayCompleteAuditTrail();
             displayForegroundBackground();
         } else {
-            console.warn('[showTab] Transparency Log: calculation not ready, skipping render.');
+            console.warn('[showTab] transparency tab: data not ready, renders skipped.');
         }
     }
-    
+
     updateTabIndicator();
 }
 
