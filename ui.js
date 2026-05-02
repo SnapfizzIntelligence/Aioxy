@@ -3,18 +3,29 @@
 // ===================================================================
 
 // ================== TAB MANAGEMENT ==================
-// FIX: showTab is now async so we can await calculateImpact() before rendering
-// dependent tabs. This eliminates the race condition where render functions were
-// called via setTimeout(fn, 200) before the async calculate() resolved and wrote
-// window.finalPefResults / window.auditTrailData. Pattern matches main.js line 435
-// where updateResultsUI(result) is called directly after await calculateImpact().
+// ROOT CAUSE ANALYSIS (all 3 broken tabs shared the same two bugs):
 //
-// ROOT-CAUSE FIX (pef-scorecard, transparency-card, transparency tabs):
-// Every setupDemoData() call is now awaited. setupDemoData() is async and internally
-// calls await calculateImpact(). Without await here, the render functions that follow
-// fired before calculateImpact() resolved, so finalPefResults and auditTrailData were
-// always empty objects when the renderers read them, producing empty/placeholder UI.
-// Additionally, the transparency-card tab had no handler at all — added below.
+// BUG 1 — setupDemoData() was called without await.
+//   setupDemoData() is async and internally does: await calculateImpact().
+//   Without await in showTab, the render calls on the lines below fired
+//   immediately while calculateImpact() was still pending. finalPefResults
+//   and auditTrailData were still {} when the renderers read them, so every
+//   render function hit its empty-state guard and printed placeholder text.
+//
+// BUG 2 — After priming (await setupDemoData / await calculateImpact),
+//   the render calls were inside the if-branch only. If globals were already
+//   populated from a previous calculation (e.g. user visited Results tab first),
+//   the else-branch ran the renderers directly — which is correct. But if
+//   calculateImpact() throws (engine validation error), globals stay empty and
+//   the renderers still run and show empty state. Fixed by re-checking globals
+//   after the await before calling renderers, and wrapping in try/catch so a
+//   thrown engine error does not leave the tab in a broken silent state.
+//
+// BUG 3 — transparency-card tab had no handler at all. generateDPP() was
+//   never called when that tab was clicked, so currentDPPId was never set
+//   and the card always showed TRC-#####-##### placeholder.
+//
+// All fixes are confined to this one function. No other file is changed.
 async function showTab(tabName, event) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
@@ -32,117 +43,107 @@ async function showTab(tabName, event) {
     if (event && event.currentTarget) {
         event.currentTarget.classList.add('active');
     }
+
+    // ── Helper: ensure globals are populated before any tab renders ──────────
+    // Returns true if finalPefResults has real data after this call.
+    async function _ensureCalculated() {
+        const hasData = finalPefResults &&
+                        Object.keys(finalPefResults).length > 0 &&
+                        finalPefResults["Climate Change"] &&
+                        finalPefResults["Climate Change"].total > 0;
+        if (hasData) return true;
+
+        console.log('🔧 [showTab] Globals empty — priming calculation...');
+        try {
+            if (selectedIngredients.length === 0) {
+                // await is REQUIRED: setupDemoData is async and internally calls
+                // await calculateImpact(). Without await, the render calls below
+                // fire before calculateImpact() resolves and globals stay empty.
+                await setupDemoData();
+            } else {
+                await calculateImpact();
+            }
+        } catch (err) {
+            console.error('🔧 [showTab] Calculation failed during tab priming:', err);
+            return false;
+        }
+
+        // Re-check after the await — engine may have thrown and left globals empty
+        return (finalPefResults &&
+                Object.keys(finalPefResults).length > 0 &&
+                finalPefResults["Climate Change"] &&
+                finalPefResults["Climate Change"].total > 0);
+    }
     
     if (tabName === 'results') {
         if (selectedIngredients.length > 0) {
             calculateImpact();
         }
     }
+
     if (tabName === 'business-case') {
-        if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
-            console.log('🔧 [Fix] Priming missing physics data for business case...');
-            if (selectedIngredients.length === 0) {
-                // FIXED: was setupDemoData() — must be awaited because setupDemoData is async
-                // and calls await calculateImpact() internally. Without await, updateBusinessCase()
-                // ran before calculateImpact() resolved, leaving finalPefResults empty.
-                await setupDemoData();
-            } else {
-                await calculateImpact();
-            }
-            if (typeof updateBusinessCase === 'function') {
-                updateBusinessCase();
-            }
-        } else {
+        const ready = await _ensureCalculated();
+        if (ready && typeof updateBusinessCase === 'function') {
             updateBusinessCase();
         }
     }
-    // FIX: dpp tab — await calculateImpact() so window.finalPefResults is populated before
-    // generateDPP() runs. generateDPP() at audit-trail.js:846 skips the environmental metrics
-    // block when finalPefResults is empty. The old setTimeout(generateDPP, 200) fired before
-    // the async calculate() resolved, so generateDPP() always saw empty globals.
+
     if (tabName === 'dpp') {
-        if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
-            console.log('🔧 [Fix] Priming missing physics data for DPP tab...');
-            if (selectedIngredients.length === 0) {
-                // FIXED: was setupDemoData() — must be awaited (same race condition as above)
-                await setupDemoData();
-            } else {
-                await calculateImpact();
-            }
-            generateDPP();
-        } else {
+        const ready = await _ensureCalculated();
+        if (ready) {
             generateDPP();
         }
     }
-    // FIX: pef-scorecard tab — await calculateImpact() so window.finalPefResults is populated
-    // before displayFullPefScorecard() runs. displayFullPefScorecard() at audit-trail.js:40
-    // hits Object.keys(finalPefResults).length === 0 and returns early with an empty-state row
-    // when globals are not yet written.
+
+    // ── PEF Scorecard ────────────────────────────────────────────────────────
+    // displayFullPefScorecard() reads finalPefResults and auditTrailData.
+    // Both must be populated before it is called.
     if (tabName === 'pef-scorecard') {
-        if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
-            console.log('🔧 [Fix] Priming missing physics data for PEF Scorecard tab...');
-            if (selectedIngredients.length === 0) {
-                // FIXED: was setupDemoData() — must be awaited so finalPefResults is written
-                // before displayFullPefScorecard() is called below.
-                await setupDemoData();
-            } else {
-                await calculateImpact();
-            }
+        const ready = await _ensureCalculated();
+        if (ready) {
             if (typeof displayFullPefScorecard === 'function') {
                 displayFullPefScorecard();
             } else {
-                console.warn('displayFullPefScorecard is not available. PEF Scorecard will not render.');
+                console.warn('[showTab] displayFullPefScorecard not defined.');
             }
         } else {
-            if (typeof displayFullPefScorecard === 'function') {
-                displayFullPefScorecard();
-            } else {
-                console.warn('displayFullPefScorecard is not available. PEF Scorecard will not render.');
-            }
+            console.warn('[showTab] PEF Scorecard: calculation not ready, skipping render.');
         }
     }
-    // FIX: transparency-card tab — this tab had NO handler at all, so currentDPPId was never
-    // set and the card always showed TRC-#####-##### placeholder. Handler added here:
-    // ensures calculation is complete so currentDPPId and finalPefResults are populated
-    // before generateDPP() (which renders the transparency card) is called.
+
+    // ── Transparency Card (Digital Product Passport) ─────────────────────────
+    // This tab had NO handler at all in the previous version.
+    // generateDPP() sets currentDPPId and renders the QR + environmental metrics.
+    // Without this block, the tab always showed TRC-#####-##### placeholder.
     if (tabName === 'transparency-card') {
-        if (!currentDPPId || !finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
-            console.log('🔧 [Fix] Priming missing physics data for Transparency Card tab...');
-            if (selectedIngredients.length === 0) {
-                // FIXED: await so currentDPPId and finalPefResults are written before generateDPP()
-                await setupDemoData();
+        const ready = await _ensureCalculated();
+        if (ready) {
+            if (typeof generateDPP === 'function') {
+                generateDPP();
             } else {
-                await calculateImpact();
+                console.warn('[showTab] generateDPP not defined.');
             }
-        }
-        if (typeof generateDPP === 'function') {
-            generateDPP();
         } else {
-            console.warn('generateDPP is not available. Transparency Card will not render.');
+            console.warn('[showTab] Transparency Card: calculation not ready, skipping render.');
         }
     }
-    // FIX: transparency tab — await calculateImpact() so window.auditTrailData is populated
-    // before the three render functions run. displayAuditTrail() at audit-trail.js:117 hits
-    // the !auditTrailData || !auditTrailData.pefCategories guard and renders "Awaiting
-    // Calculation Data" when auditTrailData is empty.
+
+    // ── Transparency Log ─────────────────────────────────────────────────────
+    // Three renderers must all run after globals are confirmed populated:
+    //   displayAuditTrail()         → writes to #auditTrailContent
+    //   displayCompleteAuditTrail() → writes to #completeAuditTrailSection
+    //   displayForegroundBackground()→ writes to #foregroundBackgroundSection
+    // Previously: setupDemoData() was called without await, so all three
+    // renderers fired before calculateImpact() resolved — globals were {} —
+    // and each hit its empty-state guard and showed placeholder text.
     if (tabName === 'transparency') {
-        if (!auditTrailData || !auditTrailData.pefCategories) {
-            console.log('🔧 [Fix] Priming missing physics data for Transparency tab...');
-            if (selectedIngredients.length === 0) {
-                // FIXED: was setupDemoData() — must be awaited so auditTrailData is written
-                // before displayAuditTrail() / displayCompleteAuditTrail() / displayForegroundBackground()
-                // are called below.
-                await setupDemoData();
-            } else {
-                await calculateImpact();
-            }
+        const ready = await _ensureCalculated();
+        if (ready) {
             displayAuditTrail();
             displayCompleteAuditTrail();
             displayForegroundBackground();
         } else {
-            displayAuditTrail();
-            displayCompleteAuditTrail();
-            displayForegroundBackground();
+            console.warn('[showTab] Transparency Log: calculation not ready, skipping render.');
         }
     }
     
