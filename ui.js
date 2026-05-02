@@ -57,19 +57,14 @@ async function showTab(tabName, event) {
     //   4. Re-check globals after await — engine may have thrown and been caught,
     //      leaving globals empty. Return false so render is skipped cleanly.
     async function _ensureData() {
-        // FIX 1: The old guard required Climate Change.total > 0, which returned false
-        // for any valid result where the total happened to be exactly 0 (edge case) AND
-        // also returned false before the first calculation ever ran (correct). The fix
-        // checks only that finalPefResults is a non-empty object with a Climate Change
-        // key present — existence of the key (not its value) is proof the engine ran.
-        // We also guard against auditTrailData being empty so all three tab renders
-        // are skipped cleanly when no calculation has been done yet.
+        // FIX: Bug #1 — engine returns pefResults['Climate Change'].total which can be >= 0.
+        // Using > 0 incorrectly blocks rendering when total is a valid zero or very small value.
+        // Correct check: the property must exist and be a number (including 0).
         const populated = (
             finalPefResults &&
             Object.keys(finalPefResults).length > 0 &&
-            finalPefResults['Climate Change'] !== undefined &&
-            auditTrailData &&
-            Object.keys(auditTrailData).length > 0
+            finalPefResults['Climate Change'] &&
+            typeof finalPefResults['Climate Change'].total === 'number'
         );
         if (populated) return true;
 
@@ -85,19 +80,23 @@ async function showTab(tabName, event) {
             return false;
         }
 
-        // Re-check after await — engine may have returned early or thrown
+        // FIX: Bug #1 — same guard on re-check after await
         return (
             finalPefResults &&
             Object.keys(finalPefResults).length > 0 &&
             finalPefResults['Climate Change'] &&
-            finalPefResults['Climate Change'].total > 0
+            typeof finalPefResults['Climate Change'].total === 'number'
         );
     }
 
     // ── results tab ───────────────────────────────────────────────────────────
+    // FIX: Bug #7 — calculateImpact() is intentionally fire-and-forget here.
+    // The Results tab uses updateResultsUI() as its callback inside calculateImpact(),
+    // so awaiting is unnecessary and would create a redundant render path.
+    // _ensureData() is not used here because updateResultsUI() is the render trigger.
     if (tabName === 'results') {
         if (selectedIngredients.length > 0) {
-            calculateImpact(); // fire-and-forget; updateResultsUI handles the render
+            calculateImpact(); // intentional fire-and-forget; updateResultsUI() is the render callback
         }
     }
 
@@ -2180,12 +2179,10 @@ function displayCompleteAuditTrail() {
     const transparencyTab = document.getElementById('transparency-tab');
     if (!transparencyTab || !auditTrailData) return;
 
-    // FIX 2: guard against empty auditTrailData (before any calculation has run).
-    // Previously this cleared the section innerHTML before returning, destroying
-    // content that had been rendered by a prior successful call. Now we only return
-    // without touching existing content. The section starts empty in the HTML so
-    // there is nothing to clear on the very first call anyway.
+    // Bug 3 fix: guard against empty auditTrailData (before any calculation has run)
     if (!auditTrailData || !auditTrailData.pefCategories) {
+        const section = document.getElementById('completeAuditTrailSection');
+        if (section) section.innerHTML = '';
         return;
     }
 
