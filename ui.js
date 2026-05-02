@@ -3,7 +3,12 @@
 // ===================================================================
 
 // ================== TAB MANAGEMENT ==================
-function showTab(tabName, event) {
+// FIX: showTab is now async so we can await calculateImpact() before rendering
+// dependent tabs. This eliminates the race condition where render functions were
+// called via setTimeout(fn, 200) before the async calculate() resolved and wrote
+// window.finalPefResults / window.auditTrailData. Pattern matches main.js line 435
+// where updateResultsUI(result) is called directly after await calculateImpact().
+async function showTab(tabName, event) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
@@ -32,46 +37,52 @@ function showTab(tabName, event) {
             if (selectedIngredients.length === 0) {
                 setupDemoData();
             } else {
-                calculateImpact();
+                // FIX: await calculateImpact() so globals are written before updateBusinessCase()
+                // runs. Replaces the old setTimeout(updateBusinessCase, 200) which fired before
+                // the async calculate() resolved, leaving finalPefResults empty.
+                await calculateImpact();
             }
             if (typeof updateBusinessCase === 'function') {
-                setTimeout(updateBusinessCase, 200);
+                updateBusinessCase();
             }
         } else {
             updateBusinessCase();
         }
     }
-    // FIX: dpp tab — prime data before rendering, matching the business-case pattern.
-    // generateDPP() at audit-trail.js:846 skips the environmental metrics block when
-    // finalPefResults is empty (Object.keys(finalPefResults).length > 0 evaluates false).
-    // Priming ensures finalPefResults is populated before generateDPP() runs.
+    // FIX: dpp tab — await calculateImpact() so window.finalPefResults is populated before
+    // generateDPP() runs. generateDPP() at audit-trail.js:846 skips the environmental metrics
+    // block when finalPefResults is empty. The old setTimeout(generateDPP, 200) fired before
+    // the async calculate() resolved, so generateDPP() always saw empty globals.
     if (tabName === 'dpp') {
         if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
             console.log('🔧 [Fix] Priming missing physics data for DPP tab...');
             if (selectedIngredients.length === 0) {
                 setupDemoData();
             } else {
-                calculateImpact();
+                // FIX: await so window.finalPefResults is written before generateDPP() is called
+                await calculateImpact();
             }
-            setTimeout(generateDPP, 200);
+            generateDPP();
         } else {
             generateDPP();
         }
     }
-    // FIX: pef-scorecard tab — prime data before rendering, matching the business-case pattern.
-    // displayFullPefScorecard() at audit-trail.js:40 hits Object.keys(finalPefResults).length === 0
-    // guard and returns early with an empty-state row, never writing the 16-category data rows.
-    // Priming ensures finalPefResults is populated before displayFullPefScorecard() runs.
+    // FIX: pef-scorecard tab — await calculateImpact() so window.finalPefResults is populated
+    // before displayFullPefScorecard() runs. displayFullPefScorecard() at audit-trail.js:40
+    // hits Object.keys(finalPefResults).length === 0 and returns early with an empty-state row
+    // when globals are not yet written. The old setTimeout(displayFullPefScorecard, 200) fired
+    // before the async calculate() resolved, so the scorecard always rendered empty.
     if (tabName === 'pef-scorecard') {
         if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
             console.log('🔧 [Fix] Priming missing physics data for PEF Scorecard tab...');
             if (selectedIngredients.length === 0) {
                 setupDemoData();
             } else {
-                calculateImpact();
+                // FIX: await so window.finalPefResults is written before displayFullPefScorecard() is called
+                await calculateImpact();
             }
             if (typeof displayFullPefScorecard === 'function') {
-                setTimeout(displayFullPefScorecard, 200);
+                displayFullPefScorecard();
             } else {
                 console.warn('displayFullPefScorecard is not available. PEF Scorecard will not render.');
             }
@@ -83,26 +94,23 @@ function showTab(tabName, event) {
             }
         }
     }
-    // FIX: transparency tab — prime data before calling displayAuditTrail(), matching the
-    // business-case pattern. displayAuditTrail() at audit-trail.js:117 hits the
-    // !auditTrailData || !auditTrailData.pefCategories guard and renders "Awaiting Calculation
-    // Data" when auditTrailData is empty. Priming runs first so displayAuditTrail() sees
-    // populated auditTrailData, not the empty initial {}. displayCompleteAuditTrail() and
-    // displayForegroundBackground() are deferred to the same setTimeout so all three render
-    // against the same freshly-populated data.
+    // FIX: transparency tab — await calculateImpact() so window.auditTrailData is populated
+    // before the three render functions run. displayAuditTrail() at audit-trail.js:117 hits
+    // the !auditTrailData || !auditTrailData.pefCategories guard and renders "Awaiting
+    // Calculation Data" when auditTrailData is empty. The old setTimeout(fn, 200) fired before
+    // the async calculate() resolved, so all three renderers always saw empty globals.
     if (tabName === 'transparency') {
         if (!auditTrailData || !auditTrailData.pefCategories) {
             console.log('🔧 [Fix] Priming missing physics data for Transparency tab...');
             if (selectedIngredients.length === 0) {
                 setupDemoData();
             } else {
-                calculateImpact();
+                // FIX: await so window.auditTrailData is written before the render calls below
+                await calculateImpact();
             }
-            setTimeout(function() {
-                displayAuditTrail();
-                displayCompleteAuditTrail();
-                displayForegroundBackground();
-            }, 200);
+            displayAuditTrail();
+            displayCompleteAuditTrail();
+            displayForegroundBackground();
         } else {
             displayAuditTrail();
             displayCompleteAuditTrail();
