@@ -1982,12 +1982,15 @@ function displayForegroundBackground() {
         fgSection.id = 'foregroundBackgroundSection';
         fgSection.className = 'audit-trail-section';
         fgSection.style.marginTop = '1.5rem';
-        // FIX: Previous code used querySelector('.audit-trail-section') as the
-        // insertion anchor — that element is created dynamically by
-        // displayCompleteAuditTrail() and may not yet exist, causing insertBefore()
-        // to silently do nothing (fgSection created but never in the DOM).
-        // Fix: always appendChild to the tab directly — always safe and visible.
-        transparencyTab.appendChild(fgSection);
+        // FIX: DOM ID mismatch — previous code appended to transparencyTab directly
+        // (the tab's outer div), placing it outside the styled card.
+        // Correct target: the .card inside transparency-tab, with fallback to tab itself.
+        const cardInTab = transparencyTab.querySelector('.card');
+        if (cardInTab) {
+            cardInTab.appendChild(fgSection);
+        } else {
+            transparencyTab.appendChild(fgSection);
+        }
     }
 
     const fb = auditTrailData.foreground_background;
@@ -2161,9 +2164,13 @@ function displayCompleteAuditTrail() {
         auditSection.className = 'card';
         auditSection.style.marginTop = '1.5rem';
         
-        const mainContent = transparencyTab.querySelector('.main-content');
-        if (mainContent) {
-            mainContent.appendChild(auditSection);
+        // FIX: DOM ID mismatch — transparency-tab has no .main-content child;
+        // .main-content is the global grid wrapper, not inside any tab.
+        // Correct fallback: append directly to the .card inside transparency-tab,
+        // or to the tab itself if no card is found.
+        const cardInTab = transparencyTab.querySelector('.card');
+        if (cardInTab) {
+            cardInTab.appendChild(auditSection);
         } else {
             transparencyTab.appendChild(auditSection);
         }
