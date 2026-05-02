@@ -8,6 +8,13 @@
 // called via setTimeout(fn, 200) before the async calculate() resolved and wrote
 // window.finalPefResults / window.auditTrailData. Pattern matches main.js line 435
 // where updateResultsUI(result) is called directly after await calculateImpact().
+//
+// ROOT-CAUSE FIX (pef-scorecard, transparency-card, transparency tabs):
+// Every setupDemoData() call is now awaited. setupDemoData() is async and internally
+// calls await calculateImpact(). Without await here, the render functions that follow
+// fired before calculateImpact() resolved, so finalPefResults and auditTrailData were
+// always empty objects when the renderers read them, producing empty/placeholder UI.
+// Additionally, the transparency-card tab had no handler at all — added below.
 async function showTab(tabName, event) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
@@ -35,11 +42,11 @@ async function showTab(tabName, event) {
         if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
             console.log('🔧 [Fix] Priming missing physics data for business case...');
             if (selectedIngredients.length === 0) {
-                setupDemoData();
+                // FIXED: was setupDemoData() — must be awaited because setupDemoData is async
+                // and calls await calculateImpact() internally. Without await, updateBusinessCase()
+                // ran before calculateImpact() resolved, leaving finalPefResults empty.
+                await setupDemoData();
             } else {
-                // FIX: await calculateImpact() so globals are written before updateBusinessCase()
-                // runs. Replaces the old setTimeout(updateBusinessCase, 200) which fired before
-                // the async calculate() resolved, leaving finalPefResults empty.
                 await calculateImpact();
             }
             if (typeof updateBusinessCase === 'function') {
@@ -57,9 +64,9 @@ async function showTab(tabName, event) {
         if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
             console.log('🔧 [Fix] Priming missing physics data for DPP tab...');
             if (selectedIngredients.length === 0) {
-                setupDemoData();
+                // FIXED: was setupDemoData() — must be awaited (same race condition as above)
+                await setupDemoData();
             } else {
-                // FIX: await so window.finalPefResults is written before generateDPP() is called
                 await calculateImpact();
             }
             generateDPP();
@@ -70,15 +77,15 @@ async function showTab(tabName, event) {
     // FIX: pef-scorecard tab — await calculateImpact() so window.finalPefResults is populated
     // before displayFullPefScorecard() runs. displayFullPefScorecard() at audit-trail.js:40
     // hits Object.keys(finalPefResults).length === 0 and returns early with an empty-state row
-    // when globals are not yet written. The old setTimeout(displayFullPefScorecard, 200) fired
-    // before the async calculate() resolved, so the scorecard always rendered empty.
+    // when globals are not yet written.
     if (tabName === 'pef-scorecard') {
         if (!finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
             console.log('🔧 [Fix] Priming missing physics data for PEF Scorecard tab...');
             if (selectedIngredients.length === 0) {
-                setupDemoData();
+                // FIXED: was setupDemoData() — must be awaited so finalPefResults is written
+                // before displayFullPefScorecard() is called below.
+                await setupDemoData();
             } else {
-                // FIX: await so window.finalPefResults is written before displayFullPefScorecard() is called
                 await calculateImpact();
             }
             if (typeof displayFullPefScorecard === 'function') {
@@ -94,18 +101,39 @@ async function showTab(tabName, event) {
             }
         }
     }
+    // FIX: transparency-card tab — this tab had NO handler at all, so currentDPPId was never
+    // set and the card always showed TRC-#####-##### placeholder. Handler added here:
+    // ensures calculation is complete so currentDPPId and finalPefResults are populated
+    // before generateDPP() (which renders the transparency card) is called.
+    if (tabName === 'transparency-card') {
+        if (!currentDPPId || !finalPefResults || Object.keys(finalPefResults).length === 0 || !finalPefResults["Climate Change"] || finalPefResults["Climate Change"].total === 0) {
+            console.log('🔧 [Fix] Priming missing physics data for Transparency Card tab...');
+            if (selectedIngredients.length === 0) {
+                // FIXED: await so currentDPPId and finalPefResults are written before generateDPP()
+                await setupDemoData();
+            } else {
+                await calculateImpact();
+            }
+        }
+        if (typeof generateDPP === 'function') {
+            generateDPP();
+        } else {
+            console.warn('generateDPP is not available. Transparency Card will not render.');
+        }
+    }
     // FIX: transparency tab — await calculateImpact() so window.auditTrailData is populated
     // before the three render functions run. displayAuditTrail() at audit-trail.js:117 hits
     // the !auditTrailData || !auditTrailData.pefCategories guard and renders "Awaiting
-    // Calculation Data" when auditTrailData is empty. The old setTimeout(fn, 200) fired before
-    // the async calculate() resolved, so all three renderers always saw empty globals.
+    // Calculation Data" when auditTrailData is empty.
     if (tabName === 'transparency') {
         if (!auditTrailData || !auditTrailData.pefCategories) {
             console.log('🔧 [Fix] Priming missing physics data for Transparency tab...');
             if (selectedIngredients.length === 0) {
-                setupDemoData();
+                // FIXED: was setupDemoData() — must be awaited so auditTrailData is written
+                // before displayAuditTrail() / displayCompleteAuditTrail() / displayForegroundBackground()
+                // are called below.
+                await setupDemoData();
             } else {
-                // FIX: await so window.auditTrailData is written before the render calls below
                 await calculateImpact();
             }
             displayAuditTrail();
