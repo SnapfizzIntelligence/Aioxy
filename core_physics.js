@@ -1376,36 +1376,6 @@
             })
         }),
 
-        
-            
-        SOC: Object.freeze({
-            AMORTIZATION_YEARS: 20.0,
-            C_TO_CO2: 3.6666666666666665
-        }),
-        CFF: Object.freeze({
-            A_FACTOR_METALS_GLASS_PAPER: 0.2,
-            A_FACTOR_DEFAULT: 0.5,
-            QUALITY_RATIO_DENOMINATOR: 1.0
-        }),
-        MONTE_CARLO: Object.freeze({
-            MIN_ITERATIONS: 100,
-            P5_PERCENTILE: 0.05,
-            P95_PERCENTILE: 0.95
-        }),
-        VALIDATION: Object.freeze({
-            DQR_MIN: 1.0,
-            DQR_MAX: 5.0,
-            RECYCLED_CONTENT_MAX: 100.0
-        }),
-        SYSTEM_BOUNDARY: Object.freeze({
-            VALUE: "cradle-to-retail"
-        }),
-        FOSSIL_FRACTION: Object.freeze({
-            MANUFACTURING_ELECTRICITY: 1.0,
-            TRANSPORT_DIESEL: 1.0,
-            PACKAGING_DEFAULT: 1.0
-        }),
-
         // Source: ecoinvent v3.9.1, market for electricity, medium voltage, EU-27 (RER) — per-kWh multi-impact factors
         ELECTRICITY_GRID_MULTI: Object.freeze({
             'Ozone Depletion':               8.7e-12,
@@ -2212,7 +2182,7 @@ return {
                     aFactor:        pkg.aFactor,
                     qs:             pkg.q,
                     qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
-                    fossilFraction: pkg.fossilFraction
+                    fossilFraction: pkg.fossilFraction,
                     materialKey:    cloned.packagingMaterial
                 });
                 packagingCO2        = cff.totalImpact;
@@ -2431,7 +2401,7 @@ return {
                 aFactor:        pkg.aFactor,
                 qs:             pkg.q,
                 qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
-                fossilFraction: pkg.fossilFraction
+                fossilFraction: pkg.fossilFraction,
                 materialKey:    sharedParams.packagingMaterial
             });
             sharedPackagingCO2         = cff.totalImpact;
