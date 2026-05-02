@@ -57,11 +57,19 @@ async function showTab(tabName, event) {
     //   4. Re-check globals after await — engine may have thrown and been caught,
     //      leaving globals empty. Return false so render is skipped cleanly.
     async function _ensureData() {
+        // FIX 1: The old guard required Climate Change.total > 0, which returned false
+        // for any valid result where the total happened to be exactly 0 (edge case) AND
+        // also returned false before the first calculation ever ran (correct). The fix
+        // checks only that finalPefResults is a non-empty object with a Climate Change
+        // key present — existence of the key (not its value) is proof the engine ran.
+        // We also guard against auditTrailData being empty so all three tab renders
+        // are skipped cleanly when no calculation has been done yet.
         const populated = (
             finalPefResults &&
             Object.keys(finalPefResults).length > 0 &&
-            finalPefResults['Climate Change'] &&
-            finalPefResults['Climate Change'].total > 0
+            finalPefResults['Climate Change'] !== undefined &&
+            auditTrailData &&
+            Object.keys(auditTrailData).length > 0
         );
         if (populated) return true;
 
@@ -2172,10 +2180,12 @@ function displayCompleteAuditTrail() {
     const transparencyTab = document.getElementById('transparency-tab');
     if (!transparencyTab || !auditTrailData) return;
 
-    // Bug 3 fix: guard against empty auditTrailData (before any calculation has run)
+    // FIX 2: guard against empty auditTrailData (before any calculation has run).
+    // Previously this cleared the section innerHTML before returning, destroying
+    // content that had been rendered by a prior successful call. Now we only return
+    // without touching existing content. The section starts empty in the HTML so
+    // there is nothing to clear on the very first call anyway.
     if (!auditTrailData || !auditTrailData.pefCategories) {
-        const section = document.getElementById('completeAuditTrailSection');
-        if (section) section.innerHTML = '';
         return;
     }
 
