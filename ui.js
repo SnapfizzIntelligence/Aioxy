@@ -1453,7 +1453,7 @@ function updateIngredientList() {
     });
 }
 
-function setupDemoData() {
+async function setupDemoData() {
     console.log('🎯 [AIOXY] Setting up demo data...');
     
     if (!window.aioxyData || !window.aioxyData.ingredients) {
@@ -1490,10 +1490,11 @@ function setupDemoData() {
     
     updateIngredientList();
     
-    setTimeout(() => {
-        console.log('🔢 [setupDemoData] Auto-calculating with demo data...');
-        calculateImpact();
-    }, 300);
+    // FIX: await the calculation so callers (showTab) can await setupDemoData()
+    // and be sure window.finalPefResults and window.auditTrailData are populated
+    // before render functions execute.
+    await new Promise(r => setTimeout(r, 300));
+    await calculateImpact();
 }
 
 // ================== SUPPLIER DATA MODAL ==================
