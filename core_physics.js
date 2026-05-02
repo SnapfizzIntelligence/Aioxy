@@ -325,6 +325,22 @@
                 chilled: 0.006
             }),
 
+            // FIX: MULTI_CATEGORY_FACTORS was referenced in calculateTransport()
+            // at line 1815 (glec.MULTI_CATEGORY_FACTORS[mode]) but was never
+            // defined in CONSTANTS.GLEC. This caused `undefined['road']` to throw:
+            // "Cannot read properties of undefined (reading 'road')".
+            // The road entry is an empty object because the per-tkm multi-category
+            // values for road transport have not yet been populated (methodology is
+            // documented in the header comments, lines 118–166). The existing guard
+            // `if (modeMCF)` on line 1816 ensures an empty object is a safe no-op
+            // (Object.keys({}) yields zero iterations). Non-road modes are left
+            // absent so the same guard evaluates them as falsy and skips, matching
+            // the header comment: "all multi-category factors for non-road modes
+            // are 0 pending mode-specific LCI derivation."
+            MULTI_CATEGORY_FACTORS: Object.freeze({
+                road: Object.freeze({})
+            }),
+
         }),
 
         
