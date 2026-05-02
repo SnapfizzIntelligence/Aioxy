@@ -325,7 +325,37 @@
                 chilled: 0.006
             }),
 
+        }),
+
+        
             
+        SOC: Object.freeze({
+            AMORTIZATION_YEARS: 20.0,
+            C_TO_CO2: 3.6666666666666665
+        }),
+        CFF: Object.freeze({
+            A_FACTOR_METALS_GLASS_PAPER: 0.2,
+            A_FACTOR_DEFAULT: 0.5,
+            QUALITY_RATIO_DENOMINATOR: 1.0
+        }),
+        MONTE_CARLO: Object.freeze({
+            MIN_ITERATIONS: 100,
+            P5_PERCENTILE: 0.05,
+            P95_PERCENTILE: 0.95
+        }),
+        VALIDATION: Object.freeze({
+            DQR_MIN: 1.0,
+            DQR_MAX: 5.0,
+            RECYCLED_CONTENT_MAX: 100.0
+        }),
+        SYSTEM_BOUNDARY: Object.freeze({
+            VALUE: "cradle-to-retail"
+        }),
+        FOSSIL_FRACTION: Object.freeze({
+            MANUFACTURING_ELECTRICITY: 1.0,
+            TRANSPORT_DIESEL: 1.0,
+            PACKAGING_DEFAULT: 1.0
+        }),
 
     // BUGFIX PACKAGING-NON-CC: Multi-category non-CC impact factors per kg of virgin
         // packaging material produced. These replace the previous hard-coded zeros that
