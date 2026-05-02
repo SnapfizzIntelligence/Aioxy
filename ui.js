@@ -31,7 +31,19 @@
 //    silently or showed an alert, globals stayed empty, renders showed
 //    placeholder text. Fixed: try/catch in _ensureData() with console.error.
 
-async function showTab(tabName, event) {
+// FIX: showTab() rebuilt from scratch. The previous version used _ensureData() — a complex
+// async guard that attempted to prime globals before rendering. This was solving the wrong
+// problem. updateResultsUI() already calls ALL three render functions (displayAuditTrail,
+// displayFullPefScorecard, generateDPP, etc.) on every calculation, so content is already
+// in the DOM when a tab is clicked. The tabs appeared blank because:
+//   1. _ensureData() correctly detected data was present but the render functions themselves
+//      had DOM-insertion ordering bugs (fixed separately in audit-trail.js).
+//   2. generateDPP() was guarded by `currentDPPId !== null` in updateResultsUI(), causing it
+//      to be skipped on the first calculation (fixed below in updateResultsUI).
+// New approach: tab switching just shows/hides. If data is missing (first click before any
+// calculation), trigger ONE calculation — updateResultsUI() will render everything when done.
+// No _ensureData(), no per-tab render calls, no async dependencies in showTab().
+function showTab(tabName, event) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
@@ -46,113 +58,65 @@ async function showTab(tabName, event) {
         event.currentTarget.classList.add('active');
     }
 
-    // ── _ensureData: guarantee globals are populated before any render ────────
-    // Returns true if finalPefResults has real calculated data.
-    // Calling sequence:
-    //   1. If globals already have data → return true immediately (fast path).
-    //   2. If selectedIngredients is empty → run setupDemoData() which internally
-    //      awaits calculateImpact(). Must await here too or render runs before
-    //      calculateImpact() resolves and globals stay empty.
-    //   3. If ingredients exist → await calculateImpact() directly.
-    //   4. Re-check globals after await — engine may have thrown and been caught,
-    //      leaving globals empty. Return false so render is skipped cleanly.
-    async function _ensureData() {
-        // FIX: Bug #1 — engine returns pefResults['Climate Change'].total which can be >= 0.
-        // Using > 0 incorrectly blocks rendering when total is a valid zero or very small value.
-        // Correct check: the property must exist and be a number (including 0).
-        const populated = (
-            finalPefResults &&
-            Object.keys(finalPefResults).length > 0 &&
-            finalPefResults['Climate Change'] &&
-            typeof finalPefResults['Climate Change'].total === 'number'
-        );
-        if (populated) return true;
-
-        console.log('[showTab] Globals not ready — running calculation for tab:', tabName);
-        try {
-            if (selectedIngredients.length === 0) {
-                await setupDemoData();   // setupDemoData itself awaits calculateImpact()
-            } else {
-                await calculateImpact();
-            }
-        } catch (err) {
-            console.error('[showTab] Calculation failed while priming tab', tabName, err);
-            return false;
-        }
-
-        // FIX: Bug #1 — same guard on re-check after await
-        return (
-            finalPefResults &&
-            Object.keys(finalPefResults).length > 0 &&
-            finalPefResults['Climate Change'] &&
-            typeof finalPefResults['Climate Change'].total === 'number'
-        );
-    }
-
-    // ── results tab ───────────────────────────────────────────────────────────
-    // FIX: Bug #7 — calculateImpact() is intentionally fire-and-forget here.
-    // The Results tab uses updateResultsUI() as its callback inside calculateImpact(),
-    // so awaiting is unnecessary and would create a redundant render path.
-    // _ensureData() is not used here because updateResultsUI() is the render trigger.
+    // FIX: Results tab — fire-and-forget calculation triggers updateResultsUI() as its callback.
+    // This is the existing working pattern; preserved exactly as-is.
     if (tabName === 'results') {
         if (selectedIngredients.length > 0) {
             calculateImpact(); // intentional fire-and-forget; updateResultsUI() is the render callback
         }
     }
 
-    // ── business-case tab ─────────────────────────────────────────────────────
+    // FIX: Business-case tab — updateBusinessCase() is synchronous and reads globals directly.
+    // Only call it if data is already present; otherwise the tab will populate when the next
+    // calculation completes and updateBusinessCase() is called from calculateImpact().
     if (tabName === 'business-case') {
-        const ready = await _ensureData();
-        if (ready && typeof updateBusinessCase === 'function') {
+        if (finalPefResults && Object.keys(finalPefResults).length > 0 &&
+            typeof updateBusinessCase === 'function') {
             updateBusinessCase();
         }
     }
 
-    // ── dpp tab = "Transparency Card" in the nav (food.html: showTab('dpp')) ──
-    // The HTML nav button and internal cross-tab links all pass 'dpp'.
-    // Tab content div is id="dpp-tab". generateDPP() renders the QR code,
-    // the TRC ID, and the environmental metrics block. It requires
-    // finalPefResults and auditTrailData to be populated — hence _ensureData().
+    // FIX: For the three previously-broken tabs (dpp, pef-scorecard, transparency):
+    // If globals are already populated (normal case — user has run at least one calculation),
+    // call the render function directly. The content may already be in the DOM from
+    // updateResultsUI(); calling again is safe because each function clears before re-rendering.
+    // If globals are empty (very first tab click before any calculation), trigger a calculation.
+    // updateResultsUI() at the end of calculateImpact() will call all render functions.
+    // No await, no _ensureData(), no per-tab async gate needed.
+    const dataReady = (
+        finalPefResults &&
+        Object.keys(finalPefResults).length > 0 &&
+        finalPefResults['Climate Change'] &&
+        typeof finalPefResults['Climate Change'].total === 'number'
+    );
+
     if (tabName === 'dpp') {
-        const ready = await _ensureData();
-        if (ready) {
+        if (dataReady) {
             generateDPP();
+        } else if (selectedIngredients.length > 0) {
+            calculateImpact(); // updateResultsUI() will call generateDPP() when done
         } else {
-            console.warn('[showTab] dpp tab: data not ready, generateDPP() skipped.');
+            setupDemoData(); // setupDemoData awaits calculateImpact() internally
         }
     }
 
-    // ── pef-scorecard tab ─────────────────────────────────────────────────────
-    // displayFullPefScorecard() reads finalPefResults at line 40:
-    //   if (Object.keys(finalPefResults).length === 0) → shows empty-state row
-    // Must be called only after _ensureData() confirms globals are populated.
     if (tabName === 'pef-scorecard') {
-        const ready = await _ensureData();
-        if (ready) {
-            if (typeof displayFullPefScorecard === 'function') {
-                displayFullPefScorecard();
-            }
-        } else {
-            console.warn('[showTab] pef-scorecard tab: data not ready, render skipped.');
+        if (dataReady && typeof displayFullPefScorecard === 'function') {
+            displayFullPefScorecard();
+        } else if (!dataReady) {
+            if (selectedIngredients.length > 0) calculateImpact();
+            else setupDemoData();
         }
     }
 
-    // ── transparency tab = "Transparency Log" in the nav ─────────────────────
-    // Three functions all read auditTrailData and finalPefResults:
-    //   displayAuditTrail()          → #auditTrailContent
-    //   displayCompleteAuditTrail()  → #completeAuditTrailSection
-    //   displayForegroundBackground()→ #foregroundBackgroundSection
-    // displayAuditTrail() guard at line 117:
-    //   if (!auditTrailData || !auditTrailData.pefCategories) → shows placeholder
-    // All three must run AFTER _ensureData() returns true.
     if (tabName === 'transparency') {
-        const ready = await _ensureData();
-        if (ready) {
+        if (dataReady) {
             displayAuditTrail();
             displayCompleteAuditTrail();
             displayForegroundBackground();
         } else {
-            console.warn('[showTab] transparency tab: data not ready, renders skipped.');
+            if (selectedIngredients.length > 0) calculateImpact();
+            else setupDemoData();
         }
     }
 
@@ -688,9 +652,12 @@ function updateResultsUI(results) {
         displayFullPefScorecard();
     }
 
-    // FIX 3: Refresh DPP tab content whenever new results arrive,
-    // regardless of which tab is currently visible.
-    if (typeof generateDPP === 'function' && currentDPPId !== null) {
+    // FIX: Call generateDPP() unconditionally — the previous guard
+    // `currentDPPId !== null` caused DPP to be skipped on the FIRST
+    // calculation because currentDPPId is set by calculateImpact() AFTER
+    // updateResultsUI() runs. generateDPP() reads finalPefResults directly
+    // so it is safe to call unconditionally here.
+    if (typeof generateDPP === 'function') {
         generateDPP();
     }
 }
@@ -2015,11 +1982,12 @@ function displayForegroundBackground() {
         fgSection.id = 'foregroundBackgroundSection';
         fgSection.className = 'audit-trail-section';
         fgSection.style.marginTop = '1.5rem';
-        
-        const auditContent = transparencyTab.querySelector('.audit-trail-section');
-        if (auditContent) {
-            auditContent.parentNode.insertBefore(fgSection, auditContent);
-        }
+        // FIX: Previous code used querySelector('.audit-trail-section') as the
+        // insertion anchor — that element is created dynamically by
+        // displayCompleteAuditTrail() and may not yet exist, causing insertBefore()
+        // to silently do nothing (fgSection created but never in the DOM).
+        // Fix: always appendChild to the tab directly — always safe and visible.
+        transparencyTab.appendChild(fgSection);
     }
 
     const fb = auditTrailData.foreground_background;
