@@ -1746,12 +1746,13 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
 
 // ================== UTILITY FUNCTIONS ==================
 function formatPEFValue(value) {
+    if (value === undefined || value === null || typeof value !== 'number' || isNaN(value)) return "0.00";
     if (value === 0) return "0.00";
     if (Math.abs(value) < 0.0001) return value.toExponential(3);
     if (Math.abs(value) < 1) return value.toFixed(5);
     if (Math.abs(value) < 1000) return value.toFixed(2);
     return value.toFixed(1);
-}
+} 
 
 // ================== AUDIT TRAIL LOADED ==================
 window.exportCSRDMatrix = exportCSRDMatrix;
