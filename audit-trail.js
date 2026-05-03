@@ -764,9 +764,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
         </div>
     </div>\`;
     }
-}
-
-                // ========== TOTAL IMPACT FOOTER ==========
+    // ========== TOTAL IMPACT FOOTER ==========
     // 🛡️ PULL DIRECTLY FROM THE ENGINE'S UNIFIED TRUTH (ZERO FAKE MATH)
     const totalFossil = auditTrailData?.pefCategories?.['Climate Change - Fossil']?.total || 0;
     const totalBiogenic = auditTrailData?.pefCategories?.['Climate Change - Biogenic']?.total || 0;
@@ -817,7 +815,7 @@ Date: ${dateStr}`;
             });
         }
     }, 100);
-        }
+}
 
 // ================== DIGITAL TRANSPARENCY CARD ==================
 function generateDPP() {
@@ -881,12 +879,11 @@ function generateDPP() {
             </div>
         `;
 
-        // FIX: DOM ID mismatch — append inside the .card child of #dpp-tab, not #dpp-tab itself.
-        // Appending to #dpp-tab directly put the metrics outside the card styling.
-        // food.html: #dpp-tab > .card — use .card as the anchor.
+        // Append metrics inside the card for proper styling.
+        // #dpp-tab > .card is static HTML — safe to query here.
         const dppTabContainer = document.getElementById('dpp-tab');
         if (dppTabContainer) {
-            const dppCard = dppTabContainer.querySelector('.card') || dppTabContainer; // FIX: DOM ID mismatch
+            const dppCard = dppTabContainer.querySelector('.card') || dppTabContainer;
             dppCard.appendChild(metricsContainer);
         }
     }
@@ -1746,13 +1743,13 @@ This assessment follows the Product Environmental Footprint (PEF) 3.1 methodolog
 
 // ================== UTILITY FUNCTIONS ==================
 function formatPEFValue(value) {
-    if (value === undefined || value === null || typeof value !== 'number' || isNaN(value)) return "0.00";
+    if (value === undefined || value === null || isNaN(value)) return "N/A";
     if (value === 0) return "0.00";
     if (Math.abs(value) < 0.0001) return value.toExponential(3);
     if (Math.abs(value) < 1) return value.toFixed(5);
     if (Math.abs(value) < 1000) return value.toFixed(2);
     return value.toFixed(1);
-} 
+}
 
 // ================== AUDIT TRAIL LOADED ==================
 window.exportCSRDMatrix = exportCSRDMatrix;
