@@ -154,7 +154,7 @@ function createEmissionChart(results) {
     }
 
     // Bug 10 fix: if no valid calculation data, destroy any existing chart and return
-    const hasData = auditTrailData?.pefCategories?.["Climate Change"]?.total > 0;
+    const hasData = window.auditTrailData?.pefCategories?.["Climate Change"]?.total > 0;
     if (!hasData) {
         if (currentChart) {
             currentChart.destroy();
@@ -163,11 +163,11 @@ function createEmissionChart(results) {
         return;
     }
     
-    const ingredientsCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Ingredients?.total || 0;
-    const processingCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Manufacturing?.total || 0;
-    const transportCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Transport?.total || 0;
-    const packagingCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Packaging?.total || 0;
-    const upstreamCO2 = auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Upstream?.total || 0;
+    const ingredientsCO2 = window.auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Ingredients?.total || 0;
+    const processingCO2 = window.auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Manufacturing?.total || 0;
+    const transportCO2 = window.auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Transport?.total || 0;
+    const packagingCO2 = window.auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Packaging?.total || 0;
+    const upstreamCO2 = window.auditTrailData.pefCategories?.["Climate Change"]?.contribution_tree?.Upstream?.total || 0;
     
     currentChart = new Chart(ctx.getContext('2d'), {
         type: 'doughnut',
@@ -643,7 +643,7 @@ function updateResultsUI(results) {
 
     // FIX 1: Refresh Transparency Log whenever new results arrive,
     // regardless of which tab is currently visible.
-    if (typeof displayAuditTrail === 'function' && auditTrailData && Object.keys(auditTrailData).length > 0) {
+    if (typeof displayAuditTrail === 'function' && window.auditTrailData && Object.keys(window.auditTrailData).length > 0) {
         displayAuditTrail();
     }
 
@@ -670,13 +670,13 @@ function updateDataQualityDisplay(results) {
     
     if (!dataQualitySection || !dqrBreakdown || !overallDQRBadge) return;
 
-    if (auditTrailData.dqr_summary && auditTrailData.dqr_summary.component_dqrs && auditTrailData.dqr_summary.component_dqrs.length > 0) {
+    if (window.auditTrailData.dqr_summary && window.auditTrailData.dqr_summary.component_dqrs && window.auditTrailData.dqr_summary.component_dqrs.length > 0) {
         dataQualitySection.classList.remove('hidden');
         
         let terSum = 0, grSum = 0, tirSum = 0, pSum = 0;
         let count = 0;
         
-        auditTrailData.dqr_summary.component_dqrs.forEach(score => {
+        window.auditTrailData.dqr_summary.component_dqrs.forEach(score => {
             const match = selectedIngredients.find(i => 
                 i.name === score.name || 
                 (i.id && score.name && score.name.includes(i.name && i.name.substring(0, 10)))
@@ -725,7 +725,7 @@ function updateDataQualityDisplay(results) {
             </div>
         `;
         
-        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(results.overallDQR);
+        const dqrQuality = window.foodCalculationEngine.getDQRQualityLevel(results.overallDQR);
         overallDQRBadge.className = `dqr-badge ${dqrQuality.class}`;
         overallDQRBadge.innerHTML = `<i class="fas fa-star"></i> Overall Data Quality: ${dqrQuality.level} (DQR: ${(results.overallDQR ?? 2.5).toFixed(1)}) • ±${results.overallUncertainty}% uncertainty`;
     } else {
@@ -993,11 +993,11 @@ function displayPEFSingleScore() {
             <h4 style="margin-bottom: 1rem; color: var(--primary);">
                 <i class="fas fa-chart-area"></i> Monte Carlo Uncertainty
             </h4>
-            ${auditTrailData?.uncertainty_analysis?.monte_carlo ? `
+            ${window.auditTrailData?.uncertainty_analysis?.monte_carlo ? `
                 <div style="max-height: 200px; overflow-y: auto;">
                     <div style="margin-bottom: 1rem;">
                         ${(() => {
-                            const cc = auditTrailData.uncertainty_analysis.monte_carlo['Climate Change'];
+                            const cc = window.auditTrailData.uncertainty_analysis.monte_carlo['Climate Change'];
                             if (!cc || cc.mean === 0) return '<div style="color:var(--gray);">Climate Change: N/A</div>';
                             const range = (cc.p95 - cc.p5);
                             return `
@@ -1012,7 +1012,7 @@ function displayPEFSingleScore() {
                     </div>
                     <div>
                         ${(() => {
-                            const wa = auditTrailData.uncertainty_analysis.monte_carlo['Water Use/Scarcity (AWARE)'];
+                            const wa = window.auditTrailData.uncertainty_analysis.monte_carlo['Water Use/Scarcity (AWARE)'];
                             if (!wa || wa.mean === 0) return '<div style="color:var(--gray);">Water Scarcity: N/A</div>';
                             const range = (wa.p95 - wa.p5);
                             return `
@@ -1378,8 +1378,8 @@ function updateIngredientList() {
         // FIX: Guard against missing dqr_overall or dqr.P before calling engine methods
         const dqrOverall = ingredientData.data?.metadata?.dqr_overall || 2.5;
         const dqrP = ingredientData.data?.metadata?.dqr?.P || 2.0;
-        const dqrQuality = foodCalculationEngine.getDQRQualityLevel(dqrOverall);
-        const uncertainty = foodCalculationEngine.calculateUncertainty(dqrP);
+        const dqrQuality = window.foodCalculationEngine.getDQRQualityLevel(dqrOverall);
+        const uncertainty = window.foodCalculationEngine.calculateUncertainty(dqrP);
 
         // Counterpart column: show mapped name or "Map counterpart →" link
         const counterpart = ingredient.conventionalCounterpart;
@@ -1964,6 +1964,7 @@ function loadBioreactorPreset() {
 
 // ================== UTILITY: FORMAT PEF VALUE ==================
 function formatPEFValue(value) {
+    if (value === undefined || value === null || isNaN(value)) return 'N/A';
     if (value === 0) return "0.00";
     if (Math.abs(value) < 0.0001) return value.toExponential(3);
     if (Math.abs(value) < 1) return value.toFixed(5);
@@ -1972,12 +1973,20 @@ function formatPEFValue(value) {
 }
 
 // ================== UI INTEGRATION: FOREGROUND/BACKGROUND DISPLAY ==================
+// FIX: DOM insertion rewritten. The previous version competed with displayCompleteAuditTrail
+// for the same .card parent and used insertBefore(fgSection, auditTrailEl) — but
+// auditTrailEl is INSIDE a different sub-div, not a direct child of .card, so the
+// insertBefore silently failed and fell through to appendChild on the tab element
+// (outside the .card entirely = invisible). New approach: fgSection is always a
+// direct child of the transparency-tab's .card, inserted AFTER #auditTrailContent
+// (the raw audit table) and BEFORE #completeAuditTrailSection (the chain-of-custody block).
+// This matches the visual order shown in the designs and never conflicts with either sibling.
 function displayForegroundBackground() {
     const transparencyTab = document.getElementById('transparency-tab');
-    // Guard: need both the tab and the foreground_background property to be present
-    // foreground_background is always built by the engine - if absent, data not ready yet
     if (!transparencyTab) return;
-    if (!auditTrailData || typeof auditTrailData.foreground_background === 'undefined') return;
+    // Guard: only bail if the property truly doesn't exist on the object.
+    // A value of 0 for foreground_count is valid — we still need to render.
+    if (!window.auditTrailData || !('foreground_background' in window.auditTrailData)) return;
 
     let fgSection = document.getElementById('foregroundBackgroundSection');
     if (!fgSection) {
@@ -1985,19 +1994,22 @@ function displayForegroundBackground() {
         fgSection.id = 'foregroundBackgroundSection';
         fgSection.className = 'audit-trail-section';
         fgSection.style.marginTop = '1.5rem';
-        // FIX: DOM ID mismatch — previous code appended to transparencyTab directly (outside .card).
-        // food.html: #transparency-tab > .card > #foregroundBackgroundSection (line 2174).
-        // Insert inside the .card, before #auditTrailContent so order matches the HTML structure.
-        const transparencyCard = transparencyTab.querySelector('.card') || transparencyTab; // FIX: DOM ID mismatch
-        const auditTrailEl = document.getElementById('auditTrailContent');
-        if (auditTrailEl && auditTrailEl.parentNode === transparencyCard) {
-            transparencyCard.insertBefore(fgSection, auditTrailEl);
+
+        // Target: .card inside #transparency-tab
+        const transparencyCard = transparencyTab.querySelector('.card') || transparencyTab;
+
+        // Insert AFTER auditTrailContent's parent container, BEFORE completeAuditTrailSection.
+        // Both auditTrailContent and completeAuditTrailSection are inside transparencyCard.
+        const completeAuditSection = document.getElementById('completeAuditTrailSection');
+        if (completeAuditSection && completeAuditSection.parentNode === transparencyCard) {
+            transparencyCard.insertBefore(fgSection, completeAuditSection);
         } else {
+            // completeAuditTrailSection not yet in DOM (first render) — just append
             transparencyCard.appendChild(fgSection);
         }
     }
 
-    const fb = auditTrailData.foreground_background;
+    const fb = window.auditTrailData.foreground_background;
     
     fgSection.innerHTML = `
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
@@ -2084,7 +2096,7 @@ function displayForegroundBackground() {
 // ================== UI INTEGRATION: ISO COMPLIANCE DISPLAY ==================
 function displayISOCompliance() {
     const methodologyTab = document.getElementById('methodology-tab');
-    if (!methodologyTab || !auditTrailData?.ISO_compliance) return;
+    if (!methodologyTab || !window.auditTrailData?.ISO_compliance) return;
 
     let isoSection = document.getElementById('isoComplianceSection');
     if (!isoSection) {
@@ -2095,7 +2107,7 @@ function displayISOCompliance() {
         methodologyTab.appendChild(isoSection);
     }
 
-    const iso = auditTrailData.ISO_compliance;
+    const iso = window.auditTrailData.ISO_compliance;
     
     isoSection.innerHTML = `
         <div class="card-header">
@@ -2150,12 +2162,28 @@ function displayISOCompliance() {
 }
 
 // ================== UI INTEGRATION: COMPLETE AUDIT TRAIL ==================
+// FIX: All window.auditTrailData references changed to window.auditTrailData for consistency with
+// global scope. DOM insertion fixed: auditSection is always appended to the .card inside
+// #transparency-tab — never to the tab itself. foodCalculationEngine.getDQRQualityLevel()
+// replaced with the safe inline _dqrQualityLevel() helper to prevent race-condition crashes.
+function _dqrQualityLevel(dqr) {
+    // Inline safe helper — never crashes even if window.foodCalculationEngine not ready yet
+    if (window.foodCalculationEngine && typeof window.foodCalculationEngine.getDQRQualityLevel === 'function') {
+        return window.foodCalculationEngine.getDQRQualityLevel(dqr);
+    }
+    var d = typeof dqr === 'number' ? dqr : 2.5;
+    if (d <= 1.6) return { level: 'Excellent',  class: 'dqr-excellent' };
+    if (d <= 2.0) return { level: 'Very Good',  class: 'dqr-very-good' };
+    if (d <= 3.0) return { level: 'Good',       class: 'dqr-good' };
+    return           { level: 'Fair/Poor',       class: 'dqr-poor' };
+}
+
 function displayCompleteAuditTrail() {
     const transparencyTab = document.getElementById('transparency-tab');
-    if (!transparencyTab || !auditTrailData) return;
+    if (!transparencyTab) return;
 
-    // Bug 3 fix: guard against empty auditTrailData (before any calculation has run)
-    if (!auditTrailData || !auditTrailData.pefCategories) {
+    // Guard: no data yet
+    if (!window.auditTrailData || !window.auditTrailData.pefCategories) {
         const section = document.getElementById('completeAuditTrailSection');
         if (section) section.innerHTML = '';
         return;
@@ -2167,18 +2195,16 @@ function displayCompleteAuditTrail() {
         auditSection.id = 'completeAuditTrailSection';
         auditSection.className = 'card';
         auditSection.style.marginTop = '1.5rem';
-        
-        // FIX: DOM ID mismatch — previous code used transparencyTab.querySelector('.main-content')
-        // but food.html has no .main-content inside #transparency-tab (line 2153-2192).
-        // The fallback silently fell through to appendChild on the tab itself (outside .card).
-        // Fix: use the .card inside #transparency-tab as the correct parent.
-        const transparencyCard = transparencyTab.querySelector('.card') || transparencyTab; // FIX: DOM ID mismatch
+
+        // FIX: always append to .card inside #transparency-tab — never to the tab element itself.
+        // The tab element is the outer wrapper; the .card is the visible content container.
+        const transparencyCard = transparencyTab.querySelector('.card') || transparencyTab;
         transparencyCard.appendChild(auditSection);
     }
 
-    const audit = auditTrailData;
+    const audit = window.auditTrailData;
 
-    // 🛡️ REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration AND Nutritional Result
+    // REGULATOR FIX: Dynamic ISO 14044 Functional Unit Declaration AND Nutritional Result
     const userProtein = parseFloat(document.getElementById('proteinContent')?.value) || 0;
     let functionalUnitText = "1 kg of final product";
     let nutritionalLCA_HTML = "";
@@ -2317,7 +2343,7 @@ function displayCompleteAuditTrail() {
                     ${nutritionalLCA_HTML}
                     <div>
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">Data Quality Rating</div>
-                        <div style="margin-top: 0.25rem;" class="dqr-badge ${foodCalculationEngine.getDQRQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
+                        <div style="margin-top: 0.25rem;" class="dqr-badge ${_dqrQualityLevel(audit.dqr_summary?.overall_dqr || 1.5).class}">
                             ${audit.dqr_summary?.dqr_level || 'Good'} (DQR: ${audit.dqr_summary?.overall_dqr?.toFixed(2) || '1.50'})
                         </div>
                         <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.25rem;">
