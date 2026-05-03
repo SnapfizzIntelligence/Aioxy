@@ -1982,14 +1982,15 @@ function displayForegroundBackground() {
         fgSection.id = 'foregroundBackgroundSection';
         fgSection.className = 'audit-trail-section';
         fgSection.style.marginTop = '1.5rem';
-        // FIX: DOM ID mismatch — previous code appended to transparencyTab directly
-        // (the tab's outer div), placing it outside the styled card.
-        // Correct target: the .card inside transparency-tab, with fallback to tab itself.
-        const cardInTab = transparencyTab.querySelector('.card');
-        if (cardInTab) {
-            cardInTab.appendChild(fgSection);
+        // FIX: DOM ID mismatch — previous code appended to transparencyTab directly (outside .card).
+        // food.html: #transparency-tab > .card > #foregroundBackgroundSection (line 2174).
+        // Insert inside the .card, before #auditTrailContent so order matches the HTML structure.
+        const transparencyCard = transparencyTab.querySelector('.card') || transparencyTab; // FIX: DOM ID mismatch
+        const auditTrailEl = document.getElementById('auditTrailContent');
+        if (auditTrailEl && auditTrailEl.parentNode === transparencyCard) {
+            transparencyCard.insertBefore(fgSection, auditTrailEl);
         } else {
-            transparencyTab.appendChild(fgSection);
+            transparencyCard.appendChild(fgSection);
         }
     }
 
@@ -2164,16 +2165,12 @@ function displayCompleteAuditTrail() {
         auditSection.className = 'card';
         auditSection.style.marginTop = '1.5rem';
         
-        // FIX: DOM ID mismatch — transparency-tab has no .main-content child;
-        // .main-content is the global grid wrapper, not inside any tab.
-        // Correct fallback: append directly to the .card inside transparency-tab,
-        // or to the tab itself if no card is found.
-        const cardInTab = transparencyTab.querySelector('.card');
-        if (cardInTab) {
-            cardInTab.appendChild(auditSection);
-        } else {
-            transparencyTab.appendChild(auditSection);
-        }
+        // FIX: DOM ID mismatch — previous code used transparencyTab.querySelector('.main-content')
+        // but food.html has no .main-content inside #transparency-tab (line 2153-2192).
+        // The fallback silently fell through to appendChild on the tab itself (outside .card).
+        // Fix: use the .card inside #transparency-tab as the correct parent.
+        const transparencyCard = transparencyTab.querySelector('.card') || transparencyTab; // FIX: DOM ID mismatch
+        transparencyCard.appendChild(auditSection);
     }
 
     const audit = auditTrailData;
