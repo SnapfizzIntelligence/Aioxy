@@ -76,47 +76,32 @@ function showTab(tabName, event) {
         }
     }
 
-    // FIX: For the three previously-broken tabs (dpp, pef-scorecard, transparency):
-    // If globals are already populated (normal case — user has run at least one calculation),
-    // call the render function directly. The content may already be in the DOM from
-    // updateResultsUI(); calling again is safe because each function clears before re-rendering.
-    // If globals are empty (very first tab click before any calculation), trigger a calculation.
-    // updateResultsUI() at the end of calculateImpact() will call all render functions.
-    // No await, no _ensureData(), no per-tab async gate needed.
-    const dataReady = (
-        finalPefResults &&
-        Object.keys(finalPefResults).length > 0 &&
-        finalPefResults['Climate Change'] &&
-        typeof finalPefResults['Climate Change'].total === 'number'
-    );
+        // RENDER ON DEMAND: Always call render functions when tab is shown.
+    // These read directly from current globals. If data exists, it renders.
+    // If not, the functions show their built-in empty states.
+    // No complex dataReady checks. No triggering extra calculations.
 
     if (tabName === 'dpp') {
-        if (dataReady) {
+        if (typeof generateDPP === 'function') {
             generateDPP();
-        } else if (selectedIngredients.length > 0) {
-            calculateImpact(); // updateResultsUI() will call generateDPP() when done
-        } else {
-            setupDemoData(); // setupDemoData awaits calculateImpact() internally
         }
     }
 
     if (tabName === 'pef-scorecard') {
-        if (dataReady && typeof displayFullPefScorecard === 'function') {
+        if (typeof displayFullPefScorecard === 'function') {
             displayFullPefScorecard();
-        } else if (!dataReady) {
-            if (selectedIngredients.length > 0) calculateImpact();
-            else setupDemoData();
         }
     }
 
     if (tabName === 'transparency') {
-        if (dataReady) {
+        if (typeof displayAuditTrail === 'function') {
             displayAuditTrail();
+        }
+        if (typeof displayCompleteAuditTrail === 'function') {
             displayCompleteAuditTrail();
+        }
+        if (typeof displayForegroundBackground === 'function') {
             displayForegroundBackground();
-        } else {
-            if (selectedIngredients.length > 0) calculateImpact();
-            else setupDemoData();
         }
     }
 
@@ -131,7 +116,7 @@ function updateTabIndicator() {
         indicator.style.left = activeTab.offsetLeft + 'px';
         indicator.style.width = activeTab.offsetWidth + 'px';
     }
-}
+    }
 
 // ================== TOGGLE ADVANCED OPTIONS ==================
 function toggleAdvanced() {
