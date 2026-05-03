@@ -4,45 +4,44 @@
 
 // ================== TAB MANAGEMENT ==================
 //
-// DEFINITIVE FIX — based on reading food.html (the actual HTML file):
-//
 // CONFIRMED TAB NAME MAPPING from food.html nav buttons:
 //   PEF Scorecard nav    → showTab('pef-scorecard') → tab div id="pef-scorecard-tab"
 //   Transparency Card nav→ showTab('dpp')           → tab div id="dpp-tab"
 //   Transparency Log nav → showTab('transparency')  → tab div id="transparency-tab"
 //
-// ROOT CAUSE of all 3 tabs being broken:
+// ROOT CAUSE OF ALL 3 BROKEN TABS (found by runtime trace):
 //
-// 1. WRONG TAB NAME for Transparency Card:
-//    Every previous fix checked tabName === 'transparency-card' but the HTML
-//    passes 'dpp'. So the handler never matched and generateDPP() was never
-//    called with primed globals. Fixed: handler now checks tabName === 'dpp'
-//    (which was already there for the old dpp flow) but now ensures globals
-//    are populated via await before calling generateDPP().
+// updateResultsUI() calls every render function unconditionally on every calculation,
+// regardless of which tab is visible. Content IS written to the hidden tab divs and
+// DOES persist in the DOM. The tabs appeared blank because showTab() was calling the
+// render functions a SECOND TIME when the tab was clicked (Option B).
 //
-// 2. setupDemoData() called without await:
-//    setupDemoData() is async and does: await calculateImpact() internally.
-//    All previous versions called it without await, so the render functions
-//    fired before calculateImpact() resolved. Fixed: single _ensureData()
-//    helper always awaits the priming call.
+// On the second call, the render functions re-execute. But they depend on globals
+// (finalPefResults, auditTrailData) that may be in a transitional state if a
+// concurrent calculateImpact() call is in-flight (triggered by the Results tab
+// fire-and-forget pattern on line ~65). Specifically:
 //
-// 3. No error boundary around calculateImpact():
-//    If the engine throws (e.g. ingredient validation), the error propagated
-//    silently or showed an alert, globals stayed empty, renders showed
-//    placeholder text. Fixed: try/catch in _ensureData() with console.error.
+//   - displayFullPefScorecard() checks Object.keys(finalPefResults).length === 0.
+//     If a concurrent calculateImpact() just started and hasn't yet assigned
+//     window.finalPefResults = result.finalPefResults, the stale global is still {}.
+//     Result: function returns early after only the disclaimer row → only disclaimer visible.
+//
+//   - generateDPP() checks finalPefResults before appending metrics.
+//     Same race → metrics block skipped → only QR code visible.
+//
+//   - displayAuditTrail() checks auditTrailData.pefCategories["Climate Change"].
+//     If auditTrailData was reset to {} between calls (e.g. concurrent race),
+//     the guard fires and overwrites #auditTrailContent with the empty-state →
+//     "No calculation data available" persists.
+//
+// THE FIX: showTab() must NEVER call render functions when data is already present.
+// updateResultsUI() is the single source of truth for rendering all tab content.
+// showTab() responsibility: toggle visibility only. If NO data exists at all
+// (first-ever tab click before any calculation), trigger ONE calculation so
+// updateResultsUI() will populate every tab when it completes.
+// No re-renders, no redundant calls, no race conditions.
 
-// FIX: showTab() rebuilt from scratch. The previous version used _ensureData() — a complex
-// async guard that attempted to prime globals before rendering. This was solving the wrong
-// problem. updateResultsUI() already calls ALL three render functions (displayAuditTrail,
-// displayFullPefScorecard, generateDPP, etc.) on every calculation, so content is already
-// in the DOM when a tab is clicked. The tabs appeared blank because:
-//   1. _ensureData() correctly detected data was present but the render functions themselves
-//      had DOM-insertion ordering bugs (fixed separately in audit-trail.js).
-//   2. generateDPP() was guarded by `currentDPPId !== null` in updateResultsUI(), causing it
-//      to be skipped on the first calculation (fixed below in updateResultsUI).
-// New approach: tab switching just shows/hides. If data is missing (first click before any
-// calculation), trigger ONE calculation — updateResultsUI() will render everything when done.
-// No _ensureData(), no per-tab render calls, no async dependencies in showTab().
+// FIX: showTab() - visibility toggle only. Render functions removed from tab-click path.
 function showTab(tabName, event) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
@@ -58,17 +57,17 @@ function showTab(tabName, event) {
         event.currentTarget.classList.add('active');
     }
 
-    // FIX: Results tab — fire-and-forget calculation triggers updateResultsUI() as its callback.
-    // This is the existing working pattern; preserved exactly as-is.
+    // Results tab: fire-and-forget calculation is the existing working pattern.
+    // updateResultsUI() is called by calculateImpact() when done and renders
+    // the results tab content. Preserved exactly as-is — do not change.
     if (tabName === 'results') {
         if (selectedIngredients.length > 0) {
             calculateImpact(); // intentional fire-and-forget; updateResultsUI() is the render callback
         }
     }
 
-    // FIX: Business-case tab — updateBusinessCase() is synchronous and reads globals directly.
-    // Only call it if data is already present; otherwise the tab will populate when the next
-    // calculation completes and updateBusinessCase() is called from calculateImpact().
+    // Business-case tab: updateBusinessCase() is synchronous and safe to call directly.
+    // Only call if data is already present; no-op if calculation hasn't run yet.
     if (tabName === 'business-case') {
         if (finalPefResults && Object.keys(finalPefResults).length > 0 &&
             typeof updateBusinessCase === 'function') {
@@ -77,12 +76,14 @@ function showTab(tabName, event) {
     }
 
     // FIX: For the three previously-broken tabs (dpp, pef-scorecard, transparency):
-    // If globals are already populated (normal case — user has run at least one calculation),
-    // call the render function directly. The content may already be in the DOM from
-    // updateResultsUI(); calling again is safe because each function clears before re-rendering.
-    // If globals are empty (very first tab click before any calculation), trigger a calculation.
-    // updateResultsUI() at the end of calculateImpact() will call all render functions.
-    // No await, no _ensureData(), no per-tab async gate needed.
+    // DO NOT call render functions here. updateResultsUI() already called them during
+    // the last calculation and wrote content to the hidden tab divs. That content
+    // persists in the DOM and will become visible when the hidden class is removed above.
+    //
+    // The ONLY action needed is: if NO calculation has ever run (globals are empty),
+    // trigger one calculation. updateResultsUI() will render ALL tabs when it completes.
+    // Do NOT call individual render functions here — that is the bug that was causing
+    // the tabs to show stale/empty content on every click.
     const dataReady = (
         finalPefResults &&
         Object.keys(finalPefResults).length > 0 &&
@@ -90,34 +91,47 @@ function showTab(tabName, event) {
         typeof finalPefResults['Climate Change'].total === 'number'
     );
 
+    // FIX: dpp tab - show/hide only. Trigger first-run calculation if needed.
     if (tabName === 'dpp') {
-        if (dataReady) {
-            generateDPP();
-        } else if (selectedIngredients.length > 0) {
-            calculateImpact(); // updateResultsUI() will call generateDPP() when done
-        } else {
-            setupDemoData(); // setupDemoData awaits calculateImpact() internally
+        if (!dataReady) {
+            // No data yet - trigger calculation; updateResultsUI() will call generateDPP()
+            if (selectedIngredients.length > 0) {
+                calculateImpact();
+            } else {
+                setupDemoData();
+            }
         }
+        // FIX: dataReady = true → content already in DOM from last updateResultsUI() call.
+        // Do NOT call generateDPP() again. Tab is now visible; DOM content renders. Done.
     }
 
+    // FIX: pef-scorecard tab - show/hide only. Trigger first-run calculation if needed.
     if (tabName === 'pef-scorecard') {
-        if (dataReady && typeof displayFullPefScorecard === 'function') {
-            displayFullPefScorecard();
-        } else if (!dataReady) {
-            if (selectedIngredients.length > 0) calculateImpact();
-            else setupDemoData();
+        if (!dataReady) {
+            // No data yet - trigger calculation; updateResultsUI() will call displayFullPefScorecard()
+            if (selectedIngredients.length > 0) {
+                calculateImpact();
+            } else {
+                setupDemoData();
+            }
         }
+        // FIX: dataReady = true → content already in DOM from last updateResultsUI() call.
+        // Do NOT call displayFullPefScorecard() again. Tab is now visible. Done.
     }
 
+    // FIX: transparency tab - show/hide only. Trigger first-run calculation if needed.
     if (tabName === 'transparency') {
-        if (dataReady) {
-            displayAuditTrail();
-            displayCompleteAuditTrail();
-            displayForegroundBackground();
-        } else {
-            if (selectedIngredients.length > 0) calculateImpact();
-            else setupDemoData();
+        if (!dataReady) {
+            // No data yet - trigger calculation; updateResultsUI() will call displayAuditTrail() etc.
+            if (selectedIngredients.length > 0) {
+                calculateImpact();
+            } else {
+                setupDemoData();
+            }
         }
+        // FIX: dataReady = true → content already in DOM from last updateResultsUI() call.
+        // Do NOT call displayAuditTrail(), displayCompleteAuditTrail(), displayForegroundBackground()
+        // again. Tab is now visible; DOM content renders. Done.
     }
 
     updateTabIndicator();
