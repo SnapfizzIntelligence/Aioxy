@@ -879,12 +879,17 @@ function generateDPP() {
             </div>
         `;
 
-        // Append metrics inside the card for proper styling.
-        // #dpp-tab > .card is static HTML — safe to query here.
+        // Insert metrics BEFORE the action-buttons div so they appear in the card body,
+        // not after the buttons where they are hidden below the fold.
         const dppTabContainer = document.getElementById('dpp-tab');
         if (dppTabContainer) {
             const dppCard = dppTabContainer.querySelector('.card') || dppTabContainer;
-            dppCard.appendChild(metricsContainer);
+            const actionButtons = dppCard.querySelector('.action-buttons');
+            if (actionButtons) {
+                dppCard.insertBefore(metricsContainer, actionButtons);
+            } else {
+                dppCard.appendChild(metricsContainer);
+            }
         }
     }
 
