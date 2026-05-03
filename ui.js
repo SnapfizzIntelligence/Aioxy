@@ -76,32 +76,47 @@ function showTab(tabName, event) {
         }
     }
 
-        // RENDER ON DEMAND: Always call render functions when tab is shown.
-    // These read directly from current globals. If data exists, it renders.
-    // If not, the functions show their built-in empty states.
-    // No complex dataReady checks. No triggering extra calculations.
+    // FIX: For the three previously-broken tabs (dpp, pef-scorecard, transparency):
+    // If globals are already populated (normal case — user has run at least one calculation),
+    // call the render function directly. The content may already be in the DOM from
+    // updateResultsUI(); calling again is safe because each function clears before re-rendering.
+    // If globals are empty (very first tab click before any calculation), trigger a calculation.
+    // updateResultsUI() at the end of calculateImpact() will call all render functions.
+    // No await, no _ensureData(), no per-tab async gate needed.
+    const dataReady = (
+        finalPefResults &&
+        Object.keys(finalPefResults).length > 0 &&
+        finalPefResults['Climate Change'] &&
+        typeof finalPefResults['Climate Change'].total === 'number'
+    );
 
     if (tabName === 'dpp') {
-        if (typeof generateDPP === 'function') {
+        if (dataReady) {
             generateDPP();
+        } else if (selectedIngredients.length > 0) {
+            calculateImpact(); // updateResultsUI() will call generateDPP() when done
+        } else {
+            setupDemoData(); // setupDemoData awaits calculateImpact() internally
         }
     }
 
     if (tabName === 'pef-scorecard') {
-        if (typeof displayFullPefScorecard === 'function') {
+        if (dataReady && typeof displayFullPefScorecard === 'function') {
             displayFullPefScorecard();
+        } else if (!dataReady) {
+            if (selectedIngredients.length > 0) calculateImpact();
+            else setupDemoData();
         }
     }
 
     if (tabName === 'transparency') {
-        if (typeof displayAuditTrail === 'function') {
+        if (dataReady) {
             displayAuditTrail();
-        }
-        if (typeof displayCompleteAuditTrail === 'function') {
             displayCompleteAuditTrail();
-        }
-        if (typeof displayForegroundBackground === 'function') {
             displayForegroundBackground();
+        } else {
+            if (selectedIngredients.length > 0) calculateImpact();
+            else setupDemoData();
         }
     }
 
@@ -116,7 +131,7 @@ function updateTabIndicator() {
         indicator.style.left = activeTab.offsetLeft + 'px';
         indicator.style.width = activeTab.offsetWidth + 'px';
     }
-    }
+}
 
 // ================== TOGGLE ADVANCED OPTIONS ==================
 function toggleAdvanced() {
@@ -1959,7 +1974,10 @@ function formatPEFValue(value) {
 // ================== UI INTEGRATION: FOREGROUND/BACKGROUND DISPLAY ==================
 function displayForegroundBackground() {
     const transparencyTab = document.getElementById('transparency-tab');
-    if (!transparencyTab || !auditTrailData?.foreground_background) return;
+    // Guard: need both the tab and the foreground_background property to be present
+    // foreground_background is always built by the engine - if absent, data not ready yet
+    if (!transparencyTab) return;
+    if (!auditTrailData || typeof auditTrailData.foreground_background === 'undefined') return;
 
     let fgSection = document.getElementById('foregroundBackgroundSection');
     if (!fgSection) {
