@@ -1240,12 +1240,42 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
                 }
             }
 
+            // FIX: [Audit #16] Apply yield factor to flatPef BEFORE the geographic proxy step
+            // so that the proxy multiplier acts on yield-adjusted values.
+            // A yield_factor < 1 means more raw material is required to produce 1 kg of output
+            // (e.g., yield_factor = 0.90 for flour means 1/0.90 = 1.11 kg grain per kg flour).
+            // Dividing by yield_factor scales up the per-kg impact to reflect this upstream burden.
+            // Applied to ALL categories because the upstream mass loss affects every impact category.
+            if (processingMultiplier > 0 && processingMultiplier !== 1.0) {
+                for (const cat of ALL_CATEGORIES) {
+                    if (flatPef[cat] !== undefined) {
+                        flatPef[cat] /= processingMultiplier;
+                    }
+                }
+                adjustments.processing_yield_factor_applied = processingMultiplier;
+            }
+
             // 1g. Geographic proxy adjustment
-            // Apply 1.15× penalty if origin country differs from FR and no primary data override
+            // FIX: [Audit #34] Apply 1.15× penalty ONLY to geography-dependent categories:
+            // Climate Change (total + 3 sub-splits), Water Use/Scarcity (AWARE), and Land Use.
+            // The remaining 12 PEF categories are excluded because geographic origin does not
+            // meaningfully affect their characterization factors — a blanket 15% uplift for
+            // Ozone Depletion, Ionizing Radiation, Particulate Matter, toxicity categories,
+            // eutrophication, acidification, etc. has no scientific basis.
             if (ingredient.originCountry && ingredient.originCountry !== 'FR' && !ingredient.primaryData) {
                 const geoProxy = 1.15;
-                for (const cat of ALL_CATEGORIES) {
-                    flatPef[cat] *= geoProxy;
+                const GEO_PROXY_CATEGORIES = [
+                    'Climate Change',
+                    'Climate Change - Fossil',
+                    'Climate Change - Biogenic',
+                    'Climate Change - Land Use',
+                    'Water Use/Scarcity (AWARE)',
+                    'Land Use'
+                ];
+                for (const cat of GEO_PROXY_CATEGORIES) {
+                    if (flatPef[cat] !== undefined) {
+                        flatPef[cat] *= geoProxy;
+                    }
                 }
                 adjustments.geo_proxy_applied    = true;
                 adjustments.geo_proxy_factor     = geoProxy;
