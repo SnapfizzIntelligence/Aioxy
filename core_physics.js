@@ -1902,6 +1902,14 @@
         const term1 = (CONSTANTS.MATH.ONE - r1) * ev;
         const term2 = r1 * (aFactor * erecycled + (CONSTANTS.MATH.ONE - aFactor) * ev * qualityRatio);
         const burdenAcquisition = term1 + term2;
+        // FIX: [Audit #22] Sign convention documentation:
+        // creditEoL is a SIGNED value computed as r2 × (1−A) × (Erec − Ev × Qs/Qp).
+        // For typical materials where recycled production (Erec) has lower impact than
+        // virgin production (Ev × Qs/Qp), this expression is NEGATIVE.
+        // Adding a negative value correctly REDUCES the total impact.
+        // This is algebraically equivalent to PEF 3.1 Annex C's notation which writes
+        // the formula as subtracting the credit — both forms yield the same result.
+        // DO NOT change the sign or the formula; the calculation is correct as written.
         const creditEoL = r2 * (CONSTANTS.MATH.ONE - aFactor) * (erecycled - ev * qualityRatio);
         const burdenDisposal = (CONSTANTS.MATH.ONE - r2) * ed;
         const impactPerKg = burdenAcquisition + creditEoL + burdenDisposal;
@@ -2221,13 +2229,19 @@ return {
                 const recycledContentPercent = cloned.recycledContentPercent;
                 if (typeof recycledContentPercent !== 'number') throw new MissingDataError('cloned.recycledContentPercent');
 
+                // FIX: [Audit #23] Cap user-supplied r1 at pkg.r1_max, matching the main path's
+                // validation in processPackaging(). r2 is read directly from pkg.r2, same as the
+                // main path (which uses pkgData.r2 directly, not pkg.r1_max * pkg.r2).
+                const r1Raw = recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX;
+                const r1Capped = (typeof pkg.r1_max === 'number') ? Math.min(r1Raw, pkg.r1_max) : r1Raw;
+
                 const cff = calculatePackaging({
                     weightKg:       cloned.packagingWeightKg,
                     ev:             pkg.co2_virgin,
                     erecycled:      pkg.co2_recycled,
                     ed:             pkg.co2_disposal_average,
-                    r1:             recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX,
-                    r2:             pkg.r1_max * pkg.r2,
+                    r1:             r1Capped,
+                    r2:             pkg.r2,
                     aFactor:        pkg.aFactor,
                     qs:             pkg.q,
                     qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
@@ -2252,7 +2266,7 @@ return {
                 fossilCO2PerKg:  totalFossilCO2,
                 biogenicCO2PerKg: totalBiogenicCO2,
                 dlucCO2PerKg:    farmDLUC,
-                breakdown:       { farm: farmCO2, manufacturing: mfgCO2, transport: transportCO2, packaging: packagingCO2 }
+                breakdown:       { ingredients: farmCO2, manufacturing: mfgCO2, transport: transportCO2, packaging: packagingCO2 }
             };
         }
 
@@ -2440,13 +2454,18 @@ return {
                 throw new MissingDataError('sharedParams.recycledContentPercent');
             }
 
+            // FIX: [Audit #23] Cap r1 at pkg.r1_max and read r2 directly from pkg.r2,
+            // matching the main path in processPackaging().
+            const r1RawShared = sharedParams.recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX;
+            const r1CappedShared = (typeof pkg.r1_max === 'number') ? Math.min(r1RawShared, pkg.r1_max) : r1RawShared;
+
             const cff = calculatePackaging({
                 weightKg:       sharedParams.packagingWeightKg,
                 ev:             pkg.co2_virgin,
                 erecycled:      pkg.co2_recycled,
                 ed:             pkg.co2_disposal_average,
-                r1:             sharedParams.recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX,
-                r2:             pkg.r1_max * pkg.r2,
+                r1:             r1CappedShared,
+                r2:             pkg.r2,
                 aFactor:        pkg.aFactor,
                 qs:             pkg.q,
                 qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
@@ -2488,14 +2507,18 @@ return {
         });
 
         // ── STEP 8: Build structured totals for return ───────────────────────
+        // FIX: [Audit #32] Renamed key from 'farm' to 'ingredients' in both breakdowns.
+        // The value represents the full pre-manufacturing ingredient CO2 total, which
+        // includes IPCC Tier 1 N2O, enteric CH4, primary data adjustments, and geographic
+        // proxies — not just farm-gate emissions. 'farm' was misleading.
         const assessedBreakdown = {
-            farm:          assessedTotals.totalCO2,
+            ingredients:   assessedTotals.totalCO2,
             manufacturing: sharedMfgCO2,
             transport:     sharedTransportCO2,
             packaging:     sharedPackagingCO2
         };
         const conventionalBreakdown = {
-            farm:          conventionalTotals.totalCO2,
+            ingredients:   conventionalTotals.totalCO2,
             manufacturing: sharedMfgCO2,
             transport:     sharedTransportCO2,
             packaging:     sharedPackagingCO2
