@@ -26,23 +26,18 @@ def write_js_object(name, data_dict):
 # PATH RESOLVER — works locally AND in GitHub Actions
 # ================================================================
 def get_base_path():
-    # Try script directory first
     script_dir = Path(__file__).resolve().parent
-    # Check if our key file exists there
     if (script_dir / "Normalisation_Weighting_Factors_EF_3.1.xlsx").exists():
         print(f"   Base path: {script_dir}")
         return script_dir
-    # Try current working directory
     cwd = Path.cwd()
     if (cwd / "Normalisation_Weighting_Factors_EF_3.1.xlsx").exists():
         print(f"   Base path (cwd): {cwd}")
         return cwd
-    # Try parent of script dir
     parent = script_dir.parent
     if (parent / "Normalisation_Weighting_Factors_EF_3.1.xlsx").exists():
         print(f"   Base path (parent): {parent}")
         return parent
-    # List what we can see for debugging
     print(f"   ERROR: Cannot find data files!")
     print(f"   Script dir contents: {list(script_dir.iterdir())}")
     print(f"   CWD contents: {list(cwd.iterdir())}")
@@ -50,6 +45,41 @@ def get_base_path():
         f"Data files not found in {script_dir} or {cwd}. "
         "Make sure all 8 source files are in the same folder as build_database.py"
     )
+
+
+# ================================================================
+# SHARED COUNTRY NAME NORMALIZATION
+# ================================================================
+# This map ensures ALL databases use consistent country names.
+# FAOSTAT CSV uses long-form names; Excel files (LANCA, AWARE)
+# use column headers that may differ. Normalize everything here.
+# Sources for each variant are noted inline.
+COUNTRY_NAME_NORMALIZE = {
+    # FAOSTAT CSV long-form → short standard
+    "Netherlands (Kingdom of the)":                         "Netherlands",
+    "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+    "Türkiye":                                              "Turkey",
+    "Iran (Islamic Republic of)":                           "Iran",
+    "Republic of Korea":                                    "South Korea",
+    "Viet Nam":                                             "Vietnam",
+    "United States of America":                             "USA",
+    "Russian Federation":                                   "Russia",
+    "Czechia":                                              "Czech Republic",
+    "Bolivia (Plurinational State of)":                     "Bolivia",
+    "Venezuela (Bolivarian Republic of)":                   "Venezuela",
+    "Tanzania, United Republic of":                         "Tanzania",
+    "Côte d'Ivoire":                                        "Ivory Coast",
+    "Congo, Democratic Republic of the":                    "DR Congo",
+    "China, mainland":                                      "China",
+}
+
+
+def normalize_country(name):
+    """Normalize a country name to the standard short form used across all databases."""
+    if not name or not isinstance(name, str):
+        return name
+    name = name.strip()
+    return COUNTRY_NAME_NORMALIZE.get(name, name)
 
 
 # ================================================================
@@ -93,9 +123,6 @@ def build_pef_factors(base_path):
 # ================================================================
 def build_ilcd_registry(base_path):
     print("[2/7] Building ilcd_registry...")
-    # Handle both filename variants:
-    # "EF-LCIAMethod_CF_EF-v3_1_.csv"  (underscores)
-    # "EF-LCIAMethod_CF(EF-v3.1).csv"  (parentheses)
     matches = list(base_path.glob("EF-LCIAMethod_CF*.csv"))
     if not matches:
         raise FileNotFoundError(f"EF-LCIAMethod CSV not found in {base_path}")
@@ -212,6 +239,10 @@ def build_lanca_sqi(base_path):
         result = {}
         for i in range(5, len(df.columns)):
             country = str(df.columns[i]).strip()
+            # FIX: Normalize country name to match FAOSTAT and AWARE naming convention.
+            # Excel column headers in LANCA use short names (e.g. "United Kingdom")
+            # while FAOSTAT CSV uses long names. Normalize for cross-database consistency.
+            country = normalize_country(country)
             value   = row.iloc[i]
             if pd.notna(value) and country not in ["nan", ""]:
                 try:
@@ -243,29 +274,13 @@ def build_crop_yields(base_path):
     if not faostat_files:
         raise FileNotFoundError(f"No FAOSTAT file found in {base_path}")
     fp = faostat_files[-1]
-    df = pd.read_csv(fp, encoding="utf-8-sig")  # utf-8-sig handles BOM character
+    df = pd.read_csv(fp, encoding="utf-8-sig")
     print(f"   Using: {fp.name} ({len(df)} rows)")
 
     df = df[df["Element"].isin(["Yield", "Yield/Carcass Weight"])].copy()
 
-    COUNTRY_MAP = {
-        "Netherlands (Kingdom of the)":                         "Netherlands",
-        "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
-        "Türkiye":                                              "Turkey",
-        "Iran (Islamic Republic of)":                           "Iran",
-        "Republic of Korea":                                    "South Korea",
-        "Viet Nam":                                             "Vietnam",
-        "United States of America":                             "USA",
-        "Russian Federation":                                   "Russia",
-        "Czechia":                                              "Czech Republic",
-        "Bolivia (Plurinational State of)":                     "Bolivia",
-        "Venezuela (Bolivarian Republic of)":                   "Venezuela",
-        "Tanzania, United Republic of":                         "Tanzania",
-        "Côte d'Ivoire":                                        "Ivory Coast",
-        "Congo, Democratic Republic of the":                    "DR Congo",
-        "China, mainland":                                      "China",
-    }
-    df["Area"] = df["Area"].replace(COUNTRY_MAP)
+    # FIX: Use shared COUNTRY_NAME_NORMALIZE instead of duplicate local map
+    df["Area"] = df["Area"].apply(normalize_country)
 
     ybc = defaultdict(lambda: defaultdict(list))
     for _, row in df.iterrows():
@@ -305,6 +320,10 @@ def build_aware(base_path):
     not_defined = 0
     for _, row in df.iterrows():
         country = str(row.iloc[3]).strip() if pd.notna(row.iloc[3]) else None
+        # FIX: Normalize country name for cross-database consistency.
+        # AWARE Excel column uses "United Kingdom of Great Britain & Northern Ireland"
+        # which normalizes to "United Kingdom" via COUNTRY_NAME_NORMALIZE.
+        country = normalize_country(country)
         cf      = row.iloc[8]
         if not country or country in ["nan", ""]:
             continue
@@ -329,7 +348,6 @@ def build_usetox(base_path):
     print("[7/7] Building usetox...")
 
     human_fp = base_path / "USEtox_results_organics.csv"
-    # Handle both: "USEtox_results_organics__1_.csv" and "USEtox_results_organics (1).csv"
     eco_matches = [f for f in base_path.glob("USEtox_results_organics*.csv") if f.name != "USEtox_results_organics.csv"]
     if not eco_matches:
         raise FileNotFoundError(f"USEtox ecotox file not found in {base_path}")
