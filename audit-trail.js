@@ -617,7 +617,7 @@ function displayAuditTrail() {
                     <strong>Methodology:</strong> System boundaries cloned from assessed product. Only agricultural ingredient differs.
                 </div>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 0;"><strong>1. Agricultural Phase (Farm Gate)</strong></td><td style="text-align: right; font-family: monospace;">${bd.farm ? bd.farm.toFixed(4) : '0.0000'} kg CO₂e</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 0;"><strong>1. Agricultural Phase (Farm Gate)</strong></td><td style="text-align: right; font-family: monospace;">${bd.ingredients ? bd.ingredients.toFixed(4) : '0.0000'} kg CO₂e</td></tr>
                     <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 0;"><strong>2. Cloned Manufacturing</strong></td><td style="text-align: right; font-family: monospace;">${bd.manufacturing ? bd.manufacturing.toFixed(4) : '0.0000'} kg CO₂e</td></tr>
                     <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 0;"><strong>3. Cloned Logistics</strong></td><td style="text-align: right; font-family: monospace;">${bd.transport ? bd.transport.toFixed(4) : '0.0000'} kg CO₂e</td></tr>
                     <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 0;"><strong>4. Cloned Packaging</strong></td><td style="text-align: right; font-family: monospace;">${bd.packaging ? bd.packaging.toFixed(4) : '0.0000'} kg CO₂e</td></tr>
