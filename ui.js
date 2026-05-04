@@ -506,7 +506,15 @@ function updateResultsUI(results) {
         function getProteinForIngredient(ingredientId, ingredientName) { // BUGFIX B22
             if (window.aioxyData && window.aioxyData.nutrition && // BUGFIX B22
                     ingredientId && window.aioxyData.nutrition[ingredientId]) { // BUGFIX B22
-                return window.aioxyData.nutrition[ingredientId].protein_g_per_100g; // BUGFIX B22
+                const proteinValue = window.aioxyData.nutrition[ingredientId].protein_g_per_100g; // BUGFIX B22
+                // FIX: [Audit 2.3] Guard against null, 0, or non-positive protein values.
+                // Without this guard, null is coerced to 0 in arithmetic, producing
+                // kgNeeded = 100 / 0 = Infinity and co2PerProtein = Infinity.
+                if (!proteinValue || proteinValue <= 0) { // FIX: [Audit 2.3]
+                    console.warn('[FIX 2.3] protein_g_per_100g is null, 0, or negative for ingredientId:', ingredientId, '— using default 10.0 g/100g'); // FIX: [Audit 2.3]
+                    return 10.0; // FIX: [Audit 2.3] safe default
+                } // FIX: [Audit 2.3]
+                return proteinValue; // BUGFIX B22
             } // BUGFIX B22
             // BUGFIX B22: No match found — log warning and return default.
             console.warn('[BUGFIX B22] No nutrition entry for ingredientId:', ingredientId, // BUGFIX B22
