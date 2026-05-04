@@ -529,6 +529,12 @@ Object.assign(window.aioxyData.ingredients, {
 
 
 
+// FIX: [Audit 11.2] grid_intensity is the authoritative source (Ember 2025, flat numbers).
+// countries[code].electricityCO2 values below have been synced to match grid_intensity[code]
+// for all countries present in both objects. Countries in 'countries' but NOT in grid_intensity
+// retain their existing values unchanged.
+// grid_intensity is authoritative (Ember 2025); countries.electricityCO2 is a synced copy
+// for backward compatibility only. On any future update, change grid_intensity first.
 window.aioxyData.grid_intensity = {
     "IS": 18, "NO": 28.1, "SE": 35.3, "CH": 39.2, "FR": 41.4, "FI": 57.5, "SK": 94.8,
     "DK": 114.4, "AT": 116.9, "CA": 120, "LU": 123.4, "PT": 127.9, "BR": 135, "LT": 138.4,
@@ -543,10 +549,12 @@ window.aioxyData.countries = {
     "AU": { "name": "Australia", "electricityCO2": 380, "awareFactor": 60.1 },
     "AT": { "name": "Austria", "electricityCO2": 116.9, "awareFactor": 2.5 },
     "BE": { "name": "Belgium", "electricityCO2": 149.8, "awareFactor": 42.1 },
-    "BR": { "name": "Brazil", "electricityCO2": 110, "awareFactor": 3.1 },
+    // FIX: [Audit 11.2] BR synced: was 110, grid_intensity.BR = 135 (Ember 2025)
+    "BR": { "name": "Brazil", "electricityCO2": 135, "awareFactor": 3.1 },
     "BG": { "name": "Bulgaria", "electricityCO2": 275.6, "awareFactor": null },
     "CA": { "name": "Canada", "electricityCO2": 120, "awareFactor": 2.2 },
-    "CN": { "name": "China", "electricityCO2": 492, "awareFactor": 41.2 },
+    // FIX: [Audit 11.2] CN synced: was 492, grid_intensity.CN = 580 (Ember 2025)
+    "CN": { "name": "China", "electricityCO2": 580, "awareFactor": 41.2 },
     "HR": { "name": "Croatia", "electricityCO2": 158.5, "awareFactor": null },
     "CY": { "name": "Cyprus", "electricityCO2": 489.0, "awareFactor": null },
     "CZ": { "name": "Czechia", "electricityCO2": 401.5, "awareFactor": null },
@@ -557,10 +565,12 @@ window.aioxyData.countries = {
     "DE": { "name": "Germany", "electricityCO2": 329.6, "awareFactor": 24.5 },
     "GR": { "name": "Greece", "electricityCO2": 315.1, "awareFactor": 61.2 },
     "HU": { "name": "Hungary", "electricityCO2": 163.0, "awareFactor": null },
-    "IN": { "name": "India", "electricityCO2": 480, "awareFactor": 70.1 },
+    // FIX: [Audit 11.2] IN synced: was 480, grid_intensity.IN = 632 (Ember 2025)
+    "IN": { "name": "India", "electricityCO2": 632, "awareFactor": 70.1 },
     "IE": { "name": "Ireland", "electricityCO2": 256.5, "awareFactor": 1.8 },
     "IT": { "name": "Italy", "electricityCO2": 284.8, "awareFactor": 49.8 },
-    "JP": { "name": "Japan", "electricityCO2": 470, "awareFactor": 36.5 },
+    // FIX: [Audit 11.2] JP synced: was 470, grid_intensity.JP = 435 (Ember 2025)
+    "JP": { "name": "Japan", "electricityCO2": 435, "awareFactor": 36.5 },
     "LV": { "name": "Latvia", "electricityCO2": 138.8, "awareFactor": null },
     "LT": { "name": "Lithuania", "electricityCO2": 138.4, "awareFactor": null },
     "LU": { "name": "Luxembourg", "electricityCO2": 123.4, "awareFactor": null },
@@ -576,7 +586,8 @@ window.aioxyData.countries = {
     "CH": { "name": "Switzerland", "electricityCO2": 39.2, "awareFactor": null },
     "TR": { "name": "Türkiye", "electricityCO2": 474.7, "awareFactor": null },
     "GB": { "name": "United Kingdom", "electricityCO2": 217.4, "awareFactor": 22.9 }, // ISO 3166-1 alpha-2 standard — "GB" is the correct code for the United Kingdom.
-    "US": { "name": "United States", "electricityCO2": 383, "awareFactor": 33.4 }
+    // FIX: [Audit 11.2] US synced: was 383, grid_intensity.US = 368 (Ember 2025)
+    "US": { "name": "United States", "electricityCO2": 368, "awareFactor": 33.4 }
 };
 
 // ================== FOOD PROCESSING ENERGY INTENSITY ==================
