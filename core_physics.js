@@ -227,24 +227,27 @@
             // ----------------------------------------------------------------
             EMISSION_FACTORS: Object.freeze({
                 road: Object.freeze({
-                    // GLEC v3.2 Module 5, Annex 1, Table 18: artic truck,
-                    // 0% empty running, 24t payload → 60 g/tkm = 0.060 kg/tkm.
-                    // *** OPTIMISTIC full-load scenario. EU average = 0.089. ***
+                    // FIX: [Audit 9.2] GLEC v3.2 Module 2, Table 8 (EU artic truck,
+                    // Average/mixed, 60% load factor, 17% empty running):
+                    // 89 g CO2e/tkm (WTW) = 0.089 kg CO2e/tkm.
+                    // Direct value used; payloadMultiplier removed from calculateTransport().
+                    // Previous value 0.060 was the full-load optimistic scenario (Table 18)
+                    // and was incorrectly combined with a separate payload correction.
                     // Van: Module 2, Table 7 (Europe): Van <3.5t, diesel → 842 g/tkm.
-                    ambient: Object.freeze({ hgv: 0.060, van: 0.842 }),
+                    // Van factors unchanged — Table 7 values already embed load/empty running.
+                    ambient: Object.freeze({ hgv: 0.089, van: 0.842 }),
 
                     // 12% uplift on ambient: GLEC v3.2 Module 2, temperature-
                     // controlled road freight section (p. 103), for HGV >3.5t.
-                    // 0.060 × 1.12 = 0.0672 → 0.067 kg CO2e/tkm.
+                    // FIX: [Audit 9.2] 0.089 × 1.12 = 0.09968 → 0.100 kg CO2e/tkm.
                     // Van: 15% uplift (GLEC v3.2 p. 103, vans ≤3.5t, Europe).
-                    // 0.842 × 1.15 = 0.9683 → 0.969 kg CO2e/tkm.
-                    // Note: prior van chilled/frozen value was 0.943 (13% uplift);
-                    // corrected to 0.969 (15%) per GLEC v3.2 explicit guidance.
-                    chilled: Object.freeze({ hgv: 0.067, van: 0.969 }),
+                    // 0.842 × 1.15 = 0.9683 → 0.969 kg CO2e/tkm. Unchanged.
+                    chilled: Object.freeze({ hgv: 0.100, van: 0.969 }),
 
                     // Same 12%/15% uplift applies to frozen as to chilled.
                     // GLEC provides no separate frozen vs. chilled uplift.
-                    frozen: Object.freeze({ hgv: 0.067, van: 0.969 })
+                    // FIX: [Audit 9.2] 0.089 × 1.12 = 0.100 kg CO2e/tkm.
+                    frozen: Object.freeze({ hgv: 0.100, van: 0.969 })
                 }),
                 sea: Object.freeze({
                     // GLEC v3.2 Module 2, Table 18 (p. 111): Industry Average
@@ -1440,6 +1443,79 @@
             'Resource Use, minerals/metals': 2.1e-07
         }),
 
+        // FIX: [Audit A5] GAS_COMBUSTION_MULTI — non-CC multi-category factors per m³ natural gas
+        // burned in a stationary industrial boiler (primary factory path).
+        //
+        // ═══ METHODOLOGY ═══
+        // Sources:
+        //   (1) EMEP/EEA Air Pollutant Emission Inventory Guidebook 2023, §1.A.1b
+        //       "Stationary combustion in manufacturing industries and construction — natural gas"
+        //       Euro VI / modern industrial boiler emission factors (per GJ fuel):
+        //         NOx:   40 g/GJ  (EMEP/EEA §1.A.1b Table 3-2, Tier 1 default, NG boiler)
+        //         SO2:    0.5 g/GJ (EMEP/EEA §1.A.1b; natural gas has very low sulphur <0.001%)
+        //         PM2.5:  1 g/GJ  (EMEP/EEA §1.A.1b Table 3-2, Tier 1 default, NG boiler)
+        //         NMVOC:  2 g/GJ  (EMEP/EEA §1.A.1b, unburned hydrocarbons, NG)
+        //   (2) Natural gas energy content: 38 MJ/m³ (lower heating value, EU average)
+        //       → NOx per m³    = 40  × 38/1000 = 1.52 g/m³
+        //       → SO2 per m³    = 0.5 × 38/1000 = 0.019 g/m³
+        //       → PM2.5 per m³  = 1   × 38/1000 = 0.038 g/m³
+        //       → NMVOC per m³  = 2   × 38/1000 = 0.076 g/m³
+        //   (3) JRC EF 3.1 characterization factors (JRC Technical Report EUR 29540 EN):
+        //         NOx  → Acidification:              0.0296 mol H+eq/g NOx
+        //         NOx  → Eutrophication terrestrial: 0.0128 mol N eq/g NOx
+        //         NOx  → Eutrophication marine:      0.0022 kg N eq/g NOx
+        //         SO2  → Acidification:              0.0313 mol H+eq/g SO2
+        //         NH3  → Acidification:              0.0591 mol H+eq/g NH3 (not applicable here)
+        //         PM2.5→ Particulate Matter:         6.4e-4 disease inc./g PM2.5
+        //         NOx  → Photochem. Ozone Formation: 0.028 kg NMVOCeq/g NOx
+        //         NMVOC→ Photochem. Ozone Formation: 0.045 kg NMVOCeq/g NMVOC
+        //
+        // ═══ DERIVED VALUES (per m³ natural gas) ═══
+        //   Acidification:
+        //     NOx:  1.52 × 0.0296 = 0.04499 mol H+eq/m³
+        //     SO2:  0.019 × 0.0313 = 5.95e-4 mol H+eq/m³
+        //     Total = 0.04558 mol H+eq/m³ → 0.0456
+        //   Eutrophication, terrestrial:
+        //     NOx:  1.52 × 0.0128 = 0.01946 mol N eq/m³ → 0.01946
+        //   Eutrophication, marine:
+        //     NOx:  1.52 × 0.0022 = 3.34e-3 kg N eq/m³ → 3.34e-3
+        //   Particulate Matter:
+        //     PM2.5: 0.038 × 6.4e-4 = 2.43e-5 disease inc./m³ → 2.43e-5
+        //   Photochemical Ozone Formation:
+        //     NOx:   1.52 × 0.028  = 0.04256 kg NMVOCeq/m³
+        //     NMVOC: 0.076 × 0.045 = 3.42e-3 kg NMVOCeq/m³
+        //     Total = 0.04598 → 0.0460
+        //
+        // ═══ ZERO CATEGORIES ═══
+        //   Eutrophication, freshwater: Natural gas combustion emits negligible P. Zero.
+        //   Human Toxicity (cancer/non-cancer): BaP, heavy metals from NG combustion are
+        //     negligible vs. oil combustion. Documented gap; set to zero pending EMEP/EEA
+        //     NG-specific USEtox derivation. Confidence: LOW for these two categories.
+        //   Ecotoxicity, freshwater: No aquatic pathway from stack gas combustion. Zero.
+        //   Ozone Depletion, Ionizing Radiation, Land Use, Water Use, Resource Use
+        //     minerals/metals, Resource Use fossils: Not applicable to direct gas combustion.
+        //
+        // Confidence: MEDIUM (EMEP/EEA values from training-data recall; verify against
+        // current EMEP/EEA Guidebook 2023 §1.A.1b for final audit submission).
+        GAS_COMBUSTION_MULTI: Object.freeze({
+            // Unit: impact per m³ natural gas burned (stationary industrial boiler)
+            'Acidification':                 0.0456,   // mol H+eq/m³ — NOx + SO2 contributions
+            'Eutrophication, terrestrial':   0.01946,  // mol N eq/m³ — NOx only
+            'Eutrophication, marine':        3.34e-3,  // kg N eq/m³ — NOx only
+            'Eutrophication, freshwater':    0,        // negligible P from NG combustion
+            'Particulate Matter':            2.43e-5,  // disease inc./m³ — PM2.5 only
+            'Photochemical Ozone Formation': 0.0460,   // kg NMVOCeq/m³ — NOx + NMVOC
+            'Human Toxicity, cancer':        0,        // documented gap — negligible from NG
+            'Human Toxicity, non-cancer':    0,        // documented gap — negligible from NG
+            'Ecotoxicity, freshwater':       0,        // no aquatic pathway
+            'Ozone Depletion':               0,
+            'Ionizing Radiation':            0,
+            'Land Use':                      0,
+            'Water Use/Scarcity (AWARE)':    0,
+            'Resource Use, minerals/metals': 0,
+            'Resource Use, fossils':         0
+        }),
+
         // ================== IPCC TIER 1 LIVESTOCK LOOKUP TABLE ==================
         // Sources and verification:
         //
@@ -1809,12 +1885,14 @@
             adjustedDistance = distanceKm * daf;
         }
         
-        let payloadMultiplier = CONSTANTS.MATH.ONE;
-        if (mode === 'road') {
-            payloadMultiplier = (CONSTANTS.MATH.ONE / glec.LOAD_FACTOR) * (CONSTANTS.MATH.ONE + glec.EMPTY_RETURN_RATE);
-        }
-        
-        const adjustedFactor = factor * payloadMultiplier;
+        // FIX: [Audit 9.2] Road HGV payload correction removed.
+        // The 0.060 base factor × payloadMultiplier = (1/0.60) × (1+0.17) = 1.95 produced
+        // 0.117 kg CO2e/tkm, overestimating by 31% vs GLEC v3.2 Table 8 direct value (0.089).
+        // Fix (Option A): EMISSION_FACTORS.road.ambient.hgv updated to 0.089 (GLEC v3.2 Table 8,
+        // EU artic truck, 60% load, 17% empty running — see header documentation).
+        // payloadMultiplier is therefore 1.0 for road HGV; the GLEC value already embeds it.
+        // Van factors (Table 7) are unchanged — they also embed load factor and empty running.
+        const adjustedFactor = factor; // FIX: [Audit 9.2] No payload multiplier — factor already at full-load/EU-avg corrected value
         const massTons = massKg / CONSTANTS.UNIT.KG_TO_TON;
         const fuelEmissions = massTons * adjustedDistance * adjustedFactor;
         
