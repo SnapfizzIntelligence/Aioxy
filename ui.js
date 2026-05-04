@@ -516,7 +516,36 @@ function updateResultsUI(results) {
 
         const baselineKey = Object.keys(ANCHOR_DATASETS).find(key => // BUGFIX B22
             resolvedBaseline.name && resolvedBaseline.name.includes(ANCHOR_DATASETS[key].name)) || 'default'; // BUGFIX B22
-        const baselineProteinPer100g = getProteinForIngredient(baselineKey, resolvedBaseline.name); // BUGFIX B22
+
+        // FIX 7: When the baseline is a parametric twin (resolvedBaseline.ingredientPairs exists),
+        // look up protein from the actual conventional ingredient IDs in window.aioxyData.nutrition,
+        // instead of the ANCHOR_DATASETS name-matching path (which falls through to the hardcoded
+        // 'default' of 10 g/100g when the twin name like "Recipe Twin: Beef, Pork" has no match).
+        let baselineProteinPer100g;
+        if (resolvedBaseline.ingredientPairs && resolvedBaseline.ingredientPairs.length > 0 &&
+                window.aioxyData && window.aioxyData.nutrition) {
+            // Collect proteins from all conventional ingredient IDs and average them weighted by quantity.
+            let totalProteinWeighted = 0;
+            let totalQuantityKg = 0;
+            for (const pair of resolvedBaseline.ingredientPairs) {
+                const conv = pair.conventional;
+                if (conv) {
+                    const convId = conv.id || conv.name;
+                    const nutritionEntry = convId && window.aioxyData.nutrition[convId];
+                    const proteinVal = nutritionEntry
+                        ? nutritionEntry.protein_g_per_100g
+                        : 10.0; // fallback per-ingredient if nutrition entry missing
+                    const qty = conv.quantityKg || 1;
+                    totalProteinWeighted += proteinVal * qty;
+                    totalQuantityKg += qty;
+                }
+            }
+            baselineProteinPer100g = totalQuantityKg > 0
+                ? totalProteinWeighted / totalQuantityKg
+                : getProteinForIngredient(baselineKey, resolvedBaseline.name);
+        } else {
+            baselineProteinPer100g = getProteinForIngredient(baselineKey, resolvedBaseline.name); // BUGFIX B22
+        }
 
         const userKgNeededFor100gProtein = 100 / (userProteinPer100g * 10);
         const baseKgNeededFor100gProtein = 100 / (baselineProteinPer100g * 10);
