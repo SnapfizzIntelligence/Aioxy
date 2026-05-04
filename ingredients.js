@@ -848,7 +848,13 @@ window.aioxyData.transportation = {
 //
 // CFF Formula:
 //   Impact = (1−R1)×Ev + R1×(A×Erec + (1−A)×Ev×Qs/Qp)
-//            + (1−R2)×Ed − R2×(1−A)×(Erec − Ev×Qs/Qp)
+//            + (1−R2)×Ed + R2×(1−A)×(Erec − Ev×Qs/Qp)
+//
+// NOTE on the EoL credit term sign: creditEoL = R2×(1−A)×(Erec−Ev×Qs/Qp) is
+// computed and ADDED to the total. For typical materials where Erec < Ev×Qs/Qp,
+// creditEoL is negative, so adding it correctly reduces the total impact.
+// The formula is written with an explicit '+' here to match the code; the credit
+// is negative by value, not by operator.
 //
 // WHERE:
 //   R1      = Recycled content fraction at input (user-defined, 0–1)
