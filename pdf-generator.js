@@ -2100,7 +2100,8 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     };
 
     // 1. FARM GATE
-    const baseRaw = bd.farm / (b.concentration_ratio || 1.0);
+    // FIX: [Audit #32] Key renamed from breakdown.farm to breakdown.ingredients
+    const baseRaw = bd.ingredients / (b.concentration_ratio || 1.0);
     const anchorIng = window.aioxyData?.ingredients?.[b.anchor_used];
     const farmCO2Raw = anchorIng?.data?.pef?.["Climate Change"] || baseRaw;
     
@@ -2112,7 +2113,7 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
             `Formula: Raw LCI x Concentration Ratio`,
             `= ${farmCO2Raw.toFixed(4)} x ${(b.concentration_ratio || 1.0).toFixed(2)}`,
         ],
-        `${bd.farm.toFixed(4)} kg CO2e`
+        `${bd.ingredients.toFixed(4)} kg CO2e`
     );
 
     // 2. MANUFACTURING
@@ -2227,7 +2228,8 @@ if (window.currentComparisonBaseline && window.currentComparisonBaseline.breakdo
     doc.setFont("courier", "normal");
     doc.setFontSize(8);
     doc.setTextColor(...COLORS.dark);
-    doc.text(`${bd.farm.toFixed(4)} + ${bd.manufacturing.toFixed(4)} + ${bd.logistics.toFixed(4)} + ${bd.packaging.toFixed(4)}`, margin + 10, currentY);
+    // FIX: [Audit #32] Key renamed from bd.farm to bd.ingredients
+    doc.text(`${bd.ingredients.toFixed(4)} + ${bd.manufacturing.toFixed(4)} + ${bd.logistics.toFixed(4)} + ${bd.packaging.toFixed(4)}`, margin + 10, currentY);
     currentY += 4;
     
     doc.setFont("courier", "bold");
