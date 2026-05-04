@@ -903,7 +903,7 @@ if (!traceability.usetox) {
                         // ── Enteric methane (CH4) ─────────────────────────────────────────
                         // Formula: heads = quantityKg / productPerHeadPerYear
                         //          CH4_kg = heads × efCh4PerHead
-                        //          CO2e = CH4_kg × GWP_CH4_BIOGENIC (25, per IPCC AR5 / PEF 3.1)
+                        //          CO2e = CH4_kg × GWP_CH4_BIOGENIC (28, per IPCC AR5 / PEF 3.1)
                         const entericCO2e = window.corePhysics.calculateEntericMethane({
                             animalType:          pd.animalType,
                             quantityKg:          ingredient.quantityKg,
@@ -949,7 +949,7 @@ if (!traceability.usetox) {
                                 product_per_head_yr:   productPerHeadPerYear,
                                 enteric_co2e_total:    entericCO2e,
                                 enteric_co2e_per_kg:   entericPerKg,
-                                gwp_used:              'GWP_CH4_BIOGENIC = 25 (IPCC AR5, PEF 3.1)',
+                                gwp_used:              'GWP_CH4_BIOGENIC = 28 (IPCC AR5, PEF 3.1)',
                                 ipcc_source:           'IPCC 2006 Vol. 4 Table 10.11, confirmed 2019 Refinement'
                             };
                         }
@@ -1197,12 +1197,12 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
         }
         
         if (totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0) {
-            // Apply primary data composite multiplier to USEtox-derived values for consistency with other categories.
-            // co2Mult was already applied to flatPef for all other categories (lines 729-747).
-            // Without this, USEtox assignments would silently discard the primary data adjustment.
-            flatPef['Human Toxicity, cancer']    = (totalCancerCTUh     / ingredient.quantityKg) * co2Mult;
-            flatPef['Human Toxicity, non-cancer'] = (totalNonCancerCTUh  / ingredient.quantityKg) * co2Mult;
-            flatPef['Ecotoxicity, freshwater']   = (totalEcotoxicityCTUe / ingredient.quantityKg) * co2Mult;
+            // FIX 3: Use += to ADD USEtox substance-specific values to the AGRIBALYSE background toxicity,
+            // not = which would overwrite and delete the background. co2Mult was already applied to
+            // flatPef earlier in the primary data multiplier step — do NOT re-apply it here.
+            flatPef['Human Toxicity, cancer']    += (totalCancerCTUh     / ingredient.quantityKg);
+            flatPef['Human Toxicity, non-cancer'] += (totalNonCancerCTUh  / ingredient.quantityKg);
+            flatPef['Ecotoxicity, freshwater']   += (totalEcotoxicityCTUe / ingredient.quantityKg);
         }
         
         adjustments.usetox_applied = {
@@ -1432,7 +1432,9 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
 // Source: European Commission, Covenant of Mayors, Emission Factors
 //   for Local Energy Use, 2024 Edition, JRC
 const gasCO2 = gasM3PerKg * 2.13;
-            const elecCO2        = kwhPerKgActual * (gridIntensity / 1000);
+            // FIX 2: Apply T&D losses to primary factory electricity, matching the benchmark path.
+            // CONSTANTS.GLEC.T_AND_D_LOSSES = 0.07 (IEA EU average, defined in core_physics.js).
+            const elecCO2        = kwhPerKgActual * (gridIntensity * (1 + window.corePhysics.CONSTANTS.GLEC.T_AND_D_LOSSES) / 1000);
             const totalMfgCO2    = (elecCO2 + gasCO2) * prodWt;
             const totalMfgKwh    = kwhPerKgActual * prodWt;
 
@@ -1551,8 +1553,11 @@ const gasCO2 = gasM3PerKg * 2.13;
         const ev         = pkgData.co2_virgin;
         const erecycled  = pkgData.co2_recycled;
         const ed         = pkgData.co2_disposal_average || pkgData.co2_disposal || 0.05;
-        const r1         = pkgIn.recycledPct / 100;
-        const r2         = (pkgData.r1_max || 0.8) * (pkgData.r2 || 0.7);
+        // FIX 1: CFF R2 — pkgData.r2 IS the Annex C end-of-life recycling rate; do not multiply by r1_max.
+        // r1_max separately caps the user-supplied recycled content fraction per PEF 3.1 Annex C.
+        const r1Uncapped = pkgIn.recycledPct / 100;
+        const r1         = pkgData.r1_max !== undefined ? Math.min(r1Uncapped, pkgData.r1_max) : r1Uncapped;
+        const r2         = pkgData.r2 || 0.7;
         const qs         = pkgData.q || 0.9;
         const qp         = 1.0;
 
