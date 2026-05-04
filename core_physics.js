@@ -1867,6 +1867,9 @@
             co2, 
             kwh: electricityKWh,
             fossilFraction: CONSTANTS.FOSSIL_FRACTION.MANUFACTURING_ELECTRICITY,
+            // FIX 5: Return the actual grid intensity used so contribution tree builders
+            // can read mfgResult.gridIntensityGPerKwh instead of falling back to a hardcoded value.
+            gridIntensityGPerKwh: gridIntensityGPerKwh,
             multiCategoryResults: multiCategoryResults
         };
     }
