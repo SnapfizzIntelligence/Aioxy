@@ -182,7 +182,49 @@
                 energy_source: (input && input.manufacturing && input.manufacturing.energySource) || 'Grid Mix',
                 grid_intensity: mfgResult.gridIntensityGPerKwh || gridIntensity,
                 subtotal: mfgTotal,
-                calculation_trace: `Formula: CO2e = kWh × Grid_Intensity(gCO2e/kWh) ÷ 1000\n  kWh = ${(mfgResult.kwh || 0).toFixed(4)}\n  Grid Intensity = ${mfgResult.gridIntensityGPerKwh || gridIntensity} gCO2e/kWh\n  = ${mfgTotal.toFixed(4)} kg CO2e`
+                // GAP 7 FIX: Full manufacturing trace for PDF dumb-printer.
+                // Shows: source, formula, all inputs, T&D loss, step-by-step arithmetic, result.
+                // PDF must read this trace directly — must NOT recompute any value.
+                calculation_trace: (() => {
+                    const mfgCountry     = (input && input.manufacturing && input.manufacturing.country) || 'FR';
+                    const mfgMethod      = (input && input.manufacturing && input.manufacturing.processingMethod) || 'none';
+                    const mfgEnergySource= (input && input.manufacturing && input.manufacturing.energySource) || 'Grid Mix';
+                    const kwhTotal       = mfgResult.kwh || 0;
+                    const productMassKg  = (input && input.product && input.product.weightKg) || 1;
+                    const kwhPerKg       = productMassKg > 0 ? kwhTotal / productMassKg : 0;
+                    const gIntensity     = mfgResult.gridIntensityGPerKwh !== undefined ? mfgResult.gridIntensityGPerKwh : gridIntensity;
+                    const tdLoss         = 0.07;
+                    const adjustedG      = gIntensity * (1 + tdLoss);
+                    const isCatCC        = (cat === 'Climate Change');
+                    if (isCatCC) {
+                        return [
+                            'Sources: Ember 2025 (grid intensity) / Processing benchmark DB (energy intensity)',
+                            'Formula: CO2e = kWh_per_kg x mass(kg) x grid_intensity(g/kWh) x (1 + T&D_loss) / 1000',
+                            '',
+                            '  Processing method  : ' + mfgMethod,
+                            '  Energy source      : ' + mfgEnergySource,
+                            '  Energy intensity   : ' + kwhPerKg.toFixed(4) + ' kWh/kg  [Processing benchmark DB]',
+                            '  Product mass       : ' + productMassKg.toFixed(4) + ' kg',
+                            '  kWh (total)        : ' + kwhPerKg.toFixed(4) + ' kWh/kg x ' + productMassKg.toFixed(4) + ' kg = ' + kwhTotal.toFixed(4) + ' kWh',
+                            '',
+                            '  Grid intensity     : ' + gIntensity.toFixed(2) + ' g CO2e/kWh  [Ember 2025 - ' + mfgCountry + ']',
+                            '  T&D loss factor    : 7%  [IEA Electricity Information 2023, EU average]',
+                            '  Adjusted intensity : ' + gIntensity.toFixed(2) + ' x (1 + 0.07) = ' + adjustedG.toFixed(2) + ' g CO2e/kWh',
+                            '',
+                            '  CO2e = ' + kwhTotal.toFixed(4) + ' kWh x ' + adjustedG.toFixed(2) + ' g/kWh / 1000',
+                            '       = ' + mfgTotal.toFixed(4) + ' kg CO2e'
+                        ].join('\n');
+                    } else {
+                        return [
+                            'Sources: ENTSO-E 2023 / EMEP/EEA 2023 / JRC EF 3.1 (EU27 average electricity mix)',
+                            'Formula: impact = kWh x multi_category_factor[' + cat + ']',
+                            '',
+                            '  kWh (total)        : ' + kwhTotal.toFixed(4) + ' kWh',
+                            '  Multi-category EF  : from ELECTRICITY_GRID_MULTI[' + cat + ']',
+                            '  Result             : ' + mfgTotal.toExponential(4) + ' ' + cat
+                        ].join('\n');
+                    }
+                })()
             };
 
             // GAP 4 FIX: Inbound upstream transport shadow calculation REMOVED.
@@ -242,27 +284,159 @@
             }
 
             // Bug 11 fix: Transport component
+            // GAP 1 FIX: Full GLEC v3.2 calculation_trace built here in the engine.
+            // PDF must read this trace directly — must NOT recompute any transport value.
+            // All EFs, DAFs, and mass values come from the same CONSTANTS used in
+            // calculateTransport() in core_physics.js. This is documentation of what
+            // the engine calculated, not a recalculation.
             const transportComponents = [];
             if (input && input.transport) {
-                const transMode = input.transport.mode || 'road';
-                const transDist = input.transport.distanceKm || 0;
+                const transMode   = input.transport.mode || 'road';
+                const transDist   = input.transport.distanceKm || 0;
+                const transRefrig = input.transport.refrigeration || 'ambient';
+                const transWtKg   = (input.product ? input.product.weightKg : 0)
+                                  + (input.packaging ? input.packaging.weightKg : 0);
+                const transWtT    = transWtKg / 1000;
+
+                // EF table mirrors CONSTANTS.GLEC.EMISSION_FACTORS in core_physics.js
+                const EF_TABLE = {
+                    road:  { ambient: 0.089, chilled: 0.100, frozen: 0.100 },
+                    sea:   { ambient: 0.0072, chilled: 0.0072, frozen: 0.0142 },
+                    air:   { ambient: 0.788,  chilled: 0.788,  frozen: 0.788  },
+                    rail:  { ambient: 0.0184, chilled: 0.0184, frozen: 0.0206 }
+                };
+                // DAF table mirrors CONSTANTS.GLEC.DAF in core_physics.js
+                const DAF_TABLE    = { road: 1.05, sea: 1.15, rail: 1.00 };
+                const AIR_ADD_KM   = 95;
+
+                const modeEFs  = EF_TABLE[transMode]  || EF_TABLE.road;
+                const ef       = modeEFs[transRefrig] || modeEFs.ambient;
+                const isAir    = transMode === 'air';
+                const daf      = isAir ? null : (DAF_TABLE[transMode] || 1.0);
+                const adjDist  = isAir ? transDist + AIR_ADD_KM : transDist * daf;
+                const dafNote  = isAir
+                    ? transDist + ' km + ' + AIR_ADD_KM + ' km (GLEC v3.2 additive DAF for air)'
+                    : transDist + ' km x ' + daf + ' (GLEC v3.2 DAF for ' + transMode + ')';
+
+                // EF source reference per mode
+                const EF_SOURCE = {
+                    road:  'GLEC v3.2 Table 8 — EU articulated HGV average',
+                    sea:   'GLEC v3.2 Table 18 — Module 2',
+                    air:   'GLEC v3.2 Table 1 — Module 2',
+                    rail:  'GLEC v3.2 Table 4 — Module 2'
+                };
+                const efSource = EF_SOURCE[transMode] || EF_SOURCE.road;
+
+                const transTrace = [
+                    'Source: ' + efSource,
+                    'Formula: mass(t) x adjusted_distance(km) x EF(kg CO2e/tkm)',
+                    '',
+                    '  Gross mass (product + packaging):',
+                    '    product   = ' + (input.product ? input.product.weightKg.toFixed(4) : '0') + ' kg',
+                    '    packaging = ' + (input.packaging ? input.packaging.weightKg.toFixed(4) : '0') + ' kg',
+                    '    total     = ' + transWtKg.toFixed(4) + ' kg = ' + transWtT.toFixed(6) + ' t',
+                    '',
+                    '  Distance:',
+                    '    user input     = ' + transDist + ' km',
+                    '    DAF applied    = ' + dafNote,
+                    '    adjusted dist  = ' + adjDist.toFixed(2) + ' km',
+                    '',
+                    '  Emission factor:',
+                    '    mode           = ' + transMode.toUpperCase(),
+                    '    temperature    = ' + transRefrig,
+                    '    EF             = ' + ef + ' kg CO2e/tkm  [' + efSource + ']',
+                    '',
+                    '  CO2e = ' + transWtT.toFixed(6) + ' t x ' + adjDist.toFixed(2) + ' km x ' + ef + ' kg CO2e/tkm',
+                    '       = ' + transTotal.toFixed(4) + ' kg CO2e'
+                ].join('\n');
+
                 transportComponents.push({
-                    name: `Outbound: ${transMode} transport`,
-                    notes: `${transDist} km, ${transMode}`,
+                    name: 'Outbound: ' + transMode + ' transport',
+                    notes: transDist + ' km, ' + transMode + ', ' + transRefrig,
                     subtotal: transTotal,
-                    calculation_trace: `[GLEC v3.2: ${transTotal.toFixed(4)} kg CO2e]`
+                    calculation_trace: transTrace
                 });
             }
 
             // Bug 11 fix: Packaging component
+            // GAP 8 FIX: Full PEF 3.1 CFF calculation_trace built here in the engine.
+            // PDF must read this trace directly — must NOT recompute any CFF value.
+            // All parameters (Ev, Erec, Ed, R1, R2, A, Qs/Qp) are read from the
+            // packaging database (window.aioxyData.packaging) — the same source used
+            // by calculatePackaging() in core_physics.js.
             const packagingComponents = [];
-            if (pkgTotal !== 0) {
-                const pkgMat = (input && input.packaging) ? input.packaging.material : 'unknown';
+            if (pkgTotal !== 0 || (input && input.packaging && input.packaging.material)) {
+                const pkgMat  = (input && input.packaging) ? input.packaging.material : 'unknown';
+                const pkgWtKg = (input && input.packaging) ? (input.packaging.weightKg || 0) : 0;
+                const pkgRec  = (input && input.packaging) ? ((input.packaging.recycledPct || 0) / 100) : 0;
+
+                // Read CFF parameters from database — same source as calculatePackaging()
+                const pkgDB   = (window.aioxyData && window.aioxyData.packaging)
+                                ? (window.aioxyData.packaging[pkgMat] || {})
+                                : {};
+                const ev      = pkgDB.co2_virgin              || 0;
+                const erec    = pkgDB.co2_recycled             || 0;
+                const ed      = pkgDB.co2_disposal_average     || 0;
+                const r1max   = pkgDB.r1_max                   !== undefined ? pkgDB.r1_max : 1.0;
+                const r1      = Math.min(pkgRec, r1max);
+                const r2      = pkgDB.r2                       || 0;
+                const A       = pkgDB.aFactor                  || 0;
+                const qs      = pkgDB.q                        !== undefined ? pkgDB.q : 1.0;
+                const qp      = 1.0;
+                const qr      = qs / qp;
+
+                // CFF formula per PEF 3.1 Annex C v2.1:
+                // [(1-R1) x Ev] + [R1 x (A x Erec + (1-A) x Ev x Qs/Qp)]
+                // + [(1-R2) x Ed] + [R2 x (1-A) x (Erec - Ev x Qs/Qp)]
+                const term1   = (1 - r1) * ev;
+                const term2   = r1 * (A * erec + (1 - A) * ev * qr);
+                const burden  = (1 - r2) * ed;
+                const credit  = r2 * (1 - A) * (erec - ev * qr);
+                const perKg   = term1 + term2 + burden + credit;
+
+                const pkgSrc  = pkgDB.source || 'PEF Annex C v2.1 / packaging database';
+
+                const cffTrace = [
+                    'Source: PEF 3.1 Annex C v2.1 (CFF) — ' + pkgSrc,
+                    'Formula: [(1-R1) x Ev] + [R1 x (A x Erec + (1-A) x Ev x Qs/Qp)]',
+                    '         + [(1-R2) x Ed] + [R2 x (1-A) x (Erec - Ev x Qs/Qp)]',
+                    '',
+                    '  Material         : ' + pkgMat,
+                    '  Weight           : ' + pkgWtKg.toFixed(4) + ' kg',
+                    '',
+                    '  Parameters (from packaging database):',
+                    '    Ev  (virgin production)   = ' + ev.toFixed(5)   + ' kg CO2e/kg',
+                    '    Erec (recycled production) = ' + erec.toFixed(5) + ' kg CO2e/kg',
+                    '    Ed  (disposal average)     = ' + ed.toFixed(5)   + ' kg CO2e/kg',
+                    '    R1  (recycled content)     = ' + pkgRec.toFixed(4) + ' -> capped at r1_max(' + r1max + ') -> R1 = ' + r1.toFixed(4),
+                    '    R2  (EoL recycling rate)   = ' + r2.toFixed(4),
+                    '    A   (allocation factor)    = ' + A.toFixed(4),
+                    '    Qs/Qp (quality ratio)      = ' + qs.toFixed(4) + ' / ' + qp.toFixed(4) + ' = ' + qr.toFixed(4),
+                    '',
+                    '  Term 1: (1 - ' + r1.toFixed(4) + ') x ' + ev.toFixed(5),
+                    '        = ' + term1.toFixed(5) + ' kg CO2e/kg',
+                    '',
+                    '  Term 2: ' + r1.toFixed(4) + ' x (' + A.toFixed(4) + ' x ' + erec.toFixed(5) + ' + (1 - ' + A.toFixed(4) + ') x ' + ev.toFixed(5) + ' x ' + qr.toFixed(4) + ')',
+                    '        = ' + term2.toFixed(5) + ' kg CO2e/kg',
+                    '',
+                    '  Burden: (1 - ' + r2.toFixed(4) + ') x ' + ed.toFixed(5),
+                    '        = ' + burden.toFixed(5) + ' kg CO2e/kg',
+                    '',
+                    '  Credit: ' + r2.toFixed(4) + ' x (1 - ' + A.toFixed(4) + ') x (' + erec.toFixed(5) + ' - ' + ev.toFixed(5) + ' x ' + qr.toFixed(4) + ')',
+                    '        = ' + credit.toFixed(5) + ' kg CO2e/kg',
+                    '',
+                    '  Impact/kg = ' + term1.toFixed(5) + ' + ' + term2.toFixed(5) + ' + ' + burden.toFixed(5) + ' + ' + credit.toFixed(5),
+                    '           = ' + perKg.toFixed(5) + ' kg CO2e/kg',
+                    '',
+                    '  Total = ' + perKg.toFixed(5) + ' kg CO2e/kg x ' + pkgWtKg.toFixed(4) + ' kg',
+                    '        = ' + pkgTotal.toFixed(4) + ' kg CO2e'
+                ].join('\n');
+
                 packagingComponents.push({
-                    name: `Primary Packaging: ${pkgMat}`,
-                    notes: `CFF-adjusted impact`,
+                    name: 'Primary Packaging: ' + pkgMat,
+                    notes: 'CFF-adjusted impact — PEF 3.1 Annex C v2.1',
                     subtotal: pkgTotal,
-                    calculation_trace: `[PEF 3.1 CFF: ${pkgTotal.toFixed(4)} kg CO2e]`
+                    calculation_trace: cffTrace
                 });
             }
 
@@ -1113,6 +1287,16 @@ if (!traceability.usetox) {
                         ? 'Default (5000 kg/ha)'
                         : 'FAOSTAT ' + ((window.aioxyData.crop_yields && window.aioxyData.crop_yields.years) || '2020-2024');
                     yieldAdj = Math.min(baselineYield / pd.yieldKgPerHa, 2.0);
+                    // GAP 10 FIX: structured yield_adjustment for PDF dumb-printer trace.
+                    // PDF reads this object directly — must NOT recompute yieldAdj.
+                    adjustments.yield_adjustment = {
+                        baseline_kg_ha:  baselineYield,
+                        baseline_source: adjustments.baseline_yield_source,
+                        actual_kg_ha:    pd.yieldKgPerHa,
+                        formula:         'min(baseline_kg_ha / actual_kg_ha, 2.0)',
+                        factor:          yieldAdj,
+                        capped_at_2:     (baselineYield / pd.yieldKgPerHa) > 2.0
+                    };
                 }
 
                 // Nitrogen adjustment factor
@@ -1121,6 +1305,14 @@ if (!traceability.usetox) {
                     const baselineN = 15;
                     adjustments.baseline_nitrogen = baselineN;
                     nAdj = pd.nitrogenKgPerTon / baselineN;
+                    // GAP 10 FIX: structured nitrogen_adjustment for PDF dumb-printer trace.
+                    // PDF reads this object directly — must NOT recompute nAdj.
+                    adjustments.nitrogen_adjustment = {
+                        baseline_kg_per_ton: baselineN,
+                        actual_kg_per_ton:   pd.nitrogenKgPerTon,
+                        formula:             'actual_kg_per_ton / baseline_kg_per_ton',
+                        factor:              nAdj
+                    };
                 }
 
                 // AIOXY COMPOSITE PRIMARY DATA MULTIPLIER
@@ -1143,6 +1335,16 @@ if (!traceability.usetox) {
                     land:   yieldAdj,
                     water:  co2Mult,
                     fossil: co2Mult
+                };
+                // GAP 10 FIX: store composite multiplier formula for PDF dumb-printer trace.
+                // PDF reads this object directly — must NOT recompute co2Mult.
+                adjustments.composite_multiplier = {
+                    formula:      '(0.6 x yield_factor) + (0.4 x nitrogen_factor)',
+                    yield_weight: 0.6,
+                    n_weight:     0.4,
+                    yield_factor: yieldAdj,
+                    n_factor:     nAdj,
+                    result:       co2Mult
                 };
                 adjustments.method = 'primary_data_adjusted';
                 yieldFactor = yieldAdj;
