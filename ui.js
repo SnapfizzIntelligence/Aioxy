@@ -859,10 +859,14 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
 
     const ccPerKgCurrent  = results.co2PerKg || 0;
     const ccPerKgTwin     = resolvedBaseline.co2PerKg || 0;
-    const co2DiffPerKg    = Math.max(0, ccPerKgTwin - ccPerKgCurrent); // potential reduction
-    const rawPctDiff      = ccPerKgTwin > 0 ? ((ccPerKgTwin - ccPerKgCurrent) / ccPerKgTwin * 100) : 0;
-    const uncertainty     = results.overallUncertainty || 15;
-    const isBetter        = rawPctDiff > 0;
+    // Single source of truth: use engine-computed co2SavedPerKg and rawCo2Pct.
+    // Both are already declared above in this function from the original block.
+    // co2SavedPerKg = results.comparison?.co2SavedPerKg (engine value)
+    // rawCo2Pct     = (resolvedBaseline.co2PerKg - results.co2PerKg) / resolvedBaseline.co2PerKg * 100
+    const co2DiffPerKg    = co2SavedPerKg;  // engine value — authoritative
+    const rawPctDiff      = rawCo2Pct;      // already computed above — reuse
+    // uncertainty already declared above — reuse it
+    const isBetter        = rawPctDiff >= 0;
 
     // Conservative reduction (subtract uncertainty) — legally safer
     const conservativeDiff = Math.max(0, co2DiffPerKg * (1 - uncertainty / 100));
@@ -873,13 +877,12 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     //   Tree:        IPCC AR5 WGIII Ch.11 temperate zone 21.77 kg CO2/tree/year
     //   Smartphone:  IEA 2022 + Ember 2025 — 8.25 Wh/charge, 0.275 kg CO2e/kWh
     //   Flight:      ICAO 2023 — 120 g CO2e/passenger-km economy average
-    //   LED:         Derived from Ember 2025 EU grid + 10W LED spec
-    const carKm       = co2DiffPerKg > 0 ? (co2DiffPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM).toFixed(1) : null;
+    const storyCarKm  = co2DiffPerKg > 0 ? (co2DiffPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM).toFixed(1) : null;
     const treeHours   = co2DiffPerKg > 0 ? Math.round(co2DiffPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR * 365) : null;
     const smartCharges= co2DiffPerKg > 0 ? Math.round(co2DiffPerKg * PHYSICS_CONSTANTS.SMARTPHONE_CHARGES_PER_KG_CO2) : null;
     const flightKm    = co2DiffPerKg > 0 ? (co2DiffPerKg * PHYSICS_CONSTANTS.FLIGHT_KM_PER_KG_CO2).toFixed(1) : null;
 
-    const baselineName = (resolvedBaseline.name || 'Benchmark').replace(" (Cradle-to-Retail)", "");
+    // baselineName already declared above — reuse it
 
     storyContent.innerHTML = `
         <div style="font-family: Inter, Arial, sans-serif; color: #2D3748;">
@@ -953,7 +956,7 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
 
                 <div style="flex: 1; min-width: 130px; background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: 8px; padding: 0.75rem; text-align: center;">
                     <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🚗</div>
-                    <div style="font-size: 1.2rem; font-weight: 800; color: #0A2540;">${carKm}</div>
+                    <div style="font-size: 1.2rem; font-weight: 800; color: #0A2540;">${storyCarKm}</div>
                     <div style="font-size: 0.7rem; color: #0369A1; font-weight: 600;">km not driven</div>
                     <div style="font-size: 0.6rem; color: #64748B; margin-top: 0.2rem;">EEA 2023 — EU fleet avg 158.4 g CO2/km</div>
                 </div>
