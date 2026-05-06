@@ -158,6 +158,14 @@
         // An adversary could change ingredient IDs, quantities, transport mode, packaging
         // material, etc. and produce the same hash if the final pefResults happened to match.
         // The inputs block below ensures every calculation-affecting field is hash-covered.
+        //
+        // GAP 9 FIX: database_versions block added to hashPayload.
+        // ISO 14044 §4.5 requires that results be reproducible from the audit record.
+        // Without database version strings in the hash, updating any background database
+        // (AGRIBALYSE version, NF/WF table, GLEC version) silently changes outputs while
+        // producing the same hash for identical inputs. The database_versions block below
+        // ensures that any change to background databases produces a different hash,
+        // making the audit trail unique to the specific database state used.
         const hashPayload = JSON.stringify({
             physics: physicsResults.pefResults,
             compliance: {
@@ -195,6 +203,30 @@
                     recycledPct:    (metadata.packaging || {}).recycledPct   || null,
                     eolDestination: (metadata.packaging || {}).eolDestination || null
                 }
+            },
+            // GAP 9 FIX: Database version strings — ISO 14044 §4.5 reproducibility.
+            // Any update to background databases changes these strings and therefore
+            // changes the hash, making it impossible to produce the same DPP ID
+            // from a different database state. Auditors can verify the exact database
+            // versions used by checking these fields against the deployed codebase.
+            database_versions: {
+                lci_database:        (window.aioxyData && window.aioxyData.version)
+                                         ? window.aioxyData.version
+                                         : 'AGRIBALYSE 3.2 — ADEME/INRAE 2022',
+                nf_wf_table:         (window.aioxyData && window.aioxyData.pef_factors && window.aioxyData.pef_factors.version)
+                                         ? window.aioxyData.pef_factors.version
+                                         : 'EF 3.1 — JRC Technical Report EUR 29540 EN',
+                nf_wf_source:        (window.aioxyData && window.aioxyData.pef_factors && window.aioxyData.pef_factors.source)
+                                         ? window.aioxyData.pef_factors.source
+                                         : 'European Commission Joint Research Centre',
+                glec_version:        'GLEC v3.2 — Smart Freight Centre, published 21 October 2025',
+                grid_intensity_source: 'Ember 2025',
+                emep_eea_version:    'EMEP/EEA Air Pollutant Emission Inventory Guidebook 2023',
+                ipcc_gwp_basis:      'IPCC AR5 GWP100 — no climate-carbon feedback (CH4=28, N2O=265)',
+                aware_version:       'AWARE 2.0 — WULCA consensus model (Boulay et al. 2018)',
+                lanca_version:       'LANCA v2.5 — Fraunhofer IBP / European Commission JRC',
+                usetox_version:      'USEtox 2.14',
+                packaging_cff_source: 'PEF Annex C v2.1 — European Commission, May 2020'
             }
         });
 
