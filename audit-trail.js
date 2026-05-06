@@ -1148,7 +1148,9 @@ function exportCSRDMatrix() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     console.log('[AIOXY] CSV export complete — 9 sections, 19 categories, full traceability');
-}// ================== RAW DATA EXPORT ==================
+}
+
+// ================== RAW DATA EXPORT ==================
 function downloadRawData() {
     if (!window.auditTrailData) { alert('No data available. Please run a calculation first.'); return; }
     const dataStr  = JSON.stringify(window.auditTrailData, null, 2);
