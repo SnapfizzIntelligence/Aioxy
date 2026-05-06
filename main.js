@@ -37,9 +37,59 @@ let currentHydrationSuggestion = null;
 // AR6 GWP values (ch4: 27.9) removed. Use core_physics IPCC_AR5_PEF31
 // constants directly. Only equivalency-display constants retained here.
 var PHYSICS_CONSTANTS = {
-    TREE_ABSORPTION_KG_YEAR:  22.0,
-    CAR_EMISSIONS_KG_PER_KM:  0.150,
-    HOUSEHOLD_ELEC_KG_DAY:    2.58,
+    // ── OFFICIAL EQUIVALENCE FACTORS ────────────────────────────────────────
+    // These are used for consumer-facing environmental story equivalences.
+    // All values from official, publicly citable sources.
+    // Framing must always be "potential reduction" not "saved" — see DISCLAIMER below.
+    //
+    // CAR: EEA (2023) "CO2 emission performance standards for cars and vans"
+    //   Average EU passenger car fleet (all fuels, new registrations 2022): 116.3 g CO2/km
+    //   Used-fleet average (all ages, all fuels): ~158 g CO2/km
+    //   AIOXY uses fleet average (all ages) = 0.1584 kg CO2/km.
+    //   This is conservative (higher than new car only) and therefore harder to attack.
+    //   Source: EEA 2023 — EEA Report No 01/2023, Table 1.
+    //   URL: https://www.eea.europa.eu/publications/co2-performance-of-new-passenger
+    CAR_EMISSIONS_KG_PER_KM:  0.1584,
+
+    // TREE: IPCC AR5 Working Group III Chapter 11 (2014), Afforestation/Reforestation
+    //   Temperate zone, mature broadleaf forest: 21.77 kg CO2/tree/year
+    //   This is the IPCC default for temperate zone afforestation projects.
+    //   MUST be framed as "equivalent to one mature temperate tree absorbing CO2 for X days"
+    //   DO NOT say "trees planted" — planting ≠ absorption. Use absorption framing only.
+    //   Source: IPCC AR5 WGIII Ch.11 Table 11.2, temperate moist forest.
+    TREE_ABSORPTION_KG_YEAR:  21.77,
+
+    // HOUSEHOLD ELECTRICITY: IEA (2023) "Electricity Information" EU average
+    //   EU27 average household electricity consumption: 8.5 kWh/day
+    //   EU27 average grid carbon intensity (Ember 2025): 0.275 kg CO2e/kWh
+    //   Daily household electricity CO2 = 8.5 x 0.275 = 2.3375 kg CO2e/day
+    //   Source: IEA Electricity Information 2023 Table 2.1 + Ember 2025.
+    HOUSEHOLD_ELEC_KG_DAY:    2.3375,
+
+    // SMARTPHONE: IEA (2022) "Tracking Clean Energy Progress — Appliances"
+    //   Average smartphone: 8.25 Wh per full charge
+    //   EU grid: 0.275 kg CO2e/kWh = 0.000275 kg CO2e/Wh
+    //   CO2 per charge: 8.25 x 0.000275 = 0.002269 kg CO2e
+    //   Charges per kg CO2e: 1 / 0.002269 = 440.7
+    //   Source: IEA Tracking Clean Energy Progress 2022 + Ember 2025.
+    SMARTPHONE_CHARGES_PER_KG_CO2: 440.7,
+
+    // FLIGHT: ICAO Carbon Emissions Calculator methodology (2023)
+    //   Economy class, average passenger, global fleet average: 0.120 kg CO2e/passenger-km
+    //   1 kg CO2e = 1/0.120 = 8.33 km of economy flight
+    //   Source: ICAO Environmental Report 2022, Section 3 — Aviation and Climate Change.
+    //   URL: https://www.icao.int/environmental-protection/Documents/ICAO%20Environmental%20Report%202022.pdf
+    FLIGHT_KM_PER_KG_CO2:     8.33,
+
+    // LED BULB: derived from EU grid
+    //   10W LED bulb, EU grid 0.275 kg CO2e/kWh
+    //   kWh per hour = 0.010 kWh
+    //   kg CO2e per hour = 0.010 x 0.275 = 0.00275
+    //   Hours per kg CO2e = 1 / 0.00275 = 363.6
+    //   Source: Derived from Ember 2025 EU grid intensity + standard LED specification.
+    LED_HOURS_PER_KG_CO2:     363.6,
+
+    // ── RETAINED FOR COMPATIBILITY ────────────────────────────────────────────
     WATER_BOTTLE_LITERS:      0.5,
     SHADOW_PRICE_EUR_TON:     85.0
     // gwp block removed — use window.corePhysics.CONSTANTS.IPCC_AR5_PEF31
