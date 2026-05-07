@@ -860,199 +860,186 @@ SCREENING-LEVEL ASSESSMENT — for certified EPD conduct ISO 14044 critical revi
 
 // ================== CSRD SCOPE 3 MATRIX EXPORTER ==================
 function exportCSRDMatrix() {
-    // ── AIOXY CSRD/ESRS SCOPE 3 MATRIX CSV EXPORT ──────────────────────────────
-    // All values read from window.auditTrailData and window.finalPefResults.
-    // No recalculation. No DOM reads for impact values.
-    // Structure: complete 19-category PEF data + per-ingredient traceability.
-    // Suitable for: CSRD/ESRS E1 Scope 3 screening, retailer questionnaires,
-    //               CDP supply chain, EcoVadis supplier submissions.
-    // ──────────────────────────────────────────────────────────────────────────
+    // ── AIOXY ENVIRONMENTAL FOOTPRINT CSV EXPORT ────────────────────────────
+    // TWO files in one function:
+    //   File 1: Machine-readable data CSV (for retailer systems, CDP, EcoVadis)
+    //   File 2: This is the machine CSV — formulas and methods in # comment rows
+    //           so parser software skips them cleanly.
+    // All values from engine globals. No DOM reads. No recalculation.
+    // ────────────────────────────────────────────────────────────────────────
 
     if (!window.auditTrailData || !window.auditTrailData.pefCategories) {
         alert('Please calculate the environmental impact first.');
         return;
     }
 
-    const audit    = window.auditTrailData;
-    const pef      = window.finalPefResults;
-    const mb       = audit.mass_balance || {};
-    const pWeightKg= mb.final_content_weight_kg || 1.0;
-    const pName    = audit.productName || 'Product';
-    const dppId    = audit.dppId || 'N/A';
-    const auditHash= audit.auditHash || '';
-    const assessDate = new Date(audit.calculationTimestamp || Date.now()).toISOString().split('T')[0];
-    const dqrOverall = (audit.dqr_summary?.overall_dqr ?? 0).toFixed(2);
-    const dqrLevel   = audit.dqr_summary?.dqr_level || 'N/A';
+    const audit     = window.auditTrailData;
+    const pef       = window.finalPefResults;
+    const mb        = audit.mass_balance || {};
+    const pWeightKg = mb.final_content_weight_kg || 1.0;
+    const pName     = audit.productName || 'Product';
+    const dppId     = audit.dppId || 'N/A';
+    const auditHash = audit.auditHash || '';
+    const assessDate= new Date(audit.calculationTimestamp || Date.now()).toISOString().split('T')[0];
+    const dqrOverall= (audit.dqr_summary?.overall_dqr ?? 0).toFixed(2);
+    const dqrLevel  = audit.dqr_summary?.dqr_level || 'N/A';
+    const mfgTrace  = audit.traceability?.manufacturing || {};
+    const mfgCountry= mfgTrace.country || mfgTrace.countryCode || 'N/A';
+    const gridG     = (mfgTrace.gridIntensityGPerKwh || 0).toFixed(2);
+    const ss        = audit.pef_single_score || {};
+    const mPt       = (ss.singleScore || 0).toFixed(4);
+    const ssBkd     = ss.breakdown || {};
+    const unc       = audit.uncertainty_analysis?.monte_carlo || {};
+    const uncPct    = (audit.uncertainty_analysis?.overall_uncertainty || 15).toFixed(1);
+    const mcP5      = (unc.p5_lower_bound || unc.p5 || 0).toFixed(6);
+    const mcP95     = (unc.p95_upper_bound || unc.p95 || 0).toFixed(6);
+    const baseline  = audit.comparison_baseline || window.currentComparisonBaseline || null;
+    const twinCO2   = baseline?.co2PerKg || 0;
+    const twinName  = baseline?.name || 'N/A';
+    const ccPerKg   = pWeightKg > 0 ? (pef['Climate Change']?.total || 0) / pWeightKg : 0;
+    const reduction = (twinCO2 > 0 && ccPerKg > 0)
+        ? ((twinCO2 - ccPerKg) / twinCO2 * 100).toFixed(2) : '0.00';
+    const ccTree    = pef['Climate Change']?.contribution_tree || {};
+    const ingComps  = ccTree.Ingredients?.components || [];
 
-    // Manufacturing traceability
-    const mfgTrace   = audit.traceability?.manufacturing || {};
-    const mfgCountry = mfgTrace.country || mfgTrace.countryCode || 'N/A';
-    const gridG      = (mfgTrace.gridIntensityGPerKwh || mfgTrace.grid_intensity_g_per_kwh || 0).toFixed(2);
+    const getTotal  = (cat) => (pef[cat]?.total ?? 0);
+    const getPerKg  = (cat) => pWeightKg > 0 ? getTotal(cat) / pWeightKg : 0;
 
-    // Contribution tree
-    const ccTree = pef['Climate Change']?.contribution_tree || audit.contribution_tree || {};
-    const getDQR = (node) => (node?.dqr || audit.dqr_summary?.overall_dqr || 0).toFixed(2);
-    const getTotal = (cat) => (pef[cat]?.total ?? 0);
-    const getPerKg = (cat) => pWeightKg > 0 ? getTotal(cat) / pWeightKg : 0;
-
-    // Single score
-    const ss     = audit.pef_single_score || {};
-    const mPt    = (ss.singleScore || 0).toFixed(4);
-    const ssBkd  = ss.breakdown || {};
-
-    // Uncertainty
-    const unc    = audit.uncertainty_analysis?.monte_carlo || {};
-    const uncPct = (audit.uncertainty_analysis?.overall_uncertainty || 15).toFixed(1);
-    const mcP5   = (unc.p5_lower_bound || unc.p5 || 0).toFixed(6);
-    const mcP95  = (unc.p95_upper_bound || unc.p95 || 0).toFixed(6);
-
-    // Baseline
-    const baseline   = audit.comparison_baseline || window.currentComparisonBaseline || null;
-    const twinCO2    = baseline?.co2PerKg || 0;
-    const twinName   = baseline?.name || 'N/A';
-    const reduction  = (twinCO2 > 0 && getPerKg('Climate Change') > 0)
-        ? ((twinCO2 - getPerKg('Climate Change')) / twinCO2 * 100).toFixed(2)
-        : '0.00';
-
-    // Ingredient traceability
-    const ingList = audit.traceability?.ingredients || [];
-    const ingComps = ccTree.Ingredients?.components || [];
-
-    // All 19 categories
     const ALL_CATS = [
-        ['Climate Change',                'kg CO2e',     'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E1'],
-        ['Climate Change - Fossil',       'kg CO2e',     'AGRIBALYSE 3.2',                'ESRS E1'],
-        ['Climate Change - Biogenic',     'kg CO2e',     'AGRIBALYSE 3.2',                'ESRS E1'],
-        ['Climate Change - Land Use',     'kg CO2e',     'AGRIBALYSE 3.2 / FAOSTAT',      'ESRS E1'],
-        ['Ozone Depletion',               'kg CFC11e',   'AGRIBALYSE 3.2 / JRC EF 3.1',  '—'],
-        ['Human Toxicity, non-cancer',    'CTUh',        'AGRIBALYSE 3.2 / USEtox 2.14',  '—'],
-        ['Human Toxicity, cancer',        'CTUh',        'AGRIBALYSE 3.2 / USEtox 2.14',  '—'],
-        ['Particulate Matter',            'disease inc.','AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E1'],
-        ['Ionizing Radiation',            'kBq U235e',   'AGRIBALYSE 3.2 / JRC EF 3.1',  '—'],
-        ['Photochemical Ozone Formation', 'kg NMVOCe',   'AGRIBALYSE 3.2 / JRC EF 3.1',  '—'],
-        ['Acidification',                 'mol H+e',     'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E1'],
-        ['Eutrophication, terrestrial',   'mol Ne',      'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E4'],
-        ['Eutrophication, freshwater',    'kg Pe',       'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E4'],
-        ['Eutrophication, marine',        'kg Ne',       'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E4'],
-        ['Ecotoxicity, freshwater',       'CTUe',        'AGRIBALYSE 3.2 / USEtox 2.14',  'ESRS E4'],
-        ['Land Use',                      'Pt',          'AGRIBALYSE 3.2 / LANCA v2.5',  'ESRS E4'],
-        ['Water Use/Scarcity (AWARE)',    'm3 world eq.','AGRIBALYSE 3.2 / AWARE 2.0',   'ESRS E3'],
-        ['Resource Use, minerals/metals', 'kg Sbe',      'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E5'],
-        ['Resource Use, fossils',         'MJ',          'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E5']
+        ['Climate Change',                'kg CO2e',      'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E1'],
+        ['Climate Change - Fossil',       'kg CO2e',      'AGRIBALYSE 3.2',               'ESRS E1'],
+        ['Climate Change - Biogenic',     'kg CO2e',      'AGRIBALYSE 3.2',               'ESRS E1'],
+        ['Climate Change - Land Use',     'kg CO2e',      'AGRIBALYSE 3.2 / FAOSTAT',     'ESRS E1'],
+        ['Ozone Depletion',               'kg CFC11e',    'AGRIBALYSE 3.2 / JRC EF 3.1', ''],
+        ['Human Toxicity, non-cancer',    'CTUh',         'AGRIBALYSE 3.2 / USEtox 2.14',''],
+        ['Human Toxicity, cancer',        'CTUh',         'AGRIBALYSE 3.2 / USEtox 2.14',''],
+        ['Particulate Matter',            'disease inc.', 'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E1'],
+        ['Ionizing Radiation',            'kBq U235e',    'AGRIBALYSE 3.2 / JRC EF 3.1', ''],
+        ['Photochemical Ozone Formation', 'kg NMVOCe',    'AGRIBALYSE 3.2 / JRC EF 3.1', ''],
+        ['Acidification',                 'mol H+e',      'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E1'],
+        ['Eutrophication, terrestrial',   'mol Ne',       'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E4'],
+        ['Eutrophication, freshwater',    'kg Pe',        'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E4'],
+        ['Eutrophication, marine',        'kg Ne',        'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E4'],
+        ['Ecotoxicity, freshwater',       'CTUe',         'AGRIBALYSE 3.2 / USEtox 2.14','ESRS E4'],
+        ['Land Use',                      'Pt',           'AGRIBALYSE 3.2 / LANCA v2.5', 'ESRS E4'],
+        ['Water Use/Scarcity (AWARE)',    'm3 world eq.', 'AGRIBALYSE 3.2 / AWARE 2.0',  'ESRS E3'],
+        ['Resource Use, minerals/metals', 'kg Sbe',       'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E5'],
+        ['Resource Use, fossils',         'MJ',           'AGRIBALYSE 3.2 / JRC EF 3.1', 'ESRS E5']
     ];
 
-    const q = (s) => '"' + String(s || '').replace(/"/g, '""') + '"';
-    const csvLines = [];
+    // q() — safe CSV quoting
+    const q = (s) => '"' + String(s ?? '').replace(/"/g, '""') + '"';
+    // c() — comment row, skipped by machine parsers (prefix #)
+    const c = (s) => q('# ' + s);
 
-    // ── SECTION 1: REPORT HEADER ─────────────────────────────────────────────
-    csvLines.push(q('AIOXY ENVIRONMENTAL FOOTPRINT REPORT — CSRD/ESRS SCOPE 3 MATRIX'));
-    csvLines.push(q('Assessment ID') + ',' + q(dppId) + ',' + q('Audit Hash (SHA-256, first 32 chars)') + ',' + q(auditHash.slice(0,32)));
-    csvLines.push(q('Product') + ',' + q(pName) + ',' + q('Assessment Date') + ',' + q(assessDate));
-    csvLines.push(q('Functional Unit') + ',' + q('1 kg of product as sold') + ',' + q('Product Weight') + ',' + q(pWeightKg.toFixed(4) + ' kg'));
-    csvLines.push(q('LCI Database') + ',' + q('AGRIBALYSE 3.2 (ADEME/INRAE 2022)') + ',' + q('LCIA Method') + ',' + q('EF 3.1 — JRC EUR 29540 EN'));
-    csvLines.push(q('Transport Method') + ',' + q('GLEC v3.2 — Smart Freight Centre 2025') + ',' + q('Packaging Method') + ',' + q('PEF 3.1 CFF — Annex C v2.1'));
-    csvLines.push(q('GWP Basis') + ',' + q('IPCC AR5 GWP100 — CH4=28 N2O=265') + ',' + q('Water Scarcity') + ',' + q('AWARE 2.0 — Boulay et al. 2018'));
-    csvLines.push(q('System Boundary') + ',' + q('Cradle-to-Retail (farm gate through distribution)') + ',' + q('Assessment Type') + ',' + q('Screening-level LCA — not third-party verified'));
-    csvLines.push(q('Overall DQR') + ',' + q(dqrOverall + ' / 5.0 (' + dqrLevel + ')') + ',' + q('Uncertainty (Monte Carlo)') + ',' + q('+-' + uncPct + '%'));
-    csvLines.push(q('Manufacturing Country') + ',' + q(mfgCountry) + ',' + q('Grid Intensity') + ',' + q(gridG + ' g CO2e/kWh (Ember 2025)'));
-    csvLines.push('');
+    const rows = [];
 
-    // ── SECTION 2: COMPLETE 19-CATEGORY PEF RESULTS ──────────────────────────
-    csvLines.push(q('=== SECTION 2: COMPLETE EF 3.1 ENVIRONMENTAL PROFILE (19 CATEGORIES) ==='));
-    csvLines.push(q('NOTE: All values per functional unit (1 kg product as sold). Source: AIOXY calculation engine.'));
-    csvLines.push(q('Impact Category') + ',' + q('Unit') + ',' +
-                  q('Total (all stages)') + ',' + q('Per kg product') + ',' +
-                  q('Ingredients') + ',' + q('Manufacturing') + ',' +
-                  q('Transport') + ',' + q('Packaging') + ',' + q('Waste') + ',' +
-                  q('mPt contribution') + ',' + q('DQR') + ',' +
-                  q('Primary Source') + ',' + q('ESRS relevance'));
+    // ── BLOCK 1: REPORT IDENTITY ─────────────────────────────────────────────
+    // Machine-parseable key-value pairs. No free text in value fields.
+    rows.push(['field', 'value', 'unit', 'source', 'note'].map(q).join(','));
+    rows.push([c('REPORT IDENTITY')]);
+    rows.push(['report_type',         'Environmental Footprint Report',          '',    'AIOXY v6.0',                         ''].map(q).join(','));
+    rows.push(['assessment_id',       dppId,                                     '',    'AIOXY',                              ''].map(q).join(','));
+    rows.push(['audit_hash_sha256',   auditHash,                                 '',    'SHA-256 covers all inputs+outputs',  ''].map(q).join(','));
+    rows.push(['product_name',        pName,                                     '',    'User input',                         ''].map(q).join(','));
+    rows.push(['assessment_date',     assessDate,                                '',    '',                                   ''].map(q).join(','));
+    rows.push(['functional_unit',     '1 kg of product as sold',                 'kg',  'PEF 3.1',                            ''].map(q).join(','));
+    rows.push(['product_weight',      pWeightKg.toFixed(4),                      'kg',  'Mass balance',                       ''].map(q).join(','));
+    rows.push(['system_boundary',     'Cradle-to-Retail',                        '',    'ISO 14044',                          'Farm gate through distribution'].map(q).join(','));
+    rows.push(['assessment_type',     'Screening-level LCA',                     '',    'ISO 14044',                          'Not third-party verified'].map(q).join(','));
+    rows.push(['lci_database',        'AGRIBALYSE 3.2',                          '',    'ADEME/INRAE 2022',                   ''].map(q).join(','));
+    rows.push(['lcia_method',         'EF 3.1',                                  '',    'JRC Technical Report EUR 29540 EN',  '16 categories + 3 CC sub-splits'].map(q).join(','));
+    rows.push(['transport_method',    'GLEC v3.2',                               '',    'Smart Freight Centre 2025',          ''].map(q).join(','));
+    rows.push(['packaging_method',    'PEF 3.1 CFF Annex C v2.1',               '',    'European Commission May 2020',       ''].map(q).join(','));
+    rows.push(['gwp_basis',           'IPCC AR5 GWP100',                         '',    'IPCC 2013',                          'CH4=28 N2O=265'].map(q).join(','));
+    rows.push(['water_scarcity',      'AWARE 2.0',                               '',    'Boulay et al. 2018',                 ''].map(q).join(','));
+    rows.push(['overall_dqr',         dqrOverall,                                '/5.0','PEF 3.1 §5.7',                       dqrLevel].map(q).join(','));
+    rows.push(['uncertainty_cv',      uncPct,                                    '%',   'Monte Carlo 1000 iterations',        'Lognormal propagation'].map(q).join(','));
+    rows.push(['manufacturing_country',mfgCountry,                               '',    'User input',                         ''].map(q).join(','));
+    rows.push(['grid_intensity',      gridG,                                     'g CO2e/kWh','Ember 2025',                   ''].map(q).join(','));
+    rows.push(['']);
+
+    // ── BLOCK 2: ENVIRONMENTAL PROFILE — 19 CATEGORIES ───────────────────────
+    rows.push([c('ENVIRONMENTAL PROFILE — 19 EF 3.1 CATEGORIES')]);
+    rows.push([c('All values per functional unit (1 kg product as sold). Source: AIOXY engine.')]);
+    rows.push([c('Stage columns: per kg product. Total column: absolute (all stages combined).')]);
+    rows.push([
+        'impact_category', 'unit',
+        'total_kg_product', 'ingredients_kg_product', 'manufacturing_kg_product',
+        'transport_kg_product', 'packaging_kg_product', 'waste_kg_product',
+        'pef_single_score_mpt', 'dqr', 'primary_source', 'esrs_relevance'
+    ].map(q).join(','));
 
     ALL_CATS.forEach(([cat, unit, source, esrs]) => {
-        const tree    = pef[cat]?.contribution_tree || {};
-        const total   = getTotal(cat);
-        const perKg   = getPerKg(cat);
-        const ingV    = tree.Ingredients?.total    || 0;
-        const mfgV    = tree.Manufacturing?.total  || 0;
-        const trpV    = tree.Transport?.total      || 0;
-        const pkgV    = tree.Packaging?.total      || 0;
-        const wstV    = tree.Waste?.total          || 0;
-        const ssEntry = ssBkd[cat];
-        const mPtCat  = ssEntry ? (ssEntry.microPoints || 0).toFixed(4) : '0.0000';
-        const isSub   = cat.startsWith('Climate Change -');
-        const indent  = isSub ? '    ' : '';
+        const tree   = pef[cat]?.contribution_tree || {};
+        const total  = getPerKg(cat);
+        const ing    = pWeightKg > 0 ? (tree.Ingredients?.total   || 0) / pWeightKg : 0;
+        const mfg    = pWeightKg > 0 ? (tree.Manufacturing?.total || 0) / pWeightKg : 0;
+        const trp    = pWeightKg > 0 ? (tree.Transport?.total     || 0) / pWeightKg : 0;
+        const pkg    = pWeightKg > 0 ? (tree.Packaging?.total     || 0) / pWeightKg : 0;
+        const wst    = pWeightKg > 0 ? (tree.Waste?.total         || 0) / pWeightKg : 0;
+        const ssE    = ssBkd[cat];
+        const mPtCat = ssE ? (ssE.microPoints || 0).toFixed(4) : '0.0000';
 
-        csvLines.push(
-            q(indent + cat) + ',' + q(unit) + ',' +
-            q(total.toFixed(6)) + ',' + q(perKg.toFixed(6)) + ',' +
-            q(ingV.toFixed(6)) + ',' + q(mfgV.toFixed(6)) + ',' +
-            q(trpV.toFixed(6)) + ',' + q(pkgV.toFixed(6)) + ',' +
-            q(wstV.toFixed(6)) + ',' +
-            q(mPtCat) + ',' + q(dqrOverall) + ',' +
-            q(source) + ',' + q(esrs)
-        );
+        rows.push([
+            cat, unit,
+            total.toFixed(8), ing.toFixed(8), mfg.toFixed(8),
+            trp.toFixed(8),   pkg.toFixed(8), wst.toFixed(8),
+            mPtCat, dqrOverall, source, esrs
+        ].map(q).join(','));
     });
-    csvLines.push('');
+    rows.push(['']);
 
-    // ── SECTION 3: PEF SINGLE SCORE ──────────────────────────────────────────
-    csvLines.push(q('=== SECTION 3: PEF SINGLE SCORE ==='));
-    csvLines.push(q('Formula: Sum_i [(impact_i / kg product) / NF_i x WF_i] x 1000000'));
-    csvLines.push(q('NF/WF Source: JRC Technical Report EUR 29540 EN (EF 3.1)'));
-    csvLines.push(q('Impact Category') + ',' + q('Impact / kg product') + ',' +
-                  q('After NF') + ',' + q('After WF') + ',' + q('mPt / kg product'));
+    // ── BLOCK 3: PEF SINGLE SCORE ─────────────────────────────────────────────
+    rows.push([c('PEF SINGLE SCORE')]);
+    rows.push([c('Method: Sum_i [(impact_i / kg product) / NF_i x WF_i] x 1000000')]);
+    rows.push([c('NF/WF source: JRC Technical Report EUR 29540 EN (EF 3.1)')]);
+    rows.push(['impact_category', 'impact_per_kg', 'normalised', 'weighted', 'mpt_per_kg'].map(q).join(','));
     Object.entries(ssBkd).forEach(([cat, data]) => {
-        csvLines.push(
-            q(cat) + ',' +
-            q((data.impact || 0).toExponential(6)) + ',' +
-            q((data.normalizedImpact || 0).toExponential(6)) + ',' +
-            q((data.weightedImpact || 0).toExponential(6)) + ',' +
-            q((data.microPoints || 0).toFixed(4))
-        );
+        rows.push([
+            cat,
+            (data.impact            || 0).toExponential(6),
+            (data.normalizedImpact  || 0).toExponential(6),
+            (data.weightedImpact    || 0).toExponential(6),
+            (data.microPoints       || 0).toFixed(6)
+        ].map(q).join(','));
     });
-    csvLines.push(q('TOTAL PEF SINGLE SCORE') + ',' + q('') + ',' + q('') + ',' + q('') + ',' + q(mPt));
-    csvLines.push('');
+    rows.push(['pef_single_score_total', '', '', '', mPt].map(q).join(','));
+    rows.push(['']);
 
-    // ── SECTION 4: UNCERTAINTY ───────────────────────────────────────────────
-    csvLines.push(q('=== SECTION 4: MONTE CARLO UNCERTAINTY (Climate Change) ==='));
-    csvLines.push(q('Method: Lognormal propagation') + ',' + q('Iterations: ' + (unc.iterations || 1000)));
-    csvLines.push(q('Formula: sigma_sq=ln(1+CV^2) | multiplier=exp(Z*sigma-sigma_sq/2)'));
-    csvLines.push(q('Reference: ISO 14044 / Heijungs & Huijbregts 2004'));
-    csvLines.push(q('Metric') + ',' + q('kg CO2e (total)') + ',' + q('kg CO2e / kg product'));
-    csvLines.push(q('P5 lower bound') + ',' + q(mcP5) + ',' + q(pWeightKg > 0 ? (parseFloat(mcP5)/pWeightKg).toFixed(6) : '0'));
-    csvLines.push(q('Median') + ',' + q(getTotal('Climate Change').toFixed(6)) + ',' + q(getPerKg('Climate Change').toFixed(6)));
-    csvLines.push(q('P95 upper bound') + ',' + q(mcP95) + ',' + q(pWeightKg > 0 ? (parseFloat(mcP95)/pWeightKg).toFixed(6) : '0'));
-    csvLines.push(q('Overall CV') + ',' + q(uncPct + '%') + ',' + q(''));
-    csvLines.push('');
+    // ── BLOCK 4: UNCERTAINTY ──────────────────────────────────────────────────
+    rows.push([c('MONTE CARLO UNCERTAINTY — Climate Change')]);
+    rows.push([c('Method: Lognormal propagation | Iterations: 1000 | Reference: ISO 14044 / Heijungs & Huijbregts 2004')]);
+    rows.push(['metric', 'kg_co2e_total', 'kg_co2e_per_kg'].map(q).join(','));
+    rows.push(['cc_p5_lower_bound',  mcP5,  pWeightKg > 0 ? (parseFloat(mcP5)/pWeightKg).toFixed(8) : '0'].map(q).join(','));
+    rows.push(['cc_median',          getTotal('Climate Change').toFixed(8), ccPerKg.toFixed(8)].map(q).join(','));
+    rows.push(['cc_p95_upper_bound', mcP95, pWeightKg > 0 ? (parseFloat(mcP95)/pWeightKg).toFixed(8) : '0'].map(q).join(','));
+    rows.push(['overall_cv_percent', uncPct, ''].map(q).join(','));
+    rows.push(['']);
 
-    // ── SECTION 5: PARAMETRIC TWIN ───────────────────────────────────────────
-    csvLines.push(q('=== SECTION 5: PARAMETRIC TWIN COMPARISON ==='));
-    csvLines.push(q('IMPORTANT: Parametric twin = screening-level modelled scenario. NOT a verified comparative claim.'));
-    csvLines.push(q('Metric') + ',' + q('Current Product') + ',' + q('Parametric Twin') + ',' + q('Potential Reduction'));
+    // ── BLOCK 5: PARAMETRIC TWIN ──────────────────────────────────────────────
+    rows.push([c('PARAMETRIC TWIN COMPARISON')]);
+    rows.push([c('IMPORTANT: Modelled scenario only. NOT a verified comparative claim.')]);
+    rows.push(['metric', 'current_product', 'parametric_twin', 'potential_reduction_pct'].map(q).join(','));
     if (baseline) {
-        csvLines.push(
-            q('Climate Change (kg CO2e/kg)') + ',' +
-            q(getPerKg('Climate Change').toFixed(6)) + ',' +
-            q((twinCO2).toFixed(6)) + ',' +
-            q(reduction + '%')
-        );
-        csvLines.push(q('Twin scenario name') + ',' + q('') + ',' + q(twinName) + ',' + q(''));
-        csvLines.push(q('Twin source') + ',' + q('') + ',' + q('AGRIBALYSE 3.2 parametric scenario') + ',' + q(''));
+        rows.push(['climate_change_kg_co2e_per_kg', ccPerKg.toFixed(8), twinCO2.toFixed(8), reduction + '%'].map(q).join(','));
+        rows.push(['twin_scenario_name', '', twinName, ''].map(q).join(','));
+        rows.push(['twin_data_source', '', 'AGRIBALYSE 3.2 parametric scenario', ''].map(q).join(','));
     } else {
-        csvLines.push(q('No parametric twin calculated') + ',' + q('Run comparison in AIOXY to populate'));
+        rows.push([c('No parametric twin calculated. Run comparison in AIOXY.')]);
     }
-    csvLines.push('');
+    rows.push(['']);
 
-    // ── SECTION 6: INGREDIENT TRACEABILITY ───────────────────────────────────
-    csvLines.push(q('=== SECTION 6: INGREDIENT TRACEABILITY ==='));
-    csvLines.push(q('Source: AGRIBALYSE 3.2 (ADEME/INRAE 2022). All values at farm gate.'));
-    csvLines.push(q('Allocation method per ingredient: inherited from AGRIBALYSE 3.2 system boundary.'));
-    csvLines.push(
-        q('Ingredient Name') + ',' + q('Internal ID') + ',' +
-        q('AGRIBALYSE LCI Name') + ',' + q('Quantity (kg)') + ',' +
-        q('Origin Country') + ',' + q('Processing State') + ',' +
-        q('CC Total (kg CO2e)') + ',' + q('CC per kg (kg CO2e/kg)') + ',' +
-        q('% of CC Total') + ',' + q('DQR') + ',' +
-        q('Primary Data Applied') + ',' + q('Allocation Method')
-    );
+    // ── BLOCK 6: INGREDIENT TRACEABILITY ─────────────────────────────────────
+    rows.push([c('INGREDIENT TRACEABILITY')]);
+    rows.push([c('Source: AGRIBALYSE 3.2 (ADEME/INRAE 2022). Values at farm gate.')]);
+    rows.push([c('Allocation: economic, inherited from AGRIBALYSE 3.2 system boundary.')]);
+    rows.push([
+        'ingredient_name', 'internal_id', 'agribalyse_lci_name',
+        'quantity_kg', 'origin_country', 'processing_state',
+        'cc_total_kg_co2e', 'cc_per_kg_kg_co2e', 'pct_of_cc_total',
+        'dqr', 'primary_data_applied', 'allocation_method'
+    ].map(q).join(','));
 
     const ccTotal = getTotal('Climate Change');
     ingComps.forEach(ing => {
@@ -1066,89 +1053,345 @@ function exportCSRDMatrix() {
         const ingCC   = ing.allCategoryResults?.['Climate Change'] || ing.subtotal || 0;
         const perKgCC = qty > 0 ? ingCC / qty : 0;
         const pctCC   = ccTotal > 0 ? (ingCC / ccTotal * 100).toFixed(2) : '0.00';
-        const hasPD   = !!ing.primary_data;
-        const alloc   = ing.allocationMethod || 'Economic (AGRIBALYSE 3.2)';
-
-        csvLines.push(
-            q(ing.name || ingId) + ',' + q(ingId) + ',' +
-            q(lciName) + ',' + q(qty.toFixed(4)) + ',' +
-            q(origin) + ',' + q(ing.processingState || 'raw') + ',' +
-            q(ingCC.toFixed(6)) + ',' + q(perKgCC.toFixed(6)) + ',' +
-            q(pctCC + '%') + ',' + q((ing.dqr || 0).toFixed(2)) + ',' +
-            q(hasPD ? 'YES' : 'NO') + ',' + q(alloc)
-        );
+        rows.push([
+            ing.name || ingId, ingId, lciName,
+            qty.toFixed(6), origin, ing.processingState || 'raw',
+            ingCC.toFixed(8), perKgCC.toFixed(8), pctCC + '%',
+            (ing.dqr || 0).toFixed(2), !!ing.primary_data ? 'YES' : 'NO',
+            ing.allocationMethod || 'Economic (AGRIBALYSE 3.2)'
+        ].map(q).join(','));
     });
-    csvLines.push('');
+    rows.push(['']);
 
-    // ── SECTION 7: DATA QUALITY RATING ───────────────────────────────────────
-    csvLines.push(q('=== SECTION 7: DATA QUALITY RATING (DQR) — PEF 3.1 §5.7 ==='));
-    csvLines.push(q('Formula: DQR = (TeR + TiR + GeR + CoR + RR) / 5'));
-    csvLines.push(q('Scale: 1=best (excellent) to 5=worst (poor). Weighted by contribution to Climate Change.'));
-    csvLines.push(
-        q('Component') + ',' + q('TeR') + ',' + q('TiR') + ',' +
-        q('GeR') + ',' + q('CoR') + ',' + q('RR') + ',' +
-        q('DQR Overall') + ',' + q('Data Source')
-    );
+    // ── BLOCK 7: DQR ─────────────────────────────────────────────────────────
+    rows.push([c('DATA QUALITY RATING (DQR) — PEF 3.1 §5.7')]);
+    rows.push([c('Formula: DQR = (TeR + TiR + GeR + CoR + RR) / 5 | Scale: 1=best 5=worst')]);
+    rows.push(['component', 'TeR', 'TiR', 'GeR', 'CoR', 'RR', 'dqr_overall', 'source'].map(q).join(','));
     const dqrComps = audit.dqr_summary?.component_dqrs || [];
     dqrComps.forEach(d => {
-        csvLines.push(
-            q(d.name || d.id) + ',' +
-            q((d.TeR || d.temporal      || 0).toFixed(1)) + ',' +
-            q((d.TiR || d.technological || 0).toFixed(1)) + ',' +
-            q((d.GeR || d.geographical  || 0).toFixed(1)) + ',' +
-            q((d.CoR || d.completeness  || 0).toFixed(1)) + ',' +
-            q((d.RR  || d.reliability   || 0).toFixed(1)) + ',' +
-            q((d.overall || 0).toFixed(2)) + ',' +
-            q(d.source || 'AGRIBALYSE 3.2 metadata')
-        );
+        rows.push([
+            d.name || d.id,
+            (d.TeR || d.temporal      || 0).toFixed(1),
+            (d.TiR || d.technological || 0).toFixed(1),
+            (d.GeR || d.geographical  || 0).toFixed(1),
+            (d.CoR || d.completeness  || 0).toFixed(1),
+            (d.RR  || d.reliability   || 0).toFixed(1),
+            (d.overall || 0).toFixed(2),
+            d.source || 'AGRIBALYSE 3.2 metadata'
+        ].map(q).join(','));
     });
-    csvLines.push(q('WEIGHTED OVERALL DQR') + ',' + q('') + ',' + q('') + ',' + q('') + ',' + q('') + ',' + q('') + ',' + q(dqrOverall) + ',' + q('Contribution-weighted'));
-    csvLines.push('');
+    rows.push(['weighted_overall_dqr', '', '', '', '', '', dqrOverall, 'Contribution-weighted'].map(q).join(','));
+    rows.push(['']);
 
-    // ── SECTION 8: DATABASE VERSIONS ─────────────────────────────────────────
-    csvLines.push(q('=== SECTION 8: BACKGROUND DATABASE VERSIONS ==='));
-    csvLines.push(q('Database / Standard') + ',' + q('Version') + ',' + q('Source Reference'));
-    const dbVersions = [
-        ['LCI Database',         'AGRIBALYSE 3.2',         'ADEME / INRAE 2022'],
-        ['LCIA Method',          'EF 3.1',                  'JRC Technical Report EUR 29540 EN'],
-        ['Transport',            'GLEC v3.2',               'Smart Freight Centre October 2025'],
-        ['Grid Intensity',       'Ember 2025',              'Ember Climate 2025'],
-        ['Air Pollutants',       'EMEP/EEA 2023',           'EEA Guidebook 2023 §1.A.3.b'],
-        ['GWP Values',           'IPCC AR5 GWP100',         'CH4=28 N2O=265 no climate-carbon feedback'],
-        ['Water Scarcity',       'AWARE 2.0',               'Boulay et al. 2018 WULCA consensus'],
-        ['Land Use',             'LANCA v2.5',              'Fraunhofer IBP / JRC'],
-        ['Toxicity',             'USEtox 2.14',             'UNEP/SETAC toxicity model'],
-        ['Packaging CFF',        'PEF Annex C v2.1',        'European Commission May 2020'],
-        ['NF/WF Factors',        'EF 3.1 JRC',              'JRC Technical Report EUR 29540 EN']
-    ];
-    dbVersions.forEach(([db, ver, ref]) => {
-        csvLines.push(q(db) + ',' + q(ver) + ',' + q(ref));
-    });
-    csvLines.push('');
+    // ── BLOCK 8: DATABASE VERSIONS ────────────────────────────────────────────
+    rows.push([c('BACKGROUND DATABASE VERSIONS')]);
+    rows.push(['database_standard', 'version', 'source_reference'].map(q).join(','));
+    [
+        ['AGRIBALYSE',       'AGRIBALYSE 3.2',       'ADEME / INRAE 2022'],
+        ['LCIA_method',      'EF 3.1',                'JRC Technical Report EUR 29540 EN'],
+        ['Transport',        'GLEC v3.2',             'Smart Freight Centre October 2025'],
+        ['Grid_intensity',   'Ember 2025',            'Ember Climate 2025'],
+        ['Air_pollutants',   'EMEP/EEA 2023',         'EEA Guidebook 2023'],
+        ['GWP_values',       'IPCC AR5 GWP100',       'CH4=28 N2O=265'],
+        ['Water_scarcity',   'AWARE 2.0',             'Boulay et al. 2018'],
+        ['Land_use',         'LANCA v2.5',            'Fraunhofer IBP / JRC'],
+        ['Toxicity',         'USEtox 2.14',           'UNEP/SETAC'],
+        ['Packaging_CFF',    'PEF Annex C v2.1',      'European Commission May 2020'],
+        ['NF_WF_factors',    'EF 3.1 JRC',            'JRC Technical Report EUR 29540 EN']
+    ].forEach(([db, ver, ref]) => rows.push([db, ver, ref].map(q).join(',')));
+    rows.push(['']);
 
-    // ── SECTION 9: LEGAL NOTICE ───────────────────────────────────────────────
-    csvLines.push(q('=== SECTION 9: LEGAL NOTICE ==='));
-    csvLines.push(q('This file presents screening-level product environmental footprint data calculated using AGRIBALYSE 3.2 (ADEME/INRAE) EF 3.1 characterisation factors (JRC) and GLEC v3.2 transport emission factors (Smart Freight Centre). Results represent modelled estimates based on supplied data and secondary LCI databases. They have not been independently verified by a third party. All values are expressed per 1 kg of product as sold. Parametric twin results represent potential reductions under modified scenarios and do not constitute verified performance claims. This document may not be used to support comparative environmental assertions per ISO 14044 §6 without independent critical review.'));
-    csvLines.push(q('Report generated') + ',' + q(new Date().toISOString()));
-    csvLines.push(q('Assessment ID') + ',' + q(dppId));
-    csvLines.push(q('Audit Hash') + ',' + q(auditHash));
+    // ── BLOCK 9: LEGAL ────────────────────────────────────────────────────────
+    rows.push([c('LEGAL NOTICE')]);
+    rows.push([c('Screening-level LCA. Not third-party verified. Not for comparative advertising per ISO 14044 §6.')]);
+    rows.push([c('EU Green Claims Directive COM/2023/166 applies to any consumer-facing use of these results.')]);
+    rows.push(['report_generated', new Date().toISOString(), '', '', ''].map(q).join(','));
+    rows.push(['assessment_id',    dppId,                    '', '', ''].map(q).join(','));
+    rows.push(['audit_hash',       auditHash,                '', '', ''].map(q).join(','));
 
     // ── DOWNLOAD ──────────────────────────────────────────────────────────────
-    const csvContent = '\uFEFF' + csvLines.join('\n');
+    const csvContent = '\uFEFF' + rows.join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
     link.setAttribute('download',
-        'AIOXY_EFP_' + String(pName).replace(/[^a-z0-9]/gi, '_').slice(0,30) +
-        '_' + dppId + '_' + assessDate.replace(/-/g,'') + '.csv'
+        'AIOXY_EFP_' + String(pName).replace(/[^a-z0-9]/gi, '_').slice(0, 30) +
+        '_' + dppId + '_' + assessDate.replace(/-/g, '') + '.csv'
     );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    console.log('[AIOXY] CSV export complete — 9 sections, 19 categories, full traceability');
+    console.log('[AIOXY] CSV export complete — 9 blocks, 19 categories, machine-readable');
 }
+
+// ── ONE-PAGE ENVIRONMENTAL FOOTPRINT CARD ────────────────────────────────────
+// Single-page PDF. Print-ready. Brand can put this on their website, trade show,
+// attach to retailer email. QR embedded. Downloadable.
+// Uses jsPDF already loaded in food.html.
+window.generateFootprintCard = async function() {
+    if (!window.auditTrailData || !window.finalPefResults) {
+        alert('Please run a calculation first.');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const PW  = 210; const PH = 297;
+    const M   = 16;
+
+    const audit      = window.auditTrailData;
+    const pef        = window.finalPefResults;
+    const mb         = audit.mass_balance || {};
+    const pWeightKg  = mb.final_content_weight_kg || 1.0;
+    const pName      = audit.productName || 'Product';
+    const dppId      = audit.dppId || 'N/A';
+    const auditHash  = audit.auditHash || '';
+    const dateStr    = new Date(audit.calculationTimestamp || Date.now()).toISOString().split('T')[0];
+    const ccPerKg    = pWeightKg > 0 ? (pef['Climate Change']?.total || 0) / pWeightKg : 0;
+    const waterPerKg = pWeightKg > 0 ? (pef['Water Use/Scarcity (AWARE)']?.total || 0) / pWeightKg : 0;
+    const landPerKg  = pWeightKg > 0 ? (pef['Land Use']?.total || 0) / pWeightKg : 0;
+    const mPt        = (audit.pef_single_score?.singleScore || 0).toFixed(2);
+    const dqrVal     = (audit.dqr_summary?.overall_dqr || 0).toFixed(2);
+    const uncPct     = (audit.uncertainty_analysis?.overall_uncertainty || 15).toFixed(0);
+
+    const baseline   = audit.comparison_baseline || window.currentComparisonBaseline || null;
+    const hasTwin    = !!(baseline && baseline.co2PerKg > 0);
+    const twinCO2    = baseline?.co2PerKg || 0;
+    const twinName   = (baseline?.name || '').replace(' (Cradle-to-Retail)', '');
+    const reduction  = hasTwin && twinCO2 > 0
+        ? ((twinCO2 - ccPerKg) / twinCO2 * 100).toFixed(1) : null;
+    const actualSaving = hasTwin ? Math.max(0, twinCO2 - ccPerKg) : 0;
+
+    // Equivalences
+    const carKm    = actualSaving > 0
+        ? Math.round(actualSaving / (PHYSICS_CONSTANTS?.CAR_EMISSIONS_KG_PER_KM || 0.1584)) : 0;
+    const charges  = actualSaving > 0
+        ? Math.round(actualSaving * (PHYSICS_CONSTANTS?.SMARTPHONE_CHARGES_PER_KG_CO2 || 440)) : 0;
+    const flightKm = actualSaving > 0
+        ? (actualSaving * (PHYSICS_CONSTANTS?.FLIGHT_KM_PER_KG_CO2 || 8.33)).toFixed(1) : 0;
+
+    const safe = (s) => String(s || '').replace(/[^\x00-\x7F]/g, c => {
+        const m = {'°':'deg','±':'+/-','²':'2','³':'3','₂':'2','→':'>','\u2014':'-'};
+        return m[c] || '';
+    });
+
+    // ── NAVY HEADER ───────────────────────────────────────────────────────────
+    doc.setFillColor(10, 37, 64);
+    doc.rect(0, 0, PW, 42, 'F');
+    doc.setFillColor(0, 168, 150);
+    doc.rect(0, 42, PW, 2, 'F');
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(0, 168, 150);
+    doc.text('AIOXY', M, 12);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(148, 163, 184);
+    doc.text('ENVIRONMENTAL FOOTPRINT CARD', M, 17);
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(255, 255, 255);
+    const nameLines = doc.splitTextToSize(safe(pName), PW - M * 2 - 30);
+    doc.text(nameLines, M, 30);
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(148, 163, 184);
+    doc.text('Assessment: ' + safe(dateStr) + '   ID: ' + safe(dppId).slice(0, 16), M, 39);
+
+    // ── KEY METRICS ROW ───────────────────────────────────────────────────────
+    let Y = 52;
+    const cardW = (PW - M * 2 - 9) / 4;
+
+    const drawMetricCard = (x, y, w, label, value, unit, color) => {
+        doc.setFillColor(248, 250, 252);
+        doc.setDrawColor(...color);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(x, y, w, 26, 2, 2, 'FD');
+        doc.setFillColor(...color);
+        doc.rect(x, y, w, 2.5, 'F');
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(100, 116, 139);
+        doc.text(safe(label), x + w/2, y + 7.5, {align: 'center'});
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...color);
+        doc.text(safe(value), x + w/2, y + 17, {align: 'center'});
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(100, 116, 139);
+        doc.text(safe(unit), x + w/2, y + 22, {align: 'center'});
+    };
+
+    drawMetricCard(M,              Y, cardW, 'Climate Change', ccPerKg.toFixed(3), 'kg CO2e / kg', [0, 168, 150]);
+    drawMetricCard(M + cardW + 3,  Y, cardW, 'PEF Single Score', mPt, 'mPt / kg', [26, 74, 107]);
+    drawMetricCard(M + (cardW+3)*2,Y, cardW, 'Water Scarcity', waterPerKg.toFixed(4), 'm3 world eq./kg', [56, 189, 248]);
+    const dqrColor = parseFloat(dqrVal) <= 2 ? [42,157,143] : parseFloat(dqrVal) <= 3 ? [244,162,97] : [230,57,70];
+    drawMetricCard(M + (cardW+3)*3,Y, cardW, 'Data Quality DQR', dqrVal + '/5.0', 'PEF 3.1 §5.7', dqrColor);
+
+    Y += 32;
+
+    // ── PARAMETRIC TWIN BAR ───────────────────────────────────────────────────
+    if (hasTwin && reduction !== null) {
+        doc.setFillColor(240, 253, 244);
+        doc.setDrawColor(134, 239, 172);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(M, Y, PW - M*2, 18, 2, 2, 'FD');
+
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(10, 37, 64);
+        doc.text('vs ' + safe(twinName) + ':', M + 3, Y + 7);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(71, 85, 105);
+        doc.text('This product ' + ccPerKg.toFixed(3) + ' kg CO2e/kg', M + 3, Y + 13);
+        doc.text(safe(twinName) + ' ' + twinCO2.toFixed(3) + ' kg CO2e/kg', M + 60, Y + 13);
+
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(21, 128, 61);
+        doc.text(reduction + '% potential reduction', PW - M - 3, Y + 12, {align: 'right'});
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(100, 116, 139);
+        doc.text('Modelled estimate. Not a verified claim. See disclaimer below.', PW - M - 3, Y + 16.5, {align: 'right'});
+        Y += 23;
+    }
+
+    // ── EQUIVALENCES ─────────────────────────────────────────────────────────
+    if (hasTwin && actualSaving > 0) {
+        Y += 3;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(10, 37, 64);
+        doc.text('Per kg of potential reduction vs ' + safe(twinName) + ':', M, Y);
+        Y += 5;
+
+        const eqW = (PW - M*2 - 9) / 4;
+        const eqItems = [
+            { icon: '>', val: carKm + ' km', label: 'not driven', sub: 'EEA 2023' },
+            { icon: '#', val: charges.toLocaleString(), label: 'phone charges', sub: 'IEA 2022' },
+            { icon: '~', val: flightKm + ' km', label: 'economy flight', sub: 'ICAO 2023' },
+            { icon: '*', val: '+/-' + uncPct + '%', label: 'uncertainty', sub: 'Monte Carlo' }
+        ];
+
+        eqItems.forEach((item, i) => {
+            const ex = M + i * (eqW + 3);
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(203, 213, 224);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(ex, Y, eqW, 20, 2, 2, 'FD');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(10, 37, 64);
+            doc.text(safe(item.val), ex + eqW/2, Y + 9, {align: 'center'});
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(71, 85, 105);
+            doc.text(safe(item.label), ex + eqW/2, Y + 14, {align: 'center'});
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(5.5); doc.setTextColor(148, 163, 184);
+            doc.text(safe(item.sub), ex + eqW/2, Y + 18.5, {align: 'center'});
+        });
+        Y += 25;
+    }
+
+    // ── METHODOLOGY STRIP ─────────────────────────────────────────────────────
+    Y += 2;
+    doc.setFillColor(241, 245, 249);
+    doc.rect(M, Y, PW - M*2, 14, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.setTextColor(71, 85, 105);
+    doc.text('METHODOLOGY', M + 2, Y + 5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(100, 116, 139);
+    doc.text('LCI: AGRIBALYSE 3.2 (ADEME/INRAE)  |  LCIA: EF 3.1 (JRC EUR 29540 EN)  |  Transport: GLEC v3.2', M + 2, Y + 9.5);
+    doc.text('Packaging: PEF 3.1 CFF Annex C v2.1  |  Water: AWARE 2.0  |  GHGs: IPCC 2006 Tier 1  |  Boundary: Cradle-to-Retail', M + 2, Y + 13.5);
+    Y += 19;
+
+    // ── QR CODE ───────────────────────────────────────────────────────────────
+    const qrPayload = [
+        'AIOXY FOOTPRINT CARD',
+        'Product: ' + pName,
+        'ID: ' + dppId,
+        'Date: ' + dateStr,
+        'Climate Change: ' + ccPerKg.toFixed(4) + ' kg CO2e/kg',
+        'PEF Score: ' + mPt + ' mPt/kg',
+        'DQR: ' + dqrVal + '/5.0',
+        hasTwin ? ('vs ' + twinName + ': ' + twinCO2.toFixed(4) + ' kg CO2e/kg') : '',
+        hasTwin ? ('Potential reduction: ' + reduction + '%') : '',
+        'Method: PEF 3.1 / AGRIBALYSE 3.2 / EF 3.1 / GLEC v3.2',
+        'Uncertainty: +/-' + uncPct + '%',
+        'Hash: ' + auditHash.slice(0, 20),
+        'NOT third-party verified. Modelled estimates only.',
+        'ISO 14044 §6 / EU Green Claims Dir COM/2023/166'
+    ].filter(Boolean).join('\n');
+
+    const qrSize  = 36;
+    const qrX     = PW - M - qrSize;
+    const qrY     = Y;
+
+    // Generate QR into hidden div then embed
+    const hiddenDiv = document.createElement('div');
+    hiddenDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+    document.body.appendChild(hiddenDiv);
+
+    await new Promise((resolve) => {
+        if (typeof QRCode === 'undefined') { resolve(); return; }
+        try {
+            new QRCode(hiddenDiv, {
+                text: qrPayload, width: 150, height: 150,
+                colorDark: '#0A2540', colorLight: '#FFFFFF',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } catch(e) { resolve(); return; }
+        let attempts = 0;
+        const poll = () => {
+            attempts++;
+            const canvas = hiddenDiv.querySelector('canvas');
+            const img    = hiddenDiv.querySelector('img');
+            if (canvas && canvas.width > 0) {
+                try {
+                    doc.addImage(canvas.toDataURL('image/png'), 'PNG', qrX, qrY, qrSize, qrSize);
+                    doc.setDrawColor(10, 37, 64); doc.setLineWidth(0.3);
+                    doc.rect(qrX, qrY, qrSize, qrSize);
+                } catch(e) {}
+                resolve();
+            } else if (img && img.src && img.src.length > 100) {
+                try { doc.addImage(img.src, 'PNG', qrX, qrY, qrSize, qrSize); } catch(e) {}
+                resolve();
+            } else if (attempts < 30) {
+                setTimeout(poll, 60);
+            } else { resolve(); }
+        };
+        setTimeout(poll, 60);
+    });
+
+    if (document.body.contains(hiddenDiv)) document.body.removeChild(hiddenDiv);
+
+    // QR label
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6); doc.setTextColor(10, 37, 64);
+    doc.text('SCAN TO VERIFY', qrX + qrSize/2, qrY + qrSize + 4, {align: 'center'});
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(5.5); doc.setTextColor(100, 116, 139);
+    doc.text('No internet required', qrX + qrSize/2, qrY + qrSize + 8, {align: 'center'});
+
+    // Audit hash below QR
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(5); doc.setTextColor(148, 163, 184);
+    doc.text('SHA-256: ' + auditHash.slice(0, 24) + '...', qrX, qrY + qrSize + 12);
+
+    // ── DISCLAIMER ────────────────────────────────────────────────────────────
+    const discX = M;
+    const discW = PW - M*2 - qrSize - 6;
+    doc.setFillColor(255, 251, 235);
+    doc.setDrawColor(245, 158, 11); doc.setLineWidth(0.4);
+    doc.rect(discX, qrY, discW, qrSize + 14, 'FD');
+    doc.setFillColor(245, 158, 11);
+    doc.rect(discX, qrY, 2, qrSize + 14, 'F');
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5); doc.setTextColor(120, 53, 15);
+    doc.text('IMPORTANT', discX + 4, qrY + 5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(5.8); doc.setTextColor(120, 53, 15);
+    const disc = 'Screening-level LCA. Modelled estimates based on AGRIBALYSE 3.2 ' +
+        'secondary data. Not independently verified by a third party. ' +
+        'Equivalences use official published factors (EEA 2023, ICAO 2023, IEA 2022). ' +
+        'Potential reductions vs parametric twin only — not absolute performance claims. ' +
+        'Not for comparative advertising per ISO 14044 §6 and EU Green Claims Directive COM/2023/166.';
+    const discLines = doc.splitTextToSize(disc, discW - 8);
+    discLines.forEach((line, i) => {
+        doc.text(safe(line), discX + 4, qrY + 11 + i * 4.2);
+    });
+
+    // ── FOOTER ────────────────────────────────────────────────────────────────
+    doc.setFillColor(10, 37, 64);
+    doc.rect(0, PH - 10, PW, 10, 'F');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(148, 163, 184);
+    doc.text('AIOXY Environmental Intelligence  |  aioxy.com  |  Screening-level LCA — Not third-party verified', M, PH - 4);
+    doc.setTextColor(0, 168, 150);
+    doc.text(safe(dppId), PW - M, PH - 4, {align: 'right'});
+
+    // ── SAVE ──────────────────────────────────────────────────────────────────
+    const filename = 'AIOXY_Card_' + String(pName).replace(/[^a-z0-9]/gi, '_').slice(0, 25) +
+        '_' + dateStr + '.pdf';
+    doc.save(filename);
+    console.log('[AIOXY] Footprint Card saved:', filename);
+};
+
+
 
 // ================== RAW DATA EXPORT ==================
 function downloadRawData() {
