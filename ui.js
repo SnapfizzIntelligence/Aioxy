@@ -811,193 +811,364 @@ function updateMassBalanceDisplay() {
 // FIX: Accept resolvedBaseline as second param so baseline is never null here
 function updateEnvironmentalStory(results, resolvedBaseline) {
     const environmentalStory = document.getElementById('environmentalStory');
-    const storyContent = document.getElementById('storyContent');
-    const storyComparison = document.getElementById('storyComparison');
+    const storyContent       = document.getElementById('storyContent');
+    const storyComparison    = document.getElementById('storyComparison');
 
     if (!environmentalStory || !storyContent || !storyComparison) return;
-
-    // FIX: Guard — if no baseline available at all, hide story and return
     if (!resolvedBaseline) {
         environmentalStory.classList.add('hidden');
         return;
     }
 
-    const customerName = document.getElementById('customerName')?.value || 'Consumer';
-    // FIX: Use resolvedBaseline.name safely — it is always set
-    const baselineName = (resolvedBaseline.name || 'Benchmark').replace(" (Cradle-to-Retail)", "");
-    
-    const co2SavedPerKg = results.comparison?.co2SavedPerKg || 0;
-    const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
-    const treeYears = (co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
-    const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
-    const baselineWater = resolvedBaseline.waterPerKg || 0;
-    const currentWater = results.waterScarcityPerKg || 0;
-    const waterScoreDiff = Math.max(0, baselineWater - currentWater);
+    // ── MATHS — single source of truth ──────────────────────────────────────
+    // Engine computes: co2SavedPerKg = baseline.co2PerKg - (total / weightKg)
+    // This is the correct simple subtraction: e.g. 14.773 - 0.635 = 14.138
+    const thisProductCO2  = results.co2PerKg || 0;
+    const baselineCO2     = resolvedBaseline.co2PerKg || 0;
+    const actualSaving    = Math.max(0, baselineCO2 - thisProductCO2); // e.g. 14.138
+    const uncertainty     = results.overallUncertainty || 15;
+    const pctReduction    = baselineCO2 > 0 ? (actualSaving / baselineCO2) * 100 : 0;
+    // Conservative = apply uncertainty band to the actual saving
+    // e.g. 14.138 × (1 - 0.813) is WRONG — uncertainty is ±15%, not 81%
+    // Correct: 14.138 × (1 - 0.15) = 12.017 at P5
+    const conservativeSaving = actualSaving * (1 - uncertainty / 100);
+    const isBetter        = actualSaving > 0;
 
-    const uncertainty = results.overallUncertainty || 15;
-    const rawCo2Pct = resolvedBaseline.co2PerKg > 0 
-        ? ((resolvedBaseline.co2PerKg - results.co2PerKg) / resolvedBaseline.co2PerKg) * 100 
-        : 0;
+    const baselineName    = (resolvedBaseline.name || 'Benchmark')
+                             .replace(' (Cradle-to-Retail)', '');
 
-    const isBetterEnv = rawCo2Pct >= 0;
-    const conservativeReduction = isBetterEnv 
-        ? Math.max(0, co2SavedPerKg * (1 - (uncertainty/100))) 
-        : 0;
-        
-    const envActionText = isBetterEnv 
-        ? `<strong style="color: #2C7A7B; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px;">↓ ${Math.abs(rawCo2Pct).toFixed(1)}% lower</strong>` 
-        : `<strong style="color: #C0392B; background: rgba(255,255,255,0.5); padding: 2px 6px; border-radius: 4px;">↑ ${Math.abs(rawCo2Pct).toFixed(1)}% higher</strong>`;
-        
-    // ── ENVIRONMENTAL STORY ─────────────────────────────────────────────────
-    // LEGAL FRAMING RULES:
-    // 1. Always "potential reduction" — never "saved", "avoided", "better for planet"
-    // 2. Equivalences are based on official published sources (EEA, ICAO, IPCC, IEA)
-    // 3. Compare to parametric twin only — never to absolute benchmarks unless stated
-    // 4. Always show disclaimer below equivalences
-    // 5. Uncertainty range shown so no claim appears more precise than it is
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── OFFICIAL EQUIVALENCES — applied to actualSaving per kg ───────────────
+    // Sources: PHYSICS_CONSTANTS in main.js (EEA 2023, ICAO 2023, IEA 2022)
+    // No tree equivalence — greenwashing risk acknowledged
+    const carKmStory     = actualSaving > 0
+        ? Math.round(actualSaving / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM)    : 0;
+    const smartCharges   = actualSaving > 0
+        ? Math.round(actualSaving * PHYSICS_CONSTANTS.SMARTPHONE_CHARGES_PER_KG_CO2) : 0;
+    const flightKmStory  = actualSaving > 0
+        ? (actualSaving * PHYSICS_CONSTANTS.FLIGHT_KM_PER_KG_CO2).toFixed(1)       : 0;
+    const ledHours       = actualSaving > 0
+        ? Math.round(actualSaving * PHYSICS_CONSTANTS.LED_HOURS_PER_KG_CO2)         : 0;
 
-    const ccPerKgCurrent  = results.co2PerKg || 0;
-    const ccPerKgTwin     = resolvedBaseline.co2PerKg || 0;
-    // Single source of truth: use engine-computed co2SavedPerKg and rawCo2Pct.
-    // Both are already declared above in this function from the original block.
-    // co2SavedPerKg = results.comparison?.co2SavedPerKg (engine value)
-    // rawCo2Pct     = (resolvedBaseline.co2PerKg - results.co2PerKg) / resolvedBaseline.co2PerKg * 100
-    const co2DiffPerKg    = co2SavedPerKg;  // engine value — authoritative
-    const rawPctDiff      = rawCo2Pct;      // already computed above — reuse
-    // uncertainty already declared above — reuse it
-    const isBetter        = rawPctDiff >= 0;
+    // ── QR TEXT PAYLOAD ──────────────────────────────────────────────────────
+    // Plain text — no server, no URL, works on any phone forever
+    // Structure: product footprint first, then comparison, then story, then disclaimer
+    const dppId    = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
+    const dateStr  = new Date().toISOString().split('T')[0];
+    const pName    = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
 
-    // Conservative reduction (subtract uncertainty) — legally safer
-    const conservativeDiff = Math.max(0, co2DiffPerKg * (1 - uncertainty / 100));
+    const qrText = [
+        '=== AIOXY PRODUCT FOOTPRINT ===',
+        '',
+        'PRODUCT: ' + pName,
+        'Assessment ID: ' + dppId,
+        'Date: ' + dateStr,
+        '',
+        '--- THIS PRODUCT ---',
+        thisProductCO2.toFixed(4) + ' kg CO2e per kg product',
+        'Method: PEF 3.1 / AGRIBALYSE 3.2 / EF 3.1',
+        '',
+        '--- COMPARISON: ' + baselineName.toUpperCase() + ' ---',
+        baselineCO2.toFixed(4) + ' kg CO2e per kg product',
+        '(Secondary data / AGRIBALYSE 3.2)',
+        '',
+        '--- POTENTIAL REDUCTION ---',
+        'If choosing this product over ' + baselineName + ':',
+        actualSaving.toFixed(4) + ' kg CO2e/kg lower (' + pctReduction.toFixed(1) + '%)',
+        'Conservative estimate (+/-' + uncertainty + '% uncertainty): '
+            + conservativeSaving.toFixed(4) + ' kg CO2e/kg',
+        '',
+        'EQUIVALENCES (per kg of potential reduction):',
+        '  Car: ' + carKmStory + ' km not driven (EEA 2023, 158.4g CO2/km)',
+        '  Phone: ' + smartCharges + ' smartphone charges (IEA 2022)',
+        '  Flight: ' + flightKmStory + ' km economy class (ICAO 2023)',
+        '  LED: ' + ledHours + ' hours of lighting (Ember 2025)',
+        '',
+        '--- IMPORTANT ---',
+        'Modelled estimates. Not verified by third party.',
+        'Potential reductions only. Not absolute claims.',
+        'Per ISO 14044 / EU Green Claims Dir. COM/2023/166.',
+        '',
+        '=== AIOXY ENVIRONMENTAL INTELLIGENCE ==='
+    ].join('\n');
 
-    // ── OFFICIAL EQUIVALENCES (per kg of potential CO2 reduction) ──
-    // Sources in PHYSICS_CONSTANTS (main.js):
-    //   Car:         EEA 2023 EU fleet average 158.4 g CO2/km
-    //   Tree:        IPCC AR5 WGIII Ch.11 temperate zone 21.77 kg CO2/tree/year
-    //   Smartphone:  IEA 2022 + Ember 2025 — 8.25 Wh/charge, 0.275 kg CO2e/kWh
-    //   Flight:      ICAO 2023 — 120 g CO2e/passenger-km economy average
-    const storyCarKm  = co2DiffPerKg > 0 ? (co2DiffPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM).toFixed(1) : null;
-    const treeHours   = co2DiffPerKg > 0 ? Math.round(co2DiffPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR * 365) : null;
-    const smartCharges= co2DiffPerKg > 0 ? Math.round(co2DiffPerKg * PHYSICS_CONSTANTS.SMARTPHONE_CHARGES_PER_KG_CO2) : null;
-    const flightKm    = co2DiffPerKg > 0 ? (co2DiffPerKg * PHYSICS_CONSTANTS.FLIGHT_KM_PER_KG_CO2).toFixed(1) : null;
-
-    // baselineName already declared above — reuse it
-
+    // ── STORY HTML ───────────────────────────────────────────────────────────
     storyContent.innerHTML = `
-        <div style="font-family: Inter, Arial, sans-serif; color: #2D3748;">
+        <div style="font-family: Inter, Arial, sans-serif;">
 
-            <!-- PRODUCT FOOTPRINT VS TWIN -->
-            <div style="background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem;">
-                <div style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; color: #0369A1; text-transform: uppercase; margin-bottom: 0.75rem;">
-                    Product Environmental Footprint — Climate Change
+            <!-- HERO: THIS PRODUCT vs COMPARISON -->
+            <div style="background: linear-gradient(135deg, #0A2540 0%, #1A4A6B 100%);
+                        border-radius: 14px; padding: 1.4rem 1.5rem 1.2rem; margin-bottom: 1rem; color: white;">
+
+                <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
+                            text-transform: uppercase; color: #00D4AA; margin-bottom: 0.9rem;">
+                    ⚡ Product Environmental Footprint — Climate Change
                 </div>
-                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-end;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: #64748B; margin-bottom: 0.2rem;">This product</div>
-                        <div style="font-size: 1.6rem; font-weight: 800; color: #0A2540; line-height: 1;">
-                            ${ccPerKgCurrent.toFixed(3)}
+
+                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <!-- THIS PRODUCT -->
+                    <div style="flex: 1; min-width: 110px;">
+                        <div style="font-size: 0.68rem; color: #94A3B8; margin-bottom: 0.2rem;">This product</div>
+                        <div style="font-size: 2rem; font-weight: 900; color: #00D4AA; line-height: 1;">
+                            ${thisProductCO2.toFixed(3)}
                         </div>
-                        <div style="font-size: 0.7rem; color: #64748B;">kg CO2e per kg product</div>
+                        <div style="font-size: 0.68rem; color: #CBD5E0;">kg CO₂e / kg product</div>
                     </div>
-                    <div style="font-size: 1.5rem; color: #94A3B8; align-self: center;">vs</div>
-                    <div>
-                        <div style="font-size: 0.75rem; color: #64748B; margin-bottom: 0.2rem;">${baselineName}</div>
-                        <div style="font-size: 1.6rem; font-weight: 800; color: #64748B; line-height: 1;">
-                            ${ccPerKgTwin.toFixed(3)}
+
+                    <div style="font-size: 1.2rem; color: #475569; font-weight: 300;">vs</div>
+
+                    <!-- COMPARISON -->
+                    <div style="flex: 1; min-width: 110px;">
+                        <div style="font-size: 0.68rem; color: #94A3B8; margin-bottom: 0.2rem;">${baselineName}</div>
+                        <div style="font-size: 2rem; font-weight: 900; color: #F87171; line-height: 1;">
+                            ${baselineCO2.toFixed(3)}
                         </div>
-                        <div style="font-size: 0.7rem; color: #64748B;">kg CO2e per kg product</div>
+                        <div style="font-size: 0.68rem; color: #CBD5E0;">kg CO₂e / kg product</div>
                     </div>
+
                     ${isBetter ? `
-                    <div style="background: #DCFCE7; border: 1px solid #86EFAC; border-radius: 8px; padding: 0.6rem 1rem; align-self: center;">
-                        <div style="font-size: 0.7rem; color: #166534; font-weight: 700;">Potential reduction</div>
-                        <div style="font-size: 1.3rem; font-weight: 800; color: #15803D;">${Math.abs(rawPctDiff).toFixed(1)}%</div>
-                        <div style="font-size: 0.65rem; color: #166534;">Conservative estimate: ${conservativeDiff.toFixed(3)} kg CO2e/kg</div>
+                    <!-- REDUCTION BADGE -->
+                    <div style="background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.4);
+                                border-radius: 10px; padding: 0.7rem 1rem; min-width: 110px; text-align: center;">
+                        <div style="font-size: 0.62rem; color: #00D4AA; font-weight: 700;
+                                    text-transform: uppercase; letter-spacing: 0.08em;">Potential reduction</div>
+                        <div style="font-size: 1.6rem; font-weight: 900; color: #00D4AA; line-height: 1.1;">
+                            ${pctReduction.toFixed(1)}%
+                        </div>
+                        <div style="font-size: 0.6rem; color: #94A3B8; margin-top: 0.2rem;">
+                            ${actualSaving.toFixed(3)} kg CO₂e/kg lower
+                        </div>
                     </div>` : `
-                    <div style="background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 0.6rem 1rem; align-self: center;">
-                        <div style="font-size: 0.7rem; color: #991B1B; font-weight: 700;">Higher footprint</div>
-                        <div style="font-size: 1.3rem; font-weight: 800; color: #DC2626;">${Math.abs(rawPctDiff).toFixed(1)}%</div>
-                        <div style="font-size: 0.65rem; color: #991B1B;">vs ${baselineName}</div>
+                    <div style="background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.4);
+                                border-radius: 10px; padding: 0.7rem 1rem; text-align: center;">
+                        <div style="font-size: 0.62rem; color: #F87171; font-weight: 700;">Higher footprint</div>
+                        <div style="font-size: 1.4rem; font-weight: 900; color: #F87171;">
+                            ${Math.abs(pctReduction).toFixed(1)}%
+                        </div>
                     </div>`}
                 </div>
-                <div style="margin-top: 0.75rem; font-size: 0.7rem; color: #64748B;">
-                    Uncertainty: +/-${uncertainty}% (Monte Carlo, lognormal propagation, 1000 iterations)
-                    &nbsp;|&nbsp; Method: PEF 3.1 / AGRIBALYSE 3.2 / EF 3.1 / GLEC v3.2
+
+                <!-- UNCERTAINTY LINE -->
+                <div style="font-size: 0.65rem; color: #64748B; border-top: 1px solid rgba(255,255,255,0.08);
+                            padding-top: 0.6rem; line-height: 1.4;">
+                    Uncertainty: ±${uncertainty}% (Monte Carlo, 1000 iterations)
+                    &nbsp;|&nbsp; PEF 3.1 / AGRIBALYSE 3.2 / EF 3.1 / GLEC v3.2
+                    &nbsp;|&nbsp; Functional unit: 1 kg as sold
                 </div>
             </div>
 
-            <!-- METHODOLOGY PROOF -->
-            <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                <div style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; color: #475569; text-transform: uppercase; margin-bottom: 0.6rem;">
+            ${isBetter ? `
+            <!-- WHAT THIS MEANS -->
+            <div style="background: #F0FDF9; border: 1px solid #99F6E4;
+                        border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem;">
+
+                <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+                            text-transform: uppercase; color: #0D9488; margin-bottom: 0.8rem;">
+                    💡 What choosing this product potentially means — per kg consumed
+                </div>
+
+                <div style="font-size: 0.9rem; color: #134E4A; line-height: 1.6; margin-bottom: 0.7rem;">
+                    Every kilogram of this product has a footprint of
+                    <strong>${thisProductCO2.toFixed(3)} kg CO₂e</strong>.
+                    Compared to <strong>${baselineName}</strong> at
+                    <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong>, choosing this
+                    product potentially avoids <strong>${actualSaving.toFixed(3)} kg CO₂e per kg</strong>
+                    under modelled conditions — equivalent to:
+                </div>
+
+                <!-- EQUIVALENCE CARDS -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 0.7rem;">
+
+                    <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
+                                padding: 0.75rem; text-align: center;">
+                        <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🚗</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${carKmStory}</div>
+                        <div style="font-size: 0.68rem; font-weight: 600; color: #0369A1;">km not driven</div>
+                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">EEA 2023 — EU fleet avg 158.4 g/km</div>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
+                                padding: 0.75rem; text-align: center;">
+                        <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">📱</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${smartCharges.toLocaleString()}</div>
+                        <div style="font-size: 0.68rem; font-weight: 600; color: #92400E;">smartphone charges</div>
+                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">IEA 2022 + Ember 2025 — 8.25 Wh/charge</div>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
+                                padding: 0.75rem; text-align: center;">
+                        <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">✈️</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${flightKmStory}</div>
+                        <div style="font-size: 0.68rem; font-weight: 600; color: #1D4ED8;">km economy flight</div>
+                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">ICAO 2023 — 120 g CO₂e/passenger-km</div>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
+                                padding: 0.75rem; text-align: center;">
+                        <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">💡</div>
+                        <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${ledHours.toLocaleString()}</div>
+                        <div style="font-size: 0.68rem; font-weight: 600; color: #6D28D9;">hours LED lighting</div>
+                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">Ember 2025 EU grid — 10W LED</div>
+                    </div>
+
+                </div>
+
+                <div style="font-size: 0.68rem; color: #64748B; font-style: italic;">
+                    Note: This product itself still generates ${thisProductCO2.toFixed(3)} kg CO₂e/kg consumed.
+                    Equivalences represent the <em>difference</em> vs ${baselineName} only.
+                </div>
+            </div>` : ''}
+
+            <!-- METHODOLOGY -->
+            <div style="background: #F8FAFC; border: 1px solid #E2E8F0;
+                        border-radius: 10px; padding: 0.9rem 1rem; margin-bottom: 0.8rem;">
+                <div style="font-size: 0.63rem; font-weight: 700; letter-spacing: 0.1em;
+                            text-transform: uppercase; color: #64748B; margin-bottom: 0.5rem;">
                     Methodology & Data Sources
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.78rem; color: #4A5568;">
-                    <div><strong>LCI database:</strong> AGRIBALYSE 3.2 (ADEME/INRAE 2022)</div>
-                    <div><strong>LCIA method:</strong> EF 3.1 — 16 categories + 3 CC sub-splits</div>
-                    <div><strong>Transport:</strong> GLEC v3.2 (Smart Freight Centre 2025)</div>
-                    <div><strong>Water scarcity:</strong> AWARE 2.0 (Boulay et al. 2018)</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem;
+                            font-size: 0.73rem; color: #4A5568; line-height: 1.5;">
+                    <div><strong>LCI:</strong> AGRIBALYSE 3.2 (ADEME/INRAE)</div>
+                    <div><strong>LCIA:</strong> EF 3.1 — 16 categories + 3 CC splits</div>
+                    <div><strong>Transport:</strong> GLEC v3.2</div>
+                    <div><strong>Water:</strong> AWARE 2.0</div>
                     <div><strong>Packaging:</strong> PEF 3.1 CFF (Annex C v2.1)</div>
-                    <div><strong>Agri. GHGs:</strong> IPCC 2006 Tier 1 (N2O, CH4)</div>
-                    <div><strong>System boundary:</strong> Cradle-to-retail</div>
-                    <div><strong>Functional unit:</strong> 1 kg product as sold</div>
+                    <div><strong>Agri GHGs:</strong> IPCC 2006 Tier 1</div>
+                </div>
+            </div>
+
+            <!-- DISCLAIMER -->
+            <div style="background: #FFFBEB; border-left: 3px solid #F59E0B;
+                        border-radius: 0 8px 8px 0; padding: 0.75rem 1rem;
+                        font-size: 0.68rem; color: #78350F; line-height: 1.5;">
+                <strong>Important:</strong> All figures represent modelled potential reductions
+                based on AGRIBALYSE 3.2 secondary data and a parametric scenario comparison.
+                Not verified by a third party. Equivalences use official published factors
+                (EEA 2023, ICAO 2023, IEA 2022, Ember 2025). This product still generates
+                ${thisProductCO2.toFixed(3)} kg CO₂e/kg — equivalences show only the
+                <em>difference</em> vs ${baselineName}. Not for comparative advertising
+                per ISO 14044 §6 / EU Green Claims Directive COM/2023/166.
+            </div>
+
+        </div>
+    `;
+
+    // ── QR CODE SECTION ──────────────────────────────────────────────────────
+    // Plain text QR — no server, no URL, works forever on any phone
+    storyComparison.innerHTML = `
+        <div style="margin-top: 1rem; background: #F8FAFC; border: 1px solid #E2E8F0;
+                    border-radius: 12px; padding: 1rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;
+                        margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+                                text-transform: uppercase; color: #0A2540; margin-bottom: 0.2rem;">
+                        📲 Print-Ready QR — For Product Packaging
+                    </div>
+                    <div style="font-size: 0.7rem; color: #64748B;">
+                        Scan to verify footprint. Plain text — no internet required. Works forever.
+                    </div>
+                </div>
+                <button onclick="downloadStoryQR()" 
+                        style="background: #0A2540; color: white; border: none; border-radius: 8px;
+                               padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600;
+                               cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                    ⬇ Download QR
+                </button>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+                <div id="storyQRCode" style="flex-shrink: 0; background: white; padding: 8px;
+                                             border: 2px solid #0A2540; border-radius: 8px;
+                                             min-width: 100px; min-height: 100px;
+                                             display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 0.65rem; color: #94A3B8;">Generating QR...</span>
+                </div>
+                <div style="flex: 1; min-width: 160px;">
+                    <div style="font-size: 0.68rem; font-weight: 700; color: #0A2540; margin-bottom: 0.4rem;">
+                        QR encodes:
+                    </div>
+                    <div style="font-size: 0.68rem; color: #4A5568; line-height: 1.7;">
+                        ✓ This product: <strong>${thisProductCO2.toFixed(3)} kg CO₂e/kg</strong><br>
+                        ✓ vs ${baselineName}: <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong><br>
+                        ✓ Potential reduction: <strong>${pctReduction.toFixed(1)}%</strong><br>
+                        ✓ Equivalences (car, phone, flight, LED)<br>
+                        ✓ Full methodology references<br>
+                        ✓ Assessment ID + legal disclaimer<br>
+                        ✓ No server · No expiry · Works offline
+                    </div>
                 </div>
             </div>
         </div>
     `;
 
-    // ── EQUIVALENCES ─────────────────────────────────────────────────────────
-    // Only show if there is a positive potential reduction vs twin
-    storyComparison.innerHTML = co2DiffPerKg > 0 ? `
-        <div style="font-family: Inter, Arial, sans-serif; margin-top: 1rem;">
-            <div style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; color: #0369A1; text-transform: uppercase; margin-bottom: 0.75rem;">
-                What this potential reduction represents per kg of product
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+    // Generate QR after DOM is ready
+    setTimeout(() => {
+        const qrBox = document.getElementById('storyQRCode');
+        if (qrBox && typeof QRCode !== 'undefined') {
+            qrBox.innerHTML = '';
+            new QRCode(qrBox, {
+                text:         qrText,
+                width:        120,
+                height:       120,
+                colorDark:    '#0A2540',
+                colorLight:   '#FFFFFF',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } else if (qrBox) {
+            qrBox.innerHTML = '<span style="font-size:0.6rem;color:#94A3B8;text-align:center;padding:0.5rem;">QRCode library not loaded</span>';
+        }
+    }, 150);
 
-                <div style="flex: 1; min-width: 130px; background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🚗</div>
-                    <div style="font-size: 1.2rem; font-weight: 800; color: #0A2540;">${storyCarKm}</div>
-                    <div style="font-size: 0.7rem; color: #0369A1; font-weight: 600;">km not driven</div>
-                    <div style="font-size: 0.6rem; color: #64748B; margin-top: 0.2rem;">EEA 2023 — EU fleet avg 158.4 g CO2/km</div>
-                </div>
-
-                <div style="flex: 1; min-width: 130px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">🌳</div>
-                    <div style="font-size: 1.2rem; font-weight: 800; color: #0A2540;">${treeHours}</div>
-                    <div style="font-size: 0.7rem; color: #166534; font-weight: 600;">days of tree absorption</div>
-                    <div style="font-size: 0.6rem; color: #64748B; margin-top: 0.2rem;">IPCC AR5 WGIII Ch.11 — mature temperate tree</div>
-                </div>
-
-                <div style="flex: 1; min-width: 130px; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">📱</div>
-                    <div style="font-size: 1.2rem; font-weight: 800; color: #0A2540;">${smartCharges}</div>
-                    <div style="font-size: 0.7rem; color: #92400E; font-weight: 600;">smartphone charges</div>
-                    <div style="font-size: 0.6rem; color: #64748B; margin-top: 0.2rem;">IEA 2022 + Ember 2025 — 8.25 Wh/charge</div>
-                </div>
-
-                <div style="flex: 1; min-width: 130px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 0.75rem; text-align: center;">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">✈️</div>
-                    <div style="font-size: 1.2rem; font-weight: 800; color: #0A2540;">${flightKm}</div>
-                    <div style="font-size: 0.7rem; color: #1D4ED8; font-weight: 600;">km economy flight</div>
-                    <div style="font-size: 0.6rem; color: #64748B; margin-top: 0.2rem;">ICAO 2023 — 120 g CO2e/passenger-km</div>
-                </div>
-
-            </div>
-
-            <!-- SHORT STRONG DISCLAIMER — legally defensible -->
-            <div style="background: #FFFBEB; border-left: 3px solid #F59E0B; border-radius: 0 6px 6px 0; padding: 0.75rem; font-size: 0.72rem; color: #78350F; line-height: 1.5;">
-                <strong>Important:</strong> All figures represent modelled potential reductions based on AGRIBALYSE 3.2 secondary data and a parametric scenario comparison. They are not verified performance claims. Equivalences are calculated using official published factors (EEA 2023, IPCC AR5, ICAO 2023, IEA 2022). Results have not been independently verified by a third party. This information may not be used to support comparative environmental advertising claims without independent critical review per ISO 14044 §6 and EU Green Claims Directive (COM/2023/166).
-            </div>
-        </div>
-    ` : `
-        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem; font-size: 0.8rem; color: #64748B; margin-top: 0.75rem;">
-            Equivalences shown when this product has a lower footprint than the comparison scenario.
-            Run a parametric twin comparison to see potential reduction equivalences.
-        </div>
-    `;
+    // Store qrText globally so download function can access it
+    window._storyQRText = qrText;
 
     environmentalStory.classList.remove('hidden');
 }
+
+// ── QR DOWNLOAD ─────────────────────────────────────────────────────────────
+function downloadStoryQR() {
+    const qrBox = document.getElementById('storyQRCode');
+    if (!qrBox) return;
+    const canvas = qrBox.querySelector('canvas');
+    const img    = qrBox.querySelector('img');
+    let dataUrl  = null;
+
+    if (canvas) {
+        // Add white padding for print quality
+        const padded = document.createElement('canvas');
+        padded.width  = canvas.width  + 32;
+        padded.height = canvas.height + 32;
+        const ctx = padded.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, padded.width, padded.height);
+        ctx.drawImage(canvas, 16, 16);
+        dataUrl = padded.toDataURL('image/png');
+    } else if (img) {
+        dataUrl = img.src;
+    }
+
+    if (dataUrl) {
+        const pName   = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
+        const dppId   = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
+        const link    = document.createElement('a');
+        link.download = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
+        link.href     = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        // Fallback: download the text payload as .txt
+        const blob = new Blob([window._storyQRText || ''], { type: 'text/plain;charset=utf-8;' });
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = 'AIOXY_QR_payload.txt';
+        link.href     = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+}
+
 
 // ================== UNIVERSAL COMPARISON ENGINE ==================
 function renderUniversalComparisons(myCo2, baseline) {
