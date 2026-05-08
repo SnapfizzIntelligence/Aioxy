@@ -1476,5 +1476,52 @@ function formatPEFValue(value) {
 }
 
 // ================== AUDIT TRAIL LOADED ==================
+// ── QR DOWNLOAD — called by Download QR button in environmental story ────────
+function downloadStoryQR() {
+    const qrBox = document.getElementById('storyQRCode');
+    if (!qrBox) return;
+    const canvas = qrBox.querySelector('canvas');
+    const img    = qrBox.querySelector('img');
+    let dataUrl  = null;
+
+    if (canvas) {
+        // Add white padding for print quality
+        const padded = document.createElement('canvas');
+        padded.width  = canvas.width  + 32;
+        padded.height = canvas.height + 32;
+        const ctx = padded.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, padded.width, padded.height);
+        ctx.drawImage(canvas, 16, 16);
+        dataUrl = padded.toDataURL('image/png');
+    } else if (img) {
+        dataUrl = img.src;
+    }
+
+    if (dataUrl) {
+        const pName = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
+        const dppId = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
+        const link  = document.createElement('a');
+        link.download = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
+        link.href     = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        // Fallback: download the text payload as .txt
+        const blob = new Blob([window._storyQRText || ''], { type: 'text/plain;charset=utf-8;' });
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = 'AIOXY_QR_payload.txt';
+        link.href     = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+}
+window.downloadStoryQR = downloadStoryQR;
+
+
 window.exportCSRDMatrix = exportCSRDMatrix;
 console.log('✅ [AIOXY] audit-trail.js v4.0 loaded — All tab render bugs fixed');
