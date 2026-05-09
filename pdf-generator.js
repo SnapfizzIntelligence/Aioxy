@@ -430,6 +430,54 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     pdLines.push('  Source: IPCC 2006 Vol. 4 Ch. 11  |  GWP N2O = 265 (IPCC AR5)');
                 }
 
+                // ── ENTERIC METHANE (livestock) ──────────────────────────────
+                if (adj.enteric_applied) {
+                    const e = adj.enteric_applied;
+                    if (e.applied) {
+                        pdLines.push('');
+                        pdLines.push('ENTERIC METHANE (IPCC 2006 Vol. 4 Ch. 10):');
+                        pdLines.push('  Animal type       : ' + safe(e.animal_type));
+                        pdLines.push('  Formula: heads x EF_CH4_per_head x GWP_CH4_biogenic(28)');
+                        pdLines.push('  Heads (estimated) : ' + fix(e.heads_estimated || 0, 4) + ' head');
+                        pdLines.push('  EF CH4 per head   : ' + fix(e.ef_ch4_per_head || 0, 2) + ' kg CH4/head/year');
+                        pdLines.push('  CH4 total         : ' + fix(e.ch4_total_kg || 0, 4) + ' kg CH4');
+                        pdLines.push('  GWP CH4 biogenic  : 28 (IPCC AR5 GWP100)');
+                        pdLines.push('  Enteric CO2e      : ' + fix(e.enteric_co2e_total || 0, 4) + ' kg CO2e');
+                        pdLines.push('  Source: IPCC 2006 Vol. 4 Ch. 10 Table 10.11');
+                    } else {
+                        pdLines.push('');
+                        pdLines.push('ENTERIC METHANE: Not applied — ' + safe(e.reason || 'already included in AGRIBALYSE 3.2 dataset'));
+                    }
+                }
+
+                // ── MANURE N2O (livestock) ───────────────────────────────────
+                if (adj.manure_applied) {
+                    const m = adj.manure_applied;
+                    if (m.applied) {
+                        pdLines.push('');
+                        pdLines.push('MANURE MANAGEMENT N2O (IPCC 2006 Vol. 4 Ch. 10):');
+                        pdLines.push('  Animal type        : ' + safe(m.animal_type));
+                        pdLines.push('  Manure system      : ' + safe(m.manure_system));
+                        pdLines.push('  Formula: heads x N_excreted x EF_manure[system] x (44/28) x GWP_N2O(265)');
+                        pdLines.push('  N excreted         : ' + fix(m.n_excreted_kg || 0, 4) + ' kg N');
+                        pdLines.push('  EF manure system   : ' + fix(m.ef_manure || 0, 4) + ' kg N2O-N / kg N');
+                        pdLines.push('  N2O total          : ' + fix(m.n2o_total_kg || 0, 4) + ' kg N2O');
+                        pdLines.push('  Manure CO2e        : ' + fix(m.manure_co2e || 0, 4) + ' kg CO2e');
+                        pdLines.push('  Source: IPCC 2006 Vol. 4 Ch. 10 Table 10.21  |  GWP N2O = 265 (IPCC AR5)');
+                    } else {
+                        pdLines.push('');
+                        pdLines.push('MANURE N2O: Not applied — ' + safe(m.reason || 'not applicable'));
+                    }
+                }
+
+                // ── SOC NOTE (regenerative agriculture) ─────────────────────
+                if (adj.soc_note) {
+                    pdLines.push('');
+                    pdLines.push('REGENERATIVE AGRICULTURE NOTE:');
+                    pdLines.push('  ' + safe(adj.soc_note).slice(0, 120) + '...');
+                    pdLines.push('  SOC sequestration deferred — farm-specific soil data required.');
+                }
+
                 if (needsSpace(pdLines.length * 4.2 + 10)) {
                     doc.addPage(); pageNum++;
                     doc.setFillColor(...C.navyDark);
@@ -450,6 +498,104 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     doc.text(safe(line), M + 3, Y + 4.5 + i * 4.2);
                 });
                 Y += pdLines.length * 4.2 + 8;
+            }
+
+            // FIX 3: Country-specific adjustment trace — AWARE, LANCA, FAOSTAT
+            // These adjustments happen in applyCountrySpecificFactors() in calculation_engine.js
+            // and are stored in ing.country_factors. They are now surfaced in the PDF
+            // so an auditor can see exactly what ratio was applied and why.
+            const cf = adj.country_factors || ing.country_factors || null;
+            if (cf && cf.applied) {
+                const cfLines = [];
+                cfLines.push('GEOGRAPHIC ADJUSTMENT FACTORS (origin: ' + safe(origin) + ' vs reference: FR)');
+                cfLines.push('');
+
+                // AWARE 2.0 water scarcity adjustment
+                if (cf.aware && cf.aware.applied) {
+                    cfLines.push('AWARE 2.0 — Water Scarcity Adjustment:');
+                    cfLines.push('  Source: AWARE 2.0 (Boulay et al. 2018) — agricultural sector CFs');
+                    cfLines.push('  Formula: Water impact x= (originAWARE / refAWARE)');
+                    cfLines.push('  Reference CF (FR): ' + fix(cf.aware.ref_factor, 4) + ' m3 world eq/m3');
+                    cfLines.push('  Origin CF (' + safe(origin) + '): ' + fix(cf.aware.origin_factor, 4) + ' m3 world eq/m3');
+                    cfLines.push('  Ratio applied: ' + fix(cf.aware.ratio_applied, 4));
+                    cfLines.push('  Category affected: Water Use/Scarcity (AWARE)');
+                    cfLines.push('');
+                } else if (cf.aware && !cf.aware.applied) {
+                    cfLines.push('AWARE 2.0: Not applied — ' + safe(cf.aware.reason || 'no adjustment needed'));
+                    cfLines.push('');
+                }
+
+                // LANCA v2.5 land use adjustment
+                if (cf.lanca && cf.lanca.applied) {
+                    cfLines.push('LANCA v2.5 — Land Use Quality Adjustment:');
+                    cfLines.push('  Source: LANCA v2.5 — Fraunhofer IBP / JRC (SQI occupation factors)');
+                    cfLines.push('  Formula: Land Use impact x= (originSQI / refSQI)');
+                    cfLines.push('  Ratio applied: ' + fix(cf.lanca.ratio_applied, 4));
+                    cfLines.push('  Category affected: Land Use');
+                    cfLines.push('');
+                } else if (cf.lanca && !cf.lanca.applied) {
+                    cfLines.push('LANCA v2.5: Not applied — ' + safe(cf.lanca.reason || 'no adjustment needed'));
+                    cfLines.push('');
+                }
+
+                // FAOSTAT yield proxy
+                if (cf.faostat && cf.faostat.benchmarked) {
+                    cfLines.push('FAOSTAT Yield Proxy:');
+                    cfLines.push('  Source: FAOSTAT (FAO Statistical Databases — ' + safe(cf.faostat.source || '') + ')');
+                    cfLines.push('  Matched crop: ' + safe(cf.faostat.matched_crop || 'N/A'));
+                    cfLines.push('  FAOSTAT yield (' + safe(origin) + '): ' + fix(cf.faostat.faostat_yield_kg_ha, 1) + ' kg/ha');
+                    cfLines.push('  Deviation from FR baseline: ' + fix(cf.faostat.deviation_pct, 1) + '%');
+                    cfLines.push('');
+                }
+
+                if (needsSpace(cfLines.length * 4.2 + 10)) {
+                    doc.addPage(); pageNum++;
+                    doc.setFillColor(...C.navyDark);
+                    doc.rect(0, 0, PW, 10, 'F');
+                    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...C.white);
+                    doc.text('INGREDIENT CALCULATION DETAIL (continued)', M, 6.8);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.white);
+                    doc.text('Page ' + pageNum + ' of ' + TOTAL_PAGES, PW - M, 6.8, {align:'right'});
+                    Y = 16;
+                }
+
+                doc.setFillColor(235, 245, 255);
+                doc.rect(M, Y, CW, cfLines.length * 4.2 + 6, 'F');
+                doc.setDrawColor(147, 197, 253); doc.setLineWidth(0.3);
+                doc.rect(M, Y, CW, cfLines.length * 4.2 + 6, 'D');
+                doc.setFillColor(59, 130, 246);
+                doc.rect(M, Y, 1.5, cfLines.length * 4.2 + 6, 'F');
+                T.mono(); doc.setFontSize(6.5); doc.setTextColor(30, 58, 138);
+                cfLines.forEach((line, i) => {
+                    doc.text(safe(line), M + 3, Y + 4.5 + i * 4.2);
+                });
+                Y += cfLines.length * 4.2 + 8;
+            } else if (origin !== 'FR' && origin !== '' && origin !== 'N/A') {
+                // Origin is non-FR but no country factors stored — flag it
+                const noAdjLines = [
+                    'GEOGRAPHIC NOTE: Origin = ' + safe(origin) + ' (non-FR)',
+                    'AWARE / LANCA / FAOSTAT adjustments: not applied or data unavailable for this country.',
+                    'AGRIBALYSE 3.2 French reference values used. Water and land impacts may differ from actual origin.'
+                ];
+                if (needsSpace(noAdjLines.length * 4.2 + 10)) {
+                    doc.addPage(); pageNum++;
+                    doc.setFillColor(...C.navyDark);
+                    doc.rect(0, 0, PW, 10, 'F');
+                    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...C.white);
+                    doc.text('INGREDIENT CALCULATION DETAIL (continued)', M, 6.8);
+                    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.white);
+                    doc.text('Page ' + pageNum + ' of ' + TOTAL_PAGES, PW - M, 6.8, {align:'right'});
+                    Y = 16;
+                }
+                doc.setFillColor(255, 251, 235);
+                doc.rect(M, Y, CW, noAdjLines.length * 4.2 + 6, 'F');
+                doc.setDrawColor(...C.amber); doc.setLineWidth(0.3);
+                doc.rect(M, Y, CW, noAdjLines.length * 4.2 + 6, 'D');
+                T.mono(); doc.setFontSize(6.5); doc.setTextColor(120, 80, 0);
+                noAdjLines.forEach((line, i) => {
+                    doc.text(safe(line), M + 3, Y + 4.5 + i * 4.2);
+                });
+                Y += noAdjLines.length * 4.2 + 8;
             }
 
             // Block bottom border
@@ -937,6 +1083,78 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 'Source: PEF Annex C v2.1 / ICE Database v3.0'
             ], Y);
         }
+
+        // FIX 2: Packaging confidence flags — declared honestly per ISO 14044 §4.2.3.3
+        Y += 2;
+        const pkgMaterialKey = (input && input.packaging && input.packaging.material) || 'unknown';
+        const pkgConfidenceFlags = {
+            cardboard: { r1r2: 'HIGH (PEF Annex C v2.1)', evErec: 'MEDIUM (ICE DB v3.0)', disposal: 'LOW — disposal factors partially unverified. EF 3.1-compliant dataset required.' },
+            paper:     { r1r2: 'HIGH (PEF Annex C v2.1)', evErec: 'MEDIUM (ICE DB v3.0)', disposal: 'LOW — partially unverified. Same basis as cardboard.' },
+            pet:       { r1r2: 'HIGH (PEF Annex C v2.1)', evErec: 'MEDIUM (PlasticsEurope)', disposal: 'LOW-MEDIUM — partially unverified.' },
+            hdpe:      { r1r2: 'HIGH (PEF Annex C v2.1)', evErec: 'MEDIUM (PlasticsEurope)', disposal: 'LOW-MEDIUM — partially unverified.' },
+            glass:     { r1r2: 'MEDIUM (FEVE est.)',       evErec: 'LOW (FEVE source not obtained)', disposal: 'LOW — partially unverified.' },
+            steel:     { r1r2: 'MEDIUM (World Steel 2021)',evErec: 'MEDIUM (World Steel 2021)', disposal: 'LOW — partially unverified.' },
+            aluminium: { r1r2: 'MEDIUM (EAA 2021)',        evErec: 'MEDIUM (EAA 2021)', disposal: 'LOW — partially unverified.' }
+        };
+        const pkgFlags = pkgConfidenceFlags[pkgMaterialKey] || {
+            r1r2: 'MEDIUM', evErec: 'MEDIUM', disposal: 'LOW — source not confirmed for this material.'
+        };
+        const flagLines = [
+            'PARAMETER CONFIDENCE FLAGS — ' + pkgMaterialKey.toUpperCase(),
+            '',
+            'R1/R2 (recycling rates):      ' + pkgFlags.r1r2,
+            'Ev/Erec (production impacts): ' + pkgFlags.evErec,
+            'Ed (disposal):                ' + pkgFlags.disposal,
+            '',
+            'Disposal value sensitivity: Ed error of +/-50% changes CFF by approximately',
+            '  (1 - R2) x Ed_error x weight_kg. For cardboard 50g pack: ~0.00015 kg CO2e.',
+            '  For glass 200g pack: ~0.007 kg CO2e. Declared per ISO 14044 §4.2.3.3.',
+            '',
+            'Note: AGRIBALYSE 3.2 upstream background processes for packaging materials',
+            '  are derived from ecoinvent background data embedded in AGRIBALYSE.',
+            '  AIOXY does not hold an ecoinvent license and cannot independently verify',
+            '  these upstream values. CFF formula application is correct per PEF Annex C v2.1.'
+        ];
+        Y = traceBlock(flagLines, Y, CW * 0.95);
+
+        // TASK 2: Packaging non-CC impact categories table
+        Y += 2;
+        Y = subHeader('Packaging — Non-CC Impact Categories', Y);
+        T.small(); doc.setTextColor(...C.bodyMid);
+        doc.text('Source: Packaging multi-category factors (EMEP/EEA / PlasticsEurope / USEtox). Confidence: MEDIUM.', M, Y); Y += 5;
+
+        const nonCCPkgCats = [
+            'Ozone Depletion', 'Human Toxicity, non-cancer', 'Human Toxicity, cancer',
+            'Particulate Matter', 'Ionizing Radiation', 'Photochemical Ozone Formation',
+            'Acidification', 'Eutrophication, terrestrial', 'Eutrophication, freshwater',
+            'Eutrophication, marine', 'Ecotoxicity, freshwater', 'Land Use',
+            'Water Use/Scarcity (AWARE)', 'Resource Use, minerals/metals'
+        ];
+        const pkgNonCCRows = nonCCPkgCats.map(cat => {
+            const catTotal = pef[cat]?.contribution_tree?.Packaging?.total || 0;
+            const perKg    = pWeightKg > 0 ? catTotal / pWeightKg : 0;
+            const unit     = CAT_UNITS[cat] || '';
+            const nonZero  = catTotal !== 0 ? 'YES' : 'ZERO (gap declared)';
+            return [safe(cat), safe(unit), numFmt(perKg, 5), safe(nonZero)];
+        });
+
+        doc.autoTable({
+            startY: Y,
+            head: [['Category', 'Unit', 'Result / kg product', 'Data status']],
+            body: pkgNonCCRows,
+            theme: 'plain',
+            styles: { fontSize: 7, cellPadding: 1.8 },
+            headStyles: { fillColor: C.navyMid, textColor: C.white, fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: C.rowAlt },
+            columnStyles: {
+                0: { cellWidth: 72, fontStyle: 'bold' },
+                1: { cellWidth: 28, textColor: C.bodyMid },
+                2: { cellWidth: 40, halign: 'right' },
+                3: { cellWidth: 42 }
+            },
+            margin: { left: M }
+        });
+        Y = doc.lastAutoTable.finalY + 4;
 
         footer('Packaging — Page ' + pageNum + ' of ' + TOTAL_PAGES);
 
