@@ -1354,11 +1354,17 @@ if (!traceability.usetox) {
                 flatPef['Climate Change - Fossil']       *= co2Mult;
                 flatPef['Climate Change - Biogenic']     *= co2Mult;
                 flatPef['Climate Change - Land Use']     *= co2Mult;
-                flatPef['Ozone Depletion']               *= co2Mult;
+                // FIX CALC-08: Ozone Depletion NOT scaled by co2Mult.
+                // OD is driven by CFC/HCFC refrigerant emissions — no relationship
+                // to agricultural yield or nitrogen application rate.
+                // flatPef['Ozone Depletion'] unchanged — AGRIBALYSE 3.2 value used as-is.
                 flatPef['Human Toxicity, non-cancer']    *= co2Mult;
                 flatPef['Human Toxicity, cancer']        *= co2Mult;
                 flatPef['Particulate Matter']            *= co2Mult;
-                flatPef['Ionizing Radiation']            *= co2Mult;
+                // FIX CALC-08: Ionizing Radiation NOT scaled by co2Mult.
+                // IR is driven by nuclear energy share in background electricity mix —
+                // no relationship to agricultural yield or nitrogen application rate.
+                // flatPef['Ionizing Radiation'] unchanged — AGRIBALYSE 3.2 value used as-is.
                 flatPef['Photochemical Ozone Formation'] *= co2Mult;
                 flatPef['Acidification']                 *= co2Mult;
                 flatPef['Eutrophication, terrestrial']   *= co2Mult;
