@@ -1180,18 +1180,14 @@ function renderUniversalComparisons(myCo2, baseline) {
     
     grid.innerHTML = "";
     
-    // FIX: Denominator mismatch — myCo2 uses input.product.weightKg as denominator
-    // (e.g. 0.2 kg), while baseline.co2PerKg uses safeMassKg = sum of assessed
-    // ingredient quantities (e.g. 0.702 kg). Putting them in the same bar chart
-    // produces a false comparison (e.g. 66.81 vs 3.63 appear side by side as if
-    // on the same scale, when they are not).
-    // Both baseline.assessed_co2PerKg and baseline.co2PerKg use the IDENTICAL
-    // denominator (safeMassKg) — they are directly comparable. When a parametric
-    // twin is active, use the twin's assessed value for "This Product" so both
-    // bars share the same per-kg basis.
-    const twinAssessedVal = (baseline.assessed_co2PerKg != null) ? baseline.assessed_co2PerKg : myCo2;
+    // FIX (calculation_engine.js + core_physics.txt): All denominators now unified.
+    // results.co2PerKg uses totalInputMass (ingredient sum), matching the twin's
+    // assessedTotal and conventionalTotal denominators exactly. myCo2 is therefore
+    // directly comparable to baseline.co2PerKg — no workaround needed. The old
+    // twinAssessedVal substitution is removed; it was patching a mismatch that no
+    // longer exists now that the engine fixes are in place.
     const list = [
-        {name: `This Product (Modeled: PEF 3.1)`, val: twinAssessedVal, highlight: true},
+        {name: `This Product (Modeled: PEF 3.1)`, val: myCo2, highlight: true},
         {name: `${baseline.name}`, val: baseline.co2PerKg || 0}
     ];
 
