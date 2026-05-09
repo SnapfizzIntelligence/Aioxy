@@ -2680,24 +2680,29 @@ const gasCO2 = gasM3PerKg * 2.13;
             massBalanceData: massBalanceData,
 
             unifiedMetrics: {
-                weightUsed:         input.product.weightKg,
-                co2PerKg:           pefResults['Climate Change'].total                / input.product.weightKg,
-                waterScarcityPerKg: pefResults['Water Use/Scarcity (AWARE)'].total    / input.product.weightKg,
-                landUsePerKg:       pefResults['Land Use'].total                      / input.product.weightKg,
-                fossilPerKg:        pefResults['Resource Use, fossils'].total         / input.product.weightKg
+                // FIX 5: Denominator is totalInputMass (sum of all ingredient quantities),
+                // matching the denominator used by calculateParametricTwin's assessedTotal.
+                // Using input.product.weightKg (declared finished weight, e.g. 0.2 kg) when
+                // ingredient mass is larger (e.g. 0.7 kg) inflated co2PerKg by 3-4×, producing
+                // the impossible 66.81 kg figure. Both sides now share the same per-kg basis.
+                weightUsed:         totalInputMass > 0 ? totalInputMass : input.product.weightKg,
+                co2PerKg:           pefResults['Climate Change'].total                / (totalInputMass > 0 ? totalInputMass : input.product.weightKg),
+                waterScarcityPerKg: pefResults['Water Use/Scarcity (AWARE)'].total    / (totalInputMass > 0 ? totalInputMass : input.product.weightKg),
+                landUsePerKg:       pefResults['Land Use'].total                      / (totalInputMass > 0 ? totalInputMass : input.product.weightKg),
+                fossilPerKg:        pefResults['Resource Use, fossils'].total         / (totalInputMass > 0 ? totalInputMass : input.product.weightKg)
             },
 
-            co2PerKg:           pefResults['Climate Change'].total                / input.product.weightKg,
-            waterScarcityPerKg: pefResults['Water Use/Scarcity (AWARE)'].total    / input.product.weightKg,
-            landUsePerKg:       pefResults['Land Use'].total                      / input.product.weightKg,
-            fossilPerKg:        pefResults['Resource Use, fossils'].total         / input.product.weightKg,
+            co2PerKg:           pefResults['Climate Change'].total                / (totalInputMass > 0 ? totalInputMass : input.product.weightKg),
+            waterScarcityPerKg: pefResults['Water Use/Scarcity (AWARE)'].total    / (totalInputMass > 0 ? totalInputMass : input.product.weightKg),
+            landUsePerKg:       pefResults['Land Use'].total                      / (totalInputMass > 0 ? totalInputMass : input.product.weightKg),
+            fossilPerKg:        pefResults['Resource Use, fossils'].total         / (totalInputMass > 0 ? totalInputMass : input.product.weightKg),
             overallDQR:         weightedDQR.overallDQR,
             overallUncertainty: computedOverallUncertainty,
 
             comparison: {
                 baseline:      comparisonBaseline,
                 co2SavedPerKg: (comparisonBaseline ? comparisonBaseline.co2PerKg : 0) -
-                               (pefResults['Climate Change'].total / input.product.weightKg)
+                               (pefResults['Climate Change'].total / (totalInputMass > 0 ? totalInputMass : input.product.weightKg))
             },
 
             auditTrailData:    auditTrailData,
