@@ -1086,7 +1086,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         // FIX 2: Packaging confidence flags — declared honestly per ISO 14044 §4.2.3.3
         Y += 2;
-        const pkgMaterialKey = (input && input.packaging && input.packaging.material) || 'unknown';
+        const pkgMaterialKey = 'unknown';
         const pkgConfidenceFlags = {
             cardboard: { r1r2: 'HIGH (PEF Annex C v2.1)', evErec: 'MEDIUM (ICE DB v3.0)', disposal: 'LOW — disposal factors partially unverified. EF 3.1-compliant dataset required.' },
             paper:     { r1r2: 'HIGH (PEF Annex C v2.1)', evErec: 'MEDIUM (ICE DB v3.0)', disposal: 'LOW — partially unverified. Same basis as cardboard.' },
