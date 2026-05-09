@@ -417,44 +417,64 @@ async function calculateImpact() {
             eolDestination:   document.getElementById('packagingEoL')?.value                  || 'eu_average'
         },
         comparison: (() => {
-            // FIX 1: Auto-match conventionalBaselineIngredients to selectedIngredients by index
-            for (let i = 0; i < selectedIngredients.length; i++) {
-                const ing = selectedIngredients[i];
-                if (!ing.conventionalCounterpart && conventionalBaselineIngredients[i]) {
-                    const cbi = conventionalBaselineIngredients[i];
-                    ing.conventionalCounterpart = {
-                        id:   cbi.id,
-                        name: cbi.name,
-                        pef:  window.aioxyData.ingredients[cbi.id]?.data?.pef || null
-                    };
-                    ing.conventionalQuantity = cbi.quantity || ing.quantity;
-                }
-            }
+            // ROOT CAUSE FIX: The previous index-based auto-match was fragile — it skipped
+            // ingredients that already had a conventionalCounterpart (stale from a prior run),
+            // and silently dropped any conventional ingredients beyond the assessed ingredient
+            // count. This meant ingredientMappings was always empty or stale, so PATH 2 never
+            // fired and the twin fell through to PATH 4 (fixed self-comparison value).
+            //
+            // New approach: build ingredientMappings directly from conventionalBaselineIngredients.
+            // Each entry in conventionalBaselineIngredients is what the user explicitly added.
+            // We pair them with assessed ingredients by index. Assessed ingredients with no
+            // conventional counterpart self-map (zero delta). This covers all cases correctly
+            // regardless of how many conventional ingredients the user adds.
+            const cbiList = conventionalBaselineIngredients;
+            const hasTwin = cbiList && cbiList.length > 0;
+
+            const ingredientMappings = hasTwin
+                ? selectedIngredients.map((ing, i) => {
+                    const cbi = cbiList[i] || null;
+                    const assessedPef = window.aioxyData.ingredients[ing.id]?.data?.pef || null;
+                    if (cbi) {
+                        const conventionalPef = window.aioxyData.ingredients[cbi.id]?.data?.pef || null;
+                        return {
+                            assessed: {
+                                id:            ing.id,
+                                name:          ing.name,
+                                quantityKg:    ing.quantity,
+                                pef:           assessedPef,
+                                entericParams: ing.entericParams || null
+                            },
+                            conventional: {
+                                id:            cbi.id,
+                                name:          cbi.name,
+                                quantityKg:    cbi.quantity || ing.quantity,
+                                pef:           conventionalPef,
+                                entericParams: null
+                            }
+                        };
+                    } else {
+                        // No conventional counterpart for this assessed ingredient — self-map (zero delta)
+                        return {
+                            assessed: {
+                                id:            ing.id,
+                                name:          ing.name,
+                                quantityKg:    ing.quantity,
+                                pef:           assessedPef,
+                                entericParams: ing.entericParams || null
+                            },
+                            conventional: null
+                        };
+                    }
+                })
+                : [];
+
             return {
             conventionalBaselineName: document.getElementById('conventionalBaselineName')?.value?.trim() || null,
             baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
             customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
             useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false,
-
-            // PARAMETRIC TWIN: build ingredientMappings from selectedIngredients
-            ingredientMappings: selectedIngredients
-                .filter(ing => ing.conventionalCounterpart !== undefined && ing.conventionalCounterpart !== null)
-                .map(ing => ({
-                    assessed: {
-                        id:            ing.id,
-                        name:          ing.name,
-                        quantityKg:    ing.quantity,
-                        pef:           window.aioxyData.ingredients[ing.id].data.pef,
-                        entericParams: ing.entericParams || null
-                    },
-                    conventional: {
-                        id:            ing.conventionalCounterpart.id,
-                        name:          ing.conventionalCounterpart.name,
-                        quantityKg:    ing.conventionalQuantity || ing.quantity,
-                        pef:           ing.conventionalCounterpart.pef,
-                        entericParams: null
-                    }
-                }))
+            ingredientMappings
             };
         })()
     };
