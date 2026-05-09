@@ -366,6 +366,16 @@ async function calculateImpact() {
         }
     });
 
+    // FIX: Sync conventionalBaselineIngredients from window global written by ui.js.
+    // main.js declares its own local array (line 8) which is never updated by ui.js.
+    // ui.js writes to window.conventionalBaselineIngredients after every user edit.
+    // Without this sync, ingredientMappings is always empty → PATH 2 never fires →
+    // parametric twin falls through to PATH 4 (auto self-comparison) → baseline
+    // echoes the product's own CO2 as a fixed number regardless of user selection.
+    if (window.conventionalBaselineIngredients && window.conventionalBaselineIngredients.length > 0) {
+        conventionalBaselineIngredients = window.conventionalBaselineIngredients;
+    }
+
     const input = {
         product: {
             name:               document.getElementById('productName')?.value || 'Unnamed Product',
@@ -448,6 +458,11 @@ async function calculateImpact() {
             };
         })()
     };
+
+    // FIX: Expose input globally so pdf-generator.js can read input.packaging.material.
+    // The PDF generator has no parameter for input — it only receives (tabId, reportTitle).
+    // Without this line, pdf-generator.js throws: ReferenceError: input is not defined.
+    window.lastInput = input;
 
     try {
         // F7 FIX: await the async calculate() so the SHA-256 DPP ID is resolved
