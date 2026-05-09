@@ -1381,7 +1381,7 @@ if (!traceability.usetox) {
                 if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
                     // IPCC, AR5, SALCA are declared at pd scope (F3 fix) — accessible here
 
-                    const F_SN = pd.nitrogenKgPerTon * ingredient.quantityKg;                                                              // kg synthetic N applied
+                    const F_SN = (pd.nitrogenKgPerTon / 1000) * ingredient.quantityKg;                                                        // kg synthetic N applied — nitrogenKgPerTon is kg N per tonne of crop, /1000 converts to kg N per kg, then × quantityKg gives total kg N
                     const N2O_direct         = F_SN * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;                      // kg CO2e (EF1, direct)
                     const N2O_indirect_leach = F_SN * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF5, leaching)
                     const N2O_volatilization = F_SN * IPCC.FRAC_GASF * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF4, volatilization/atmospheric deposition)
@@ -1406,8 +1406,8 @@ if (!traceability.usetox) {
                 // === GAP 2: SALCA-P phosphorus leaching (ISO 14044 primary data path) ===
                 // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
                 if (pd.phosphorusKgPerTon && pd.phosphorusKgPerTon > 0) {
-                    const P_applied = pd.phosphorusKgPerTon * ingredient.quantityKg;   // kg P applied
-                    const P_leach   = P_applied * SALCA.FRAC_RELE * SALCA.PO4_CONVERSION; // kg P eq
+                    const P_applied = (pd.phosphorusKgPerTon / 1000) * ingredient.quantityKg;   // kg P applied — phosphorusKgPerTon is kg P per tonne, /1000 converts to kg P per kg
+                    const P_leach   = P_applied * SALCA.FRAC_RELE;                            // kg P-eq — EF 3.1 Eutrophication freshwater unit is kg P-eq; P is the reference substance (CF=1.0), no PO4 mass conversion required
 
                     // Add to per-kg flatPef for Eutrophication, freshwater
                     flatPef['Eutrophication, freshwater'] += P_leach / ingredient.quantityKg;
@@ -1416,7 +1416,7 @@ if (!traceability.usetox) {
                         applied:        true,
                         P_applied_kg:   P_applied,
                         P_leach_kg_P_eq: P_leach,
-                        formula:        'SALCA-P, FRAC_RELE=SALCA.FRAC_RELE, PO4_CONV=SALCA.PO4_CONVERSION'
+                        formula:        'SALCA-P: P_applied=(phosphorusKgPerTon/1000)*quantityKg, P_leach=P_applied*FRAC_RELE. Unit: kg P-eq (EF 3.1 reference substance = P, CF=1.0, no PO4 conversion)'
                     };
                 }
 
@@ -1539,21 +1539,23 @@ if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPe
             }
 
             // 1g. Geographic proxy adjustment
-            // FIX: [Audit #34] Apply 1.15× penalty ONLY to geography-dependent categories:
-            // Climate Change (total + 3 sub-splits), Water Use/Scarcity (AWARE), and Land Use.
+            // Apply 1.15× penalty to CC categories only for non-FR, non-primary-data ingredients.
+            // Water Use/Scarcity (AWARE) and Land Use are excluded — those receive country-specific
+            // adjustment via AWARE 2.0 and LANCA v2.5 in Phase 2 (applyCountrySpecificFactors).
             // The remaining 12 PEF categories are excluded because geographic origin does not
-            // meaningfully affect their characterization factors — a blanket 15% uplift for
-            // Ozone Depletion, Ionizing Radiation, Particulate Matter, toxicity categories,
-            // eutrophication, acidification, etc. has no scientific basis.
+            // meaningfully affect their characterization factors.
             if (ingredient.originCountry && ingredient.originCountry !== 'FR' && !ingredient.primaryData) {
                 const geoProxy = 1.15;
+                // BUG-04 FIX: Water Use and Land Use removed from geo-proxy.
+                // AWARE 2.0 and LANCA v2.5 in applyCountrySpecificFactors() (Phase 2)
+                // already apply country-specific ratios to those two categories.
+                // Adding 1.15x here AND the AWARE/LANCA ratio below double-adjusts them.
+                // Geo-proxy retained only for CC categories which have no country-specific lookup.
                 const GEO_PROXY_CATEGORIES = [
                     'Climate Change',
                     'Climate Change - Fossil',
                     'Climate Change - Biogenic',
-                    'Climate Change - Land Use',
-                    'Water Use/Scarcity (AWARE)',
-                    'Land Use'
+                    'Climate Change - Land Use'
                 ];
                 for (const cat of GEO_PROXY_CATEGORIES) {
                     if (flatPef[cat] !== undefined) {
