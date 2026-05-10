@@ -1219,7 +1219,10 @@ function displayPEFSingleScore() {
 
     // productWeightKg is not in scope here (it lives in updateResultsUI).
     // Read it from auditTrailData.mass_balance — same source, same value.
-    const productWeightKg = window.auditTrailData?.mass_balance?.final_content_weight_kg || 0.2;
+    // No fallback default: if mass_balance is missing, calculation has not run yet.
+    // Return early rather than divide by a hardcoded number and show wrong results.
+    const productWeightKg = window.auditTrailData?.mass_balance?.final_content_weight_kg;
+    if (!productWeightKg || productWeightKg <= 0) return;
 
     const singleScoreResult = window.auditTrailData?.pef_single_score || { singleScore: 0, normalizedScore: 0, weightedScore: 0, breakdown: {} };
     
