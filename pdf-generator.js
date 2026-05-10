@@ -108,7 +108,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         // ── PAGE UTILITIES ───────────────────────────────────
         let pageNum = 0;
-        const TOTAL_PAGES = 13;
+        // BUG-23 FIX: TOTAL_PAGES was hardcoded as 13 — wrong for variable-ingredient products.
+        // We now compute it retroactively after all pages are rendered using doc.internal.getNumberOfPages(),
+        // then loop back and overwrite the page number area on every page with the correct total.
+        // TOTAL_PAGES is kept as a mutable reference so newPage() can still write a placeholder during render.
+        let TOTAL_PAGES = '??'; // placeholder during render — replaced retroactively at end
 
         const newPage = (sectionTitle) => {
             doc.addPage();
@@ -155,10 +159,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const dppId      = safe(audit.dppId || 'N/A');
         const auditHash  = safe(audit.auditHash || '');
 
-        // Manufacturing country — read from traceability, not DOM
+        // Manufacturing country — read from traceability.parameters (BUG-11 fix: nested under parameters)
         const mfgTrace   = audit.traceability?.manufacturing || {};
-        const mfgCountry = safe(mfgTrace.country || mfgTrace.countryCode || 'N/A');
-        const gridG      = mfgTrace.gridIntensityGPerKwh || mfgTrace.grid_intensity_g_per_kwh || 0;
+        const mfgCountry = safe(mfgTrace.parameters?.country || mfgTrace.country || mfgTrace.countryCode || 'N/A');
+        const gridG      = mfgTrace.parameters?.gridIntensityGPerKwh || mfgTrace.gridIntensityGPerKwh || mfgTrace.grid_intensity_g_per_kwh || 0;
 
         // PEF results
         const ccTotal    = pef['Climate Change']?.total || 0;
@@ -371,11 +375,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 doc.text(safe(unit), bX + 75, Y + 4);
 
                 // Formula line: CF x qty = total
+                // BUG-08 FIX: For primary-data ingredients, the total includes composite multiplier
+                // and/or N2O additions on top of CF × qty. Annotate so auditors aren't confused
+                // by the apparent arithmetic mismatch.
                 T.mono(); doc.setFontSize(6.5);
                 doc.setTextColor(...(isCC ? C.white : C.bodyDark));
                 const cfStr    = numFmt(perKg, 5);
                 const totStr   = numFmt(totalV, 5);
-                const formula  = cfStr + ' ' + unit + '/kg  x  ' + fix(qty,4) + ' kg  =  ' + totStr + ' ' + unit;
+                const pdNote   = hasPD ? '  [incl. primary data adj. — see detail below]' : '';
+                const formula  = cfStr + ' ' + unit + '/kg  x  ' + fix(qty,4) + ' kg  =  ' + totStr + ' ' + unit + (isCC ? pdNote : '');
                 doc.text(safe(formula), bX + 2, Y + 8);
 
                 Y += rowH;
@@ -1167,7 +1175,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('All values read directly from calculation engine. No recalculation at PDF layer.', M, Y); Y += 6;
 
         // Stage totals per category
-        const stageNames = ['Ingredients','Manufacturing','Transport','Packaging','Waste'];
+        const stageNames = ['Ingredients','Manufacturing','Transport','Packaging','Waste*'];
         const stageTotHeader = ['Category','Unit',...stageNames,'TOTAL / kg product'];
 
         const stageTotRows = allCatList.filter(c => !c.startsWith('Climate Change -')).map(cat => {
@@ -1206,7 +1214,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             }
         });
 
-        Y = doc.lastAutoTable.finalY + 5;
+        Y = doc.lastAutoTable.finalY + 3;
+        T.small(); doc.setTextColor(...C.bodyMid);
+        doc.text('* Waste = processing loss (informational only — not added to TOTAL column). Shown for mass balance transparency per ISO 14044 §4.2.3.3.',
+                 M, Y, { maxWidth: CW }); Y += 8;
 
         // CC sub-splits
         Y = subHeader('Climate Change Sub-splits', Y);
@@ -1790,6 +1801,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         Y = qrY + qrSize + 14;
         footer('Offline Verification — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+
+        // ================================================================
+        // BUG-23 FIX: Retroactive page numbering
+        // Now that all pages are rendered, get the real total and overwrite
+        // the placeholder '??' on every page with the correct 'Page X of Y'.
+        // ================================================================
+        const realTotalPages = doc.internal.getNumberOfPages();
+        for (let pg = 1; pg <= realTotalPages; pg++) {
+            doc.setPage(pg);
+            // Overdraw the top-right corner of the header bar (navyDark)
+            doc.setFillColor(...C.navyDark);
+            doc.rect(PW - 50, 0, 52, 10, 'F');
+            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.white);
+            doc.text('Page ' + pg + ' of ' + realTotalPages, PW - M, 6.8, {align:'right'});
+        }
 
         // ================================================================
         // SAVE
