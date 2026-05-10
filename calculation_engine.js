@@ -2046,14 +2046,21 @@ const gasCO2 = gasM3PerKg * 2.13;
         );
 
         const dqrComponentsWithUncertainty = dqrComponents.map(d => {
-            const ingEntry = ingredientResults.find(i => i.name === d.name);
-            const dqrP     = ingEntry && ingEntry.dqrBreakdown && ingEntry.dqrBreakdown.P
-                ? ingEntry.dqrBreakdown.P
-                : d.dqr;
+            const ingEntry    = ingredientResults.find(i => i.name === d.name);
+            const dqrBkd      = ingEntry?.dqrBreakdown || {};
+            const dqrP        = dqrBkd.P ? dqrBkd.P : d.dqr;
             const uncertainty = window.foodCalculationEngine.calculateUncertainty(dqrP);
             return Object.assign({}, d, {
                 uncertainty,
-                source: ingEntry ? ingEntry.source : 'AGRIBALYSE 3.2'
+                source: ingEntry ? ingEntry.source : 'AGRIBALYSE 3.2',
+                // BUG-14 FIX: expose individual DQR indicators for CSV/PDF export
+                // AGRIBALYSE DQI Matrix v3.0.1 uses 4-indicator scheme (TeR + TiR + GR + P) / 4
+                // CoR (completeness) is not scored per ADEME/INRAE DQI methodology
+                TeR: dqrBkd.TeR || 0,
+                TiR: dqrBkd.TiR || 0,
+                GeR: dqrBkd.GR  || dqrBkd.GeR || 0,   // database key is 'GR' (geographical representativeness)
+                CoR: 0,                                 // not scored per AGRIBALYSE DQI Matrix v3.0.1
+                RR:  dqrBkd.P   || 0                   // 'P' (precision) maps to reliability/reproducibility column
             });
         });
 
@@ -2580,8 +2587,9 @@ const gasCO2 = gasM3PerKg * 2.13;
         const manufacturingTraceability = {
             source:     mfgResult.source || 'Ember 2025 / IEA',
             parameters: {
-                country:      input.manufacturing.country,
-                energySource: input.manufacturing.energySource
+                country:                input.manufacturing.country,
+                energySource:           input.manufacturing.energySource,
+                gridIntensityGPerKwh:   mfgResult.gridIntensityGPerKwh || gridIntensity   // BUG-11 FIX: expose grid intensity so audit-trail.js and CSV export can read it
             },
             residual_mix: mfgResult.residual_mix_available ? {
                 source:     mfgResult.residual_mix_source,
