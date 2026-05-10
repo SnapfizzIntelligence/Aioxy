@@ -1217,6 +1217,10 @@ function displayPEFSingleScore() {
     const resultsContent = document.getElementById('resultsContent');
     if (!resultsContent || !finalPefResults || Object.keys(finalPefResults).length === 0) return;
 
+    // productWeightKg is not in scope here (it lives in updateResultsUI).
+    // Read it from auditTrailData.mass_balance — same source, same value.
+    const productWeightKg = window.auditTrailData?.mass_balance?.final_content_weight_kg || 0.2;
+
     const singleScoreResult = window.auditTrailData?.pef_single_score || { singleScore: 0, normalizedScore: 0, weightedScore: 0, breakdown: {} };
     
     let singleScoreSection = document.getElementById('pefSingleScoreSection');
