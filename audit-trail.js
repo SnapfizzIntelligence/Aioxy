@@ -532,7 +532,7 @@ function displayAuditTrail() {
             </tbody>
         </table>
         <div style="font-size:0.75rem; color:#555; padding:8px; border-top:1px solid #eee; background:#fafafa;">
-            <strong>ℹ️ Road freight factor note:</strong> Outbound road transport uses 0.060 kg CO₂e/tkm (GLEC v3.2, Module 5 Annex 1).
+            <strong>ℹ️ Road freight factor note:</strong> Outbound road transport uses 0.089 kg CO₂e/tkm (GLEC v3.2 Table 8 — EU articulated HGV average, ambient). DAF 1.05 applied per GLEC v3.2.
         </div>
     </div>`;
 
@@ -632,7 +632,7 @@ function displayAuditTrail() {
     if (window.currentComparisonBaseline?.ingredientPairs && window.currentComparisonBaseline.ingredientPairs.length > 0) {
         const pairs = window.currentComparisonBaseline.ingredientPairs;
         const assessedTotal     = window.currentComparisonBaseline.assessed_co2PerKg || 0;
-        const conventionalTotal = window.currentComparisonBaseline.conventionalTotal?.co2PerKg || 0;
+        const conventionalTotal = window.currentComparisonBaseline.co2PerKg || window.currentComparisonBaseline.conventionalTotal?.co2PerKg || 0;   // BUG-12 FIX: co2PerKg is top-level on baseline object, conventionalTotal sub-object does not exist
         const delta    = window.currentComparisonBaseline.delta || 0;
         const deltaPct = conventionalTotal > 0 ? ((delta / conventionalTotal) * 100).toFixed(1) : '0.0';
         const deltaSign = delta >= 0 ? '+' : '';
@@ -884,15 +884,15 @@ function exportCSRDMatrix() {
     const dqrOverall= (audit.dqr_summary?.overall_dqr ?? 0).toFixed(2);
     const dqrLevel  = audit.dqr_summary?.dqr_level || 'N/A';
     const mfgTrace  = audit.traceability?.manufacturing || {};
-    const mfgCountry= mfgTrace.country || mfgTrace.countryCode || 'N/A';
-    const gridG     = (mfgTrace.gridIntensityGPerKwh || 0).toFixed(2);
+    const mfgCountry= mfgTrace.parameters?.country || mfgTrace.country || mfgTrace.countryCode || 'N/A';   // BUG-11 FIX: country is nested under mfgTrace.parameters, not top-level
+    const gridG     = (mfgTrace.parameters?.gridIntensityGPerKwh || mfgTrace.gridIntensityGPerKwh || 0).toFixed(2);   // BUG-11 FIX: gridIntensityGPerKwh also nested under parameters
     const ss        = audit.pef_single_score || {};
     const mPt       = (ss.singleScore || 0).toFixed(4);
     const ssBkd     = ss.breakdown || {};
-    const unc       = audit.uncertainty_analysis?.monte_carlo || {};
+    const unc       = audit.uncertainty_analysis?.monte_carlo?.['Climate Change'] || {};   // BUG-10 FIX: monteCarloResults is keyed by category — must access ['Climate Change'], not top-level
     const uncPct    = (audit.uncertainty_analysis?.overall_uncertainty || 15).toFixed(1);
-    const mcP5      = (unc.p5_lower_bound || unc.p5 || 0).toFixed(6);
-    const mcP95     = (unc.p95_upper_bound || unc.p95 || 0).toFixed(6);
+    const mcP5      = (unc.p5 || 0).toFixed(6);
+    const mcP95     = (unc.p95 || 0).toFixed(6);
     const baseline  = audit.comparison_baseline || window.currentComparisonBaseline || null;
     const twinCO2   = baseline?.co2PerKg || 0;
     const twinName  = baseline?.name || 'N/A';
@@ -998,10 +998,10 @@ function exportCSRDMatrix() {
     Object.entries(ssBkd).forEach(([cat, data]) => {
         rows.push([
             cat,
-            (data.impact            || 0).toExponential(6),
-            (data.normalizedImpact  || 0).toExponential(6),
-            (data.weightedImpact    || 0).toExponential(6),
-            (data.microPoints       || 0).toFixed(6)
+            (data.raw            || 0).toExponential(6),   // BUG-09 FIX: engine stores 'raw' not 'impact'
+            (data.normalized     || 0).toExponential(6),   // BUG-09 FIX: engine stores 'normalized' not 'normalizedImpact'
+            (data.weighted       || 0).toExponential(6),   // BUG-09 FIX: engine stores 'weighted' not 'weightedImpact'
+            ((data.weighted || 0) * 1e6).toFixed(6)        // BUG-09 FIX: microPoints not stored — compute as weighted * 1,000,000
         ].map(q).join(','));
     });
     rows.push(['pef_single_score_total', '', '', '', mPt].map(q).join(','));
@@ -1476,52 +1476,5 @@ function formatPEFValue(value) {
 }
 
 // ================== AUDIT TRAIL LOADED ==================
-// ── QR DOWNLOAD — called by Download QR button in environmental story ────────
-function downloadStoryQR() {
-    const qrBox = document.getElementById('storyQRCode');
-    if (!qrBox) return;
-    const canvas = qrBox.querySelector('canvas');
-    const img    = qrBox.querySelector('img');
-    let dataUrl  = null;
-
-    if (canvas) {
-        // Add white padding for print quality
-        const padded = document.createElement('canvas');
-        padded.width  = canvas.width  + 32;
-        padded.height = canvas.height + 32;
-        const ctx = padded.getContext('2d');
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, padded.width, padded.height);
-        ctx.drawImage(canvas, 16, 16);
-        dataUrl = padded.toDataURL('image/png');
-    } else if (img) {
-        dataUrl = img.src;
-    }
-
-    if (dataUrl) {
-        const pName = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
-        const dppId = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
-        const link  = document.createElement('a');
-        link.download = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
-        link.href     = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } else {
-        // Fallback: download the text payload as .txt
-        const blob = new Blob([window._storyQRText || ''], { type: 'text/plain;charset=utf-8;' });
-        const url  = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = 'AIOXY_QR_payload.txt';
-        link.href     = url;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
-}
-window.downloadStoryQR = downloadStoryQR;
-
-
 window.exportCSRDMatrix = exportCSRDMatrix;
 console.log('✅ [AIOXY] audit-trail.js v4.0 loaded — All tab render bugs fixed');
