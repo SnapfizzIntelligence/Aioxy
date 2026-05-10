@@ -1754,10 +1754,11 @@ const gasCO2 = gasM3PerKg * 2.13;
             const totalMfgKwh    = kwhPerKgActual * prodWt;
 
             mfgResult = {
-                co2:            totalMfgCO2,
-                kwh:            totalMfgKwh,
-                fossilFraction: 1.0,
-                source:         'Primary Factory Data'
+                co2:                  totalMfgCO2,
+                kwh:                  totalMfgKwh,
+                fossilFraction:       1.0,
+                source:               'Primary Factory Data',
+                gridIntensityGPerKwh: gridIntensity   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
             };
 
             // Bug 8 fix: compute multi-category results for primary factory data
@@ -2268,7 +2269,7 @@ const gasCO2 = gasM3PerKg * 2.13;
 
             // Build flat name lists for anchor_name / anchor_used
             const conventionalNames = twinResult.ingredientPairs
-                .map(p => p.conventional || p.assessed)
+                .map(p => p.conventional?.name || p.assessed?.name || '')
                 .join(', ');
             const conventionalIds = compIn.ingredientMappings
                 .map(m => m.conventional ? (m.conventional.id || m.conventional.name) : (m.assessed.id || m.assessed.name))
@@ -2590,7 +2591,7 @@ const gasCO2 = gasM3PerKg * 2.13;
             parameters: {
                 country:                input.manufacturing.country,
                 energySource:           input.manufacturing.energySource,
-                gridIntensityGPerKwh:   mfgResult.gridIntensityGPerKwh ?? null   // BUG-11 FIX: expose grid intensity so audit-trail.js and CSV export can read it
+                gridIntensityGPerKwh:   mfgResult.gridIntensityGPerKwh ?? null   // BUG-11 FIX: gridIntensity is local to processManufacturing and not in scope here; use null when primary factory data path omits it (baked into elecCO2 already)
             },
             residual_mix: mfgResult.residual_mix_available ? {
                 source:     mfgResult.residual_mix_source,

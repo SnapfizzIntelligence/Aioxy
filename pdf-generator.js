@@ -1309,7 +1309,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             fix(d.GeR || d.geographical || 0, 1),
             fix(d.CoR || d.completeness || 0, 1),
             fix(d.RR  || d.reliability  || 0, 1),
-            fix(d.overall || 0, 2)
+            fix(d.dqr || d.overall || 0, 2)
         ]);
 
         if (dqrRows.length > 0) {
@@ -1345,11 +1345,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         Y = subHeader('Monte Carlo Uncertainty Analysis', Y);
 
         const mc      = unc;
-        const mcMed   = mc.median         || mc.mean         || ccTotal;
-        const mcP5    = mc.p5_lower_bound || mc.p5           || (mcMed * 0.85);
-        const mcP95   = mc.p95_upper_bound|| mc.p95          || (mcMed * 1.15);
-        const mcIter  = mc.iterations     || 1000;
-        const mcCV    = mc.cv_percent      || audit.uncertainty_analysis?.overall_uncertainty || 15;
+        // unc is keyed by category name — extract Climate Change sub-object for real MC values.
+        // mc.p5 / mc.p95 don't exist at the top level; they live under unc['Climate Change'].
+        // Divide by pWeightKg here so mcP5/mcP95 are in the same absolute units ccTotal uses.
+        const ccMC    = unc['Climate Change'] || {};
+        const mcMed   = (ccMC.mean   > 0 ? ccMC.mean   : null) || ccTotal * pWeightKg;
+        const mcP5    = (ccMC.p5     > 0 ? ccMC.p5     : null) || (mcMed * 0.85);
+        const mcP95   = (ccMC.p95    > 0 ? ccMC.p95    : null) || (mcMed * 1.15);
+        const mcIter  = ccMC.iterations || mc.iterations || 1000;
+        const mcCV    = ccMC.cv_percent  || mc.cv_percent || audit.uncertainty_analysis?.overall_uncertainty || 15;
 
         Y = traceBlock([
             'Method: Lognormal uncertainty propagation',

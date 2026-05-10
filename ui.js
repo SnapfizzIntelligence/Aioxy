@@ -1283,14 +1283,16 @@ function displayPEFSingleScore() {
                         ${(() => {
                             const cc = window.auditTrailData.uncertainty_analysis.monte_carlo['Climate Change'];
                             if (!cc || cc.mean === 0) return '<div style="color:var(--gray);">Climate Change: N/A</div>';
-                            const range = (cc.p95 - cc.p5);
+                            const p5perKg  = cc.p5  / productWeightKg;
+                            const p95perKg = cc.p95 / productWeightKg;
+                            const range    = (p95perKg - p5perKg);
                             return `
                             <div style="display: flex; justify-content: space-between;">
                                 <span>Climate Change:</span>
-                                <span>±${range.toFixed(2)} kg</span>
+                                <span>±${range.toFixed(2)} kg/kg</span>
                             </div>
                             <div style="font-size: 0.8rem; color: var(--gray);">
-                                90% confidence: ${cc.p5.toFixed(2)} to ${cc.p95.toFixed(2)} kg
+                                90% confidence: ${p5perKg.toFixed(2)} to ${p95perKg.toFixed(2)} kg CO₂e/kg
                             </div>`;
                         })()}
                     </div>
@@ -1298,14 +1300,16 @@ function displayPEFSingleScore() {
                         ${(() => {
                             const wa = window.auditTrailData.uncertainty_analysis.monte_carlo['Water Use/Scarcity (AWARE)'];
                             if (!wa || wa.mean === 0) return '<div style="color:var(--gray);">Water Scarcity: N/A</div>';
-                            const range = (wa.p95 - wa.p5);
+                            const p5perKg  = wa.p5  / productWeightKg;
+                            const p95perKg = wa.p95 / productWeightKg;
+                            const range    = (p95perKg - p5perKg);
                             return `
                             <div style="display: flex; justify-content: space-between;">
                                 <span>Water Scarcity:</span>
-                                <span>±${range.toFixed(2)} m³</span>
+                                <span>±${range.toFixed(2)} m³/kg</span>
                             </div>
                             <div style="font-size: 0.8rem; color: var(--gray);">
-                                90% confidence: ${wa.p5.toFixed(2)} to ${wa.p95.toFixed(2)} m³
+                                90% confidence: ${p5perKg.toFixed(2)} to ${p95perKg.toFixed(2)} m³ world eq./kg
                             </div>`;
                         })()}
                     </div>

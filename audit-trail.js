@@ -633,7 +633,11 @@ function displayAuditTrail() {
         const pairs = window.currentComparisonBaseline.ingredientPairs;
         const assessedTotal     = window.currentComparisonBaseline.assessed_co2PerKg || 0;
         const conventionalTotal = window.currentComparisonBaseline.co2PerKg || window.currentComparisonBaseline.conventionalTotal?.co2PerKg || 0;   // BUG-12 FIX: co2PerKg is top-level on baseline object, conventionalTotal sub-object does not exist
-        const delta    = window.currentComparisonBaseline.delta || 0;
+        // twinResult.delta is ABSOLUTE batch CO2e (conventionalCO2Total - assessedCO2Total in kg for the batch).
+        // conventionalTotal is per-kg. Must convert delta to per-kg first before computing percentage.
+        const deltaAbsolute = window.currentComparisonBaseline.delta || 0;
+        const productWtKg   = mb?.final_content_weight_kg || 0.2;
+        const delta         = deltaAbsolute / productWtKg;   // now per-kg, same unit as conventionalTotal
         const deltaPct = conventionalTotal > 0 ? ((delta / conventionalTotal) * 100).toFixed(1) : '0.0';
         const deltaSign = delta >= 0 ? '+' : '';
 
