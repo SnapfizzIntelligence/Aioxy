@@ -2734,17 +2734,19 @@ return {
             packaging:     sharedPackagingCO2
         };
 
-        // FIX 4: Compute total recipe mass so that absolute batch totals can be
-        // converted to per-kg values before being stored in the *PerKg fields.
-        // FIX 5: Each side uses its OWN total mass as denominator. Previously both
-        // sides used assessedMassKg, so the conventional total never changed no matter
-        // what ingredients were added — producing a stuck 3.63 figure. Now the
-        // conventional side reflects its actual ingredient quantities.
+        // PEF 3.1 functional unit = 1 kg of product as sold.
+        // Both the assessed and conventional sides must be divided by the same
+        // declared product weight so their co2PerKg values are on an identical basis
+        // and directly comparable to the main engine's co2PerKg.
+        // sharedParams.productWeightKg is set by calculation_engine.js from input.product.weightKg.
+        // Fallback to assessed ingredient mass only if productWeightKg is absent (defensive).
         const assessedMassKgForPerKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
-        const safeAssessedMassKg = assessedMassKgForPerKg > CONSTANTS.MATH.ZERO ? assessedMassKgForPerKg : 1;
+        const safeProductWeightKg = (sharedParams.productWeightKg > CONSTANTS.MATH.ZERO)
+            ? sharedParams.productWeightKg
+            : (assessedMassKgForPerKg > CONSTANTS.MATH.ZERO ? assessedMassKgForPerKg : 1);
 
-        const conventionalMassKgForPerKg = conventionalRecipe.reduce((s, ing) => s + (ing ? ing.quantityKg : CONSTANTS.MATH.ZERO), CONSTANTS.MATH.ZERO);
-        const safeConventionalMassKg = conventionalMassKgForPerKg > CONSTANTS.MATH.ZERO ? conventionalMassKgForPerKg : safeAssessedMassKg;
+        const safeAssessedMassKg     = safeProductWeightKg;
+        const safeConventionalMassKg = safeProductWeightKg;
 
         return {
             name: `Parametric Twin: ${assessedRecipe.map(i => i.name || i.id).join(', ')} vs Conventional`,
