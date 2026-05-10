@@ -2589,7 +2589,7 @@ const gasCO2 = gasM3PerKg * 2.13;
             parameters: {
                 country:                input.manufacturing.country,
                 energySource:           input.manufacturing.energySource,
-                gridIntensityGPerKwh:   mfgResult.gridIntensityGPerKwh || gridIntensity   // BUG-11 FIX: expose grid intensity so audit-trail.js and CSV export can read it
+                gridIntensityGPerKwh:   mfgResult.gridIntensityGPerKwh ?? null   // BUG-11 FIX: expose grid intensity so audit-trail.js and CSV export can read it
             },
             residual_mix: mfgResult.residual_mix_available ? {
                 source:     mfgResult.residual_mix_source,
