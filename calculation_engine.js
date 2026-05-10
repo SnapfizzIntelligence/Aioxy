@@ -2649,7 +2649,7 @@ const gasCO2 = gasM3PerKg * 2.13;
                 compliance_statement: 'Screening-level assessment per ISO 14040:2006 and ISO 14044:2006.',
                 principles: {
                     system_boundary: 'Cradle-to-Retail',
-                    functional_unit: input.product.weightKg + ' kg',
+                    functional_unit: '1 kg of product as sold',   // BUG-19 FIX: functional unit is always 1 kg; input.product.weightKg (e.g. 0.2 kg) is the formulation batch weight used for per-kg normalisation
                     allocation:      'Economic allocation per ISO 14044'
                 }
             },
