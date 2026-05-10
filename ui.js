@@ -306,7 +306,9 @@ function updateResultsUI(results) {
     }
 
     // =====================================================================
-    // 🚀 FRONT-OF-PACK (FOP) ECO-SCORE ENGINE (ADEME/PEF 3.1)
+    // 🚀 FRONT-OF-PACK (FOP) ECO-SCORE ENGINE
+    // BUG-16 FIX: Thresholds (150/250/400/600 µPt) are AIOXY internal benchmarks.
+    // They are NOT sourced from ADEME or PEF 3.1. Do not attribute externally.
     // =====================================================================
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     const singleScoreData = window.auditTrailData?.pef_single_score || { singleScore: 0 };
@@ -314,7 +316,7 @@ function updateResultsUI(results) {
         ? singleScoreData.singleScore
         : 0;
 
-    // Strictly aligned with ADEME / PEF 3.1 Eco-Score thresholds (µPt per kg)
+    // Indicative µPt grade bands — AIOXY internal benchmarks only, not ADEME or PEF 3.1 thresholds
     let ecoGrade = 'E';
     let ecoColor = '#E63946'; // Red
     if (mPtScore < 150) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
@@ -341,7 +343,7 @@ function updateResultsUI(results) {
                         <h3 style="margin: 0; color: var(--primary); font-size: 1.25rem;">Front-of-Pack (FOP) Eco-Score</h3>
                     </div>
                     <div style="font-size: 0.9rem; color: var(--gray); max-width: 450px;">
-                        Consumer-facing environmental grade based on ADEME & PEF 3.1 thresholds (${mPtScore.toFixed(1)} µPt). <strong>Ready for packaging integration.</strong>
+                        Consumer-facing environmental grade based on internal µPt benchmarks (${mPtScore.toFixed(1)} µPt). <strong>For internal use — not for external environmental claims.</strong>
                     </div>
                 </div>
                 <div style="display: flex; gap: 4px; align-items: flex-end;">
@@ -383,7 +385,7 @@ function updateResultsUI(results) {
     if (pairs && pairs.length > 0) {
         const assessedTotal  = resolvedBaseline.assessed_co2PerKg  ?? 0;
         const conventTotal   = resolvedBaseline.co2PerKg           ?? 0;
-        const netDelta       = resolvedBaseline.delta               ?? (assessedTotal - conventTotal);
+        const netDelta       = assessedTotal - conventTotal;  // BUG-24 FIX: always compute from product totals; resolvedBaseline.delta holds per-pair delta not product total
         const deltaPct       = conventTotal > 0 ? ((netDelta / conventTotal) * 100).toFixed(1) : '0.0';
         const deltaPctAbs    = Math.abs(parseFloat(deltaPct)).toFixed(1);
         const deltaSign      = netDelta <= 0 ? '↓' : '↑';
@@ -600,7 +602,7 @@ function updateResultsUI(results) {
                     <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${userCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
                 </div>
                 <div>
-                    <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${resolvedBaseline.name} (~${baselineProteinPer100g}g protein/100g)</div>
+                    <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${resolvedBaseline.name} (~${parseFloat(baselineProteinPer100g.toFixed(1))}g protein/100g)</div>
                     <div style="font-size: 1.25rem; font-weight: bold; color: var(--gray);">${baseCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
                 </div>
             </div>
@@ -1315,7 +1317,7 @@ function displayPEFSingleScore() {
                 </div>
             `}
             <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--gray);">
-                <i class="fas fa-info-circle"></i> Based on 500 Monte Carlo simulations with DQR-based uncertainty
+                <i class="fas fa-info-circle"></i> Based on 1000 Monte Carlo simulations with DQR-based uncertainty
             </div>
         </div>
 
@@ -1338,7 +1340,7 @@ function displayPEFSingleScore() {
                         ${Object.entries(singleScoreResult.breakdown).map(([cat, data]) => `
                             <tr style="border-bottom: 1px solid var(--border);">
                                 <td style="padding: 0.5rem;"><strong>${cat}</strong></td>
-                                <td style="padding: 0.5rem; text-align: right;">${data.raw.toFixed(4)} <span style="color:var(--gray); font-size:0.75rem;">${data.unit || ''}</span></td>
+                                <td style="padding: 0.5rem; text-align: right;">${Math.abs(data.raw) > 0 && Math.abs(data.raw) < 0.0001 ? data.raw.toExponential(3) : data.raw.toFixed(4)} <span style="color:var(--gray); font-size:0.75rem;">${data.unit || ''}</span></td>
                                 <td style="padding: 0.5rem; text-align: right;">${data.normalized.toExponential(3)}</td>
                                 <td style="padding: 0.5rem; text-align: right;">${data.weighted.toExponential(3)}</td>
                                 <td style="padding: 0.5rem; text-align: right;">${singleScoreResult.weightedScore > 0 ? (data.weighted / singleScoreResult.weightedScore * 100).toFixed(1) : '0.0'}%</td>
@@ -2598,7 +2600,7 @@ function displayCompleteAuditTrail() {
                         ` : ''}
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (ADEME)</div>
+                        <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (Internal)</div>
                         
                         ${(() => {
                             const score = audit.pef_single_score?.singleScore || 0;
