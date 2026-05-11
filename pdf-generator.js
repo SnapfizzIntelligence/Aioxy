@@ -1253,10 +1253,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         const ssRows = Object.entries(ssBkd).map(([cat, data]) => [
             safe(cat),
-            numFmt(data.impact || 0, 5),
-            numFmt(data.normalizedImpact || 0, 6),
-            numFmt(data.weightedImpact || 0, 6),
-            numFmt(data.microPoints || 0, 3)
+            numFmt(data.raw            || data.impact             || 0, 5),
+            numFmt(data.normalized     || data.normalizedImpact   || 0, 6),
+            numFmt(data.weighted       || data.weightedImpact     || 0, 6),
+            numFmt((data.weighted != null ? data.weighted * 1e6 : null) ?? data.microPoints ?? 0, 3)
         ]);
 
         if (ssRows.length > 0) {

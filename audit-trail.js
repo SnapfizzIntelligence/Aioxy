@@ -624,6 +624,7 @@ function displayAuditTrail() {
                     <tr style="font-weight: bold; background: #E2E8F0;"><td style="padding: 8px 0; font-size: 0.95rem;">TOTAL PARAMETRIC TWIN BASELINE</td><td style="text-align: right; font-family: monospace; font-size: 0.95rem;">${b.co2PerKg ? b.co2PerKg.toFixed(4) : '0.0000'} kg CO₂e/kg</td></tr>
                 </table>
                 <div style="margin-top: 10px; color: #27AE60; font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Functional Equivalence Verified per ISO 14044 §4.2.3.2</div>
+                <div style="margin-top: 6px; color: #888; font-size: 0.75rem; font-style: italic;"><i class="fas fa-info-circle"></i> Twin uses AGRIBALYSE 3.2 baseline for all ingredients. Supplier primary data adjustments (yield, nitrogen) are applied in the main assessment only and are not carried into the parametric twin. This is intentional: the twin compares standard industry baselines, not supplier-specific actuals.</div>
             </div>
         </div>`;
     }
@@ -1080,7 +1081,7 @@ function exportCSRDMatrix() {
             (d.GeR || d.geographical  || 0).toFixed(1),
             (d.CoR || d.completeness  || 0).toFixed(1),
             (d.RR  || d.reliability   || 0).toFixed(1),
-            (d.overall || 0).toFixed(2),
+            (d.dqr || d.overall || 0).toFixed(2),
             d.source || 'AGRIBALYSE 3.2 metadata'
         ].map(q).join(','));
     });
