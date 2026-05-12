@@ -2300,10 +2300,30 @@
 
                 <!-- ═══ CROP-SPECIFIC FIELDS (hidden when animal ingredient) ═══ -->
                 <div id="supplierCropSection">
-                    <div class="form-group"><label>Nitrogen Fertilizer (kg per ton of crop)</label><input type="number" id="primaryNitrogen" placeholder="e.g. 15"></div>
-                    <div class="form-group"><label>Yield (kg per hectare)</label><input type="number" id="primaryYield" placeholder="e.g. 5000"></div>
+                    <!-- CALCULATION INPUT: Nitrogen → IPCC Tier 1 N2O (direct + leaching + volatilization) -->
                     <div class="form-group">
-                        <label class="form-label">Irrigation Water Source</label>
+                        <label>Nitrogen Fertilizer (kg N per ton of crop)</label>
+                        <input type="number" id="primaryNitrogen" placeholder="e.g. 15">
+                        <small style="color:#555; font-size:0.75rem;">Source: IPCC 2006 Vol.4 Ch.11 — drives N₂O calculation (Climate Change + CC-Land Use)</small>
+                    </div>
+                    <!-- CALCULATION INPUT: Yield → composite multiplier applied to all 16 EF 3.1 categories -->
+                    <div class="form-group">
+                        <label>Yield (kg per hectare)</label>
+                        <input type="number" id="primaryYield" placeholder="e.g. 5000">
+                        <small style="color:#555; font-size:0.75rem;">Composite multiplier = (0.6 × yield_factor) + (0.4 × N_factor). Benchmarked against FAOSTAT country average.</small>
+                    </div>
+                    <!-- CALCULATION INPUT: Phosphorus → SALCA-P eutrophication freshwater (Nemecek et al. 2012) -->
+                    <!-- Engine formula: P_applied = (phosphorusKgPerTon/1000) × quantityKg; P_leach = P_applied × FRAC_RELE -->
+                    <!-- FRAC_RELE = 0.035 per SALCA-P (fraction of applied P that leaches to freshwater) -->
+                    <div class="form-group">
+                        <label>Phosphorus Fertilizer (kg P per ton of crop)</label>
+                        <input type="number" id="primaryPhosphorus" placeholder="e.g. 3.5" step="0.1" min="0">
+                        <small style="color:#555; font-size:0.75rem;">Source: SALCA-P (Nemecek et al. 2012) — drives Eutrophication, freshwater (kg P-eq). Leave blank to use AGRIBALYSE background value.</small>
+                    </div>
+                    <!-- AUDIT METADATA ONLY: Irrigation source — AWARE 2.0 country-level CFs already embed average irrigation. -->
+                    <!-- No separate calculation formula at PEF 3.1 screening level. Recorded for audit trail only. -->
+                    <div class="form-group">
+                        <label class="form-label">Irrigation Water Source <span style="font-size:0.7rem; color:#888; font-weight:400;">(Audit metadata — does not modify calculation)</span></label>
                         <select id="supplierWaterSource" class="form-control">
                             <option value="">Select...</option>
                             <option value="rainfed">Rainfed (no irrigation)</option>
@@ -2311,18 +2331,46 @@
                             <option value="groundwater">Groundwater (well)</option>
                             <option value="mixed">Mixed irrigation</option>
                         </select>
+                        <small style="color:#888; font-size:0.75rem;">AWARE 2.0 country-level CFs already embed average irrigation water use. Recorded in audit trail for Green Claims Directive substantiation.</small>
                     </div>
+                    <!-- AUDIT METADATA ONLY: Farming practice — calculation activates only when SOC data provided -->
                     <div class="form-group">
-                        <label class="form-label">Farming Practice</label>
-                        <select id="supplierPractice" class="form-control">
+                        <label class="form-label">Farming Practice <span style="font-size:0.7rem; color:#888; font-weight:400;">(Audit metadata — SOC sequestration activates when soil data entered below)</span></label>
+                        <select id="supplierPractice" class="form-control" onchange="toggleSOCFields(this.value)">
                             <option value="">Select...</option>
                             <option value="conventional">Conventional</option>
                             <option value="organic">Organic Certified</option>
                             <option value="regen">Regenerative Agriculture</option>
                             <option value="precision">Precision Farming</option>
                         </select>
+                        <small style="color:#888; font-size:0.75rem;">Organic/Conventional/Precision: recorded as audit metadata. Regenerative: activates SOC sequestration formula below.</small>
                     </div>
-                </div>
+
+                    <!-- SOC FIELDS: shown only when Farming Practice = Regenerative -->
+                    <!-- Formula: IPCC 2006 Vol.4 Ch.2 Eq.2.25 | PEF 3.1 §4.4.8 -->
+                    <!-- ΔC = (SOC_current − SOC_baseline) / 20yr × 3.667 × 1000 / yield_kg_per_ha -->
+                    <!-- Affects: Climate Change − Land Use + Climate Change total -->
+                    <div id="supplierSOCSection" style="display:none; background:#F0FFF4; padding:0.75rem; border-radius:8px; border:1px solid #9AE6B4; margin-bottom:0.75rem;">
+                        <div style="font-weight:700; color:#276749; font-size:0.82rem; margin-bottom:0.5rem;">
+                            🌱 SOC Sequestration — IPCC 2006 Vol.4 Ch.2 Eq.2.25
+                        </div>
+                        <small style="color:#276749; display:block; margin-bottom:0.6rem;">
+                            Provide measured soil organic carbon stocks to activate sequestration credit/penalty in Climate Change − Land Use.
+                            Amortized over 20 years per PEF 3.1 §4.4.8. Requires certified soil sampling at 0–30 cm depth.
+                        </small>
+                        <div class="form-group">
+                            <label>Baseline SOC Stock (t C / ha) — before regenerative practice</label>
+                            <input type="number" id="primarySOCBaseline" placeholder="e.g. 35.0" step="0.1" min="0">
+                            <small style="color:#555; font-size:0.75rem;">Measured stock before regenerative management began. Source: certified soil lab report (ISO 10694 or equivalent).</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Current SOC Stock (t C / ha) — latest measurement</label>
+                            <input type="number" id="primarySOCCurrent" placeholder="e.g. 38.5" step="0.1" min="0">
+                            <small style="color:#555; font-size:0.75rem;">Most recent measurement. Positive delta = sequestration (reduces CC). Negative delta = SOC loss (increases CC).</small>
+                        </div>
+                    </div>
+
+                </div><!-- end supplierCropSection -->
 
                 <!-- ═══ ANIMAL-SPECIFIC FIELDS (hidden when crop ingredient) ═══
                      IPCC Tier 1 methodology: IPCC 2006 Vol. 4, Ch. 10, confirmed in 2019 Refinement.
@@ -2345,8 +2393,10 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Production System</label>
-                        <select id="supplierProductionSystem" class="form-control">
+                        <label class="form-label">Production System
+                            <span style="font-size:0.7rem; color:#888; font-weight:400;">(Audit metadata — auto-suggests manure system)</span>
+                        </label>
+                        <select id="supplierProductionSystem" class="form-control" onchange="suggestManureSystem(this.value)">
                             <option value="">Select…</option>
                             <option value="intensive">Intensive Indoor</option>
                             <option value="free_range">Free Range</option>
@@ -2354,6 +2404,7 @@
                             <option value="pasture_fed">Pasture-Fed / Grass-Fed</option>
                             <option value="mixed">Mixed</option>
                         </select>
+                        <small style="color:#888; font-size:0.75rem;">IPCC 2006 Table 10.11 W. Europe enteric EF does not vary by production system — value is the same. Production system determines typical manure management. Recorded in audit trail.</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label" id="supplierProductivityLabel">Productivity (per animal per year)</label>

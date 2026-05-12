@@ -1747,6 +1747,34 @@
                 // FARMED FISH: zero enteric + zero manure N (aquatic pathway differs)
                 'farmed_fish': Object.freeze({ ef_ch4: 0,    n_excretion: 0    })
             }),
+
+            // AGRIBALYSE_DEFAULT_PRODUCTIVITY: French national average productivity per animal type.
+            // Used to compute the enteric CH4 DELTA when user provides actual productivity data
+            // and AGRIBALYSE 3.2 already embeds a default enteric value (entericIncluded=true).
+            // Formula: Δ_enteric = ef_ch4 × (1/user_productivity − 1/agri_default) × GWP_CH4
+            // Sources:
+            //   dairy_cow:   CNIEL/IDELE France Chiffres-Clés 2022 — 8,230 kg milk/cow/year
+            //   beef_cattle: Eurostat + Institut de l'Élevage (IDELE) France 2022 — 329 kg CW/animal
+            //   pig:         IFIP France 2022 — 95 kg live weight/pig
+            //   sheep:       Institut de l'Élevage France 2022 — 22 kg CW/animal
+            //   goat:        Institut de l'Élevage France 2022 — 850 kg milk/goat/year
+            //   broiler:     ITAVI France 2022 — 2.3 kg live weight/bird
+            //   layer_hen:   ITAVI France 2022 — 14.5 kg eggs/year
+            //   turkey:      ITAVI France 2022 — 14.0 kg live weight/bird
+            //   farmed_fish: FranceAgriMer Aquaculture 2022 — 3.5 kg/fish
+            //   Reference: ADEME (2019) Agribalyse 3.0 Technical Documentation (Collet et al.)
+            //              Section 4.3 — Livestock system modelling and productivity assumptions.
+            AGRIBALYSE_DEFAULT_PRODUCTIVITY: Object.freeze({
+                'dairy_cow':   8230,   // kg milk / cow / year
+                'beef_cattle': 329,    // kg carcass weight / animal
+                'pig':         95,     // kg live weight / pig
+                'sheep':       22,     // kg carcass weight / animal
+                'goat':        850,    // kg milk / goat / year
+                'broiler':     2.3,    // kg live weight / bird
+                'layer_hen':   14.5,   // kg eggs / year
+                'turkey':      14.0,   // kg live weight / bird
+                'farmed_fish': 3.5     // kg / fish
+            }),
             // manureEF: kg N2O-N per kg N excreted
             // IPCC 2006 Vol. 4 Table 10.21, confirmed unchanged in 2019 Refinement
             // Keys must match UI dropdown values in supplierManureSystem

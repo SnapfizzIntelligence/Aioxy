@@ -1190,25 +1190,77 @@ if (!traceability.usetox) {
                         const entericAlreadyIncluded = (ingDataMeta && ingDataMeta.entericIncluded === true);
 
                         if (entericAlreadyIncluded) {
-                            // AGRIBALYSE embeds its own default enteric EF.
-                            // We must replace it with the supplier's actual value.
-                            // Compute AGRIBALYSE embedded enteric using the same formula with
-                            // the Tier 1 default productivity (productPerHeadPerYear as fallback).
-                            // Delta = supplierActual - agribalyseDefault
-                            // Since we don't have the AGRIBALYSE enteric split separately,
-                            // we apply a net adjustment by adding the delta to CC-Biogenic.
-                            // Conservative approach: net adjustment only if supplier EF differs.
-                            // For Tier 1 defaults matched exactly, delta = 0 (no change).
-                            // Note: Full delta calculation requires the AGRIBALYSE embedded EF
-                            // value per kg — deferred to Phase 2 when that data is available.
-                            adjustments.enteric_applied = {
-                                applied:                  false,
-                                reason:                   'entericIncluded=true in AGRIBALYSE. ' +
-                                    'Delta adjustment deferred to Phase 2 ' +
-                                    '(requires AGRIBALYSE per-product embedded enteric EF).',
-                                supplier_enteric_co2e:    entericCO2e,
-                                ipcc_source:              'IPCC 2006 Vol. 4 Table 10.11, confirmed 2019 Refinement'
-                            };
+                            // GAP 2 FIX: ENTERIC DELTA ADJUSTMENT
+                            // AGRIBALYSE 3.2 embeds enteric CH4 modelled from French national average
+                            // productivity (ADEME/INRAE methodology, Collet et al. 2018, §4.3).
+                            // We cannot extract the embedded value directly, but we CAN compute
+                            // the delta between user's actual productivity and the AGRIBALYSE baseline.
+                            //
+                            // Formula:
+                            //   heads_user    = quantityKg / user_productivity
+                            //   heads_default = quantityKg / AGRIBALYSE_default_productivity
+                            //   Δ_enteric     = (heads_user − heads_default) × ef_ch4 × GWP_CH4(biogenic)
+                            //   Apply Δ_enteric to CC-Biogenic (enteric CH4 = biogenic carbon)
+                            //
+                            // Sign: if user productivity LOWER than default → more heads per kg → more CH4 → positive delta
+                            //       if user productivity HIGHER than default → fewer heads per kg → less CH4 → negative delta
+                            //
+                            // Sources: ADEME Agribalyse 3.0 Technical Documentation (Collet et al. 2018) §4.3
+                            //          CNIEL/IDELE France Chiffres-Clés 2022 (dairy)
+                            //          Institut de l'Élevage France 2022 (beef, sheep, goat)
+                            //          ITAVI France 2022 (poultry)
+                            //          IPCC 2006 Vol.4 Table 10.11 (ef_ch4)
+                            //          GWP_CH4_biogenic = 28 (IPCC AR5, PEF 3.1)
+
+                            const TIER1 = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
+                            const agriDefaultProd = TIER1.AGRIBALYSE_DEFAULT_PRODUCTIVITY[pd.animalType];
+
+                            if (agriDefaultProd && agriDefaultProd > 0 && productPerHeadPerYear > 0) {
+                                const GWP_CH4_BIO = 28;
+                                const headsUser    = ingredient.quantityKg / productPerHeadPerYear;
+                                const headsDefault = ingredient.quantityKg / agriDefaultProd;
+                                const deltaEntericCH4_kg  = (headsUser - headsDefault) * animalRow.ef_ch4;
+                                const deltaEntericCO2e    = deltaEntericCH4_kg * GWP_CH4_BIO;
+                                const deltaEntericPerKg   = deltaEntericCO2e / ingredient.quantityKg;
+
+                                if (Math.abs(deltaEntericPerKg) > 1e-6) {
+                                    flatPef['Climate Change']            += deltaEntericPerKg;
+                                    flatPef['Climate Change - Biogenic'] += deltaEntericPerKg;
+                                }
+
+                                adjustments.enteric_applied = {
+                                    applied:                        true,
+                                    method:                         'delta_vs_agribalyse_default',
+                                    animal_type:                    pd.animalType,
+                                    ef_ch4_per_head_yr:             animalRow.ef_ch4,
+                                    user_productivity:              productPerHeadPerYear,
+                                    agribalyse_default_productivity: agriDefaultProd,
+                                    heads_user:                     headsUser,
+                                    heads_agribalyse_default:       headsDefault,
+                                    delta_ch4_kg:                   deltaEntericCH4_kg,
+                                    delta_co2e_total:               deltaEntericCO2e,
+                                    delta_co2e_per_kg:              deltaEntericPerKg,
+                                    gwp_ch4_biogenic:               GWP_CH4_BIO,
+                                    note: deltaEntericPerKg < 0
+                                        ? 'User productivity ABOVE AGRIBALYSE default — enteric credit applied to CC-Biogenic'
+                                        : deltaEntericPerKg > 0
+                                            ? 'User productivity BELOW AGRIBALYSE default — enteric penalty applied to CC-Biogenic'
+                                            : 'User productivity matches AGRIBALYSE default — no delta',
+                                    sources: [
+                                        'ADEME Agribalyse 3.0 Technical Documentation (Collet et al. 2018) §4.3',
+                                        'CNIEL/IDELE/ITAVI France national average productivities 2022',
+                                        'IPCC 2006 Vol.4 Table 10.11',
+                                        'GWP_CH4_biogenic=28 IPCC AR5 PEF 3.1'
+                                    ]
+                                };
+                            } else {
+                                // No default productivity for this animal type — cannot compute delta
+                                adjustments.enteric_applied = {
+                                    applied: false,
+                                    reason:  'No AGRIBALYSE baseline productivity for animal type: ' + pd.animalType +
+                                             '. Delta cannot be computed. AGRIBALYSE embedded value used as-is.'
+                                };
+                            }
                         } else {
                             // AGRIBALYSE does NOT embed enteric — add the supplier's value directly.
                             // Applied to CC-Biogenic (enteric CH4 is biogenic carbon).
@@ -1451,24 +1503,57 @@ if (!traceability.usetox) {
                     };
                 }
 
-                // === GAP B: SOC Sequestration — Structural Placeholder ===
-                // Regenerative agriculture was selected (pd.farmingPractice === 'regen') but
-                // SOC sequestration per IPCC 2006 Vol. 4, Ch. 2, Eq. 2.25 is NOT yet quantified.
-                // Quantification requires farm-specific soil carbon measurements (baseline SOC stock
-                // in t C/ha, current SOC stock in t C/ha, sampling depth in cm, bulk density in g/cm³)
-                // which the current supplier data form does not collect. Adding a formula without
-                // this input data would be methodologically unsound. Constants are defined in
-                // core_physics.CONSTANTS.SOC (AMORTIZATION_YEARS=20, C_TO_CO2=3.667) per PEF 3.1 §4.4.8.
-                // Implementation is deferred to a future phase requiring supplier data form extension.
-                if (pd.farmingPractice === 'regen') {
-                    adjustments.soc_note = 'Regenerative agriculture selected. SOC sequestration per IPCC 2006 ' +
-                        'Vol. 4, Ch. 2, Eq. 2.25 (PEF 3.1 §4.4.8) is not yet quantified — requires ' +
-                        'farm-specific soil carbon measurement data (baseline SOC t C/ha, current SOC t C/ha, ' +
-                        'sampling depth cm, bulk density g/cm³) not collected in current supplier data form. ' +
-                        'Constants defined: core_physics.CONSTANTS.SOC.AMORTIZATION_YEARS=20, C_TO_CO2=3.667. ' +
-                        'Deferred to future phase requiring supplier data form extension.';
+                // === SOC SEQUESTRATION — IPCC 2006 Vol.4 Ch.2 Eq.2.25 (PEF 3.1 §4.4.8) ===
+                // Activated when user provides both socBaselineTC_ha and socCurrentTC_ha.
+                // Formula (direct soil carbon measurement approach — Tier 2/3):
+                //   ΔC = SOC_current − SOC_baseline  [t C / ha]
+                //   Annual flux = ΔC / AMORTIZATION_YEARS  [t C / ha / year]
+                //   CO2e per ha = annual_flux × C_TO_CO2  [t CO2e / ha / year]
+                //   CO2e per kg product = CO2e_per_ha × 1000 / yieldKgPerHa
+                //   Sign: negative = sequestration (removal from atmosphere) → reduces CC impact.
+                //         positive = SOC loss (carbon source) → increases CC impact.
+                // Category: Climate Change − Land Use (soil C stock = land-use related per PEF 3.1)
+                //           and Climate Change total.
+                // Sources: IPCC 2006 Vol.4 Ch.2 Eq.2.25 | PEF 3.1 §4.4.8 | Nemecek & Kägi (2007)
+                if (pd.farmingPractice === 'regen' &&
+                    pd.socBaselineTC_ha != null && pd.socCurrentTC_ha != null &&
+                    pd.yieldKgPerHa > 0) {
+
+                    const SOC = window.corePhysics.CONSTANTS.SOC;
+                    const deltaC_t_per_ha = pd.socCurrentTC_ha - pd.socBaselineTC_ha;
+                    // t CO2e per ha per year (20yr amortization)
+                    const annualCO2e_per_ha = (deltaC_t_per_ha / SOC.AMORTIZATION_YEARS) * SOC.C_TO_CO2;
+                    // kg CO2e per kg product (1000 converts t→kg; yieldKgPerHa converts ha→kg)
+                    const socCO2e_per_kg = -(annualCO2e_per_ha * 1000) / pd.yieldKgPerHa;
+                    // Apply: negative = sequestration credit, positive = SOC loss penalty
+                    flatPef['Climate Change - Land Use'] += socCO2e_per_kg;
+                    flatPef['Climate Change']            += socCO2e_per_kg;
+
+                    adjustments.soc_sequestration = {
+                        applied:                  true,
+                        soc_baseline_tC_per_ha:   pd.socBaselineTC_ha,
+                        soc_current_tC_per_ha:    pd.socCurrentTC_ha,
+                        delta_tC_per_ha:          deltaC_t_per_ha,
+                        amortization_years:       SOC.AMORTIZATION_YEARS,
+                        c_to_co2_factor:          SOC.C_TO_CO2,
+                        annual_co2e_per_ha:       annualCO2e_per_ha,
+                        co2e_per_kg_product:      socCO2e_per_kg,
+                        direction:                deltaC_t_per_ha >= 0 ? 'sequestration (removal)' : 'SOC loss (source)',
+                        category_affected:        'Climate Change - Land Use + Climate Change total',
+                        formula: 'IPCC 2006 Vol.4 Ch.2 Eq.2.25: ΔC=(SOC_current−SOC_baseline)/D×C_TO_CO2×1000/yield',
+                        source:  'IPCC 2006 Vol.4 Ch.2 Eq.2.25 | PEF 3.1 §4.4.8 | Nemecek & Kägi (2007)'
+                    };
+                } else if (pd.farmingPractice === 'regen') {
+                    // Regen selected but soil carbon measurements not provided
+                    adjustments.soc_note = {
+                        applied: false,
+                        reason:  'Regenerative agriculture selected but SOC measurements not provided. ' +
+                                 'Enter Baseline SOC (t C/ha) and Current SOC (t C/ha) in supplier form to activate. ' +
+                                 'Formula: IPCC 2006 Vol.4 Ch.2 Eq.2.25, PEF 3.1 §4.4.8. ' +
+                                 'Recorded as audit metadata only.'
+                    };
                 }
-                // === END GAP B ===
+                // === END SOC SEQUESTRATION ===
 
             // === USEtox 2.14: Substance-specific pesticide toxicity ===
 if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {

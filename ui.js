@@ -1945,8 +1945,12 @@ function openSupplierModal(index) {
     // Crop fields
     document.getElementById('primaryNitrogen').value     = '';
     document.getElementById('primaryYield').value        = '';
+    document.getElementById('primaryPhosphorus').value   = ''; // PHOSPHORUS FIX
     document.getElementById('supplierWaterSource').value = '';
     document.getElementById('supplierPractice').value    = '';
+    document.getElementById('primarySOCBaseline').value  = ''; // SOC FIX
+    document.getElementById('primarySOCCurrent').value   = ''; // SOC FIX
+    toggleSOCFields(''); // hide SOC section on fresh open
     document.getElementById('pesticide1Name').value      = '';
     document.getElementById('pesticide1CAS').value       = '';
     document.getElementById('pesticide1Rate').value      = '';
@@ -2000,10 +2004,14 @@ function openSupplierModal(index) {
             updateProductivityLabel();
         } else {
             // Restore crop fields
-            document.getElementById('primaryNitrogen').value     = pd.nitrogenKgPerTon || '';
-            document.getElementById('primaryYield').value        = pd.yieldKgPerHa     || '';
-            document.getElementById('supplierWaterSource').value = pd.waterSource       || '';
-            document.getElementById('supplierPractice').value    = pd.farmingPractice  || '';
+            document.getElementById('primaryNitrogen').value     = pd.nitrogenKgPerTon    || '';
+            document.getElementById('primaryYield').value        = pd.yieldKgPerHa        || '';
+            document.getElementById('primaryPhosphorus').value   = pd.phosphorusKgPerTon  || ''; // PHOSPHORUS FIX
+            document.getElementById('supplierWaterSource').value = pd.waterSource         || '';
+            document.getElementById('supplierPractice').value    = pd.farmingPractice     || '';
+            document.getElementById('primarySOCBaseline').value  = pd.socBaselineTC_ha    || ''; // SOC FIX
+            document.getElementById('primarySOCCurrent').value   = pd.socCurrentTC_ha     || ''; // SOC FIX
+            toggleSOCFields(pd.farmingPractice || ''); // show/hide SOC section based on saved practice
             if (pd.pesticides) {
                 var pest1 = pd.pesticides[0] || {};
                 var pest2 = pd.pesticides[1] || {};
@@ -2093,21 +2101,39 @@ function saveSupplierData() {
             },
 
             // Null out crop-specific fields so engine never mis-reads them
-            nitrogenKgPerTon: null,
-            yieldKgPerHa:     null,
-            waterSource:      null,
-            farmingPractice:  null,
-            pesticides:       null
+            nitrogenKgPerTon:  null,
+            yieldKgPerHa:      null,
+            phosphorusKgPerTon: null,
+            waterSource:       null,
+            farmingPractice:   null,
+
+            // ANIMAL PESTICIDE FIX: was hardcoded null — now collects USEtox data for animal feeds.
+            // Feed crops (grains, soy, silage) can carry pesticide residues relevant to
+            // ecotoxicity and human toxicity. CAS + rate collected and passed to USEtox lookup.
+            // Source: USEtox 2.14 (Rosenbaum et al. 2011), SETAC/UNEP consensus model.
+            pesticides: (() => {
+                var _pests = [];
+                for (var _i = 1; _i <= 3; _i++) {
+                    var _n = document.getElementById('pesticide' + _i + 'Name').value.trim();
+                    var _c = document.getElementById('pesticide' + _i + 'CAS').value.trim();
+                    var _r = parseFloat(document.getElementById('pesticide' + _i + 'Rate').value);
+                    if (_n && _c && !isNaN(_r) && _r > 0) _pests.push({ name: _n, cas: _c, rateKgPerHa: _r });
+                }
+                return _pests.length > 0 ? _pests : null;
+            })()
         };
 
         console.log(`✅ [Supplier-Animal] Primary livestock data saved for ${ingredient.name} — type: ${animalType}, productivity: ${productivityMetric}, manure: ${manureSystem}`);
 
     } else {
-        // ── CROP PRIMARY DATA PATH (unchanged) ────────────────────────────────
-        const nitrogen = parseFloat(document.getElementById('primaryNitrogen').value);
-        const yieldVal = parseFloat(document.getElementById('primaryYield').value);
+        // ── CROP PRIMARY DATA PATH ────────────────────────────────
+        const nitrogen    = parseFloat(document.getElementById('primaryNitrogen').value);
+        const yieldVal    = parseFloat(document.getElementById('primaryYield').value);
+        const phosphorus  = parseFloat(document.getElementById('primaryPhosphorus').value); // PHOSPHORUS FIX
         const waterSource = document.getElementById('supplierWaterSource').value;
         const practice    = document.getElementById('supplierPractice').value;
+        const socBaseline = parseFloat(document.getElementById('primarySOCBaseline').value); // SOC FIX
+        const socCurrent  = parseFloat(document.getElementById('primarySOCCurrent').value);  // SOC FIX
 
         if (isNaN(nitrogen) || isNaN(yieldVal)) {
             alert('Please fill in required fields: Nitrogen Fertilizer and Yield');
@@ -2128,20 +2154,23 @@ function saveSupplierData() {
         selectedIngredients[currentIngredientIndex].primaryData = {
             farmRegion,
             geolocation,
-            ddsReference:     ddsRef,
-            nitrogenKgPerTon: nitrogen,
-            yieldKgPerHa:     yieldVal,
+            ddsReference:      ddsRef,
+            nitrogenKgPerTon:  nitrogen,
+            yieldKgPerHa:      yieldVal,
+            phosphorusKgPerTon: (!isNaN(phosphorus) && phosphorus > 0) ? phosphorus : null, // PHOSPHORUS FIX: null = use AGRIBALYSE background
             waterSource,
-            farmingPractice:  practice,
-            pesticides:       pesticides.length > 0 ? pesticides : null,
-            timestamp:        new Date().toISOString(),
+            farmingPractice:   practice,
+            socBaselineTC_ha:  (practice === 'regen' && !isNaN(socBaseline) && socBaseline > 0) ? socBaseline : null, // SOC FIX
+            socCurrentTC_ha:   (practice === 'regen' && !isNaN(socCurrent)  && socCurrent  > 0) ? socCurrent  : null, // SOC FIX
+            pesticides:        pesticides.length > 0 ? pesticides : null,
+            timestamp:         new Date().toISOString(),
 
             // Null out animal-specific fields
-            animalType:        null,
-            productionSystem:  null,
+            animalType:         null,
+            productionSystem:   null,
             productivityMetric: null,
-            manureSystem:      null,
-            entericParams:     null
+            manureSystem:       null,
+            entericParams:      null
         };
 
         console.log(`✅ [Supplier-Crop] Primary data saved for ${ingredient.name}`);
@@ -2152,7 +2181,58 @@ function saveSupplierData() {
     closeSupplierModal();
 }
 
-function generateSupplierLink() {
+/**
+ * toggleSOCFields
+ * Shows the SOC measurement section only when Farming Practice = Regenerative.
+ * IPCC 2006 Vol.4 Ch.2 Eq.2.25 SOC formula only activates with measured soil carbon data.
+ * Other farming practices are recorded as audit metadata only.
+ */
+function toggleSOCFields(practice) {
+    const socSection = document.getElementById('supplierSOCSection');
+    if (!socSection) return;
+    if (practice === 'regen') {
+        socSection.style.display = 'block';
+    } else {
+        socSection.style.display = 'none';
+        // Clear SOC values when switching away from regen
+        const baseEl = document.getElementById('primarySOCBaseline');
+        const currEl = document.getElementById('primarySOCCurrent');
+        if (baseEl) baseEl.value = '';
+        if (currEl) currEl.value = '';
+    }
+}
+
+/**
+ * suggestManureSystem
+ * Production system does not change IPCC Tier 1 enteric EF for Western Europe
+ * (Table 10.11 values are the same regardless of indoor/outdoor).
+ * BUT production system strongly implies the typical manure management system
+ * per IPCC 2006 Vol.4 Table 10.21.
+ * This function auto-selects the most appropriate manure system when user
+ * picks a production system — user can always override.
+ * Sources: IPCC 2006 Vol.4 Ch.10, Table 10.21 + FAO Livestock Handbook (2011).
+ */
+function suggestManureSystem(productionSystem) {
+    const manureEl = document.getElementById('supplierManureSystem');
+    if (!manureEl || manureEl.value) return; // don't overwrite if user already chose
+
+    const suggestions = {
+        'intensive':   'pit_storage',   // Indoor intensive → liquid/slurry pit (IPCC Table 10.21 default for confinement)
+        'free_range':  'pasture',       // Free range → pasture/range/paddock
+        'organic':     'pasture',       // Organic → pasture (EU Organic Reg. 2018/848 requires outdoor access)
+        'pasture_fed': 'pasture',       // Pasture-fed → pasture (by definition)
+        'mixed':       'dry_lot'        // Mixed → dry lot as conservative default
+    };
+
+    const suggestion = suggestions[productionSystem];
+    if (suggestion) {
+        manureEl.value = suggestion;
+        // Visual hint to user that this was auto-suggested
+        manureEl.style.borderColor = '#48BB78';
+        manureEl.title = 'Auto-suggested based on production system. Override if different.';
+        setTimeout(() => { manureEl.style.borderColor = ''; }, 3000);
+    }
+}
     if (currentIngredientIndex === null) {
         alert("Please select an ingredient first.");
         return;
