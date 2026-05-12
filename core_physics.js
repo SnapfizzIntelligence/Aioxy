@@ -214,11 +214,11 @@
 
             // GLEC v3.2 Module 1, Diesel-Biofuel Blends table (p. 88):
             // 100% Diesel: LHV 42.8 MJ/kg, TTW = 75.3 gCO2/MJ.
-            // kg CO2e / MJ = 0.07530 → reciprocal for MJ/kg CO2e = 13.28
-            // NOTE: DIESEL_CO2_PER_MJ is used for fossil resource calculation
-            // (MJ of diesel per kg CO2 emitted), not for emission factor derivation.
-            // Value retained from prior version; independent of GLEC EF tables.
-            DIESEL_CO2_PER_MJ: 11.11,
+            // kg CO2e / MJ = 0.07530 → reciprocal for MJ/kg CO2e = 1/0.07530 = 13.28
+            // BUG M5 FIX: Was 11.11 (= 1/0.09, no cited source). Corrected to 13.28
+            // per GLEC v3.2 Module 1 Diesel-Biofuel Blends table cited above.
+            // Used for fossil resource MJ calculation in parametric twin only.
+            DIESEL_CO2_PER_MJ: 13.28,
             PACKAGING_FOSSIL_MJ_PER_KG_CO2: 20.0,
 
             // ----------------------------------------------------------------

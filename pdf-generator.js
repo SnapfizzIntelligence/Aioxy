@@ -108,11 +108,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         // ── PAGE UTILITIES ───────────────────────────────────
         let pageNum = 0;
-        // BUG-23 FIX: TOTAL_PAGES was hardcoded as 13 — wrong for variable-ingredient products.
-        // We now compute it retroactively after all pages are rendered using doc.internal.getNumberOfPages(),
-        // then loop back and overwrite the page number area on every page with the correct total.
-        // TOTAL_PAGES is kept as a mutable reference so newPage() can still write a placeholder during render.
-        let TOTAL_PAGES = '??'; // placeholder during render — replaced retroactively at end
+        const _pageSectionLabels = {}; // BUG D2 FIX: track section label per page for retroactive footer correction
+        // TOTAL_PAGES computed retroactively after all pages rendered — see end of function
+        let TOTAL_PAGES = '??'; // placeholder during render
 
         const newPage = (sectionTitle) => {
             doc.addPage();
@@ -129,6 +127,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         };
 
         const footer = (label) => {
+            // BUG D2 FIX: Store section labels per page number for retroactive footer fix
+            _pageSectionLabels[pageNum] = label;
             doc.setFillColor(...C.navyDark);
             doc.rect(0, PH - 8, PW, 8, 'F');
             doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
@@ -375,15 +375,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 doc.text(safe(unit), bX + 75, Y + 4);
 
                 // Formula line: CF x qty = total
-                // BUG-08 FIX: For primary-data ingredients, the total includes composite multiplier
-                // and/or N2O additions on top of CF × qty. Annotate so auditors aren't confused
-                // by the apparent arithmetic mismatch.
+                // BUG C2 FIX: perKg is the BASE AGRIBALYSE value. For primary-data adjusted
+                // ingredients, totalV includes composite multiplier + N2O additions, so
+                // perKg × qty ≠ totalV — the displayed formula was arithmetically false.
+                // Fix: for adjusted ingredients, show the effective CF (totalV / qty) so the
+                // formula is always correct. Show base CF as a separate reference line.
                 T.mono(); doc.setFontSize(6.5);
                 doc.setTextColor(...(isCC ? C.white : C.bodyDark));
-                const cfStr    = numFmt(perKg, 5);
+                const effectiveCF = (qty > 0) ? (totalV / qty) : perKg;
+                const cfDisplayed = (hasPD && Math.abs(effectiveCF - perKg) > 1e-9) ? effectiveCF : perKg;
+                const cfStr    = numFmt(cfDisplayed, 5);
                 const totStr   = numFmt(totalV, 5);
-                const pdNote   = hasPD ? '  [incl. primary data adj. — see detail below]' : '';
-                const formula  = cfStr + ' ' + unit + '/kg  x  ' + fix(qty,4) + ' kg  =  ' + totStr + ' ' + unit + (isCC ? pdNote : '');
+                const pdNote   = (hasPD && Math.abs(effectiveCF - perKg) > 1e-9)
+                    ? '  [adj. CF — base AGRIBALYSE: ' + numFmt(perKg, 5) + ' ' + unit + '/kg]'
+                    : (hasPD ? '  [primary data adj. applied]' : '');
+                const formula  = cfStr + ' ' + unit + '/kg  x  ' + fix(qty,4) + ' kg  =  ' + totStr + ' ' + unit + (isCC ? pdNote : (hasPD ? pdNote : ''));
                 doc.text(safe(formula), bX + 2, Y + 8);
 
                 Y += rowH;
@@ -696,12 +702,17 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('Source: Engine contribution tree  |  All values: kg CO2e per kg product', M, Y); Y += 5;
 
+        // BUG D3 FIX: Waste was displayed as a life cycle stage alongside Ingredients,
+        // Manufacturing, Transport, Packaging — with a percentage of the TOTAL. This was
+        // misleading because waste is informational only and NOT included in the TOTAL.
+        // A reader seeing "Waste 21.6%" could believe the total includes waste. It does not.
+        // Fix: render the 4 real stages first (sum = TOTAL), then show waste separately below
+        // as an informational line with an explicit "not in TOTAL" label.
         const stages = [
             { name: 'Ingredients',    val: ingCC },
             { name: 'Manufacturing',  val: mfgCC },
             { name: 'Transport',      val: transCC },
-            { name: 'Packaging',      val: pkgCC },
-            { name: 'Waste',          val: wasteCC }
+            { name: 'Packaging',      val: pkgCC }
         ];
         const maxVal    = Math.max(...stages.map(s => Math.abs(s.val)), 0.001);
         const barMaxW   = CW - 60;
@@ -732,6 +743,17 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.setTextColor(...C.teal);
         doc.text(numFmt(ccPerKg,4) + ' kg CO2e / kg product', M + 28, Y + 5);
         Y += 10;
+
+        // BUG D3 FIX: Waste displayed as informational line BELOW the total, not as a stage
+        if (wasteCC && wasteCC > 0) {
+            doc.setFont('helvetica','italic'); doc.setFontSize(7); doc.setTextColor(...C.bodyMid);
+            doc.text(
+                'Processing waste (informational — not in TOTAL): ' +
+                numFmt(wasteCC/pWeightKg, 4) + ' kg CO2e/kg  — ISO 14044 §4.2.3.3',
+                M, Y + 4
+            );
+            Y += 8;
+        }
 
         hRule(Y); Y += 5;
 
@@ -1299,7 +1321,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // DQR
         Y = subHeader('Data Quality Rating — per ingredient (PEF 3.1 §5.7)', Y);
         T.small(); doc.setTextColor(...C.bodyMid);
-        doc.text('Formula: DQR = (TeR + TiR + GeR + CoR + RR) / 5   |   Scale: 1 = best, 5 = worst', M, Y); Y += 5;
+        // BUG C3 FIX: Formula was displayed as (TeR + TiR + GeR + CoR + RR) / 5.
+        // AGRIBALYSE 3.2 uses the ADEME/INRAE DQI Matrix v3.0.1 4-indicator scheme:
+        // (TeR + TiR + GeR + RR) / 4. CoR (completeness) is not scored in this scheme
+        // and is hardcoded to 0. Displaying /5 with CoR=0 would give 1.6, not 2.00.
+        // The calculated result was always correct (4-indicator /4). Only the label was wrong.
+        doc.text('Formula: DQR = (TeR + TiR + GeR + RR) / 4   |   CoR not scored per AGRIBALYSE DQI Matrix v3.0.1   |   Scale: 1 = best, 5 = worst', M, Y); Y += 5;
 
         const dqrComponents = dqr.component_dqrs || [];
         const dqrRows = dqrComponents.map(d => [
@@ -1807,18 +1834,24 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         footer('Offline Verification — Page ' + pageNum + ' of ' + TOTAL_PAGES);
 
         // ================================================================
-        // BUG-23 FIX: Retroactive page numbering
-        // Now that all pages are rendered, get the real total and overwrite
-        // the placeholder '??' on every page with the correct 'Page X of Y'.
+        // ================================================================
+        // BUG D2 FIX: Retroactive page numbering — header AND footer
         // ================================================================
         const realTotalPages = doc.internal.getNumberOfPages();
         for (let pg = 1; pg <= realTotalPages; pg++) {
             doc.setPage(pg);
-            // Overdraw the top-right corner of the header bar (navyDark)
+            // Fix header top-right
             doc.setFillColor(...C.navyDark);
             doc.rect(PW - 50, 0, 52, 10, 'F');
             doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.white);
             doc.text('Page ' + pg + ' of ' + realTotalPages, PW - M, 6.8, {align:'right'});
+            // Fix footer right — replace section label with corrected page count
+            const sectionLabel = _pageSectionLabels[pg] || '';
+            const fixedLabel   = sectionLabel.replace(/of \?\?/g, 'of ' + realTotalPages);
+            doc.setFillColor(...C.navyDark);
+            doc.rect(PW * 0.45, PH - 8, PW * 0.55 + 2, 8, 'F');
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
+            doc.text(safe(fixedLabel), PW - M, PH - 3.5, {align:'right'});
         }
 
         // ================================================================

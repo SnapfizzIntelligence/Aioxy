@@ -175,6 +175,28 @@
                 mfgTotal = mfgResult.multiCategoryResults[cat];
             }
 
+            // BUG C1 FIX: buildContributionTree was not populating transTotal or pkgTotal
+            // for non-CC categories — they stayed 0. After buildContributionTree() ran,
+            // its output overwrote pefResults[cat].contribution_tree (lines 2453-2455),
+            // zeroing the correct values that aggregateAllCategories() had computed.
+            // Fix: mirror the same multiCategoryResults branch used in aggregateAllCategories().
+            const isCCCategory = (
+                cat === 'Climate Change' ||
+                cat === 'Climate Change - Fossil' ||
+                cat === 'Climate Change - Biogenic' ||
+                cat === 'Climate Change - Land Use'
+            );
+            if (!isCCCategory) {
+                if (transportResult.multiCategoryResults &&
+                    transportResult.multiCategoryResults[cat] !== undefined) {
+                    transTotal = transportResult.multiCategoryResults[cat];
+                }
+                if (packagingResult.multiCategoryResults &&
+                    packagingResult.multiCategoryResults[cat] !== undefined) {
+                    pkgTotal = packagingResult.multiCategoryResults[cat];
+                }
+            }
+
             // Bug 2 fix: Build Manufacturing component
             const mfgComponent = {
                 name: 'Factory Operations',
@@ -270,16 +292,25 @@
                     : (procEntry && typeof procEntry.yield_factor === 'number'
                         ? 1.0 - procEntry.yield_factor
                         : 0); // FIX: [Audit 8.4] default = no loss if field absent; document as gap
-                if (lossFraction > 0 && cat === 'Climate Change') {
-                    const ingTotalCO2 = ingComponents.reduce((s, c) => s + (c.allCategoryResults ? (c.allCategoryResults['Climate Change'] || 0) : (c.subtotal || 0)), 0);
-                    const wasteCO2 = ingTotalCO2 * lossFraction;
-                    wasteTotal = wasteCO2;
-                    wasteComponents.push({
-                        name: `Processing Waste: ${processingMethod}`,
-                        notes: `Formulation loss (${(lossFraction * 100).toFixed(1)}%) — source: db.processing["${processingMethod}"].loss or yield_factor`,
-                        subtotal: wasteCO2,
-                        calculation_trace: `[Processing waste: ${wasteCO2.toFixed(4)} kg CO2e — primary factory data should provide actual waste splits]`
-                    });
+                // BUG M4 FIX: Waste was previously only computed for 'Climate Change'.
+                // Processing loss proportionally affects ALL EF 3.1 categories (the same
+                // mass fraction of ingredients is lost regardless of impact category).
+                // Fix: apply lossFraction to ingTotal for every category.
+                // The waste is informational only — it is NOT added to pefResults totals.
+                // This fixes the contribution tree display for all 16 categories.
+                if (lossFraction > 0 && cat !== 'Climate Change - Fossil' &&
+                    cat !== 'Climate Change - Biogenic' && cat !== 'Climate Change - Land Use') {
+                    const ingTotalCat = ingComponents.reduce((s, c) => s + (c.allCategoryResults ? (c.allCategoryResults[cat] || 0) : (cat === 'Climate Change' ? (c.subtotal || 0) : 0)), 0);
+                    const wasteImpact = ingTotalCat * lossFraction;
+                    if (wasteImpact !== 0) {
+                        wasteTotal = wasteImpact;
+                        wasteComponents.push({
+                            name: `Processing Waste: ${processingMethod}`,
+                            notes: `Formulation loss (${(lossFraction * 100).toFixed(1)}%) applied to ${cat} — source: db.processing["${processingMethod}"].loss or yield_factor`,
+                            subtotal: wasteImpact,
+                            calculation_trace: `[Processing waste (${cat}): ${wasteImpact.toExponential(4)} — informational only, not added to totals]`
+                        });
+                    }
                 }
             }
 
@@ -2613,7 +2644,7 @@ const gasCO2 = gasM3PerKg * 2.13;
             calculationTimestamp: new Date().toISOString(),
 
             pefCategories:    pefResults,
-            contribution_tree: fullContribTree['Climate Change'],
+            contribution_tree: fullContribTree, // BUG M1 FIX: was fullContribTree['Climate Change'] — now stores all 16 category trees. PDF/audit trail reads specific categories as needed (e.g. auditTrailData.contribution_tree['Climate Change']).
             mass_balance:     massBalanceData,
 
             dqr_summary: {

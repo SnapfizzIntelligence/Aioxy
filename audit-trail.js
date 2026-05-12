@@ -502,7 +502,7 @@ function displayAuditTrail() {
                 </tr>`;
         });
     } else {
-        html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">No intercontinental inbound logistics detected (Local Sourcing).</td></tr>`;
+        html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">Inbound ingredient transport excluded from system boundary per ISO 14044 §4.2.3.3 — AGRIBALYSE 3.2 data includes representative farm-gate transport within the LCI; cross-border inbound transport is a declared gap.</td></tr>`;
     }
 
     const outbound = catCC.contribution_tree.Transport?.total || 0;
