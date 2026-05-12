@@ -1556,70 +1556,70 @@ if (!traceability.usetox) {
                 // === END SOC SEQUESTRATION ===
 
             // === USEtox 2.14: Substance-specific pesticide toxicity ===
-if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
-    const usetoxDB = window.aioxyData.usetox;
-    if (usetoxDB && usetoxDB.human_toxicity && usetoxDB.ecotoxicity) {
-        const areaHarvested = ingredient.quantityKg / pd.yieldKgPerHa;
+                if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
+                    const usetoxDB = window.aioxyData.usetox;
+                    if (usetoxDB && usetoxDB.human_toxicity && usetoxDB.ecotoxicity) {
+                        const areaHarvested = ingredient.quantityKg / pd.yieldKgPerHa;
         
-        let totalCancerCTUh = 0;
-        let totalNonCancerCTUh = 0;
-        let totalEcotoxicityCTUe = 0;
-        const pesticideDetails = [];
+                        let totalCancerCTUh = 0;
+                        let totalNonCancerCTUh = 0;
+                        let totalEcotoxicityCTUe = 0;
+                        const pesticideDetails = [];
         
-        for (const pesticide of pd.pesticides) {
-            const cas = (pesticide.cas || '').trim();
-            const rate = pesticide.rateKgPerHa || 0;
-            const amountApplied = rate * areaHarvested;
+                        for (const pesticide of pd.pesticides) {
+                            const cas = (pesticide.cas || '').trim();
+                            const rate = pesticide.rateKgPerHa || 0;
+                            const amountApplied = rate * areaHarvested;
             
-            const htCF = usetoxDB.human_toxicity[cas];
-            const ecoCF = usetoxDB.ecotoxicity[cas];
+                            const htCF = usetoxDB.human_toxicity[cas];
+                            const ecoCF = usetoxDB.ecotoxicity[cas];
             
-            if (htCF || ecoCF) {
-                const cancer = htCF ? (amountApplied * (htCF.cancer_CTUh_per_kg || 0)) : 0;
-                const noncancer = htCF ? (amountApplied * (htCF.noncancer_CTUh_per_kg || 0)) : 0;
-                const ecotox = ecoCF ? (amountApplied * ecoCF) : 0;
+                            if (htCF || ecoCF) {
+                                const cancer = htCF ? (amountApplied * (htCF.cancer_CTUh_per_kg || 0)) : 0;
+                                const noncancer = htCF ? (amountApplied * (htCF.noncancer_CTUh_per_kg || 0)) : 0;
+                                const ecotox = ecoCF ? (amountApplied * ecoCF) : 0;
                 
-                totalCancerCTUh += cancer;
-                totalNonCancerCTUh += noncancer;
-                totalEcotoxicityCTUe += ecotox;
+                                totalCancerCTUh += cancer;
+                                totalNonCancerCTUh += noncancer;
+                                totalEcotoxicityCTUe += ecotox;
                 
-                pesticideDetails.push({
-                    name: pesticide.name || 'Unknown',
-                    cas: cas,
-                    rateKgPerHa: rate,
-                    amountAppliedKg: amountApplied,
-                    cancer_CTUh: cancer,
-                    noncancer_CTUh: noncancer,
-                    ecotoxicity_CTUe: ecotox
-                });
-            }
-        }
+                                pesticideDetails.push({
+                                    name: pesticide.name || 'Unknown',
+                                    cas: cas,
+                                    rateKgPerHa: rate,
+                                    amountAppliedKg: amountApplied,
+                                    cancer_CTUh: cancer,
+                                    noncancer_CTUh: noncancer,
+                                    ecotoxicity_CTUe: ecotox
+                                });
+                            }
+                        }
         
-        if (totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0) {
-            // FIX 3: Use += to ADD USEtox substance-specific values to the AGRIBALYSE background toxicity,
-            // not = which would overwrite and delete the background. co2Mult was already applied to
-            // flatPef earlier in the primary data multiplier step — do NOT re-apply it here.
-            flatPef['Human Toxicity, cancer']    += (totalCancerCTUh     / ingredient.quantityKg);
-            flatPef['Human Toxicity, non-cancer'] += (totalNonCancerCTUh  / ingredient.quantityKg);
-            flatPef['Ecotoxicity, freshwater']   += (totalEcotoxicityCTUe / ingredient.quantityKg);
-        }
+                        if (totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0) {
+                            // FIX 3: Use += to ADD USEtox substance-specific values to the AGRIBALYSE background toxicity,
+                            // not = which would overwrite and delete the background. co2Mult was already applied to
+                            // flatPef earlier in the primary data multiplier step — do NOT re-apply it here.
+                            flatPef['Human Toxicity, cancer']    += (totalCancerCTUh     / ingredient.quantityKg);
+                            flatPef['Human Toxicity, non-cancer'] += (totalNonCancerCTUh  / ingredient.quantityKg);
+                            flatPef['Ecotoxicity, freshwater']   += (totalEcotoxicityCTUe / ingredient.quantityKg);
+                        }
         
-        adjustments.usetox_applied = {
-            applied: totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0,
-            source: 'USEtox 2.14',
-            area_harvested_ha: areaHarvested,
-            total_cancer_CTUh: totalCancerCTUh,
-            total_noncancer_CTUh: totalNonCancerCTUh,
-            total_ecotoxicity_CTUe: totalEcotoxicityCTUe,
-            pesticides: pesticideDetails
-        };
-        // USEtox 2.14 coverage: 3,077 substances loaded in aioxyData.usetox.human_toxicity
-        // and ecotoxicity compartments. Full USEtox 2.14 substance list contains ~4,200
-        // organic substances + metals. Coverage verification against the official USEtox
-        // 2.14 release manifest is deferred — requires external reference file.
-        // Source: USEtox 2.14, continental agricultural soil compartment, EF 3.1 compliant.
-    }
-}
+                        adjustments.usetox_applied = {
+                            applied: totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0,
+                            source: 'USEtox 2.14',
+                            area_harvested_ha: areaHarvested,
+                            total_cancer_CTUh: totalCancerCTUh,
+                            total_noncancer_CTUh: totalNonCancerCTUh,
+                            total_ecotoxicity_CTUe: totalEcotoxicityCTUe,
+                            pesticides: pesticideDetails
+                        };
+                        // USEtox 2.14 coverage: 3,077 substances loaded in aioxyData.usetox.human_toxicity
+                        // and ecotoxicity compartments. Full USEtox 2.14 substance list contains ~4,200
+                        // organic substances + metals. Coverage verification against the official USEtox
+                        // 2.14 release manifest is deferred — requires external reference file.
+                        // Source: USEtox 2.14, continental agricultural soil compartment, EF 3.1 compliant.
+                    }
+                }
                 } // end else (crop primary data path)
             } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (ingredient.primaryData)
 

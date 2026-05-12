@@ -2233,6 +2233,11 @@ function suggestManureSystem(productionSystem) {
         setTimeout(() => { manureEl.style.borderColor = ''; }, 3000);
     }
 }
+
+// FIX: Restored missing function declaration. The opening line was accidentally
+// deleted when suggestManureSystem() was added above, leaving the body as orphaned
+// top-level code → SyntaxError: Unexpected token '}' at line 2249 → ui.js failed to load.
+function generateSupplierLink() {
     if (currentIngredientIndex === null) {
         alert("Please select an ingredient first.");
         return;
