@@ -469,12 +469,46 @@ async function calculateImpact() {
                 })
                 : [];
 
+            // ── Twin operational overrides ────────────────────────────────────
+            // Read twin-specific manufacturing/transport/packaging fields.
+            // If ALL are blank, twinParams is null → engine falls back to
+            // sharedParams on both sides (apple-to-apple, zero operational delta).
+            // If ANY are filled, twinParams is passed → each side calculated independently.
+            const twinManufCountry   = document.getElementById('twinManufacturingCountry')?.value?.trim()  || null;
+            const twinProcessMethod  = document.getElementById('twinProcessingMethod')?.value?.trim()      || null;
+            const twinTransportMode  = document.getElementById('twinTransportMode')?.value?.trim()         || null;
+            const twinTransportDist  = parseFloat(document.getElementById('twinTransportDistance')?.value) || null;
+            const twinRefrig         = document.getElementById('twinRefrigeratedTransport')?.value === 'yes' ? 'chilled'
+                                     : twinProcessMethod === 'freezing' ? 'frozen' : 'ambient';
+            const twinPackMaterial   = document.getElementById('twinPackagingMaterial')?.value?.trim()     || null;
+            const twinPackWeight     = parseFloat(document.getElementById('twinPackagingWeight')?.value)   || null;
+            const twinRecycledPct    = parseFloat(document.getElementById('twinRecycledContent')?.value);
+            const twinPackEoL        = document.getElementById('twinPackagingEoL')?.value?.trim()          || null;
+
+            const hasTwinOverrides = twinManufCountry || twinProcessMethod || twinTransportMode ||
+                                     twinTransportDist || twinPackMaterial || twinPackWeight ||
+                                     (!isNaN(twinRecycledPct)) || twinPackEoL;
+
+            const twinParams = hasTwinOverrides ? {
+                countryCode:            twinManufCountry   || input.manufacturing.country,
+                processingMethod:       twinProcessMethod  || input.manufacturing.processingMethod,
+                transportMode:          twinTransportMode  || input.transport.mode,
+                transportDistance:      twinTransportDist  != null ? twinTransportDist : input.transport.distanceKm,
+                refrigeration:          twinRefrig,
+                packagingMaterial:      twinPackMaterial   || input.packaging.material,
+                packagingWeightKg:      twinPackWeight     != null ? twinPackWeight    : input.packaging.weightKg,
+                recycledContentPercent: !isNaN(twinRecycledPct) ? twinRecycledPct     : input.packaging.recycledPct,
+                eolDestination:         twinPackEoL        || input.packaging.eolDestination,
+                productWeightKg:        input.product.weightKg
+            } : null;
+
             return {
             conventionalBaselineName: document.getElementById('conventionalBaselineName')?.value?.trim() || null,
             baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
             customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
             useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false,
-            ingredientMappings
+            ingredientMappings,
+            twinParams
             };
         })()
     };

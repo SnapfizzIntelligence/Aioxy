@@ -2380,6 +2380,7 @@ const gasCO2 = gasM3PerKg * 2.13;
                 assessedRecipe,
                 conventionalRecipe,
                 sharedParams,
+                twinParams:  compIn.twinParams || null,   // null = apple-to-apple, object = net-zero scenario
                 databases: twinDatabases
             });
 
@@ -2406,6 +2407,7 @@ const gasCO2 = gasM3PerKg * 2.13;
                 allocation_note:       'Mass allocation (ISO 14044)',
                 concentration_ratio:   input.product.concentrationRatio || 1.0,
                 cloned_parameters:     sharedParams,
+                twin_parameters:       compIn.twinParams || null,  // null = identical to assessed side
                 sensitivity_analysis: {
                     parameters_tested: [
                         'transport_distance_km (' + input.transport.distanceKm + ')',

@@ -1522,7 +1522,7 @@ window.selectBaseline = function(id, name) {
 };
 
 function populateCountrySelect() {
-    const targets = ['manufacturingCountry', 'ingredientOriginSelect'];
+    const targets = ['manufacturingCountry', 'ingredientOriginSelect', 'twinManufacturingCountry'];
     
     if (!window.aioxyData || !window.aioxyData.countries) {
         console.warn('⚠️ [populateCountrySelect] No country data available');
@@ -1544,6 +1544,8 @@ function populateCountrySelect() {
 
         if (id === 'manufacturingCountry') {
             select.innerHTML = '<option value="">Select country...</option>';
+        } else if (id === 'twinManufacturingCountry') {
+            select.innerHTML = '<option value="">— inherit from product —</option>';
         } else if (id === 'ingredientOriginSelect') {
             select.innerHTML = '<option value="FR">🇫🇷 France (Base)</option>';
         }
@@ -1554,7 +1556,7 @@ function populateCountrySelect() {
             const option = document.createElement('option');
             option.value = code;
             
-            if (id === 'manufacturingCountry') {
+            if (id === 'manufacturingCountry' || id === 'twinManufacturingCountry') {
                 option.textContent = `${countries[code].name} (${countries[code].electricityCO2}g CO₂/kWh)`;
             } else {
                 option.textContent = `${getFlagEmoji(code)} ${countries[code].name}`;
@@ -1568,6 +1570,7 @@ function populateCountrySelect() {
                 select.value = 'FR';
             }
         }
+        // twinManufacturingCountry intentionally left blank (inherit)
         
         console.log(`✅ [populateCountrySelect] Added ${sortedKeys.length} countries to #${id}`);
     });

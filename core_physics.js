@@ -2524,6 +2524,19 @@ return {
         }
         if (!sharedParams) throw new MissingDataError('sharedParams');
 
+        // ── Twin operational params: use twinParams where supplied, otherwise
+        //    fall back to sharedParams (assessed product values).
+        //    This is how one function serves two purposes:
+        //      1. Apple-to-apple: twinParams not supplied → both sides identical → delta = ingredients only
+        //      2. Net-zero scenario: twinParams supplied → each side calculated independently → delta = full product
+        //    No new formulas needed. calculateManufacturing / calculateTransport / calculatePackaging
+        //    are called with different inputs. The physics is unchanged.
+        const twinParams = input.twinParams || null;
+        function twinVal(field) {
+            // Return twin override if present and non-null, else fall back to sharedParams
+            return (twinParams && twinParams[field] != null) ? twinParams[field] : sharedParams[field];
+        }
+
         // ── Helper: zero-initialised totals accumulator ──────────────────────
         function zeroTotals() {
             return {
@@ -2616,119 +2629,120 @@ return {
             }
         }
 
-        // ── STEP 3: Shared manufacturing (added identically to both sides) ───
-        let sharedMfgCO2        = CONSTANTS.MATH.ZERO;
-        let sharedMfgKwh        = CONSTANTS.MATH.ZERO;
-        let sharedMfgFossilCO2  = CONSTANTS.MATH.ZERO;
-        let sharedMfgFossilMJ   = CONSTANTS.MATH.ZERO;
-
-        if (sharedParams.processingMethod) {
+        // ── Helper: calculate manufacturing CO2 for one side ────────────────
+        function calcMfgSide(processingMethod, countryCode, recipeMassKg) {
+            let co2 = CONSTANTS.MATH.ZERO, kwh = CONSTANTS.MATH.ZERO,
+                fossilCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO;
+            if (!processingMethod) return { co2, kwh, fossilCO2, fossilMJ };
             if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
-            if (!db.gridIntensity)      throw new MissingDataError('databases.gridIntensity');
-
-            const benchmark = db.processBenchmarks[sharedParams.processingMethod];
-            if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${sharedParams.processingMethod}`);
-
-            const grid = db.gridIntensity[sharedParams.countryCode];
-            if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${sharedParams.countryCode}`);
-
+            if (!db.gridIntensity)     throw new MissingDataError('databases.gridIntensity');
+            const benchmark = db.processBenchmarks[processingMethod];
+            if (benchmark === undefined) throw new MissingDataError(`processBenchmarks.${processingMethod}`);
+            const grid = db.gridIntensity[countryCode];
+            if (!grid && grid !== 0) throw new MissingDataError(`gridIntensity.${countryCode}`);
             let gridValue;
             if (typeof grid === 'number') {
                 gridValue = grid;
             } else if (grid && typeof grid.electricityCO2 === 'number') {
                 gridValue = grid.electricityCO2;
             } else {
-                throw new MissingDataError(`gridIntensity.${sharedParams.countryCode}`);
+                throw new MissingDataError(`gridIntensity.${countryCode}`);
             }
-
-            // Use total assessed recipe mass as the manufacturing output mass
-            const totalRecipeMassKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
             const mfg = calculateManufacturing({
-                massOutputKg:         totalRecipeMassKg,
+                massOutputKg:         recipeMassKg,
                 benchmarkKwhPerKg:    benchmark,
                 gridIntensityGPerKwh: gridValue
             });
-            sharedMfgCO2       = mfg.co2;
-            sharedMfgKwh       = mfg.kwh;
-            sharedMfgFossilCO2 = sharedMfgCO2 * mfg.fossilFraction;
-            sharedMfgFossilMJ  = sharedMfgKwh * CONSTANTS.UNIT.KWH_TO_MJ;
+            co2      = mfg.co2;
+            kwh      = mfg.kwh;
+            fossilCO2 = co2 * mfg.fossilFraction;
+            fossilMJ  = kwh * CONSTANTS.UNIT.KWH_TO_MJ;
+            return { co2, kwh, fossilCO2, fossilMJ };
         }
 
-        // ── STEP 4: Shared transport ─────────────────────────────────────────
-        let sharedTransportCO2      = CONSTANTS.MATH.ZERO;
-        let sharedTransportFossilCO2 = CONSTANTS.MATH.ZERO;
-        let sharedTransportFossilMJ  = CONSTANTS.MATH.ZERO;
-
-        if (sharedParams.transportDistance !== undefined && sharedParams.transportMode) {
-            const totalRecipeMassKg = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
+        // ── Helper: calculate transport CO2 for one side ─────────────────────
+        function calcTransportSide(transportMode, transportDistance, refrigeration, recipeMassKg) {
+            let co2 = CONSTANTS.MATH.ZERO, fossilCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO;
+            if (transportDistance === undefined || !transportMode) return { co2, fossilCO2, fossilMJ };
             const t = calculateTransport({
-                massKg:        totalRecipeMassKg,
-                distanceKm:    sharedParams.transportDistance,
-                mode:          sharedParams.transportMode,
-                refrigeration: sharedParams.refrigeration || 'ambient'
+                massKg:        recipeMassKg,
+                distanceKm:    transportDistance,
+                mode:          transportMode,
+                refrigeration: refrigeration || 'ambient'
             });
-            sharedTransportCO2       = t.total;
-            sharedTransportFossilCO2 = sharedTransportCO2 * t.fossilFraction;
-            sharedTransportFossilMJ  = sharedTransportCO2 * CONSTANTS.GLEC.DIESEL_CO2_PER_MJ;
+            co2      = t.total;
+            fossilCO2 = co2 * t.fossilFraction;
+            fossilMJ  = co2 * CONSTANTS.GLEC.DIESEL_CO2_PER_MJ;
+            return { co2, fossilCO2, fossilMJ };
         }
 
-        // ── STEP 5: Shared packaging ─────────────────────────────────────────
-        let sharedPackagingCO2        = CONSTANTS.MATH.ZERO;
-        let sharedPackagingFossilCO2  = CONSTANTS.MATH.ZERO;
-        let sharedPackagingBiogenicCO2 = CONSTANTS.MATH.ZERO;
-        let sharedPackagingFossilMJ   = CONSTANTS.MATH.ZERO;
-
-        if (sharedParams.packagingMaterial && sharedParams.packagingWeightKg !== undefined) {
+        // ── Helper: calculate packaging CO2 for one side ─────────────────────
+        function calcPackagingSide(packagingMaterial, packagingWeightKg, recycledContentPercent) {
+            let co2 = CONSTANTS.MATH.ZERO, fossilCO2 = CONSTANTS.MATH.ZERO,
+                biogenicCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO;
+            if (!packagingMaterial || packagingWeightKg === undefined) return { co2, fossilCO2, biogenicCO2, fossilMJ };
             if (!db.packaging) throw new MissingDataError('databases.packaging');
-
-            const pkg = db.packaging[sharedParams.packagingMaterial];
-            if (!pkg) throw new MissingDataError(`packaging.${sharedParams.packagingMaterial}`);
+            const pkg = db.packaging[packagingMaterial];
+            if (!pkg) throw new MissingDataError(`packaging.${packagingMaterial}`);
             if (typeof pkg.aFactor !== 'number') throw new MissingDataError('packaging.aFactor');
             if (typeof pkg.fossilFraction !== 'number') throw new MissingDataError('packaging.fossilFraction');
-            // NOTE: materialClass check intentionally absent — field does not
-            // exist in the database and is never used downstream.
-
-            if (typeof sharedParams.recycledContentPercent !== 'number') {
-                throw new MissingDataError('sharedParams.recycledContentPercent');
-            }
-
-            // FIX: [Audit #23] Cap r1 at pkg.r1_max and read r2 directly from pkg.r2,
-            // matching the main path in processPackaging().
-            const r1RawShared = sharedParams.recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX;
-            const r1CappedShared = (typeof pkg.r1_max === 'number') ? Math.min(r1RawShared, pkg.r1_max) : r1RawShared;
-
+            if (typeof recycledContentPercent !== 'number') throw new MissingDataError('recycledContentPercent');
+            const r1Raw    = recycledContentPercent / CONSTANTS.UNIT.PERCENT_MAX;
+            const r1Capped = (typeof pkg.r1_max === 'number') ? Math.min(r1Raw, pkg.r1_max) : r1Raw;
             const cff = calculatePackaging({
-                weightKg:       sharedParams.packagingWeightKg,
+                weightKg:       packagingWeightKg,
                 ev:             pkg.co2_virgin,
                 erecycled:      pkg.co2_recycled,
                 ed:             pkg.co2_disposal_average,
-                r1:             r1CappedShared,
+                r1:             r1Capped,
                 r2:             pkg.r2,
                 aFactor:        pkg.aFactor,
                 qs:             pkg.q,
                 qp:             CONSTANTS.CFF.QUALITY_RATIO_DENOMINATOR,
                 fossilFraction: pkg.fossilFraction,
-                materialKey:    sharedParams.packagingMaterial
+                materialKey:    packagingMaterial
             });
-            sharedPackagingCO2         = cff.totalImpact;
-            sharedPackagingFossilCO2   = cff.fossilImpact;
-            sharedPackagingBiogenicCO2 = cff.biogenicImpact;
-            sharedPackagingFossilMJ    = sharedPackagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2;
+            co2        = cff.totalImpact;
+            fossilCO2  = cff.fossilImpact;
+            biogenicCO2 = cff.biogenicImpact;
+            fossilMJ    = co2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2;
+            return { co2, fossilCO2, biogenicCO2, fossilMJ };
         }
 
-        // ── STEP 6: Combine ingredient totals + shared overheads ─────────────
-        // Shared manufacturing, transport, and packaging are added identically
-        // to both sides. The delta therefore reflects only ingredient differences.
+        // ── STEP 3: Manufacturing — assessed side uses sharedParams, twin side
+        //    uses twinParams where provided (else falls back via twinVal()) ───
+        const totalAssessedMassKg     = assessedRecipe.reduce((s, ing) => s + ing.quantityKg, CONSTANTS.MATH.ZERO);
+        // For conventional mass: if twin has its own recipe mass it will differ;
+        // use assessed mass as denominator for both (same functional unit, ISO 14044).
+        const totalConventionalMassKg = totalAssessedMassKg;
 
-        const assessedCO2Total      = assessedTotals.totalCO2      + sharedMfgCO2 + sharedTransportCO2 + sharedPackagingCO2;
-        const assessedFossilCO2     = assessedTotals.fossilCO2     + sharedMfgFossilCO2 + sharedTransportFossilCO2 + sharedPackagingFossilCO2;
-        const assessedBiogenicCO2   = assessedTotals.biogenicCO2   + sharedPackagingBiogenicCO2;
-        const assessedFossilMJ      = assessedTotals.totalFossil   + sharedMfgFossilMJ + sharedTransportFossilMJ + sharedPackagingFossilMJ;
+        const assessedMfg     = calcMfgSide(sharedParams.processingMethod, sharedParams.countryCode,     totalAssessedMassKg);
+        const conventionalMfg = calcMfgSide(twinVal('processingMethod'),   twinVal('countryCode'),       totalConventionalMassKg);
 
-        const conventionalCO2Total  = conventionalTotals.totalCO2  + sharedMfgCO2 + sharedTransportCO2 + sharedPackagingCO2;
-        const conventionalFossilCO2 = conventionalTotals.fossilCO2 + sharedMfgFossilCO2 + sharedTransportFossilCO2 + sharedPackagingFossilCO2;
-        const conventionalBiogenicCO2 = conventionalTotals.biogenicCO2 + sharedPackagingBiogenicCO2;
-        const conventionalFossilMJ  = conventionalTotals.totalFossil + sharedMfgFossilMJ + sharedTransportFossilMJ + sharedPackagingFossilMJ;
+        // ── STEP 4: Transport — each side independently ──────────────────────
+        const assessedTransport     = calcTransportSide(sharedParams.transportMode,  sharedParams.transportDistance,  sharedParams.refrigeration,  totalAssessedMassKg);
+        const conventionalTransport = calcTransportSide(twinVal('transportMode'),    twinVal('transportDistance'),    twinVal('refrigeration'),    totalConventionalMassKg);
+
+        // ── STEP 5: Packaging — each side independently ──────────────────────
+        const assessedPackaging     = calcPackagingSide(sharedParams.packagingMaterial,  sharedParams.packagingWeightKg,  sharedParams.recycledContentPercent);
+        const conventionalPackaging = calcPackagingSide(twinVal('packagingMaterial'),    twinVal('packagingWeightKg'),    twinVal('recycledContentPercent'));
+
+        // ── STEP 6: Combine ingredient totals + independent operational overheads
+        // Each side now carries its own manufacturing, transport, and packaging.
+        // When twinParams is null (apple-to-apple mode), twinVal() returns sharedParams
+        // values for every field, so both sides get identical operational numbers —
+        // behaviour is unchanged from the original. No new formulas. Same functions,
+        // different inputs on each side.
+
+        const assessedCO2Total      = assessedTotals.totalCO2      + assessedMfg.co2     + assessedTransport.co2     + assessedPackaging.co2;
+        const assessedFossilCO2     = assessedTotals.fossilCO2     + assessedMfg.fossilCO2 + assessedTransport.fossilCO2 + assessedPackaging.fossilCO2;
+        const assessedBiogenicCO2   = assessedTotals.biogenicCO2   + assessedPackaging.biogenicCO2;
+        const assessedFossilMJ      = assessedTotals.totalFossil   + assessedMfg.fossilMJ + assessedTransport.fossilMJ + assessedPackaging.fossilMJ;
+
+        const conventionalCO2Total  = conventionalTotals.totalCO2  + conventionalMfg.co2     + conventionalTransport.co2     + conventionalPackaging.co2;
+        const conventionalFossilCO2 = conventionalTotals.fossilCO2 + conventionalMfg.fossilCO2 + conventionalTransport.fossilCO2 + conventionalPackaging.fossilCO2;
+        const conventionalBiogenicCO2 = conventionalTotals.biogenicCO2 + conventionalPackaging.biogenicCO2;
+        const conventionalFossilMJ  = conventionalTotals.totalFossil + conventionalMfg.fossilMJ + conventionalTransport.fossilMJ + conventionalPackaging.fossilMJ;
 
         // ── STEP 7: Build ingredientPairs array ──────────────────────────────
         const ingredientPairs = assessedRecipe.map((ing, i) => {
@@ -2746,20 +2760,18 @@ return {
 
         // ── STEP 8: Build structured totals for return ───────────────────────
         // FIX: [Audit #32] Renamed key from 'farm' to 'ingredients' in both breakdowns.
-        // The value represents the full pre-manufacturing ingredient CO2 total, which
-        // includes IPCC Tier 1 N2O, enteric CH4, primary data adjustments, and geographic
-        // proxies — not just farm-gate emissions. 'farm' was misleading.
+        // Each side now shows its own operational values — not shared ones.
         const assessedBreakdown = {
             ingredients:   assessedTotals.totalCO2,
-            manufacturing: sharedMfgCO2,
-            transport:     sharedTransportCO2,
-            packaging:     sharedPackagingCO2
+            manufacturing: assessedMfg.co2,
+            transport:     assessedTransport.co2,
+            packaging:     assessedPackaging.co2
         };
         const conventionalBreakdown = {
             ingredients:   conventionalTotals.totalCO2,
-            manufacturing: sharedMfgCO2,
-            transport:     sharedTransportCO2,
-            packaging:     sharedPackagingCO2
+            manufacturing: conventionalMfg.co2,
+            transport:     conventionalTransport.co2,
+            packaging:     conventionalPackaging.co2
         };
 
         // PEF 3.1 functional unit = 1 kg of product as sold.

@@ -1350,6 +1350,153 @@
                     <!-- Legacy hidden input: keeps backward compat for engine baselineId -->
                     <input type="hidden" id="comparisonBaseline" value="auto">
 
+                    <!-- ═══════════════════════════════════════════════════════════
+                         TWIN OPERATIONAL PARAMETERS
+                         Leave all fields blank → engine inherits from your product
+                         (apple-to-apple: delta reflects ingredients only).
+                         Fill any field → that side is calculated independently
+                         (net-zero scenario: delta reflects full product difference).
+                         No new formulas — same calculateManufacturing / calculateTransport /
+                         calculatePackaging called with twin's own inputs.
+                         ═══════════════════════════════════════════════════════════ -->
+                    <div style="margin-top: 1rem; border: 1.5px solid #2C7A7B; border-radius: 10px; overflow: hidden;">
+                        <!-- Collapsible header -->
+                        <div id="twinOpsHeader"
+                             onclick="document.getElementById('twinOpsBody').classList.toggle('hidden'); this.querySelector('.twin-chevron').classList.toggle('fa-chevron-down'); this.querySelector('.twin-chevron').classList.toggle('fa-chevron-up');"
+                             style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem;
+                                    background: linear-gradient(135deg,#2C7A7B,#38A169); cursor:pointer; user-select:none;">
+                            <div style="display:flex; align-items:center; gap:0.6rem;">
+                                <i class="fas fa-sliders-h" style="color:white; font-size:0.9rem;"></i>
+                                <span style="font-weight:700; color:white; font-size:0.9rem;">
+                                    Twin Operational Parameters
+                                </span>
+                                <span style="background:rgba(255,255,255,0.2); color:white; font-size:0.65rem;
+                                             padding:0.15rem 0.5rem; border-radius:999px; font-weight:600;">
+                                    OPTIONAL
+                                </span>
+                            </div>
+                            <i class="fas fa-chevron-down twin-chevron" style="color:white; font-size:0.8rem;"></i>
+                        </div>
+
+                        <!-- Collapsible body — hidden by default -->
+                        <div id="twinOpsBody" class="hidden" style="padding:1rem; background:#F0FAFA; display:flex; flex-direction:column; gap:0.75rem;">
+
+                            <div style="font-size:0.75rem; color:#2C7A7B; background:white;
+                                        border:1px solid #B2DFDB; border-radius:6px; padding:0.6rem 0.75rem;">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Leave blank</strong> = inherits from your product (apple-to-apple comparison, ingredient delta only).<br>
+                                <strong>Fill any field</strong> = that field is calculated independently for the twin (net-zero scenario planning).
+                            </div>
+
+                            <!-- Manufacturing country + Processing method -->
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                                <div>
+                                    <label class="form-label" style="font-size:0.8rem;">Manufacturing Country</label>
+                                    <select id="twinManufacturingCountry" class="form-control" style="font-size:0.85rem;">
+                                        <option value="">— inherit from product —</option>
+                                    </select>
+                                    <small style="color:var(--gray); font-size:0.7rem;">Determines grid intensity for manufacturing</small>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:0.8rem;">Processing Method</label>
+                                    <select id="twinProcessingMethod" class="form-control" style="font-size:0.85rem;">
+                                        <option value="">— inherit from product —</option>
+                                        <option value="none">No Additional Processing</option>
+                                        <option value="pasteurization">Pasteurization</option>
+                                        <option value="uht_processing">UHT Processing (140°C)</option>
+                                        <option value="sterilization">Batch Sterilization (121°C)</option>
+                                        <option value="emulsification">Emulsification / Homogenization</option>
+                                        <option value="baking">Baking</option>
+                                        <option value="roasting">Roasting</option>
+                                        <option value="frying">Frying</option>
+                                        <option value="freezing">Freezing (IQF)</option>
+                                        <option value="drying">Spray Drying</option>
+                                        <option value="milling">Milling</option>
+                                        <option value="mixing">Mixing/Blending</option>
+                                        <option value="fermentation">Fermentation</option>
+                                        <option value="extrusion">Extrusion</option>
+                                        <option value="oat-processing">Oat Enzyming/Heat Treatment</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Transport distance + mode -->
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                                <div>
+                                    <label class="form-label" style="font-size:0.8rem;">Transport Distance (km)</label>
+                                    <input type="number" id="twinTransportDistance" class="form-control"
+                                           placeholder="inherit from product" min="0" style="font-size:0.85rem;">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:0.8rem;">Transport Mode</label>
+                                    <select id="twinTransportMode" class="form-control" style="font-size:0.85rem;">
+                                        <option value="">— inherit from product —</option>
+                                        <option value="road">Road Freight (HGV Diesel)</option>
+                                        <option value="rail">Rail Freight (Electric)</option>
+                                        <option value="sea">Sea Freight (Container)</option>
+                                        <option value="air">Air Freight</option>
+                                        <option value="lastmile">Last-mile Delivery</option>
+                                        <option value="electric_van">Electric Van</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Refrigeration -->
+                            <div>
+                                <label class="form-label" style="font-size:0.8rem;">Refrigerated Transport</label>
+                                <select id="twinRefrigeratedTransport" class="form-control" style="font-size:0.85rem;">
+                                    <option value="">— inherit from product —</option>
+                                    <option value="no">No Refrigeration</option>
+                                    <option value="yes">Refrigerated (+20-40% emissions)</option>
+                                </select>
+                            </div>
+
+                            <!-- Packaging material + weight + recycled -->
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem;">
+                                <div>
+                                    <label class="form-label" style="font-size:0.8rem;">Packaging Material</label>
+                                    <select id="twinPackagingMaterial" class="form-control" style="font-size:0.85rem;">
+                                        <option value="">— inherit from product —</option>
+                                        <option value="cardboard">Cardboard (Coated)</option>
+                                        <option value="PET">PET Plastic</option>
+                                        <option value="rPET">rPET (Recycled)</option>
+                                        <option value="HDPE">HDPE Plastic</option>
+                                        <option value="LDPE">LDPE Plastic</option>
+                                        <option value="PP">PP Plastic</option>
+                                        <option value="glass">Glass</option>
+                                        <option value="aluminum">Aluminum</option>
+                                        <option value="steel">Steel</option>
+                                        <option value="PLA">PLA Bioplastic</option>
+                                        <option value="mycelium">Mycelium Foam</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:0.8rem;">Packaging Weight (kg)</label>
+                                    <input type="number" id="twinPackagingWeight" class="form-control"
+                                           placeholder="inherit" step="0.001" min="0" style="font-size:0.85rem;">
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size:0.8rem;">Recycled Content (%)</label>
+                                    <input type="number" id="twinRecycledContent" class="form-control"
+                                           placeholder="inherit" min="0" max="100" style="font-size:0.85rem;">
+                                </div>
+                            </div>
+
+                            <!-- EoL -->
+                            <div>
+                                <label class="form-label" style="font-size:0.8rem;">End-of-Life Destination</label>
+                                <select id="twinPackagingEoL" class="form-control" style="font-size:0.85rem;">
+                                    <option value="">— inherit from product —</option>
+                                    <option value="eu_average">EU Average Mix (Default)</option>
+                                    <option value="recycled">100% Recycled (Closed Loop)</option>
+                                    <option value="incinerated">100% Incinerated (Energy Recovery)</option>
+                                    <option value="landfill">100% Landfill</option>
+                                </select>
+                            </div>
+
+                        </div><!-- /twinOpsBody -->
+                    </div><!-- /twin ops panel -->
+
                     <div class="form-group" style="margin-top: 0.5rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <input type="checkbox" id="useJRCBAT" onchange="updateComparison()">
