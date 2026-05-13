@@ -852,45 +852,85 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         ? Math.round(actualSaving * PHYSICS_CONSTANTS.LED_HOURS_PER_KG_CO2)         : 0;
 
     // ── QR TEXT PAYLOAD ──────────────────────────────────────────────────────
-    // Plain text — no server, no URL, works on any phone forever
-    // Structure: product footprint first, then comparison, then story, then disclaimer
-    const dppId    = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
-    const dateStr  = new Date().toISOString().split('T')[0];
-    const pName    = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
+    // Plain text only — no special unicode chars (no +/-, m3, CO2e are ASCII-safe)
+    // QR CorrectLevel.M max ~1269 chars. Two sections, no audience labels.
+    // Section 1: real-world story — anyone can read it
+    // Section 2: technical record — auditors/regulators find what they need
+    // All values are dynamic — pulled from live calculation globals every time
+    const dppId   = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
+    const dateStr = new Date().toISOString().split('T')[0];
+    const pName   = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
+    const dqr     = window.auditTrailData?.dqr_summary?.overall_dqr?.toFixed(2) || 'N/A';
+    const dqrLvl  = window.auditTrailData?.dqr_summary?.dqr_level || 'N/A';
+    const mPtVal  = window.auditTrailData?.pef_single_score?.singleScore;
+    const mPt     = (typeof mPtVal === 'number' && isFinite(mPtVal)) ? mPtVal.toFixed(1) + ' uPt' : 'N/A';
+    const waterVal = results.waterScarcityPerKg;
+    const water    = (typeof waterVal === 'number' && isFinite(waterVal)) ? waterVal.toFixed(4) + ' m3/kg' : 'N/A';
+    const landVal  = results.landUsePerKg;
+    const land     = (typeof landVal === 'number'  && isFinite(landVal))  ? landVal.toFixed(2)  + ' Pt/kg' : 'N/A';
+    const fossilVal= results.fossilPerKg;
+    const fossil   = (typeof fossilVal === 'number' && isFinite(fossilVal)) ? fossilVal.toFixed(2) + ' MJ/kg' : 'N/A';
 
-    const qrText = [
-        '=== AIOXY PRODUCT FOOTPRINT ===',
+    // Section 1 — real-world story (works for any footprint, zero saving or positive)
+    const storyLines = isBetter ? [
+        pName + ' vs ' + baselineName,
         '',
-        'PRODUCT: ' + pName,
-        'Assessment ID: ' + dppId,
+        'Choosing this product over ' + baselineName + ':',
+        '',
+        '  ' + carKmStory + ' km not driven by car',
+        '  ' + smartCharges + ' smartphone charges avoided',
+        '  ' + flightKmStory + ' km economy flight equivalent',
+        '  ' + ledHours + ' hours of LED lighting powered',
+        '',
+        'Footprint: ' + thisProductCO2.toFixed(3) + ' kg CO2e per kg product',
+        'vs ' + baselineName + ': ' + baselineCO2.toFixed(3) + ' kg CO2e per kg',
+        'Reduction: ' + pctReduction.toFixed(1) + '% (' + actualSaving.toFixed(3) + ' kg CO2e/kg)',
+        'Conservative at +/-' + uncertainty + '% uncertainty: ' + conservativeSaving.toFixed(3) + ' kg CO2e/kg'
+    ] : [
+        pName,
+        '',
+        'Footprint: ' + thisProductCO2.toFixed(3) + ' kg CO2e per kg product',
+        'vs ' + baselineName + ': ' + baselineCO2.toFixed(3) + ' kg CO2e per kg',
+        '',
+        'Footprint on par with conventional benchmark.',
+        'See methodology section below for full data.'
+    ];
+
+    // Section 2 — technical record
+    // Kept concise: QR byte-mode limit is ~1273 chars at L error correction.
+    // Product name truncated to 30 chars to keep worst-case under limit.
+    const techLines = [
+        'Product: ' + pName.slice(0, 30),
+        'ID: ' + dppId,
         'Date: ' + dateStr,
         '',
-        '--- THIS PRODUCT ---',
-        thisProductCO2.toFixed(4) + ' kg CO2e per kg product',
-        'Method: PEF 3.1 / AGRIBALYSE 3.2 / EF 3.1',
+        'FOOTPRINT (PEF 3.1 / EF 3.1)',
+        'CO2: ' + thisProductCO2.toFixed(4) + ' kg CO2e/kg',
+        'Water: ' + water,
+        'Land: ' + land,
+        'Fossil: ' + fossil,
+        'PEF Score: ' + mPt,
+        'vs ' + baselineName.slice(0, 20) + ': ' + baselineCO2.toFixed(4) + ' kg CO2e/kg',
         '',
-        '--- COMPARISON: ' + baselineName.toUpperCase() + ' ---',
-        baselineCO2.toFixed(4) + ' kg CO2e per kg product',
-        '(Secondary data / AGRIBALYSE 3.2)',
+        'METHOD: AGRIBALYSE 3.2 / GLEC v3.2',
+        'AWARE 2.0 / IPCC 2006 T1 / CFF v2.1',
+        'Boundary: Cradle-to-Retail',
         '',
-        '--- POTENTIAL REDUCTION ---',
-        'If choosing this product over ' + baselineName + ':',
-        actualSaving.toFixed(4) + ' kg CO2e/kg lower (' + pctReduction.toFixed(1) + '%)',
-        'Conservative estimate (+/-' + uncertainty + '% uncertainty): '
-            + conservativeSaving.toFixed(4) + ' kg CO2e/kg',
+        'DQR: ' + dqr + ' (' + dqrLvl + ')',
+        'Uncertainty: +/-' + uncertainty + '% Monte Carlo',
         '',
-        'EQUIVALENCES (per kg of potential reduction):',
-        '  Car: ' + carKmStory + ' km not driven (EEA 2023, 158.4g CO2/km)',
-        '  Phone: ' + smartCharges + ' smartphone charges (IEA 2022)',
-        '  Flight: ' + flightKmStory + ' km economy class (ICAO 2023)',
-        '  LED: ' + ledHours + ' hours of lighting (Ember 2025)',
+        'Not third-party verified.',
+        'ISO 14044 / EU GCD COM/2023/166.',
+        'AIOXY Environmental Intelligence'
+    ];
+
+    const qrText = [
+        '================================',
+        ...storyLines,
         '',
-        '--- IMPORTANT ---',
-        'Modelled estimates. Not verified by third party.',
-        'Potential reductions only. Not absolute claims.',
-        'Per ISO 14044 / EU Green Claims Dir. COM/2023/166.',
-        '',
-        '=== AIOXY ENVIRONMENTAL INTELLIGENCE ==='
+        '--------------------------------',
+        ...techLines,
+        '================================'
     ].join('\n');
 
     // ── STORY HTML ───────────────────────────────────────────────────────────
@@ -1102,73 +1142,87 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         </div>
     `;
 
-    // Generate QR after DOM is ready
-    setTimeout(() => {
-        const qrBox = document.getElementById('storyQRCode');
-        if (qrBox && typeof QRCode !== 'undefined') {
-            qrBox.innerHTML = '';
-            new QRCode(qrBox, {
-                text:         qrText,
-                width:        120,
-                height:       120,
-                colorDark:    '#0A2540',
-                colorLight:   '#FFFFFF',
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        } else if (qrBox) {
-            qrBox.innerHTML = '<span style="font-size:0.6rem;color:#94A3B8;text-align:center;padding:0.5rem;">QRCode library not loaded</span>';
-        }
-    }, 150);
-
     // Store qrText globally so download function can access it
     window._storyQRText = qrText;
 
+    // ROOT CAUSE FIX 1: qrcodejs (loaded 2nd) overwrote window.QRCode and silently
+    // failed on non-ASCII chars, producing a blank box with nothing to scan.
+    // FIX: Use qrcode npm QRCode.toCanvas() — real canvas, all browsers, no charset issues.
+    //
+    // ROOT CAUSE FIX 2: environmentalStory was still hidden when render fired —
+    // element had zero dimensions. FIX: Remove hidden FIRST, then render via
+    // requestAnimationFrame which guarantees layout is done before canvas draws.
+
     environmentalStory.classList.remove('hidden');
+
+    requestAnimationFrame(() => {
+        const qrBox = document.getElementById('storyQRCode');
+        if (!qrBox) return;
+        qrBox.innerHTML = '';
+
+        if (typeof QRCode !== 'undefined' && typeof QRCode.toCanvas === 'function') {
+            const canvas = document.createElement('canvas');
+            qrBox.appendChild(canvas);
+            QRCode.toCanvas(canvas, qrText, {
+                width:                160,
+                margin:               1,
+                color:                { dark: '#0A2540', light: '#FFFFFF' },
+                errorCorrectionLevel: 'L'   // L = max capacity (~1273 chars); M wastes space on error correction
+            }, function(err) {
+                if (err) {
+                    qrBox.innerHTML = '<span style="font-size:0.65rem;color:#94A3B8;padding:0.5rem;display:block;text-align:center;">QR render failed</span>';
+                }
+            });
+        } else {
+            qrBox.innerHTML = '<span style="font-size:0.6rem;color:#94A3B8;text-align:center;padding:0.5rem;display:block;">QR library not loaded</span>';
+        }
+    });
 }
 
 // ── QR DOWNLOAD ─────────────────────────────────────────────────────────────
+// ROOT CAUSE FIX 3: Previous download looked for canvas first, then img.
+// qrcodejs produced img (not canvas) on modern browsers, and only if QR rendered.
+// Since QR never rendered (root causes 1+2), both were null and download silently fell
+// through to a .txt blob the user could not see.
+// FIX: QRCode.toCanvas() now always produces a real canvas. Download reads it directly,
+// adds white padding for print quality, exports PNG. Text fallback kept as safety net.
 function downloadStoryQR() {
     const qrBox = document.getElementById('storyQRCode');
     if (!qrBox) return;
-    const canvas = qrBox.querySelector('canvas');
-    const img    = qrBox.querySelector('img');
-    let dataUrl  = null;
 
+    const pName  = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
+    const dppId  = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
+    const fname  = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
+
+    const canvas = qrBox.querySelector('canvas');
     if (canvas) {
-        // Add white padding for print quality
+        // Add white border padding for print quality
         const padded = document.createElement('canvas');
-        padded.width  = canvas.width  + 32;
-        padded.height = canvas.height + 32;
+        padded.width  = canvas.width  + 40;
+        padded.height = canvas.height + 40;
         const ctx = padded.getContext('2d');
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, padded.width, padded.height);
-        ctx.drawImage(canvas, 16, 16);
-        dataUrl = padded.toDataURL('image/png');
-    } else if (img) {
-        dataUrl = img.src;
+        ctx.drawImage(canvas, 20, 20);
+        const link = document.createElement('a');
+        link.download = fname;
+        link.href     = padded.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
     }
 
-    if (dataUrl) {
-        const pName   = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
-        const dppId   = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
-        const link    = document.createElement('a');
-        link.download = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
-        link.href     = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } else {
-        // Fallback: download the text payload as .txt
-        const blob = new Blob([window._storyQRText || ''], { type: 'text/plain;charset=utf-8;' });
-        const url  = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = 'AIOXY_QR_payload.txt';
-        link.href     = url;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
+    // Safety fallback: QR did not render — download text payload so content is never lost
+    const blob = new Blob([window._storyQRText || 'No QR data available'], { type: 'text/plain;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'AIOXY_QR_payload_' + dppId + '.txt';
+    link.href     = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 
@@ -1522,7 +1576,7 @@ window.selectBaseline = function(id, name) {
 };
 
 function populateCountrySelect() {
-    const targets = ['manufacturingCountry', 'ingredientOriginSelect', 'twinManufacturingCountry'];
+    const targets = ['manufacturingCountry', 'ingredientOriginSelect'];
     
     if (!window.aioxyData || !window.aioxyData.countries) {
         console.warn('⚠️ [populateCountrySelect] No country data available');
@@ -1544,8 +1598,6 @@ function populateCountrySelect() {
 
         if (id === 'manufacturingCountry') {
             select.innerHTML = '<option value="">Select country...</option>';
-        } else if (id === 'twinManufacturingCountry') {
-            select.innerHTML = '<option value="">— inherit from product —</option>';
         } else if (id === 'ingredientOriginSelect') {
             select.innerHTML = '<option value="FR">🇫🇷 France (Base)</option>';
         }
@@ -1556,7 +1608,7 @@ function populateCountrySelect() {
             const option = document.createElement('option');
             option.value = code;
             
-            if (id === 'manufacturingCountry' || id === 'twinManufacturingCountry') {
+            if (id === 'manufacturingCountry') {
                 option.textContent = `${countries[code].name} (${countries[code].electricityCO2}g CO₂/kWh)`;
             } else {
                 option.textContent = `${getFlagEmoji(code)} ${countries[code].name}`;
@@ -1570,7 +1622,6 @@ function populateCountrySelect() {
                 select.value = 'FR';
             }
         }
-        // twinManufacturingCountry intentionally left blank (inherit)
         
         console.log(`✅ [populateCountrySelect] Added ${sortedKeys.length} countries to #${id}`);
     });
