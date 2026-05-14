@@ -50,6 +50,9 @@
 <!-- 6. UI Layer -->
 <script src="ui.js"></script>
 
+<!-- 6.5 Parametric Twin Module — MUST LOAD AFTER ui.js AND main.js -->
+<script src="twin_module.js"></script>
+
 <!-- 7. PDF Generator -->
 <script src="pdf-generator.js"></script>
 
@@ -1382,6 +1385,240 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- =================== PARAMETRIC TWIN SECTION =================== -->
+                <div class="card" style="border-left: 4px solid #2C7A7B; margin-top: 1.5rem;">
+                    <div style="padding: 1.25rem 1.5rem;">
+
+                        <!-- Section header -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <div style="background: #2C7A7B; color: white; width: 34px; height: 34px; border-radius: 8px;
+                                            display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i class="fas fa-balance-scale"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0; color: #2C7A7B; font-size: 1.05rem; font-weight: 800;">
+                                        Parametric Twin
+                                    </h3>
+                                    <div style="font-size: 0.72rem; color: var(--gray); margin-top: 1px;">
+                                        Independent full LCA product — calculated simultaneously with your main product
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Copy from main button -->
+                            <button id="copyMainToTwinBtn"
+                                    onclick="copyMainToTwin()"
+                                    class="btn btn-outline"
+                                    style="border-color: #2C7A7B; color: #2C7A7B; font-size: 0.8rem; padding: 0.4rem 1rem;">
+                                <i class="fas fa-copy"></i> Copy from Main
+                            </button>
+                        </div>
+
+                        <!-- Explainer -->
+                        <div style="background: #E6FFFA; border: 1px solid #81E6D9; border-radius: 6px;
+                                    padding: 0.6rem 0.9rem; margin-bottom: 1.25rem; font-size: 0.78rem; color: #2C7A7B;">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Apple-to-apple:</strong> Use <em>Copy from Main</em>, then swap only the ingredient (e.g. pea protein → beef, same 0.15 kg).
+                            <strong>Net-zero scenario:</strong> Fill independently — change sourcing country, packaging, or energy source to model what-if impact.
+                        </div>
+
+                        <!-- Twin product basics -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                            <div>
+                                <label class="form-label" style="color: #2C7A7B;">Twin Product Name</label>
+                                <input type="text" id="twinProductName" class="form-control"
+                                       placeholder="e.g. Beef Burger (Conventional)" value="">
+                            </div>
+                            <div>
+                                <label class="form-label" style="color: #2C7A7B;">Product Net Weight (kg)</label>
+                                <input type="number" id="twinProductWeight" class="form-control"
+                                       value="0.200" step="0.001" min="0.001">
+                            </div>
+                        </div>
+
+                        <!-- Twin BOM label -->
+                        <label class="form-label" style="color: #2C7A7B; font-weight: 700; margin-bottom: 0.5rem; display: block;">
+                            <i class="fas fa-list"></i> Bill of Materials
+                        </label>
+
+                        <!-- Twin search row -->
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; align-items: flex-end;">
+                            <div style="flex: 2; min-width: 200px; position: relative;">
+                                <label class="form-label" style="font-size: 0.75rem;">Search Ingredient</label>
+                                <input type="text" id="twinIngredientSearch" class="form-control"
+                                       placeholder="Type to search AGRIBALYSE 3.2…" autocomplete="off">
+                                <input type="hidden" id="twinIngredientSelect">
+                                <ul id="twinIngredientDropdown"
+                                    class="search-dropdown hidden"
+                                    style="position: absolute; top: 100%; left: 0; right: 0; z-index: 1000;
+                                           max-height: 280px; overflow-y: auto; background: white;
+                                           border: 1px solid var(--border); border-radius: 8px;
+                                           box-shadow: 0 8px 24px rgba(0,0,0,0.12); list-style: none;
+                                           padding: 0; margin: 4px 0 0;">
+                                </ul>
+                            </div>
+                            <div style="min-width: 90px;">
+                                <label class="form-label" style="font-size: 0.75rem;">Quantity (kg)</label>
+                                <input type="number" id="twinIngredientQuantity" class="form-control"
+                                       value="0.150" step="0.001" min="0">
+                            </div>
+                            <div style="min-width: 130px;">
+                                <label class="form-label" style="font-size: 0.75rem;">Origin Country</label>
+                                <select id="twinIngredientOriginSelect" class="form-control">
+                                    <option value="FR">🇫🇷 France (Base)</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: flex-end;">
+                                <button class="btn btn-primary" onclick="addTwinIngredient()"
+                                        style="background: linear-gradient(135deg, #2C7A7B, #38A169); border-color: #2C7A7B;">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Twin ingredient list -->
+                        <div id="twinIngredientList"
+                             style="border: 1px solid #B2DFDB; border-radius: 8px; background: white; min-height: 56px; margin-bottom: 1rem;">
+                            <div style="text-align: center; padding: 1.25rem; color: var(--gray); font-size: 0.85rem;">
+                                <i class="fas fa-flask" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block; opacity: 0.35;"></i>
+                                No twin ingredients yet — add them above or use <strong>Copy from Main</strong>
+                            </div>
+                        </div>
+
+                        <!-- Twin operational parameters (collapsible) -->
+                        <details>
+                            <summary style="cursor: pointer; font-weight: 700; color: #2C7A7B; font-size: 0.9rem;
+                                            padding: 0.5rem 0; user-select: none; list-style: none;">
+                                <i class="fas fa-sliders-h"></i> Operational Parameters
+                                <span style="font-size: 0.72rem; font-weight: 400; color: var(--gray); margin-left: 0.5rem;">
+                                    Manufacturing · Transport · Packaging
+                                </span>
+                            </summary>
+
+                            <div style="padding-top: 0.75rem;">
+
+                                <!-- Manufacturing -->
+                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray);
+                                            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;">
+                                    Manufacturing
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Country</label>
+                                        <select id="twinManufacturingCountry" class="form-control" onchange="calculateImpact()">
+                                            <option value="FR">France</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Processing Method</label>
+                                        <select id="twinProcessingMethod" class="form-control" onchange="calculateImpact()">
+                                            <option value="none">None / Minimal</option>
+                                            <option value="baking">Baking</option>
+                                            <option value="pasteurization">Pasteurization</option>
+                                            <option value="sterilization">Sterilization</option>
+                                            <option value="fermentation">Fermentation</option>
+                                            <option value="extrusion">Extrusion</option>
+                                            <option value="spray_drying">Spray Drying</option>
+                                            <option value="freeze_drying">Freeze Drying</option>
+                                            <option value="chilling">Chilling</option>
+                                            <option value="freezing">Freezing</option>
+                                            <option value="retort">Retort</option>
+                                            <option value="crushing_milling">Crushing / Milling</option>
+                                            <option value="pressing">Pressing</option>
+                                            <option value="mixing_blending">Mixing / Blending</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Energy Source</label>
+                                        <select id="twinEnergySource" class="form-control" onchange="calculateImpact()">
+                                            <option value="grid">Grid (National Mix)</option>
+                                            <option value="renewable">100% Renewable</option>
+                                            <option value="gas">Natural Gas</option>
+                                            <option value="coal">Coal</option>
+                                            <option value="nuclear">Nuclear</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Transport -->
+                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray);
+                                            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;">
+                                    Transport
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Transport Mode</label>
+                                        <select id="twinTransportMode" class="form-control" onchange="calculateImpact()">
+                                            <option value="road">Road (Truck)</option>
+                                            <option value="sea">Sea (Container Ship)</option>
+                                            <option value="rail">Rail</option>
+                                            <option value="air">Air Freight</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Distance (km)</label>
+                                        <input type="number" id="twinTransportDistance" class="form-control"
+                                               value="300" min="1" onchange="calculateImpact()">
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Refrigerated</label>
+                                        <select id="twinRefrigeratedTransport" class="form-control" onchange="calculateImpact()">
+                                            <option value="no">No</option>
+                                            <option value="yes">Yes (Chilled)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Packaging -->
+                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray);
+                                            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;">
+                                    Packaging
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.75rem;">
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Material</label>
+                                        <select id="twinPackagingMaterial" class="form-control" onchange="calculateImpact()">
+                                            <option value="cardboard">Cardboard</option>
+                                            <option value="glass">Glass</option>
+                                            <option value="plastic_pet">Plastic PET</option>
+                                            <option value="plastic_hdpe">Plastic HDPE</option>
+                                            <option value="plastic_pp">Plastic PP</option>
+                                            <option value="aluminium">Aluminium</option>
+                                            <option value="steel">Steel</option>
+                                            <option value="paper">Paper</option>
+                                            <option value="bioplastic_pla">Bioplastic PLA</option>
+                                            <option value="multilayer">Multilayer</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Weight (kg)</label>
+                                        <input type="number" id="twinPackagingWeight" class="form-control"
+                                               value="0.050" step="0.001" min="0" onchange="calculateImpact()">
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Recycled Content (%)</label>
+                                        <input type="number" id="twinRecycledContent" class="form-control"
+                                               value="30" min="0" max="100" onchange="calculateImpact()">
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">End of Life</label>
+                                        <select id="twinPackagingEoL" class="form-control" onchange="calculateImpact()">
+                                            <option value="eu_average">EU Average</option>
+                                            <option value="recycling">Recycling</option>
+                                            <option value="incineration">Incineration</option>
+                                            <option value="landfill">Landfill</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </details>
+
+                    </div>
+                </div>
+                <!-- ================= END PARAMETRIC TWIN SECTION ================= -->
 
                 <!-- Ingredients Card -->
                 <div class="card">
