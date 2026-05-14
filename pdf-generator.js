@@ -1860,6 +1860,27 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         footer('Methodology & Legal — Page ' + pageNum + ' of ' + TOTAL_PAGES);
 
         // ================================================================
+        // PARAMETRIC TWIN — FULL GLASS-BOX SECTION
+        // Injected here: after ingredient deep-dive, before QR verification.
+        // Reads window._twinResultsForPDF written by twin_module.js
+        // renderTwinResults(). No-op if twin was not calculated.
+        // ================================================================
+        if (window._twinResultsForPDF && typeof window.buildTwinPDFSection === 'function') {
+            // Build the helpers object the twin builder expects
+            const twinHelpers = {
+                C, M, CW, PH,
+                safe, fix, numFmt, pct,
+                ensureSpace, subHeader, hRule, footer,
+                newPage,
+                get Y()      { return Y; },
+                set Y(v)     { Y = v; },
+                get pageNum(){ return pageNum; },
+                set pageNum(v){ pageNum = v; }
+            };
+            window.buildTwinPDFSection(doc, twinHelpers);
+        }
+
+        // ================================================================
         // OFFLINE VERIFICATION + QR
         // ================================================================
         newPage('Offline Verification — Digital Transparency Card');
