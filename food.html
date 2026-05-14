@@ -2001,6 +2001,16 @@
                             </div>
                             <div class="story-content" id="storyContent"></div>
                             <div class="story-comparison" id="storyComparison"></div>
+                            <!-- QR render target — ui.js renderEnvironmentalStory()
+                                 writes QRCode.toCanvas() output here.
+                                 Without this div the canvas has no parent and QR
+                                 silently fails (getElementById returns null). -->
+                            <div id="storyQRCode" style="margin-top:1.25rem;text-align:center;min-height:168px;"></div>
+                            <div style="text-align:center;margin-top:0.6rem;">
+                                <button class="btn btn-outline" onclick="downloadStoryQR()">
+                                    <i class="fas fa-qrcode"></i> Download QR
+                                </button>
+                            </div>
                         </div>
 
                         <div class="chart-container">
