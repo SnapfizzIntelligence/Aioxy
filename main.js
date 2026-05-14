@@ -1,11 +1,12 @@
 
-// ================== AIOXY MAIN CONTROLLER v3.0 ==================
+// ================== AIOXY MAIN CONTROLLER v3.1 ==================
 // Global State, Initialization, and Core Application Flow
+// Twin Calculation Engine — Dual Product Parallel Analysis
 // ===================================================================
 
 // ================== GLOBAL VARIABLES ==================
 var selectedIngredients = [];
-var conventionalBaselineIngredients = []; // Conventional baseline recipe (full recipe swap)
+var conventionalBaselineIngredients = [];
 var currentChart = null;
 var currentDPPId = null;
 var finalPefResults = {};
@@ -13,6 +14,15 @@ var massBalanceData = {};
 var auditTrailData = {};
 var currentComparisonBaseline = null;
 var currentAnnualVolume = 10000;
+
+// ── TWIN GLOBALS ─────────────────────────────────────────────────────────────
+// Mirrors selectedIngredients / auditTrailData for the parametric twin product.
+// Populated only when the twin form has at least one ingredient.
+var twinSelectedIngredients = [];
+var twinResult = null;
+var twinFinalPefResults = {};
+var twinAuditTrailData = {};
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Physics-based scenarios (7 total)
 let activeScenarios = {
@@ -29,74 +39,17 @@ let activeScenarios = {
 let currentHydrationSuggestion = null;
 
 // ================== COMPATIBILITY BRIDGE ==================
-// Engine_3 exported these as globals. The 3 new engine files do NOT.
-// ui.js, audit-trail.js and business-case.js still call them by name.
-// We re-expose them here from the new engine modules so no other file needs to change.
-
-// ── 1. PHYSICS_CONSTANTS — AR5 values, consistent with core_physics ──────
-// AR6 GWP values (ch4: 27.9) removed. Use core_physics IPCC_AR5_PEF31
-// constants directly. Only equivalency-display constants retained here.
 var PHYSICS_CONSTANTS = {
-    // ── OFFICIAL EQUIVALENCE FACTORS ────────────────────────────────────────
-    // These are used for consumer-facing environmental story equivalences.
-    // All values from official, publicly citable sources.
-    // Framing must always be "potential reduction" not "saved" — see DISCLAIMER below.
-    //
-    // CAR: EEA (2023) "CO2 emission performance standards for cars and vans"
-    //   Average EU passenger car fleet (all fuels, new registrations 2022): 116.3 g CO2/km
-    //   Used-fleet average (all ages, all fuels): ~158 g CO2/km
-    //   AIOXY uses fleet average (all ages) = 0.1584 kg CO2/km.
-    //   This is conservative (higher than new car only) and therefore harder to attack.
-    //   Source: EEA 2023 — EEA Report No 01/2023, Table 1.
-    //   URL: https://www.eea.europa.eu/publications/co2-performance-of-new-passenger
     CAR_EMISSIONS_KG_PER_KM:  0.1584,
-
-    // TREE: IPCC AR5 Working Group III Chapter 11 (2014), Afforestation/Reforestation
-    //   Temperate zone, mature broadleaf forest: 21.77 kg CO2/tree/year
-    //   This is the IPCC default for temperate zone afforestation projects.
-    //   MUST be framed as "equivalent to one mature temperate tree absorbing CO2 for X days"
-    //   DO NOT say "trees planted" — planting ≠ absorption. Use absorption framing only.
-    //   Source: IPCC AR5 WGIII Ch.11 Table 11.2, temperate moist forest.
     TREE_ABSORPTION_KG_YEAR:  21.77,
-
-    // HOUSEHOLD ELECTRICITY: IEA (2023) "Electricity Information" EU average
-    //   EU27 average household electricity consumption: 8.5 kWh/day
-    //   EU27 average grid carbon intensity (Ember 2025): 0.275 kg CO2e/kWh
-    //   Daily household electricity CO2 = 8.5 x 0.275 = 2.3375 kg CO2e/day
-    //   Source: IEA Electricity Information 2023 Table 2.1 + Ember 2025.
     HOUSEHOLD_ELEC_KG_DAY:    2.3375,
-
-    // SMARTPHONE: IEA (2022) "Tracking Clean Energy Progress — Appliances"
-    //   Average smartphone: 8.25 Wh per full charge
-    //   EU grid: 0.275 kg CO2e/kWh = 0.000275 kg CO2e/Wh
-    //   CO2 per charge: 8.25 x 0.000275 = 0.002269 kg CO2e
-    //   Charges per kg CO2e: 1 / 0.002269 = 440.7
-    //   Source: IEA Tracking Clean Energy Progress 2022 + Ember 2025.
     SMARTPHONE_CHARGES_PER_KG_CO2: 440.7,
-
-    // FLIGHT: ICAO Carbon Emissions Calculator methodology (2023)
-    //   Economy class, average passenger, global fleet average: 0.120 kg CO2e/passenger-km
-    //   1 kg CO2e = 1/0.120 = 8.33 km of economy flight
-    //   Source: ICAO Environmental Report 2022, Section 3 — Aviation and Climate Change.
-    //   URL: https://www.icao.int/environmental-protection/Documents/ICAO%20Environmental%20Report%202022.pdf
     FLIGHT_KM_PER_KG_CO2:     8.33,
-
-    // LED BULB: derived from EU grid
-    //   10W LED bulb, EU grid 0.275 kg CO2e/kWh
-    //   kWh per hour = 0.010 kWh
-    //   kg CO2e per hour = 0.010 x 0.275 = 0.00275
-    //   Hours per kg CO2e = 1 / 0.00275 = 363.6
-    //   Source: Derived from Ember 2025 EU grid intensity + standard LED specification.
     LED_HOURS_PER_KG_CO2:     363.6,
-
-    // ── RETAINED FOR COMPATIBILITY ────────────────────────────────────────────
     WATER_BOTTLE_LITERS:      0.5,
     SHADOW_PRICE_EUR_TON:     85.0
-    // gwp block removed — use window.corePhysics.CONSTANTS.IPCC_AR5_PEF31
 };
 
-// ── 2. pefCategories — unit labels and icons used by ui.js ──────────────
-// Unchanged: ui.js reads pefCategories[category].unit for display labels.
 var pefCategories = {
     "Climate Change":                { unit: "kg CO₂e",      icon: "smog"         },
     "Ozone Depletion":               { unit: "kg CFC11e",     icon: "sun"          },
@@ -116,7 +69,6 @@ var pefCategories = {
     "Resource Use, fossils":         { unit: "MJ",            icon: "oil-can"      }
 };
 
-// ── 3. ANCHOR_DATASETS — comparison baseline anchors, used by ui.js ─────
 var ANCHOR_DATASETS = {
     'beef-product':    { id: 'beef-cattle-conventional-national-average-at-farm-gate-fr',  factor: 1.0,  name: 'Beef' },
     'chicken-product': { id: 'broiler-conventional-at-farm-gate-fr',                       factor: 1.0,  name: 'Chicken' },
@@ -128,45 +80,33 @@ var ANCHOR_DATASETS = {
     'default':         { id: 'beef-cattle-conventional-national-average-at-farm-gate-fr',  factor: 1.0,  name: 'Conventional Product' }
 };
 
-// ── 4. calculatePEFSingleScore — reads from window.auditTrailData ────────
-// Shadow recalculation removed. This wrapper now reads the pre-computed
-// result from auditTrailData so ui.js, audit-trail.js, and pdf-generator.js
-// get a consistent number without recomputing.
 function calculatePEFSingleScore(pefResults, productWeightKg) {
-    // Primary path: return pre-computed result from the engine
     if (window.auditTrailData && window.auditTrailData.pef_single_score) {
         const ps = window.auditTrailData.pef_single_score;
         return {
-            singleScore:            ps.singleScore        || 0,
-            normalizedScore:        ps.normalizedScore    || 0,
-            weightedScore:          ps.weightedScore      || 0,
-            breakdown:              ps.breakdown          || {},
-            unit:                   'µPt'
+            singleScore:     ps.singleScore     || 0,
+            normalizedScore: ps.normalizedScore || 0,
+            weightedScore:   ps.weightedScore   || 0,
+            breakdown:       ps.breakdown       || {},
+            unit:            'µPt'
         };
     }
-    // Fallback (first render before engine result is ready): return zeros
-    return {
-        singleScore: 0, normalizedScore: 0, weightedScore: 0,
-        breakdown: {}, unit: 'µPt'
-    };
+    return { singleScore: 0, normalizedScore: 0, weightedScore: 0, breakdown: {}, unit: 'µPt' };
 }
 
-// ── 6. getUnifiedMetrics — reads from engine output ──────────────────────
 function getUnifiedMetrics(pefResults, massData) {
     const weightKg = (massData && massData.final_content_weight_kg) || 0.2;
     if (!pefResults || !pefResults['Climate Change']) {
         return { weightUsed: weightKg, co2PerKg: 0, waterScarcityPerKg: 0, landUsePerKg: 0, fossilPerKg: 0 };
     }
     return {
-        weightUsed:          weightKg,
-        co2PerKg:            (pefResults['Climate Change'].total                || 0) / weightKg,
-        waterScarcityPerKg:  (pefResults['Water Use/Scarcity (AWARE)']?.total   || 0) / weightKg,
-        landUsePerKg:        (pefResults['Land Use']?.total                     || 0) / weightKg,
-        fossilPerKg:         (pefResults['Resource Use, fossils']?.total        || 0) / weightKg
+        weightUsed:         weightKg,
+        co2PerKg:           (pefResults['Climate Change'].total                || 0) / weightKg,
+        waterScarcityPerKg: (pefResults['Water Use/Scarcity (AWARE)']?.total   || 0) / weightKg,
+        landUsePerKg:       (pefResults['Land Use']?.total                     || 0) / weightKg,
+        fossilPerKg:        (pefResults['Resource Use, fossils']?.total        || 0) / weightKg
     };
 }
-
-
 
 // ================== FACTORY PRIMARY DATA TOGGLE ==================
 function toggleFactoryInputs() {
@@ -247,18 +187,18 @@ function validateDataIntegrity() {
     else warnings.push("⚠️ No comparison baseline set");
 
     console.group("📊 Data Integrity Report");
-    if (issues.length)   { console.error("❌ CRITICAL:");  issues.forEach(i => console.error(i)); }
-    if (warnings.length) { console.warn("⚠️ WARNINGS:");   warnings.forEach(w => console.warn(w)); }
-    if (successes.length){ console.log("✅ OK:");          successes.forEach(s => console.log(s)); }
+    if (issues.length)   { console.error("❌ CRITICAL:"); issues.forEach(i => console.error(i)); }
+    if (warnings.length) { console.warn("⚠️ WARNINGS:"); warnings.forEach(w => console.warn(w)); }
+    if (successes.length){ console.log("✅ OK:");        successes.forEach(s => console.log(s)); }
     console.groupEnd();
     return { hasCriticalIssues: issues.length > 0, hasWarnings: warnings.length > 0, issues, warnings, successes,
              overallStatus: issues.length > 0 ? "CRITICAL" : warnings.length > 0 ? "WARNING" : "HEALTHY" };
 }
 
-// ================== TROUBLESHOOTING HELPER ==================
 function debugCurrentState() {
     console.group("🐛 Current Application State");
     console.log("📦 Ingredients:", { count: selectedIngredients.length, items: selectedIngredients.map(i => `${i.name}: ${i.quantity}kg`) });
+    console.log("🔬 Twin Ingredients:", { count: twinSelectedIngredients.length, items: twinSelectedIngredients.map(i => `${i.name}: ${i.quantity}kg`) });
     console.log("📊 PEF Results:", { categories: finalPefResults ? Object.keys(finalPefResults).length : 0, climateChange: finalPefResults?.["Climate Change"]?.total || 0 });
     console.log("💰 Business:", { baseline: currentComparisonBaseline?.name, volume: currentAnnualVolume });
     console.log("⚖️ Mass Balance:", massBalanceData || "Not calculated");
@@ -303,11 +243,7 @@ function dismissHydrationSuggestion() {
     if (card) card.classList.add('hidden');
 }
 
-
 // ================== ENGINE BRIDGE ==================
-// Only utility functions retained here — called by calculation_engine.js and ui.js.
-// The legacy calculateFoodImpact() dual path has been removed (GAP 1 / ISO 14044 audit).
-// The sole calculation entry point is calculateImpact() → window.calculationEngine.calculate().
 window.foodCalculationEngine = {
     getDQRQualityLevel: function(dqr) {
         if (dqr <= 1.6) return { level: 'Excellent',  class: 'dqr-excellent' };
@@ -315,33 +251,6 @@ window.foodCalculationEngine = {
         if (dqr <= 3.0) return { level: 'Good',       class: 'dqr-good' };
         return           { level: 'Fair/Poor',         class: 'dqr-poor' };
     },
-
-    // GAP 9 FIX: DQR-to-uncertainty mapping — source citations added.
-    //
-    // This function maps a DQR score (1–4) to a percentage uncertainty value
-    // for use in Monte Carlo lognormal propagation (core_physics.calculateUncertainty).
-    //
-    // Primary source:
-    //   PEF Category Rules guidance (EC, 2017), "Overview of the PEF method",
-    //   Annex III, Table A.3 — "Default uncertainty values for secondary data
-    //   as a function of data quality score (DQS)":
-    //     DQS 1 → ~10%,  DQS 2 → ~25%,  DQS 3+ → ~50%
-    //
-    // Supporting sources:
-    //   Weidema et al. (2013) pedigree matrix uncertainty factors, as cited in
-    //   the PEF method guidance (Huijbregts et al. 2017, Sci Total Environ
-    //   581-582:358-367) — maps geometric standard deviation (GSD²) to
-    //   percentage uncertainty for lognormal distributions.
-    //
-    //   Ciroth et al. (2016) "Empirically based uncertainty factors for the
-    //   pedigree matrix in ecoinvent", Int J Life Cycle Assess 21:1338–1348 —
-    //   provides empirical basis for the 10% / 25% / 50% tier boundaries.
-    //
-    // Implementation: linear interpolation within each DQS tier.
-    //   DQR ≤ 1.0 → 10%  (excellent quality, AGRIBALYSE primary survey data)
-    //   DQR 1–2   → linear 10%–25%  (good/secondary data)
-    //   DQR 2–3   → linear 25%–50%  (secondary/proxy data)
-    //   DQR > 3   → linear extrapolation from 50% base (fair/poor data)
     calculateUncertainty: function(dqr) {
         var score = typeof dqr === 'object' ? (dqr.P || 2.0) : (dqr || 2.0);
         if (score <= 1) return 10;
@@ -349,6 +258,120 @@ window.foodCalculationEngine = {
         return Math.round((25 + 25 * (score - 2)) * 10) / 10;
     }
 };
+
+// ================== TWIN INPUT BUILDER ==================
+// Assembles a full calculation_engine input object from the twin form.
+// Called by calculateImpact() when twinSelectedIngredients.length > 0.
+function buildTwinInput() {
+    const twinProductName   = document.getElementById('twinProductName')?.value || 'Parametric Twin';
+    const twinProductWeight = parseFloat(document.getElementById('twinProductWeight')?.value) || 0.2;
+
+    return {
+        product: {
+            name:               twinProductName,
+            weightKg:           twinProductWeight,
+            proteinContent:     0,
+            concentrationRatio: 1.0
+        },
+        ingredients: twinSelectedIngredients.map(ing => ({
+            id:              ing.id,
+            quantityKg:      ing.quantity,
+            originCountry:   ing.originCountry  || 'FR',
+            processingState: ing.processingState || 'raw',
+            physics_note:    ing.physics_note   || '',
+            primaryData:     ing.primaryData    || null
+        })),
+        manufacturing: {
+            country:              document.getElementById('twinManufacturingCountry')?.value || 'FR',
+            processingMethod:     document.getElementById('twinProcessingMethod')?.value     || 'none',
+            energySource:         document.getElementById('twinEnergySource')?.value         || 'grid',
+            usePrimaryFactoryData: false,
+            primaryFactoryData:   null
+        },
+        transport: {
+            mode:          document.getElementById('twinTransportMode')?.value                   || 'road',
+            distanceKm:    parseFloat(document.getElementById('twinTransportDistance')?.value)    || 300,
+            refrigeration: document.getElementById('twinRefrigeratedTransport')?.value === 'yes' ? 'chilled'
+                         : document.getElementById('twinProcessingMethod')?.value === 'freezing'  ? 'frozen'
+                         : 'ambient',
+            crisisRouting: false
+        },
+        packaging: {
+            material:       document.getElementById('twinPackagingMaterial')?.value             || 'cardboard',
+            weightKg:       parseFloat(document.getElementById('twinPackagingWeight')?.value)   || 0.050,
+            recycledPct:    parseFloat(document.getElementById('twinRecycledContent')?.value)   || 30,
+            eolDestination: document.getElementById('twinPackagingEoL')?.value                  || 'eu_average'
+        },
+        // Twin has its own auto self-comparison; inter-product comparison is handled
+        // externally by renderTwinResults() comparing mainResult vs twinResult directly.
+        comparison: {
+            baselineId:        'auto',
+            customBaselineCO2: null,
+            useJRCBAT:         false,
+            ingredientMappings: [],
+            twinParams:        null
+        }
+    };
+}
+
+// ================== COPY MAIN → TWIN ==================
+// Populates all twin form fields with current main product values.
+// User can then tweak only the parameters they want to change.
+function copyMainToTwin() {
+    // Product basics
+    const mainName = document.getElementById('productName')?.value;
+    if (mainName) {
+        const twinNameEl = document.getElementById('twinProductName');
+        if (twinNameEl) twinNameEl.value = mainName + ' (Twin)';
+    }
+    const mainWeight = document.getElementById('productWeight')?.value;
+    if (mainWeight) {
+        const twEl = document.getElementById('twinProductWeight');
+        if (twEl) twEl.value = mainWeight;
+    }
+
+    // Manufacturing
+    _copyField('manufacturingCountry',  'twinManufacturingCountry');
+    _copyField('processingMethod',      'twinProcessingMethod');
+    _copyField('energySource',          'twinEnergySource');
+
+    // Transport
+    _copyField('transportMode',         'twinTransportMode');
+    _copyField('transportDistance',     'twinTransportDistance');
+    _copyField('refrigeratedTransport', 'twinRefrigeratedTransport');
+
+    // Packaging
+    _copyField('packagingMaterial',     'twinPackagingMaterial');
+    _copyField('packagingWeight',       'twinPackagingWeight');
+    _copyField('recycledContent',       'twinRecycledContent');
+    _copyField('packagingEoL',          'twinPackagingEoL');
+
+    // BOM — deep copy all main ingredients into twin
+    twinSelectedIngredients = selectedIngredients.map(ing => Object.assign({}, ing));
+    window.twinSelectedIngredients = twinSelectedIngredients;
+    if (typeof updateTwinIngredientList === 'function') updateTwinIngredientList();
+
+    console.log('[AIOXY Twin] Copied main product to twin (' + twinSelectedIngredients.length + ' ingredients)');
+    showTwinCopyConfirmation();
+}
+
+function _copyField(fromId, toId) {
+    const fromEl = document.getElementById(fromId);
+    const toEl   = document.getElementById(toId);
+    if (fromEl && toEl) toEl.value = fromEl.value;
+}
+
+function showTwinCopyConfirmation() {
+    const btn = document.getElementById('copyMainToTwinBtn');
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    btn.style.background = '#27AE60';
+    setTimeout(() => {
+        btn.innerHTML = orig;
+        btn.style.background = '';
+    }, 2000);
+}
 
 // ================== ENHANCED CALCULATION ENGINE ==================
 async function calculateImpact() {
@@ -366,16 +389,12 @@ async function calculateImpact() {
         }
     });
 
-    // FIX: Sync conventionalBaselineIngredients from window global written by ui.js.
-    // main.js declares its own local array (line 8) which is never updated by ui.js.
-    // ui.js writes to window.conventionalBaselineIngredients after every user edit.
-    // Without this sync, ingredientMappings is always empty → PATH 2 never fires →
-    // parametric twin falls through to PATH 4 (auto self-comparison) → baseline
-    // echoes the product's own CO2 as a fixed number regardless of user selection.
+    // Sync conventionalBaselineIngredients from window global written by ui.js
     if (window.conventionalBaselineIngredients && window.conventionalBaselineIngredients.length > 0) {
         conventionalBaselineIngredients = window.conventionalBaselineIngredients;
     }
 
+    // ── Build MAIN input ─────────────────────────────────────────────────────
     const input = {
         product: {
             name:               document.getElementById('productName')?.value || 'Unnamed Product',
@@ -411,23 +430,12 @@ async function calculateImpact() {
             crisisRouting: document.getElementById('crisisRoutingToggle')?.checked || false
         },
         packaging: {
-            material:         document.getElementById('packagingMaterial')?.value             || 'cardboard',
-            weightKg:         parseFloat(document.getElementById('packagingWeight')?.value)   || 0.050,
-            recycledPct:      parseFloat(document.getElementById('recycledContent')?.value)   || 30,
-            eolDestination:   document.getElementById('packagingEoL')?.value                  || 'eu_average'
+            material:       document.getElementById('packagingMaterial')?.value             || 'cardboard',
+            weightKg:       parseFloat(document.getElementById('packagingWeight')?.value)   || 0.050,
+            recycledPct:    parseFloat(document.getElementById('recycledContent')?.value)   || 30,
+            eolDestination: document.getElementById('packagingEoL')?.value                  || 'eu_average'
         },
         comparison: (() => {
-            // ROOT CAUSE FIX: The previous index-based auto-match was fragile — it skipped
-            // ingredients that already had a conventionalCounterpart (stale from a prior run),
-            // and silently dropped any conventional ingredients beyond the assessed ingredient
-            // count. This meant ingredientMappings was always empty or stale, so PATH 2 never
-            // fired and the twin fell through to PATH 4 (fixed self-comparison value).
-            //
-            // New approach: build ingredientMappings directly from conventionalBaselineIngredients.
-            // Each entry in conventionalBaselineIngredients is what the user explicitly added.
-            // We pair them with assessed ingredients by index. Assessed ingredients with no
-            // conventional counterpart self-map (zero delta). This covers all cases correctly
-            // regardless of how many conventional ingredients the user adds.
             const cbiList = conventionalBaselineIngredients;
             const hasTwin = cbiList && cbiList.length > 0;
 
@@ -438,103 +446,71 @@ async function calculateImpact() {
                     if (cbi) {
                         const conventionalPef = window.aioxyData.ingredients[cbi.id]?.data?.pef || null;
                         return {
-                            assessed: {
-                                id:            ing.id,
-                                name:          ing.name,
-                                quantityKg:    ing.quantity,
-                                pef:           assessedPef,
-                                entericParams: ing.entericParams || null
-                            },
-                            conventional: {
-                                id:            cbi.id,
-                                name:          cbi.name,
-                                quantityKg:    cbi.quantity || ing.quantity,
-                                pef:           conventionalPef,
-                                entericParams: null
-                            }
-                        };
-                    } else {
-                        // No conventional counterpart for this assessed ingredient — self-map (zero delta)
-                        return {
-                            assessed: {
-                                id:            ing.id,
-                                name:          ing.name,
-                                quantityKg:    ing.quantity,
-                                pef:           assessedPef,
-                                entericParams: ing.entericParams || null
-                            },
-                            conventional: null
+                            assessed:     { id: ing.id, name: ing.name, quantityKg: ing.quantity, pef: assessedPef, entericParams: ing.entericParams || null },
+                            conventional: { id: cbi.id, name: cbi.name, quantityKg: cbi.quantity || ing.quantity, pef: conventionalPef, entericParams: null }
                         };
                     }
+                    return {
+                        assessed:     { id: ing.id, name: ing.name, quantityKg: ing.quantity, pef: assessedPef, entericParams: ing.entericParams || null },
+                        conventional: null
+                    };
                 })
                 : [];
 
-            // ── Twin operational overrides ────────────────────────────────────
-            // Read twin-specific manufacturing/transport/packaging fields.
-            // If ALL are blank, twinParams is null → engine falls back to
-            // sharedParams on both sides (apple-to-apple, zero operational delta).
-            // If ANY are filled, twinParams is passed → each side calculated independently.
-            const twinManufCountry   = document.getElementById('twinManufacturingCountry')?.value?.trim()  || null;
-            const twinProcessMethod  = document.getElementById('twinProcessingMethod')?.value?.trim()      || null;
-            const twinTransportMode  = document.getElementById('twinTransportMode')?.value?.trim()         || null;
-            const twinTransportDist  = parseFloat(document.getElementById('twinTransportDistance')?.value) || null;
-            const twinRefrig         = document.getElementById('twinRefrigeratedTransport')?.value === 'yes' ? 'chilled'
-                                     : twinProcessMethod === 'freezing' ? 'frozen' : 'ambient';
-            const twinPackMaterial   = document.getElementById('twinPackagingMaterial')?.value?.trim()     || null;
-            const twinPackWeight     = parseFloat(document.getElementById('twinPackagingWeight')?.value)   || null;
-            const twinRecycledPct    = parseFloat(document.getElementById('twinRecycledContent')?.value);
-            const twinPackEoL        = document.getElementById('twinPackagingEoL')?.value?.trim()          || null;
-
-            const hasTwinOverrides = twinManufCountry || twinProcessMethod || twinTransportMode ||
-                                     twinTransportDist || twinPackMaterial || twinPackWeight ||
-                                     (!isNaN(twinRecycledPct)) || twinPackEoL;
-
-            const twinParams = hasTwinOverrides ? {
-                countryCode:            twinManufCountry   || input.manufacturing.country,
-                processingMethod:       twinProcessMethod  || input.manufacturing.processingMethod,
-                transportMode:          twinTransportMode  || input.transport.mode,
-                transportDistance:      twinTransportDist  != null ? twinTransportDist : input.transport.distanceKm,
-                refrigeration:          twinRefrig,
-                packagingMaterial:      twinPackMaterial   || input.packaging.material,
-                packagingWeightKg:      twinPackWeight     != null ? twinPackWeight    : input.packaging.weightKg,
-                recycledContentPercent: !isNaN(twinRecycledPct) ? twinRecycledPct     : input.packaging.recycledPct,
-                eolDestination:         twinPackEoL        || input.packaging.eolDestination,
-                productWeightKg:        input.product.weightKg
-            } : null;
-
             return {
-            conventionalBaselineName: document.getElementById('conventionalBaselineName')?.value?.trim() || null,
-            baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
-            customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
-            useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false,
-            ingredientMappings,
-            twinParams
+                conventionalBaselineName: document.getElementById('conventionalBaselineName')?.value?.trim() || null,
+                baselineId:        document.getElementById('comparisonBaseline')?.value           || 'auto',
+                customBaselineCO2: parseFloat(document.getElementById('customBaseline')?.value)   || null,
+                useJRCBAT:         document.getElementById('useJRCBAT')?.checked                  || false,
+                ingredientMappings,
+                twinParams: null   // parametric twin now runs as separate full calculation
             };
         })()
     };
 
-    // FIX: Expose input globally so pdf-generator.js can read input.packaging.material.
-    // The PDF generator has no parameter for input — it only receives (tabId, reportTitle).
-    // Without this line, pdf-generator.js throws: ReferenceError: input is not defined.
     window.lastInput = input;
 
+    // ── Build TWIN input (if twin has ingredients) ───────────────────────────
+    const hasTwinIngredients = twinSelectedIngredients.length > 0;
+    let twinInput = null;
+    if (hasTwinIngredients) {
+        twinInput = buildTwinInput();
+        window.lastTwinInput = twinInput;
+        console.log('[AIOXY Twin] Twin calculation active —', twinSelectedIngredients.length, 'ingredients');
+    }
+
     try {
-        // F7 FIX: await the async calculate() so the SHA-256 DPP ID is resolved
-        // before updateResultsUI() runs. Previously missing await caused placeholder ID in UI.
-        const result = await window.calculationEngine.calculate(input);
+        let mainCalcResult, twinCalcResult = null;
 
-        // Write globals — SINGLE SOURCE OF TRUTH, no shadow assembly
-        window.finalPefResults           = result.finalPefResults;
-        window.massBalanceData           = result.massBalanceData;
-        window.auditTrailData            = result.auditTrailData;
-        window.currentComparisonBaseline = result.comparison.baseline;
-        window.currentDPPId              = result.auditTrailData.dppId;
+        if (twinInput) {
+            // ── Run both products simultaneously ──────────────────────────────
+            [mainCalcResult, twinCalcResult] = await Promise.all([
+                window.calculationEngine.calculate(input),
+                window.calculationEngine.calculate(twinInput)
+            ]);
+            console.log('[AIOXY Twin] ✅ Dual calculation complete');
+        } else {
+            mainCalcResult = await window.calculationEngine.calculate(input);
+        }
 
-        // Persist session state for business-case tab
+        // ── Write main globals ────────────────────────────────────────────────
+        window.finalPefResults           = mainCalcResult.finalPefResults;
+        window.massBalanceData           = mainCalcResult.massBalanceData;
+        window.auditTrailData            = mainCalcResult.auditTrailData;
+        window.currentComparisonBaseline = mainCalcResult.comparison.baseline;
+        window.currentDPPId              = mainCalcResult.auditTrailData.dppId;
+
+        // ── Write twin globals ────────────────────────────────────────────────
+        window.twinResult           = twinCalcResult;
+        window.twinFinalPefResults  = twinCalcResult ? twinCalcResult.finalPefResults  : null;
+        window.twinAuditTrailData   = twinCalcResult ? twinCalcResult.auditTrailData   : null;
+
+        // Persist session state
         try {
             localStorage.setItem('aioxy_pitch_state', JSON.stringify({
                 ingredients:                     selectedIngredients,
                 conventionalBaselineIngredients: conventionalBaselineIngredients,
+                twinIngredients:                 twinSelectedIngredients,
                 productName:                     input.product.name,
                 volume:                          currentAnnualVolume,
                 manufacturingCountry:            input.manufacturing.country,
@@ -549,17 +525,17 @@ async function calculateImpact() {
                 crisisRoutingToggle:             input.transport.crisisRouting,
                 timestamp:                       Date.now()
             }));
-        } catch(e) { /* localStorage may be unavailable in some environments */ }
+        } catch(e) { /* localStorage may be unavailable */ }
 
-        updateResultsUI(result);
+        // ── Update UI with both results ───────────────────────────────────────
+        updateResultsUI(mainCalcResult, twinCalcResult);
 
-        // Update business-case if visible
         const businessTab = document.getElementById('business-case-tab');
         if (businessTab && !businessTab.classList.contains('hidden')) {
             if (typeof updateBusinessCase === 'function') updateBusinessCase();
         }
 
-        return result;
+        return mainCalcResult;
 
     } catch (error) {
         console.error('💥 Calculation error:', error);
@@ -569,20 +545,32 @@ async function calculateImpact() {
         if (loadingElement) loadingElement.classList.add('hidden');
         if (resultsContent)  resultsContent.classList.remove('hidden');
     }
-            }
-    
+}
+
 // ================== WORKFLOW: START NEW AUDIT ==================
 function startNewAudit() {
     if (!confirm("Are you sure you want to start a new audit? This will clear all current data.")) return;
     localStorage.removeItem('aioxy_pitch_state');
+
     conventionalBaselineIngredients = [];
     window.conventionalBaselineIngredients = conventionalBaselineIngredients;
     if (typeof updateConventionalIngredientList === 'function') updateConventionalIngredientList();
+
+    // Clear twin state
+    twinSelectedIngredients = [];
+    window.twinSelectedIngredients = twinSelectedIngredients;
+    window.twinResult = null;
+    window.twinFinalPefResults = null;
+    window.twinAuditTrailData = null;
+    if (typeof updateTwinIngredientList === 'function') updateTwinIngredientList();
+    if (typeof clearTwinResults === 'function') clearTwinResults();
+
     selectedIngredients = []; currentDPPId = null; finalPefResults = {}; massBalanceData = {}; auditTrailData = {}; currentComparisonBaseline = null;
 
     const fields = [
         {id:'productName',val:'New Product'},{id:'productWeight',val:'0.200'},
-        {id:'proteinContent',val:''},{id:'customBaseline',val:''}
+        {id:'proteinContent',val:''},{id:'customBaseline',val:''},
+        {id:'twinProductName',val:''},{id:'twinProductWeight',val:'0.200'}
     ];
     fields.forEach(f => { const el=document.getElementById(f.id); if(el) el.value=f.val; });
 
@@ -591,7 +579,13 @@ function startNewAudit() {
         {id:'manufacturingCountry',val:'FR'},{id:'processingMethod',val:'none'},
         {id:'transportMode',val:'road'},{id:'transportDistance',val:'300'},
         {id:'packagingMaterial',val:'cardboard'},{id:'energySource',val:'grid'},
-        {id:'packagingEoL',val:'eu_average'}
+        {id:'packagingEoL',val:'eu_average'},
+        // Twin operational selects
+        {id:'twinManufacturingCountry',val:'FR'},{id:'twinProcessingMethod',val:'none'},
+        {id:'twinEnergySource',val:'grid'},{id:'twinTransportMode',val:'road'},
+        {id:'twinTransportDistance',val:'300'},{id:'twinPackagingMaterial',val:'cardboard'},
+        {id:'twinPackagingWeight',val:'0.050'},{id:'twinRecycledContent',val:'30'},
+        {id:'twinPackagingEoL',val:'eu_average'}
     ];
     selects.forEach(s => { const el=document.getElementById(s.id); if(el) el.value=s.val; });
 
@@ -675,23 +669,18 @@ function initApp() {
     function proceedWithInitialization() {
         console.log('📊 [AIOXY] Starting full initialization...');
 
-        // F11 FIX: was window.aioxyData.yield_benchmarks which does not exist.
-        // Crop yield data is stored under window.aioxyData.crop_yields (aioxy_pef31_database.js).
-        // The false condition always triggered the legacy mode warning and injected a banner.
         if (window.aioxyData.crop_yields && window.aioxyData.grid_intensity) {
             console.log('✅ Universal Physics Engine Ready:', {
                 crops:         Object.keys(window.aioxyData.crop_yields).length,
                 countries:     Object.keys(window.aioxyData.grid_intensity).length,
-                // F13 FIX: was window.aioxyData.aware_factors (does not exist).
-                // AWARE 2.0 data is stored under window.aioxyData.aware_20.agricultural.
                 aware_factors: Object.keys(window.aioxyData.aware_20?.agricultural || {}).length
             });
         } else {
-            console.warn('⚠️ Universal physics data not found (crop_yields or grid_intensity missing). Using legacy mode.');
+            console.warn('⚠️ Universal physics data not found. Using legacy mode.');
             if (window.aioxyData.ingredients) {
                 const w = document.createElement('div');
                 w.style.cssText = 'background:#FFF3E0;padding:0.75rem;margin:0.5rem 0;border-radius:6px;border-left:4px solid #FF9800';
-                w.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#FF9800"></i> <strong>Universal Physics Data Missing</strong><br><small>Using legacy calculations. Ensure ingredients.js includes crop_yields, grid_intensity, aware_20.</small>';
+                w.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#FF9800"></i> <strong>Universal Physics Data Missing</strong>';
                 const fc = document.querySelector('.card');
                 if (fc) fc.parentNode.insertBefore(w, fc);
             }
@@ -705,6 +694,12 @@ function initApp() {
         setupCounterpartSearch();
         if (typeof setupConventionalSearch === 'function') setupConventionalSearch();
         if (typeof populateConventionalCountrySelect === 'function') populateConventionalCountrySelect();
+
+        // ── Twin UI setup ──────────────────────────────────────────────────
+        if (typeof setupTwinIngredientSearch === 'function') setupTwinIngredientSearch();
+        if (typeof populateTwinCountrySelects === 'function') populateTwinCountrySelects();
+        // ──────────────────────────────────────────────────────────────────
+
         setupDemoData();
         updateTabIndicator();
 
@@ -714,11 +709,19 @@ function initApp() {
                 const p = JSON.parse(savedState);
                 if (Date.now() - p.timestamp < 43200000) {
                     selectedIngredients = p.ingredients || [];
+
+                    // Restore twin ingredients if present
+                    if (p.twinIngredients && p.twinIngredients.length > 0) {
+                        twinSelectedIngredients = p.twinIngredients;
+                        window.twinSelectedIngredients = twinSelectedIngredients;
+                        if (typeof updateTwinIngredientList === 'function') updateTwinIngredientList();
+                        console.log('✅ [Twin] Restored ' + twinSelectedIngredients.length + ' twin ingredients');
+                    }
+
                     if (p.conventionalBaselineIngredients && p.conventionalBaselineIngredients.length > 0) {
                         conventionalBaselineIngredients = p.conventionalBaselineIngredients;
                         window.conventionalBaselineIngredients = conventionalBaselineIngredients;
                         if (typeof updateConventionalIngredientList === 'function') updateConventionalIngredientList();
-                        console.log('✅ [ConvBaseline] Restored ' + conventionalBaselineIngredients.length + ' conventional ingredients');
                     }
                     if (p.productName)           document.getElementById('productName').value           = p.productName;
                     if (p.manufacturingCountry)  document.getElementById('manufacturingCountry').value  = p.manufacturingCountry;
@@ -732,8 +735,6 @@ function initApp() {
                         const pt = document.getElementById('usePrimaryFactoryData');
                         if (pt) { pt.checked = p.usePrimaryFactoryData; if (typeof toggleFactoryInputs === 'function') toggleFactoryInputs(); }
                     }
-                    if (p.factoryTotalKWh)    document.getElementById('factoryTotalKWh').value    = p.factoryTotalKWh;
-                    if (p.factoryTotalOutput) document.getElementById('factoryTotalOutput').value  = p.factoryTotalOutput;
                     if (p.recycledContent)    document.getElementById('recycledContent').value     = p.recycledContent;
                     if (p.packagingEoL)       document.getElementById('packagingEoL').value        = p.packagingEoL;
                     if (p.crisisRoutingToggle !== undefined) {
@@ -741,7 +742,7 @@ function initApp() {
                         if (ct) ct.checked = p.crisisRoutingToggle;
                     }
                     updateIngredientList();
-                    console.log('✅ Recovered previous pitch state');
+                    console.log('✅ Recovered previous session state');
                 }
             }
         } catch (e) { console.warn('Could not restore session state', e); }
@@ -757,5 +758,4 @@ function initApp() {
 
 document.addEventListener('DOMContentLoaded', initApp);
 
-// ================== MAIN.JS LOADED ==================
-console.log("✅ [AIOXY] main.js loaded - Global state ready");
+console.log("✅ [AIOXY] main.js v3.1 loaded — Twin Calculation Engine ready");
