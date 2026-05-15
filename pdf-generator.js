@@ -1,6 +1,15 @@
 // ============================================================
-// AIOXY PDF GENERATOR v7.0 — GLASS-BOX AUDIT REPORT
+// AIOXY PDF GENERATOR v7.1 — GLASS-BOX AUDIT REPORT
+// PATCH: FIX-1/2/3 setTextColor array->args  FIX-4 microPoints
+// BUILD: 2026-05-15-v7.1-colorfix
 // ============================================================
+// CACHE VERIFY: open browser console and type:
+//   window._AIOXY_PDF_VERSION
+// Should return "7.1-colorfix". If it says undefined or 7.0,
+// your browser is still serving the OLD cached file.
+// Hard-reload with Ctrl+Shift+R (Win/Linux) or Cmd+Shift+R (Mac)
+// ============================================================
+window._AIOXY_PDF_VERSION = '7.1-colorfix';
 // Design contract:
 //   - ZERO shadow calculations. ZERO hardcoded impact values.
 //   - PDF is a DUMB PRINTER: reads engine globals, renders them.
@@ -2078,8 +2087,17 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         console.log('[AIOXY PDF v7.0] Glass-Box Report saved: ' + filename);
 
     } catch (err) {
-        console.error('[AIOXY PDF v7.0] Error:', err);
-        alert('PDF generation error: ' + err.message);
+        // v7.1: Full diagnostic — copy the console.error output and send to developer
+        console.error('[AIOXY PDF v7.1] CRASH — full error below:');
+        console.error('Message:', err.message);
+        console.error('Stack:\n', err.stack || '(no stack available)');
+        console.error('PDF version loaded:', window._AIOXY_PDF_VERSION || 'UNKNOWN — old cached file!');
+        alert(
+            'PDF generation error: ' + err.message + '\n\n' +
+            'PDF engine version: ' + (window._AIOXY_PDF_VERSION || 'UNKNOWN — OLD CACHED FILE DETECTED') + '\n\n' +
+            'NEXT STEP: Open DevTools (F12) → Console tab → copy the full red error block and send to developer.\n\n' +
+            'If version shows UNKNOWN: press Ctrl+Shift+R (hard reload) then try again.'
+        );
     } finally {
         if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
@@ -2100,4 +2118,4 @@ window.downloadEditablePDF = function(tabId, title) {
 
 window.generateProfessionalPDF = generateProfessionalPDF;
 
-console.log('[AIOXY] pdf-generator.js v7.0 loaded — Glass-Box Audit Report, Zero Shadow Calculations, Full Derivation');
+console.log('[AIOXY] pdf-generator.js v7.1 loaded — FIX: setTextColor array→args (3 locations), microPoints→weighted*1e6 (2 locations)');
