@@ -435,7 +435,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(...C.white);
         const pNameLines = doc.splitTextToSize(safe(pName), CW);
         doc.text(pNameLines, M, 33);
-        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor([180, 200, 220]);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(180, 200, 220); // FIX-1: was setTextColor([180,200,220]) — array arg throws jsPDF.f3 "Invalid argument"
         doc.text('Assessment Date: ' + dateStr + '   |   Report ID: ' + safe(dppId).slice(0, 20), M, 56);
         doc.text('Functional Unit: 1 kg of product as sold  |  Every formula shown with full arithmetic', M, 62);
 
@@ -592,7 +592,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             const perKgV = catVal / pWeightKg;
             const unit   = CAT_UNITS[cat] || '';
             const ssEntry = ssBkd[cat];
-            const ssCont  = ssEntry ? (ssEntry.microPoints || 0) : 0;
+            const ssCont  = ssEntry ? ((ssEntry.weighted != null ? ssEntry.weighted * 1e6 : null) ?? ssEntry.microPoints ?? 0) : 0; // FIX-4: engine breakdown has no .microPoints; use weighted*1e6 (matches line 1541 pattern)
             const conf   = ['Climate Change','Climate Change - Fossil','Climate Change - Biogenic','Climate Change - Land Use'].includes(cat) ? 'HIGH' : 'MEDIUM';
 
             // Stage breakdown
@@ -649,7 +649,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.rect(M, Y, CW, 18, 'F');
         doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.white);
         doc.text('PEF SINGLE SCORE', M + 3, Y + 6);
-        doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor([180,200,220]);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(180, 200, 220); // FIX-2: was setTextColor([180,200,220]) — array arg throws jsPDF.f3 "Invalid argument"
         doc.text('Formula: SUM_i [ (result_i / kg product) / NF_i x WF_i ] x 1,000,000   |   Source: JRC EUR 29540 EN (EF 3.1)', M + 3, Y + 11);
         doc.text('NF and WF values from window.aioxyData.pef_factors — full derivation on Normalisation & Weighting page', M + 3, Y + 15.5);
         doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...C.teal);
@@ -676,7 +676,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             const wfVal      = resolvedWF[cat];
             const unit       = CAT_UNITS[cat] || '';
             const ssEntry    = ssBkd[cat];
-            const mPtCat     = ssEntry ? (ssEntry.microPoints || 0) : 0;
+            const mPtCat     = ssEntry ? ((ssEntry.weighted != null ? ssEntry.weighted * 1e6 : null) ?? ssEntry.microPoints ?? 0) : 0; // FIX-4: engine breakdown has no .microPoints; use weighted*1e6
             mPtTotal += mPtCat;
 
             // Derivation shown
@@ -1690,7 +1690,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('AUDIT HASH (SHA-256)', M + 3, Y + 6);
         doc.setFont('courier','normal'); doc.setFontSize(7.5); doc.setTextColor(...C.white);
         doc.text(safe(auditHash).slice(0,64) || '[Hash not generated — run calculation first]', M + 3, Y + 12);
-        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor([180,200,220]);
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(180, 200, 220); // FIX-3: was setTextColor([180,200,220]) — array arg throws jsPDF.f3 "Invalid argument"
         doc.text('Covers: all calculation inputs + all outputs + all database versions  |  Generated: ' + dateStr, M + 3, Y + 18);
         Y += 24;
 
