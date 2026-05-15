@@ -1095,49 +1095,35 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     `;
 
     // ── QR CODE SECTION ──────────────────────────────────────────────────────
-    // Plain text QR — no server, no URL, works forever on any phone
+    // The render target (#storyQRCode) and Download button live in the static HTML
+    // (food.html), OUTSIDE storyComparison. Injecting a second #storyQRCode inside
+    // storyComparison caused duplicate IDs — getElementById() found the injected one
+    // (drawn to first in DOM order) while the visible static one stayed blank.
+    // FIX: storyComparison only holds the label + metadata panel; render goes to the
+    // static #storyQRCode div that is already in the HTML below storyComparison.
     storyComparison.innerHTML = `
         <div style="margin-top: 1rem; background: #F8FAFC; border: 1px solid #E2E8F0;
                     border-radius: 12px; padding: 1rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between;
-                        margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-                <div>
-                    <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
-                                text-transform: uppercase; color: #0A2540; margin-bottom: 0.2rem;">
-                        📲 Print-Ready QR — For Product Packaging
-                    </div>
-                    <div style="font-size: 0.7rem; color: #64748B;">
-                        Scan to verify footprint. Plain text — no internet required. Works forever.
-                    </div>
+            <div style="margin-bottom: 0.75rem;">
+                <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+                            text-transform: uppercase; color: #0A2540; margin-bottom: 0.2rem;">
+                    📲 Print-Ready QR — For Product Packaging
                 </div>
-                <button onclick="downloadStoryQR()" 
-                        style="background: #0A2540; color: white; border: none; border-radius: 8px;
-                               padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 600;
-                               cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
-                    ⬇ Download QR
-                </button>
+                <div style="font-size: 0.7rem; color: #64748B;">
+                    Scan to verify footprint. Plain text — no internet required. Works forever.
+                </div>
             </div>
-            <div style="display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
-                <div id="storyQRCode" style="flex-shrink: 0; background: white; padding: 8px;
-                                             border: 2px solid #0A2540; border-radius: 8px;
-                                             min-width: 100px; min-height: 100px;
-                                             display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 0.65rem; color: #94A3B8;">Generating QR...</span>
-                </div>
-                <div style="flex: 1; min-width: 160px;">
-                    <div style="font-size: 0.68rem; font-weight: 700; color: #0A2540; margin-bottom: 0.4rem;">
-                        QR encodes:
-                    </div>
-                    <div style="font-size: 0.68rem; color: #4A5568; line-height: 1.7;">
-                        ✓ This product: <strong>${thisProductCO2.toFixed(3)} kg CO₂e/kg</strong><br>
-                        ✓ vs ${baselineName}: <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong><br>
-                        ✓ Potential reduction: <strong>${pctReduction.toFixed(1)}%</strong><br>
-                        ✓ Equivalences (car, phone, flight, LED)<br>
-                        ✓ Full methodology references<br>
-                        ✓ Assessment ID + legal disclaimer<br>
-                        ✓ No server · No expiry · Works offline
-                    </div>
-                </div>
+            <div style="font-size: 0.68rem; font-weight: 700; color: #0A2540; margin-bottom: 0.4rem;">
+                QR encodes:
+            </div>
+            <div style="font-size: 0.68rem; color: #4A5568; line-height: 1.7;">
+                ✓ This product: <strong>${thisProductCO2.toFixed(3)} kg CO₂e/kg</strong><br>
+                ✓ vs ${baselineName}: <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong><br>
+                ✓ Potential reduction: <strong>${pctReduction.toFixed(1)}%</strong><br>
+                ✓ Equivalences (car, phone, flight, LED)<br>
+                ✓ Full methodology references<br>
+                ✓ Assessment ID + legal disclaimer<br>
+                ✓ No server · No expiry · Works offline
             </div>
         </div>
     `;
