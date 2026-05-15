@@ -42,7 +42,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-        doc.setFont('helvetica');
+        doc.setFont('helvetica', 'normal');
 
         const PW  = doc.internal.pageSize.width;   // 210mm
         const PH  = doc.internal.pageSize.height;  // 297mm
