@@ -492,7 +492,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // ================================================================
         newPage('Executive Summary');
 
-        Y = subHeader('Life Cycle Stage Contribution — Climate Change (kg CO2e / kg product)'); Y -= 2;
+        subHeader('Life Cycle Stage Contribution — Climate Change (kg CO2e / kg product)'); Y -= 2;
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('Source: Engine contribution tree.  Formula: stage_total / product_weight_kg', M, Y); Y += 5;
 
