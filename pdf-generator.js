@@ -1371,14 +1371,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 GAS_MCF && gasM3PerKg > 0 ? '' : '',
                 GAS_MCF && gasM3PerKg > 0 ? 'Gas non-CC impact arithmetic (m3/kg x factor):' : '',
                 GAS_MCF && gasM3PerKg > 0 ? '  Acidification: ' + fix(gasM3PerKg,6) + ' m3/kg x ' + numFmt(GAS_MCF['Acidification']||0,6) + ' = ' + fix(gasM3PerKg*(GAS_MCF['Acidification']||0),8) + ' mol H+eq/kg product' : ''
-            ].filter(l => l !== undefined), { sectionLabel: 'Manufacturing (continued)' });
+            ].filter(l => l !== undefined), LAYER.A, 'Manufacturing (continued)');
 
         } else if (isPrimaryFactory && !pfd) {
             traceBlock([
                 'PRIMARY FACTORY DATA: flag is set but window.lastInput.manufacturing.primaryFactoryData',
                 'is not available at PDF time. Regenerate PDF immediately after calculation.',
                 'Engine source: ' + safe(mfgTrace.source || 'Primary Factory Data')
-            ], { bg: [255,243,205], border: C.amber, accent: C.amber, text: [120,80,0], sectionLabel: 'Manufacturing (continued)' });
+            ], { sectionLabel: 'Manufacturing (continued)' });
         }
         // Read all per-kWh factors from window.corePhysics.CONSTANTS.ELECTRICITY_GRID_MULTI
         // These are the EU27 average base values BEFORE any country-specific adjustment.
@@ -2844,4 +2844,4 @@ window.downloadEditablePDF = function(tabId, title) {
 
 window.generateProfessionalPDF = generateProfessionalPDF;
 
-console.log('[AIOXY] pdf-generator.js v7.4 loaded — FIX: setTextColor array→args (3 locations), microPoints→weighted*1e6 (2 locations)');
+console.log('[AIOXY] pdf-generator.js v7.1 loaded — FIX: setTextColor array→args (3 locations), microPoints→weighted*1e6 (2 locations)');
