@@ -2844,4 +2844,4 @@ window.downloadEditablePDF = function(tabId, title) {
 
 window.generateProfessionalPDF = generateProfessionalPDF;
 
-console.log('[AIOXY] pdf-generator.js v7.1 loaded — FIX: setTextColor array→args (3 locations), microPoints→weighted*1e6 (2 locations)');
+console.log('[AIOXY] pdf-generator.js v7.4 loaded — FIX: setTextColor array→args (3 locations), microPoints→weighted*1e6 (2 locations)');
