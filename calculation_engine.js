@@ -1,4 +1,3 @@
-
 // ================== AIOXY CALCULATION ENGINE v2.0 ==================
 // ISO 14044 / PEF 3.1 Calculation Orchestration Layer
 //
@@ -538,52 +537,96 @@
     // silently skipping ALL country-specific adjustments since Phase 2 launched.
     // This resolver translates ISO codes to the exact key strings used in the
     // database, fixing AWARE 2.0, LANCA v2.5, and FAOSTAT lookups in one place.
-    function resolveCountryCode(isoCode) {
-        // Maps ISO 3166-1 alpha-2 codes to the full names used by:
-        // AWARE 2.0 (WULCA consortium), LANCA v2.5 (Fraunhofer IBP / JRC),
-        // FAOSTAT (Crops and Livestock Products)
-        // Sources for country names: the exact key strings used in
-        // aioxy_pef31_database.js
-        const MAP = {
+    // ── Finding 1 Fix (v5.3): Per-database country name resolver ─────────────────
+    // ROOT CAUSE: LANCA v2.5, AWARE 2.0, and FAOSTAT each use different name
+    // strings for the same countries. A single shared MAP caused silent lookup
+    // failures for GB, CZ, VN, IR, KR, US, MK — LANCA/AWARE adjustments were
+    // silently skipped without error for ingredients from those origins.
+    // FIX: Three separate maps, each keyed to the exact strings in the database.
+    // Callers pass the database name; lookups now always resolve correctly.
+    function resolveCountryName(isoCode, database) {
+        // Shared entries (same name in all three databases)
+        const SHARED = {
             "AL": "Albania",        "AT": "Austria",          "BA": "Bosnia and Herzegovina",
             "BE": "Belgium",        "BG": "Bulgaria",         "BR": "Brazil",
             "CA": "Canada",         "CH": "Switzerland",      "CI": "Côte d'Ivoire",
-            "CN": "China",          "CY": "Cyprus",           "CZ": "Czechia",
+            "CN": "China",          "CY": "Cyprus",
             "DE": "Germany",        "DK": "Denmark",          "EE": "Estonia",
             "ES": "Spain",          "FI": "Finland",          "FR": "France",
-            "GB": "United Kingdom of Great Britain & Northern Ireland",
             "GR": "Greece",         "HR": "Croatia",          "HU": "Hungary",
             "IE": "Ireland",        "IN": "India",            "IS": "Iceland",
             "IT": "Italy",          "JP": "Japan",            "LT": "Lithuania",
             "LU": "Luxembourg",     "LV": "Latvia",           "MA": "Morocco",
-            "MD": "Moldova",        "ME": "Montenegro",       "MK": "North Macedonia",
+            "MD": "Moldova",        "ME": "Montenegro",
             "MT": "Malta",          "NL": "Netherlands",      "NO": "Norway",
             "PL": "Poland",         "PT": "Portugal",         "RO": "Romania",
             "RS": "Serbia",         "SE": "Sweden",           "SI": "Slovenia",
-            "SK": "Slovakia",       "TR": "Turkey",           "US": "United States of America",
-            "VN": "Viet Nam",       "AR": "Argentina",        "AU": "Australia",
+            "SK": "Slovakia",       "TR": "Turkey",
+            "AR": "Argentina",      "AU": "Australia",
             "ID": "Indonesia",      "PK": "Pakistan",         "NG": "Nigeria",
             "EG": "Egypt",          "ZA": "South Africa",     "MX": "Mexico",
-            "RU": "Russian Federation", "UA": "Ukraine",      "KR": "Republic of Korea",
+            "RU": "Russian Federation", "UA": "Ukraine",
             "KE": "Kenya",          "ET": "Ethiopia",         "GH": "Ghana",
             "CM": "Cameroon",       "PE": "Peru",
             "CL": "Chile",          "CO": "Colombia",         "UY": "Uruguay",
             "MY": "Malaysia",       "PH": "Philippines",      "TH": "Thailand",
             "BD": "Bangladesh",     "NP": "Nepal",            "LK": "Sri Lanka",
-            "IR": "Iran (Islamic Republic of)", "IQ": "Iraq",
+            "IQ": "Iraq",
             "SA": "Saudi Arabia",   "AE": "United Arab Emirates",
-            "RE": "France",          // Réunion is FR overseas — uses FR as proxy
-            "WI": "France",          // West Indies (FR Antilles) — uses FR as proxy
-            "EU": "France",          // EU aggregate — uses FR as conservative proxy
-            "XK": "Serbia"           // Kosovo — nearest neighbor proxy
+            "RE": "France",    // Réunion — uses FR as proxy
+            "WI": "France",    // West Indies (FR Antilles) — uses FR as proxy
+            "EU": "France",    // EU aggregate — uses FR as conservative proxy
+            "XK": "Serbia"     // Kosovo — nearest neighbor proxy
         };
 
-        if (MAP[isoCode]) return MAP[isoCode];
+        // Database-specific overrides — verified against exact key strings
+        // in aioxy_pef3_1_database.js (LANCA, AWARE, FAOSTAT sections).
+        // These 7 countries use different names across the three databases.
+        const LANCA_OVERRIDES = {
+            "CZ": "Czech Republic",
+            "VN": "Vietnam",
+            "IR": "Iran",
+            "KR": "South Korea",
+            "US": "United States",
+            "GB": "United Kingdom",
+            "MK": "The Former Yugoslav Republic of Macedonia"
+        };
+        const AWARE_OVERRIDES = {
+            "CZ": "Czech Republic",
+            "VN": "Vietnam",
+            "IR": "Iran",
+            "KR": "South Korea",
+            "GB": "United Kingdom of Great Britain & Northern Ireland",
+            "MK": "North Macedonia"
+            // US: not present in AWARE 2.0 — will fall through to SHARED (null lookup)
+        };
+        const FAOSTAT_OVERRIDES = {
+            "CZ": "Czech Republic",
+            "VN": "Vietnam",
+            "IR": "Iran",
+            "KR": "South Korea",
+            "US": "United States",
+            "GB": "United Kingdom"
+            // MK: not present in FAOSTAT crop_yields — will fall through gracefully
+        };
 
-        // Fallback: log warning, return original code (will fail gracefully in caller)
-        console.warn('[AIOXY] No country name mapping for ISO code: ' + isoCode +
-                     '. AWARE/LANCA/FAOSTAT adjustments will be skipped for this country.');
+        let overrides;
+        if (database === 'LANCA')   overrides = LANCA_OVERRIDES;
+        else if (database === 'AWARE')  overrides = AWARE_OVERRIDES;
+        else if (database === 'FAOSTAT') overrides = FAOSTAT_OVERRIDES;
+        else overrides = {};
+
+        const name = overrides[isoCode] || SHARED[isoCode];
+        if (name) return name;
+
+        console.warn('[AIOXY] resolveCountryName: no mapping for ' + isoCode +
+                     ' in database=' + database + '. Adjustment will be skipped.');
         return isoCode;
+    }
+
+    // Legacy alias — kept for any callers not yet updated (safe fallback to LANCA)
+    function resolveCountryCode(isoCode) {
+        return resolveCountryName(isoCode, 'LANCA');
     }
 
     function applyCountrySpecificFactors(flatPef, ingredient, ingData, adjustments, traceability) {
@@ -594,8 +637,14 @@
 
         // Resolve ISO codes to the full country name strings used as keys in
         // aioxy_pef31_database.js (AWARE 2.0, LANCA v2.5, FAOSTAT).
-        const refName    = resolveCountryCode(REFERENCE_COUNTRY);
-        const originName = resolveCountryCode(originCountry);
+        // Per-database names: LANCA and AWARE use different strings for some countries
+        const refNameLANCA    = resolveCountryName(REFERENCE_COUNTRY, 'LANCA');
+        const originNameLANCA = resolveCountryName(originCountry, 'LANCA');
+        const refNameAWARE    = resolveCountryName(REFERENCE_COUNTRY, 'AWARE');
+        const originNameAWARE = resolveCountryName(originCountry, 'AWARE');
+        // Legacy aliases (used by FAOSTAT benchmarking below which uses LANCA names)
+        const refName    = refNameLANCA;
+        const originName = originNameLANCA;
 
         // If origin is FR, no adjustment needed — Agribalyse already reflects FR conditions
         if (originCountry === REFERENCE_COUNTRY) {
@@ -644,8 +693,8 @@
                     reason:  'window.aioxyData.aware_20.agricultural not loaded'
                 };
             } else {
-                const refAWARE    = awareData.agricultural[refName];
-                const originAWARE = awareData.agricultural[originName];
+                const refAWARE    = awareData.agricultural[refNameAWARE];
+                const originAWARE = awareData.agricultural[originNameAWARE];
 
                 if (refAWARE === undefined || refAWARE === null) {
                     countryFactorsLog.aware = {
@@ -1356,7 +1405,7 @@ if (!traceability.usetox) {
                 if (pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
                     let baselineYield = 5000;
                     const yieldDB = window.aioxyData.crop_yields;
-                    const yieldLookupName = resolveCountryCode(ingredient.originCountry || 'FR');
+                    const yieldLookupName = resolveCountryName(ingredient.originCountry || 'FR', 'FAOSTAT');
                     if (yieldDB && yieldDB.yields && yieldDB.yields[yieldLookupName]) {
                         const countryYields = yieldDB.yields[yieldLookupName];
                         for (const [cropName, cropYield] of Object.entries(countryYields)) {
