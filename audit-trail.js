@@ -864,7 +864,8 @@ SCREENING-LEVEL ASSESSMENT — for certified EPD conduct ISO 14044 critical revi
 }
 
 // ================== CSRD SCOPE 3 MATRIX EXPORTER ==================
-// v5.3 — Bug 1: Block 2 true_total adds waste stage, col renamed. Bug 2: Block 7 AGRIBALYSE 4-param DQI correctly labelled.
+// v5.4 — Finding 2: uncertainty metric renamed CI width (not CV). Finding 3: MC scope declared.
+//         Finding 4: Scope 3 perspective + primary data type fields added.
 //
 // CHANGES FROM audit-trail.js v4.0:
 //   GAP-1  Removed Block 5 (Parametric Twin) — modelled scenario, not verified
@@ -1007,7 +1008,8 @@ function exportCSRDMatrix() {
     rows.push(['system_boundary',      'Cradle-to-Retail',                         '',     'ISO 14044',                           'Farm gate through distribution'].map(q).join(','));
     rows.push(['assessment_type',      'Screening-level LCA',                      '',     'ISO 14044',                           'Not third-party verified'].map(q).join(','));
     // GAP-4: Primary data flag
-    rows.push(['primary_data_applied', primaryDataApplied,                         '',     'AIOXY engine flags',                  primaryDataScope].map(q).join(','));
+    rows.push(['primary_data_applied', primaryDataApplied, '', 'AIOXY engine flags', primaryDataScope].map(q).join(','));
+    rows.push(['primary_data_type', 'Activity quantities (measured kg inputs/outputs). Emission factors from AGRIBALYSE 3.2 for all ingredients.', '', 'ISO 14044 §4.2.3.3', 'Primary data = measured activity data, not primary emission factors'].map(q).join(','));
     rows.push(['lci_database',         'AGRIBALYSE 3.2',                           '',     'ADEME/INRAE 2022',                    ''].map(q).join(','));
     rows.push(['lcia_method',          'EF 3.1',                                   '',     'JRC Technical Report EUR 29540 EN',   '16 categories + 3 CC sub-splits'].map(q).join(','));
     rows.push(['transport_method',     'GLEC v3.2',                                '',     'Smart Freight Centre 2025',           ''].map(q).join(','));
@@ -1017,7 +1019,7 @@ function exportCSRDMatrix() {
     rows.push(['gwp_n2o_factor',       '265',                                      'kg CO2e/kg N2O', 'IPCC AR5 Table 8.7',          'GWP100 100-year horizon'].map(q).join(','));
     rows.push(['water_scarcity',       'AWARE 2.0',                                '',     'Boulay et al. 2018',                  ''].map(q).join(','));
     rows.push(['overall_dqr',          dqrOverall,                                 '/5.0', 'PEF 3.1 §5.7',                        dqrLevel].map(q).join(','));
-    rows.push(['uncertainty_cv',       uncPct,                                     '%',    'Monte Carlo 1000 iterations',         'Lognormal propagation'].map(q).join(','));
+    rows.push(['uncertainty_ci_width_pct', uncPct, '%', 'Monte Carlo 1000 iterations — (P95-P5)/mean×100 per category, averaged', 'Lognormal propagation | Not a CV — see Block 4'].map(q).join(','));
     rows.push(['manufacturing_country',mfgCountry,                                 '',     'User input',                          ''].map(q).join(','));
     rows.push(['grid_intensity',       gridG,                                      'g CO2e/kWh', 'Ember 2025',                    ''].map(q).join(','));
     rows.push(['']);
@@ -1035,6 +1037,10 @@ function exportCSRDMatrix() {
     rows.push(['transport_kg_product',      '4',  'Upstream transportation and distribution','GHG Protocol Scope 3 §5.6'].map(q).join(','));
     rows.push(['packaging_kg_product',      '1',  'Purchased goods and services (packaging)','GHG Protocol Scope 3 §5.3'].map(q).join(','));
     rows.push(['waste_kg_product',          '12', 'End-of-life treatment of sold products', 'GHG Protocol Scope 3 §5.14'].map(q).join(','));
+    rows.push([c('scope3_reporting_perspective: downstream_purchaser — all stages are Scope 3 from the perspective of')]);
+    rows.push([c('the retailer or brand receiving this product. The manufacturing stage is Scope 1/2 from the')]);
+    rows.push([c('producer's own CSRD filing and must be reclassified accordingly in the buyer's value chain report.')]);
+    rows.push(['scope3_reporting_perspective', 'downstream_purchaser', '', 'GHG Protocol Scope 3 Standard §5 / ESRS E1-6 AR3', 'Reclassify manufacturing to Scope 1/2 for producer own CSRD filing'].map(q).join(','));
     rows.push(['']);
 
     // ── BLOCK 2: ENVIRONMENTAL PROFILE — 19 CATEGORIES ───────────────────────
@@ -1048,7 +1054,7 @@ function exportCSRDMatrix() {
         'true_total_kg_product', 'total_excl_eol_kg_product',
         'ingredients_kg_product', 'manufacturing_kg_product',
         'transport_kg_product', 'packaging_kg_product', 'waste_eol_kg_product',
-        'pef_single_score_mpt', 'dqr', 'uncertainty_cv_pct', 'primary_source', 'esrs_relevance'
+        'pef_single_score_mpt', 'dqr', 'uncertainty_ci_width_pct', 'primary_source', 'esrs_relevance'
     ].map(q).join(','));
 
     ALL_CATS.forEach(([cat, unit, source, esrs]) => {
@@ -1097,12 +1103,16 @@ function exportCSRDMatrix() {
     // ── BLOCK 4: UNCERTAINTY ──────────────────────────────────────────────────
     rows.push([c('BLOCK 4 — MONTE CARLO UNCERTAINTY — Climate Change')]);
     rows.push([c('Method: Lognormal propagation | Iterations: 1000 | Reference: ISO 14044 / Heijungs & Huijbregts 2004')]);
-    rows.push([c('For other categories, see uncertainty_cv_pct column in Block 2.')]);
+    rows.push([c('Finding 2 Note: The reported metric is the normalised CI width = (P95-P5)/mean × 100.')]);
+    rows.push([c('This is NOT a coefficient of variation (CV). True CV ≈ 18% (derived from P5/P95 via lognormal sigma).')]);
+    rows.push([c('Finding 3 Note: MC propagates ingredient uncertainty only. Manufacturing/transport/packaging')]);
+    rows.push([c('uncertainties are not included. Reported bounds represent ingredient-stage uncertainty only.')]);
+    rows.push([c('For other categories, see uncertainty_ci_width_pct column in Block 2.')]);
     rows.push(['metric', 'kg_co2e_total', 'kg_co2e_per_kg'].map(q).join(','));
     rows.push(['cc_p5_lower_bound',  mcP5,  pWeightKg > 0 ? (parseFloat(mcP5)/pWeightKg).toFixed(8) : '0'].map(q).join(','));
     rows.push(['cc_median',          getTotal('Climate Change').toFixed(8), ccPerKg.toFixed(8)].map(q).join(','));
     rows.push(['cc_p95_upper_bound', mcP95, pWeightKg > 0 ? (parseFloat(mcP95)/pWeightKg).toFixed(8) : '0'].map(q).join(','));
-    rows.push(['overall_cv_percent', uncPct, ''].map(q).join(','));
+    rows.push(['overall_ci_width_pct', uncPct, '% — (P95-P5)/mean×100 avg across MC categories | Ingredient stage only'].map(q).join(','));
     rows.push(['']);
 
     // ── BLOCK 5: PACKAGING DETAIL (GAP-2) ────────────────────────────────────
