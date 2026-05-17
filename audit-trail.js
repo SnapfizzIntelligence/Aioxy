@@ -385,8 +385,10 @@ function displayAuditTrail() {
         if (archetype && processState !== 'raw') {
             processingDisplay = `${archetype.name} (${(archetype?.yield_factor ?? 1.0).toFixed(2)}x)`;
             bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">⚙️ [Physics Flag] ${archetype.name} (Yield: ${(archetype?.yield_factor ?? 1.0).toFixed(2)}x)</span>`;
-            if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
-                bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">🔋 Energy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | 🔥 Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg</span>`;
+            const _eKwh = archetype.energy_kwh ?? 0;
+            const _gMj  = archetype.gas_mj   ?? 0;
+            if (_eKwh > 0 || _gMj > 0) {
+                bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">🔋 Energy: ${_eKwh.toFixed(2)} kWh/kg | 🔥 Gas: ${_gMj.toFixed(2)} MJ/kg</span>`;
             }
         }
 
