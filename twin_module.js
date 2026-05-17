@@ -554,6 +554,13 @@ function renderTwinResults(mainResult, twinCalcResult) {
         '</div>';
 
     // Store for PDF builder
+    // GAP-1 FIX: Store full twinAudit data so buildTwinPDFSection() can render
+    // 3-layer glass-box derivation for every twin ingredient.
+    // Previously only summary totals were stored — ingredient Layer A/B/C was discarded here.
+    var twinIngComponents = (twinAudit.contribution_tree && twinAudit.contribution_tree['Climate Change']
+        && twinAudit.contribution_tree['Climate Change'].Ingredients
+        && twinAudit.contribution_tree['Climate Change'].Ingredients.components) || [];
+
     window._twinResultsForPDF = {
         mainName: mainName, twinName: twinName, modeLabel: modeLabel,
         mainCO2: mainCO2, twinCO2: twinCO2, co2Delta: co2Delta, co2DeltaPct: co2DeltaPct,
@@ -567,7 +574,13 @@ function renderTwinResults(mainResult, twinCalcResult) {
         mfgCountry: gv('twinManufacturingCountry'), process: gv('twinProcessingMethod'),
         energy: gv('twinEnergySource'), transMode: gv('twinTransportMode'),
         transDist: gv('twinTransportDistance'), pkgMat: gv('twinPackagingMaterial'),
-        pkgWt: gv('twinPackagingWeight'), recycled: gv('twinRecycledContent')
+        pkgWt: gv('twinPackagingWeight'), recycled: gv('twinRecycledContent'),
+        // GAP-1: Full twin audit data for PDF glass-box derivation
+        twinAllCategoryTree: twinAudit.contribution_tree || {},
+        twinIngComponents: twinIngComponents,   // ingredient-level component array with universal_adjustments
+        twinIngList: twinAudit.traceability && twinAudit.traceability.ingredients ? twinAudit.traceability.ingredients : [],
+        twinMassBalance: twinAudit.mass_balance || {},
+        twinMfgTrace: twinAudit.traceability && twinAudit.traceability.manufacturing ? twinAudit.traceability.manufacturing : {}
     };
 }
 
@@ -855,6 +868,279 @@ function buildTwinPDFSection(doc, h) {
         }
     });
     h.Y = doc.lastAutoTable.finalY + 5;
+
+    // ────────────────────────────────────────────────────────────────────
+    // GAP-1 FIX: Twin ingredient 3-layer glass-box derivation
+    // The same Layer A / Layer B / Layer C trace that the main product
+    // receives for each ingredient is now generated for every twin ingredient.
+    // Data source: d.twinIngComponents (from twinAudit.contribution_tree)
+    // which contains allCategoryResults, universal_adjustments, primary_data, etc.
+    // ────────────────────────────────────────────────────────────────────
+    if (d.twinIngComponents && d.twinIngComponents.length > 0) {
+        h.newPage('Parametric Twin \u2014 Ingredient Glass-Box (A: BASE > B: ADJUSTMENTS > C: FINAL)');
+        doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+        doc.setTextColor.apply(doc, C.bodyMid);
+        doc.text('Same 3-layer derivation as main product. Every twin ingredient: Layer A (AGRIBALYSE 3.2 base) -> Layer B (adjustments) -> Layer C (final x qty).', M, h.Y); h.Y += 4;
+        doc.text('Source: twinCalcResult.auditTrailData.contribution_tree (calculation_engine.js)', M, h.Y); h.Y += 6;
+
+        var CAT_UNITS_T = {
+            'Climate Change':'kg CO2e','Climate Change - Fossil':'kg CO2e',
+            'Climate Change - Biogenic':'kg CO2e','Climate Change - Land Use':'kg CO2e',
+            'Ozone Depletion':'kg CFC11e','Human Toxicity, non-cancer':'CTUh',
+            'Human Toxicity, cancer':'CTUh','Particulate Matter':'disease inc.',
+            'Ionizing Radiation':'kBq U235e','Photochemical Ozone Formation':'kg NMVOCe',
+            'Acidification':'mol H+e','Eutrophication, terrestrial':'mol Ne',
+            'Eutrophication, freshwater':'kg Pe','Eutrophication, marine':'kg Ne',
+            'Ecotoxicity, freshwater':'CTUe','Land Use':'Pt',
+            'Water Use/Scarcity (AWARE)':'m3 world eq.','Resource Use, minerals/metals':'kg Sbe',
+            'Resource Use, fossils':'MJ'
+        };
+        var ALL_CATS_T = Object.keys(CAT_UNITS_T);
+
+        d.twinIngComponents.forEach(function (ing) {
+            var ingName  = ing.name || ing.id || 'Unknown';
+            var ingId    = ing.id   || '';
+            var qty      = ing.quantity_kg || 0;
+            var origin   = ing.origin || ing.originCountry || 'FR';
+            var procState= ing.processingState || 'raw';
+            var dqrV     = ing.dqr || 2.00;
+            var adj      = ing.universal_adjustments || {};
+            var allCats  = ing.allCategoryResults || {};
+            var source   = ing.source || 'AGRIBALYSE 3.2';
+            var uuid     = ing.uuid || '';
+            var isPD     = ing.primary_data_used || false;
+
+            // Get AGRIBALYSE base EF from DB (same path as main product)
+            var dbIng    = (window.aioxyData && window.aioxyData.ingredients) ? (window.aioxyData.ingredients[ingId] || null) : null;
+            var pefVals  = (dbIng && dbIng.data && dbIng.data.pef) ? dbIng.data.pef : null;
+
+            h.ensureSpace(18, 'Twin Ingredient Glass-Box (continued)');
+            // Ingredient header bar
+            doc.setFillColor.apply(doc, C.navyDark);
+            doc.rect(M, h.Y, CW, 12, 'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+            doc.setTextColor.apply(doc, C.white);
+            doc.text(safe(ingName.slice(0,60)), M + 3, h.Y + 5.5);
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+            doc.setTextColor.apply(doc, C.teal);
+            doc.text('Source: ' + safe(source) + '  |  Qty: ' + fix(qty,4) + ' kg  |  Origin: ' + safe(origin) + '  |  Processing: ' + safe(procState) + (isPD ? '  [PRIMARY DATA]' : ''), M + 3, h.Y + 10);
+            h.Y += 15;
+
+            // Sub-info line
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+            doc.setTextColor.apply(doc, C.bodyMid);
+            doc.text('Internal slug: ' + safe(ingId) + '  |  Verify LCI at: https://agribalyse.ademe.fr/', M, h.Y); h.Y += 5;
+
+            // LAYER A — AGRIBALYSE 3.2 base EF
+            var layerALines = ['LAYER A — AGRIBALYSE 3.2 Base EF (FR Reference)'];
+            if (pefVals) {
+                layerALines.push('AGRIBALYSE 3.2 base characterisation factors (FR reference, per kg ingredient):');
+                layerALines.push('Source: window.aioxyData.ingredients["' + ingId + '"].data.pef');
+                layerALines.push('');
+                ALL_CATS_T.forEach(function (cat) {
+                    var v = pefVals[cat];
+                    if (v !== undefined && v !== null) {
+                        layerALines.push('  ' + cat.padEnd(36) + ': ' + numFmt(v, 6) + ' ' + (CAT_UNITS_T[cat]||'') + '/kg');
+                    }
+                });
+            } else {
+                layerALines.push('Base EF values not available from window.aioxyData.ingredients["' + ingId + '"].');
+                layerALines.push('This may mean the ingredient DB is not loaded at PDF generation time.');
+                layerALines.push('Effective EF values are available in Layer C (computed by engine).');
+            }
+            // Render Layer A block
+            var layerAH  = layerALines.length * 4 + 8;
+            h.ensureSpace(layerAH + 4, 'Twin Ingredient Glass-Box (continued)');
+            var bY = h.Y;
+            doc.setFillColor(239, 246, 255); // light blue
+            doc.setDrawColor(147, 197, 253);
+            doc.setLineWidth(0.3);
+            doc.rect(M, bY, CW, layerAH, 'FD');
+            doc.setFillColor(59,130,246);
+            doc.rect(M, bY, 1.5, layerAH, 'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(7);
+            doc.setTextColor(30,58,138);
+            doc.text('LAYER A', M + 4, bY + 4.5);
+            doc.setFont('courier','normal'); doc.setFontSize(6.2);
+            layerALines.forEach(function (line, i) {
+                doc.text(safe(line), M + 4, bY + 8 + i * 4);
+            });
+            h.Y = bY + layerAH + 3;
+
+            // LAYER B — Adjustments
+            var layerBLines = ['LAYER B — All Adjustments Applied by Engine (in sequence)'];
+            layerBLines.push('Adjustments applied in sequence by the engine (calculation_engine.js):');
+            layerBLines.push('');
+
+            // B1 Processing
+            layerBLines.push('B1 — Processing Archetype: ' + safe(procState) + (procState==='raw' ? ' (no processing adjustment)' : ''));
+            var procFactor = adj.processing_yield_factor_applied || 1.0;
+            if (procState !== 'raw' && procFactor !== 1.0) {
+                layerBLines.push('  yield_factor: ' + fix(procFactor,4));
+                layerBLines.push('  Formula: for each category: base_EF / yield_factor = adjusted_EF');
+            }
+            layerBLines.push('');
+
+            // B2 Geographic proxy
+            var geoAdj = adj.geo_proxy || adj.geographic_proxy || {};
+            if (geoAdj && geoAdj.applied) {
+                layerBLines.push('B2 — Geographic Proxy (non-FR origin, no primary data):');
+                layerBLines.push('  Origin: ' + safe(origin) + ' (non-FR)');
+                layerBLines.push('  Factor: ' + fix(geoAdj.factor||1.15,4));
+                layerBLines.push('  Formula: CC categories x ' + fix(geoAdj.factor||1.15,4));
+                layerBLines.push('  Applied to: Climate Change, CC-Fossil, CC-Biogenic, CC-Land Use');
+                layerBLines.push('  Rationale: Conservative penalty for non-FR transport and production');
+                layerBLines.push('  Excluded: Water Use and Land Use (handled by AWARE/LANCA below)');
+            } else {
+                layerBLines.push('B2 — Geographic Proxy: not applied (' + safe(origin) + ' origin or primary data present)');
+            }
+            layerBLines.push('');
+
+            // B3 Primary data composite multiplier
+            var pdAdj = adj.primary_data_composite || adj.composite_multiplier || {};
+            if (pdAdj && pdAdj.applied) {
+                layerBLines.push('B3 — Primary Data Composite Multiplier:');
+                layerBLines.push('  Yield adjustment:');
+                layerBLines.push('    Source: ' + safe(pdAdj.yield_source || 'FAOSTAT / user-supplied'));
+                layerBLines.push('    Formula: min(baseline_yield / actual_yield, 2.0)');
+                layerBLines.push('    = min(' + fix(pdAdj.baseline_yield||0,1) + ' / ' + fix(pdAdj.actual_yield||0,1) + ', 2.0)');
+                layerBLines.push('    = ' + fix(pdAdj.yield_factor||1,4) + (pdAdj.yield_factor>=2?' [CAPPED at 2.0]':''));
+                layerBLines.push('  Nitrogen adjustment:');
+                layerBLines.push('    Formula: actual_N / baseline_N');
+                layerBLines.push('    = ' + fix(pdAdj.actual_n||0,1) + ' / ' + fix(pdAdj.baseline_n||0,1) + ' = ' + fix(pdAdj.n_factor||1,4));
+                layerBLines.push('  Composite multiplier:');
+                layerBLines.push('    Formula: (0.6 x yield_factor) + (0.4 x nitrogen_factor)');
+                layerBLines.push('    = (0.6 x ' + fix(pdAdj.yield_factor||1,4) + ') + (0.4 x ' + fix(pdAdj.n_factor||1,4) + ') = ' + fix(pdAdj.multiplier||1,6));
+                layerBLines.push('  Applied to: 14 of 16 EF 3.1 categories (OD and IR excluded — see engine CALC-08)');
+            }
+            layerBLines.push('');
+
+            // B4 IPCC N2O crop
+            var n2oAdj = adj.ipcc_n2o || adj.n2o_crop || {};
+            if (n2oAdj && n2oAdj.applied) {
+                layerBLines.push('B4 — IPCC Tier 1 N2O (crop nitrogen, added to Climate Change):');
+                layerBLines.push('  F_SN = ' + fix(n2oAdj.f_sn||0,4) + ' kg N applied');
+                layerBLines.push('  N2O total = ' + fix(n2oAdj.total_co2e||0,4) + ' kg CO2e  [batch total for ' + fix(qty,4) + ' kg ingredient]');
+                layerBLines.push('  Per-kg additive: N2O_total / qty = ' + fix(n2oAdj.total_co2e||0,6) + ' / ' + fix(qty,4) + ' = ' + numFmt(qty>0?(n2oAdj.total_co2e||0)/qty:0,6) + ' kg CO2e/kg ingredient');
+                layerBLines.push('  -> added to flatPef[CC] and flatPef[CC-Land Use] per kg ingredient');
+                layerBLines.push('  Source: IPCC 2006 Vol. 4 Ch. 11  |  GWP N2O = 265 (IPCC AR5)');
+            }
+            layerBLines.push('');
+
+            // B5 Enteric methane
+            var entAdj = adj.enteric_methane || {};
+            if (entAdj && entAdj.applied) {
+                layerBLines.push('B5 — Enteric Methane (IPCC 2006 Vol.4 Ch.10):');
+                layerBLines.push('  Animal type: ' + safe(entAdj.animal_type || 'beef_cattle'));
+                layerBLines.push('  Method: DELTA adjustment');
+                layerBLines.push('  delta CO2e = ' + fix(entAdj.delta_co2e||0,4) + ' kg CO2e  [applied to CC-Biogenic]');
+                layerBLines.push('  Source: IPCC 2006 Vol. 4 Table 10.11  |  GWP CH4 biogenic = 28');
+            }
+
+            // B6 Manure N2O
+            var manureAdj = adj.manure_n2o || {};
+            if (manureAdj && manureAdj.applied) {
+                layerBLines.push('B6 — Manure N2O (IPCC 2006 Vol.4 Ch.10):');
+                layerBLines.push('  Animal type: ' + safe(manureAdj.animal_type || 'beef_cattle'));
+                layerBLines.push('  Manure system: ' + safe(manureAdj.system || 'pit_storage'));
+                layerBLines.push('  Manure N2O CO2e: ' + fix(manureAdj.co2e||0,4) + ' kg CO2e  [added to CC + CC-Land Use]');
+            }
+
+            // B7 AWARE
+            var awareAdj = adj.aware || {};
+            if (awareAdj && awareAdj.applied) {
+                layerBLines.push('B7 — AWARE 2.0 Water Scarcity Adjustment:');
+                layerBLines.push('  Formula: Water Use x= (origin_CF / reference_CF_FR)');
+                layerBLines.push('  Reference CF (FR) : ' + fix(awareAdj.ref_cf||15.8,4) + ' m3 world eq/m3');
+                layerBLines.push('  Origin CF (' + safe(origin) + ')  : ' + fix(awareAdj.origin_cf||0,4) + ' m3 world eq/m3');
+                layerBLines.push('  Ratio applied     : ' + fix(awareAdj.ratio||1,4));
+                layerBLines.push('  Source: AWARE 2.0 (Boulay et al. 2018)');
+            }
+
+            // B8 LANCA
+            var lancaAdj = adj.lanca || {};
+            if (lancaAdj && lancaAdj.applied) {
+                layerBLines.push('B8 — LANCA v2.5 Land Use Adjustment:');
+                layerBLines.push('  Formula: Land Use x= (origin_SQI / reference_SQI_FR)');
+                if (lancaAdj.ref_occupation !== undefined) {
+                    layerBLines.push('  Reference SQI (FR) — Occupation   : ' + fix(lancaAdj.ref_occupation||0,4));
+                    if (lancaAdj.ref_transformation) layerBLines.push('  Reference SQI (FR) — Transformation: ' + fix(lancaAdj.ref_transformation||0,4));
+                    layerBLines.push('  Origin SQI (' + safe(origin) + ') — Occupation   : ' + fix(lancaAdj.origin_occupation||0,4));
+                    if (lancaAdj.origin_transformation) layerBLines.push('  Origin SQI (' + safe(origin) + ') — Transformation: ' + fix(lancaAdj.origin_transformation||0,4));
+                    layerBLines.push('  Transformation included: ' + (lancaAdj.transformation_included ? 'YES' : 'NO (occupation ratio only)'));
+                }
+                layerBLines.push('  Ratio applied: ' + fix(lancaAdj.ratio_applied||1,4));
+                layerBLines.push('  Source: LANCA v2.5 — Fraunhofer IBP / JRC');
+            }
+
+            if (layerBLines.length <= 3) {
+                layerBLines.push('  No adjustments applied (FR origin, raw processing, no primary data provided).');
+            }
+
+            var layerBH = layerBLines.length * 4 + 8;
+            h.ensureSpace(layerBH + 4, 'Twin Ingredient Glass-Box (continued)');
+            var bYb = h.Y;
+            doc.setFillColor(255,251,235); // light amber
+            doc.setDrawColor(251,191,36);
+            doc.setLineWidth(0.3);
+            doc.rect(M, bYb, CW, layerBH, 'FD');
+            doc.setFillColor(245,158,11);
+            doc.rect(M, bYb, 1.5, layerBH, 'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(7);
+            doc.setTextColor(120,53,15);
+            doc.text('LAYER B', M + 4, bYb + 4.5);
+            doc.setFont('courier','normal'); doc.setFontSize(6.2);
+            doc.setTextColor(92,53,15);
+            layerBLines.forEach(function (line, i) {
+                doc.text(safe(line), M + 4, bYb + 8 + i * 4);
+            });
+            h.Y = bYb + layerBH + 3;
+
+            // LAYER C — effective_EF x qty = impact for all categories
+            var layerCLines = [
+                'LAYER C — Final: effective_EF x Qty = Impact (all 19 categories)',
+                'Formula per category: effective_EF (kg impact/kg ingredient) x qty (kg) = total (kg impact)',
+                'Source: twinCalcResult.auditTrailData.contribution_tree (ingredient allCategoryResults)',
+                ''
+            ];
+            var ingCC_total = 0;
+            ALL_CATS_T.forEach(function (cat) {
+                var totalImpact = allCats[cat] || 0;
+                var effectiveEF = qty > 0 ? totalImpact / qty : 0;
+                var baseV = pefVals ? (pefVals[cat] || 0) : null;
+                var unit  = CAT_UNITS_T[cat] || '';
+                var baseStr = (baseV !== null) ? '  [base: ' + numFmt(baseV,6) + ']' : '';
+                layerCLines.push('  ' + cat.padEnd(36) + ': ' + numFmt(effectiveEF,6) + ' ' + unit + '/kg x ' + fix(qty,4) + ' kg = ' + numFmt(totalImpact,6) + ' ' + unit + baseStr);
+                if (cat === 'Climate Change') ingCC_total = totalImpact;
+            });
+            layerCLines.push('');
+            var twinTotalCC = ((d.twinPef['Climate Change'] && d.twinPef['Climate Change'].total) || 0);
+            layerCLines.push('  CC TOTAL contribution of this ingredient: ' + numFmt(ingCC_total,6) + ' kg CO2e');
+            layerCLines.push('  % of twin product CC total: ' + fix(twinTotalCC>0?(ingCC_total/twinTotalCC*100):0,2) + '%');
+            layerCLines.push('  DQR (AGRIBALYSE DQI Matrix v3.0.1): ' + fix(dqrV,2) + ' / 5.0');
+
+            var layerCH = layerCLines.length * 4 + 8;
+            h.ensureSpace(layerCH + 4, 'Twin Ingredient Glass-Box (continued)');
+            var bYc = h.Y;
+            doc.setFillColor(236,253,245); // light green
+            doc.setDrawColor(52,211,153);
+            doc.setLineWidth(0.3);
+            doc.rect(M, bYc, CW, layerCH, 'FD');
+            doc.setFillColor(16,185,129);
+            doc.rect(M, bYc, 1.5, layerCH, 'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(7);
+            doc.setTextColor(6,78,59);
+            doc.text('LAYER C', M + 4, bYc + 4.5);
+            doc.setFont('courier','normal'); doc.setFontSize(6.2);
+            doc.setTextColor(6,78,59);
+            layerCLines.forEach(function (line, i) {
+                doc.text(safe(line), M + 4, bYc + 8 + i * 4);
+            });
+            h.Y = bYc + layerCH + 6;
+        }); // end ingredient loop
+
+        h.footer('Twin Glass-Box Ingredients \u2014 Page ' + h.pageNum);
+    } // end if twinIngComponents
 
     // Disclaimer
     h.ensureSpace(16, 'Parametric Twin (continued)');

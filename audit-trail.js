@@ -864,7 +864,7 @@ SCREENING-LEVEL ASSESSMENT — for certified EPD conduct ISO 14044 critical revi
 }
 
 // ================== CSRD SCOPE 3 MATRIX EXPORTER ==================
-// v5.2 — FINAL SIGN-OFF VERSION (Gap C: GWP CH4/N2O factors as explicit machine-readable rows)
+// v5.3 — Bug 1: Block 2 true_total adds waste stage, col renamed. Bug 2: Block 7 AGRIBALYSE 4-param DQI correctly labelled.
 //
 // CHANGES FROM audit-trail.js v4.0:
 //   GAP-1  Removed Block 5 (Parametric Twin) — modelled scenario, not verified
@@ -1041,10 +1041,13 @@ function exportCSRDMatrix() {
     rows.push([c('BLOCK 2 — ENVIRONMENTAL PROFILE — 19 EF 3.1 CATEGORIES')]);
     rows.push([c('All per-kg values are per functional unit (1 kg product as sold).')]);
     rows.push([c('Stage columns: per kg product. uncertainty_cv: category-level Monte Carlo CV% where available, else overall CV%.')]);
+    rows.push([c('true_total_kg_product = total_excl_eol_kg_product + waste_kg_product. Waste/EoL is informational per engine design; excluded from pef[cat].total.')]);
+    rows.push([c('Auditor arithmetic check: true_total = ing + mfg + transport + packaging + waste (all columns sum to true_total).')]);
     rows.push([
         'impact_category', 'unit',
-        'total_kg_product', 'ingredients_kg_product', 'manufacturing_kg_product',
-        'transport_kg_product', 'packaging_kg_product', 'waste_kg_product',
+        'true_total_kg_product', 'total_excl_eol_kg_product',
+        'ingredients_kg_product', 'manufacturing_kg_product',
+        'transport_kg_product', 'packaging_kg_product', 'waste_eol_kg_product',
         'pef_single_score_mpt', 'dqr', 'uncertainty_cv_pct', 'primary_source', 'esrs_relevance'
     ].map(q).join(','));
 
@@ -1064,10 +1067,11 @@ function exportCSRDMatrix() {
             ? catMC.cv_pct.toFixed(1)
             : uncPct;
 
+        const trueTotal = total + wst;
         rows.push([
             cat, unit,
-            total.toFixed(8), ing.toFixed(8), mfg.toFixed(8),
-            trp.toFixed(8),   pkg.toFixed(8), wst.toFixed(8),
+            trueTotal.toFixed(8), total.toFixed(8), ing.toFixed(8), mfg.toFixed(8),
+            trp.toFixed(8),       pkg.toFixed(8),   wst.toFixed(8),
             mPtCat, dqrOverall, catCV, source, esrs
         ].map(q).join(','));
     });
@@ -1205,24 +1209,27 @@ function exportCSRDMatrix() {
     rows.push(['']);
 
     // ── BLOCK 7: DQR ─────────────────────────────────────────────────────────
-    rows.push([c('BLOCK 7 — DATA QUALITY RATING (DQR) — PEF 3.1 §5.7')]);
-    rows.push([c('Formula: DQR = (TeR + TiR + GeR + CoR + RR) / 5 | Scale: 1=best 5=worst')]);
-    rows.push([c('TeR=Temporal, TiR=Technological, GeR=Geographical, CoR=Completeness, RR=Reliability')]);
-    rows.push(['component', 'TeR', 'TiR', 'GeR', 'CoR', 'RR', 'dqr_overall', 'source'].map(q).join(','));
+    rows.push([c('BLOCK 7 — DATA QUALITY RATING (DQR) — AGRIBALYSE 3.2 DQI Matrix (ADEME/INRAE)')]);
+    rows.push([c('Source: DQI_Matrix_for_AGRIBALYSE v3.0.1 — 4-indicator scheme per ADEME/INRAE methodology')]);
+    rows.push([c('Formula: DQR = (TeR + TiR + GR + P) / 4 | Scale: 1=best 5=worst')]);
+    rows.push([c('TeR=Technological Rep., TiR=Time Rep., GR=Geographical Rep., P=Precision (maps to Reliability in PEF DQR)')]);
+    rows.push([c('CoR (Completeness of Review) — not scored in AGRIBALYSE DQI Matrix v3.0.1; set to N/A by design')]);
+    rows.push([c('PEF 3.1 §5.7 reference preserved; AGRIBALYSE 4-indicator DQI is the operationalised form for this LCI database')]);
+    rows.push(['component', 'TeR', 'TiR', 'GR_geographical', 'P_precision', 'CoR_not_scored', 'dqr_overall', 'source'].map(q).join(','));
     const dqrComps = audit.dqr_summary?.component_dqrs || [];
     dqrComps.forEach(d => {
         rows.push([
             d.name || d.id,
-            (d.TeR || d.temporal      || 0).toFixed(1),
-            (d.TiR || d.technological || 0).toFixed(1),
-            (d.GeR || d.geographical  || 0).toFixed(1),
-            (d.CoR || d.completeness  || 0).toFixed(1),
-            (d.RR  || d.reliability   || 0).toFixed(1),
-            (d.dqr || d.overall       || 0).toFixed(2),
-            d.source || 'AGRIBALYSE 3.2 metadata'
+            (d.TeR || 0).toFixed(1),                    // Technological representativeness
+            (d.TiR || 0).toFixed(1),                    // Time representativeness
+            (d.GeR || 0).toFixed(1),                    // Geographical representativeness (stored as GR in AGRIBALYSE)
+            (d.RR  || 0).toFixed(1),                    // P (Precision) — stored as RR in engine per BUG-14 mapping
+            'N/A',                                       // CoR — not scored in AGRIBALYSE DQI Matrix v3.0.1
+            (d.dqr || d.overall || 0).toFixed(2),
+            d.source || 'AGRIBALYSE 3.2 DQI Matrix'
         ].map(q).join(','));
     });
-    rows.push(['weighted_overall_dqr', '', '', '', '', '', dqrOverall, 'Contribution-weighted'].map(q).join(','));
+    rows.push(['weighted_overall_dqr', '', '', '', '', 'N/A', dqrOverall, 'Contribution-weighted — formula: (TeR+TiR+GR+P)/4'].map(q).join(','));
     rows.push(['']);
 
     // ── BLOCK 8: DATABASE VERSIONS ────────────────────────────────────────────
