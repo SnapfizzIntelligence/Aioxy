@@ -385,10 +385,8 @@ function displayAuditTrail() {
         if (archetype && processState !== 'raw') {
             processingDisplay = `${archetype.name} (${(archetype?.yield_factor ?? 1.0).toFixed(2)}x)`;
             bridgeHTML += `<br><span style="color:#2C7A7B; font-size:0.85em; font-weight:bold;">⚙️ [Physics Flag] ${archetype.name} (Yield: ${(archetype?.yield_factor ?? 1.0).toFixed(2)}x)</span>`;
-            const _eKwh = archetype.energy_kwh ?? 0;
-            const _gMj  = archetype.gas_mj   ?? 0;
-            if (_eKwh > 0 || _gMj > 0) {
-                bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">🔋 Energy: ${_eKwh.toFixed(2)} kWh/kg | 🔥 Gas: ${_gMj.toFixed(2)} MJ/kg</span>`;
+            if (archetype.energy_kwh > 0 || archetype.gas_mj > 0) {
+                bridgeHTML += `<br><span style="color:#1A5276; font-size:0.8em;">🔋 Energy: ${archetype.energy_kwh.toFixed(2)} kWh/kg | 🔥 Gas: ${archetype.gas_mj.toFixed(2)} MJ/kg</span>`;
             }
         }
 
@@ -711,7 +709,14 @@ function displayAuditTrail() {
         const qrBox = document.getElementById('dpp-qr-code');
         if (qrBox && typeof QRCode !== 'undefined') {
             qrBox.innerHTML = '';
-            new QRCode(qrBox, { text: qrTextPayload, width: 120, height: 120, colorDark: '#0A2540', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+            // FIX: qrcode@1.5.3 npm uses QRCode.toCanvas() — not new QRCode() constructor
+            try {
+                const canvas = document.createElement('canvas');
+                qrBox.appendChild(canvas);
+                QRCode.toCanvas(canvas, qrTextPayload, { width: 120, color: { dark: '#0A2540', light: '#ffffff' } });
+            } catch (e) {
+                qrBox.innerHTML = '<div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;background:#f0f0f0;border-radius:6px;"><i class="fas fa-qrcode" style="font-size:2rem;color:#666;"></i></div>';
+            }
         }
     }, 100);
 }
@@ -826,22 +831,44 @@ function generateDPP() {
     if (!qrElement) return;
     qrElement.innerHTML = '';
 
-    if (typeof QRCode !== 'undefined') {
-        const brandGTIN     = '00012345678905';
-        const dppDomain     = 'https://dpp.aioxy.com';
-        const gs1DigitalLink = `${dppDomain}/01/${brandGTIN}/21/${dppId}`;
-        new QRCode(qrElement, { text: gs1DigitalLink, width: 200, height: 200, colorDark: '#0A2540', colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.M });
+    // FIX: qrcode@1.5.3 npm (loaded in food.html) uses QRCode.toCanvas() API.
+    // The old `new QRCode(el, opts)` is qrcodejs constructor syntax — incompatible
+    // with the npm package. Calling it threw TypeError: QRCode is not a constructor
+    // on every calculation, which propagated uncaught through generateDPP() →
+    // updateResultsUI() → calculateImpact() catch block → alert + re-throw,
+    // crashing all three tabs (PEF Scorecard, Transparency Card, Transparency Log).
+    if (typeof QRCode !== 'undefined' && typeof QRCode.toCanvas === 'function') {
+        try {
+            const brandGTIN      = '00012345678905';
+            const dppDomain      = 'https://dpp.aioxy.com';
+            const gs1DigitalLink = `${dppDomain}/01/${brandGTIN}/21/${dppId}`;
+            const canvas = document.createElement('canvas');
+            qrElement.appendChild(canvas);
+            QRCode.toCanvas(canvas, gs1DigitalLink, {
+                width: 200,
+                color: { dark: '#0A2540', light: '#FFFFFF' }
+            });
+        } catch (e) {
+            console.warn('[AIOXY] QR code render failed:', e.message);
+            qrElement.innerHTML = `
+                <div style="background:#f0f0f0;width:200px;height:200px;display:flex;align-items:center;justify-content:center;border-radius:10px;">
+                    <div style="text-align:center;">
+                        <i class="fas fa-qrcode" style="font-size:3rem;color:#666;"></i>
+                        <div style="margin-top:1rem;font-size:0.8rem;">QR Code unavailable</div>
+                        <div style="font-size:0.7rem;color:#999;font-family:monospace;">${dppId}</div>
+                    </div>
+                </div>`;
+        }
     } else {
         qrElement.innerHTML = `
-            <div style="background: #f0f0f0; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
-                <div style="text-align: center;">
-                    <i class="fas fa-qrcode" style="font-size: 3rem; color: #666;"></i>
-                    <div style="margin-top: 1rem; font-size: 0.8rem;">QR Code would display here</div>
-                    <div style="font-size: 0.7rem; color: #999;">DPP ID: ${dppId}</div>
+            <div style="background:#f0f0f0;width:200px;height:200px;display:flex;align-items:center;justify-content:center;border-radius:10px;">
+                <div style="text-align:center;">
+                    <i class="fas fa-qrcode" style="font-size:3rem;color:#666;"></i>
+                    <div style="margin-top:1rem;font-size:0.8rem;">QR Code would display here</div>
+                    <div style="font-size:0.7rem;color:#999;">DPP ID: ${dppId}</div>
                 </div>
             </div>`;
     }
-}
 
 // ================== REGULATOR DISCLAIMER ==================
 function generateRegulatorDisclaimer() {
