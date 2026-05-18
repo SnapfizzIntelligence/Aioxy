@@ -367,6 +367,19 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // Derive correct kWh:
         const _pfd4kwh = window.lastInput?.manufacturing?.primaryFactoryData || null;
         const _isPfKwh = window.lastInput?.manufacturing?.usePrimaryFactoryData === true;
+        // contribution_tree: engine stores BOTH audit.contribution_tree (all cats) AND
+        // pef[cat].contribution_tree (per-cat). Use audit.contribution_tree as primary source.
+        // MOVED: must be declared before mfgKwhCorrect block which uses mfgCC (fixes
+        // ReferenceError: Cannot access 'mfgCC' before initialization)
+        const fullTree = audit.contribution_tree || {};
+        const ccTree   = fullTree['Climate Change'] || pef['Climate Change']?.contribution_tree || {};
+        const ingComps = ccTree.Ingredients?.components || [];
+        const mfgCC    = ccTree.Manufacturing?.total || 0;
+        const transCC  = ccTree.Transport?.total     || 0;
+        const pkgCC    = ccTree.Packaging?.total      || 0;
+        const wasteCC  = ccTree.Waste?.total          || 0;
+        const ingCC    = ccTree.Ingredients?.total    || 0;
+
         let mfgKwhCorrect;
         if (_isPfKwh && _pfd4kwh && _pfd4kwh.totalOutputKg > 0) {
             // Primary factory data path: exact per-batch kWh
@@ -395,17 +408,6 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const dqrVal   = dqr.overall_dqr   || 0;
 
         const unc      = audit.uncertainty_analysis?.monte_carlo || {};
-
-        // contribution_tree: engine stores BOTH audit.contribution_tree (all cats) AND
-        // pef[cat].contribution_tree (per-cat). Use audit.contribution_tree as primary source.
-        const fullTree = audit.contribution_tree || {};
-        const ccTree   = fullTree['Climate Change'] || pef['Climate Change']?.contribution_tree || {};
-        const ingComps = ccTree.Ingredients?.components || [];
-        const mfgCC    = ccTree.Manufacturing?.total || 0;
-        const transCC  = ccTree.Transport?.total     || 0;
-        const pkgCC    = ccTree.Packaging?.total      || 0;
-        const wasteCC  = ccTree.Waste?.total          || 0;
-        const ingCC    = ccTree.Ingredients?.total    || 0;
 
         const baseline = audit.comparison_baseline || window.currentComparisonBaseline || null;
         const hasTwin  = !!(baseline && (baseline.co2PerKg || baseline.assessed_co2PerKg));
