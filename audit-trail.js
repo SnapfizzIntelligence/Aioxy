@@ -1069,7 +1069,7 @@ function exportCSRDMatrix() {
     rows.push(['waste_kg_product',          '12', 'End-of-life treatment of sold products', 'GHG Protocol Scope 3 §5.14'].map(q).join(','));
     rows.push([c('scope3_reporting_perspective: downstream_purchaser — all stages are Scope 3 from the perspective of')]);
     rows.push([c('the retailer or brand receiving this product. The manufacturing stage is Scope 1/2 from the')]);
-    rows.push([c('producer's own CSRD filing and must be reclassified accordingly in the buyer's value chain report.')]);
+    rows.push([c("producer's own CSRD filing and must be reclassified accordingly in the buyer's value chain report.")]);
     rows.push(['scope3_reporting_perspective', 'downstream_purchaser', '', 'GHG Protocol Scope 3 Standard §5 / ESRS E1-6 AR3', 'Reclassify manufacturing to Scope 1/2 for producer own CSRD filing'].map(q).join(','));
     rows.push(['']);
 
