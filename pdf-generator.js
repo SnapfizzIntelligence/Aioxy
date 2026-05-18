@@ -3053,31 +3053,44 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             doc.text(safe(line), instrX + 2, legalY + 4 + i * 3.8);
         });
 
-        // FIX: food.html loads qrcode@1.5.3 npm (QRCode.toCanvas API).
-        // qrcodejs was deliberately removed to fix library conflicts (see food.html lines 17-19).
-        // Previous code used `new QRCode()` (qrcodejs constructor) which no longer exists,
-        // so the QR always fell through to the "QR library not loaded" placeholder.
-        // FIX: Use QRCode.toCanvas() which is what the loaded library actually exposes.
+        // qrcodejs constructor API — renders into a temp div, reads back the img src as data URL
         const attemptQrEmbed = () => new Promise((resolve) => {
-            if (typeof QRCode === 'undefined' || typeof QRCode.toCanvas !== 'function') {
+            if (typeof QRCode === 'undefined') {
                 resolve(null);
                 return;
             }
-            const canvas = document.createElement('canvas');
-            hiddenQrDiv.appendChild(canvas);
-            QRCode.toCanvas(canvas, qrPayload, {
-                width:                180,
-                margin:               1,
-                color:                { dark: '#0A2540', light: '#FFFFFF' },
-                errorCorrectionLevel: 'M'
-            }, function(err) {
-                if (err) { resolve(null); return; }
-                try {
-                    resolve(canvas.toDataURL('image/png'));
-                } catch(e) {
-                    resolve(null);
-                }
-            });
+            try {
+                hiddenQrDiv.innerHTML = '';
+                new QRCode(hiddenQrDiv, {
+                    text:         qrPayload,
+                    width:        180,
+                    height:       180,
+                    colorDark:    '#0A2540',
+                    colorLight:   '#FFFFFF',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                // qrcodejs renders async internally — wait one tick for img to populate
+                setTimeout(() => {
+                    try {
+                        const img = hiddenQrDiv.querySelector('img');
+                        if (img && img.src && img.src.startsWith('data:')) {
+                            resolve(img.src);
+                            return;
+                        }
+                        // Fallback: try canvas if img not ready
+                        const canvas = hiddenQrDiv.querySelector('canvas');
+                        if (canvas) {
+                            resolve(canvas.toDataURL('image/png'));
+                            return;
+                        }
+                        resolve(null);
+                    } catch(e) {
+                        resolve(null);
+                    }
+                }, 150);
+            } catch(e) {
+                resolve(null);
+            }
         });
 
         const qrDataUrl = await attemptQrEmbed();

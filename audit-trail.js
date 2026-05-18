@@ -709,11 +709,15 @@ function displayAuditTrail() {
         const qrBox = document.getElementById('dpp-qr-code');
         if (qrBox && typeof QRCode !== 'undefined') {
             qrBox.innerHTML = '';
-            // FIX: qrcode@1.5.3 npm uses QRCode.toCanvas() — not new QRCode() constructor
             try {
-                const canvas = document.createElement('canvas');
-                qrBox.appendChild(canvas);
-                QRCode.toCanvas(canvas, qrTextPayload, { width: 120, color: { dark: '#0A2540', light: '#ffffff' } });
+                new QRCode(qrBox, {
+                    text:         qrTextPayload,
+                    width:        120,
+                    height:       120,
+                    colorDark:    '#0A2540',
+                    colorLight:   '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
             } catch (e) {
                 qrBox.innerHTML = '<div style="width:120px;height:120px;display:flex;align-items:center;justify-content:center;background:#f0f0f0;border-radius:6px;"><i class="fas fa-qrcode" style="font-size:2rem;color:#666;"></i></div>';
             }
@@ -831,22 +835,19 @@ function generateDPP() {
     if (!qrElement) return;
     qrElement.innerHTML = '';
 
-    // FIX: qrcode@1.5.3 npm (loaded in food.html) uses QRCode.toCanvas() API.
-    // The old `new QRCode(el, opts)` is qrcodejs constructor syntax — incompatible
-    // with the npm package. Calling it threw TypeError: QRCode is not a constructor
-    // on every calculation, which propagated uncaught through generateDPP() →
-    // updateResultsUI() → calculateImpact() catch block → alert + re-throw,
-    // crashing all three tabs (PEF Scorecard, Transparency Card, Transparency Log).
-    if (typeof QRCode !== 'undefined' && typeof QRCode.toCanvas === 'function') {
+    // qrcodejs constructor API — reliable browser QR rendering
+    if (typeof QRCode !== 'undefined') {
         try {
             const brandGTIN      = '00012345678905';
             const dppDomain      = 'https://dpp.aioxy.com';
             const gs1DigitalLink = `${dppDomain}/01/${brandGTIN}/21/${dppId}`;
-            const canvas = document.createElement('canvas');
-            qrElement.appendChild(canvas);
-            QRCode.toCanvas(canvas, gs1DigitalLink, {
-                width: 200,
-                color: { dark: '#0A2540', light: '#FFFFFF' }
+            new QRCode(qrElement, {
+                text:         gs1DigitalLink,
+                width:        200,
+                height:       200,
+                colorDark:    '#0A2540',
+                colorLight:   '#FFFFFF',
+                correctLevel: QRCode.CorrectLevel.M
             });
         } catch (e) {
             console.warn('[AIOXY] QR code render failed:', e.message);

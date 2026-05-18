@@ -9,14 +9,13 @@
    
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- qrcodejs removed: conflicted with qrcode npm (qrcode@1.5.3) loaded above.
-         Both export window.QRCode. qrcodejs (loaded 2nd) overwrote the npm API,
-         causing silent render failures. qrcode npm is used exclusively now via QRCode.toCanvas(). -->
+    <!-- qrcodejs (davidshimjs) v1.0.0 — constructor API: new QRCode(el, opts)
+         Used across ui.js, audit-trail.js, pdf-generator.js for all QR rendering. -->
  
     <!-- AIOXY MODULAR JAVASCRIPT -->
 <!-- 1. Farm Gate Database (221 ingredients) - MUST LOAD FIRST -->

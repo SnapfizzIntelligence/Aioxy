@@ -1131,13 +1131,9 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     // Store qrText globally so download function can access it
     window._storyQRText = qrText;
 
-    // ROOT CAUSE FIX 1: qrcodejs (loaded 2nd) overwrote window.QRCode and silently
-    // failed on non-ASCII chars, producing a blank box with nothing to scan.
-    // FIX: Use qrcode npm QRCode.toCanvas() — real canvas, all browsers, no charset issues.
-    //
-    // ROOT CAUSE FIX 2: environmentalStory was still hidden when render fired —
-    // element had zero dimensions. FIX: Remove hidden FIRST, then render via
-    // requestAnimationFrame which guarantees layout is done before canvas draws.
+    // qrcodejs (davidshimjs) v1.0.0 loaded in food.html.
+    // Uses constructor API: new QRCode(element, opts) — no async, no toCanvas, works in all browsers.
+    // environmentalStory is unhidden FIRST so element has dimensions before QR renders.
 
     environmentalStory.classList.remove('hidden');
 
@@ -1146,19 +1142,19 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         if (!qrBox) return;
         qrBox.innerHTML = '';
 
-        if (typeof QRCode !== 'undefined' && typeof QRCode.toCanvas === 'function') {
-            const canvas = document.createElement('canvas');
-            qrBox.appendChild(canvas);
-            QRCode.toCanvas(canvas, qrText, {
-                width:                160,
-                margin:               1,
-                color:                { dark: '#0A2540', light: '#FFFFFF' },
-                errorCorrectionLevel: 'L'   // L = max capacity (~1273 chars); M wastes space on error correction
-            }, function(err) {
-                if (err) {
-                    qrBox.innerHTML = '<span style="font-size:0.65rem;color:#94A3B8;padding:0.5rem;display:block;text-align:center;">QR render failed</span>';
-                }
-            });
+        if (typeof QRCode !== 'undefined') {
+            try {
+                new QRCode(qrBox, {
+                    text:         qrText,
+                    width:        160,
+                    height:       160,
+                    colorDark:    '#0A2540',
+                    colorLight:   '#FFFFFF',
+                    correctLevel: QRCode.CorrectLevel.L
+                });
+            } catch (err) {
+                qrBox.innerHTML = '<span style="font-size:0.65rem;color:#94A3B8;padding:0.5rem;display:block;text-align:center;">QR render failed</span>';
+            }
         } else {
             qrBox.innerHTML = '<span style="font-size:0.6rem;color:#94A3B8;text-align:center;padding:0.5rem;display:block;">QR library not loaded</span>';
         }
@@ -1170,8 +1166,8 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
 // qrcodejs produced img (not canvas) on modern browsers, and only if QR rendered.
 // Since QR never rendered (root causes 1+2), both were null and download silently fell
 // through to a .txt blob the user could not see.
-// FIX: QRCode.toCanvas() now always produces a real canvas. Download reads it directly,
-// adds white padding for print quality, exports PNG. Text fallback kept as safety net.
+// FIX: qrcodejs (constructor API) creates an <img> inside the qrBox (with a canvas as interim).
+// Download reads the img src directly and exports as PNG with white padding for print quality.
 function downloadStoryQR() {
     const qrBox = document.getElementById('storyQRCode');
     if (!qrBox) return;
@@ -1180,9 +1176,32 @@ function downloadStoryQR() {
     const dppId  = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
     const fname  = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
 
+    // qrcodejs renders an <img> (data URI) inside the container
+    const img = qrBox.querySelector('img');
+    if (img && img.src) {
+        const image = new Image();
+        image.onload = function() {
+            const padded = document.createElement('canvas');
+            padded.width  = image.width  + 40;
+            padded.height = image.height + 40;
+            const ctx = padded.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, padded.width, padded.height);
+            ctx.drawImage(image, 20, 20);
+            const link = document.createElement('a');
+            link.download = fname;
+            link.href     = padded.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        image.src = img.src;
+        return;
+    }
+
+    // Fallback: canvas element (some browsers)
     const canvas = qrBox.querySelector('canvas');
     if (canvas) {
-        // Add white border padding for print quality
         const padded = document.createElement('canvas');
         padded.width  = canvas.width  + 40;
         padded.height = canvas.height + 40;

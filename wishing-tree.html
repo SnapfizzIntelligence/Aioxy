@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>The Wishing Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#0E1A0A;font-family:'Nunito',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent}
+
+/* ── CANVAS ── */
+#scene{position:fixed;inset:0;width:100%;height:100%}
+
+/* ── LEAF LAYER ── */
+#leafLayer{position:fixed;inset:0;pointer-events:none}
+
+.leaf{
+  position:absolute;
+  pointer-events:all;
+  cursor:pointer;
+  transform-origin:50% 0%;
+  transition:filter .22s;
+  filter:drop-shadow(1px 3px 4px rgba(0,0,0,0.35));
+}
+.leaf:hover{filter:drop-shadow(0 0 10px rgba(100,255,100,.65)) brightness(1.3)}
+.leaf svg{display:block}
+
+/* shimmer hint — tells user it's tappable */
+.leaf svg path.body{animation:leafShimmer 3.5s ease-in-out infinite}
+.leaf:nth-child(2n)   svg path.body{animation-delay:-1.7s}
+.leaf:nth-child(3n)   svg path.body{animation-delay:-0.9s}
+.leaf:nth-child(5n)   svg path.body{animation-delay:-2.6s}
+@keyframes leafShimmer{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.22) drop-shadow(0 0 5px rgba(80,220,80,.5))}
+}
+
+.leaf.falling{
+  pointer-events:none;
+  animation:leafFall 2.9s cubic-bezier(.4,0,1,1) forwards;
+}
+.leaf.gone{display:none}
+
+@keyframes leafFall{
+  0%  {transform:translate(0,0)      rotate(0deg)   scale(1)   ;opacity:1}
+  14% {transform:translate(-26px,65px)  rotate(-40deg) scale(.97) ;opacity:1}
+  30% {transform:translate(20px,160px)  rotate(28deg)  scale(.93) ;opacity:.95}
+  47% {transform:translate(-16px,270px) rotate(-24deg) scale(.88) ;opacity:.82}
+  63% {transform:translate(14px,375px)  rotate(34deg)  scale(.82) ;opacity:.58}
+  80% {transform:translate(-9px,468px)  rotate(-18deg) scale(.76) ;opacity:.28}
+  100%{transform:translate(5px,580px)   rotate(12deg)  scale(.70) ;opacity:0}
+}
+
+/* ── HEADER ── */
+.hdr{
+  position:fixed;top:0;left:0;right:0;
+  text-align:center;padding:16px 20px 12px;
+  z-index:20;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(8,14,4,.75) 0%,transparent 100%);
+}
+.hdr h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,5vw,2.2rem);
+  font-weight:700;color:#E8F5D0;
+  letter-spacing:2px;
+  text-shadow:0 2px 16px rgba(60,180,60,.5),0 2px 6px rgba(0,0,0,.7);
+}
+.hdr p{
+  font-size:clamp(.62rem,1.9vw,.8rem);color:rgba(200,240,180,.7);
+  font-weight:300;margin-top:4px;letter-spacing:.5px;
+}
+
+/* ── COUNTER ── */
+.ctr{
+  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  background:rgba(8,20,4,.78);border:1px solid rgba(100,200,60,.3);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:7px 22px;border-radius:30px;
+  font-size:clamp(.66rem,1.8vw,.8rem);color:rgba(200,240,160,.88);
+  font-weight:600;z-index:20;white-space:nowrap;letter-spacing:.3px;
+  box-shadow:0 2px 14px rgba(0,0,0,.4);transition:color .4s;
+}
+
+/* ── OVERLAY ── */
+.ov{
+  position:fixed;inset:0;
+  background:rgba(4,10,2,.66);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity .35s ease;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:20px;
+}
+.ov.show{opacity:1;pointer-events:all}
+
+/* ── CARD ── */
+.card{
+  background:linear-gradient(148deg,#FFFEF5,#FFF9E6,#FFFEF5);
+  border-radius:28px;max-width:380px;width:100%;
+  text-align:center;
+  box-shadow:0 32px 80px rgba(0,0,0,.42),0 0 0 2px rgba(180,145,20,.55),0 0 0 7px rgba(180,145,20,.1);
+  overflow:hidden;position:relative;
+  transform:scale(.82) translateY(30px);
+  transition:transform .46s cubic-bezier(.34,1.56,.64,1);
+}
+.ov.show .card{transform:scale(1) translateY(0)}
+
+.ribbon{
+  height:6px;width:100%;
+  background:linear-gradient(90deg,#8A6008,#D4A020,#8A6008,#D4A020,#8A6008);
+  background-size:200% 100%;
+  animation:rShim 2.3s linear infinite;
+}
+@keyframes rShim{0%{background-position:0% 0}100%{background-position:200% 0}}
+
+.cbody{padding:26px 28px 26px}
+.corner{position:absolute;font-size:1.6rem;opacity:.18;pointer-events:none}
+.corner.tl{top:14px;left:14px;transform:rotate(-35deg)}
+.corner.tr{top:14px;right:14px;transform:rotate(35deg) scaleX(-1)}
+.corner.bl{bottom:14px;left:14px;transform:rotate(20deg)}
+.corner.br{bottom:14px;right:14px;transform:rotate(-20deg) scaleX(-1)}
+
+/* CARD CONTENT — short format */
+.cico{font-size:clamp(2.8rem,9vw,3.8rem);line-height:1;margin-bottom:10px}
+.ctag{
+  display:inline-block;background:rgba(60,30,0,.09);color:#6B3A00;
+  border:1px solid rgba(107,58,0,.2);
+  font-size:.62rem;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;padding:3px 12px;border-radius:20px;
+  margin-bottom:12px;
+}
+.cheadline{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.7rem,6vw,2.2rem);
+  font-weight:700;color:#1E3A0E;
+  line-height:1.15;margin-bottom:6px;
+  letter-spacing:.5px;
+}
+.csub{
+  font-size:clamp(.78rem,2.4vw,.92rem);
+  color:#5C4A2A;line-height:1.5;
+  margin-bottom:18px;font-weight:400;
+}
+.div{width:44px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(160,120,20,.45),transparent);margin:0 auto 16px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#1C3A0C;color:#C8F0A8;
+  padding:6px 20px;border-radius:24px;
+  font-family:'Courier New',monospace;
+  font-size:clamp(.9rem,2.8vw,1.08rem);
+  letter-spacing:3.5px;font-weight:700;
+  margin-bottom:18px;
+  box-shadow:0 3px 14px rgba(28,58,12,.45);
+}
+.pcopy{
+  font-family:'Nunito',sans-serif;font-size:.6rem;letter-spacing:1px;
+  color:#82C870;cursor:pointer;
+  border:1px solid rgba(130,200,112,.4);
+  padding:2px 7px;border-radius:10px;transition:background .2s;
+}
+.pcopy:hover{background:rgba(130,200,112,.15)}
+.btn{
+  background:linear-gradient(135deg,#2A6A10 0%,#3E9418 50%,#2A6A10 100%);
+  background-size:200% 100%;color:#fff;border:none;
+  padding:13px 40px;border-radius:50px;
+  font-family:'Nunito',sans-serif;
+  font-size:clamp(.8rem,2.5vw,.95rem);
+  font-weight:700;cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 5px 22px rgba(42,106,16,.5);
+  transition:transform .2s,box-shadow .2s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(42,106,16,.6)}
+.btn:active{transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+<div id="leafLayer"></div>
+
+<div class="hdr">
+  <h1>🌳 The Wishing Tree</h1>
+  <p>Touch a leaf — every one hides a gift for you</p>
+</div>
+
+<div class="ctr" id="ctr">🍃 12 gifts hiding in the leaves</div>
+
+<div class="ov" id="ov">
+  <div class="card">
+    <div class="ribbon"></div>
+    <span class="corner tl">🍃</span><span class="corner tr">🍃</span>
+    <span class="corner bl">✦</span><span class="corner br">✦</span>
+    <div class="cbody">
+      <div class="cico"      id="cico">🎁</div>
+      <div class="ctag"      id="ctag">YOUR GIFT</div>
+      <div class="cheadline" id="chl">5% Off</div>
+      <div class="div"></div>
+      <div class="csub"      id="csub">A small gift, with a big smile</div>
+      <div class="pill"      id="cpill" style="display:none">
+        <span id="ccode">CODE</span>
+        <span class="pcopy" id="pcopy" onclick="copyCode()">COPY</span>
+      </div>
+      <button class="btn" onclick="closeCard()">Claim My Gift 🎁</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════
+   12 SHORT, ENGAGING GIFTS
+   Format: icon · tag · headline · sub · code
+   ═══════════════════════════════════ */
+const GIFTS = [
+  { ico:'🎁', tag:'WELCOME GIFT',     hl:'5% Off',              sub:'A little something on us — just for you.',         code:'LEAF5'    },
+  { ico:'🚚', tag:'ON US',            hl:'Free Shipping',       sub:'Your order travels free. No minimum needed.',      code:null       },
+  { ico:'✨', tag:'MYSTERY',          hl:'Surprise Gift',       sub:'Something extra lands in your cart at checkout.',  code:'MYSTERY'  },
+  { ico:'👑', tag:'EARLY ACCESS',     hl:'VIP Preview',         sub:'You see the new drop 48 hours before anyone.',     code:'VIP48'    },
+  { ico:'🎉', tag:'BUNDLE DEAL',      hl:'Buy 2, Get 1 Free',   sub:'Pick three. Pay for two. Any items, any mix.',     code:'B2G1FREE' },
+  { ico:'💌', tag:'LITTLE LUXURY',    hl:'Free Gift Wrapping',  sub:'Every detail, beautifully dressed. On the house.', code:null       },
+  { ico:'⚡', tag:'TODAY ONLY',       hl:'Flash 20% Off',       sub:'A rare window. Move when you feel ready.',         code:'FLASH20'  },
+  { ico:'🌟', tag:'LOYALTY REWARD',   hl:'Double Points',       sub:'2× loyalty on everything you buy next.',           code:null       },
+  { ico:'🎲', tag:'SURPRISE',         hl:'Hidden Discount',     sub:'Revealed at checkout. Trust the tree.',            code:'SURPRISE' },
+  { ico:'🔮', tag:'SECRET OFFER',     hl:'15% Off',             sub:'Not on our site. Not in any email. Only here.',    code:'HIDDEN15' },
+  { ico:'🛍️', tag:'EXPRESS',         hl:'Free Next-Day',       sub:'Arrives tomorrow. Costs you absolutely nothing.',  code:null       },
+  { ico:'💫', tag:'FROM THE TREE',    hl:'10% Off',             sub:'A leaf fell. A gift arrived. That\'s the deal.',  code:'TREE10'   },
+];
+
+/* shuffle once per load */
+for(let i=GIFTS.length-1;i>0;i--){const j=0|Math.random()*(i+1);[GIFTS[i],GIFTS[j]]=[GIFTS[j],GIFTS[i]];}
+
+/* ═══════════════════════════════════
+   SEEDED RNG — Mulberry32
+   Same seed = same tree every load
+   ═══════════════════════════════════ */
+function makeRng(seed){
+  let s=seed|0;
+  const next=()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  return{next,between:(a,b)=>a+next()*(b-a),pick:a=>a[0|next()*a.length]};
+}
+
+/* ═══════════════════════════════════
+   CANVAS SETUP
+   ═══════════════════════════════════ */
+const canvas = document.getElementById('scene');
+const ctx    = canvas.getContext('2d');
+const DPR    = Math.min(window.devicePixelRatio||1,2);
+
+let W=0,H=0,scaleF=1;
+
+/* branch tips collected during tree draw — used to position leaves */
+let branchTips = [];
+
+function resize(){
+  W=window.innerWidth; H=window.innerHeight;
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.scale(DPR,DPR);
+  scaleF=Math.min(W,H)/600;
+  renderScene();
+  repositionLeaves();
+}
+window.addEventListener('resize',resize);
+
+/* ═══════════════════════════════════
+   SCENE RENDER
+   Called once on load + on resize.
+   Canvas is static (no animation loop).
+   Motion lives entirely in CSS/JS for leaves.
+   ═══════════════════════════════════ */
+function renderScene(){
+  ctx.clearRect(0,0,W,H);
+  drawSky();
+  drawHills();
+  drawGround();
+  branchTips=[];
+  drawTree();
+  drawFoliage();
+}
+
+function drawSky(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,   '#1A3A2A');  /* deep forest green-black at top */
+  g.addColorStop(0.28,'#2A5C3A');
+  g.addColorStop(0.55,'#4A8C5A');
+  g.addColorStop(0.72,'#6AB870');  /* bright mid-green horizon */
+  g.addColorStop(0.85,'#8CD490');
+  g.addColorStop(1,   '#A8C878');  /* warm light at ground */
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  /* sun glow — upper right */
+  const sx=W*0.78, sy=H*0.12;
+  const sg=ctx.createRadialGradient(sx,sy,0,sx,sy,H*0.38);
+  sg.addColorStop(0,  'rgba(255,255,200,.22)');
+  sg.addColorStop(0.4,'rgba(255,240,160,.08)');
+  sg.addColorStop(1,  'transparent');
+  ctx.fillStyle=sg;
+  ctx.beginPath(); ctx.arc(sx,sy,H*0.38,0,Math.PI*2); ctx.fill();
+
+  /* sun disc */
+  const sd=ctx.createRadialGradient(sx,sy,0,sx,sy,H*0.055);
+  sd.addColorStop(0,'rgba(255,255,220,0.95)');
+  sd.addColorStop(0.5,'rgba(255,240,160,0.7)');
+  sd.addColorStop(1,'transparent');
+  ctx.fillStyle=sd;
+  ctx.beginPath(); ctx.arc(sx,sy,H*0.055,0,Math.PI*2); ctx.fill();
+
+  /* stars / birds (subtle dots high up) */
+  const rnd=makeRng(77);
+  for(let i=0;i<18;i++){
+    const bx=rnd.between(W*.05,W*.95), by=rnd.between(H*.03,H*.22);
+    if(Math.hypot(bx-sx,by-sy)<H*.08) continue;
+    ctx.fillStyle=`rgba(255,255,240,${rnd.between(.3,.7)})`;
+    ctx.beginPath(); ctx.arc(bx,by,rnd.between(.5,1.3),0,Math.PI*2); ctx.fill();
+  }
+}
+
+function drawHills(){
+  /* far hills */
+  ctx.fillStyle='rgba(30,80,40,0.55)';
+  ctx.beginPath(); ctx.moveTo(0,H*.62);
+  const rnd=makeRng(55);
+  let x=0;
+  while(x<W){ const w=60+rnd.next()*120; ctx.quadraticCurveTo(x+w*.5,H*.62-40-rnd.next()*60,x+w,H*.62); x+=w; }
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+
+  /* near hills */
+  ctx.fillStyle='rgba(40,100,45,0.6)';
+  ctx.beginPath(); ctx.moveTo(0,H*.72);
+  const rnd2=makeRng(33);
+  let x2=0;
+  while(x2<W){ const w=50+rnd2.next()*100; ctx.quadraticCurveTo(x2+w*.5,H*.72-30-rnd2.next()*50,x2+w,H*.72); x2+=w; }
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+}
+
+function drawGround(){
+  /* ground plane */
+  const g=ctx.createLinearGradient(0,H*.82,0,H);
+  g.addColorStop(0,'#3E7030'); g.addColorStop(0.5,'#2E5A22'); g.addColorStop(1,'#1C3C14');
+  ctx.fillStyle=g; ctx.fillRect(0,H*.82,W,H*.18);
+
+  /* grass texture — micro strokes */
+  const rnd=makeRng(99);
+  ctx.strokeStyle='rgba(100,190,60,0.38)';
+  ctx.lineWidth=1;
+  for(let i=0;i<120;i++){
+    const gx=rnd.between(0,W), gy=rnd.between(H*.83,H*.97);
+    const gh=4+rnd.next()*9;
+    ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx+(rnd.next()-.5)*6,gy-gh); ctx.stroke();
+  }
+
+  /* tree shadow on ground */
+  const shadowX=W/2+W*.04, shadowY=H*.865;
+  const sg=ctx.createRadialGradient(shadowX,shadowY,0,shadowX,shadowY,W*.22);
+  sg.addColorStop(0,'rgba(0,0,0,0.28)'); sg.addColorStop(1,'transparent');
+  ctx.fillStyle=sg;
+  ctx.beginPath(); ctx.ellipse(shadowX,shadowY,W*.22,H*.04,0,0,Math.PI*2); ctx.fill();
+}
+
+/* ═══════════════════════════════════
+   FRACTAL TREE — Seeded L-System style
+   Recursive bezier branches with:
+   • Organic tapering width
+   • Natural bark colouring
+   • Round-light highlight per branch
+   • Collects tip positions for leaf placement
+   ═══════════════════════════════════ */
+function drawTree(){
+  const rng = makeRng(137); /* 137 → beautiful tree shape (tested) */
+  const baseX = W/2, baseY = H*.87;
+  const trunkLen = H * .22 * Math.min(1,scaleF*1.1);
+  const trunkWid = trunkLen * .115;
+
+  /* Draw roots */
+  ctx.lineCap='round';
+  const roots=[[-1.3,.18],[-1.0,.12],[-.6,.07],[.6,.07],[1.0,.12],[1.3,.18]];
+  roots.forEach(([ra,rl])=>{
+    const rx=baseX+Math.cos(ra)*trunkWid*3*rl;
+    const ry=baseY+Math.sin(ra)*trunkWid*2*rl;
+    const shade=`rgba(30,12,4,0.65)`;
+    ctx.strokeStyle=shade; ctx.lineWidth=trunkWid*.28*(1-Math.abs(ra)/2.5);
+    ctx.beginPath(); ctx.moveTo(baseX,baseY); ctx.quadraticCurveTo((baseX+rx)/2,baseY+6,rx,ry); ctx.stroke();
+  });
+
+  /* Recursive branch draw */
+  branch(ctx, rng, baseX, baseY, -Math.PI/2 - .03, trunkLen, trunkWid, 8);
+}
+
+function branch(ctx, rng, x1, y1, angle, length, width, depth){
+  if(depth<=0 || length<2.5) {
+    branchTips.push({x:x1,y:y1,d:depth});
+    return;
+  }
+
+  /* Slight organic curve on each branch */
+  const curve = rng.between(-.18,.18);
+  const midX = x1+Math.cos(angle+curve*.5)*length*.46;
+  const midY = y1+Math.sin(angle+curve*.5)*length*.46;
+  const x2   = x1+Math.cos(angle+curve*.85)*length;
+  const y2   = y1+Math.sin(angle+curve*.85)*length;
+
+  /* Bark colour — dark at base, lighter at tips */
+  const t = 1-depth/8;
+  const br = Math.round(38+t*62), bg2 = Math.round(18+t*38), bb = Math.round(6+t*18);
+  ctx.strokeStyle=`rgb(${br},${bg2},${bb})`;
+  ctx.lineWidth=width; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(midX,midY,x2,y2); ctx.stroke();
+
+  /* Highlight stripe — simulates round bark surface */
+  if(width>2.5){
+    const hx=Math.cos(angle+Math.PI/2)*width*.18;
+    const hy=Math.sin(angle+Math.PI/2)*width*.18;
+    ctx.strokeStyle=`rgba(${br+48},${bg2+28},${bb+18},0.32)`;
+    ctx.lineWidth=width*.32;
+    ctx.beginPath(); ctx.moveTo(x1+hx,y1+hy); ctx.quadraticCurveTo(midX+hx,midY+hy,x2+hx,y2+hy); ctx.stroke();
+  }
+
+  /* Parameters for children */
+  const spread   = rng.between(.32,.50);
+  const lenRatio = rng.between(.62,.72);
+  const widRatio = rng.between(.63,.70);
+
+  /* Left child */
+  branch(ctx,rng,x2,y2, angle-spread,                 length*lenRatio,           width*widRatio,           depth-1);
+  /* Right child */
+  branch(ctx,rng,x2,y2, angle+spread*rng.between(.8,1.2), length*lenRatio*rng.between(.88,1.04), width*widRatio*rng.between(.88,.96), depth-1);
+  /* Optional third child (40% chance, skips a depth level) */
+  if(depth>3 && rng.next()<.40){
+    branch(ctx,rng,x2,y2, angle+(rng.next()-.5)*.22, length*lenRatio*.68, width*widRatio*.62, depth-2);
+  }
+}
+
+/* ═══════════════════════════════════
+   FOLIAGE — Pointillist leaf rendering
+   Thousands of tiny overlapping leaf ellipses
+   build up a convincingly natural canopy mass.
+   Layered dark→light with sun bias top-right.
+   ═══════════════════════════════════ */
+function drawFoliage(){
+  if(!branchTips.length) return;
+
+  /* Canopy centroid from branch tips */
+  const tips = branchTips.filter(t=>t.d<=1);
+  const sumX=tips.reduce((a,t)=>a+t.x,0)/tips.length;
+  const sumY=tips.reduce((a,t)=>a+t.y,0)/tips.length;
+  const cx=sumX, cy=sumY;
+
+  /* Canopy radius = spread of tips */
+  const maxDist=tips.reduce((m,t)=>Math.max(m,Math.hypot(t.x-cx,t.y-cy)),0);
+  const radius=maxDist*1.15;
+
+  const rng=makeRng(42);
+
+  /* Layer config: [count, radiusScale, rMin,gMin,bMin, rMax,gMax,bMax, alphaMin,alphaMax] */
+  const layers=[
+    /* deep shadow interior */
+    [900, 1.0,  8,28,8,  18,48,14, .55,.85],
+    /* dark base */
+    [700, .90, 14,42,12, 26,65,20, .60,.88],
+    /* mid-dark */
+    [550, .80, 22,60,18, 38,85,28, .62,.90],
+    /* mid green */
+    [400, .70, 30,82,24, 50,110,35, .65,.88],
+    /* light (sun-biased top-right) */
+    [260, .56, 44,105,32, 68,142,48, .60,.85],
+    /* highlights */
+    [140, .42, 60,130,44, 85,168,60, .55,.80],
+    /* sunlit crown (top-right quadrant only) */
+    [80,  .32, 80,158,56, 110,195,78, .50,.75],
+  ];
+
+  layers.forEach(([count,rScale,rLo,gLo,bLo,rHi,gHi,bHi,aLo,aHi],li)=>{
+    const R=radius*rScale;
+    for(let i=0;i<count;i++){
+      /* polar coords with sqrt() for uniform distribution */
+      let angle=rng.next()*Math.PI*2;
+      let dist=Math.sqrt(rng.next())*R;
+
+      /* For highlight layers: bias toward top-right */
+      if(li>=4){
+        angle = angle*0.8 - Math.PI*.45; /* pull toward upper-right */
+        dist *= rng.between(.3,.9);
+      }
+
+      const lx=cx+Math.cos(angle)*dist;
+      const ly=cy+Math.sin(angle)*dist*.88; /* slight vertical squeeze */
+      const ls=rng.between(4,11);
+      const rot=rng.next()*Math.PI*2;
+
+      const r=Math.round(rng.between(rLo,rHi));
+      const g=Math.round(rng.between(gLo,gHi));
+      const b=Math.round(rng.between(bLo,bHi));
+      const a=rng.between(aLo,aHi);
+
+      ctx.save();
+      ctx.translate(lx,ly); ctx.rotate(rot);
+      ctx.globalAlpha=a;
+      ctx.fillStyle=`rgb(${r},${g},${b})`;
+      ctx.beginPath();
+      /* Leaf shape — slightly elongated ellipse */
+      ctx.ellipse(0,0,ls*.52,ls,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+  });
+}
+
+/* ═══════════════════════════════════
+   INTERACTIVE LEAVES
+   Positioned across the canopy as HTML.
+   Each is a detailed SVG leaf shape.
+   ═══════════════════════════════════ */
+const LEAF_COLORS=[
+  '#3E9448','#48A852','#52BC5C','#3C8842','#44A050',
+  '#5CBE66','#38864A','#4AAE56','#62C66E','#3A8040','#46A24E','#58B860'
+];
+
+/* Pre-chosen canopy distribution:
+   top-row, mid-row, lower-row — evenly spread
+   so no two leaves look crammed. */
+const LEAF_OFFSETS=[
+  /* top cluster */
+  [-.38,-.52],[-.12,-.60],[.14,-.58],[.40,-.50],
+  /* mid cluster */
+  [-.58,-.26],[-.28,-.30],[.04,-.32],[.34,-.28],[.60,-.22],
+  /* lower edges */
+  [-.55,.02],[-.18,.05],[.45,.02],
+];
+
+const leafEl=[];
+let leafTips=[];
+
+function buildLeaves(){
+  /* Collect tips and compute canopy */
+  const tips=branchTips.filter(t=>t.d<=1);
+  if(!tips.length) return;
+  const cx=tips.reduce((a,t)=>a+t.x,0)/tips.length;
+  const cy=tips.reduce((a,t)=>a+t.y,0)/tips.length;
+  const radius=tips.reduce((m,t)=>Math.max(m,Math.hypot(t.x-cx,t.y-cy)),0)*1.0;
+
+  const layer=document.getElementById('leafLayer');
+  layer.innerHTML='';
+  leafEl.length=0; leafTips.length=0;
+
+  LEAF_OFFSETS.forEach((off,i)=>{
+    const wx=cx + off[0]*radius;
+    const wy=cy + off[1]*radius*0.88;
+
+    leafTips.push({x:wx,y:wy});
+
+    const rot=-40+Math.random()*80;
+    const size=32+Math.random()*16;
+    const color=LEAF_COLORS[i%LEAF_COLORS.length];
+    const darker=darkenHex(color,.35);
+
+    const div=document.createElement('div');
+    div.className='leaf';
+    div.style.cssText=`
+      left:${wx}px;top:${wy}px;
+      width:${size}px;height:${size*1.48}px;
+      margin-left:${-size/2}px;
+      margin-top:${-size*.74}px;
+      transform:rotate(${rot}deg);
+    `;
+    /* Realistic leaf SVG:
+       Pointed tip at top, rounded lobes, centre vein, two side veins */
+    div.innerHTML=`<svg viewBox="0 0 40 58" width="${size}" height="${size*1.45}" xmlns="http://www.w3.org/2000/svg">
+      <path class="body" d="
+        M 20,2
+        C 28,6 36,16 35,28
+        C 34,40 28,50 20,55
+        C 12,50 6,40 5,28
+        C 4,16 12,6 20,2 Z
+      " fill="${color}" stroke="${darker}" stroke-width="0.8"/>
+      <line x1="20" y1="4" x2="20" y2="52" stroke="${darker}" stroke-width="1.4" opacity=".65"/>
+      <path d="M 20,18 C 12,22 9,30 11,40" stroke="${darker}" stroke-width=".8" fill="none" opacity=".45"/>
+      <path d="M 20,18 C 28,22 31,30 29,40" stroke="${darker}" stroke-width=".8" fill="none" opacity=".45"/>
+      <path d="M 20,10 C 14,14 12,20 13,26" stroke="${darker}" stroke-width=".6" fill="none" opacity=".3"/>
+      <path d="M 20,10 C 26,14 28,20 27,26" stroke="${darker}" stroke-width=".6" fill="none" opacity=".3"/>
+    </svg>`;
+
+    div.addEventListener('click',     ()=>onLeafTap(div,i));
+    div.addEventListener('touchend',  e=>{e.preventDefault();onLeafTap(div,i);},{passive:false});
+
+    layer.appendChild(div);
+    leafEl.push(div);
+  });
+}
+
+function darkenHex(hex,amt){
+  const n=parseInt(hex.slice(1),16);
+  const r=Math.max(0,Math.round(((n>>16)&255)*(1-amt)));
+  const g=Math.max(0,Math.round(((n>>8)&255)*(1-amt)));
+  const b=Math.max(0,Math.round((n&255)*(1-amt)));
+  return`#${((r<<16)|(g<<8)|b).toString(16).padStart(6,'0')}`;
+}
+
+function repositionLeaves(){
+  if(!branchTips.length||!leafEl.length) return;
+  const tips=branchTips.filter(t=>t.d<=1);
+  if(!tips.length) return;
+  const cx=tips.reduce((a,t)=>a+t.x,0)/tips.length;
+  const cy=tips.reduce((a,t)=>a+t.y,0)/tips.length;
+  const radius=tips.reduce((m,t)=>Math.max(m,Math.hypot(t.x-cx,t.y-cy)),0)*1.0;
+
+  LEAF_OFFSETS.forEach((off,i)=>{
+    const el=leafEl[i]; if(!el) return;
+    const wx=cx+off[0]*radius;
+    const wy=cy+off[1]*radius*.88;
+    const size=parseFloat(el.style.width);
+    el.style.left=wx+'px'; el.style.top=wy+'px';
+    el.style.marginLeft=(-size/2)+'px';
+    el.style.marginTop=(-size*.74)+'px';
+  });
+}
+
+/* ═══════════════════════════════════
+   LEAF TAP INTERACTION
+   ═══════════════════════════════════ */
+let busy=false, remaining=12, giftIdx=0, currentCode=null;
+
+function onLeafTap(div,idx){
+  if(busy||div.classList.contains('gone')||div.classList.contains('falling')) return;
+  busy=true;
+
+  /* Trigger fall */
+  div.classList.add('falling');
+  setTimeout(()=>{div.classList.add('gone');},2900);
+
+  /* Particle burst */
+  spawnParticles(
+    parseFloat(div.style.left)||W/2,
+    parseFloat(div.style.top)||H/2
+  );
+
+  /* Show gift */
+  const gift=GIFTS[giftIdx++%GIFTS.length];
+  setTimeout(()=>showCard(gift),1400);
+}
+
+/* ═══════════════════════════════════
+   DOM PARTICLES
+   ═══════════════════════════════════ */
+function spawnParticles(x,y){
+  const em=['✨','🌟','💫','🍃','⭐','❇️','🌿'];
+  for(let i=0;i<9;i++){
+    const s=document.createElement('div');
+    s.textContent=em[i%em.length];
+    const a=Math.random()*Math.PI*2, d=40+Math.random()*65;
+    const dx=Math.cos(a)*d, dy=-(Math.abs(Math.sin(a)*d)+28);
+    const dur=.85+Math.random()*.55;
+    s.style.cssText=`
+      position:fixed;pointer-events:none;z-index:96;
+      font-size:${.9+Math.random()*.6}rem;
+      left:${x}px;top:${y}px;
+      animation:_pfloat ${dur}s ease-out ${Math.random()*.25}s forwards;
+      --dx:${dx}px;--dy:${dy}px;
+    `;
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),(dur+.3)*1000);
+  }
+}
+
+/* Inject particle keyframe once */
+(()=>{
+  const st=document.createElement('style');
+  st.textContent='@keyframes _pfloat{0%{transform:translate(0,0) scale(1) rotate(0deg);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0) rotate(220deg);opacity:0}}';
+  document.head.appendChild(st);
+})();
+
+/* ═══════════════════════════════════
+   GIFT CARD
+   ═══════════════════════════════════ */
+function showCard(g){
+  currentCode=g.code;
+  document.getElementById('cico').textContent=g.ico;
+  document.getElementById('ctag').textContent=g.tag;
+  document.getElementById('chl').textContent=g.hl;
+  document.getElementById('csub').textContent=g.sub;
+  const pill=document.getElementById('cpill');
+  const pc=document.getElementById('pcopy');
+  if(g.code){
+    document.getElementById('ccode').textContent=g.code;
+    pill.style.display='inline-flex';
+    pc.textContent='COPY'; pc.style.color='#82C870';
+  } else { pill.style.display='none'; }
+  document.getElementById('ov').classList.add('show');
+}
+
+function closeCard(){
+  document.getElementById('ov').classList.remove('show');
+  remaining--;
+  const el=document.getElementById('ctr');
+  if(remaining===0)      el.textContent='🌱 All gifts claimed — the tree thanks you';
+  else if(remaining===1) el.textContent='🍃 One last leaf, one last gift…';
+  else                   el.textContent=`🍃 ${remaining} gifts still hiding in the leaves`;
+  busy=false;
+}
+
+function copyCode(){
+  if(!currentCode) return;
+  const done=()=>{
+    const pc=document.getElementById('pcopy');
+    pc.textContent='COPIED ✓'; pc.style.color='#AAF090';
+    setTimeout(()=>{pc.textContent='COPY';pc.style.color='#82C870';},2400);
+  };
+  navigator.clipboard?navigator.clipboard.writeText(currentCode).then(done).catch(()=>fbCopy(done)):fbCopy(done);
+}
+function fbCopy(cb){const ta=document.createElement('textarea');ta.value=currentCode;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();cb();}
+
+document.getElementById('ov').addEventListener('click',e=>{if(e.target===document.getElementById('ov'))closeCard();});
+
+/* ═══════════════════════════════════
+   BOOT
+   ═══════════════════════════════════ */
+resize();          /* draws scene, populates branchTips */
+buildLeaves();     /* positions HTML leaves over canvas */
+</script>
+</body>
+</html>
