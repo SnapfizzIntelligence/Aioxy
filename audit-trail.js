@@ -869,6 +869,7 @@ function generateDPP() {
                 </div>
             </div>`;
     }
+}
 
 // ================== REGULATOR DISCLAIMER ==================
 function generateRegulatorDisclaimer() {
