@@ -1172,61 +1172,51 @@ function downloadStoryQR() {
     const qrBox = document.getElementById('storyQRCode');
     if (!qrBox) return;
 
-    const pName  = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
-    const dppId  = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
-    const fname  = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
+    const pName = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
+    const dppId = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
+    const fname = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
 
-    // qrcodejs renders an <img> (data URI) inside the container
+    // qrcodejs creates a hidden <canvas> + visible <img src="data:image/png;...">
+    // Use img.src directly — no async Image() wrapper needed (data: URI is already loaded).
+    // IMPORTANT: do NOT wrap in Image.onload — that breaks the browser's user-gesture
+    // chain, causing link.click() to be silently blocked as an untrusted popup.
     const img = qrBox.querySelector('img');
-    if (img && img.src) {
-        const image = new Image();
-        image.onload = function() {
-            const padded = document.createElement('canvas');
-            padded.width  = image.width  + 40;
-            padded.height = image.height + 40;
-            const ctx = padded.getContext('2d');
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, padded.width, padded.height);
-            ctx.drawImage(image, 20, 20);
-            const link = document.createElement('a');
-            link.download = fname;
-            link.href     = padded.toDataURL('image/png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-        image.src = img.src;
-        return;
-    }
-
-    // Fallback: canvas element (some browsers)
-    const canvas = qrBox.querySelector('canvas');
-    if (canvas) {
-        const padded = document.createElement('canvas');
-        padded.width  = canvas.width  + 40;
-        padded.height = canvas.height + 40;
-        const ctx = padded.getContext('2d');
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, padded.width, padded.height);
-        ctx.drawImage(canvas, 20, 20);
+    if (img && img.src && img.src.startsWith('data:')) {
         const link = document.createElement('a');
         link.download = fname;
-        link.href     = padded.toDataURL('image/png');
+        link.href = img.src;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         return;
     }
 
-    // Safety fallback: QR did not render — download text payload so content is never lost
+    // Fallback: qrcodejs also keeps the raw <canvas> (display:none) — use it directly
+    const canvas = qrBox.querySelector('canvas');
+    if (canvas) {
+        try {
+            const link = document.createElement('a');
+            link.download = fname;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch(e) {
+            console.warn('[AIOXY] QR canvas download failed:', e.message);
+        }
+        return;
+    }
+
+    // Safety fallback: nothing rendered — download text payload so content is never lost
     const blob = new Blob([window._storyQRText || 'No QR data available'], { type: 'text/plain;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.download = 'AIOXY_QR_payload_' + dppId + '.txt';
-    link.href     = url;
+    link.href = url;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     URL.revokeObjectURL(url);
 }
 
