@@ -5501,7 +5501,7 @@ window.aioxyData.crop_yields = {
       "triticale": 3835.08,
       "wheat": 7755.46
     },
-    "USA": {
+    "United States": {
       "almonds, in shell": 3786.74,
       "apples": 39425.92,
       "apricots": 11554.38,
@@ -5765,7 +5765,7 @@ window.aioxyData.aware_20 = {
     "Central African Republic": 6.88,
     "Congo": 0.765,
     "Switzerland": 2.07,
-    "Ivory Coast": 6.32,
+    "Cote d'Ivoire": 6.32,    // FIX: was "Ivory Coast" — aligned to LANCA/FAOSTAT key
     "Chile": 91.3,
     "Cameroon": 7.07,
     "Colombia": 3.96,
@@ -5787,7 +5787,7 @@ window.aioxyData.aware_20 = {
     "Ethiopia": 38.2,
     "Fiji": 2.16,
     "Gabon": 1.01,
-    "United Kingdom of Great Britain & Northern Ireland": 14.9,
+    "United Kingdom": 14.9,   // FIX: was "United Kingdom of Great Britain & Northern Ireland" — aligned to LANCA/FAOSTAT key
     "Grenada": 86.3,
     "Georgia": 86.2,
     "Ghana": 21.4,
@@ -5834,6 +5834,7 @@ window.aioxyData.aware_20 = {
     "Moldova": 3.04,
     "Montenegro": 1.47,
     "Madagascar": 13.4,
+    "The Former Yugoslav Republic of Macedonia": 88.8, // FIX: added — LANCA key for MK; value from AWARE "North Macedonia"
     "North Macedonia": 88.8,
     "Mali": 15.8,
     "Myanmar": 3.19,
@@ -5889,7 +5890,7 @@ window.aioxyData.aware_20 = {
     "Trinidad and Tobago": 3.02,
     "United Republic of Tanzania": 17.0,
     "Uganda": 80.2,
-    "USA": 37.4,
+    "United States": 37.4,    // FIX: was "USA" — aligned to LANCA/FAOSTAT key
     "Uruguay": 0.81,
     "Uzbekistan": 83.8,
     "Holy See": 5.17,
