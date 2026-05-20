@@ -1146,8 +1146,8 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
             try {
                 new QRCode(qrBox, {
                     text:         qrText,
-                    width:        160,
-                    height:       160,
+                    width:        220,
+                    height:       220,
                     colorDark:    '#0A2540',
                     colorLight:   '#FFFFFF',
                     correctLevel: QRCode.CorrectLevel.L
@@ -1162,12 +1162,11 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
 }
 
 // ── QR DOWNLOAD ─────────────────────────────────────────────────────────────
-// ROOT CAUSE FIX 3: Previous download looked for canvas first, then img.
-// qrcodejs produced img (not canvas) on modern browsers, and only if QR rendered.
-// Since QR never rendered (root causes 1+2), both were null and download silently fell
-// through to a .txt blob the user could not see.
-// FIX: qrcodejs (constructor API) creates an <img> inside the qrBox (with a canvas as interim).
-// Download reads the img src directly and exports as PNG with white padding for print quality.
+// qrcodejs (constructor API) creates an <img> inside qrBox (with a hidden <canvas> as
+// interim). We grab whichever is available and upscale to 1200×1200px — print-ready at
+// 300 dpi on a 4"×4" label. imageSmoothingEnabled = false keeps QR modules pixel-crisp.
+// All canvas ops are synchronous (no Image.onload wrapper) so the browser's user-gesture
+// chain is preserved and link.click() fires without being blocked as an untrusted popup.
 function downloadStoryQR() {
     const qrBox = document.getElementById('storyQRCode');
     if (!qrBox) return;
@@ -1176,38 +1175,41 @@ function downloadStoryQR() {
     const dppId = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
     const fname = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
 
-    // qrcodejs creates a hidden <canvas> + visible <img src="data:image/png;...">
-    // Use img.src directly — no async Image() wrapper needed (data: URI is already loaded).
-    // IMPORTANT: do NOT wrap in Image.onload — that breaks the browser's user-gesture
-    // chain, causing link.click() to be silently blocked as an untrusted popup.
-    const img = qrBox.querySelector('img');
-    if (img && img.src && img.src.startsWith('data:')) {
+    // Upscale source (img element or canvas element) to PRINT_SIZE × PRINT_SIZE,
+    // white background, nearest-neighbour scaling for crisp QR modules, then download.
+    function upscaleAndDownload(source) {
+        const PRINT_SIZE = 1200; // 1200px = 4" @ 300dpi — print-ready for product packaging
+        const out = document.createElement('canvas');
+        out.width = out.height = PRINT_SIZE;
+        const ctx = out.getContext('2d');
+        ctx.imageSmoothingEnabled = false; // nearest-neighbour — keeps QR modules crisp
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, PRINT_SIZE, PRINT_SIZE);
+        ctx.drawImage(source, 0, 0, PRINT_SIZE, PRINT_SIZE);
         const link = document.createElement('a');
         link.download = fname;
-        link.href = img.src;
+        link.href = out.toDataURL('image/png');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        return;
     }
 
-    // Fallback: qrcodejs also keeps the raw <canvas> (display:none) — use it directly
+    // qrcodejs creates a visible <img> whose src is a data: URI — already synchronously loaded.
+    // Draw the img element directly (no new Image() + onload — that breaks user-gesture chain).
+    const img = qrBox.querySelector('img');
+    if (img && img.src && img.src.startsWith('data:')) {
+        try { upscaleAndDownload(img); return; } catch(e) { /* fall through to canvas */ }
+    }
+
+    // Fallback: qrcodejs also keeps a hidden <canvas> — upscale that instead.
     const canvas = qrBox.querySelector('canvas');
     if (canvas) {
-        try {
-            const link = document.createElement('a');
-            link.download = fname;
-            link.href = canvas.toDataURL('image/png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch(e) {
-            console.warn('[AIOXY] QR canvas download failed:', e.message);
+        try { upscaleAndDownload(canvas); return; } catch(e) {
+            console.warn('[AIOXY] QR canvas upscale failed:', e.message);
         }
-        return;
     }
 
-    // Safety fallback: nothing rendered — download text payload so content is never lost
+    // Last-resort: nothing rendered — download raw text payload so data is never lost.
     const blob = new Blob([window._storyQRText || 'No QR data available'], { type: 'text/plain;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -1216,7 +1218,6 @@ function downloadStoryQR() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
     URL.revokeObjectURL(url);
 }
 
