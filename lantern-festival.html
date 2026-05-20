@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Lantern Festival</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;width:100%;overflow:hidden;background:#04020E;font-family:'Nunito',sans-serif;user-select:none;-webkit-tap-highlight-color:transparent}
+
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%;cursor:pointer}
+
+.hdr{
+  position:fixed;top:0;left:0;right:0;
+  text-align:center;padding:18px 20px 14px;
+  z-index:10;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(4,2,20,0.78) 0%,transparent 100%);
+}
+.hdr h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,5.5vw,2.3rem);
+  font-weight:600;color:#FFE09A;
+  letter-spacing:2.5px;
+  text-shadow:0 0 28px rgba(255,170,50,0.65),0 2px 6px rgba(0,0,0,0.7);
+}
+.hdr p{
+  font-size:clamp(0.64rem,2vw,0.82rem);
+  color:rgba(255,215,140,0.72);
+  font-weight:300;margin-top:5px;letter-spacing:0.6px;
+}
+
+.ctr{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:rgba(8,4,28,0.75);
+  border:1px solid rgba(218,165,32,0.35);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  padding:7px 24px;border-radius:30px;
+  font-size:clamp(0.66rem,1.8vw,0.8rem);
+  color:rgba(255,215,140,0.88);font-weight:600;
+  z-index:10;white-space:nowrap;letter-spacing:0.3px;
+  box-shadow:0 2px 16px rgba(0,0,0,0.4);
+  transition:color 0.4s;
+}
+
+/* ── OVERLAY ── */
+.ov{
+  position:fixed;inset:0;
+  background:rgba(4,2,16,0.68);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;opacity:0;pointer-events:none;
+  transition:opacity 0.38s ease;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:20px;
+}
+.ov.show{opacity:1;pointer-events:all}
+
+/* ── CARD ── */
+.card{
+  background:linear-gradient(150deg,#FFFEF5 0%,#FFF8E1 55%,#FFFEF5 100%);
+  border-radius:28px;max-width:410px;width:100%;
+  padding:0 0 28px;text-align:center;
+  box-shadow:
+    0 32px 80px rgba(0,0,0,0.5),
+    0 0 0 2px rgba(218,165,32,0.55),
+    0 0 0 8px rgba(218,165,32,0.1);
+  position:relative;overflow:hidden;
+  transform:scale(0.8) translateY(32px);
+  transition:transform 0.48s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ov.show .card{transform:scale(1) translateY(0)}
+
+.ribbon{
+  height:7px;width:100%;
+  background:linear-gradient(90deg,#9A6008,#E0A820,#9A6008,#E0A820,#9A6008);
+  background-size:200% 100%;
+  animation:rShim 2.4s linear infinite;
+}
+@keyframes rShim{0%{background-position:0% 0}100%{background-position:200% 0}}
+
+.cbody{padding:26px 28px 0}
+.corner{position:absolute;font-size:1.5rem;opacity:0.2;pointer-events:none}
+.corner.tl{top:14px;left:14px;transform:rotate(-35deg)}
+.corner.tr{top:14px;right:14px;transform:rotate(35deg) scaleX(-1)}
+.corner.bl{bottom:14px;left:14px;transform:rotate(20deg)}
+.corner.br{bottom:14px;right:14px;transform:rotate(-20deg) scaleX(-1)}
+
+.ci{font-size:clamp(2.5rem,8vw,3.5rem);line-height:1;margin-bottom:8px}
+.ct{
+  display:inline-block;
+  background:rgba(80,30,0,0.1);color:#6B2E00;
+  border:1px solid rgba(107,46,0,0.22);
+  font-size:0.62rem;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;padding:3px 12px;
+  border-radius:20px;margin-bottom:10px;
+}
+.card h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.1rem,4.2vw,1.52rem);
+  font-weight:700;color:#2C1A08;
+  margin-bottom:8px;line-height:1.28;
+}
+.card p{
+  font-size:clamp(0.74rem,2.4vw,0.9rem);
+  color:#5A3E22;line-height:1.85;
+  margin-bottom:16px;font-weight:400;
+}
+.div{width:52px;height:1.5px;background:linear-gradient(90deg,transparent,rgba(180,130,30,0.45),transparent);margin:0 auto 14px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#2C1205;color:#FFD9A0;
+  padding:6px 20px;border-radius:24px;
+  font-family:'Courier New',monospace;
+  font-size:clamp(0.86rem,2.8vw,1.05rem);
+  letter-spacing:3.5px;font-weight:700;
+  margin-bottom:18px;
+  box-shadow:0 3px 16px rgba(44,18,5,0.45);
+}
+.pcopy{
+  font-family:'Nunito',sans-serif;
+  font-size:0.6rem;letter-spacing:1px;
+  color:#D4A060;cursor:pointer;
+  border:1px solid rgba(212,160,96,0.4);
+  padding:2px 7px;border-radius:10px;
+  transition:background 0.2s;
+}
+.pcopy:hover{background:rgba(212,160,96,0.15)}
+.btn{
+  background:linear-gradient(135deg,#C07A08 0%,#ECA818 50%,#C07A08 100%);
+  background-size:200% 100%;color:#fff;border:none;
+  padding:13px 40px;border-radius:50px;
+  font-family:'Nunito',sans-serif;
+  font-size:clamp(0.8rem,2.5vw,0.95rem);
+  font-weight:700;cursor:pointer;letter-spacing:0.5px;
+  box-shadow:0 5px 24px rgba(192,122,8,0.5);
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(192,122,8,0.6)}
+.btn:active{transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div class="hdr">
+  <h1>🏮 The Lantern Festival</h1>
+  <p>Tap any lantern — each one carries a gift meant only for you</p>
+</div>
+
+<div class="ctr" id="ctr">🏮 12 lanterns drifting with gifts inside</div>
+
+<div class="ov" id="ov">
+  <div class="card">
+    <div class="ribbon"></div>
+    <span class="corner tl">🏮</span><span class="corner tr">🏮</span>
+    <span class="corner bl">✦</span><span class="corner br">✦</span>
+    <div class="cbody">
+      <div class="ci" id="ci">🏮</div>
+      <div class="ct" id="ct">EXCLUSIVE GIFT</div>
+      <h2 id="ch">Your Gift Awaits</h2>
+      <div class="div"></div>
+      <p  id="cp">Something warm is coming your way…</p>
+      <div class="pill" id="cpill" style="display:none">
+        <span id="ccode">CODE</span>
+        <span class="pcopy" id="pcopy" onclick="copyCode()">COPY</span>
+      </div>
+      <button class="btn" onclick="closeCard()">Claim This Gift  ✦</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════
+   GIFT DATA
+   12 messages — distinct psychology per card,
+   works universally across all cultures.
+   ═══════════════════════════════════════════ */
+const GIFTS = [
+  {
+    icon:'🔮', tag:'THE HIDDEN LIGHT',
+    title:'This Offer Does Not Exist — Except Here.',
+    body:'It is not on our homepage. It was not in any email. The only path to 15% off runs through a lantern in the night sky. We would prefer you keep that between us.',
+    code:'LIGHT15'
+  },
+  {
+    icon:'⚡', tag:'THE CHOSEN FLAME',
+    title:'You Reached Out. The Lantern Reached Back.',
+    body:'Of all the lights in this sky, your hand found this one. That is worth something real — free shipping on your next order. No minimum spend. No expiry date. No fine print of any kind.',
+    code:null
+  },
+  {
+    icon:'🎯', tag:'TRIPLE GLOW',
+    title:'One Lantern. Three Things Stacked Inside.',
+    body:'5% off your order. Free shipping. Complimentary gift wrapping. All three waiting at checkout. Some lanterns carry more than others — tonight you found the right one.',
+    code:'TRIPLE5'
+  },
+  {
+    icon:'🎁', tag:'THE HONEST GIFT',
+    title:'A Real Gift. Absolutely Zero Conditions.',
+    body:'No minimum spend. No expiry hidden in small print. No asterisk linking to a clause. A free mystery item ships with your next order. That is the complete and unedited truth of what lives in this lantern.',
+    code:'HONESTGIFT'
+  },
+  {
+    icon:'👑', tag:'FIRST LIGHT',
+    title:'You See the New Collection Before Anyone Else.',
+    body:'Our next drop opens to the public in 48 hours. Inside this lantern: early access, reserved inventory, and the best choices before they are gone. That window opens now and closes at midnight.',
+    code:'FIRSTLIGHT48'
+  },
+  {
+    icon:'🌙', tag:'THE MIDNIGHT OFFER',
+    title:'20% Off. Reachable Only by Lantern Light.',
+    body:'No paid ad could carry this here. No search engine could surface it. This 20% discount lives exclusively inside a lantern — for the person willing to reach into the dark and find something good.',
+    code:'MIDNIGHT20'
+  },
+  {
+    icon:'🦋', tag:'THE RETURN',
+    title:'The Light Always Comes Back. So Does the Reward.',
+    body:'Double loyalty points on everything in your next order. Not selected items. Not with exclusions buried somewhere. Everything. Because returning to something you love should always feel worth it.',
+    code:null
+  },
+  {
+    icon:'🛍️', tag:'THE GENEROUS LANTERN',
+    title:'Bring Two. We Will Add a Third.',
+    body:'Place any two items in your cart. We quietly add a third of equal or lesser value at no cost — no code needed, the cart handles it automatically. The lantern\'s own interpretation of generosity.',
+    code:'LANTERN3'
+  },
+  {
+    icon:'🪄', tag:'THE GOLDEN HOUR',
+    title:'Not a Discount. A Permission to Buy the Best.',
+    body:'10% off our premium range — the pieces we do not reduce, the ones built to outlast seasons and trends. This permission is rare. It arrived inside a lantern. That feels entirely appropriate.',
+    code:'GOLDEN10'
+  },
+  {
+    icon:'📦', tag:'THE BLIND FLAME',
+    title:'Neither We Nor You Know What Arrives.',
+    body:'A blind box — curated with care, randomised by design. Show this code at checkout and a mystery gift ships alongside your order. It will be worth more than it costs you. That much we will confirm.',
+    code:'BLINDFLAME'
+  },
+  {
+    icon:'🌸', tag:'YOUR LIGHT ALONE',
+    title:'This One Belongs to You. Not Anyone You Know.',
+    body:'No referral mechanic. No "share with a friend for bonus discount." This 10% is yours specifically — because sometimes a good thing should stay exactly where it landed and belong to one person completely.',
+    code:'YOURLIGHT10'
+  },
+  {
+    icon:'💫', tag:'FROM THE MAKER',
+    title:'The Person Who Built This Hoped You\'d Have a Better Day.',
+    body:'There is a real human being behind this lantern who genuinely wanted to give something warm to whoever found it. That person is you. Here is 10% off — from them, to you, with no reason required.',
+    code:'MAKER10'
+  }
+];
+
+/* shuffle once */
+for(let i=GIFTS.length-1;i>0;i--){const j=0|Math.random()*(i+1);[GIFTS[i],GIFTS[j]]=[GIFTS[j],GIFTS[i]];}
+
+/* ═══════════════════════════════════════════
+   CANVAS & STATE
+   ═══════════════════════════════════════════ */
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const DPR    = Math.min(window.devicePixelRatio||1, 2);
+
+let W=0, H=0, bgCanvas=null;
+let lanterns=[], particles=[];
+let giftIdx=0, remaining=12, busy=false, currentCode=null;
+let lastT=0, raf=null;
+
+function resize(){
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width  = W*DPR;
+  canvas.height = H*DPR;
+  canvas.style.width  = W+'px';
+  canvas.style.height = H+'px';
+  ctx.scale(DPR,DPR);
+  bgCanvas = buildBg(W,H);
+  if(!lanterns.length){
+    lanterns = Array.from({length:12},(_,i)=>new Lantern(i));
+  } else {
+    lanterns.forEach(l=>l.resize());
+  }
+}
+window.addEventListener('resize',()=>{resize();});
+
+/* ═══════════════════════════════════════════
+   SEEDED PRNG (deterministic stars each load)
+   ═══════════════════════════════════════════ */
+function prng(seed){
+  let s=seed|0;
+  return()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+}
+
+/* ═══════════════════════════════════════════
+   STATIC BACKGROUND — rendered once
+   ═══════════════════════════════════════════ */
+function buildBg(w,h){
+  const off=document.createElement('canvas');
+  off.width=w*DPR; off.height=h*DPR;
+  const g=off.getContext('2d');
+  g.scale(DPR,DPR);
+
+  /* Sky */
+  const sky=g.createLinearGradient(0,0,0,h);
+  sky.addColorStop(0,   '#03010A');
+  sky.addColorStop(0.30,'#070420');
+  sky.addColorStop(0.58,'#0E082E');
+  sky.addColorStop(0.78,'#180A28');
+  sky.addColorStop(0.90,'#280C1A');
+  sky.addColorStop(1,   '#0E0608');
+  g.fillStyle=sky; g.fillRect(0,0,w,h);
+
+  /* Horizon warm glow */
+  const hz=g.createLinearGradient(0,h*0.78,0,h*0.94);
+  hz.addColorStop(0,'rgba(255,100,30,0)');
+  hz.addColorStop(0.45,'rgba(220,70,15,0.055)');
+  hz.addColorStop(1,'rgba(180,50,5,0)');
+  g.fillStyle=hz; g.fillRect(0,h*0.78,w,h*0.22);
+
+  /* Moon */
+  const mx=w*0.77, my=h*0.1, mr=Math.max(16, Math.min(w,h)*0.038);
+  // outer halo
+  const mh=g.createRadialGradient(mx,my,0,mx,my,mr*5.5);
+  mh.addColorStop(0,'rgba(255,245,195,0.24)');
+  mh.addColorStop(0.38,'rgba(240,220,150,0.09)');
+  mh.addColorStop(0.72,'rgba(220,190,100,0.03)');
+  mh.addColorStop(1,'transparent');
+  g.fillStyle=mh; g.beginPath(); g.arc(mx,my,mr*5.5,0,Math.PI*2); g.fill();
+  // moon disc
+  const md=g.createRadialGradient(mx-mr*0.2,my-mr*0.25,0,mx,my,mr);
+  md.addColorStop(0,'#FFFDF0');
+  md.addColorStop(0.6,'#FFF8DC');
+  md.addColorStop(1,'rgba(240,220,155,0.88)');
+  g.fillStyle=md; g.beginPath(); g.arc(mx,my,mr,0,Math.PI*2); g.fill();
+  // craters
+  g.fillStyle='rgba(195,178,128,0.24)';
+  [[mx-mr*.26,my-mr*.18,mr*.11],[mx+mr*.22,my+mr*.24,mr*.08],[mx-mr*.04,my+mr*.30,mr*.065]].forEach(([cx,cy,cr])=>{g.beginPath();g.arc(cx,cy,cr,0,Math.PI*2);g.fill();});
+
+  /* Stars */
+  const rnd=prng(42);
+  for(let i=0;i<240;i++){
+    const sx=rnd()*w, sy=rnd()*h*0.9;
+    if(Math.hypot(sx-mx,sy-my)<mr*1.3) continue;
+    const r = rnd()<0.07?1.6:rnd()<0.22?1.05:0.6;
+    const a = 0.3+rnd()*0.7;
+    const warm = sy/h;
+    g.fillStyle=`rgba(${Math.round(210+warm*45)},${Math.round(210+warm*15)},${Math.round(255-warm*65)},${a})`;
+    g.beginPath(); g.arc(sx,sy,r,0,Math.PI*2); g.fill();
+  }
+
+  /* City silhouette */
+  const rnd2=prng(77);
+  const ground=h*0.92;
+  g.fillStyle='#030108';
+  g.beginPath(); g.moveTo(0,h);
+  let bx=0;
+  while(bx<w){
+    const bw=14+rnd2()*44, bh=12+rnd2()*62, by=ground-bh;
+    g.lineTo(bx,by);
+    if(rnd2()<0.28){ g.lineTo(bx+bw*.44,by-8-rnd2()*16); g.lineTo(bx+bw*.56,by); }
+    g.lineTo(bx+bw,by);
+    bx+=bw+1+rnd2()*7;
+  }
+  g.lineTo(w,ground); g.lineTo(w,h); g.closePath(); g.fill();
+
+  // ground plane
+  const gp=g.createLinearGradient(0,ground,0,h);
+  gp.addColorStop(0,'#060310'); gp.addColorStop(1,'#020108');
+  g.fillStyle=gp; g.fillRect(0,ground,w,h-ground);
+
+  return off;
+}
+
+/* ═══════════════════════════════════════════
+   LANTERN CLASS — physics + drawing
+   ═══════════════════════════════════════════ */
+class Lantern {
+  constructor(idx){
+    this.idx    = idx;
+    this.claimed= false;
+    this.flash  = 0;       // 0→1 burst brightness when tapped
+    this.flashT = 0;
+    this._init();
+  }
+
+  _init(){
+    this.size  = 56 + Math.random()*28;     // 56–84 px
+    this.baseX = (W/13)*(this.idx+1) + (Math.random()-0.5)*32;
+    this.baseX = Math.max(this.size,Math.min(W-this.size,this.baseX));
+    this.y     = 90 + (this.idx/11)*(H*0.78);
+    this.speed = 15 + Math.random()*14;     // px/s upward
+    this.swayA = 10 + Math.random()*20;     // horizontal amplitude
+    this.swayF = 0.26 + Math.random()*0.38; // Hz
+    this.swayP = Math.random()*Math.PI*2;
+    this.glowP = Math.random()*Math.PI*2;   // candle flicker phase
+    this.x     = this.baseX;
+  }
+
+  resize(){
+    this.baseX = (W/13)*(this.idx+1)+(Math.random()-0.5)*32;
+    this.baseX = Math.max(this.size,Math.min(W-this.size,this.baseX));
+  }
+
+  update(tS,dt){
+    if(this.claimed) return;
+    this.y -= this.speed*dt;
+    if(this.y < -this.size*2.5){
+      this.y = H+this.size*1.5;
+      this.baseX = 30+Math.random()*(W-60);
+    }
+    this.x = this.baseX + Math.sin(tS*this.swayF*Math.PI*2+this.swayP)*this.swayA;
+
+    /* flash decay */
+    if(this.flash>0) this.flash = Math.max(0,this.flash-dt*2.8);
+  }
+
+  draw(tS){
+    if(this.claimed) return;
+    const glow = Math.min(1, (0.5+Math.sin(tS*1.7+this.glowP)*0.16) + this.flash*0.6);
+    drawLantern(ctx, this.x, this.y, this.size, glow, tS);
+  }
+
+  hit(px,py){
+    if(this.claimed) return false;
+    return Math.abs(px-this.x)<this.size*0.56 && Math.abs(py-this.y)<this.size*0.72;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LANTERN DRAW — traditional Chinese lantern
+   All geometry relative to centre (cx,cy).
+   ═══════════════════════════════════════════ */
+function drawLantern(ctx, cx, cy, sz, glow, tS){
+  const hw = sz*0.50;   // half-width at widest
+  const hh = sz*0.50;   // half-height of body
+  const capH = hh*0.22; // height of top/bottom caps
+
+  ctx.save();
+  ctx.translate(cx,cy);
+
+  /* ── OUTER GLOW HALO ── */
+  const hr = sz*1.05;
+  const hg = ctx.createRadialGradient(0,hh*0.08,0, 0,hh*0.08,hr);
+  hg.addColorStop(0,   `rgba(255,165,45,${glow*0.52})`);
+  hg.addColorStop(0.38,`rgba(255,120,18,${glow*0.22})`);
+  hg.addColorStop(0.72,`rgba(200,70,8,${glow*0.07})`);
+  hg.addColorStop(1,   'transparent');
+  ctx.fillStyle=hg;
+  ctx.beginPath();
+  ctx.ellipse(0,hh*0.08,hr,hr*0.88,0,0,Math.PI*2);
+  ctx.fill();
+
+  /* ── SUSPENSION WIRE ── */
+  ctx.strokeStyle='rgba(150,90,35,0.6)';
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,-hh); ctx.lineTo(0,-hh*1.5); ctx.stroke();
+
+  /* ── TOP CAP ── */
+  const cw = hw*0.80;
+  ctx.fillStyle='#6A1010';
+  ctx.beginPath();
+  ctx.moveTo(-cw*0.58,-hh);
+  ctx.lineTo( cw*0.58,-hh);
+  ctx.lineTo( cw,     -hh+capH*0.52);
+  ctx.lineTo( cw*0.84,-hh+capH);
+  ctx.lineTo(-cw*0.84,-hh+capH);
+  ctx.lineTo(-cw,     -hh+capH*0.52);
+  ctx.closePath(); ctx.fill();
+
+  /* gold top ring */
+  ctx.strokeStyle=`rgba(218,165,32,${0.68+glow*0.22})`;
+  ctx.lineWidth=1.8;
+  ctx.beginPath();
+  ctx.moveTo(-cw*0.84,-hh+capH);
+  ctx.lineTo( cw*0.84,-hh+capH);
+  ctx.stroke();
+
+  /* ── BODY ── */
+  const top    = -hh+capH;
+  const bottom =  hh-capH;
+
+  /* body gradient — bright warm centre to deep red edges */
+  const bg=ctx.createRadialGradient(-hw*0.1,0,0, 0,0,hw*1.18);
+  bg.addColorStop(0,   `rgba(255,218,95,${0.72+glow*0.22})`);
+  bg.addColorStop(0.16,`rgba(245,140,28,0.9)`);
+  bg.addColorStop(0.42,`rgba(190,50,10,0.93)`);
+  bg.addColorStop(0.72,`rgba(130,18,4,0.96)`);
+  bg.addColorStop(1,   `rgba(78,6,0,0.98)`);
+  ctx.fillStyle=bg;
+
+  ctx.beginPath();
+  ctx.moveTo(-cw*0.84,top);
+  ctx.bezierCurveTo(-hw*1.12,top+(bottom-top)*0.25,
+                    -hw*1.16,top+(bottom-top)*0.60,
+                    -cw*0.84,bottom);
+  ctx.lineTo(cw*0.84,bottom);
+  ctx.bezierCurveTo(hw*1.16,top+(bottom-top)*0.60,
+                    hw*1.12,top+(bottom-top)*0.25,
+                    cw*0.84,top);
+  ctx.closePath();
+  ctx.fill();
+
+  /* body outline for depth */
+  ctx.strokeStyle='rgba(38,4,0,0.42)';
+  ctx.lineWidth=1.1;
+  ctx.stroke();
+
+  /* ── INNER CANDLE LIGHT ── */
+  const midY=(top+bottom)*0.5;
+  const il=ctx.createRadialGradient(0,midY*0.28,0, 0,midY*0.28,hw*0.9);
+  il.addColorStop(0,  `rgba(255,248,205,${0.62+glow*0.28})`);
+  il.addColorStop(0.32,`rgba(255,205,80,${0.32+glow*0.14})`);
+  il.addColorStop(0.68,`rgba(255,155,28,0.08)`);
+  il.addColorStop(1,  'transparent');
+  ctx.fillStyle=il;
+
+  /* same bezier shape, painted over body */
+  ctx.beginPath();
+  ctx.moveTo(-cw*0.80,top+2);
+  ctx.bezierCurveTo(-hw*1.05,top+(bottom-top)*0.25,-hw*1.05,top+(bottom-top)*0.62,-cw*0.80,bottom-2);
+  ctx.lineTo(cw*0.80,bottom-2);
+  ctx.bezierCurveTo(hw*1.05,top+(bottom-top)*0.62,hw*1.05,top+(bottom-top)*0.25,cw*0.80,top+2);
+  ctx.closePath();
+  ctx.fill();
+
+  /* ── RIBS ── */
+  ctx.strokeStyle='rgba(55,8,0,0.26)';
+  ctx.lineWidth=0.9;
+  [-hw*0.32, 0, hw*0.32].forEach(rx=>{
+    ctx.beginPath();
+    ctx.moveTo(rx*0.72,top+2);
+    ctx.bezierCurveTo(rx,top+(bottom-top)*0.32, rx,top+(bottom-top)*0.68, rx*0.72,bottom-2);
+    ctx.stroke();
+  });
+
+  /* ── GOLD CENTRE BAND ── */
+  ctx.strokeStyle=`rgba(218,165,32,${0.42+glow*0.28})`;
+  ctx.lineWidth=1.5;
+  const bx=hw*1.12;
+  ctx.beginPath(); ctx.moveTo(-bx,(top+bottom)*0.5); ctx.lineTo(bx,(top+bottom)*0.5); ctx.stroke();
+
+  /* ── BOTTOM CAP ── */
+  ctx.fillStyle='#6A1010';
+  ctx.beginPath();
+  ctx.moveTo(-cw*0.84,bottom);
+  ctx.lineTo( cw*0.84,bottom);
+  ctx.lineTo( cw,     bottom+capH*0.52);
+  ctx.lineTo( cw*0.58,bottom+capH);
+  ctx.lineTo(-cw*0.58,bottom+capH);
+  ctx.lineTo(-cw,     bottom+capH*0.52);
+  ctx.closePath(); ctx.fill();
+
+  /* gold bottom ring */
+  ctx.strokeStyle=`rgba(218,165,32,${0.68+glow*0.22})`;
+  ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.moveTo(-cw*0.84,bottom); ctx.lineTo(cw*0.84,bottom); ctx.stroke();
+
+  /* ── TASSEL ── */
+  const tY=bottom+capH;
+  const tLen=sz*0.20;
+
+  /* main cord */
+  ctx.strokeStyle='rgba(196,150,22,0.88)';
+  ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(0,tY); ctx.lineTo(0,tY+tLen); ctx.stroke();
+
+  /* strand fringe */
+  const stc=7;
+  for(let i=0;i<stc;i++){
+    const t=i/(stc-1);
+    const sx=(t-0.5)*hw*0.56;
+    const sw=Math.sin(tS*2.1+i*0.75)*2.8;
+    ctx.strokeStyle=`rgba(${178+i*4},${118+i*3},14,${0.62+i*0.04})`;
+    ctx.lineWidth=0.9;
+    ctx.beginPath();
+    ctx.moveTo(sx,tY+tLen);
+    ctx.quadraticCurveTo(sx+sw*0.5,tY+tLen+sz*0.08,sx+sw,tY+tLen+sz*0.16);
+    ctx.stroke();
+  }
+
+  /* cord bead */
+  ctx.fillStyle='#D4A020';
+  ctx.beginPath(); ctx.arc(0,tY+tLen,2.4,0,Math.PI*2); ctx.fill();
+
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════
+   PARTICLE BURST — on lantern tap
+   ═══════════════════════════════════════════ */
+class Particle{
+  constructor(x,y){
+    const a=Math.random()*Math.PI*2;
+    const sp=80+Math.random()*140;
+    this.x=x; this.y=y;
+    this.vx=Math.cos(a)*sp; this.vy=Math.sin(a)*sp;
+    this.life=1; this.decay=0.9+Math.random()*0.7;
+    this.r=2+Math.random()*3;
+    this.hue=Math.random()<0.5?38:22; // gold or deep orange
+  }
+  update(dt){
+    this.x+=this.vx*dt; this.y+=this.vy*dt;
+    this.vy+=60*dt; // slight gravity
+    this.life-=this.decay*dt;
+  }
+  draw(ctx){
+    if(this.life<=0) return;
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,this.life);
+    ctx.fillStyle=`hsl(${this.hue},90%,62%)`;
+    ctx.beginPath(); ctx.arc(this.x,this.y,this.r*this.life,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  get dead(){ return this.life<=0; }
+}
+
+function burst(x,y){
+  for(let i=0;i<32;i++) particles.push(new Particle(x,y));
+}
+
+/* ═══════════════════════════════════════════
+   ANIMATION LOOP
+   ═══════════════════════════════════════════ */
+function loop(ts){
+  raf=requestAnimationFrame(loop);
+  const dt=Math.min((ts-lastT)/1000, 0.05); // cap at 50ms (tab unfocus)
+  lastT=ts;
+  const tS=ts/1000;
+
+  ctx.clearRect(0,0,W,H);
+
+  /* background */
+  if(bgCanvas) ctx.drawImage(bgCanvas,0,0,W,H);
+
+  /* lanterns */
+  lanterns.forEach(l=>{ l.update(tS,dt); l.draw(tS); });
+
+  /* particles */
+  for(let i=particles.length-1;i>=0;i--){
+    particles[i].update(dt);
+    particles[i].draw(ctx);
+    if(particles[i].dead) particles.splice(i,1);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   INPUT — unified pointer + touch
+   ═══════════════════════════════════════════ */
+function getPoint(e){
+  if(e.changedTouches){
+    return{x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY};
+  }
+  return{x:e.clientX, y:e.clientY};
+}
+
+function onTap(e){
+  if(busy) return;
+  if(e.target!==canvas) return;
+  const {x,y}=getPoint(e);
+
+  for(const l of lanterns){
+    if(l.hit(x,y)){
+      busy=true;
+      l.flash=1;
+      burst(x,y);
+
+      /* brief flash then hide lantern */
+      setTimeout(()=>{
+        l.claimed=true;
+        const gift=GIFTS[giftIdx++%GIFTS.length];
+        showCard(gift);
+      },320);
+      break;
+    }
+  }
+}
+
+canvas.addEventListener('click', onTap);
+canvas.addEventListener('touchend', e=>{ e.preventDefault(); onTap(e); }, {passive:false});
+
+/* ═══════════════════════════════════════════
+   CARD UI
+   ═══════════════════════════════════════════ */
+function showCard(g){
+  currentCode=g.code;
+  document.getElementById('ci').textContent=g.icon;
+  document.getElementById('ct').textContent=g.tag;
+  document.getElementById('ch').textContent=g.title;
+  document.getElementById('cp').textContent=g.body;
+  const pill=document.getElementById('cpill');
+  const pc=document.getElementById('pcopy');
+  if(g.code){
+    document.getElementById('ccode').textContent=g.code;
+    pill.style.display='inline-flex';
+    pc.textContent='COPY'; pc.style.color='#D4A060';
+  } else {
+    pill.style.display='none';
+  }
+  document.getElementById('ov').classList.add('show');
+}
+
+function closeCard(){
+  document.getElementById('ov').classList.remove('show');
+  remaining--;
+  const el=document.getElementById('ctr');
+  if(remaining===0)       el.textContent='🌟 All lanterns have given their gifts — thank you for being here';
+  else if(remaining===1)  el.textContent='🏮 One last lantern still carrying its secret…';
+  else                    el.textContent=`🏮 ${remaining} lanterns still drifting with gifts inside`;
+  busy=false;
+}
+
+function copyCode(){
+  if(!currentCode) return;
+  const done=()=>{
+    const pc=document.getElementById('pcopy');
+    pc.textContent='COPIED ✓'; pc.style.color='#8ACD8A';
+    setTimeout(()=>{ pc.textContent='COPY'; pc.style.color='#D4A060'; },2400);
+  };
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(currentCode).then(done).catch(()=>fbCopy(done));
+  } else { fbCopy(done); }
+}
+function fbCopy(cb){
+  const ta=document.createElement('textarea');
+  ta.value=currentCode; ta.style.cssText='position:fixed;opacity:0';
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+  ta.remove(); cb();
+}
+
+/* close on backdrop tap */
+document.getElementById('ov').addEventListener('click',e=>{
+  if(e.target===document.getElementById('ov')) closeCard();
+});
+
+/* ═══════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════ */
+resize();
+requestAnimationFrame(ts=>{ lastT=ts; loop(ts); });
+</script>
+</body>
+</html>
+
