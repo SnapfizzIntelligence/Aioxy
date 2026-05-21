@@ -416,9 +416,16 @@ async function calculateImpact() {
             energySource:         document.getElementById('energySource')?.value         || 'grid',
             usePrimaryFactoryData: document.getElementById('usePrimaryFactoryData')?.checked || false,
             primaryFactoryData:   document.getElementById('usePrimaryFactoryData')?.checked ? {
-                totalKWh:      parseFloat(document.getElementById('factoryTotalKWh')?.value)    || 0,
-                totalGasM3:    parseFloat(document.getElementById('factoryTotalGas')?.value)    || 0,
-                totalOutputKg: parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1
+                totalKWh:             parseFloat(document.getElementById('factoryTotalKWh')?.value)          || 0,
+                totalGasM3:           parseFloat(document.getElementById('factoryTotalGas')?.value)          || 0,
+                totalOutputKg:        parseFloat(document.getElementById('factoryTotalOutput')?.value)       || 1,
+                // Fuel type: determines CO2 emission factor applied to totalGasM3
+                // natural_gas: 2.13 kg CO2/m³ | lpg: 1.61 kg CO2/L | fuel_oil: 2.66 kg CO2/L | coal: 2.53 kg CO2/kg
+                // Source: EC Covenant of Mayors Emission Factors 2024 Edition (JRC)
+                fuelType:             document.getElementById('factoryFuelType')?.value                      || 'natural_gas',
+                // Refrigerant leakage: F-gas GWP × kg_leaked → kg CO2e (IPCC AR5 / EC F-Gas Reg 517/2014)
+                refrigerantType:      document.getElementById('factoryRefrigerantType')?.value               || '',
+                refrigerantKgLeaked:  parseFloat(document.getElementById('factoryRefrigerantKgLeaked')?.value) || 0
             } : null
         },
         transport: {

@@ -2138,6 +2138,11 @@ function saveSupplierData() {
 
             // Animal-specific fields
             animalType,
+            // fishSpecies: for aquatic species, the animalType IS the species key used to look up
+            // window.aioxyData.aquaculture_feeds[fishSpecies] in calculation_engine.js.
+            // Keys are: salmon | trout | sea_bass | sea_bream | shrimp | farmed_fish (generic)
+            // The dropdown now uses these exact keys as option values, so animalType = fishSpecies for fish.
+            fishSpecies: (['salmon','trout','sea_bass','sea_bream','shrimp','farmed_fish'].includes(animalType)) ? animalType : null,
             productionSystem,
             productivityMetric,
             manureSystem: manureSystem || 'pasture',  // safe default
@@ -2178,6 +2183,7 @@ function saveSupplierData() {
     } else {
         // ── CROP PRIMARY DATA PATH ────────────────────────────────
         const nitrogen    = parseFloat(document.getElementById('primaryNitrogen').value);
+        const organicN    = parseFloat(document.getElementById('primaryOrganicNitrogen').value);
         const yieldVal    = parseFloat(document.getElementById('primaryYield').value);
         const phosphorus  = parseFloat(document.getElementById('primaryPhosphorus').value); // PHOSPHORUS FIX
         const waterSource = document.getElementById('supplierWaterSource').value;
@@ -2204,9 +2210,10 @@ function saveSupplierData() {
         selectedIngredients[currentIngredientIndex].primaryData = {
             farmRegion,
             geolocation,
-            ddsReference:      ddsRef,
-            nitrogenKgPerTon:  nitrogen,
-            yieldKgPerHa:      yieldVal,
+            ddsReference:           ddsRef,
+            nitrogenKgPerTon:       nitrogen,
+            organicNitrogenKgPerTon: (!isNaN(organicN) && organicN > 0) ? organicN : null,  // ORGANIC N FIX: FRAC_GASM=0.20 path in engine
+            yieldKgPerHa:           yieldVal,
             phosphorusKgPerTon: (!isNaN(phosphorus) && phosphorus > 0) ? phosphorus : null, // PHOSPHORUS FIX: null = use AGRIBALYSE background
             waterSource,
             farmingPractice:   practice,

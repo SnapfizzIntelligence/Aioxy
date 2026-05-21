@@ -1,4 +1,5 @@
 
+
 // ================== AIOXY CALCULATION ENGINE v2.0 ==================
 // ISO 14044 / PEF 3.1 Calculation Orchestration Layer
 //
@@ -1487,6 +1488,33 @@ if (!traceability.usetox) {
                     };
                 }
 
+                // === ORGANIC NITROGEN N₂O (ISO 14044 primary data path) ===
+                // Manure, compost, digestate applied to soil.
+                // Key difference from synthetic N: FRAC_GASM = 0.20 (organic N volatilization fraction)
+                // vs FRAC_GASF = 0.10 for synthetic N. Both use same EF1, EF4, EF5, FRAC_LEACH.
+                // Source: IPCC 2006 Vol. 4, Ch. 11, Table 11.1 & 11.3 (F_ON organic nitrogen inputs).
+                if (pd.organicNitrogenKgPerTon && pd.organicNitrogenKgPerTon > 0) {
+                    const FRAC_GASM = 0.20;  // IPCC 2006 Vol.4 Table 11.3 — fraction of organic N volatilized as NH3/NOx
+                    const F_ON = (pd.organicNitrogenKgPerTon / 1000) * ingredient.quantityKg;  // kg organic N applied
+                    const N2O_on_direct         = F_ON * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_leach          = F_ON * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_volatilization = F_ON * FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_total = N2O_on_direct + N2O_on_leach + N2O_on_volatilization;
+
+                    flatPef['Climate Change']            += N2O_on_total / ingredient.quantityKg;
+                    flatPef['Climate Change - Land Use'] += N2O_on_total / ingredient.quantityKg;
+
+                    adjustments.n2o_organic_applied = {
+                        applied:                 true,
+                        F_ON_kg:                 F_ON,
+                        direct_kgCO2e:           N2O_on_direct,
+                        indirect_leach_kgCO2e:   N2O_on_leach,
+                        volatilization_kgCO2e:   N2O_on_volatilization,
+                        total_kgCO2e:            N2O_on_total,
+                        frac_gasm:               FRAC_GASM,
+                        formula:                 'IPCC Tier 1 (2006) Vol.4 Table 11.3 organic N path: F_ON × EF1 (direct) + F_ON × FRAC_LEACH × EF5 (leach) + F_ON × FRAC_GASM(0.20) × EF4 (volatilization). GWP_N2O=' + AR5.GWP_N2O
+                    };
+
                 // === GAP 2: SALCA-P phosphorus leaching (ISO 14044 primary data path) ===
                 // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
                 if (pd.phosphorusKgPerTon && pd.phosphorusKgPerTon > 0) {
@@ -1858,16 +1886,43 @@ if (!traceability.usetox) {
 
             const kwhPerKgActual = pfd.totalKWh   / pfd.totalOutputKg;
             const gasM3PerKg     = pfd.totalGasM3 / pfd.totalOutputKg;
+
+            // FUEL TYPE CO2 FACTOR — CoM 2024 JRC Edition
+            // Each factor is per the unit entered in the form (m³ for gas, litres for LPG/oil, kg for coal).
+            const FUEL_CO2_FACTORS = {
+                natural_gas: 2.13,   // kg CO2/m³  (0.20196 t CO2/MWh × 38 MJ/m³ ÷ 3600 MJ/MWh × 1000)
+                lpg:         1.61,   // kg CO2/litre (63.1 t CO2/TJ × 46.1 MJ/kg × 0.555 kg/L ÷ 1e6 × 1000)
+                fuel_oil:    2.66,   // kg CO2/litre (74.1 t CO2/TJ × 42.7 MJ/kg × 0.84 kg/L ÷ 1e6 × 1000)
+                coal:        2.53,   // kg CO2/kg   (94.6 t CO2/TJ × 26.7 MJ/kg ÷ 1e6 × 1000)
+                none:        0.0
+            };
+            const fuelType   = pfd.fuelType || 'natural_gas';
+            const fuelFactor = FUEL_CO2_FACTORS[fuelType] !== undefined ? FUEL_CO2_FACTORS[fuelType] : 2.13;
             // CoM 2024 Table 1: Natural gas = 0.20196 t CO2/MWh (activity-based)
 // 1 m³ gas ≈ 0.01056 MWh (38 MJ/m³ ÷ 3,600 MJ/MWh)
 // ∴ 0.20196 × 0.01056 × 1,000 = 2.13 kg CO2/m³
 // Source: European Commission, Covenant of Mayors, Emission Factors
 //   for Local Energy Use, 2024 Edition, JRC
-const gasCO2 = gasM3PerKg * 2.13;
+const gasCO2 = gasM3PerKg * fuelFactor;
+
+            // REFRIGERANT LEAKAGE — F-gas direct emissions
+            // Formula: kg CO2e = (kgLeaked / totalOutputKg) × GWP_refrigerant (IPCC AR5 / EC Reg 517/2014)
+            // Added to Climate Change (Fossil) — F-gases are synthetic, non-biogenic, non-land-use.
+            const REFRIGERANT_GWP = {
+                'R-404A': 3922, 'R-134a': 1430, 'R-407C': 1774, 'R-410A': 2088,
+                'R-507A': 3985, 'R-32': 675,    'R-744': 1,     'R-717': 0
+            };
+            const refType    = pfd.refrigerantType   || '';
+            const refKgTotal = pfd.refrigerantKgLeaked || 0;
+            const refGWP     = refType ? (REFRIGERANT_GWP[refType] || 0) : 0;
+            const refCO2PerKg = refKgTotal > 0 && refGWP > 0 && pfd.totalOutputKg > 0
+                ? (refKgTotal / pfd.totalOutputKg) * refGWP
+                : 0;
             // FIX 2: Apply T&D losses to primary factory electricity, matching the benchmark path.
             // CONSTANTS.GLEC.T_AND_D_LOSSES = 0.07 (IEA EU average, defined in core_physics.js).
             const elecCO2        = kwhPerKgActual * (gridIntensity * (1 + window.corePhysics.CONSTANTS.GLEC.T_AND_D_LOSSES) / 1000);
-            const totalMfgCO2    = (elecCO2 + gasCO2) * prodWt;
+            // Refrigerant adds to Climate Change (Fossil) — GWP-weighted F-gas direct emission per kg product
+            const totalMfgCO2    = (elecCO2 + gasCO2 + refCO2PerKg) * prodWt;
             const totalMfgKwh    = kwhPerKgActual * prodWt;
 
             mfgResult = {
@@ -1875,7 +1930,13 @@ const gasCO2 = gasM3PerKg * 2.13;
                 kwh:                  totalMfgKwh,
                 fossilFraction:       1.0,
                 source:               'Primary Factory Data',
-                gridIntensityGPerKwh: gridIntensity   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
+                gridIntensityGPerKwh: gridIntensity,   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
+                fuelType:             fuelType,
+                fuelFactor:           fuelFactor,
+                refrigerantType:      refType   || null,
+                refrigerantKgLeaked:  refKgTotal || 0,
+                refrigerantGWP:       refGWP     || 0,
+                refrigerantCO2PerKg:  refCO2PerKg
             };
 
             // Bug 8 fix: compute multi-category results for primary factory data

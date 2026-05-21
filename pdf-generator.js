@@ -1077,6 +1077,25 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('');
             }
 
+            // Organic nitrogen N2O (B4b) — FRAC_GASM=0.20 path
+            if (adj.n2o_organic_applied && adj.n2o_organic_applied.applied) {
+                const no = adj.n2o_organic_applied;
+                layerBLines.push('B4b — IPCC Tier 1 N2O (organic nitrogen — manure/compost applied to field):');
+                layerBLines.push('  F_ON = ' + fix(no.F_ON_kg, 4) + ' kg organic N applied');
+                layerBLines.push('  Key difference vs synthetic N: FRAC_GASM = 0.20 (organic N volatilization) vs FRAC_GASF = 0.10 (synthetic)');
+                layerBLines.push('  Source: IPCC 2006 Vol.4 Ch.11 Table 11.3');
+                layerBLines.push('  Direct   = F_ON x EF1(0.01) x (44/28) x GWP_N2O(265)');
+                layerBLines.push('           = ' + fix(no.direct_kgCO2e, 4) + ' kg CO2e');
+                layerBLines.push('  Leaching = F_ON x FRAC_LEACH(0.30) x EF5(0.011) x (44/28) x 265');
+                layerBLines.push('           = ' + fix(no.indirect_leach_kgCO2e || 0, 4) + ' kg CO2e');
+                layerBLines.push('  Volatil. = F_ON x FRAC_GASM(0.20) x EF4(0.01) x (44/28) x 265');
+                layerBLines.push('           = ' + fix(no.volatilization_kgCO2e || 0, 4) + ' kg CO2e  [2x synthetic due to higher FRAC_GASM]');
+                const n2oOnTotal = (no.total_kgCO2e||0);
+                layerBLines.push('  N2O total = ' + fix(n2oOnTotal, 4) + ' kg CO2e (batch)  per-kg = ' + numFmt(qty>0?n2oOnTotal/qty:0,6) + ' kg CO2e/kg');
+                layerBLines.push('  → added to flatPef[CC] and flatPef[CC-Land Use]');
+                layerBLines.push('');
+            }
+
             // Enteric CH4
             if (adj.enteric_applied && adj.enteric_applied.applied) {
                 const e = adj.enteric_applied;
@@ -1397,13 +1416,35 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '  Elec CO2/kg       : = ' + fix(kwhPerKgActual,6) + ' x ' + numFmt(gridG*1.07,2) + ' / 1000 = ' + fix(kwhPerKgActual * gridG * 1.07 / 1000,6) + ' kg CO2e/kg',
                 '',
                 'GAS CO2 DERIVATION (CoM 2024):',
-                '  1 m³ natural gas  = 38 MJ = 38 / 3600 MWh = 0.010556 MWh',
-                '  CoM 2024 NG EF    = 0.20196 t CO2/MWh  [EC Covenant of Mayors 2024, JRC]',
-                '  Gas CO2 factor    : 0.20196 x 0.010556 x 1000 = 2.1310 kg CO2/m³',
-                '  Gas CO2/kg product: = ' + fix(gasM3PerKg,6) + ' m³/kg x 2.1310 kg CO2/m³ = ' + fix(gasM3PerKg*2.13,6) + ' kg CO2e/kg',
+                '  Fuel type selected        : ' + safe(pfd.fuelType || 'natural_gas'),
+                '  Emission factor applied   : ' + fix(pfd.fuelFactor || 2.13, 4) + ' kg CO2 per unit fuel',
+                ...( (pfd.fuelType === 'natural_gas' || !pfd.fuelType) ? [
+                    '  1 m³ natural gas  = 38 MJ = 38 / 3600 MWh = 0.010556 MWh',
+                    '  CoM 2024 NG EF    = 0.20196 t CO2/MWh  [EC Covenant of Mayors 2024, JRC]',
+                    '  Gas CO2 factor    : 0.20196 x 0.010556 x 1000 = 2.1310 kg CO2/m³',
+                ] : pfd.fuelType === 'lpg' ? [
+                    '  LPG EF: 63.1 t CO2/TJ x 46.1 MJ/kg x 0.555 kg/L ÷ 1e6 x 1000 = 1.61 kg CO2/litre  [CoM 2024 JRC]',
+                ] : pfd.fuelType === 'fuel_oil' ? [
+                    '  Fuel oil EF: 74.1 t CO2/TJ x 42.7 MJ/kg x 0.84 kg/L ÷ 1e6 x 1000 = 2.66 kg CO2/litre  [CoM 2024 JRC]',
+                ] : pfd.fuelType === 'coal' ? [
+                    '  Coal EF: 94.6 t CO2/TJ x 26.7 MJ/kg ÷ 1e6 x 1000 = 2.53 kg CO2/kg  [CoM 2024 JRC]',
+                ] : ['  No process heat fuel (100% electric).']),
+                '  Fuel CO2/kg product: = ' + fix(gasM3PerKg,6) + ' fuel-units/kg x ' + fix(pfd.fuelFactor||2.13,4) + ' kg CO2/unit = ' + fix(gasM3PerKg*(pfd.fuelFactor||2.13),6) + ' kg CO2e/kg',
                 '',
-                'TOTAL MANUFACTURING CO2/kg: ' + fix(kwhPerKgActual*gridG*1.07/1000 + gasM3PerKg*2.13, 6) + ' kg CO2e/kg',
-                '  = electricity CO2 + gas CO2',
+                ...( (pfd.refrigerantType && pfd.refrigerantKgLeaked > 0) ? [
+                    'REFRIGERANT LEAKAGE (F-GAS DIRECT EMISSIONS):',
+                    '  Refrigerant type     : ' + safe(pfd.refrigerantType),
+                    '  GWP (IPCC AR5)       : ' + (pfd.refrigerantGWP || 0),
+                    '  Annual leakage       : ' + fix(pfd.refrigerantKgLeaked||0,2) + ' kg refrigerant/year',
+                    '  Total output         : ' + fix(pfd.totalOutputKg||1,2) + ' kg product/year',
+                    '  Leakage per kg prod  : = ' + fix(pfd.refrigerantKgLeaked||0,2) + ' / ' + fix(pfd.totalOutputKg||1,2) + ' = ' + fix((pfd.refrigerantKgLeaked||0)/(pfd.totalOutputKg||1),6) + ' kg refrig/kg product',
+                    '  CO2e per kg product  : = ' + fix((pfd.refrigerantKgLeaked||0)/(pfd.totalOutputKg||1),6) + ' x GWP(' + (pfd.refrigerantGWP||0) + ') = ' + fix(pfd.refrigerantCO2PerKg||0,4) + ' kg CO2e/kg product',
+                    '  Added to             : Climate Change (Fossil)  [F-gases: synthetic, non-biogenic]',
+                    '  Source: IPCC AR5 GWP100 / EC F-Gas Regulation 517/2014 Annex I',
+                    '',
+                ] : ['REFRIGERANT LEAKAGE: None entered (or not applicable).', '']),
+                'TOTAL MANUFACTURING CO2/kg: ' + fix(kwhPerKgActual*gridG*1.07/1000 + gasM3PerKg*(pfd.fuelFactor||2.13) + (pfd.refrigerantCO2PerKg||0), 6) + ' kg CO2e/kg',
+                '  = electricity CO2 + fuel CO2' + (pfd.refrigerantCO2PerKg > 0 ? ' + refrigerant CO2' : ''),
                 '  x product weight (' + fix(pfd.totalOutputKg||1,2) + ' kg) — see CC trace below for batch total',
                 '',
                 // FIX-15: GAS_COMBUSTION_MULTI shown here for primary factory data

@@ -1770,19 +1770,65 @@
                         </div>
                         
                         <div id="factoryDataInputs" class="hidden">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
                                 <div>
                                     <label class="form-label" style="font-size: 0.8rem;">Annual Elec. (kWh)</label>
                                     <input type="number" id="factoryTotalKWh" class="form-control" placeholder="e.g. 50000">
                                 </div>
                                 <div>
-                                    <label class="form-label" style="font-size: 0.8rem;">Annual Gas (m³)</label>
+                                    <label class="form-label" style="font-size: 0.8rem;" id="factoryFuelLabel">Annual Fuel — Natural Gas (m³)</label>
                                     <input type="number" id="factoryTotalGas" class="form-control" placeholder="e.g. 25000">
                                 </div>
                                 <div>
                                     <label class="form-label" style="font-size: 0.8rem;">Total Output (kg)</label>
                                     <input type="number" id="factoryTotalOutput" class="form-control" placeholder="e.g. 100000">
                                 </div>
+                            </div>
+                            <!-- FUEL TYPE: CO2 factor varies by fuel. Engine reads pfd.fuelType to select correct EF. -->
+                            <!-- Natural gas: 2.13 kg CO2/m³ | LPG: 1.61 kg CO2/L | Fuel oil: 2.66 kg CO2/L | Coal: 2.53 kg CO2/kg -->
+                            <!-- Source: EC Covenant of Mayors, Emission Factors 2024 Edition (JRC) -->
+                            <div class="form-group" style="margin-bottom: 0.75rem;">
+                                <label class="form-label" style="font-size: 0.8rem;">Process Heat Fuel Type</label>
+                                <select id="factoryFuelType" class="form-control" onchange="updateFactoryFuelLabel(this.value)" style="font-size: 0.8rem;">
+                                    <option value="natural_gas">Natural Gas — 2.13 kg CO₂/m³  (CoM 2024 JRC)</option>
+                                    <option value="lpg">LPG (Propane/Butane) — 1.61 kg CO₂/litre  (CoM 2024 JRC)</option>
+                                    <option value="fuel_oil">Fuel Oil (HFO/Light) — 2.66 kg CO₂/litre  (CoM 2024 JRC)</option>
+                                    <option value="coal">Coal (Bituminous) — 2.53 kg CO₂/kg  (CoM 2024 JRC)</option>
+                                    <option value="none">No Process Heat / 100% Electric</option>
+                                </select>
+                                <small style="color:#555; font-size:0.75rem;">Selects the correct CO₂ emission factor for the fuel amount entered above. Unit shown in label updates automatically.</small>
+                            </div>
+                            <!-- REFRIGERANT LEAKAGE: F-gases are often the largest single-site climate impact in food cold-chain. -->
+                            <!-- Formula: kg CO2e = kg_leaked × GWP_refrigerant (IPCC AR5 / EC F-Gas Reg 517/2014) -->
+                            <!-- Added to CC-Fossil in manufacturing total. -->
+                            <div style="background:#FFF0F0; border:1px solid #FCA5A5; border-radius:8px; padding:0.75rem; margin-bottom:0.5rem;">
+                                <div style="font-weight:700; color:#991B1B; font-size:0.8rem; margin-bottom:0.4rem;">
+                                    ❄️ Refrigerant Leakage (F-Gas / HFC) — Often Largest Site CO₂ Source
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.8rem;">Refrigerant Type</label>
+                                        <select id="factoryRefrigerantType" class="form-control" style="font-size: 0.8rem;">
+                                            <option value="">None / Not applicable</option>
+                                            <option value="R-404A">R-404A  (GWP 3,922 — blast freezers, cold stores)</option>
+                                            <option value="R-134a">R-134a  (GWP 1,430 — refrigerated cabinets)</option>
+                                            <option value="R-407C">R-407C  (GWP 1,774 — chillers)</option>
+                                            <option value="R-410A">R-410A  (GWP 2,088 — cooling units)</option>
+                                            <option value="R-507A">R-507A  (GWP 3,985 — low-temp freezers)</option>
+                                            <option value="R-32">R-32    (GWP 675 — newer efficient chillers)</option>
+                                            <option value="R-744">R-744 / CO₂  (GWP 1 — natural refrigerant)</option>
+                                            <option value="R-717">R-717 / NH₃  (GWP 0 — natural refrigerant)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.8rem;">Annual Leakage (kg refrigerant/year)</label>
+                                        <input type="number" id="factoryRefrigerantKgLeaked" class="form-control" placeholder="e.g. 12.5" step="0.1" min="0" style="font-size:0.8rem;">
+                                        <small style="color:#555; font-size:0.72rem;">Typical leakage: 15–25% of charge/year. Source: F-Gas inventory, service records.</small>
+                                    </div>
+                                </div>
+                                <small style="color:#991B1B; font-size:0.72rem; display:block; margin-top:0.4rem;">
+                                    Source: GWP values from IPCC AR5 / EC F-Gas Regulation 517/2014 Annex I. Formula: kg CO₂e = kg_leaked × GWP. Added to Climate Change (Fossil) in manufacturing total.
+                                </small>
                             </div>
                             <div style="font-size: 0.75rem; color: #084B82; margin-top: 0.5rem;">
                                 <i class="fas fa-check-circle"></i> This replaces generic processing estimates with your verified data.
@@ -2549,11 +2595,17 @@
 
                 <!-- ═══ CROP-SPECIFIC FIELDS (hidden when animal ingredient) ═══ -->
                 <div id="supplierCropSection">
-                    <!-- CALCULATION INPUT: Nitrogen → IPCC Tier 1 N2O (direct + leaching + volatilization) -->
+                    <!-- CALCULATION INPUT: Nitrogen Fertilizer (synthetic) → IPCC Tier 1 N2O (direct + leaching + volatilization) -->
                     <div class="form-group">
-                        <label>Nitrogen Fertilizer (kg N per ton of crop)</label>
+                        <label>Synthetic Nitrogen Fertilizer (kg N per ton of crop) <span style="font-size:0.7rem; color:#888; font-weight:400;">Urea, AN, CAN…</span></label>
                         <input type="number" id="primaryNitrogen" placeholder="e.g. 15">
-                        <small style="color:#555; font-size:0.75rem;">Source: IPCC 2006 Vol.4 Ch.11 — drives N₂O calculation (Climate Change + CC-Land Use)</small>
+                        <small style="color:#555; font-size:0.75rem;">Source: IPCC 2006 Vol.4 Ch.11 — drives N₂O calculation (EF1 direct + EF5 leaching + EF4 volatilization). FRAC_GASF = 0.10 for synthetic N.</small>
+                    </div>
+                    <!-- CALCULATION INPUT: Organic Nitrogen → IPCC Tier 1 N2O (FRAC_GASM=0.20 path, higher volatilization for manure/compost) -->
+                    <div class="form-group">
+                        <label>Organic Nitrogen Applied (kg N per ton of crop) <span style="font-size:0.7rem; color:#888; font-weight:400;">Manure, compost, digestate… Optional</span></label>
+                        <input type="number" id="primaryOrganicNitrogen" placeholder="e.g. 8.0" step="0.1" min="0">
+                        <small style="color:#555; font-size:0.75rem;">Source: IPCC 2006 Vol.4 Ch.11 Table 11.3 — organic N uses FRAC_GASM = 0.20 (vs 0.10 for synthetic) due to higher NH₃ volatilization from manure. Leave blank if no organic amendments applied.</small>
                     </div>
                     <!-- CALCULATION INPUT: Yield → composite multiplier applied to all 16 EF 3.1 categories -->
                     <div class="form-group">
@@ -2637,8 +2689,12 @@
                             <option value="broiler">Broiler Chicken</option>
                             <option value="layer_hen">Layer Hen</option>
                             <option value="turkey">Turkey</option>
-                            <option value="farmed_fish">Farmed Fish (Salmon / Trout)</option>
-                            <option value="farmed_fish">Farmed Fish (Other)</option>
+                            <option value="salmon">Farmed Fish — Atlantic Salmon (FCR 1.25, fishmeal 30%)</option>
+                            <option value="trout">Farmed Fish — Rainbow Trout (FCR 1.25, fishmeal 30%)</option>
+                            <option value="sea_bass">Farmed Fish — Sea Bass (FCR 2.1, fishmeal 32%)</option>
+                            <option value="sea_bream">Farmed Fish — Sea Bream (FCR 1.9, fishmeal 27%)</option>
+                            <option value="shrimp">Farmed Fish — Shrimp / Prawn (FCR 1.7, fishmeal 20%)</option>
+                            <option value="farmed_fish">Farmed Fish — Other / Generic (FCR 1.7, fishmeal 20%)</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -2680,8 +2736,11 @@
                     <!-- Compliance badge for animal section -->
                     <div style="background: #E8F5E9; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #A5D6A7; margin-top: 0.75rem; font-size: 0.8rem; color: #1B5E20;">
                         <i class="fas fa-leaf"></i>
-                        <strong>IPCC Tier 1 Animal Emissions:</strong> Enteric CH4 (Table 10.11) + Manure N₂O (Table 10.21) will be calculated using your primary data and applied as adjustments to Agribalyse 3.2 background values.
-                        <span id="farmedFishNote" style="display:none; color: #0277BD; font-style: italic;"> Farmed fish: feed-driven emissions model deferred to Phase 2. Primary data stored for audit trail.</span>
+                        <strong>IPCC Tier 1 Animal Emissions:</strong> Enteric CH₄ (Table 10.11) + Manure N₂O (Table 10.21) will be calculated using your primary data.
+                        <div style="margin-top:0.4rem; color:#1a6032; font-size:0.77rem;">
+                            <strong>How the calculation works:</strong> AGRIBALYSE 3.2 already embeds enteric CH₄ based on French national average productivity (ADEME/INRAE methodology, Collet et al. 2018 §4.3). Your productivity entry is compared against that baseline — the <em>delta</em> (difference) is applied. If your productivity equals the French average, the adjustment is zero. If lower (more animals needed per kg product), impact goes up. If higher, impact goes down. The Agribalyse default productivities used: Dairy cow 8,230 kg/yr | Beef 295 kg/yr | Pig 98 kg/yr | Broiler 2.1 kg/yr.
+                        </div>
+                        <span id="farmedFishNote" style="display:none; color: #0277BD; font-style: italic; display:block; margin-top:0.4rem;"> 🐟 Farmed fish: feed-driven emissions model using Tacon &amp; Metian (2008) FCR values. Species-specific feed conversion ratios are applied (salmon FCR=1.25, trout FCR=1.25, sea bass FCR=2.1, sea bream FCR=1.9, shrimp FCR=1.7). No enteric CH₄ or manure N₂O for aquatic species.</span>
                     </div>
                 </div>
             </div>
@@ -2736,6 +2795,9 @@
             <label class="form-label" style="font-size: 0.75rem;">Rate (kg/ha)</label>
             <input type="number" id="pesticide3Rate" class="form-control" style="font-size: 0.75rem; padding: 0.4rem;" placeholder="e.g., 0.05" step="0.01" min="0">
         </div>
+    </div>
+    <div style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:6px; padding:0.5rem; margin-top:0.5rem; font-size:0.72rem; color:#92400E;">
+        ⚠️ <strong>3-substance limit:</strong> If your crop uses more than 3 active substances, enter the 3 highest-rate products (by kg/ha). Additional pesticides beyond 3 will use the Agribalyse 3.2 average USEtox background. For a full substance list, contact your AIOXY account manager.
     </div>
             </div>
             

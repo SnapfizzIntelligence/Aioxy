@@ -321,7 +321,7 @@ function displayAuditTrail() {
             const isAnimal = pd.animalType ? true : false;
 
             if (isAnimal) {
-                const animalLabels = { dairy_cow:'Dairy Cow', beef_cattle:'Beef Cattle', pig:'Pig', sheep:'Sheep', goat:'Goat', broiler:'Broiler Chicken', layer_hen:'Layer Hen', turkey:'Turkey', farmed_fish:'Farmed Fish' };
+                const animalLabels = { dairy_cow:'Dairy Cow', beef_cattle:'Beef Cattle', pig:'Pig', sheep:'Sheep', goat:'Goat', broiler:'Broiler Chicken', layer_hen:'Layer Hen', turkey:'Turkey', farmed_fish:'Farmed Fish (Generic)', salmon:'Atlantic Salmon', trout:'Rainbow Trout', sea_bass:'Sea Bass', sea_bream:'Sea Bream', shrimp:'Shrimp/Prawn' };
                 const systemLabels = { conventional:'Conventional', organic:'Organic', grass_fed:'Grass-Fed', intensive:'Intensive', semi_intensive:'Semi-Intensive' };
                 const manureLabels = { pasture:'Pasture', lagoon:'Lagoon', solid_storage:'Solid Storage', anaerobic_digestion:'Anaerobic Digestion' };
                 const animalLabel = animalLabels[pd.animalType] || pd.animalType;
@@ -351,8 +351,8 @@ function displayAuditTrail() {
                 bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
                     <span style="font-size:0.85em; color: #555;">
                     📍 Farm: ${farmRegionText}<br>🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
-                    🌾 Yield: ${pd.yieldKgPerHa} kg/ha | 💧 N: ${pd.nitrogenKgPerTon} kg/t<br>
-                    💦 Irrigation: ${irrigationText} | 🌱 Practice: ${practiceText}<br>
+                    🌾 Yield: ${pd.yieldKgPerHa} kg/ha | 🧪 Synthetic N: ${pd.nitrogenKgPerTon} kg/t${pd.organicNitrogenKgPerTon ? ` | 🌿 Organic N: ${pd.organicNitrogenKgPerTon} kg/t (FRAC_GASM=0.20)` : ''}<br>
+                    ${pd.phosphorusKgPerTon ? `💧 Phosphorus (P): ${pd.phosphorusKgPerTon} kg P/t → SALCA-P eutrophication freshwater<br>` : ''}💦 Irrigation: ${irrigationText} | 🌱 Practice: ${practiceText}<br>
                     📋 ${ddsText || 'DDS: Not provided'}<br>
                     ${adjustmentSummary ? `<span style="color:#2C7A7B;">⚙️ ${adjustmentSummary}</span>` : ''}
                     </span>`;
