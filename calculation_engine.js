@@ -1811,6 +1811,7 @@ if (!traceability.usetox) {
 
         return { ingredientResults, ingredientTraceability };
     }
+    }
 
     // ── STEP 2: MANUFACTURING ────────────────────────────────────────────────
     function processManufacturing(input) {
