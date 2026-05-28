@@ -63,6 +63,7 @@ Object.assign(window.aioxyData.ingredients, {
         }
     },
     
+    
     "salt-white-ciqual-11017": {
         "name": "Salt, white, for human consumption",
         "loss": 0.0,
@@ -94,7 +95,7 @@ Object.assign(window.aioxyData.ingredients, {
                 "source_activity": "Sel blanc alimentaire, non iodé, non fluoré (marin, ignigène ou gemme)",
                 "source_uuid": "ciqual-11017",
                 "allocation_method": "Economic Allocation",
-                "dqr": { "P": null, "TiR": null, "TeR": null, "GR": null },
+                "dqr": { "P": 2.0, "TiR": 3.28, "TeR": 2.0, "GR": 2.0 },
                 "dqr_overall": 2.32,
                 "single_score_mpt": 0.0708,
                 "biogenic_net": 0.037,
@@ -141,7 +142,7 @@ Object.assign(window.aioxyData.ingredients, {
                 "source_activity": "Huile de tournesol",
                 "source_uuid": "ciqual-17440",
                 "allocation_method": "Economic Allocation",
-                "dqr": { "P": null, "TiR": null, "TeR": null, "GR": null },
+                "dqr": { "P": 2.0, "TiR": 2.0, "TeR": 1.0, "GR": 2.08 },
                 "dqr_overall": 1.77,
                 "single_score_mpt": 0.358,
                 "biogenic_net": 0.0531,
@@ -188,7 +189,7 @@ Object.assign(window.aioxyData.ingredients, {
                 "source_activity": "Ail, cru",
                 "source_uuid": "ciqual-11000",
                 "allocation_method": "Economic Allocation",
-                "dqr": { "P": null, "TiR": null, "TeR": null, "GR": null },
+                "dqr": { "P": 3.0, "TiR": 3.0, "TeR": 2.52, "GR": 3.0 },
                 "dqr_overall": 2.88,
                 "single_score_mpt": 0.0457,
                 "biogenic_net": 0.0702,
@@ -204,6 +205,7 @@ Object.assign(window.aioxyData.ingredients, {
             }
         }
     }, 
+        
                     
 
     "maize-corn-starch-agribalyse-3-2": {
