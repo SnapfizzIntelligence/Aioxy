@@ -62,6 +62,149 @@ Object.assign(window.aioxyData.ingredients, {
             }
         }
     },
+    
+    "salt-white-ciqual-11017": {
+        "name": "Salt, white, for human consumption",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.632,
+                "Climate Change - Fossil": 0.00214,
+                "Climate Change - Biogenic": 0.037,
+                "Climate Change - Land Use": 0.593,
+                "Ozone Depletion": 1.09e-08,
+                "Human Toxicity, non-cancer": 1.30e-08,
+                "Human Toxicity, cancer": 4.62e-10,
+                "Particulate Matter": 4.70e-08,
+                "Ionizing Radiation": 0.109,
+                "Photochemical Ozone Formation": 0.00253,
+                "Acidification": 0.00321,
+                "Eutrophication, terrestrial": 0.00764,
+                "Eutrophication, freshwater": 0.000267,
+                "Eutrophication, marine": 0.000945,
+                "Ecotoxicity, freshwater": 5.57,
+                "Land Use": 14.3,
+                "Water Use/Scarcity (AWARE)": 0.0776,
+                "Resource Use, minerals/metals": 1.07e-05,
+                "Resource Use, fossils": 9.05
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Sel blanc alimentaire, non iodé, non fluoré (marin, ignigène ou gemme)",
+                "source_uuid": "ciqual-11017",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": null, "TiR": null, "TeR": null, "GR": null },
+                "dqr_overall": 2.32,
+                "single_score_mpt": 0.0708,
+                "biogenic_net": 0.037,
+                "co2_luc_net": 0.593,
+                "co2_fossil": 0.00214,
+                "ciqual_category": "aides culinaires et ingrédients divers",
+                "ciqual_sub_category": "sels",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK PROXY",
+                "preparation": "Pas de préparation"
+            }
+        }
+    },
+    "sunflower-oil-ciqual-17440": {
+        "name": "Sunflower oil",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 2.36,
+                "Climate Change - Fossil": 0.611,
+                "Climate Change - Biogenic": 0.0531,
+                "Climate Change - Land Use": 1.69,
+                "Ozone Depletion": 3.00e-07,
+                "Human Toxicity, non-cancer": 7.34e-08,
+                "Human Toxicity, cancer": 8.58e-09,
+                "Particulate Matter": 1.46e-07,
+                "Ionizing Radiation": 0.259,
+                "Photochemical Ozone Formation": 0.00864,
+                "Acidification": 0.0184,
+                "Eutrophication, terrestrial": 0.0829,
+                "Eutrophication, freshwater": 0.00136,
+                "Eutrophication, marine": 0.0286,
+                "Ecotoxicity, freshwater": 92.3,
+                "Land Use": 555.0,
+                "Water Use/Scarcity (AWARE)": 0.788,
+                "Resource Use, minerals/metals": 1.12e-05,
+                "Resource Use, fossils": 20.5
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Huile de tournesol",
+                "source_uuid": "ciqual-17440",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": null, "TiR": null, "TeR": null, "GR": null },
+                "dqr_overall": 1.77,
+                "single_score_mpt": 0.358,
+                "biogenic_net": 0.0531,
+                "co2_luc_net": 1.69,
+                "co2_fossil": 0.611,
+                "ciqual_category": "matières grasses",
+                "ciqual_sub_category": "huiles et graisses végétales",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK AGB",
+                "preparation": "Pas de préparation"
+            }
+        }
+    },
+    "garlic-raw-ciqual-11000": {
+        "name": "Garlic, fresh",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.383,
+                "Climate Change - Fossil": 0.000229,
+                "Climate Change - Biogenic": 0.0702,
+                "Climate Change - Land Use": 0.313,
+                "Ozone Depletion": 9.79e-09,
+                "Human Toxicity, non-cancer": 7.97e-09,
+                "Human Toxicity, cancer": 3.15e-10,
+                "Particulate Matter": 2.44e-08,
+                "Ionizing Radiation": 0.132,
+                "Photochemical Ozone Formation": 0.00123,
+                "Acidification": 0.00186,
+                "Eutrophication, terrestrial": 0.00579,
+                "Eutrophication, freshwater": 7.00e-05,
+                "Eutrophication, marine": 0.00215,
+                "Ecotoxicity, freshwater": 5.05,
+                "Land Use": 18.7,
+                "Water Use/Scarcity (AWARE)": 0.553,
+                "Resource Use, minerals/metals": 2.76e-06,
+                "Resource Use, fossils": 6.38
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Ail, cru",
+                "source_uuid": "ciqual-11000",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": null, "TiR": null, "TeR": null, "GR": null },
+                "dqr_overall": 2.88,
+                "single_score_mpt": 0.0457,
+                "biogenic_net": 0.0702,
+                "co2_luc_net": 0.313,
+                "co2_fossil": 0.000229,
+                "ciqual_category": "aides culinaires et ingrédients divers",
+                "ciqual_sub_category": "herbes",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK AGB",
+                "preparation": "Pas de préparation"
+            }
+        }
+    }, 
+                    
 
     "maize-corn-starch-agribalyse-3-2": {
         "name": "Maize/corn starch",
