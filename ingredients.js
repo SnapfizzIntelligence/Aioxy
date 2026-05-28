@@ -62,7 +62,150 @@ Object.assign(window.aioxyData.ingredients, {
             }
         }
     },
+
     
+    "vinegar-ciqual-11018": {
+        "name": "Vinegar",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.96,
+                "Climate Change - Fossil": 0.00129,
+                "Climate Change - Biogenic": 0.0167,
+                "Climate Change - Land Use": 0.942,
+                "Ozone Depletion": 5.08e-08,
+                "Human Toxicity, non-cancer": 1.04e-07,
+                "Human Toxicity, cancer": 1.86e-09,
+                "Particulate Matter": 5.71e-08,
+                "Ionizing Radiation": 0.323,
+                "Photochemical Ozone Formation": 0.00392,
+                "Acidification": 0.00525,
+                "Eutrophication, terrestrial": 0.0172,
+                "Eutrophication, freshwater": 0.000176,
+                "Eutrophication, marine": 0.00552,
+                "Ecotoxicity, freshwater": 16.1,
+                "Land Use": 94.2,
+                "Water Use/Scarcity (AWARE)": 0.149,
+                "Resource Use, minerals/metals": 7.04e-06,
+                "Resource Use, fossils": 17.2
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Vinaigre",
+                "source_uuid": "ciqual-11018",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 3.0, "TiR": 3.0, "TeR": 3.0, "GR": 2.68 },
+                "dqr_overall": 2.92,
+                "single_score_mpt": 0.128,
+                "biogenic_net": 0.0167,
+                "co2_luc_net": 0.942,
+                "co2_fossil": 0.00129,
+                "ciqual_category": "aides culinaires et ingrédients divers",
+                "ciqual_sub_category": "condiments",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK PROXY",
+                "preparation": "Pas de préparation"
+            }
+        }
+    },
+    "lemon-pulp-raw-ciqual-13009": {
+        "name": "Lemon, pulp, raw",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.764,
+                "Climate Change - Fossil": 0.000439,
+                "Climate Change - Biogenic": 0.131,
+                "Climate Change - Land Use": 0.632,
+                "Ozone Depletion": 2.80e-08,
+                "Human Toxicity, non-cancer": 1.44e-08,
+                "Human Toxicity, cancer": 3.50e-10,
+                "Particulate Matter": 5.55e-08,
+                "Ionizing Radiation": 0.0613,
+                "Photochemical Ozone Formation": 0.00311,
+                "Acidification": 0.0057,
+                "Eutrophication, terrestrial": 0.0223,
+                "Eutrophication, freshwater": 0.00011,
+                "Eutrophication, marine": 0.0016,
+                "Ecotoxicity, freshwater": 26.8,
+                "Land Use": 25.3,
+                "Water Use/Scarcity (AWARE)": 12.6,
+                "Resource Use, minerals/metals": 3.68e-06,
+                "Resource Use, fossils": 8.46
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Citron, pulpe, cru",
+                "source_uuid": "ciqual-13009",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 3.0, "TiR": 3.0, "TeR": 2.0, "GR": 2.88 },
+                "dqr_overall": 2.72,
+                "single_score_mpt": 0.172,
+                "biogenic_net": 0.131,
+                "co2_luc_net": 0.632,
+                "co2_fossil": 0.000439,
+                "ciqual_category": "fruits, légumes, légumineuses et oléagineux",
+                "ciqual_sub_category": "fruits",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (moyen)",
+                "packaging": "PACK AGB",
+                "preparation": "Pas de préparation"
+            }
+        }
+    },
+    "rapeseed-oil-ciqual-17130": {
+        "name": "Rapeseed oil",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 2.5,
+                "Climate Change - Fossil": 0.332,
+                "Climate Change - Biogenic": 0.0573,
+                "Climate Change - Land Use": 2.11,
+                "Ozone Depletion": 2.99e-07,
+                "Human Toxicity, non-cancer": 3.59e-08,
+                "Human Toxicity, cancer": 2.84e-09,
+                "Particulate Matter": 2.38e-07,
+                "Ionizing Radiation": 0.255,
+                "Photochemical Ozone Formation": 0.0088,
+                "Acidification": 0.0312,
+                "Eutrophication, terrestrial": 0.143,
+                "Eutrophication, freshwater": 0.000525,
+                "Eutrophication, marine": 0.0211,
+                "Ecotoxicity, freshwater": 47.2,
+                "Land Use": 287.0,
+                "Water Use/Scarcity (AWARE)": 0.602,
+                "Resource Use, minerals/metals": 1.30e-05,
+                "Resource Use, fossils": 20.1
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Huile de colza",
+                "source_uuid": "ciqual-17130",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 2.0, "TiR": 2.0, "TeR": 2.0, "GR": 1.96 },
+                "dqr_overall": 1.99,
+                "single_score_mpt": 0.323,
+                "biogenic_net": 0.0573,
+                "co2_luc_net": 2.11,
+                "co2_fossil": 0.332,
+                "ciqual_category": "matières grasses",
+                "ciqual_sub_category": "huiles et graisses végétales",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK AGB",
+                "preparation": "Pas de préparation"
+            }
+        }
+    }, 
+                    
     
     "salt-white-ciqual-11017": {
         "name": "Salt, white, for human consumption",
