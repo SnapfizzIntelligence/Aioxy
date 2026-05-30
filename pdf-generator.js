@@ -1032,10 +1032,16 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 if (adj.yield_adjustment) {
                     const ya = adj.yield_adjustment;
                     layerBLines.push('  Yield adjustment:');
+                    // BK-3 FIX: show FAOSTAT fallback warning prominently if it fired
+                    if (adj.yield_baseline_warning && adj.yield_baseline_warning.fired) {
+                        layerBLines.push('    ⚠ BK-3 WARNING: FAOSTAT yield fallback used (5000 kg/ha)');
+                        layerBLines.push('    Reason : ' + safe(adj.yield_baseline_warning.reason));
+                        layerBLines.push('    Action : ' + safe(adj.yield_baseline_warning.action));
+                    }
                     layerBLines.push('    Source: ' + safe(ya.baseline_source));
                     layerBLines.push('    Formula: min(baseline_yield / actual_yield, 2.0)');
                     layerBLines.push('           = min(' + fix(ya.baseline_kg_ha,1) + ' / ' + fix(ya.actual_kg_ha,1) + ', 2.0)');
-                    layerBLines.push('           = ' + fix(ya.factor, 4) + (ya.capped_at_2 ? '  [CAPPED at 2.0]' : ''));
+                    layerBLines.push('           = ' + fix(ya.factor, 4) + (ya.capped_at_2 ? '  [CAPPED at 2.0 per JRC PEF 3.1 §4.4.3]' : ''));
                 }
                 if (adj.nitrogen_adjustment) {
                     const na = adj.nitrogen_adjustment;
@@ -1199,7 +1205,35 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 }
             }
 
-            // USEtox
+            // L-3 FIX: USEtox 2.14 for LIVESTOCK ingredients
+            if (adj.usetox_livestock) {
+                const ul = adj.usetox_livestock;
+                if (ul.status === 'applied') {
+                    layerBLines.push('L-3 FIX — Livestock USEtox 2.14 Substance-Specific Toxicity:');
+                    layerBLines.push('  Feed crop area (ha) : ' + fix(ul.feed_area_ha||0, 4) + ' ha');
+                    layerBLines.push('  Human cancer        : +' + sci(ul.total_htox_cancer_CTUh||0, 3) + ' CTUh (added to AGRIBALYSE background)');
+                    layerBLines.push('  Human non-cancer    : +' + sci(ul.total_htox_noncancer_CTUh||0, 3) + ' CTUh');
+                    layerBLines.push('  Ecotoxicity fw      : +' + sci(ul.total_ecotox_CTUe||0, 3) + ' CTUe');
+                    if (ul.pesticides && ul.pesticides.length > 0) {
+                        layerBLines.push('  Pesticides:');
+                        ul.pesticides.slice(0, 5).forEach(p => {
+                            layerBLines.push('    ' + safe(p.name) + ' (CAS: ' + safe(p.cas) + ')  ' +
+                                             fix(p.rate_kg_per_ha||0,4) + ' kg/ha  Cancer: ' + sci(p.htox_cancer_CTUh||0,2) +
+                                             '  Eco: ' + sci(p.ecotox_CTUe||0,2));
+                        });
+                    }
+                    layerBLines.push('  Source: USEtox 2.14 — L-3 FIX, livestock feed-crop pesticide pathway');
+                    layerBLines.push('');
+                } else {
+                    layerBLines.push('L-3 Livestock USEtox: ' + safe(ul.reason || 'not applied'));
+                    if (ul.action_required) {
+                        layerBLines.push('  Action: ' + safe(ul.action_required));
+                    }
+                    layerBLines.push('');
+                }
+            }
+
+            // USEtox (CROP path — unchanged)
             if (adj.usetox_applied && adj.usetox_applied.applied) {
                 const u = adj.usetox_applied;
                 layerBLines.push('B10 — USEtox 2.14 Pesticide Substance-Specific Toxicity:');
@@ -1209,12 +1243,24 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  Human non-cancer  : +' + sci(u.total_noncancer_CTUh||0, 3) + ' CTUh');
                 layerBLines.push('  Ecotoxicity fw    : +' + sci(u.total_ecotoxicity_CTUe||0, 3) + ' CTUe');
                 if (u.pesticides && u.pesticides.length > 0) {
-                    layerBLines.push('  Pesticides:');
-                    u.pesticides.slice(0, 5).forEach(p => {
-                        layerBLines.push('    ' + safe(p.name) + ' (CAS: ' + safe(p.cas) + ')  ' +
-                                         fix(p.rateKgPerHa||0,4) + ' kg/ha  Cancer: ' + sci(p.cancer_CTUh||0,2) +
-                                         '  Eco: ' + sci(p.ecotoxicity_CTUe||0,2));
-                    });
+                    // M-3 FIX: separate matched vs unmatched CAS numbers
+                    const pMatched   = u.pesticides.filter(p => p.matched !== false);
+                    const pUnmatched = u.pesticides.filter(p => p.matched === false);
+                    if (pMatched.length) {
+                        layerBLines.push('  Pesticides matched (' + pMatched.length + '):');
+                        pMatched.slice(0, 5).forEach(p => {
+                            layerBLines.push('    ✓ ' + safe(p.name) + ' (CAS: ' + safe(p.cas) + ')  ' +
+                                             fix(p.rateKgPerHa||0,4) + ' kg/ha  Cancer: ' + sci(p.cancer_CTUh||0,2) +
+                                             '  Eco: ' + sci(p.ecotoxicity_CTUe||0,2));
+                        });
+                    }
+                    if (pUnmatched.length) {
+                        layerBLines.push('  ⚠ M-3 WARNING: ' + pUnmatched.length + ' pesticide(s) NOT found in USEtox 2.14 (contribution = 0):');
+                        pUnmatched.forEach(p => {
+                            layerBLines.push('    ✗ ' + safe(p.name) + ' (CAS: ' + safe(p.cas || 'none') + ') — ' + safe(p.reason || 'not in USEtox 2.14'));
+                        });
+                        layerBLines.push('    Verify: https://www.usetox.org/model/substance-list');
+                    }
                 }
                 layerBLines.push('  Source: USEtox 2.14 — continental agricultural soil compartment, EF 3.1 compliant');
                 layerBLines.push('');
@@ -1283,6 +1329,18 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     layerBLines.push('  CC split source          : ' + safe(ff.cc_split_source));
                     layerBLines.push('  Enteric CH4              : 0  (fish have no enteric fermentation)');
                     layerBLines.push('  Manure N2O               : 0  (aquatic N excretion — not modelled in this version)');
+
+                    // L-2 FIX: Show fish oil confidence warning in PDF when fallback was used
+                    if (ff.fish_oil_confidence && ff.fish_oil_confidence.level === 'LOW') {
+                        const fo = ff.fish_oil_confidence;
+                        layerBLines.push('');
+                        layerBLines.push('  ⚠ L-2 WARNING: Fish Oil CO2 — LOW CONFIDENCE');
+                        layerBLines.push('  Level  : LOW — no dedicated fish oil DB entry found');
+                        layerBLines.push('  Reason : ' + safe(fo.reason));
+                        layerBLines.push('  Basis  : ' + safe(fo.basis));
+                        layerBLines.push('  Action : ' + safe(fo.action));
+                        layerBLines.push('  Value used: ' + fix(fo.value_used_kg_co2_per_kg||0, 4) + ' kg CO2e/kg fish oil (= fishmeal proxy)');
+                    }
                     layerBLines.push('');
                 }
             }
@@ -1565,6 +1623,49 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'Note: Non-CC categories do NOT use country grid intensity.',
             '      They use EU27 average EGM factors directly (see Layer A above).'
         ], LAYER.B, 'Manufacturing (continued)');
+
+        // BK-7 FIX: Show gas benchmark trace for non-primary-data manufacturing path.
+        // mfgTrace.benchmarkGas is populated by the BK-7 fix in calculation_engine.js
+        // when gas_mj_per_kg > 0 for the selected processing method.
+        const benchGas = (window.lastInput?.manufacturing?.usePrimaryFactoryData)
+            ? null
+            : (window.lastCalcResult?.auditTrailData?.traceability?.manufacturing?.benchmarkGas || null);
+        if (benchGas && benchGas.gas_mj_per_kg > 0) {
+            layerBlock('LAYER B — Benchmark Gas CO2 (BK-7 FIX)', [
+                'BK-7 FIX: Gas combustion CO2 now included in benchmark manufacturing path.',
+                'Previously gas_mj_per_kg was defined in the processing database but never',
+                'read for the benchmark path — causing baking/sterilization/roasting/drying',
+                'CO2 to be understated by the gas contribution.',
+                '',
+                'Processing method    : ' + safe(benchGas.processing_method),
+                'gas_mj_per_kg (DB)  : ' + fix(benchGas.gas_mj_per_kg, 4) + ' MJ/kg product',
+                '  Source: AIOXY processing database (thermodynamic derivation per SKILL.md)',
+                '',
+                'GAS CO2 FORMULA:',
+                '  gas_CO2/kg = gas_mj_per_kg x gas_CO2_per_MJ x product_weight_kg',
+                '  gas_CO2_per_MJ = ' + fix(benchGas.gas_co2_per_mj, 4) + ' kg CO2/MJ',
+                '    Source: IPCC 2006 Guidelines Vol. 2, Ch. 2, Table 2.2',
+                '    Natural gas: 56,100 kg CO2/TJ = 0.0562 kg CO2/MJ (TTW, direct combustion)',
+                '',
+                '  gas_CO2 = ' + fix(benchGas.gas_mj_per_kg, 4) + ' MJ/kg x ' + fix(benchGas.gas_co2_per_mj, 4) + ' kg CO2/MJ',
+                '          = ' + fix(benchGas.gas_mj_per_kg * benchGas.gas_co2_per_mj, 6) + ' kg CO2/kg product',
+                '  gas_CO2 total (x product batch) = ' + fix(benchGas.gas_co2_kg, 6) + ' kg CO2',
+                '',
+                'NON-CC GAS IMPACTS:',
+                '  Converted to m³ natural gas: gas_mj_per_kg / 38 MJ/m³ LHV',
+                '  38 MJ/m³: IPCC 2006 Vol.2 Table 2.3 natural gas LHV',
+                '  Non-CC factors from GAS_COMBUSTION_MULTI (same as primary factory path)',
+                '  Source: EMEP/EEA 2023 §1.A.1b x JRC EF 3.1'
+            ], LAYER.B, 'Manufacturing (continued)');
+        } else if (!window.lastInput?.manufacturing?.usePrimaryFactoryData) {
+            layerBlock('LAYER B — Benchmark Gas CO2', [
+                'Processing method: ' + safe(window.lastInput?.manufacturing?.processingMethod || 'none'),
+                benchGas === null
+                    ? 'Gas benchmark trace not available from engine (regenerate PDF after calculation).'
+                    : 'gas_mj_per_kg = 0 for this processing method — no gas combustion component (e.g. cooling, chilling, raw pack).',
+                'BK-7 FIX is active: gas_mj_per_kg is read from the processing database for thermal methods.'
+            ], LAYER.B, 'Manufacturing (continued)');
+        }
 
         // CC trace from engine
         const mfgComp = ccTree.Manufacturing?.components?.[0] || null;
@@ -1903,6 +2004,26 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             pkgLayerALines.push('  A (alloc. factor) : ' + numFmt(pkgDbEntry.aFactor || 0, 4) + '  [PEF Annex C v2.1]');
             pkgLayerALines.push('  Qs/Qp (quality)   : ' + numFmt(pkgDbEntry.q || 0, 4) + ' / 1.0000 = ' + numFmt(pkgDbEntry.q || 0, 4));
             pkgLayerALines.push('  R1 (recycled cont): from user input (shown in CFF trace below)');
+            // NEW-2 FIX: Show which EOL scenario was selected and which Ed/R2 it resolved to.
+            // Before this fix, eolDestination was collected in the form but never surfaced
+            // in the PDF — auditors could not verify that the correct disposal scenario
+            // was applied. Now the PDF shows the exact Ed and R2 values used.
+            const eolDest = (window.lastInput?.packaging?.eolDestination || 'eu_average');
+            const eolScenarioLabel = {
+                'eu_average':   'EU Average (default mix)',
+                'recycling':    'Recycling pathway',
+                'incineration': 'Incineration (with/without energy recovery)',
+                'landfill':     'Landfill disposal',
+                'composting':   'Industrial composting (bio-based materials)'
+            }[eolDest] || eolDest;
+            pkgLayerALines.push('');
+            pkgLayerALines.push('  EOL DESTINATION (user selection):');
+            pkgLayerALines.push('  Selected scenario  : ' + eolScenarioLabel);
+            pkgLayerALines.push('  Ed used in CFF     : see CFF trace below — Ed resolved from packaging DB co2_disposal_' + eolDest);
+            pkgLayerALines.push('  R2 used in CFF     : see CFF trace below — r2 resolved from packaging DB r2_' + eolDest + ' (or default r2 if not defined)');
+            pkgLayerALines.push('  Source: PEF 3.1 Annex C §C.4 — EOL recycling rate per scenario; PlasticsEurope EOL statistics (2022)');
+            pkgLayerALines.push('  NEW-2 FIX: eolDestination now wired into CFF calculation. Before this fix, Ed and R2');
+            pkgLayerALines.push('    always used eu_average regardless of user selection (calculation_engine.js v2+).');
         } else {
             // Fallback: hardcoded known values per material for full transparency
             const PKG_LAYER_A_FALLBACK = {
@@ -2233,7 +2354,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         if (dqrRows.length > 0) {
             doc.autoTable({
                 startY: Y,
-                head: [['Ingredient','TeR','TiR','GR','CoR*','P','Formula','DQR']],
+                head: [['Ingredient','TeR','TiR','GR','CoR*','P','Formula (4-ind.)','DQR/5']],
+                // NEW-1 FIX: Formula column header updated to "Formula (4-ind.)" to match
+                // INDICATOR_COUNT=4 fix in compliance_engine.js. DQR/5 reminds auditor
+                // that the scale is 1-5 even though only 4 indicators contribute.
                 body: dqrRows,
                 theme: 'plain',
                 styles: { fontSize: 7, cellPadding: 1.8 },

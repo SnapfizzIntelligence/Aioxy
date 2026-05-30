@@ -25,7 +25,20 @@
     // use SHARED_CONSTANTS to preserve a single source of truth.
     const CONSTANTS = Object.freeze({
         DQR: Object.freeze({
-            INDICATOR_COUNT: 5.0,
+            // NEW-1 FIX: INDICATOR_COUNT changed from 5 to 4.
+            // AGRIBALYSE DQI Matrix v3.0.1 uses a 4-indicator scheme:
+            //   TeR (temporal representativeness)
+            //   TiR (technological representativeness)
+            //   GeR (geographical representativeness)
+            //   P   (precision / reliability) — mapped to RR in code
+            // CoR (completeness) is NOT scored in AGRIBALYSE DQI methodology
+            // (ADEME/INRAE, Agribalyse 3.0 Methodology Report, §6.2).
+            // Using INDICATOR_COUNT=5 with CoR hardcoded to 0 in calculation_engine.js
+            // artificially deflated every DQR score by 20% (dividing by 5 instead of 4).
+            // Fix: set INDICATOR_COUNT=4. CoR field kept in calculateDQR() signature
+            // for API compatibility but excluded from the average.
+            // Source: ADEME (2022) Agribalyse 3.0 Methodology — DQI Matrix §6.2.
+            INDICATOR_COUNT: 4.0,
             MIN: 1.0,
             MAX: 5.0,
             EXCELLENT: 1.6,
@@ -106,7 +119,10 @@
             }
         }
         
-        const dqr = (TeR + TiR + GeR + CoR + RR) / CONSTANTS.DQR.INDICATOR_COUNT;
+        // NEW-1 FIX: CoR excluded from sum — AGRIBALYSE DQI uses 4 indicators not 5.
+        // Formula: DQR = (TeR + TiR + GeR + RR) / 4
+        // CoR is retained in the input signature for API compatibility only.
+        const dqr = (TeR + TiR + GeR + RR) / CONSTANTS.DQR.INDICATOR_COUNT;
         
         const qualityLevel = 
             dqr <= CONSTANTS.DQR.EXCELLENT ? 'EXCELLENT' :

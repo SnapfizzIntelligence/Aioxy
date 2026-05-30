@@ -1420,4 +1420,60 @@ function formatPEFValue(value) {
 
 // ================== AUDIT TRAIL LOADED ==================
 window.exportCSRDMatrix = exportCSRDMatrix;
+
+// ── RETAILER CSV ENGINE WIRING ────────────────────────────────────────────────
+// These two functions are called by the dropdown buttons injected in food.js.
+// They delegate to window.aioxy_retailer which is loaded from retailer_csv_engine.js.
+// Part 3 fix: provides retailer-specific CSV export for all major EU retailers,
+// CSRD/ESRS E1-E5, and CDP Supply Chain C6.5.
+
+window._exportRetailerCSV = function() {
+    const select = document.getElementById('retailerExportSelect');
+    const status = document.getElementById('retailerExportStatus');
+    if (!select) { alert('Retailer selector not found.'); return; }
+    const key = select.value;
+    if (!key) { alert('Please select a retailer.'); return; }
+
+    if (!window.aioxy_retailer) {
+        alert('Retailer CSV engine not loaded. Ensure retailer_csv_engine.js is included in index.html.');
+        return;
+    }
+    if (!window.auditTrailData || !window.finalPefResults) {
+        alert('No calculation data available. Please run a product assessment first.');
+        return;
+    }
+
+    try {
+        const config = window.aioxy_retailer.RETAILER_CONFIG[key];
+        if (status) status.textContent = 'Generating ' + (config ? config.label : key) + ' CSV...';
+        window.aioxy_retailer.generate(key);
+        if (status) {
+            status.textContent = '✓ ' + (config ? config.label : key) + ' CSV downloaded.';
+            setTimeout(() => { if (status) status.textContent = ''; }, 4000);
+        }
+        console.log('[AIOXY] Retailer CSV exported: ' + key);
+    } catch (err) {
+        if (status) status.textContent = '✗ Export failed: ' + err.message;
+        console.error('[AIOXY] Retailer CSV export error:', err);
+    }
+};
+
+window._exportAllRetailerCSVs = function() {
+    const status = document.getElementById('retailerExportStatus');
+    if (!window.aioxy_retailer) {
+        alert('Retailer CSV engine not loaded.');
+        return;
+    }
+    if (!window.auditTrailData || !window.finalPefResults) {
+        alert('No calculation data available. Please run a product assessment first.');
+        return;
+    }
+    const count = Object.keys(window.aioxy_retailer.RETAILER_CONFIG).length;
+    if (status) status.textContent = 'Generating all ' + count + ' retailer CSVs — browser will download each sequentially...';
+    window.aioxy_retailer.generateAll();
+    setTimeout(() => {
+        if (status) status.textContent = '✓ All ' + count + ' retailer CSVs queued for download.';
+        setTimeout(() => { if (status) status.textContent = ''; }, 6000);
+    }, count * 650);
+};
 console.log('✅ [AIOXY] audit-trail.js v4.0 loaded — All tab render bugs fixed');

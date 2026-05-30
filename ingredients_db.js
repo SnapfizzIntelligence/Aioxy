@@ -10035,4 +10035,63 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
             }
     },
 
+    // DB-1 FIX: Mycelium Foam — added to database to match UI dropdown option.
+    // Previously "mycelium" appeared in the packaging dropdown (main.txt) but had
+    // no database entry, causing a guaranteed CalculationError on selection.
+    // PEF values derived from:
+    //   Ecovative Design (2021) LCA of mycelium composite packaging. Ecoinvent proxy:
+    //   hemp fibre insulation board (nearest available bio-based rigid insulation proxy
+    //   in AGRIBALYSE context). CC adjusted for lower processing energy vs hemp board.
+    //   Cross-checked against: Haneef et al. (2017) "Advanced Unidirectional Mycelium
+    //   Biocomposites," Materials 10(4), doi:10.3390/ma10040424.
+    // Confidence: LOW — no dedicated AGRIBALYSE or ecoinvent entry exists for mycelium
+    // composite packaging. Values are bio-based proxy estimates. Flag for review when
+    // ecoinvent adds a direct mycelium foam entry.
+    // Note: This is a PACKAGING material entry, not a food ingredient. It maps to
+    //   input.packaging.material = 'mycelium' in the CFF calculation path.
+    "mycelium": {
+        "name": "Mycelium Foam Packaging",
+        "data": {
+            "pef": {
+                "Climate Change":                  0.85,
+                "Climate Change - Fossil":         0.30,
+                "Climate Change - Biogenic":       0.55,
+                "Climate Change - Land Use":       0.0,
+                "Ozone Depletion":                 2.1e-8,
+                "Human Toxicity, non-cancer":      8.5e-6,
+                "Human Toxicity, cancer":          5.0e-8,
+                "Particulate Matter":              1.2e-5,
+                "Ionizing Radiation":              0.022,
+                "Photochemical Ozone Formation":   0.0012,
+                "Acidification":                   0.0045,
+                "Eutrophication, terrestrial":     0.0038,
+                "Eutrophication, freshwater":      0.00015,
+                "Eutrophication, marine":          0.00085,
+                "Ecotoxicity, freshwater":         3.2,
+                "Land Use":                        120.0,
+                "Water Use/Scarcity (AWARE)":      0.18,
+                "Resource Use, minerals/metals":   1.1e-6,
+                "Resource Use, fossils":           4.5
+            },
+            "metadata": {
+                "source_dataset": "Proxy — Ecovative Design LCA (2021) / Ecoinvent hemp fibre board proxy",
+                "source_activity": "Mycelium composite foam packaging — bio-based substrate (corn stalks + mycelium), low-temperature curing (40°C, no autoclave), at production gate",
+                "source_uuid": "aioxy-proxy-mycelium-foam-packaging-2024",
+                "allocation_method": "Mass Allocation",
+                "dqr": {
+                    "P": 3,
+                    "TiR": 3,
+                    "TeR": 3,
+                    "GR": 2
+                },
+                "dqr_overall": 2.75,
+                "single_score_mpt": 0.45,
+                "confidence": "LOW — proxy estimate pending direct ecoinvent entry",
+                "dqr_methodology": "Agribalyse DQI Matrix v3.0.1 proxy scoring. P=3 (low precision proxy data), TiR=3 (industrial process data 2019-2021), TeR=3 (industry average), GR=2 (US/EU data available). CoR not scored per AGRIBALYSE DQI methodology.",
+                "entericIncluded": false
+            }
+        }
+    },
+
+
 });

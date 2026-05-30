@@ -478,10 +478,26 @@ function renderTwinResults(mainResult, twinCalcResult) {
 
         // 4 metric cards
         '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.25rem;">' +
-            _metricCard('Climate Change',  mainCO2.toFixed(3),  twinCO2.toFixed(3),  'kg CO\u2082e/kg', deltaChip(mainCO2,  twinCO2,  4, 'kg')) +
-            _metricCard('Water Scarcity',  mainWater.toFixed(4),twinWater.toFixed(4), 'm\u00b3/kg',      deltaChip(mainWater,twinWater,4, 'm\u00b3')) +
-            _metricCard('Land Use',        mainLand.toFixed(1), twinLand.toFixed(1),  'Pt/kg',           deltaChip(mainLand, twinLand, 2, 'Pt')) +
-            _metricCard('PEF Score',       mainPt.toFixed(1),   twinPt.toFixed(1),    '\u00b5Pt',        deltaChip(mainPt,   twinPt,   1, '\u00b5Pt')) +
+            // NEW-3 FIX: Show all 16 EF 3.1 categories in twin UI metric cards.
+            // Previously only Climate Change, Water, Land Use, PEF Score were shown.
+            // The full set is now rendered using mainAll16/twinAll16 pre-computed above.
+            _metricCard('Climate Change',             mainAll16['Climate Change'].toFixed(4),                   twinAll16['Climate Change'].toFixed(4),                   'kg CO\u2082e/kg',   deltaChip(mainAll16['Climate Change'],twinAll16['Climate Change'],4,'kg')) +
+            _metricCard('Water Scarcity',             mainAll16['Water Use/Scarcity (AWARE)'].toFixed(5),        twinAll16['Water Use/Scarcity (AWARE)'].toFixed(5),        'm\u00b3/kg',         deltaChip(mainAll16['Water Use/Scarcity (AWARE)'],twinAll16['Water Use/Scarcity (AWARE)'],5,'m\u00b3')) +
+            _metricCard('Land Use',                   mainAll16['Land Use'].toFixed(2),                          twinAll16['Land Use'].toFixed(2),                          'Pt/kg',              deltaChip(mainAll16['Land Use'],twinAll16['Land Use'],2,'Pt')) +
+            _metricCard('Resource Use (Fossil)',      mainAll16['Resource Use, fossils'].toFixed(3),             twinAll16['Resource Use, fossils'].toFixed(3),             'MJ/kg',              deltaChip(mainAll16['Resource Use, fossils'],twinAll16['Resource Use, fossils'],3,'MJ')) +
+            _metricCard('Acidification',              mainAll16['Acidification'].toFixed(5),                     twinAll16['Acidification'].toFixed(5),                     'mol H+e/kg',         deltaChip(mainAll16['Acidification'],twinAll16['Acidification'],5,'')) +
+            _metricCard('Eutroph. Terrestrial',       mainAll16['Eutrophication, terrestrial'].toFixed(5),       twinAll16['Eutrophication, terrestrial'].toFixed(5),       'mol Ne/kg',          deltaChip(mainAll16['Eutrophication, terrestrial'],twinAll16['Eutrophication, terrestrial'],5,'')) +
+            _metricCard('Eutroph. Freshwater',        mainAll16['Eutrophication, freshwater'].toFixed(6),        twinAll16['Eutrophication, freshwater'].toFixed(6),        'kg Pe/kg',           deltaChip(mainAll16['Eutrophication, freshwater'],twinAll16['Eutrophication, freshwater'],6,'')) +
+            _metricCard('Eutroph. Marine',            mainAll16['Eutrophication, marine'].toFixed(6),            twinAll16['Eutrophication, marine'].toFixed(6),            'kg Ne/kg',           deltaChip(mainAll16['Eutrophication, marine'],twinAll16['Eutrophication, marine'],6,'')) +
+            _metricCard('Particulate Matter',         mainAll16['Particulate Matter'].toFixed(8),                twinAll16['Particulate Matter'].toFixed(8),                'disease inc./kg',    deltaChip(mainAll16['Particulate Matter'],twinAll16['Particulate Matter'],8,'')) +
+            _metricCard('Photochem. Ozone',           mainAll16['Photochemical Ozone Formation'].toFixed(5),     twinAll16['Photochemical Ozone Formation'].toFixed(5),     'kg NMVOCe/kg',       deltaChip(mainAll16['Photochemical Ozone Formation'],twinAll16['Photochemical Ozone Formation'],5,'')) +
+            _metricCard('Ozone Depletion',            mainAll16['Ozone Depletion'].toFixed(9),                   twinAll16['Ozone Depletion'].toFixed(9),                   'kg CFC11e/kg',       deltaChip(mainAll16['Ozone Depletion'],twinAll16['Ozone Depletion'],9,'')) +
+            _metricCard('Human Tox. Non-cancer',      mainAll16['Human Toxicity, non-cancer'].toFixed(8),        twinAll16['Human Toxicity, non-cancer'].toFixed(8),        'CTUh/kg',            deltaChip(mainAll16['Human Toxicity, non-cancer'],twinAll16['Human Toxicity, non-cancer'],8,'')) +
+            _metricCard('Human Tox. Cancer',          mainAll16['Human Toxicity, cancer'].toFixed(9),            twinAll16['Human Toxicity, cancer'].toFixed(9),            'CTUh/kg',            deltaChip(mainAll16['Human Toxicity, cancer'],twinAll16['Human Toxicity, cancer'],9,'')) +
+            _metricCard('Ecotox. Freshwater',         mainAll16['Ecotoxicity, freshwater'].toFixed(3),           twinAll16['Ecotoxicity, freshwater'].toFixed(3),           'CTUe/kg',            deltaChip(mainAll16['Ecotoxicity, freshwater'],twinAll16['Ecotoxicity, freshwater'],3,'')) +
+            _metricCard('Ionizing Radiation',         mainAll16['Ionizing Radiation'].toFixed(4),                twinAll16['Ionizing Radiation'].toFixed(4),                'kBq U235e/kg',       deltaChip(mainAll16['Ionizing Radiation'],twinAll16['Ionizing Radiation'],4,'')) +
+            _metricCard('Resource Use (Min/Met)',     mainAll16['Resource Use, minerals/metals'].toFixed(8),     twinAll16['Resource Use, minerals/metals'].toFixed(8),     'kg Sbe/kg',          deltaChip(mainAll16['Resource Use, minerals/metals'],twinAll16['Resource Use, minerals/metals'],8,'')) +
+            _metricCard('PEF Score',                  mainPt.toFixed(1),                                         twinPt.toFixed(1),                                         '\u00b5Pt',            deltaChip(mainPt,twinPt,1,'\u00b5Pt')) +
         '</div>' +
 
         // Operational params
@@ -561,6 +577,25 @@ function renderTwinResults(mainResult, twinCalcResult) {
         && twinAudit.contribution_tree['Climate Change'].Ingredients
         && twinAudit.contribution_tree['Climate Change'].Ingredients.components) || [];
 
+    // NEW-3 FIX: Pre-compute all 16 EF 3.1 category per-kg values and store them
+    // in _twinResultsForPDF so buildTwinPDFSection() and the UI can access them
+    // without recalculating. Previously only CO2/water/land/fossils were stored
+    // as named scalars — the other 12 categories were only accessible via mainPef/twinPef
+    // objects and were never surfaced in the metric cards or summary table.
+    var ALL16_CATS = [
+        'Climate Change', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils',
+        'Eutrophication, terrestrial', 'Eutrophication, freshwater', 'Eutrophication, marine',
+        'Acidification', 'Particulate Matter', 'Photochemical Ozone Formation',
+        'Ozone Depletion', 'Human Toxicity, non-cancer', 'Human Toxicity, cancer',
+        'Ecotoxicity, freshwater', 'Ionizing Radiation', 'Resource Use, minerals/metals'
+    ];
+    var mainAll16 = {};
+    var twinAll16 = {};
+    ALL16_CATS.forEach(function(cat) {
+        mainAll16[cat] = perKg(mainPef, cat, mainMass);
+        twinAll16[cat] = perKg(twinPef, cat, twinMass);
+    });
+
     window._twinResultsForPDF = {
         mainName: mainName, twinName: twinName, modeLabel: modeLabel,
         mainCO2: mainCO2, twinCO2: twinCO2, co2Delta: co2Delta, co2DeltaPct: co2DeltaPct,
@@ -570,6 +605,8 @@ function renderTwinResults(mainResult, twinCalcResult) {
         mainPt: mainPt, twinPt: twinPt,
         mainPef: mainPef, twinPef: twinPef,
         mainMass: mainMass, twinMass: twinMass,
+        // NEW-3 FIX: All 16 categories pre-computed per kg for PDF and UI
+        mainAll16: mainAll16, twinAll16: twinAll16,
         twinIngs: twinIngs,
         mfgCountry: gv('twinManufacturingCountry'), process: gv('twinProcessingMethod'),
         energy: gv('twinEnergySource'), transMode: gv('twinTransportMode'),
@@ -691,12 +728,30 @@ function buildTwinPDFSection(doc, h) {
     // 4 metric cards
     h.ensureSpace(32, 'Parametric Twin (continued)');
     var cW4 = (CW - 9) / 4;
+    // NEW-3 FIX: The 4-metric summary cards in the PDF are retained as a header summary.
+    // The full 16-category table below this (already implemented in the 16-cat autoTable)
+    // provides the complete comparison. The summary cards are now extended to 6 categories
+    // (the most commercially important) so the first page of the twin section is informative.
     var metrics = [
-        { label:'Climate Change', mv:d.mainCO2,  tv:d.twinCO2,  unit:'kg CO2e/kg', dec:4 },
-        { label:'Water Scarcity', mv:d.mainWater,tv:d.twinWater,unit:'m3 world eq/kg',dec:5 },
-        { label:'Land Use',       mv:d.mainLand, tv:d.twinLand, unit:'Pt/kg',       dec:2 },
-        { label:'PEF Score',      mv:d.mainPt,   tv:d.twinPt,   unit:'microPt',     dec:1 }
+        { label:'Climate Change',    mv:d.mainAll16 ? d.mainAll16['Climate Change'] : d.mainCO2,
+                                     tv:d.twinAll16 ? d.twinAll16['Climate Change'] : d.twinCO2,
+                                     unit:'kg CO2e/kg', dec:4 },
+        { label:'Water Scarcity',    mv:d.mainAll16 ? d.mainAll16['Water Use/Scarcity (AWARE)'] : d.mainWater,
+                                     tv:d.twinAll16 ? d.twinAll16['Water Use/Scarcity (AWARE)'] : d.twinWater,
+                                     unit:'m3 world eq/kg', dec:5 },
+        { label:'Land Use',          mv:d.mainAll16 ? d.mainAll16['Land Use'] : d.mainLand,
+                                     tv:d.twinAll16 ? d.twinAll16['Land Use'] : d.twinLand,
+                                     unit:'Pt/kg', dec:2 },
+        { label:'Fossil Resources',  mv:d.mainAll16 ? d.mainAll16['Resource Use, fossils'] : d.mainFoss,
+                                     tv:d.twinAll16 ? d.twinAll16['Resource Use, fossils'] : d.twinFoss,
+                                     unit:'MJ/kg', dec:3 },
+        { label:'Acidification',     mv:d.mainAll16 ? d.mainAll16['Acidification'] : 0,
+                                     tv:d.twinAll16 ? d.twinAll16['Acidification'] : 0,
+                                     unit:'mol H+e/kg', dec:5 },
+        { label:'PEF Score',         mv:d.mainPt, tv:d.twinPt, unit:'microPt', dec:1 }
     ];
+    // Note: Full 16-category comparison is on the next page of the PDF twin section
+    // (rendered by the U16 autoTable further in buildTwinPDFSection).
     metrics.forEach(function (m, i) {
         var x  = M + i * (cW4 + 3);
         var dv = m.tv - m.mv;

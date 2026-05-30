@@ -1838,9 +1838,35 @@
 
                     <div class="form-group">
                         <label class="form-label">Transportation</label>
+                        <!-- SB-1-4 FIX: Explicit system boundary declaration -->
+                        <!-- Previously inbound transport exclusion was only in code comments, not visible to users -->
+                        <div style="background:#EBF5FB;border:1px solid #AED6F1;border-radius:8px;padding:0.85rem 1rem;margin-bottom:1rem;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                                <span style="background:#2980B9;color:white;border-radius:4px;padding:2px 7px;font-size:0.72rem;font-weight:700;">SYSTEM BOUNDARY</span>
+                                <span style="font-size:0.82rem;font-weight:600;color:#1A5276;">Cradle-to-Retail — ISO 14044 §4.2.3.3</span>
+                            </div>
+                            <div style="font-size:0.78rem;color:#1A5276;line-height:1.6;">
+                                <strong>Included:</strong> Agricultural production · Processing · Primary packaging · Outbound transport to retailer DC<br>
+                                <strong style="color:#E74C3C;">Excluded (declared):</strong>
+                                <span style="color:#784212;">
+                                    Inbound transport (farm→factory) ·
+                                    Secondary &amp; tertiary packaging ·
+                                    Retail operations ·
+                                    Consumer use &amp; end-of-life ·
+                                    Capital equipment
+                                </span><br>
+                                <span style="font-size:0.72rem;color:#5D6D7E;">
+                                    These exclusions are standard for a cradle-to-retail screening LCA per PEF 3.1 §4.2.3.
+                                    Inbound transport is typically &lt;1% of product carbon footprint for most ingredients.
+                                    For high-air-freight ingredients, consider adding transport manually.
+                                    Source: ISO 14044:2006 §4.2.3.3 — documented cut-off criteria.
+                                </span>
+                            </div>
+                        </div>
+
                         <div class="transport-section">
                             <div>
-                                <label class="form-label">Distance (km)</label>
+                                <label class="form-label">Distance (km) — Outbound transport to retailer DC</label>
                                 <input type="number" id="transportDistance" value="300" min="0" class="form-control">
                             </div>
                             <div>
@@ -2408,10 +2434,87 @@
                         </p>
                         
                         <div class="export-options">
+                            <!-- AIOXY RETAILER CSV ENGINE — Part 3 -->
+                            <!-- Master CSRD export (unchanged) -->
                             <div class="export-card" onclick="exportCSRDMatrix()" style="border-color: #27AE60; background: #F0FFF4;">
                                 <div class="export-icon" style="background: #27AE60;"><i class="fas fa-file-excel"></i></div>
-                                <div class="export-title" style="color: #27AE60;">CSRD Scope 3 Matrix (.csv)</div>
-                                <div class="export-desc">Flat-file supply chain data strictly mapped for Retailer Procurement & GHG Protocol Cat 1 compliance. Includes EUDR flags.</div>
+                                <div class="export-title" style="color: #27AE60;">Master CSRD Report (.csv)</div>
+                                <div class="export-desc">Full 9-block PEF 3.1 export — all 19 EF categories, DQR, ingredient traceability, packaging CFF, Monte Carlo uncertainty. For internal use, CSRD filing, and auditors.</div>
+                            </div>
+
+                            <!-- Retailer-specific CSV export with dropdown -->
+                            <div class="export-card" style="border-color: #2980B9; background: #EBF5FB; cursor: default;">
+                                <div class="export-icon" style="background: #2980B9;"><i class="fas fa-store"></i></div>
+                                <div class="export-title" style="color: #2980B9;">Retailer-Specific CSV</div>
+                                <div class="export-desc" style="margin-bottom: 0.75rem;">
+                                    Generate a CSV formatted for a specific retailer's sustainability portal or supplier questionnaire.
+                                </div>
+                                <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                                    <select id="retailerExportSelect" style="
+                                        flex: 1; min-width: 180px;
+                                        padding: 0.45rem 0.6rem;
+                                        border: 1.5px solid #2980B9;
+                                        border-radius: 6px;
+                                        font-size: 0.88rem;
+                                        background: #fff;
+                                        color: #1a1a2e;
+                                        cursor: pointer;
+                                    ">
+                                        <optgroup label="UK Retailers">
+                                            <option value="TESCO">Tesco (TSN v3.1)</option>
+                                            <option value="SAINSBURYS">Sainsbury's (SSQ 2024)</option>
+                                            <option value="ALDI">Aldi UK / Süd</option>
+                                        </optgroup>
+                                        <optgroup label="German Retailers">
+                                            <option value="REWE">Rewe Group</option>
+                                            <option value="LIDL">Lidl International</option>
+                                        </optgroup>
+                                        <optgroup label="Dutch / Belgian">
+                                            <option value="ALBERT_HEIJN">Albert Heijn / Ahold Delhaize</option>
+                                        </optgroup>
+                                        <optgroup label="French Retailers">
+                                            <option value="CARREFOUR">Carrefour (ACT for Food)</option>
+                                            <option value="LECLERC">E.Leclerc</option>
+                                            <option value="INTERMARCHE">Intermarché</option>
+                                        </optgroup>
+                                        <optgroup label="Swiss">
+                                            <option value="COOP_CH">Coop Switzerland (Oecoplan)</option>
+                                        </optgroup>
+                                        <optgroup label="Generic / Standards">
+                                            <option value="GENERIC_EU">Generic EU (GS1 / ESSG)</option>
+                                        </optgroup>
+                                        <optgroup label="Regulatory / Reporting">
+                                            <option value="CSRD_ESRS">CSRD / ESRS E1–E5</option>
+                                            <option value="CDP_SC">CDP Supply Chain C6.5</option>
+                                        </optgroup>
+                                    </select>
+                                    <button onclick="_exportRetailerCSV()" style="
+                                        padding: 0.45rem 1rem;
+                                        background: #2980B9;
+                                        color: #fff;
+                                        border: none;
+                                        border-radius: 6px;
+                                        font-size: 0.88rem;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        white-space: nowrap;
+                                    ">
+                                        <i class="fas fa-download"></i> Export CSV
+                                    </button>
+                                    <button onclick="_exportAllRetailerCSVs()" title="Download all 13 retailer CSVs" style="
+                                        padding: 0.45rem 0.75rem;
+                                        background: #1a5276;
+                                        color: #fff;
+                                        border: none;
+                                        border-radius: 6px;
+                                        font-size: 0.82rem;
+                                        cursor: pointer;
+                                        white-space: nowrap;
+                                    ">
+                                        <i class="fas fa-layer-group"></i> All Retailers
+                                    </button>
+                                </div>
+                                <div id="retailerExportStatus" style="margin-top:0.5rem; font-size:0.8rem; color:#2980B9; min-height:1rem;"></div>
                             </div>
                             <div class="export-card" onclick="generatePDFReport('marketing')">
                                 <div class="export-icon"><i class="fas fa-chart-line"></i></div>
