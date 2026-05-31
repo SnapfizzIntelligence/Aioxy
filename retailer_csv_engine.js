@@ -88,7 +88,14 @@ function buildMasterData() {
     const pkgTr   = audit.traceability?.packaging || {};
     const transTr = audit.traceability?.transport || {};
 
-    const pWeightKg = mb.final_content_weight_kg || 1.0;
+    const pWeightKg = mb.final_content_weight_kg
+                   || (window.lastInput && window.lastInput.product && window.lastInput.product.weightKg)
+                   || 0.2;
+    // FIX: Never use magic fallback 1.0. Priority:
+    //   1. mass_balance.final_content_weight_kg  (engine-computed from input.product.weightKg)
+    //   2. window.lastInput.product.weightKg     (direct from user form)
+    //   3. 0.2 kg                                (form default — traceable, documented)
+    // Using 1.0 as fallback made every per-kg value in the CSV 5× wrong for a 200g product.
     const ccTree    = pef['Climate Change']?.contribution_tree || {};
     const ingComps  = ccTree.Ingredients?.components || [];
 

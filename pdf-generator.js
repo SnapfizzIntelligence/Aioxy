@@ -338,7 +338,13 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const pName      = safe(audit.productName || 'Assessed Product');
         const dateStr    = new Date(audit.calculationTimestamp || Date.now()).toISOString().split('T')[0];
         const mb         = audit.mass_balance || {};
-        const pWeightKg  = mb.final_content_weight_kg || 1.0;
+        // FIX: Never use magic fallback 1.0 — violates zero-magic-numbers principle.
+        // Priority: mass_balance.final_content_weight_kg (set by engine from input.product.weightKg)
+        // → lastInput.product.weightKg (direct from user form) → 0.2 (documented PEF default,
+        // matches form default, logged to console so it is traceable).
+        const pWeightKg  = mb.final_content_weight_kg
+                        || window.lastInput?.product?.weightKg
+                        || (() => { console.warn('[AIOXY PDF] pWeightKg fallback to 0.2 — mass_balance missing. Verify engine ran before PDF export.'); return 0.2; })();
         const dppId      = safe(audit.dppId || 'N/A');
         const auditHash  = safe(audit.auditHash || '');
 
@@ -373,7 +379,22 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // ReferenceError: Cannot access 'mfgCC' before initialization)
         const fullTree = audit.contribution_tree || {};
         const ccTree   = fullTree['Climate Change'] || pef['Climate Change']?.contribution_tree || {};
-        const ingComps = ccTree.Ingredients?.components || [];
+        // FIX: ingComps MUST come from the full contribution_tree that buildContributionTree()
+        // populated with actual component arrays. pef[cat].contribution_tree.Ingredients.components
+        // is initialised as [] in aggregateAllCategories() and only filled by buildContributionTree()
+        // which writes back via: pefResults[cat].contribution_tree = fullContribTree[cat].
+        // If audit.contribution_tree is missing, fall back to pef['Climate Change'].contribution_tree
+        // (which should have been overwritten by buildContributionTree). If both are empty,
+        // log a warning so the user knows to re-run the calculation.
+        const ingComps = (()=>{
+            const fromAudit = fullTree['Climate Change']?.Ingredients?.components;
+            if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
+            const fromPef   = pef['Climate Change']?.contribution_tree?.Ingredients?.components;
+            if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
+            console.warn('[AIOXY PDF] ingComps: no ingredient components found in contribution_tree. ' +
+                'PDF ingredient sections will be empty. Re-run the calculation before exporting PDF.');
+            return [];
+        })();
         const mfgCC    = ccTree.Manufacturing?.total || 0;
         const transCC  = ccTree.Transport?.total     || 0;
         const pkgCC    = ccTree.Packaging?.total      || 0;
@@ -2390,7 +2411,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // Monte Carlo
         subHeader('Monte Carlo Uncertainty Analysis (1000 iterations, Lognormal)');
         const ccMC  = unc['Climate Change'] || {};
-        const mcMed = (ccMC.mean  > 0 ? ccMC.mean  : null) || ccTotal * pWeightKg;
+        // FIX: fallback must be ccTotal (batch kg CO2e), not ccTotal*pWeightKg.
+        // Display lines below divide by pWeightKg to get per-kg values.
+        // ccTotal*pWeightKg would be (kg/kg)*kg = dimensionally wrong.
+        const mcMed = (ccMC.mean  > 0 ? ccMC.mean  : null) || ccTotal;
         const mcP5  = (ccMC.p5   > 0 ? ccMC.p5   : null) || (mcMed * 0.85);
         const mcP95 = (ccMC.p95  > 0 ? ccMC.p95  : null) || (mcMed * 1.15);
         const mcIter = ccMC.iterations || unc.iterations || 1000;
@@ -2707,8 +2731,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             ...(cutoffItems.length > 0
                 ? cutoffItems.map(it => '  ' + (it.pass?'OK ':'FAIL') + '  ' + trunc(it.name||it.id,40) + '  contrib=' + fix(it.pct||0,1) + '%  DQR=' + fix(it.dqr||0,2))
                 : ingList.map(ing => {
-                    const ingCC2 = (pef['Climate Change']?.contribution_tree?.Ingredients?.components||[])
-                        .find(c => c.id===ing.id || c.name===ing.name);
+                    // FIX: use ingComps (sourced from audit.contribution_tree, fully populated)
+                    // instead of pef[cat].contribution_tree.components (initialised as [] empty array)
+                    const ingCC2 = ingComps.find(c => c.id===ing.id || c.name===ing.name);
                     const pctV = ingCC2 ? ((ingCC2.subtotal||0)/ccTotal*100) : 0;
                     const dqrV = ing.dqr || ing.overall || 2.00;
                     const passes = dqrV <= (ing.primary_data_used ? 3.0 : 4.0);

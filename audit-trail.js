@@ -197,6 +197,24 @@ function displayAuditTrail() {
         return;
     }
 
+    // FIX: ingredient components sourced from the authoritative contribution_tree.
+    // window.auditTrailData.contribution_tree IS fullContribTree (engine line 3329) —
+    // built by buildContributionTree() with all ingredient components fully populated.
+    // catCC.contribution_tree (= pefResults['Climate Change'].contribution_tree) is also
+    // correct because the engine overwrites it at line 3167 before auditTrailData is set.
+    // Using audit.contribution_tree is the most direct, unambiguous path.
+    // Priority: audit.contribution_tree → catCC.contribution_tree → [] with console warning.
+    const _auditFullTree = window.auditTrailData.contribution_tree || {};
+    const _auditCCTree   = _auditFullTree['Climate Change'] || catCC.contribution_tree || {};
+    const _auditIngComps = (function(){
+        var fromAudit = _auditCCTree.Ingredients && _auditCCTree.Ingredients.components;
+        if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
+        var fromPef = catCC.contribution_tree && catCC.contribution_tree.Ingredients && catCC.contribution_tree.Ingredients.components;
+        if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
+        console.warn('[AIOXY AuditTrail] No ingredient components found in contribution_tree. Section A will be empty. Re-run the calculation.');
+        return [];
+    })();
+
     // Helper: Country Name Resolver
     const getCtry = (code) => (window.aioxyData?.countries?.[code]?.name || code);
 
@@ -304,7 +322,8 @@ function displayAuditTrail() {
                 </thead>
                 <tbody>`;
 
-    const ingredients = catCC.contribution_tree.Ingredients.components;
+    // FIX: use _auditIngComps (sourced from audit.contribution_tree, authoritative)
+    const ingredients = _auditIngComps;
     ingredients.forEach(ing => {
         const adj = ing.universal_adjustments || {};
         const isPrimary = ing.primary_data_used;
