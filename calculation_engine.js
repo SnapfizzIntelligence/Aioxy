@@ -1027,13 +1027,14 @@ if (!traceability.usetox) {
 
                                 // BUGFIX FARMED_FISH: Resolve fishmeal CO2 proxy — look up anchovy or sardine in ingredients DB.
                                 let fishmealCO2PerKg = 0; // BUGFIX FARMED_FISH
+                                let proxyPef = null; // SCOPE FIX: declared here so it is accessible at the CC sub-split block below (was const inside for-loop, causing TypeError)
                                 const ingDB = window.aioxyData && window.aioxyData.ingredients; // BUGFIX FARMED_FISH
                                 if (ingDB) { // BUGFIX FARMED_FISH
                                     // BUGFIX FARMED_FISH: Search ingredients by name for anchovy or sardine as proxy.
                                     for (const [key, entry] of Object.entries(ingDB)) { // BUGFIX FARMED_FISH
                                         const entryName = (entry.name || key).toLowerCase(); // BUGFIX FARMED_FISH
                                         if (entryName.includes('anchovy') || entryName.includes('sardine')) { // BUGFIX FARMED_FISH
-                                            const proxyPef = entry.data && entry.data.pef; // BUGFIX FARMED_FISH
+                                            proxyPef = entry.data && entry.data.pef; // SCOPE FIX: assign to outer let, not re-declare as const
                                             if (proxyPef && proxyPef['Climate Change'] !== undefined) { // BUGFIX FARMED_FISH
                                                 fishmealCO2PerKg = proxyPef['Climate Change']; // BUGFIX FARMED_FISH
                                             } // BUGFIX FARMED_FISH
@@ -1089,9 +1090,9 @@ if (!traceability.usetox) {
                                 // be allocated to CC-Biogenic.
                                 let feedFossilFraction  = 0;
                                 let feedBiogenicFraction = 1;
-                                const proxyTotalCC  = proxyPef['Climate Change']           || 0;
-                                const proxyFossilCC = proxyPef['Climate Change - Fossil']  || null;
-                                const proxyCCBiogen = proxyPef['Climate Change - Biogenic'] || null;
+                                const proxyTotalCC  = proxyPef ? (proxyPef['Climate Change']            || 0)    : 0;    // SCOPE FIX: null-guard — proxyPef is null when no anchovy/sardine found in DB
+                                const proxyFossilCC = proxyPef ? (proxyPef['Climate Change - Fossil']   || null) : null; // SCOPE FIX: null-guard
+                                const proxyCCBiogen = proxyPef ? (proxyPef['Climate Change - Biogenic'] || null) : null; // SCOPE FIX: null-guard
                                 if (
                                     proxyTotalCC > 0 &&
                                     proxyFossilCC !== null &&
