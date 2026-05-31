@@ -1,5 +1,4 @@
 
-
 // ================== AIOXY CALCULATION ENGINE v2.0 ==================
 // ISO 14044 / PEF 3.1 Calculation Orchestration Layer
 //
@@ -548,30 +547,30 @@
         const MAP = {
             "AL": "Albania",        "AT": "Austria",          "BA": "Bosnia and Herzegovina",
             "BE": "Belgium",        "BG": "Bulgaria",         "BR": "Brazil",
-            "CA": "Canada",         "CH": "Switzerland",      "CI": "Cote d'Ivoire",    // FIX: was "Côte d'Ivoire" — DB uses no accent
-            "CN": "China",          "CY": "Cyprus",           "CZ": "Czech Republic",   // FIX: was "Czechia" — DB uses "Czech Republic"
+            "CA": "Canada",         "CH": "Switzerland",      "CI": "Côte d'Ivoire",
+            "CN": "China",          "CY": "Cyprus",           "CZ": "Czechia",
             "DE": "Germany",        "DK": "Denmark",          "EE": "Estonia",
             "ES": "Spain",          "FI": "Finland",          "FR": "France",
-            "GB": "United Kingdom",                                                       // FIX: was long UNSD form — DB uses "United Kingdom"
+            "GB": "United Kingdom of Great Britain & Northern Ireland",
             "GR": "Greece",         "HR": "Croatia",          "HU": "Hungary",
             "IE": "Ireland",        "IN": "India",            "IS": "Iceland",
             "IT": "Italy",          "JP": "Japan",            "LT": "Lithuania",
             "LU": "Luxembourg",     "LV": "Latvia",           "MA": "Morocco",
-            "MD": "Moldova",        "ME": "Montenegro",       "MK": "The Former Yugoslav Republic of Macedonia", // FIX: LANCA/FAOSTAT use old UN name
+            "MD": "Moldova",        "ME": "Montenegro",       "MK": "North Macedonia",
             "MT": "Malta",          "NL": "Netherlands",      "NO": "Norway",
             "PL": "Poland",         "PT": "Portugal",         "RO": "Romania",
             "RS": "Serbia",         "SE": "Sweden",           "SI": "Slovenia",
-            "SK": "Slovakia",       "TR": "Turkey",           "US": "United States",    // FIX: was "United States of America" — DB uses "United States"
-            "VN": "Vietnam",        "AR": "Argentina",        "AU": "Australia",        // FIX: was "Viet Nam" — DB uses "Vietnam"
+            "SK": "Slovakia",       "TR": "Turkey",           "US": "United States of America",
+            "VN": "Viet Nam",       "AR": "Argentina",        "AU": "Australia",
             "ID": "Indonesia",      "PK": "Pakistan",         "NG": "Nigeria",
             "EG": "Egypt",          "ZA": "South Africa",     "MX": "Mexico",
-            "RU": "Russia",         "UA": "Ukraine",          "KR": "South Korea",      // FIX: RU was "Russian Federation", KR was "Republic of Korea"
+            "RU": "Russian Federation", "UA": "Ukraine",      "KR": "Republic of Korea",
             "KE": "Kenya",          "ET": "Ethiopia",         "GH": "Ghana",
             "CM": "Cameroon",       "PE": "Peru",
             "CL": "Chile",          "CO": "Colombia",         "UY": "Uruguay",
             "MY": "Malaysia",       "PH": "Philippines",      "TH": "Thailand",
             "BD": "Bangladesh",     "NP": "Nepal",            "LK": "Sri Lanka",
-            "IR": "Iran",           "IQ": "Iraq",                                        // FIX: was "Iran (Islamic Republic of)" — DB uses "Iran"
+            "IR": "Iran (Islamic Republic of)", "IQ": "Iraq",
             "SA": "Saudi Arabia",   "AE": "United Arab Emirates",
             "RE": "France",          // Réunion is FR overseas — uses FR as proxy
             "WI": "France",          // West Indies (FR Antilles) — uses FR as proxy
@@ -1075,18 +1074,6 @@ if (!traceability.usetox) {
                                     fishOilCO2PerKg = fishmealCO2PerKg; // Conservative equal-to-fishmeal estimate — LOW confidence
                                     fishOilSource = 'Conservative fallback: equal to fishmeal (no fish oil DB entry). LOW confidence. Basis: IFFO 2023 co-product allocation.';
                                     console.warn('[FIX A3] No fish oil ingredient found in DB; using fishmeal value as conservative proxy. LOW confidence.');
-                                    // L-2 FIX: Record low confidence flag in adjustments for PDF rendering.
-                                    // Previously this warning only appeared in console — not in PDF or UI.
-                                    // Now it is recorded in adjustments.farmed_fish_feed.fish_oil_confidence
-                                    // so the PDF generator can surface it as a visible warning.
-                                    if (!adjustments.farmed_fish_feed) adjustments.farmed_fish_feed = {};
-                                    adjustments.farmed_fish_feed.fish_oil_confidence = {
-                                        level:   'LOW',
-                                        reason:  'No fish oil entry found in AIOXY ingredient database. Using fishmeal CO2 as conservative equal-mass proxy.',
-                                        basis:   'IFFO (2023) Fishmeal and Fish Oil Sustainability Report — co-product mass allocation. Fish oil and fishmeal share similar environmental burden per kg on a mass basis.',
-                                        action:  'Add a dedicated fish oil ingredient entry to the AIOXY database (Ecoinvent or AGRIBALYSE 3.2 fish oil proxy) to improve this estimate.',
-                                        value_used_kg_co2_per_kg: fishOilCO2PerKg
-                                    };
                                 }
 
                                 // BUGFIX FARMED_FISH: Feed CO2 = FCR × (fishmeal_fraction × fishmeal_CO2 + fish_oil_fraction × fish_oil_CO2)
@@ -1119,67 +1106,10 @@ if (!traceability.usetox) {
                                     feedBiogenicFraction = 1;
                                 }
 
-                                // FIX: [Audit A2] Apply split fractions to feed CO2 — Climate Change categories.
+                                // FIX: [Audit A2] Apply split fractions to feed CO2.
                                 flatPef['Climate Change']            = (flatPef['Climate Change']            || 0) + feedCO2PerKgFish;
                                 flatPef['Climate Change - Fossil']   = (flatPef['Climate Change - Fossil']   || 0) + feedCO2PerKgFish * feedFossilFraction;
                                 flatPef['Climate Change - Biogenic'] = (flatPef['Climate Change - Biogenic'] || 0) + feedCO2PerKgFish * feedBiogenicFraction;
-
-                                // L-1 FIX: Propagate feed impacts to all 13 non-CC EF 3.1 categories.
-                                // Previously farmed fish feed additions were limited to CC categories,
-                                // leaving Ozone Depletion, Human Toxicity, Particulate Matter, etc.
-                                // at zero for the feed contribution — systematically understating
-                                // non-CC impacts for any aquaculture ingredient.
-                                //
-                                // Method: Use the proxy fishmeal ingredient's own PEF ratios to
-                                // scale feed CO2 to non-CC categories. The ratio approach is conservative
-                                // and traceable: non-CC impact = (feed_CO2 / proxy_CC) × proxy_non-CC.
-                                // This preserves the relative category proportions of the feed ingredient
-                                // rather than applying a single scalar.
-                                //
-                                // Source: AGRIBALYSE 3.2 — fishmeal/sardine/anchovy PEF profile
-                                // (same proxy already used for fishmeal CO2 lookup above).
-                                // Limitation: proportional scaling assumes feed and fishmeal have
-                                // similar non-CC profiles. Flagged as MEDIUM confidence.
-                                // Future: replace with direct per-category FCR × feed_non-CC lookup
-                                // when aquaculture_feeds DB is extended with full 16-category factors.
-                                const NON_CC_FEED_CATS = [
-                                    'Ozone Depletion',
-                                    'Human Toxicity, non-cancer',
-                                    'Human Toxicity, cancer',
-                                    'Particulate Matter',
-                                    'Ionizing Radiation',
-                                    'Photochemical Ozone Formation',
-                                    'Acidification',
-                                    'Eutrophication, terrestrial',
-                                    'Eutrophication, freshwater',
-                                    'Eutrophication, marine',
-                                    'Ecotoxicity, freshwater',
-                                    'Land Use',
-                                    'Water Use/Scarcity (AWARE)',
-                                    'Resource Use, minerals/metals',
-                                    'Resource Use, fossils'
-                                ];
-                                // proxyPef is the fishmeal/sardine PEF object already resolved above
-                                const proxyCC = proxyPef && proxyPef['Climate Change'] ? proxyPef['Climate Change'] : 0;
-                                if (proxyCC > 0 && feedCO2PerKgFish > 0) {
-                                    const feedToProxyRatio = feedCO2PerKgFish / proxyCC;
-                                    for (const nonCCCat of NON_CC_FEED_CATS) {
-                                        const proxyNonCC = proxyPef && proxyPef[nonCCCat] !== undefined
-                                            ? proxyPef[nonCCCat]
-                                            : 0;
-                                        if (proxyNonCC !== 0) {
-                                            flatPef[nonCCCat] = (flatPef[nonCCCat] || 0) +
-                                                proxyNonCC * feedToProxyRatio;
-                                        }
-                                    }
-                                }
-                                // L-1 FIX: Record trace in adjustments for PDF and audit
-                                if (adjustments.farmed_fish_feed) {
-                                    adjustments.farmed_fish_feed.non_cc_feed_applied = proxyCC > 0;
-                                    adjustments.farmed_fish_feed.non_cc_method = proxyCC > 0
-                                        ? 'Proportional scaling: feed_CO2/proxy_CC × proxy_non-CC per category. Source: AGRIBALYSE 3.2 fishmeal proxy. Confidence: MEDIUM.'
-                                        : 'Non-CC feed impacts not applied — proxy CC value is zero.';
-                                }
 
                                 // BUGFIX FARMED_FISH: Store full calculation trace for auditors.
                                 adjustments.farmed_fish_feed = { // BUGFIX FARMED_FISH
@@ -1239,46 +1169,9 @@ if (!traceability.usetox) {
                                 }
                             } catch (e) { /* non-critical */ }
 
-                            // BK-6 FIX: Replace silent 1,000 kg/head fallback with
-                            // AGRIBALYSE default productivity lookup, then warn if still missing.
-                            // The previous 1000 kg/head was a dangerous universal guess
-                            // (a dairy cow produces 8,230 kg/year; a broiler produces 2.3 kg —
-                            // a 3,500× range). Silently applying 1,000 could severely misstate
-                            // enteric CH4 for any livestock ingredient.
-                            //
-                            // Fix: use AGRIBALYSE_DEFAULT_PRODUCTIVITY from core_physics CONSTANTS.
-                            // These are French national average productivities sourced from
-                            // CNIEL/IDELE/ITAVI 2022 (same values already used in enteric delta path).
-                            // If still zero/missing after lookup, record a WARNING in adjustments
-                            // and skip the enteric calculation (treat as 0) rather than guessing.
+                            // Final fallback — use a safe default so heads calculation doesn't divide by 0
                             if (!productPerHeadPerYear || productPerHeadPerYear <= 0) {
-                                const AGRI_DEFAULTS = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK.AGRIBALYSE_DEFAULT_PRODUCTIVITY;
-                                const agriDefault = AGRI_DEFAULTS ? AGRI_DEFAULTS[pd.animalType] : null;
-                                if (agriDefault && agriDefault > 0) {
-                                    productPerHeadPerYear = agriDefault;
-                                    adjustments.productivity_fallback = {
-                                        used: 'AGRIBALYSE_DEFAULT_PRODUCTIVITY',
-                                        animal_type: pd.animalType,
-                                        value_kg_per_head_year: agriDefault,
-                                        source: 'CNIEL/IDELE/ITAVI France national average productivity 2022 — embedded in AGRIBALYSE 3.2',
-                                        note: 'User did not provide productivityMetric. AGRIBALYSE national average used. For accurate results, provide actual herd productivity in the supplier form.'
-                                    };
-                                    console.warn('[BK-6 FIX] No user productivity for animal type "' + pd.animalType +
-                                        '". Using AGRIBALYSE default: ' + agriDefault + ' kg/head/year.');
-                                } else {
-                                    // No default available — skip enteric rather than guess
-                                    productPerHeadPerYear = null;
-                                    adjustments.productivity_fallback = {
-                                        used: 'NONE',
-                                        animal_type: pd.animalType,
-                                        value_kg_per_head_year: null,
-                                        warning: 'No productivityMetric provided and no AGRIBALYSE default available for animal type "' +
-                                                 pd.animalType + '". Enteric CH4 and manure N2O NOT calculated. ' +
-                                                 'Add productivityMetric (kg output per head per year) to supplier primary data.'
-                                    };
-                                    console.error('[BK-6 FIX] Cannot compute enteric/manure for animal type "' + pd.animalType +
-                                        '" — no productivity data and no AGRIBALYSE default. Skipping livestock adjustments.');
-                                }
+                                productPerHeadPerYear = 1000; // 1 tonne per head — conservative
                             }
                         }
 
@@ -1286,15 +1179,12 @@ if (!traceability.usetox) {
                         // Formula: heads = quantityKg / productPerHeadPerYear
                         //          CH4_kg = heads × efCh4PerHead
                         //          CO2e = CH4_kg × GWP_CH4_BIOGENIC (28, per IPCC AR5 / PEF 3.1)
-                        // BK-6 FIX: skip if productPerHeadPerYear is null (no data, no default)
-                        const entericCO2e = (productPerHeadPerYear && productPerHeadPerYear > 0)
-                            ? window.corePhysics.calculateEntericMethane({
-                                animalType:          pd.animalType,
-                                quantityKg:          ingredient.quantityKg,
-                                efCh4PerHead:        animalRow.ef_ch4,
-                                productPerHeadPerYear
-                              })
-                            : 0;
+                        const entericCO2e = window.corePhysics.calculateEntericMethane({
+                            animalType:          pd.animalType,
+                            quantityKg:          ingredient.quantityKg,
+                            efCh4PerHead:        animalRow.ef_ch4,
+                            productPerHeadPerYear
+                        });
 
                         // ── Check whether AGRIBALYSE already embeds enteric in its PEF values ──
                         const ingDataMeta = ingData && ingData.data && ingData.data.metadata;
@@ -1453,126 +1343,6 @@ if (!traceability.usetox) {
                             ipcc_source:            'IPCC 2006 Vol. 4 Tables 10.19 & 10.21, confirmed 2019 Refinement'
                         };
 
-                        // ── L-3 FIX: USEtox 2.14 path for livestock ingredients ───────────
-                        // Previously the USEtox pesticide/toxicity path existed only for crop
-                        // ingredients. Livestock ingredients had zero USEtox contribution from
-                        // primary data — silently understating Human Toxicity and Ecotoxicity
-                        // for any meat/dairy ingredient where the user provides pesticide data
-                        // (e.g. pesticides used on feed crops grown on the supplying farm).
-                        //
-                        // This fix adds the same USEtox path used in the crop branch.
-                        // Applicable scenario: Livestock supplier provides:
-                        //   pd.pesticides = [{ cas: '...', name: '...', rateKgPerHa: N }]
-                        //   pd.feedAreaHa  = hectares of feed crop grown on farm
-                        //
-                        // Formula: same as crop path — amount_applied = rate × area / quantity_kg
-                        // CharacterizationFactors from USEtox 2.14 (same database).
-                        //
-                        // Note: For most livestock suppliers, pesticide data will not be available
-                        // (they do not grow their own feed). In that case pd.pesticides is empty
-                        // and this block records a 'not_applied' note — same as crop path.
-                        //
-                        // Source: USEtox 2.14 — Rosenbaum et al. (2011) + EF 3.1 integration
-                        //         UNEP/SETAC Life Cycle Initiative; same database as crop path.
-
-                        const usetoxDB_livestock = window.aioxyData && window.aioxyData.usetox;
-                        let livestockUSEtoxApplied = false;
-
-                        if (pd.pesticides && pd.pesticides.length > 0 &&
-                            pd.feedAreaHa && pd.feedAreaHa > 0 &&
-                            usetoxDB_livestock &&
-                            usetoxDB_livestock.human_toxicity &&
-                            usetoxDB_livestock.ecotoxicity) {
-
-                            let totalHtoxCancer_livestock    = 0;
-                            let totalHtoxNonCancer_livestock = 0;
-                            let totalEcotox_livestock        = 0;
-                            const pesticideDetails_livestock = [];
-
-                            for (const pesticide of pd.pesticides) {
-                                const cas  = (pesticide.cas  || '').trim();
-                                const rate = pesticide.rateKgPerHa || 0;
-                                if (!cas || rate <= 0) continue;
-
-                                // amount_applied = kg pesticide per kg livestock product
-                                // = (rate kg/ha × feedAreaHa ha) / quantityKg
-                                const amountApplied = (rate * pd.feedAreaHa) / ingredient.quantityKg;
-
-                                const htCF_c  = usetoxDB_livestock.human_toxicity[cas];
-                                const htCF_nc = usetoxDB_livestock.human_toxicity_nc
-                                              ? usetoxDB_livestock.human_toxicity_nc[cas]
-                                              : null;
-                                const ecoCF   = usetoxDB_livestock.ecotoxicity[cas];
-
-                                const htoxCancer    = htCF_c  ? amountApplied * htCF_c  : 0;
-                                const htoxNonCancer = htCF_nc ? amountApplied * htCF_nc : 0;
-                                const ecotox        = ecoCF   ? amountApplied * ecoCF   : 0;
-
-                                totalHtoxCancer_livestock    += htoxCancer;
-                                totalHtoxNonCancer_livestock += htoxNonCancer;
-                                totalEcotox_livestock        += ecotox;
-
-                                // M-3 FIX: record match status for every pesticide
-                                const matched_livestock = !!(htCF_c || htCF_nc || ecoCF);
-                                if (!matched_livestock && cas) {
-                                    console.warn('[M-3 FIX] Livestock USEtox: CAS "' + cas + '" (' +
-                                                 (pesticide.name||'unknown') + ') not in database. Contribution = 0.');
-                                }
-
-                                pesticideDetails_livestock.push({
-                                    name:                  pesticide.name || 'Unknown',
-                                    cas,
-                                    rate_kg_per_ha:        rate,
-                                    feed_area_ha:          pd.feedAreaHa,
-                                    amount_per_kg_product: amountApplied,
-                                    htox_cancer_CTUh:      htoxCancer,
-                                    htox_noncancer_CTUh:   htoxNonCancer,
-                                    ecotox_CTUe:           ecotox,
-                                    matched:               matched_livestock,
-                                    unmatched_reason:      !matched_livestock
-                                        ? 'CAS ' + cas + ' not in USEtox 2.14. Contribution = 0. Verify at https://www.usetox.org/model/substance-list'
-                                        : null
-                                });
-                            }
-
-                            if (totalHtoxCancer_livestock > 0 || totalHtoxNonCancer_livestock > 0 || totalEcotox_livestock > 0) {
-                                // ADD to AGRIBALYSE background values (same approach as crop path)
-                                flatPef['Human Toxicity, cancer']     += totalHtoxCancer_livestock;
-                                flatPef['Human Toxicity, non-cancer'] += totalHtoxNonCancer_livestock;
-                                flatPef['Ecotoxicity, freshwater']    += totalEcotox_livestock;
-
-                                adjustments.usetox_livestock = {
-                                    status:                    'applied',
-                                    source:                    'USEtox 2.14',
-                                    version:                   'EF 3.1',
-                                    method:                    'Livestock feed-crop pesticide application — L-3 FIX',
-                                    feed_area_ha:              pd.feedAreaHa,
-                                    total_htox_cancer_CTUh:    totalHtoxCancer_livestock,
-                                    total_htox_noncancer_CTUh: totalHtoxNonCancer_livestock,
-                                    total_ecotox_CTUe:         totalEcotox_livestock,
-                                    pesticides:                pesticideDetails_livestock,
-                                    note: 'USEtox applied to feed-crop pesticide data provided by livestock supplier. ' +
-                                          'Values ADDED to AGRIBALYSE 3.2 background toxicity for this ingredient.'
-                                };
-                                livestockUSEtoxApplied = true;
-                            }
-
-                        } else {
-                            // No pesticide data or no feed area — record why USEtox not applied
-                            adjustments.usetox_livestock = {
-                                status:          'not_applied',
-                                source:          'USEtox 2.14',
-                                version:         'EF 3.1',
-                                reason:          !pd.pesticides || pd.pesticides.length === 0
-                                    ? 'No pesticide application data provided by livestock supplier. AGRIBALYSE 3.2 composite toxicity used.'
-                                    : !pd.feedAreaHa || pd.feedAreaHa <= 0
-                                        ? 'Pesticide data present but feedAreaHa not provided. Cannot compute amount applied per kg product.'
-                                        : 'USEtox 2.14 database not loaded.',
-                                action_required: 'To enable substance-specific toxicity for livestock, add pesticide application data ' +
-                                                 '(CAS number + kg/ha) and feed crop area (feedAreaHa, in hectares) to the livestock supplier form.'
-                            };
-                        }
-
                         adjustments.method = 'animal_primary_data_ipcc_tier1';
                     }
 
@@ -1596,50 +1366,10 @@ if (!traceability.usetox) {
                             }
                         }
                     }
-                    // BK-3 FIX: Detect when 5000 fallback fires and record a visible
-                    // warning in adjustments — previously fired silently with no flag.
-                    // The fallback triggers when either:
-                    //   (a) FAOSTAT yield database has no entry for this country, or
-                    //   (b) No crop name match found for this ingredient.
-                    // Both cases are now flagged explicitly so the PDF and audit trail
-                    // can surface a warning to the user.
-                    const yieldFallbackUsed = (baselineYield === 5000);
                     adjustments.baseline_yield = baselineYield;
-                    adjustments.baseline_yield_source = yieldFallbackUsed
-                        ? 'FALLBACK — 5000 kg/ha global average (FAOSTAT match not found for this crop/country combination)'
+                    adjustments.baseline_yield_source = baselineYield === 5000
+                        ? 'Default (5000 kg/ha)'
                         : 'FAOSTAT ' + ((window.aioxyData.crop_yields && window.aioxyData.crop_yields.years) || '2020-2024');
-
-                    // BK-3 FIX: Explicit warning flag for downstream PDF and audit rendering
-                    if (yieldFallbackUsed) {
-                        adjustments.yield_baseline_warning = {
-                            fired:        true,
-                            fallback_used: 5000,
-                            unit:          'kg/ha',
-                            reason:        'FAOSTAT crop yield database returned no match for ingredient "' +
-                                           (ingData.name || '') + '" in country "' +
-                                           (ingredient.originCountry || 'FR') + '".',
-                            action:        'Provide a FAOSTAT-aligned crop name or verify origin country code. ' +
-                                           '5000 kg/ha is a conservative global average — may over- or under-state ' +
-                                           'the yield adjustment factor for this specific crop.',
-                            source:        'Global average per FAO STAT crop production data 2020-2023'
-                        };
-                        console.warn('[BK-3] Yield fallback fired for "' + (ingData.name || '') +
-                                     '" in "' + (ingredient.originCountry || 'FR') +
-                                     '" — using 5000 kg/ha default. Check FAOSTAT match.');
-                    } else {
-                        adjustments.yield_baseline_warning = { fired: false };
-                    }
-                    // BK-4 FIX: The 2.0 cap on yieldAdj is now explicitly documented.
-                    // Basis: PEF 3.1 supplementary guidance on primary data sensitivity analysis
-                    // recommends capping single-parameter adjustment factors at 2× the background
-                    // data value to prevent individual primary data inputs from dominating the
-                    // entire assessment in screening-level LCAs (JRC PEF 3.1 §4.4.3).
-                    // Additional rationale: AGRIBALYSE 3.2 crop yields represent French reference
-                    // conditions. A supplier yield below 50% of the national average would indicate
-                    // an agronomic outlier requiring independent verification before applying an
-                    // uncapped multiplier. The cap triggers a warning flag (recorded below).
-                    // Source: JRC (2023) Product Environmental Footprint Category Rules guidance
-                    //         v3.1, §4.4.3 sensitivity analysis; ADEME Agribalyse 3.2 (2022).
                     yieldAdj = Math.min(baselineYield / pd.yieldKgPerHa, 2.0);
                     // GAP 10 FIX: structured yield_adjustment for PDF dumb-printer trace.
                     // PDF reads this object directly — must NOT recompute yieldAdj.
@@ -1654,174 +1384,35 @@ if (!traceability.usetox) {
                 }
 
                 // Nitrogen adjustment factor
-                // BK-2 FIX: Crop-specific baseline N application rates replace the
-                // former universal hardcoded value of 15 kg N/t.
-                //
-                // Sources per crop:
-                //   AGRIBALYSE 3.2 methodology documentation (ADEME/INRAE, Collet et al. 2022),
-                //   Table 4.1 — mean synthetic N application rates by crop, French reference system.
-                //   Cross-checked against:
-                //     FAO Fertilizer and Plant Nutrition Bulletin 17 (2006) — world averages.
-                //     EuroFert 2020 dataset (Eurostat + IFA) — EU-27 averages by crop.
-                //   Values in kg N per tonne of harvested product (= kg N/t yield).
-                //   Formula: nAdj = actual_kg_N_per_t / baseline_kg_N_per_t
-                //   A value > 1 means more N than baseline → higher impact.
-                //   A value < 1 means less N than baseline → lower impact.
-                //
-                // BASELINE_N_KG_PER_T: crop-name substring → kg N per tonne harvested
-                // Keys are lowercase substrings matched against ingData.name.toLowerCase().
-                // The first match wins. 'default' fires when no crop-specific entry matches.
-                // All values rounded to 1 decimal place.
-                const BASELINE_N_KG_PER_T = {
-                    // Cereals
-                    'wheat':        20.0,  // AGRIBALYSE 3.2 Table 4.1: soft wheat FR avg 200 kg N/ha ÷ 7.0 t/ha = 28.6 → AGRIBALYSE 3.2 reports 20 kg N/t (whole grain basis after milling adjustment)
-                    'barley':       18.0,  // AGRIBALYSE 3.2: barley FR avg 160 kg N/ha ÷ 5.5 t/ha = 18.0 kg N/t
-                    'maize':        14.0,  // AGRIBALYSE 3.2: grain maize FR avg 155 kg N/ha ÷ 9.5 t/ha = 16.3 → EuroFert 2020 EU27 avg = 14.0 kg N/t
-                    'corn':         14.0,  // synonym for maize
-                    'oat':          14.0,  // AGRIBALYSE 3.2: oats FR avg 100 kg N/ha ÷ 4.5 t/ha = 14.0 kg N/t (IFA 2020)
-                    'rye':          16.0,  // EuroFert 2020: rye EU27 avg 100 kg N/ha ÷ 4.0 t/ha = 16.0 kg N/t (AGRIBALYSE proxy)
-                    'rice':         12.0,  // FAO Fertilizer Bulletin 17 (2006) Table A3: paddy rice world avg 80 kg N/ha ÷ 4.5 t/ha = 17.8 → Asian-origin rice median = 12.0 kg N/t (IRRI 2023)
-                    'sorghum':      10.0,  // FAO (2006) Table A4: sorghum world avg 60 kg N/ha ÷ 1.5 t/ha = 10.0 kg N/t
-
-                    // Oilseeds
-                    'rapeseed':     28.0,  // AGRIBALYSE 3.2 Table 4.1: rapeseed FR avg 180 kg N/ha ÷ 3.5 t/ha = 28.0 kg N/t
-                    'canola':       28.0,  // synonym for rapeseed
-                    'sunflower':    18.0,  // AGRIBALYSE 3.2: sunflower FR avg 90 kg N/ha ÷ 2.6 t/ha = 18.0 kg N/t (Collet et al.)
-                    'soy':          3.0,   // AGRIBALYSE 3.2: soybean — N-fixing legume. Synthetic N negligible (~15 kg N/ha ÷ 3.0 t/ha = 5 → AGRIBALYSE uses 3.0 kg N/t accounting for BNF credit)
-                    'soybean':      3.0,   // synonym
-                    'palm':         8.0,   // FAO (2006) Table A9: oil palm world avg 120 kg N/ha ÷ 20 t FFB/ha = 6.0 → CPO basis ÷ 0.22 extraction rate = 8.0 kg N/t CPO (RSPO 2021)
-                    'palm oil':     8.0,
-                    'flaxseed':     20.0,  // EuroFert 2020: linseed EU27 avg 80 kg N/ha ÷ 2.0 t/ha = 20.0 kg N/t (IFA proxy)
-                    'linseed':      20.0,
-
-                    // Legumes
-                    'pea':          2.0,   // AGRIBALYSE 3.2: protein pea FR — N-fixing. Synthetic N avg 30 kg N/ha ÷ 4.5 t/ha = 6.7 → BNF credit reduces effective N to 2.0 kg N/t (ADEME 2022)
-                    'peas':         2.0,
-                    'lentil':       2.0,   // FAO (2006) Table A6: lentil — N-fixing, similar to pea
-                    'lentils':      2.0,
-                    'bean':         4.0,   // AGRIBALYSE 3.2: field beans FR avg 30 kg N/ha ÷ 4.0 t/ha = 7.5 → BNF credit → 4.0 kg N/t (Collet et al. 2022)
-                    'chickpea':     2.0,   // FAO (2006): chickpea — strong N-fixer, synthetic N minimal
-                    'faba':         2.0,   // faba bean — strong N-fixer
-
-                    // Roots and tubers
-                    'potato':       12.0,  // AGRIBALYSE 3.2 Table 4.1: potato FR avg 180 kg N/ha ÷ 45 t/ha = 4.0 → starch product basis adds processing factor → 12.0 kg N/t fresh (ADEME 2022)
-                    'sweet potato': 6.0,   // FAO (2006) Table A7: sweet potato world avg 40 kg N/ha ÷ 12 t/ha = 3.3 → fresh weight basis 6.0 (IFA 2020)
-                    'cassava':      4.0,   // FAO (2006) Table A7: cassava world avg 40 kg N/ha ÷ 12 t/ha = 3.3 → 4.0 (conservative IFA)
-                    'beet':         10.0,  // AGRIBALYSE 3.2: sugar beet FR avg 140 kg N/ha ÷ 75 t/ha = 1.9 → white sugar basis × concentration = 10.0 kg N/t sugar (Collet et al.)
-                    'sugar beet':   10.0,
-
-                    // Vegetables
-                    'tomato':       10.0,  // AGRIBALYSE 3.2 Table 4.1: tomato greenhouse FR avg 220 kg N/ha ÷ 100 t/ha = 2.2 → field tomato 100 kg N/ha ÷ 60 t/ha = 1.7 → concentrate basis = 10.0 kg N/t (Collet et al. 2022)
-                    'carrot':       8.0,   // AGRIBALYSE 3.2: carrot FR avg 120 kg N/ha ÷ 50 t/ha = 2.4 → 8.0 after processing concentration (ADEME)
-                    'onion':        7.0,   // EuroFert 2020: onion EU avg 120 kg N/ha ÷ 45 t/ha = 2.7 → 7.0 (dehydrated basis, IFA)
-                    'spinach':      15.0,  // AGRIBALYSE 3.2: leafy vegetable proxy FR avg 200 kg N/ha ÷ 20 t/ha = 10.0 → frozen/processed 15.0 (ADEME)
-                    'pea shoot':    2.0,   // legume — N-fixing proxy
-
-                    // Fruit
-                    'apple':        6.0,   // EuroFert 2020: apple EU avg 70 kg N/ha ÷ 40 t/ha = 1.8 → juice concentrate basis 6.0 (IFA 2020)
-                    'orange':       5.0,   // FAO (2006) Table A10: citrus world avg 80 kg N/ha ÷ 30 t/ha = 2.7 → concentrate 5.0
-                    'citrus':       5.0,
-                    'banana':       4.0,   // FAO (2006): banana world avg 120 kg N/ha ÷ 40 t/ha = 3.0 → 4.0 (IFA 2020 tropical avg)
-                    'grape':        10.0,  // AGRIBALYSE 3.2: wine grape FR avg 60 kg N/ha ÷ 8 t/ha = 7.5 → dried/concentrate 10.0 (Collet et al.)
-                    'strawberry':   12.0,  // EuroFert 2020: strawberry EU avg 120 kg N/ha ÷ 20 t/ha = 6.0 → processed 12.0 (IFA)
-                    'blueberry':    8.0,   // EuroFert 2020 proxy: berry EU avg 60 kg N/ha ÷ 8 t/ha = 7.5 → 8.0
-
-                    // Coffee, cocoa, tea
-                    'coffee':       12.0,  // FAO (2006) Table A11: coffee world avg 80 kg N/ha ÷ 1.5 t green bean/ha = 13.3 → 12.0 (ICO 2022 avg)
-                    'cocoa':        6.0,   // FAO (2006): cocoa world avg 20 kg N/ha ÷ 0.45 t/ha = 44 → ICCO 2022 reports 6 kg N/t dry bean (N-fixing shade trees credit)
-                    'tea':          15.0,  // FAO (2006): tea world avg 150 kg N/ha ÷ 2.0 t dry leaf/ha = 75 → processed tea leaf 15.0 (IFA 2021 — high N requirement crop)
-
-                    // Sugar / starch
-                    'sugar cane':   3.0,   // FAO (2006) Table A8: sugarcane world avg 90 kg N/ha ÷ 65 t/ha = 1.4 → raw sugar 3.0 (IFA 2020, Barbados/Brazil avg)
-                    'sugarcane':    3.0,
-                    'starch':       14.0,  // maize starch proxy — same as maize
-                    'glucose':      14.0,  // glucose syrup from maize — same proxy
-
-                    // Default — no crop-specific match
-                    'default':      15.0   // global average per IFA World Fertilizer Trends (2022) Table 2.1 — retained as conservative fallback for unclassified crops
-                };
-
-                // Match ingredient name against lookup table
-                const ingNameLower = (ingData.name || '').toLowerCase();
-                let baselineN = BASELINE_N_KG_PER_T['default'];
-                let baselineNSource = 'IFA World Fertilizer Trends (2022) Table 2.1 — global average (no crop-specific match)';
-                let baselineNKey = 'default';
-
-                for (const [cropKey, cropN] of Object.entries(BASELINE_N_KG_PER_T)) {
-                    if (cropKey === 'default') continue;
-                    if (ingNameLower.includes(cropKey)) {
-                        baselineN = cropN;
-                        baselineNKey = cropKey;
-                        // Assign source string per matched crop
-                        baselineNSource = cropKey.includes('soy') || cropKey.includes('pea') || cropKey.includes('lentil') || cropKey.includes('bean') || cropKey.includes('chickpea') || cropKey.includes('faba')
-                            ? 'AGRIBALYSE 3.2 Table 4.1 (Collet et al. 2022) — N-fixing legume, BNF credit applied'
-                            : cropKey.includes('wheat') || cropKey.includes('barley') || cropKey.includes('rapeseed') || cropKey.includes('canola') || cropKey.includes('sunflower') || cropKey.includes('potato') || cropKey.includes('beet') || cropKey.includes('tomato') || cropKey.includes('carrot') || cropKey.includes('grape')
-                                ? 'AGRIBALYSE 3.2 Table 4.1 (ADEME/INRAE, Collet et al. 2022)'
-                                : cropKey.includes('maize') || cropKey.includes('corn') || cropKey.includes('oat') || cropKey.includes('rye')
-                                    ? 'AGRIBALYSE 3.2 / EuroFert 2020 (Eurostat + IFA) EU-27 average'
-                                    : cropKey.includes('rice') ? 'FAO Fertilizer Bulletin 17 (2006) Table A3 / IRRI 2023'
-                                    : cropKey.includes('palm') ? 'FAO Fertilizer Bulletin 17 (2006) Table A9 / RSPO 2021'
-                                    : cropKey.includes('coffee') || cropKey.includes('cocoa') || cropKey.includes('tea') ? 'FAO Fertilizer Bulletin 17 (2006) Table A11 / ICO/ICCO/IFA 2021-2022'
-                                    : 'FAO Fertilizer and Plant Nutrition Bulletin 17 (2006) / EuroFert 2020 / IFA 2020';
-                        break;
-                    }
-                }
-
                 let nAdj = 1.0;
                 if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
+                    const baselineN = 15;
                     adjustments.baseline_nitrogen = baselineN;
                     nAdj = pd.nitrogenKgPerTon / baselineN;
                     // GAP 10 FIX: structured nitrogen_adjustment for PDF dumb-printer trace.
                     // PDF reads this object directly — must NOT recompute nAdj.
                     adjustments.nitrogen_adjustment = {
-                        baseline_kg_per_ton:        baselineN,
-                        baseline_source:            baselineNSource,
-                        baseline_crop_key:          baselineNKey,
-                        actual_kg_per_ton:          pd.nitrogenKgPerTon,
-                        formula:                    'actual_kg_per_ton / baseline_kg_per_ton',
-                        factor:                     nAdj,
-                        note: nAdj > 2.0
-                            ? 'WARNING: N adjustment factor > 2.0 — actual N rate is more than double the crop baseline. Verify supplier data.'
-                            : nAdj < 0.1
-                                ? 'NOTE: N adjustment factor < 0.1 — very low N rate vs baseline. Verify supplier data or confirm N-fixing crop.'
-                                : null
+                        baseline_kg_per_ton: baselineN,
+                        actual_kg_per_ton:   pd.nitrogenKgPerTon,
+                        formula:             'actual_kg_per_ton / baseline_kg_per_ton',
+                        factor:              nAdj
                     };
                 }
 
                 // AIOXY COMPOSITE PRIMARY DATA MULTIPLIER
                 // Formula: co2Mult = 0.6 × yield_factor + 0.4 × nitrogen_factor
-                //
-                // BK-1 FIX: Weights 0.6 / 0.4 are now explicitly sourced.
-                //
-                // Basis for 0.6 yield weight:
-                //   Meta-analysis of French conventional crop LCA studies (AGRIBALYSE 3.2
-                //   technical documentation, Collet et al. 2022, §4.2 "Sensitivity of
-                //   farm-gate impacts to yield variation") shows that across 14 major crops,
-                //   yield-correlated impacts (land use, diesel fuel use, upstream fertilizer
-                //   production scaled by area rather than output) account for 57–64% of total
-                //   farm-gate GHG emissions on a per-kg-product basis. Central estimate: 60%.
-                //   Source: ADEME/INRAE (2022) Agribalyse 3.2 Methodology Report §4.2, Fig 4.3.
-                //
-                // Basis for 0.4 nitrogen weight:
-                //   The remaining 36–43% of farm-gate GHG is dominated by N-management
-                //   emissions: direct N2O (IPCC EF1), indirect N2O (EF4+EF5), and NH3
-                //   volatilization. At 40% weight, the nitrogen term captures this
-                //   contribution. Source: AGRIBALYSE 3.2 §4.3 (N2O contribution analysis)
-                //   cross-checked against Poore & Nemecek (2018) Science 360:987 — crop
-                //   N2O and soil emissions ≈ 38% of farm GHG on average.
-                //
+                // Rationale: Yield improvement reduces land requirement and associated
+                // impacts proportionally (60% weight). Nitrogen efficiency reduces N₂O
+                // emissions and associated eutrophication (40% weight). Weights derived
+                // from contribution analysis of French conventional crop PEF profiles
+                // where yield-related impacts (land use, fuel use) contribute ~60% of
+                // farm-gate impact and nitrogen-related impacts (N₂O, NH₃, NO₃⁻) ~40%.
                 // Applied to ALL 16 impact categories as a conservative proxy — actual
                 // category-specific sensitivity would require per-category primary data
                 // multipliers which are not available in the current supplier data form.
-                // Limitation (unchanged): Using this composite multiplier for categories
-                // like Ionizing Radiation and Ozone Depletion is an acknowledged
-                // approximation. These two categories are now excluded per FIX CALC-08.
-                // The multiplier is appropriate for the 14 remaining categories where
-                // agricultural inputs (land, N, energy) drive the impact profile.
-                //
-                // Confidence: MEDIUM. Appropriate for screening-level PEF assessment.
-                // For regulatory submission, replace with category-specific sensitivity
-                // analysis using extended primary data form.
+                // Limitation: Using a nitrogen-derived multiplier for categories like
+                // Ionizing Radiation and Ozone Depletion is methodologically imprecise
+                // but conservative (multiplier rarely exceeds 1.5× in either direction).
                 const co2Mult = (0.6 * yieldAdj) + (0.4 * nAdj);
                 adjustments.multipliers = {
                     co2:    co2Mult,
@@ -1895,33 +1486,6 @@ if (!traceability.usetox) {
                         formula:                 'IPCC Tier 1 (2006), EF1=IPCC.EF1_DIRECT_N2O, EF5=IPCC.EF5_INDIRECT_N2O, FRAC_LEACH=IPCC.FRAC_LEACH, EF4=IPCC.EF4_VOLATILIZATION, FRAC_GASF=IPCC.FRAC_GASF (volatilization/atmospheric deposition), GWP_N2O=AR5.GWP_N2O'
                     };
                 }
-
-                // === ORGANIC NITROGEN N₂O (ISO 14044 primary data path) ===
-                // Manure, compost, digestate applied to soil.
-                // Key difference from synthetic N: FRAC_GASM = 0.20 (organic N volatilization fraction)
-                // vs FRAC_GASF = 0.10 for synthetic N. Both use same EF1, EF4, EF5, FRAC_LEACH.
-                // Source: IPCC 2006 Vol. 4, Ch. 11, Table 11.1 & 11.3 (F_ON organic nitrogen inputs).
-                if (pd.organicNitrogenKgPerTon && pd.organicNitrogenKgPerTon > 0) {
-                    const FRAC_GASM = 0.20;  // IPCC 2006 Vol.4 Table 11.3 — fraction of organic N volatilized as NH3/NOx
-                    const F_ON = (pd.organicNitrogenKgPerTon / 1000) * ingredient.quantityKg;  // kg organic N applied
-                    const N2O_on_direct         = F_ON * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
-                    const N2O_on_leach          = F_ON * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
-                    const N2O_on_volatilization = F_ON * FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
-                    const N2O_on_total = N2O_on_direct + N2O_on_leach + N2O_on_volatilization;
-
-                    flatPef['Climate Change']            += N2O_on_total / ingredient.quantityKg;
-                    flatPef['Climate Change - Land Use'] += N2O_on_total / ingredient.quantityKg;
-
-                    adjustments.n2o_organic_applied = {
-                        applied:                 true,
-                        F_ON_kg:                 F_ON,
-                        direct_kgCO2e:           N2O_on_direct,
-                        indirect_leach_kgCO2e:   N2O_on_leach,
-                        volatilization_kgCO2e:   N2O_on_volatilization,
-                        total_kgCO2e:            N2O_on_total,
-                        frac_gasm:               FRAC_GASM,
-                        formula:                 'IPCC Tier 1 (2006) Vol.4 Table 11.3 organic N path: F_ON × EF1 (direct) + F_ON × FRAC_LEACH × EF5 (leach) + F_ON × FRAC_GASM(0.20) × EF4 (volatilization). GWP_N2O=' + AR5.GWP_N2O
-                    };
 
                 // === GAP 2: SALCA-P phosphorus leaching (ISO 14044 primary data path) ===
                 // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
@@ -2010,53 +1574,25 @@ if (!traceability.usetox) {
             
                             const htCF = usetoxDB.human_toxicity[cas];
                             const ecoCF = usetoxDB.ecotoxicity[cas];
-
+            
                             if (htCF || ecoCF) {
                                 const cancer = htCF ? (amountApplied * (htCF.cancer_CTUh_per_kg || 0)) : 0;
                                 const noncancer = htCF ? (amountApplied * (htCF.noncancer_CTUh_per_kg || 0)) : 0;
                                 const ecotox = ecoCF ? (amountApplied * ecoCF) : 0;
-
+                
                                 totalCancerCTUh += cancer;
                                 totalNonCancerCTUh += noncancer;
                                 totalEcotoxicityCTUe += ecotox;
-
+                
                                 pesticideDetails.push({
-                                    name:              pesticide.name || 'Unknown',
-                                    cas:               cas,
-                                    rateKgPerHa:       rate,
-                                    amountAppliedKg:   amountApplied,
-                                    cancer_CTUh:       cancer,
-                                    noncancer_CTUh:    noncancer,
-                                    ecotoxicity_CTUe:  ecotox,
-                                    matched:           true
+                                    name: pesticide.name || 'Unknown',
+                                    cas: cas,
+                                    rateKgPerHa: rate,
+                                    amountAppliedKg: amountApplied,
+                                    cancer_CTUh: cancer,
+                                    noncancer_CTUh: noncancer,
+                                    ecotoxicity_CTUe: ecotox
                                 });
-                            } else {
-                                // M-3 FIX: CAS number not found in USEtox 2.14 database.
-                                // Previously silently skipped — understated toxicity with no trace.
-                                // Now recorded in unmatchedCAS list for PDF and audit trail.
-                                // This is NOT an error — the substance may simply not be in USEtox 2.14.
-                                // The user should verify the CAS number and consider adding it manually.
-                                if (!cas) {
-                                    // No CAS provided at all — different issue, record separately
-                                    pesticideDetails.push({
-                                        name:    pesticide.name || 'Unknown',
-                                        cas:     '(none provided)',
-                                        matched: false,
-                                        reason:  'No CAS number provided — cannot look up USEtox characterisation factor'
-                                    });
-                                } else {
-                                    pesticideDetails.push({
-                                        name:    pesticide.name || 'Unknown',
-                                        cas:     cas,
-                                        matched: false,
-                                        reason:  'CAS ' + cas + ' not found in USEtox 2.14 database. ' +
-                                                 'Toxicity contribution for this substance = 0. ' +
-                                                 'Verify CAS number or check USEtox 2.14 substance list at ' +
-                                                 'https://www.usetox.org/model/substance-list'
-                                    });
-                                    console.warn('[M-3 FIX] USEtox: CAS "' + cas + '" (' + (pesticide.name||'unknown') +
-                                                 ') not in database. Toxicity contribution = 0.');
-                                }
                             }
                         }
         
@@ -2245,8 +1781,6 @@ if (!traceability.usetox) {
             // === END PHASE 2 traceability push ===
         }
 
-        }  // close for (const ingredient of input.ingredients) loop
-
         return { ingredientResults, ingredientTraceability };
     }
 
@@ -2324,43 +1858,16 @@ if (!traceability.usetox) {
 
             const kwhPerKgActual = pfd.totalKWh   / pfd.totalOutputKg;
             const gasM3PerKg     = pfd.totalGasM3 / pfd.totalOutputKg;
-
-            // FUEL TYPE CO2 FACTOR — CoM 2024 JRC Edition
-            // Each factor is per the unit entered in the form (m³ for gas, litres for LPG/oil, kg for coal).
-            const FUEL_CO2_FACTORS = {
-                natural_gas: 2.13,   // kg CO2/m³  (0.20196 t CO2/MWh × 38 MJ/m³ ÷ 3600 MJ/MWh × 1000)
-                lpg:         1.61,   // kg CO2/litre (63.1 t CO2/TJ × 46.1 MJ/kg × 0.555 kg/L ÷ 1e6 × 1000)
-                fuel_oil:    2.66,   // kg CO2/litre (74.1 t CO2/TJ × 42.7 MJ/kg × 0.84 kg/L ÷ 1e6 × 1000)
-                coal:        2.53,   // kg CO2/kg   (94.6 t CO2/TJ × 26.7 MJ/kg ÷ 1e6 × 1000)
-                none:        0.0
-            };
-            const fuelType   = pfd.fuelType || 'natural_gas';
-            const fuelFactor = FUEL_CO2_FACTORS[fuelType] !== undefined ? FUEL_CO2_FACTORS[fuelType] : 2.13;
             // CoM 2024 Table 1: Natural gas = 0.20196 t CO2/MWh (activity-based)
 // 1 m³ gas ≈ 0.01056 MWh (38 MJ/m³ ÷ 3,600 MJ/MWh)
 // ∴ 0.20196 × 0.01056 × 1,000 = 2.13 kg CO2/m³
 // Source: European Commission, Covenant of Mayors, Emission Factors
 //   for Local Energy Use, 2024 Edition, JRC
-const gasCO2 = gasM3PerKg * fuelFactor;
-
-            // REFRIGERANT LEAKAGE — F-gas direct emissions
-            // Formula: kg CO2e = (kgLeaked / totalOutputKg) × GWP_refrigerant (IPCC AR5 / EC Reg 517/2014)
-            // Added to Climate Change (Fossil) — F-gases are synthetic, non-biogenic, non-land-use.
-            const REFRIGERANT_GWP = {
-                'R-404A': 3922, 'R-134a': 1430, 'R-407C': 1774, 'R-410A': 2088,
-                'R-507A': 3985, 'R-32': 675,    'R-744': 1,     'R-717': 0
-            };
-            const refType    = pfd.refrigerantType   || '';
-            const refKgTotal = pfd.refrigerantKgLeaked || 0;
-            const refGWP     = refType ? (REFRIGERANT_GWP[refType] || 0) : 0;
-            const refCO2PerKg = refKgTotal > 0 && refGWP > 0 && pfd.totalOutputKg > 0
-                ? (refKgTotal / pfd.totalOutputKg) * refGWP
-                : 0;
+const gasCO2 = gasM3PerKg * 2.13;
             // FIX 2: Apply T&D losses to primary factory electricity, matching the benchmark path.
             // CONSTANTS.GLEC.T_AND_D_LOSSES = 0.07 (IEA EU average, defined in core_physics.js).
             const elecCO2        = kwhPerKgActual * (gridIntensity * (1 + window.corePhysics.CONSTANTS.GLEC.T_AND_D_LOSSES) / 1000);
-            // Refrigerant adds to Climate Change (Fossil) — GWP-weighted F-gas direct emission per kg product
-            const totalMfgCO2    = (elecCO2 + gasCO2 + refCO2PerKg) * prodWt;
+            const totalMfgCO2    = (elecCO2 + gasCO2) * prodWt;
             const totalMfgKwh    = kwhPerKgActual * prodWt;
 
             mfgResult = {
@@ -2368,13 +1875,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 kwh:                  totalMfgKwh,
                 fossilFraction:       1.0,
                 source:               'Primary Factory Data',
-                gridIntensityGPerKwh: gridIntensity,   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
-                fuelType:             fuelType,
-                fuelFactor:           fuelFactor,
-                refrigerantType:      refType   || null,
-                refrigerantKgLeaked:  refKgTotal || 0,
-                refrigerantGWP:       refGWP     || 0,
-                refrigerantCO2PerKg:  refCO2PerKg
+                gridIntensityGPerKwh: gridIntensity   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
             };
 
             // Bug 8 fix: compute multi-category results for primary factory data
@@ -2400,71 +1901,12 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 }
             }
         } else {
-            // BK-7 FIX: Read gas_mj_per_kg from processing DB and compute gas CO2 for
-            // the benchmark path. Previously defined for every thermal process in the DB
-            // (baking=1.16, sterilization=0.81, roasting=0.85, drying=3.00 MJ/kg etc.)
-            // but never read here — causing benchmark baking/sterilization/roasting/drying
-            // CO2 to be understated by the gas combustion contribution.
-            //
-            // GAS_CO2_PER_MJ = 0.0562 kg CO2/MJ
-            // Source: IPCC 2006 Vol. 2, Ch. 2, Table 2.2 — Natural gas emission factor:
-            //   56,100 kg CO2/TJ = 0.05610 kg CO2/MJ → rounded to 0.0562 kg CO2/MJ.
-            //   TTW (direct combustion) factor for on-site gas burners in baking ovens,
-            //   sterilization retorts, roasting drums, and drying tunnels.
-            const GAS_CO2_PER_MJ_BENCHMARK = 0.0562; // kg CO2/MJ — IPCC 2006 Vol.2 Table 2.2
-
-            let benchmarkGasMjPerKg = 0;
-            let benchmarkGasCO2 = 0;
-
-            if (mfgIn.processingMethod && mfgIn.processingMethod !== 'none' && db.processing) {
-                const procEntryForGas = db.processing[mfgIn.processingMethod];
-                if (procEntryForGas && typeof procEntryForGas.gas_mj_per_kg === 'number') {
-                    benchmarkGasMjPerKg = procEntryForGas.gas_mj_per_kg;
-                    benchmarkGasCO2 = benchmarkGasMjPerKg * GAS_CO2_PER_MJ_BENCHMARK * prodWt;
-                }
-            }
-
             mfgResult = window.corePhysics.calculateManufacturing({
                 massOutputKg:         prodWt,
                 benchmarkKwhPerKg:    kwhPerKg,
                 gridIntensityGPerKwh: gridIntensity
             });
-
-            // Add gas combustion CO2 to total manufacturing CO2
-            if (benchmarkGasCO2 > 0) {
-                mfgResult.co2 += benchmarkGasCO2;
-                mfgResult.fossilFraction = mfgResult.co2 > 0
-                    ? ((mfgResult.co2 - benchmarkGasCO2) * (mfgResult.fossilFraction || 1.0) + benchmarkGasCO2) / mfgResult.co2
-                    : 1.0;
-
-                // Add gas non-CC multi-category impacts if GAS_COMBUSTION_MULTI is available
-                // 38 MJ/m3 natural gas LHV — IPCC 2006 Vol.2 Table 2.3
-                const totalBenchmarkGasM3 = benchmarkGasMjPerKg > 0
-                    ? (benchmarkGasMjPerKg * prodWt) / 38.0
-                    : 0;
-                if (totalBenchmarkGasM3 > 0 && window.corePhysics.CONSTANTS.GAS_COMBUSTION_MULTI) {
-                    if (!mfgResult.multiCategoryResults) mfgResult.multiCategoryResults = {};
-                    const gasMCF = window.corePhysics.CONSTANTS.GAS_COMBUSTION_MULTI;
-                    for (const category of Object.keys(gasMCF)) {
-                        if (gasMCF[category] !== 0) {
-                            mfgResult.multiCategoryResults[category] =
-                                (mfgResult.multiCategoryResults[category] || 0) +
-                                totalBenchmarkGasM3 * gasMCF[category];
-                        }
-                    }
-                }
-            }
-
             mfgResult.source = 'Ember 2025 / IEA';
-            // BK-7 FIX: record gas benchmark trace for PDF and audit trail
-            mfgResult.benchmarkGas = {
-                gas_mj_per_kg:     benchmarkGasMjPerKg,
-                gas_co2_per_mj:    GAS_CO2_PER_MJ_BENCHMARK,
-                gas_co2_kg:        benchmarkGasCO2,
-                formula:           'gas_mj_per_kg x ' + GAS_CO2_PER_MJ_BENCHMARK + ' kg CO2/MJ x ' + prodWt + ' kg product',
-                source:            'IPCC 2006 Guidelines Vol. 2, Ch. 2, Table 2.2 — Natural gas TTW EF: 56,100 kg CO2/TJ = 0.0562 kg CO2/MJ',
-                processing_method: mfgIn.processingMethod || 'none'
-            };
         }
 
         mfgResult.country = mfgIn.country;
@@ -2557,49 +1999,12 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
         const ev         = pkgData.co2_virgin;
         const erecycled  = pkgData.co2_recycled;
-
-        // NEW-2 FIX: Wire eolDestination from user input into CFF disposal parameter (ed) and
-        // end-of-life recycling rate (r2). Previously eolDestination was collected in the form
-        // and passed as input.packaging.eolDestination but never read here — the CFF always used
-        // pkgData.co2_disposal_average regardless of user selection. Now eolDestination directly
-        // selects the correct disposal scenario from the packaging database.
-        //
-        // EOL scenario mapping (keys must match packaging DB entries):
-        //   'eu_average'   → pkgData.co2_disposal_average  (default EU mix)
-        //   'recycling'    → pkgData.co2_disposal_recycling (lower disposal impact, higher r2)
-        //   'incineration' → pkgData.co2_disposal_incineration
-        //   'landfill'     → pkgData.co2_disposal_landfill
-        //   'composting'   → pkgData.co2_disposal_composting (bio-based materials only)
-        //
-        // PEF 3.1 Annex C §C.4: r2 = fraction of material that is recycled at end of life.
-        // Each EOL scenario has a corresponding r2 value in the packaging database.
-        // Source: PEF 3.1 Category Rules (EC JRC 2023); PlasticsEurope EOL statistics (2022).
-        const eolDestination = (pkgIn.eolDestination || 'eu_average').toLowerCase();
-        let ed, r2_eol;
-
-        if (eolDestination === 'recycling' && pkgData.co2_disposal_recycling !== undefined) {
-            ed    = pkgData.co2_disposal_recycling;
-            r2_eol = pkgData.r2_recycling !== undefined ? pkgData.r2_recycling : (pkgData.r2 || 0.7);
-        } else if (eolDestination === 'incineration' && pkgData.co2_disposal_incineration !== undefined) {
-            ed    = pkgData.co2_disposal_incineration;
-            r2_eol = pkgData.r2_incineration !== undefined ? pkgData.r2_incineration : 0;
-        } else if (eolDestination === 'landfill' && pkgData.co2_disposal_landfill !== undefined) {
-            ed    = pkgData.co2_disposal_landfill;
-            r2_eol = pkgData.r2_landfill !== undefined ? pkgData.r2_landfill : 0;
-        } else if (eolDestination === 'composting' && pkgData.co2_disposal_composting !== undefined) {
-            ed    = pkgData.co2_disposal_composting;
-            r2_eol = pkgData.r2_composting !== undefined ? pkgData.r2_composting : 0;
-        } else {
-            // Default: eu_average — same as previous behaviour, fully backward compatible
-            ed    = pkgData.co2_disposal_average || pkgData.co2_disposal || 0.05;
-            r2_eol = pkgData.r2 || 0.7;
-        }
-
+        const ed         = pkgData.co2_disposal_average || pkgData.co2_disposal || 0.05;
         // FIX 1: CFF R2 — pkgData.r2 IS the Annex C end-of-life recycling rate; do not multiply by r1_max.
         // r1_max separately caps the user-supplied recycled content fraction per PEF 3.1 Annex C.
         const r1Uncapped = pkgIn.recycledPct / 100;
         const r1         = pkgData.r1_max !== undefined ? Math.min(r1Uncapped, pkgData.r1_max) : r1Uncapped;
-        const r2         = r2_eol;
+        const r2         = pkgData.r2 || 0.7;
         const qs         = pkgData.q || 0.9;
         const qp         = 1.0;
 
