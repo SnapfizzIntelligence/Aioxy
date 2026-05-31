@@ -2245,8 +2245,9 @@ if (!traceability.usetox) {
             // === END PHASE 2 traceability push ===
         }
 
+        }  // close for (const ingredient of input.ingredients) loop
+
         return { ingredientResults, ingredientTraceability };
-    }
     }
 
     // ── STEP 2: MANUFACTURING ────────────────────────────────────────────────
