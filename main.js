@@ -545,10 +545,9 @@ async function calculateImpact() {
         return mainCalcResult;
 
     } catch (error) {
-    console.error('💥 Calculation error:', error);
-    alert('Calculation error: ' + error.message);
-    throw error;
-    }
+        console.error('💥 Calculation error:', error);
+        alert('Calculation error: ' + error.message);
+        throw error;
     } finally {
         if (loadingElement) loadingElement.classList.add('hidden');
         if (resultsContent)  resultsContent.classList.remove('hidden');
