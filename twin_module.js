@@ -451,6 +451,25 @@ function renderTwinResults(mainResult, twinCalcResult) {
         ? 'Modeled reduction only. Requires third-party verification for any public or B2B claims (EU Green Claims Directive 2024).'
         : 'Parametric twin shows higher or equal impact. For internal analysis only.';
 
+    // NEW-3 FIX: Pre-compute all 16 EF 3.1 category per-kg values BEFORE card.innerHTML
+    // is built. Previously this block was placed after card.innerHTML, which meant
+    // mainAll16/twinAll16 were hoisted as undefined (var hoisting) at the point the
+    // metric card calls executed, causing:
+    //   TypeError: Cannot read properties of undefined (reading 'Climate Change')
+    var ALL16_CATS = [
+        'Climate Change', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils',
+        'Eutrophication, terrestrial', 'Eutrophication, freshwater', 'Eutrophication, marine',
+        'Acidification', 'Particulate Matter', 'Photochemical Ozone Formation',
+        'Ozone Depletion', 'Human Toxicity, non-cancer', 'Human Toxicity, cancer',
+        'Ecotoxicity, freshwater', 'Ionizing Radiation', 'Resource Use, minerals/metals'
+    ];
+    var mainAll16 = {};
+    var twinAll16 = {};
+    ALL16_CATS.forEach(function(cat) {
+        mainAll16[cat] = perKg(mainPef, cat, mainMass);
+        twinAll16[cat] = perKg(twinPef, cat, twinMass);
+    });
+
     // ── BUILD CARD ────────────────────────────────────────────────────
     card.innerHTML =
         '<div style="padding:1.25rem 1.5rem;">' +
@@ -576,25 +595,6 @@ function renderTwinResults(mainResult, twinCalcResult) {
     var twinIngComponents = (twinAudit.contribution_tree && twinAudit.contribution_tree['Climate Change']
         && twinAudit.contribution_tree['Climate Change'].Ingredients
         && twinAudit.contribution_tree['Climate Change'].Ingredients.components) || [];
-
-    // NEW-3 FIX: Pre-compute all 16 EF 3.1 category per-kg values and store them
-    // in _twinResultsForPDF so buildTwinPDFSection() and the UI can access them
-    // without recalculating. Previously only CO2/water/land/fossils were stored
-    // as named scalars — the other 12 categories were only accessible via mainPef/twinPef
-    // objects and were never surfaced in the metric cards or summary table.
-    var ALL16_CATS = [
-        'Climate Change', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils',
-        'Eutrophication, terrestrial', 'Eutrophication, freshwater', 'Eutrophication, marine',
-        'Acidification', 'Particulate Matter', 'Photochemical Ozone Formation',
-        'Ozone Depletion', 'Human Toxicity, non-cancer', 'Human Toxicity, cancer',
-        'Ecotoxicity, freshwater', 'Ionizing Radiation', 'Resource Use, minerals/metals'
-    ];
-    var mainAll16 = {};
-    var twinAll16 = {};
-    ALL16_CATS.forEach(function(cat) {
-        mainAll16[cat] = perKg(mainPef, cat, mainMass);
-        twinAll16[cat] = perKg(twinPef, cat, twinMass);
-    });
 
     window._twinResultsForPDF = {
         mainName: mainName, twinName: twinName, modeLabel: modeLabel,
