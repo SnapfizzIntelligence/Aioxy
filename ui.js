@@ -564,56 +564,6 @@ function updateResultsUI(results) {
         const rawBaseCo2 = safeBaseCO2 / (resolvedBaseline?.concentration_ratio || 1);
         const baseCo2PerProtein = rawBaseCo2 * baseKgNeededFor100gProtein;
 
-        // NEW-4 FIX: Extend nutritional LCA beyond protein-only metric.
-        // Add: kg CO2e per 1000 kcal (energy) and per 100g fat.
-        // These are the three internationally recognised nutritional functional units
-        // for food product LCA comparison:
-        //   1. Per 100g protein — relevant for meat, dairy, legumes, meat substitutes
-        //   2. Per 1000 kcal — relevant for all food categories including oils and carbs
-        //   3. Per 100g fat — relevant for oils, dairy, nuts, fatty fish
-        //
-        // Source for functional unit selection:
-        //   Smetana et al. (2023) "Sustainability of food products: LCA functional units"
-        //   Trends in Food Science & Technology 131:129-141.
-        //   FAO (2019) Sustainability Assessment of Food and Agriculture Systems (SAFA).
-        //   PEF 3.1 Annex D — functional unit for food products.
-        //
-        // Values read from window.aioxyData.nutrition[ingredientId].kcal_per_100g
-        // and .fat_g_per_100g. Falls back to declared values if available,
-        // otherwise uses category-level defaults.
-
-        // User product nutritional values — from UI form inputs
-        const userKcalPer100g = parseFloat(document.getElementById('energyContent')?.value) || 0;
-        const userFatPer100g  = parseFloat(document.getElementById('fatContent')?.value)    || 0;
-
-        // Baseline nutritional values — from nutrition DB
-        let baselineKcalPer100g = 0;
-        let baselineFatPer100g  = 0;
-        try {
-            const nutritionDB = window.aioxyData?.nutrition;
-            if (nutritionDB) {
-                // Try to get from same baseline ingredient as protein
-                const baseIngKey = Object.keys(ANCHOR_DATASETS || {}).find(k =>
-                    resolvedBaseline?.name && resolvedBaseline.name.includes((ANCHOR_DATASETS[k]||{}).name));
-                const baseNut = baseIngKey ? nutritionDB[baseIngKey] : null;
-                if (baseNut) {
-                    baselineKcalPer100g = baseNut.kcal_per_100g || 0;
-                    baselineFatPer100g  = baseNut.fat_g_per_100g || 0;
-                }
-            }
-        } catch(e) { /* non-fatal */ }
-
-        // Per-1000kcal metrics
-        const userCo2Per1000kcal  = userKcalPer100g  > 0 ? unifiedCO2 * (1000 / (userKcalPer100g  * 10)) : null;
-        const baseCo2Per1000kcal  = baselineKcalPer100g > 0 ? rawBaseCo2 * (1000 / (baselineKcalPer100g * 10)) : null;
-
-        // Per-100g fat metrics
-        const userCo2Per100gFat   = userFatPer100g  > 0 ? unifiedCO2 * (100 / (userFatPer100g  * 10)) : null;
-        const baseCo2Per100gFat   = baselineFatPer100g > 0 ? rawBaseCo2 * (100 / (baselineFatPer100g * 10)) : null;
-
-        // Protein utility flag: protein < 5g/100g = protein FU is misleading for this product
-        const proteinMeaningful = userProteinPer100g >= 5.0;
-
         if (!nutritionalDiv) {
             nutritionalDiv = document.createElement('div');
             nutritionalDiv.id = 'nutritionalLCACard';
@@ -630,83 +580,31 @@ function updateResultsUI(results) {
         const proteinPrefix = isProteinBetter ? '↓ ' : '↑ ';
         const proteinLabel = isProteinBetter ? 'Advantage vs Baseline' : 'Liability vs Baseline';
 
-        // NEW-4 FIX: Build multi-metric nutritional LCA card
-        const kcalPct  = (baseCo2Per1000kcal && baseCo2Per1000kcal > 0 && userCo2Per1000kcal !== null)
-            ? ((baseCo2Per1000kcal - userCo2Per1000kcal) / baseCo2Per1000kcal) * 100 : null;
-        const fatPct   = (baseCo2Per100gFat && baseCo2Per100gFat > 0 && userCo2Per100gFat !== null)
-            ? ((baseCo2Per100gFat - userCo2Per100gFat) / baseCo2Per100gFat) * 100 : null;
-
-        const metricRow = (label, userVal, baseVal, unit, meaningful) => {
-            if (!meaningful || userVal === null) {
-                return `<div style="grid-column:1/-1;font-size:0.78rem;color:#888;padding:0.3rem 0;">
-                    ${label}: <em>Not applicable — ${!meaningful ? 'low nutrient content for this functional unit' : 'enter value above to enable'}</em>
-                </div>`;
-            }
-            const pct = baseVal > 0 ? ((baseVal - userVal) / baseVal * 100) : 0;
-            const col = pct >= 0 ? '#27AE60' : '#E63946';
-            const arrow = pct >= 0 ? '↓' : '↑';
-            return `
-                <div>
-                    <div style="font-size:0.72rem;color:#888;">Your Product</div>
-                    <div style="font-weight:700;color:var(--primary);">${userVal.toFixed(3)} <span style="font-weight:400;font-size:0.78rem;">${unit}</span></div>
-                </div>
-                <div>
-                    <div style="font-size:0.72rem;color:#888;">Baseline</div>
-                    <div style="font-weight:700;color:#888;">${baseVal.toFixed(3)} <span style="font-weight:400;font-size:0.78rem;">${unit}</span></div>
-                </div>
-                <div style="grid-column:1/-1;text-align:right;">
-                    <span style="color:${col};font-weight:700;">${arrow} ${Math.abs(pct).toFixed(1)}% ${pct>=0?'advantage':'liability'} vs baseline</span>
-                </div>`;
-        };
-
         nutritionalDiv.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <div style="background:#8E44AD;color:white;width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-dumbbell"></i>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <div style="background: ${proteinColor}; color: white; width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <h3 style="color: #4A235A; margin: 0; font-size: 1.1rem;">Nutritional LCA Assessment</h3>
                     </div>
-                    <h3 style="color:#4A235A;margin:0;font-size:1.05rem;">Nutritional LCA Assessment</h3>
+                    <div style="font-size: 0.85rem; color: var(--gray);">Impact measured per <strong>100g of delivered protein</strong>.</div>
                 </div>
-                <span style="font-size:0.72rem;color:#888;">NEW-4 FIX: 3 functional units</span>
-            </div>
-
-            ${!proteinMeaningful ? `<div style="background:#FFF3CD;border:1px solid #FFEAA7;border-radius:6px;padding:0.5rem 0.75rem;margin-bottom:0.75rem;font-size:0.8rem;color:#856404;">
-                ⚠ Protein content &lt;5g/100g — <strong>per-100g-protein</strong> metric is not meaningful for this product (oils, sugars, starches).
-                Use <strong>per-1000 kcal</strong> as primary functional unit.
-            </div>` : ''}
-
-            <!-- METRIC 1: Per 100g protein -->
-            <div style="background:white;border:1px solid #E8D5F5;border-radius:8px;padding:0.75rem;margin-bottom:0.6rem;">
-                <div style="font-size:0.78rem;font-weight:600;color:#8E44AD;margin-bottom:0.4rem;">
-                    📊 Metric 1 — kg CO₂e per 100g protein ${!proteinMeaningful ? '⚠ Low protein product' : ''}
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.88rem;">
-                    ${metricRow('Per 100g protein', userCo2PerProtein, baseCo2PerProtein, 'kg CO₂e / 100g prot.', proteinMeaningful)}
+                <div style="text-align: right;">
+                    <div style="font-size: 2rem; font-weight: 900; color: ${proteinColor};">${proteinPrefix}${Math.abs(rawProteinPct).toFixed(1)}%</div>
+                    <div style="font-size: 0.75rem; font-weight: bold; color: ${proteinColor}; text-transform: uppercase;">${proteinLabel}</div>
                 </div>
             </div>
-
-            <!-- METRIC 2: Per 1000 kcal -->
-            <div style="background:white;border:1px solid #D5EEF5;border-radius:8px;padding:0.75rem;margin-bottom:0.6rem;">
-                <div style="font-size:0.78rem;font-weight:600;color:#1A7A9C;margin-bottom:0.4rem;">
-                    ⚡ Metric 2 — kg CO₂e per 1000 kcal <span style="font-weight:400;font-size:0.72rem;">(enter kcal/100g above to enable)</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--gray);">Your Product (${userProteinPer100g}g protein/100g)</div>
+                    <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">${userCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.88rem;">
-                    ${metricRow('Per 1000 kcal', userCo2Per1000kcal, baseCo2Per1000kcal, 'kg CO₂e / 1000 kcal', userKcalPer100g > 0)}
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--gray);">Conventional ${resolvedBaseline.name} (~${parseFloat(baselineProteinPer100g.toFixed(1))}g protein/100g)</div>
+                    <div style="font-size: 1.25rem; font-weight: bold; color: var(--gray);">${baseCo2PerProtein.toFixed(2)} kg CO₂e <span style="font-size:0.8rem; font-weight:normal;">per 100g protein</span></div>
                 </div>
-            </div>
-
-            <!-- METRIC 3: Per 100g fat -->
-            <div style="background:white;border:1px solid #D5F5E3;border-radius:8px;padding:0.75rem;">
-                <div style="font-size:0.78rem;font-weight:600;color:#1E8449;margin-bottom:0.4rem;">
-                    🧈 Metric 3 — kg CO₂e per 100g fat <span style="font-weight:400;font-size:0.72rem;">(enter fat g/100g above to enable)</span>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.88rem;">
-                    ${metricRow('Per 100g fat', userCo2Per100gFat, baseCo2Per100gFat, 'kg CO₂e / 100g fat', userFatPer100g > 0)}
-                </div>
-            </div>
-
-            <div style="font-size:0.7rem;color:#aaa;margin-top:0.5rem;">
-                Source: Smetana et al. (2023) Trends Food Sci Tech 131:129-141 | PEF 3.1 Annex D | FAO SAFA 2019
             </div>
         `;
     } else if (nutritionalDiv) {
