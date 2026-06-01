@@ -2168,7 +2168,16 @@ const gasCO2 = gasM3PerKg * 2.13;
             const ingEntry    = ingredientResults.find(i => i.name === d.name);
             const dqrBkd      = ingEntry?.dqrBreakdown || {};
             const dqrP        = dqrBkd.P ? dqrBkd.P : d.dqr;
-            const uncertainty = window.foodCalculationEngine.calculateUncertainty(dqrP);
+            // FIX: window.foodCalculationEngine does not exist — was the root cause of
+            // "Cannot read properties of undefined (reading 'Climate Change')".
+            // corePhysics.calculateUncertainty() expects a Monte Carlo object, not a
+            // scalar DQR score, so a direct swap would also fail.
+            // Correct fix: derive uncertainty% inline from DQR score using the same
+            // linear mapping that the PEF 3.1 guidance implies (DQR 1→5%, DQR 5→25%).
+            const uncertainty = (() => {
+                const pct = Math.min(Math.max(dqrP * 5, 5), 25);
+                return { mean: pct / 100, p5: (pct * 0.5) / 100, p95: (pct * 1.5) / 100 };
+            })();
             return Object.assign({}, d, {
                 uncertainty,
                 source: ingEntry ? ingEntry.source : 'AGRIBALYSE 3.2',
@@ -2296,8 +2305,12 @@ const gasCO2 = gasM3PerKg * 2.13;
             // ing.dqrBreakdown || ing.dqr would pass {} (truthy empty object) when
             // dqrBreakdown is present but empty, causing calculateUncertainty to read
             // {}.P → undefined → NaN in all Monte Carlo p5/p95 outputs.
-            uncertaintyPercent: window.foodCalculationEngine.calculateUncertainty(
-                                    (ing.dqrBreakdown && ing.dqrBreakdown.P) ? ing.dqrBreakdown.P : ing.dqr)
+            // FIX: window.foodCalculationEngine does not exist (same root cause as line 2171).
+            // uncertaintyPercent must be a plain number for corePhysics.calculateUncertainty.
+            // Derive inline: DQR 1->5%, DQR 5->25%, clamped.
+            uncertaintyPercent: Math.min(Math.max(
+                                    ((ing.dqrBreakdown && ing.dqrBreakdown.P) ? ing.dqrBreakdown.P : ing.dqr) * 5,
+                                5), 25)
         }));
 
         const hasNonZero = mcComponents.some(c => c.value > 0);
