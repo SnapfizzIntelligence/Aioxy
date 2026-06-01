@@ -1738,22 +1738,7 @@
                 // Confirmed unchanged in 2019 Refinement where indicated above.
                 'dairy_cow':   Object.freeze({ ef_ch4: 128,  n_excretion: 105  }),
                 'beef_cattle': Object.freeze({ ef_ch4: 57,   n_excretion: 70   }),
-                // DB-8 FIX: pig n_excretion updated from 11 → 15 kg N/head/year.
-                // Previous value (11) was from IPCC 2006 Vol. 4 Table 10.19 — Swine,
-                // Developed countries. This was a US-weighted average that has since
-                // been superseded for European conditions.
-                // Correct value: 15 kg N/head/year.
-                // Sources:
-                //   1. IPCC (2019) Refinement to the 2006 IPCC Guidelines, Vol. 4,
-                //      Ch. 10, Table 10.19 — Swine, Developed countries: 15 kg N/head/yr.
-                //   2. EMEP/EEA (2023) Air Pollutant Emission Inventory Guidebook,
-                //      EEA Report No 13/2023, Chapter 3B, Table 3-5 — Pigs, EU: 15 kg N/head/yr.
-                //   3. AGRIBALYSE 3.2 (ADEME/INRAE 2022) — French conventional pig
-                //      production data: 14.8 kg N/head/year → rounds to 15.
-                // Impact of fix: 36% increase in manure N2O and NH3 emissions per
-                // pig head. Affects eutrophication, acidification, and CC-Land Use
-                // for all pork ingredients with livestock primary data.
-                'pig':         Object.freeze({ ef_ch4: 1.5,  n_excretion: 15   }),
+                'pig':         Object.freeze({ ef_ch4: 1.5,  n_excretion: 11   }),
                 'sheep':       Object.freeze({ ef_ch4: 8,    n_excretion: 12   }),
                 'goat':        Object.freeze({ ef_ch4: 5,    n_excretion: 12   }),
                 'broiler':     Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
