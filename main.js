@@ -546,9 +546,9 @@ async function calculateImpact() {
 
     } catch (error) {
     console.error('💥 Calculation error:', error);
-    alert('Calculation error: ' + error.message + '\n\nStack:\n' + (error.stack || 'no stack'));
+    alert('Calculation error: ' + error.message);
     throw error;
-            }
+    }
     } finally {
         if (loadingElement) loadingElement.classList.add('hidden');
         if (resultsContent)  resultsContent.classList.remove('hidden');
