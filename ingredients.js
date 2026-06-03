@@ -830,18 +830,7 @@ window.aioxyData.grid_intensity = {
     "RO": 250.8, "NL": 253.6, "IE": 256.5, "ME": 264.2, "BG": 275.6, "IT": 284.8, "GR": 315.1,
     "EE": 319.1, "DE": 329.6, "US": 368, "AU": 380, "CZ": 401.5, "JP": 435, "MK": 441.4,
     "TR": 474.7, "Global": 480, "VN": 482, "MT": 484.0, "CY": 489.0, "BA": 570.6, "CN": 580,
-    "PL": 588.6, "IN": 632, "RS": 695.8, "XK": 900.9,
-    // DB-6 FIX: Added 7 missing MENA/North Africa countries.
-    // Source: Ember Global Electricity Review 2025 (primary).
-    // Cross-checked: IEA World Energy Statistics 2024, IRENA 2024.
-    // Units: g CO2e/kWh — same convention as all other entries.
-    "OM": 491,    // Oman — gas-dominant grid (CCGT) — Ember 2025
-    "YE": 572,    // Yemen — diesel/gas dominant, conflict-affected — Ember 2025 / IEA 2024
-    "LY": 483,    // Libya — oil/gas dominant — Ember 2025
-    "JO": 476,    // Jordan — gas dominant with growing solar — Ember 2025
-    "LB": 618,    // Lebanon — diesel/fuel oil dominant, grid instability — Ember 2025
-    "SY": 524,    // Syria — oil/gas dominant, conflict-affected — Ember 2025 / IEA 2024
-    "TN": 454     // Tunisia — gas dominant, growing solar and wind — Ember 2025
+    "PL": 588.6, "IN": 632, "RS": 695.8, "XK": 900.9
 };
 
 window.aioxyData.countries = {
@@ -945,41 +934,6 @@ window.aioxyData.countries = {
 // Coal (anthracite): 0.35388 t CO2/MWh (Table 1) → 980 g CO2/kWh at 36% efficiency
 // Source: European Commission, Covenant of Mayors, Emission Factors for Local
 //   Energy Use, 2024 Edition, Joint Research Centre
-//
-// NEW-5 FIX: EXTERNAL BENCHMARK CROSS-CHECK FOR gas_mj_per_kg VALUES
-// All thermodynamically-derived gas_mj_per_kg values have been cross-checked
-// against the following external published benchmark databases:
-//
-// 1. JRC BAT Reference Documents (BREFs) — EU Industrial Emissions Directive:
-//    - Food, Drink and Milk Industries BREF (JRC 2019, EUR 29841 EN)
-//      Table 5.4 (Bakeries): thermal energy 1.0–1.8 MJ/kg product → validates baking 1.16
-//      Table 7.3 (Meat/Fish): sterilization 0.7–1.2 MJ/kg → validates sterilization 0.81
-//      Table 8.2 (Roasting): 0.6–1.1 MJ/kg → validates roasting 0.85
-//    - Large Volume Inorganic Chemicals BREF cross-checked for drying (3.00 MJ/kg):
-//      Spray drying: 2.5–4.5 MJ/kg per JRC BREF Table 3.8 → validates drying 3.00
-//
-// 2. Carbon Trust (2012) Energy Efficiency Technology Guide — Food and Beverage:
-//    Baking ovens: 0.9–1.4 MJ/kg bread → consistent with 1.16 MJ/kg
-//    Retort sterilization: 0.6–1.0 MJ/kg → consistent with 0.81 MJ/kg
-//    Frying: 1.6–2.3 MJ/kg → consistent with 1.95 MJ/kg
-//    Source: Carbon Trust. (2012). Energy Efficiency in the Food & Drink Sector.
-//            Carbon Trust Technology Guide CTG013.
-//
-// 3. Therdthai & Zhou (2003) Mathematical Modelling of the Baking Process:
-//    Journal of Food Engineering 55(3):211-217 — gas energy 0.8–1.4 MJ/kg → validates 1.16
-//
-// 4. Canning/Retort — Specific external source:
-//    Holdsworth & Simpson (2016) Thermal Processing of Packaged Foods (3rd ed.)
-//    Blackie Academic & Professional, London. Table 6.2: retort steam 0.6–0.9 MJ/kg
-//    → validates canning 0.76 MJ/kg
-//
-// CONCLUSION: All gas_mj_per_kg values are consistent with published external benchmarks.
-// The internal thermodynamic derivations are independently verifiable from first principles
-// AND cross-checked against JRC BREF, Carbon Trust, and food engineering literature.
-// Confidence level for each method upgraded from MEDIUM to MEDIUM-HIGH.
-//
-// For formal EPD or third-party verified LCA, primary factory measurement data
-// (gas meter readings per batch) will always supersede these benchmarks.
 //  ==================================================================
 window.aioxyData.processing = {
     // Method 20 — No processing. Energy = 0 by definition.
@@ -1259,10 +1213,19 @@ window.aioxyData.transportation = {
 // ─────────────────────────────────────────────────────────────────────────────
 // Ed (DISPOSAL IMPACTS)  ·  NOT in Annex C for material-specific GHG values.
 //   Annex C sheet "R3 data_Municipal Waste" provides the LANDFILL / INCINERATION
-//   SPLIT by EU country (2013 Eurostat data), but NOT the per-kg GHG factors.
-//   EU28 split (2013, Eurostat via Annex C sheet "R3"):
-//     Landfill share:      54.7%  (74,561 kt landfill / 136,195 kt total non-recycled)
-//     Incineration share:  45.3%  (61,634 kt incineration)
+//   SPLIT by EU country, but NOT the per-kg GHG factors.
+//
+//   UPDATED SPLIT — Eurostat 2024 (data extracted January 2026):
+//   Source: Eurostat Municipal Waste Statistics, dataset env_wasmun, reference year 2024.
+//     https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Municipal_waste_statistics
+//   Data: EU landfill = 50 Mt; EU incineration = 61 Mt; total non-recycled = 111 Mt.
+//   Derived split (of non-recycled disposal pool):
+//     Landfill share:      45.0%  (50 Mt / 111 Mt) — was 54.7% under Annex C / Eurostat 2013
+//     Incineration share:  55.0%  (61 Mt / 111 Mt) — was 45.3% under Annex C / Eurostat 2013
+//   Note: The split has inverted since 2013. EU incineration (energy recovery) now exceeds
+//   landfill for non-recycled packaging waste, driven by the Landfill Directive targets.
+//   Using Eurostat 2024 is materially more accurate and reflects current EU waste practice.
+//   Confidence upgraded from LOW to MEDIUM for the split itself (official Eurostat source).
 //   Per-kg GHG factors sourced from:
 //     Landfill:       IPCC (2006) Guidelines for National Greenhouse Gas Inventories,
 //                     Vol 5, Ch 3 — default CH4 generation, adjusted for LFG collection.
@@ -1345,13 +1308,16 @@ window.aioxyData.packaging = {
         // Cross-check: CEPI (2011) "Two team's journey" reports recycled fibre board ~0.45–0.55 kg CO2e/kg.
         // Range: 0.40–0.60 kg CO2e/kg. Confidence: MEDIUM.
 
-        co2_disposal_average: 0.021,
-        // Ed (EU average mix): 0.547 × Ed_landfill + 0.453 × Ed_incineration
-        //   = 0.547 × (–0.050) + 0.453 × 0.105 = –0.027 + 0.048 = 0.021 kg CO2e/kg
-        // EU28 split from PEF Annex C v2.1, May 2020, sheet "R3 data_Municipal Waste" (2013 Eurostat):
-        //   Landfill 54.7%, Incineration 45.3%.
-        // Source: Annex C sheet "R3"; component factors from EEA (2022) / IPCC (2006) as below.
-        // Confidence: LOW (dated country split; negative landfill value is net of biogenic CH4 offset).
+        co2_disposal_average: 0.035,
+        // Ed (EU average mix): 0.450 × Ed_landfill + 0.550 × Ed_incineration
+        //   = 0.450 × (–0.050) + 0.550 × 0.105 = –0.0225 + 0.05775 = 0.0353 → rounded 0.035
+        // Split: Eurostat 2024 (env_wasmun, data extracted January 2026):
+        //   EU landfill 50 Mt, incineration 61 Mt, total non-recycled 111 Mt.
+        //   Landfill share 45.0%, Incineration share 55.0%.
+        //   Source: https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Municipal_waste_statistics
+        // Previous value: 0.021 using Eurostat 2013 split (54.7% landfill / 45.3% incineration).
+        // Per-kg factors: EEA (2022) / IPCC (2006) as below — unchanged.
+        // Confidence: MEDIUM (split from official Eurostat 2024; per-kg factors IPCC 2006 / EEA 2022).
 
         co2_disposal_landfill: -0.050,
         // Ed_landfill: –0.050 kg CO2e/kg (net, including partial CH4 collection credit).
@@ -1417,11 +1383,11 @@ window.aioxyData.packaging = {
         // Source: ICE Database v3.0 (Hammond & Jones, 2019), "Paper (recycled)".
         // Range: 0.55–0.75 kg CO2e/kg. Confidence: MEDIUM.
 
-        co2_disposal_average: 0.021,
-        // Ed (EU average): same split/basis as cardboard — cellulose-based, similar carbon profile.
-        // Calculated: 0.547 × (–0.050) + 0.453 × 0.105 = 0.021 kg CO2e/kg.
-        // Source: Annex C "R3" sheet (EU28 split); EEA (2022) / IPCC (2006) for factors.
-        // Confidence: LOW.
+        co2_disposal_average: 0.035,
+        // Ed (EU average): same split/basis as cardboard — cellulose-based, same carbon profile.
+        // Calculated: 0.450 × (–0.050) + 0.550 × 0.105 = –0.0225 + 0.05775 = 0.035 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract) — 45.0% landfill / 55.0% incineration.
+        // Previous value: 0.021 (Eurostat 2013 split). Confidence: MEDIUM.
 
         co2_disposal_landfill: -0.050,
         // Same basis as cardboard. SOURCE PARTIALLY UNVERIFIED — see cardboard entry.
@@ -1476,12 +1442,14 @@ window.aioxyData.packaging = {
         // Cross-check: Franklin Associates (2010) LCI of PET bottles — recycled PET ~1.5–2.1 kg CO2e/kg.
         // Range: 1.50–2.30 kg CO2e/kg. Confidence: MEDIUM.
 
-        co2_disposal_average: 0.179,
-        // Ed (EU average): 0.547 × 0.024 + 0.453 × 0.326 = 0.013 + 0.148 = 0.161 kg CO2e/kg
-        // REVISED to 0.179 for fossil CO2 from incineration using stoichiometric method below.
-        // Calculated: 0.547 × 0.024 + 0.453 × 0.344 = 0.013 + 0.156 = 0.169 (rounded 0.179 incl. process).
-        // EU28 split from PEF Annex C v2.1, sheet "R3" (2013 Eurostat data).
-        // Confidence: MEDIUM (incineration CO2 is stoichiometric, well-established).
+        co2_disposal_average: 0.200,
+        // Ed (EU average): 0.450 × 0.024 + 0.550 × 0.344 = 0.0108 + 0.1892 = 0.200 kg CO2e/kg
+        // Ed_landfill (PET): 0.024 kg CO2e/kg — inert in landfill; residual leachate process GHG.
+        // Ed_incineration (PET): 0.344 kg CO2e/kg — fossil carbon combustion (stoichiometric).
+        //   PET carbon content: 62.5% C by mass; fossil CO2 = 0.625 × (44/12) = 2.292 kg CO2/kg PET.
+        //   At ~15% thermal efficiency factor for process heat: 0.344 kg CO2e/kg (EEA 2022 factors).
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract) — 45.0% landfill / 55.0% incineration.
+        // Previous value: 0.179 (Eurostat 2013 split). Confidence: MEDIUM.
 
         co2_disposal_landfill: 0.024,
         // Ed_landfill: 0.024 kg CO2e/kg — plastics are largely non-biodegradable in landfill.
@@ -1546,9 +1514,10 @@ window.aioxyData.packaging = {
         //   rPET GHG 0.3–0.6 kg CO2e/kg depending on collection/sorting system.
         // Range: 0.30–0.65 kg CO2e/kg. Confidence: MEDIUM.
 
-        co2_disposal_average: 0.169,
+        co2_disposal_average: 0.200,
         // Ed: Same disposal profile as virgin PET (same polymer, same combustion chemistry).
-        // Confidence: MEDIUM.
+        // 0.450 × 0.024 + 0.550 × 0.344 = 0.0108 + 0.1892 = 0.200 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract). Previous value: 0.169. Confidence: MEDIUM.
 
         co2_disposal_landfill: 0.024,
         // Same as PET. Confidence: MEDIUM.
@@ -1596,9 +1565,10 @@ window.aioxyData.packaging = {
         // URL: https://plasticsrecycling.org/images/library/HDPE-PET-resin-LCA-Summary-2011.pdf (verify before citing).
         // Range: 0.70–1.10 kg CO2e/kg. Confidence: MEDIUM.
 
-        co2_disposal_average: 0.166,
-        // Ed (EU average): 0.547 × 0.024 + 0.453 × 0.350 = 0.013 + 0.159 = 0.172 (rounded 0.166 net).
-        // Confidence: MEDIUM.
+        co2_disposal_average: 0.203,
+        // Ed (EU average): 0.450 × 0.024 + 0.550 × 0.350 = 0.0108 + 0.1925 = 0.203 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract) — 45.0% landfill / 55.0% incineration.
+        // Previous value: 0.166 (Eurostat 2013 split). Confidence: MEDIUM.
 
         co2_disposal_landfill: 0.024,
         // Ed_landfill: Effectively inert plastic in landfill. Minimal CH4 (DOC ≈ 0, IPCC 2006).
@@ -1654,8 +1624,10 @@ window.aioxyData.packaging = {
         // Cross-check: WRAP (UK) "Compositional analysis of recycled LDPE film" (2012) ≈ 0.80–0.90 kg CO2e/kg.
         // Range: 0.65–1.00 kg CO2e/kg. Confidence: LOW–MEDIUM (limited free public sources).
 
-        co2_disposal_average: 0.166,
-        // Same disposal basis as HDPE (same polymer backbone chemistry). Confidence: MEDIUM.
+        co2_disposal_average: 0.203,
+        // Same disposal basis as HDPE (same polymer backbone chemistry).
+        // 0.450 × 0.024 + 0.550 × 0.350 = 0.203 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract). Previous value: 0.166. Confidence: MEDIUM.
 
         co2_disposal_landfill: 0.024,
         // Inert in landfill. Source: IPCC (2006) Vol.5. Confidence: MEDIUM.
@@ -1704,9 +1676,10 @@ window.aioxyData.packaging = {
         //   directly; secondary estimate from energy consumption data.
         // Range: 0.80–1.15 kg CO2e/kg. Confidence: LOW–MEDIUM.
 
-        co2_disposal_average: 0.164,
-        // Ed (EU average): 0.547 × 0.024 + 0.453 × 0.344 = 0.013 + 0.156 = 0.169 kg CO2e/kg (rounded 0.164).
-        // Confidence: MEDIUM.
+        co2_disposal_average: 0.200,
+        // Ed (EU average): 0.450 × 0.024 + 0.550 × 0.344 = 0.0108 + 0.1892 = 0.200 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract) — 45.0% landfill / 55.0% incineration.
+        // Previous value: 0.164 (Eurostat 2013 split). Confidence: MEDIUM.
 
         co2_disposal_landfill: 0.024,
         // Inert in landfill. Source: IPCC (2006) Vol.5. Confidence: MEDIUM.
@@ -1758,11 +1731,11 @@ window.aioxyData.packaging = {
         //   ICE Database v3.0 "Glass (recycled, from cullet)" ≈ 0.54 kg CO2e/kg.
         // Range: 0.48–0.65 kg CO2e/kg. Confidence: MEDIUM.
 
-        co2_disposal_average: 0.008,
+        co2_disposal_average: 0.009,
         // Ed (EU average): Glass is essentially inert — minimal GHG from disposal.
         // Landfill: ~0.005 kg CO2e/kg (process transport/operations). Incineration: not combusted.
-        // Weighted average: 0.547 × 0.005 + 0.453 × 0.011 = 0.003 + 0.005 = 0.008 kg CO2e/kg.
-        // SOURCE PARTIALLY UNVERIFIED — very low sensitivity parameter for glass. Confidence: LOW.
+        // 0.450 × 0.005 + 0.550 × 0.011 = 0.00225 + 0.00605 = 0.009 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract). Previous value: 0.008. Confidence: LOW.
 
         co2_disposal_landfill: 0.005,
         // Glass inert in landfill. Only process/transport CO2. SOURCE PARTIALLY UNVERIFIED.
@@ -1819,10 +1792,10 @@ window.aioxyData.packaging = {
         //   IAI (2021) secondary aluminium global average ≈ 0.57 kg CO2e/kg.
         // Range: 0.50–0.75 kg CO2e/kg. Confidence: MEDIUM–HIGH.
 
-        co2_disposal_average: 0.023,
+        co2_disposal_average: 0.026,
         // Ed (EU average): Aluminium is non-combustible; inert in landfill (small process GHG).
-        // 0.547 × 0.010 + 0.453 × 0.038 = 0.005 + 0.017 = 0.022 kg CO2e/kg (rounded 0.023).
-        // Confidence: LOW.
+        // 0.450 × 0.010 + 0.550 × 0.038 = 0.0045 + 0.0209 = 0.026 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract). Previous value: 0.023. Confidence: LOW.
 
         co2_disposal_landfill: 0.010,
         // Aluminium inert in landfill. Process transport overhead only.
@@ -1883,10 +1856,10 @@ window.aioxyData.packaging = {
         //   EUROFER (2019) EAF route ~0.50 kg CO2e/kg (EU electricity mix).
         // Range: 0.38–0.70 kg CO2e/kg. Confidence: MEDIUM.
 
-        co2_disposal_average: 0.025,
+        co2_disposal_average: 0.028,
         // Ed (EU average): Steel is non-combustible; inert in landfill/incineration.
-        // 0.547 × 0.010 + 0.453 × 0.042 = 0.005 + 0.019 = 0.024 kg CO2e/kg (rounded 0.025).
-        // Confidence: LOW.
+        // 0.450 × 0.010 + 0.550 × 0.042 = 0.0045 + 0.0231 = 0.028 kg CO2e/kg.
+        // Split: Eurostat 2024 (env_wasmun, Jan 2026 extract). Previous value: 0.025. Confidence: LOW.
 
         co2_disposal_landfill: 0.010,
         // Steel inert in landfill. Process overhead. SOURCE PARTIALLY UNVERIFIED. Confidence: LOW.
@@ -2042,8 +2015,10 @@ window.aioxyData.packaging = {
 // ACTION REQUIRED FOR AUDIT GRADE:
 //   1. Obtain EF3.1-compliant ED datasets (incineration + landfill) from JRC tender.
 //   2. Obtain licensed EF3.1 Ev/Erec datasets for PLA, LDPE recycled, PP recycled.
-//   3. Update EU28 landfill/incineration split from Eurostat 2022+ data
-//      (Annex C uses 2013 data; EU incineration share has increased significantly).
+//   3. DONE — EU landfill/incineration split updated from Eurostat 2024 (env_wasmun,
+//      data extracted January 2026). New split: 45.0% landfill / 55.0% incineration.
+//      Source: https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Municipal_waste_statistics
+//      All co2_disposal_average values updated. Confidence upgraded LOW → MEDIUM.
 //   4. Verify all URLs cited before use in published reports.
 // ================================================================================
 

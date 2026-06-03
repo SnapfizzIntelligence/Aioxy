@@ -1,11 +1,15 @@
 
-// ================== AIOXY CALCULATION ENGINE v2.0 ==================
+
+// ================== AIOXY CALCULATION ENGINE v2.1 ==================
 // ISO 14044 / PEF 3.1 Calculation Orchestration Layer
 //
 // Phase 1: All 16 EF 3.1 categories, DQR from database, Monte Carlo,
 //          no shadow calculations, aFactor/fossilFraction strict.
 // Phase 2: Country-specific database integration — AWARE 2.0, LANCA v2.5,
 //          FAOSTAT yield benchmarking, AIB Residual Mix, USEtox note.
+//
+// BUG-02 FIX: Refrigerant type string normalisation + unrecognised type throws
+//             instead of silently applying GWP=0 for a known refrigerant.
 //
 // RULES:
 //   - ZERO physics formulas. All math lives in core_physics.js.
@@ -547,30 +551,30 @@
         const MAP = {
             "AL": "Albania",        "AT": "Austria",          "BA": "Bosnia and Herzegovina",
             "BE": "Belgium",        "BG": "Bulgaria",         "BR": "Brazil",
-            "CA": "Canada",         "CH": "Switzerland",      "CI": "Côte d'Ivoire",
-            "CN": "China",          "CY": "Cyprus",           "CZ": "Czechia",
+            "CA": "Canada",         "CH": "Switzerland",      "CI": "Cote d'Ivoire",    // FIX: was "Côte d'Ivoire" — DB uses no accent
+            "CN": "China",          "CY": "Cyprus",           "CZ": "Czech Republic",   // FIX: was "Czechia" — DB uses "Czech Republic"
             "DE": "Germany",        "DK": "Denmark",          "EE": "Estonia",
             "ES": "Spain",          "FI": "Finland",          "FR": "France",
-            "GB": "United Kingdom of Great Britain & Northern Ireland",
+            "GB": "United Kingdom",                                                       // FIX: was long UNSD form — DB uses "United Kingdom"
             "GR": "Greece",         "HR": "Croatia",          "HU": "Hungary",
             "IE": "Ireland",        "IN": "India",            "IS": "Iceland",
             "IT": "Italy",          "JP": "Japan",            "LT": "Lithuania",
             "LU": "Luxembourg",     "LV": "Latvia",           "MA": "Morocco",
-            "MD": "Moldova",        "ME": "Montenegro",       "MK": "North Macedonia",
+            "MD": "Moldova",        "ME": "Montenegro",       "MK": "The Former Yugoslav Republic of Macedonia", // FIX: LANCA/FAOSTAT use old UN name
             "MT": "Malta",          "NL": "Netherlands",      "NO": "Norway",
             "PL": "Poland",         "PT": "Portugal",         "RO": "Romania",
             "RS": "Serbia",         "SE": "Sweden",           "SI": "Slovenia",
-            "SK": "Slovakia",       "TR": "Turkey",           "US": "United States of America",
-            "VN": "Viet Nam",       "AR": "Argentina",        "AU": "Australia",
+            "SK": "Slovakia",       "TR": "Turkey",           "US": "United States",    // FIX: was "United States of America" — DB uses "United States"
+            "VN": "Vietnam",        "AR": "Argentina",        "AU": "Australia",        // FIX: was "Viet Nam" — DB uses "Vietnam"
             "ID": "Indonesia",      "PK": "Pakistan",         "NG": "Nigeria",
             "EG": "Egypt",          "ZA": "South Africa",     "MX": "Mexico",
-            "RU": "Russian Federation", "UA": "Ukraine",      "KR": "Republic of Korea",
+            "RU": "Russia",         "UA": "Ukraine",          "KR": "South Korea",      // FIX: RU was "Russian Federation", KR was "Republic of Korea"
             "KE": "Kenya",          "ET": "Ethiopia",         "GH": "Ghana",
             "CM": "Cameroon",       "PE": "Peru",
             "CL": "Chile",          "CO": "Colombia",         "UY": "Uruguay",
             "MY": "Malaysia",       "PH": "Philippines",      "TH": "Thailand",
             "BD": "Bangladesh",     "NP": "Nepal",            "LK": "Sri Lanka",
-            "IR": "Iran (Islamic Republic of)", "IQ": "Iraq",
+            "IR": "Iran",           "IQ": "Iraq",                                        // FIX: was "Iran (Islamic Republic of)" — DB uses "Iran"
             "SA": "Saudi Arabia",   "AE": "United Arab Emirates",
             "RE": "France",          // Réunion is FR overseas — uses FR as proxy
             "WI": "France",          // West Indies (FR Antilles) — uses FR as proxy
@@ -1027,14 +1031,13 @@ if (!traceability.usetox) {
 
                                 // BUGFIX FARMED_FISH: Resolve fishmeal CO2 proxy — look up anchovy or sardine in ingredients DB.
                                 let fishmealCO2PerKg = 0; // BUGFIX FARMED_FISH
-                                let proxyPef = null; // SCOPE FIX: declared here so it is accessible at the CC sub-split block below (was const inside for-loop, causing TypeError)
                                 const ingDB = window.aioxyData && window.aioxyData.ingredients; // BUGFIX FARMED_FISH
                                 if (ingDB) { // BUGFIX FARMED_FISH
                                     // BUGFIX FARMED_FISH: Search ingredients by name for anchovy or sardine as proxy.
                                     for (const [key, entry] of Object.entries(ingDB)) { // BUGFIX FARMED_FISH
                                         const entryName = (entry.name || key).toLowerCase(); // BUGFIX FARMED_FISH
                                         if (entryName.includes('anchovy') || entryName.includes('sardine')) { // BUGFIX FARMED_FISH
-                                            proxyPef = entry.data && entry.data.pef; // SCOPE FIX: assign to outer let, not re-declare as const
+                                            const proxyPef = entry.data && entry.data.pef; // BUGFIX FARMED_FISH
                                             if (proxyPef && proxyPef['Climate Change'] !== undefined) { // BUGFIX FARMED_FISH
                                                 fishmealCO2PerKg = proxyPef['Climate Change']; // BUGFIX FARMED_FISH
                                             } // BUGFIX FARMED_FISH
@@ -1090,9 +1093,9 @@ if (!traceability.usetox) {
                                 // be allocated to CC-Biogenic.
                                 let feedFossilFraction  = 0;
                                 let feedBiogenicFraction = 1;
-                                const proxyTotalCC  = proxyPef ? (proxyPef['Climate Change']            || 0)    : 0;    // SCOPE FIX: null-guard — proxyPef is null when no anchovy/sardine found in DB
-                                const proxyFossilCC = proxyPef ? (proxyPef['Climate Change - Fossil']   || null) : null; // SCOPE FIX: null-guard
-                                const proxyCCBiogen = proxyPef ? (proxyPef['Climate Change - Biogenic'] || null) : null; // SCOPE FIX: null-guard
+                                const proxyTotalCC  = proxyPef['Climate Change']           || 0;
+                                const proxyFossilCC = proxyPef['Climate Change - Fossil']  || null;
+                                const proxyCCBiogen = proxyPef['Climate Change - Biogenic'] || null;
                                 if (
                                     proxyTotalCC > 0 &&
                                     proxyFossilCC !== null &&
@@ -1488,6 +1491,33 @@ if (!traceability.usetox) {
                     };
                 }
 
+                // === ORGANIC NITROGEN N₂O (ISO 14044 primary data path) ===
+                // Manure, compost, digestate applied to soil.
+                // Key difference from synthetic N: FRAC_GASM = 0.20 (organic N volatilization fraction)
+                // vs FRAC_GASF = 0.10 for synthetic N. Both use same EF1, EF4, EF5, FRAC_LEACH.
+                // Source: IPCC 2006 Vol. 4, Ch. 11, Table 11.1 & 11.3 (F_ON organic nitrogen inputs).
+                if (pd.organicNitrogenKgPerTon && pd.organicNitrogenKgPerTon > 0) {
+                    const FRAC_GASM = 0.20;  // IPCC 2006 Vol.4 Table 11.3 — fraction of organic N volatilized as NH3/NOx
+                    const F_ON = (pd.organicNitrogenKgPerTon / 1000) * ingredient.quantityKg;  // kg organic N applied
+                    const N2O_on_direct         = F_ON * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_leach          = F_ON * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_volatilization = F_ON * FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_total = N2O_on_direct + N2O_on_leach + N2O_on_volatilization;
+
+                    flatPef['Climate Change']            += N2O_on_total / ingredient.quantityKg;
+                    flatPef['Climate Change - Land Use'] += N2O_on_total / ingredient.quantityKg;
+
+                    adjustments.n2o_organic_applied = {
+                        applied:                 true,
+                        F_ON_kg:                 F_ON,
+                        direct_kgCO2e:           N2O_on_direct,
+                        indirect_leach_kgCO2e:   N2O_on_leach,
+                        volatilization_kgCO2e:   N2O_on_volatilization,
+                        total_kgCO2e:            N2O_on_total,
+                        frac_gasm:               FRAC_GASM,
+                        formula:                 'IPCC Tier 1 (2006) Vol.4 Table 11.3 organic N path: F_ON × EF1 (direct) + F_ON × FRAC_LEACH × EF5 (leach) + F_ON × FRAC_GASM(0.20) × EF4 (volatilization). GWP_N2O=' + AR5.GWP_N2O
+                    };
+
                 // === GAP 2: SALCA-P phosphorus leaching (ISO 14044 primary data path) ===
                 // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
                 if (pd.phosphorusKgPerTon && pd.phosphorusKgPerTon > 0) {
@@ -1784,6 +1814,7 @@ if (!traceability.usetox) {
 
         return { ingredientResults, ingredientTraceability };
     }
+    }
 
     // ── STEP 2: MANUFACTURING ────────────────────────────────────────────────
     function processManufacturing(input) {
@@ -1859,16 +1890,89 @@ if (!traceability.usetox) {
 
             const kwhPerKgActual = pfd.totalKWh   / pfd.totalOutputKg;
             const gasM3PerKg     = pfd.totalGasM3 / pfd.totalOutputKg;
+
+            // FUEL TYPE CO2 FACTOR — CoM 2024 JRC Edition
+            // Each factor is per the unit entered in the form (m³ for gas, litres for LPG/oil, kg for coal).
+            const FUEL_CO2_FACTORS = {
+                natural_gas: 2.13,   // kg CO2/m³  (0.20196 t CO2/MWh × 38 MJ/m³ ÷ 3600 MJ/MWh × 1000)
+                lpg:         1.61,   // kg CO2/litre (63.1 t CO2/TJ × 46.1 MJ/kg × 0.555 kg/L ÷ 1e6 × 1000)
+                fuel_oil:    2.66,   // kg CO2/litre (74.1 t CO2/TJ × 42.7 MJ/kg × 0.84 kg/L ÷ 1e6 × 1000)
+                coal:        2.53,   // kg CO2/kg   (94.6 t CO2/TJ × 26.7 MJ/kg ÷ 1e6 × 1000)
+                none:        0.0
+            };
+            const fuelType   = pfd.fuelType || 'natural_gas';
+            const fuelFactor = FUEL_CO2_FACTORS[fuelType] !== undefined ? FUEL_CO2_FACTORS[fuelType] : 2.13;
             // CoM 2024 Table 1: Natural gas = 0.20196 t CO2/MWh (activity-based)
 // 1 m³ gas ≈ 0.01056 MWh (38 MJ/m³ ÷ 3,600 MJ/MWh)
 // ∴ 0.20196 × 0.01056 × 1,000 = 2.13 kg CO2/m³
 // Source: European Commission, Covenant of Mayors, Emission Factors
 //   for Local Energy Use, 2024 Edition, JRC
-const gasCO2 = gasM3PerKg * 2.13;
+const gasCO2 = gasM3PerKg * fuelFactor;
+
+            // REFRIGERANT LEAKAGE — F-gas direct emissions
+            // Formula: kg CO2e = (kgLeaked / totalOutputKg) × GWP_refrigerant (IPCC AR5 / EC Reg 517/2014)
+            // Added to Climate Change (Fossil) — F-gases are synthetic, non-biogenic, non-land-use.
+            //
+            // BUG-02 FIX: Normalise refrigerantType string before lookup.
+            // Previously, a mismatch like "R407C" vs "R-407C" (no hyphen) or leading/trailing
+            // whitespace caused REFRIGERANT_GWP[refType] to return undefined, which fell through
+            // to || 0, silently setting GWP=0 for a real refrigerant (R-407C actual GWP = 1774).
+            // This produced a materially wrong PDF showing "GWP: 0" for a non-zero refrigerant.
+            //
+            // Fix strategy:
+            //   1. Trim whitespace and normalise the string (uppercase, ensure hyphen format).
+            //   2. If a non-empty type is supplied but NOT found in the table after normalisation,
+            //      throw a CalculationError with the exact unrecognised value so the user can
+            //      correct the form input. Never silently apply GWP=0 for an unknown type.
+            //   3. If refrigerantType is blank/null/undefined, GWP=0 is correct (no refrigerant).
+            //   4. R-717 (ammonia) and R-744 (CO2) have GWP=0 and GWP=1 by definition — valid.
+            //
+            // Source: IPCC AR5 GWP100 / EC F-Gas Regulation 517/2014 Annex I
+            const REFRIGERANT_GWP = {
+                'R-404A': 3922, 'R-134a': 1430, 'R-407C': 1774, 'R-410A': 2088,
+                'R-507A': 3985, 'R-32':    675,  'R-744':     1, 'R-717':     0
+            };
+
+            // BUG-02 FIX: Normalise the input string
+            const _refTypeRaw = pfd.refrigerantType || '';
+            // Step 1: trim whitespace
+            let _refTypeNorm = _refTypeRaw.trim();
+            // Step 2: uppercase (R-407c → R-407C, r-32 → R-32)
+            _refTypeNorm = _refTypeNorm.toUpperCase();
+            // Step 3: insert hyphen after leading 'R' if absent (R407C → R-407C, R32 → R-32)
+            // Pattern: R followed immediately by digits — insert hyphen after R
+            _refTypeNorm = _refTypeNorm.replace(/^R(\d)/, 'R-$1');
+
+            const refType    = _refTypeNorm;
+            const refKgTotal = pfd.refrigerantKgLeaked || 0;
+
+            let refGWP;
+            if (!refType) {
+                // No refrigerant specified — GWP=0 is correct, nothing to leak
+                refGWP = 0;
+            } else if (REFRIGERANT_GWP[refType] !== undefined) {
+                // Known refrigerant — use table value (may legitimately be 0 for R-717)
+                refGWP = REFRIGERANT_GWP[refType];
+            } else {
+                // BUG-02 FIX: Unrecognised refrigerant type after normalisation.
+                // Throw so the user corrects the form — never silently use GWP=0.
+                // Supported types: R-404A, R-134a, R-407C, R-410A, R-507A, R-32, R-744, R-717
+                throw new CalculationError(
+                    'Unrecognised refrigerant type: "' + _refTypeRaw + '" ' +
+                    '(normalised to "' + refType + '"). ' +
+                    'Supported types: R-404A, R-134a, R-407C, R-410A, R-507A, R-32, R-744, R-717. ' +
+                    'Correct the Refrigerant Type field in the factory data form, or leave blank if no refrigerant is used.'
+                );
+            }
+
+            const refCO2PerKg = refKgTotal > 0 && refGWP > 0 && pfd.totalOutputKg > 0
+                ? (refKgTotal / pfd.totalOutputKg) * refGWP
+                : 0;
             // FIX 2: Apply T&D losses to primary factory electricity, matching the benchmark path.
             // CONSTANTS.GLEC.T_AND_D_LOSSES = 0.07 (IEA EU average, defined in core_physics.js).
             const elecCO2        = kwhPerKgActual * (gridIntensity * (1 + window.corePhysics.CONSTANTS.GLEC.T_AND_D_LOSSES) / 1000);
-            const totalMfgCO2    = (elecCO2 + gasCO2) * prodWt;
+            // Refrigerant adds to Climate Change (Fossil) — GWP-weighted F-gas direct emission per kg product
+            const totalMfgCO2    = (elecCO2 + gasCO2 + refCO2PerKg) * prodWt;
             const totalMfgKwh    = kwhPerKgActual * prodWt;
 
             mfgResult = {
@@ -1876,7 +1980,13 @@ const gasCO2 = gasM3PerKg * 2.13;
                 kwh:                  totalMfgKwh,
                 fossilFraction:       1.0,
                 source:               'Primary Factory Data',
-                gridIntensityGPerKwh: gridIntensity   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
+                gridIntensityGPerKwh: gridIntensity,   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
+                fuelType:             fuelType,
+                fuelFactor:           fuelFactor,
+                refrigerantType:      refType   || null,
+                refrigerantKgLeaked:  refKgTotal || 0,
+                refrigerantGWP:       refGWP     || 0,
+                refrigerantCO2PerKg:  refCO2PerKg
             };
 
             // Bug 8 fix: compute multi-category results for primary factory data

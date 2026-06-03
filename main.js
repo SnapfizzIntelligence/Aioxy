@@ -1,7 +1,8 @@
 
-// ================== AIOXY MAIN CONTROLLER v3.1 ==================
+// ================== AIOXY MAIN CONTROLLER v3.2 ==================
 // Global State, Initialization, and Core Application Flow
 // Twin Calculation Engine — Dual Product Parallel Analysis
+// BUG-01 FIX: Stale twin/baseline globals reset at start of calculateImpact()
 // ===================================================================
 
 // ================== GLOBAL VARIABLES ==================
@@ -377,6 +378,18 @@ function showTwinCopyConfirmation() {
 async function calculateImpact() {
     if (selectedIngredients.length === 0) { clearResults(); return; }
 
+    // BUG-01 FIX: Reset all twin/baseline globals at the start of every new calculation run.
+    // Without this, stale values from a prior session persist in window.currentComparisonBaseline
+    // and window._twinResultsForPDF, causing pdf-generator.js to render the wrong twin on the
+    // cover page, executive summary, and QR code even when a completely different twin (or no
+    // twin at all) was computed in the current run.
+    // These are set to their correct values below once the engine returns results.
+    window.currentComparisonBaseline = null;
+    window._twinResultsForPDF        = null;
+    if (window.auditTrailData) {
+        window.auditTrailData.comparison_baseline = null;
+    }
+
     const loadingElement = document.getElementById('loadingResults');
     const resultsContent = document.getElementById('resultsContent');
     if (loadingElement) loadingElement.classList.remove('hidden');
@@ -506,6 +519,15 @@ async function calculateImpact() {
         window.auditTrailData            = mainCalcResult.auditTrailData;
         window.currentComparisonBaseline = mainCalcResult.comparison.baseline;
         window.currentDPPId              = mainCalcResult.auditTrailData.dppId;
+
+        // BUG-01 FIX: Write comparison_baseline directly into auditTrailData so
+        // pdf-generator.js reads it via audit.comparison_baseline (its PRIMARY path)
+        // and never falls through to the window.currentComparisonBaseline global.
+        // This guarantees cover page, executive summary, and QR code always reflect
+        // the current run — not any prior session value.
+        if (window.auditTrailData) {
+            window.auditTrailData.comparison_baseline = mainCalcResult.comparison.baseline || null;
+        }
 
         // ── Write twin globals ────────────────────────────────────────────────
         window.twinResult           = twinCalcResult;
@@ -765,4 +787,4 @@ function initApp() {
 
 document.addEventListener('DOMContentLoaded', initApp);
 
-console.log("✅ [AIOXY] main.js v3.1 loaded — Twin Calculation Engine ready");
+console.log("✅ [AIOXY] main.js v3.2 loaded — BUG-01 FIX: stale twin globals reset on each calculateImpact() call");
