@@ -63,7 +63,102 @@ Object.assign(window.aioxyData.ingredients, {
         }
     },
 
-    
+  
+    "coconut-milk-ciqual-18041": {
+        "name": "Coconut milk or coconut cream",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.682,
+                "Climate Change - Fossil": 0.0264,
+                "Climate Change - Biogenic": 0.0213,
+                "Climate Change - Land Use": 0.634,
+                "Ozone Depletion": 2.71e-08,
+                "Human Toxicity, non-cancer": 1.05e-08,
+                "Human Toxicity, cancer": 8.02e-10,
+                "Particulate Matter": 4.10e-08,
+                "Ionizing Radiation": 0.221,
+                "Photochemical Ozone Formation": 0.00256,
+                "Acidification": 0.00358,
+                "Eutrophication, terrestrial": 0.0113,
+                "Eutrophication, freshwater": 0.000144,
+                "Eutrophication, marine": 0.00192,
+                "Ecotoxicity, freshwater": 9.11,
+                "Land Use": 19.3,
+                "Water Use/Scarcity (AWARE)": 0.873,
+                "Resource Use, minerals/metals": 3.13e-06,
+                "Resource Use, fossils": 12.6
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Lait de coco ou Crème de coco",
+                "source_uuid": "ciqual-18041",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 3.0, "TiR": 2.0, "TeR": 3.0, "GR": 2.40 },
+                "dqr_overall": 2.60,
+                "single_score_mpt": 0.0763,
+                "biogenic_net": 0.0213,
+                "co2_luc_net": 0.634,
+                "co2_fossil": 0.0264,
+                "ciqual_category": "boissons",
+                "ciqual_sub_category": "boissons sans alcool",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Glacé",
+                "packaging": "PACK PROXY",
+                "preparation": "Pas de préparation"
+            }
+        }
+    },
+    "red-lentil-dried-ciqual-20535": {
+        "name": "Lentil, pink or red, dried",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.581,
+                "Climate Change - Fossil": 0.0184,
+                "Climate Change - Biogenic": 0.0149,
+                "Climate Change - Land Use": 0.548,
+                "Ozone Depletion": 1.38e-08,
+                "Human Toxicity, non-cancer": 1.82e-08,
+                "Human Toxicity, cancer": 6.30e-10,
+                "Particulate Matter": 3.91e-08,
+                "Ionizing Radiation": 0.319,
+                "Photochemical Ozone Formation": 0.00335,
+                "Acidification": 0.00448,
+                "Eutrophication, terrestrial": 0.014,
+                "Eutrophication, freshwater": 0.000469,
+                "Eutrophication, marine": 0.00109,
+                "Ecotoxicity, freshwater": 139.0,
+                "Land Use": 309.0,
+                "Water Use/Scarcity (AWARE)": 0.13,
+                "Resource Use, minerals/metals": 4.99e-06,
+                "Resource Use, fossils": 13.1
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Lentille corail, sèche",
+                "source_uuid": "ciqual-20535",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 3.0, "TiR": 3.0, "TeR": 3.0, "GR": 2.48 },
+                "dqr_overall": 2.87,
+                "single_score_mpt": 0.152,
+                "biogenic_net": 0.0149,
+                "co2_luc_net": 0.548,
+                "co2_fossil": 0.0184,
+                "ciqual_category": "fruits, légumes, légumineuses et oléagineux",
+                "ciqual_sub_category": "légumineuses",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK AGB",
+                "preparation": "Pas de préparation"
+            }
+        }
+    }, 
+                      
     "vinegar-ciqual-11018": {
         "name": "Vinegar",
         "loss": 0.0,
