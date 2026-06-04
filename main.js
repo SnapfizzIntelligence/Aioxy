@@ -502,8 +502,16 @@ async function calculateImpact() {
     try {
         let mainCalcResult, twinCalcResult = null;
 
+        // Wait up to 5 s for calculationEngine to be ready (handles script load race)
         if (!window.calculationEngine) {
-            throw new Error('calculationEngine not loaded. Ensure calculation_engine.js is included before main.js.');
+            await new Promise((resolve, reject) => {
+                let waited = 0;
+                const poll = setInterval(() => {
+                    waited += 100;
+                    if (window.calculationEngine) { clearInterval(poll); resolve(); }
+                    else if (waited >= 5000)       { clearInterval(poll); reject(new Error('calculationEngine not loaded after 5 s. Check that calculation_engine.js is present and has no syntax errors.')); }
+                }, 100);
+            });
         }
 
         if (twinInput) {
