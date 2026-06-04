@@ -531,8 +531,8 @@
             }
 
             // ── Upstream: aggregate inbound transport legs across all ingredients ──
-            let upstreamTotal = 0;
-            const upstreamComponents = [];
+            upstreamTotal = 0;
+            upstreamComponents.length = 0;
             for (const ing of ingredientResults) {
                 for (const comp of (ing.upstreamComponents || [])) {
                     let compCatValue = 0;
