@@ -2811,7 +2811,6 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
         return comparisonBaseline;
     }
-    } // ── END processIngredients() ──────────────────────────────────────────
 
     // ── MAIN: calculate() ────────────────────────────────────────────────────
     async function calculate(input) {
