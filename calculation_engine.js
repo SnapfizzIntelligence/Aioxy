@@ -1820,6 +1820,7 @@ if (!traceability.usetox) {
                 }
                 } // end else (crop primary data path)
             } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (ingredient.primaryData)
+            }
 
             // 1f. Apply processing archetype
             let processingMultiplier = 1.0;
