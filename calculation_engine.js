@@ -254,6 +254,84 @@
                 })()
             };
 
+            // ── INBOUND TRANSPORT — per ingredient (Phase 3 implementation) ──────
+            // METHODOLOGY:
+            //   For non-FR origin ingredients, calculate the inbound transport leg
+            //   from origin country to manufacturing country using GLEC v3.2 factors
+            //   via the same calculateTransport() pathway as outbound transport.
+            //   FR origins: AGRIBALYSE 3.2 already embeds representative domestic
+            //   transport — no additional leg added (ISO 14044 §4.2.3.3 exclusion).
+            //
+            //   Distance source: resolveInboundTransport() — lookup table of
+            //   representative port-to-port (sea) or road-network (road) distances.
+            //   Mode: road for EU/near-EU, sea for intercontinental.
+            //   Temperature: ambient unless product is frozen (processingMethod=freezing).
+            //   Mass: ingredient quantityKg only (no packaging on inbound leg).
+            //   DAF applied inside calculateTransport() per GLEC v3.2 (road ×1.05, sea ×1.15).
+            //
+            // ISO 14044 §4.2.3.3 NOTE: This is a screening-level estimate using
+            //   representative distances. For regulatory submission, replace with
+            //   actual supplier-declared transport distances and modes.
+            //
+            const upstreamComponents = [];
+            let upstreamTotal = 0;
+
+            try {
+                const ingOrigin = ingredient.originCountry || 'FR';
+                const mfgCountry = input.manufacturing && input.manufacturing.country
+                    ? input.manufacturing.country : 'FR';
+
+                const inboundRoute = resolveInboundTransport(ingOrigin, mfgCountry);
+
+                if (inboundRoute) {
+                    // Temperature condition: frozen if processing method is freezing,
+                    // ambient otherwise (inbound ingredient transport is pre-processing).
+                    const tempCondition = (input.manufacturing &&
+                        input.manufacturing.processingMethod === 'freezing')
+                        ? 'frozen' : 'ambient';
+
+                    const inboundResult = window.corePhysics.calculateTransport({
+                        massKg:        ingredient.quantityKg,
+                        distanceKm:    inboundRoute.distanceKm,
+                        mode:          inboundRoute.mode,
+                        refrigeration: tempCondition
+                    });
+
+                    const inboundCO2 = inboundResult.total || 0;
+                    upstreamTotal += inboundCO2;
+
+                    upstreamComponents.push({
+                        name:         ingData.name,
+                        id:           ingredient.id,
+                        origin:       ingOrigin,
+                        destination:  mfgCountry,
+                        mode:         inboundRoute.mode,
+                        distanceKm:   inboundRoute.distanceKm,
+                        massKg:       ingredient.quantityKg,
+                        refrigeration: tempCondition,
+                        subtotal:     inboundCO2,
+                        fossilCO2:    inboundResult.fossilCO2 || inboundCO2,
+                        biogenicCO2:  0,
+                        dlucCO2:      0,
+                        multiCategoryResults: inboundResult.multiCategoryResults || {},
+                        source:       inboundRoute.source,
+                        notes:        ingOrigin + ' → ' + mfgCountry +
+                                      ' | ' + inboundRoute.mode.toUpperCase() +
+                                      ' | ' + inboundRoute.distanceKm + ' km (pre-DAF)' +
+                                      ' | ' + inboundRoute.source,
+                        daf_applied:  inboundRoute.mode === 'road' ? 1.05 :
+                                      inboundRoute.mode === 'sea'  ? 1.15 : 1.00,
+                        methodology:  'GLEC v3.2 screening estimate — replace with primary supplier data for regulatory submission'
+                    });
+                }
+            } catch (inboundErr) {
+                // Non-critical — log and continue. Inbound transport failure
+                // must never block the main calculation.
+                console.warn('[AIOXY] Inbound transport calculation failed for ingredient "' +
+                    (ingData && ingData.name ? ingData.name : ingredient.id) +
+                    '": ' + (inboundErr && inboundErr.message ? inboundErr.message : String(inboundErr)));
+            }
+            // ── END INBOUND TRANSPORT ─────────────────────────────────────────
 
             // FIX: [Audit 8.4] Bug 3 fix (Step B): Build Waste (processing) components
             // Previous code used db.processing_archetypes[processingMethod] — vocabulary mismatch.
@@ -1741,8 +1819,7 @@ if (!traceability.usetox) {
                     }
                 }
                 } // end else (crop primary data path)
-            } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (pd.animalType) if/else
-            } // BUGFIX: closing brace for if (ingredient.primaryData) — was missing, caused IIFE not to execute
+            } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (ingredient.primaryData)
 
             // 1f. Apply processing archetype
             let processingMultiplier = 1.0;
