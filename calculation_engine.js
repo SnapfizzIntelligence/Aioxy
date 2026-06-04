@@ -273,7 +273,7 @@
             //   representative distances. For regulatory submission, replace with
             //   actual supplier-declared transport distances and modes.
             //
-            const upstreamComponents = [];
+            let upstreamComponents = [];
             let upstreamTotal = 0;
 
             try {
@@ -531,8 +531,8 @@
             }
 
             // ── Upstream: aggregate inbound transport legs across all ingredients ──
-            let upstreamTotal = 0;
-            const upstreamComponents = [];
+            upstreamTotal = 0;
+            upstreamComponents = [];
             for (const ing of ingredientResults) {
                 for (const comp of (ing.upstreamComponents || [])) {
                     let compCatValue = 0;
@@ -1819,8 +1819,8 @@ if (!traceability.usetox) {
                     }
                 }
                 } // end else (crop primary data path)
-            } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (ingredient.primaryData)
-            }
+            } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (pd.animalType) if/else
+            } // BUGFIX: closing brace for if (ingredient.primaryData) — was missing, caused IIFE not to execute
 
             // 1f. Apply processing archetype
             let processingMultiplier = 1.0;
