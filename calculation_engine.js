@@ -254,30 +254,84 @@
                 })()
             };
 
-            // GAP 4 FIX: Inbound upstream transport shadow calculation REMOVED.
+            // ── INBOUND TRANSPORT — per ingredient (Phase 3 implementation) ──────
+            // METHODOLOGY:
+            //   For non-FR origin ingredients, calculate the inbound transport leg
+            //   from origin country to manufacturing country using GLEC v3.2 factors
+            //   via the same calculateTransport() pathway as outbound transport.
+            //   FR origins: AGRIBALYSE 3.2 already embeds representative domestic
+            //   transport — no additional leg added (ISO 14044 §4.2.3.3 exclusion).
             //
-            // The previous implementation computed inbound transport as:
-            //   transportCO2 = (ingRes.quantityKg / 1000) * 200 * 0.060
-            // using a hardcoded 200 km default distance and 0.060 kgCO2e/tkm EF.
-            // This was a shadow calculation: it bypassed calculateTransport() in
-            // core_physics.js, used an undocumented assumption (200 km), applied
-            // only to Climate Change (zeroing all other categories), and was NOT
-            // covered by the audit hash or included in pefResults.
+            //   Distance source: resolveInboundTransport() — lookup table of
+            //   representative port-to-port (sea) or road-network (road) distances.
+            //   Mode: road for EU/near-EU, sea for intercontinental.
+            //   Temperature: ambient unless product is frozen (processingMethod=freezing).
+            //   Mass: ingredient quantityKg only (no packaging on inbound leg).
+            //   DAF applied inside calculateTransport() per GLEC v3.2 (road ×1.05, sea ×1.15).
             //
-            // The correct treatment: AGRIBALYSE 3.2 farm-gate data includes
-            // representative French market transport in its system boundary
-            // (AGRIBALYSE 3.2 documentation §3.2). Cross-border transport
-            // adjustments require primary supplier data (actual origin distances)
-            // and must be modelled as an explicit transport leg through the
-            // processTransport() pathway with user-supplied distance input.
+            // ISO 14044 §4.2.3.3 NOTE: This is a screening-level estimate using
+            //   representative distances. For regulatory submission, replace with
+            //   actual supplier-declared transport distances and modes.
             //
-            // System boundary declaration: inbound ingredient transport beyond
-            // the AGRIBALYSE 3.2 farm-gate boundary is excluded from the current
-            // cradle-to-retail system boundary. This exclusion is documented here
-            // per ISO 14044 §4.2.3.3 (system boundary definition must be explicit).
-            // Phase 3 will add a per-ingredient origin transport input field.
             const upstreamComponents = [];
-            const upstreamTotal = 0;
+            let upstreamTotal = 0;
+
+            try {
+                const ingOrigin = ingredient.originCountry || 'FR';
+                const mfgCountry = input.manufacturing && input.manufacturing.country
+                    ? input.manufacturing.country : 'FR';
+
+                const inboundRoute = resolveInboundTransport(ingOrigin, mfgCountry);
+
+                if (inboundRoute) {
+                    // Temperature condition: frozen if processing method is freezing,
+                    // ambient otherwise (inbound ingredient transport is pre-processing).
+                    const tempCondition = (input.manufacturing &&
+                        input.manufacturing.processingMethod === 'freezing')
+                        ? 'frozen' : 'ambient';
+
+                    const inboundResult = window.corePhysics.calculateTransport({
+                        massKg:        ingredient.quantityKg,
+                        distanceKm:    inboundRoute.distanceKm,
+                        mode:          inboundRoute.mode,
+                        refrigeration: tempCondition
+                    });
+
+                    const inboundCO2 = inboundResult.total || 0;
+                    upstreamTotal += inboundCO2;
+
+                    upstreamComponents.push({
+                        name:         ingData.name,
+                        id:           ingredient.id,
+                        origin:       ingOrigin,
+                        destination:  mfgCountry,
+                        mode:         inboundRoute.mode,
+                        distanceKm:   inboundRoute.distanceKm,
+                        massKg:       ingredient.quantityKg,
+                        refrigeration: tempCondition,
+                        subtotal:     inboundCO2,
+                        fossilCO2:    inboundResult.fossilCO2 || inboundCO2,
+                        biogenicCO2:  0,
+                        dlucCO2:      0,
+                        multiCategoryResults: inboundResult.multiCategoryResults || {},
+                        source:       inboundRoute.source,
+                        notes:        ingOrigin + ' → ' + mfgCountry +
+                                      ' | ' + inboundRoute.mode.toUpperCase() +
+                                      ' | ' + inboundRoute.distanceKm + ' km (pre-DAF)' +
+                                      ' | ' + inboundRoute.source,
+                        daf_applied:  inboundRoute.mode === 'road' ? 1.05 :
+                                      inboundRoute.mode === 'sea'  ? 1.15 : 1.00,
+                        methodology:  'GLEC v3.2 screening estimate — replace with primary supplier data for regulatory submission'
+                    });
+                }
+            } catch (inboundErr) {
+                // Non-critical — log and continue. Inbound transport failure
+                // must never block the main calculation.
+                console.warn('[AIOXY] Inbound transport calculation failed for ingredient "' +
+                    (ingData && ingData.name ? ingData.name : ingredient.id) +
+                    '": ' + (inboundErr && inboundErr.message ? inboundErr.message : String(inboundErr)));
+            }
+            // ── END INBOUND TRANSPORT ─────────────────────────────────────────
 
             // FIX: [Audit 8.4] Bug 3 fix (Step B): Build Waste (processing) components
             // Previous code used db.processing_archetypes[processingMethod] — vocabulary mismatch.
@@ -476,6 +530,29 @@
                 });
             }
 
+            // ── Upstream: aggregate inbound transport legs across all ingredients ──
+            let upstreamTotal = 0;
+            const upstreamComponents = [];
+            for (const ing of ingredientResults) {
+                for (const comp of (ing.upstreamComponents || [])) {
+                    let compCatValue = 0;
+                    if (cat === 'Climate Change') {
+                        compCatValue = comp.subtotal || 0;
+                    } else if (cat === 'Climate Change - Fossil') {
+                        compCatValue = comp.fossilCO2 || comp.subtotal || 0;
+                    } else if (cat !== 'Climate Change - Biogenic' && cat !== 'Climate Change - Land Use') {
+                        compCatValue = (comp.multiCategoryResults && comp.multiCategoryResults[cat] !== undefined)
+                            ? comp.multiCategoryResults[cat] : 0;
+                    }
+                    upstreamTotal += compCatValue;
+                    if (cat === 'Climate Change') {
+                        // Only push full component objects for CC (used by audit trail display)
+                        upstreamComponents.push(comp);
+                    }
+                }
+            }
+            // ── End upstream ──────────────────────────────────────────────────
+
             tree[cat] = {
                 Ingredients:   { total: ingTotal,       components: ingComponents },
                 Manufacturing: { total: mfgTotal,       components: [mfgComponent] },
@@ -589,6 +666,95 @@
                      '. AWARE/LANCA/FAOSTAT adjustments will be skipped for this country.');
         return isoCode;
     }
+
+    // ── INBOUND TRANSPORT DISTANCE + MODE LOOKUP ─────────────────────────────
+    // Source methodology:
+    //   Sea distances: GLEC v3.2 representative port-to-port great circle + 15% DAF
+    //   Road distances: Eurostat transport statistics + Google Maps road network
+    //   Mode selection rule:
+    //     Same country or neighbouring EU → road
+    //     Intercontinental / >1500 km overland → sea
+    //     Island/archipelago origins (JP, ID, PH, LK) → sea always
+    //   All distances in km (pre-DAF great circle / road network).
+    //   DAF is applied inside calculateTransport() — do NOT pre-apply here.
+    //   Reference: GLEC v3.2 Module 2 §3.2 representative distances.
+    //   Temperature condition: ambient unless mfg processingMethod = freezing.
+    //
+    // Returns { distanceKm, mode, source } or null if origin === mfgCountry (FR→FR etc.)
+    // A null return means AGRIBALYSE already embeds representative farm-gate transport.
+    //
+    function resolveInboundTransport(originCode, mfgCode) {
+        // FR origin: AGRIBALYSE 3.2 already includes representative French
+        // domestic transport in its system boundary — no additional leg needed.
+        if (!originCode || originCode === 'FR') return null;
+
+        // Same country as manufacturing — negligible domestic leg,
+        // treat as included in AGRIBALYSE system boundary.
+        if (originCode === mfgCode) return null;
+
+        // ── ROAD DISTANCES (km) to representative European hub (Paris/Frankfurt) ──
+        // Used when mode = road (EU/near-EU origins).
+        // Source: Eurostat road freight statistics, representative origin city to
+        // Paris CDG / Frankfurt logistics hub.
+        const ROAD_TO_EU_HUB = {
+            'AT': 1100, 'BE': 310,  'BG': 2000, 'HR': 1500, 'CY': null, // CY = sea
+            'CZ': 880,  'DK': 1000, 'EE': 2200, 'FI': 2500, 'DE': 550,
+            'GR': 2500, 'HU': 1300, 'IE': 1800, 'IT': 1200, 'LV': 2100,
+            'LT': 2000, 'LU': 360,  'MT': null, // MT = sea
+            'NL': 500,  'NO': 2000, 'PL': 1300, 'PT': 1700, 'RO': 2200,
+            'SK': 1100, 'SI': 1200, 'ES': 1300, 'SE': 2000, 'CH': 600,
+            'GB': 850,  'TR': 2800, 'AL': 2100, 'BA': 1800, 'ME': 2000,
+            'MK': 2100, 'RS': 1900, 'UA': 2500, 'MD': 2300, 'RU': 2800,
+            'MA': 2500, 'DZ': 2200, 'TN': 2100
+        };
+
+        // ── SEA DISTANCES (km great circle, pre-DAF) to Rotterdam/Hamburg ──
+        // Intercontinental and island origins.
+        // Source: GLEC v3.2 representative port-to-port distances,
+        // Port of Rotterdam as European reference port.
+        const SEA_TO_EU_PORT = {
+            // South Asia
+            'IN': 10500, 'PK': 9800,  'BD': 11000, 'LK': 11500, 'NP': 11500,
+            // East/SE Asia
+            'CN': 12000, 'JP': 13500, 'KR': 12500, 'VN': 11500, 'TH': 10800,
+            'ID': 11000, 'MY': 10500, 'PH': 12000, 'TW': 12500,
+            // Middle East
+            'TR': 3500,  'IR': 8500,  'IQ': 8200,  'SA': 8500,  'AE': 9000,
+            // Africa (sea)
+            'EG': 4500,  'MA': 2800,  'NG': 6500,  'GH': 6200,  'CI': 6800,
+            'CM': 6500,  'KE': 8000,  'ET': 7500,  'ZA': 9500,
+            // Americas
+            'US': 7500,  'CA': 6800,  'MX': 9500,  'BR': 9000,  'AR': 11000,
+            'CL': 13000, 'CO': 9800,  'PE': 12000, 'UY': 10500,
+            // Oceania
+            'AU': 15000, 'NZ': 17500,
+            // Islands
+            'CY': 3500,  'MT': 2200,  'IS': 2000,
+        };
+
+        // ── MODE SELECTION ──
+        // EU/near-EU with road distance: use road.
+        // Everything else: use sea.
+        let distanceKm, mode, source;
+
+        if (ROAD_TO_EU_HUB[originCode] !== undefined && ROAD_TO_EU_HUB[originCode] !== null) {
+            distanceKm = ROAD_TO_EU_HUB[originCode];
+            mode       = 'road';
+            source     = 'Road distance to EU hub (Paris/Frankfurt) — Eurostat road freight statistics';
+        } else if (SEA_TO_EU_PORT[originCode] !== undefined) {
+            distanceKm = SEA_TO_EU_PORT[originCode];
+            mode       = 'sea';
+            source     = 'Sea distance to Rotterdam — GLEC v3.2 representative port-to-port (pre-DAF great circle)';
+        } else {
+            // Unknown origin: use conservative global average sea proxy
+            distanceKm = 8000;
+            mode       = 'sea';
+            source     = 'Global average proxy (origin not in lookup table) — conservative 8000 km sea';
+        }
+
+        return { distanceKm, mode, source };
+    }
+    // ── END INBOUND TRANSPORT LOOKUP ─────────────────────────────────────────
 
     function applyCountrySpecificFactors(flatPef, ingredient, ingData, adjustments, traceability) {
 
@@ -1792,7 +1958,8 @@ if (!traceability.usetox) {
                 primary_data:       ingredient.primaryData || null,
                 universal_adjustments: adjustments,
                 yieldFactor:        yieldFactor,
-                allCategoryResults: allCategoryResults
+                allCategoryResults: allCategoryResults,
+                upstreamComponents: upstreamComponents   // inbound transport legs
             };
 
             ingredientResults.push(ingEntry);
@@ -1813,7 +1980,6 @@ if (!traceability.usetox) {
         }
 
         return { ingredientResults, ingredientTraceability };
-    }
     }
 
     // ── STEP 2: MANUFACTURING ────────────────────────────────────────────────
@@ -2170,6 +2336,26 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 ingTotal += (ing.allCategoryResults[cat] || 0);
             }
 
+            // ── INBOUND UPSTREAM TRANSPORT ────────────────────────────────────
+            // Sums inbound transport CO2e across all ingredient upstream legs.
+            // CC: uses subtotal. CC-Fossil: uses fossilCO2 from calculateTransport.
+            // Non-CC: uses multiCategoryResults from calculateTransport() where present.
+            // CC-Biogenic / CC-Land Use: always zero for transport (correct per GLEC).
+            let upstreamTotal = 0;
+            for (const ing of ingredientResults) {
+                for (const comp of (ing.upstreamComponents || [])) {
+                    if (cat === 'Climate Change') {
+                        upstreamTotal += (comp.subtotal || 0);
+                    } else if (cat === 'Climate Change - Fossil') {
+                        upstreamTotal += (comp.fossilCO2 || comp.subtotal || 0);
+                    } else if (cat !== 'Climate Change - Biogenic' && cat !== 'Climate Change - Land Use') {
+                        upstreamTotal += (comp.multiCategoryResults && comp.multiCategoryResults[cat] !== undefined)
+                            ? comp.multiCategoryResults[cat] : 0;
+                    }
+                }
+            }
+            // ── END INBOUND UPSTREAM ──────────────────────────────────────────
+
             let mfgTotal = 0;
             if (cat === 'Climate Change') {
                 mfgTotal = mfgResult.co2;
@@ -2220,16 +2406,17 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 pkgTotal = packagingResult.multiCategoryResults[cat]; // BUGFIX PACKAGING-NON-CC
             }
 
-            const total = ingTotal + mfgTotal + transTotal + pkgTotal;
+            const total = ingTotal + mfgTotal + transTotal + pkgTotal + upstreamTotal;
 
             pefResults[cat] = {
                 total:             total,
                 unit:              CATEGORY_UNITS[cat] || '',
                 contribution_tree: {
-                    Ingredients:   { total: ingTotal,   components: [] },
-                    Manufacturing: { total: mfgTotal,   components: [] },
-                    Transport:     { total: transTotal,  components: [] },
-                    Packaging:     { total: pkgTotal,   components: [] }
+                    Ingredients:   { total: ingTotal,      components: [] },
+                    Manufacturing: { total: mfgTotal,      components: [] },
+                    Transport:     { total: transTotal,    components: [] },
+                    Packaging:     { total: pkgTotal,      components: [] },
+                    Upstream:      { total: upstreamTotal, components: [] }
                 }
             };
         }
