@@ -502,18 +502,6 @@ async function calculateImpact() {
     try {
         let mainCalcResult, twinCalcResult = null;
 
-        // Wait up to 5 s for calculationEngine to be ready (handles script load race)
-        if (!window.calculationEngine) {
-            await new Promise((resolve, reject) => {
-                let waited = 0;
-                const poll = setInterval(() => {
-                    waited += 100;
-                    if (window.calculationEngine) { clearInterval(poll); resolve(); }
-                    else if (waited >= 5000)       { clearInterval(poll); reject(new Error('calculationEngine not loaded after 5 s. Check that calculation_engine.js is present and has no syntax errors.')); }
-                }, 100);
-            });
-        }
-
         if (twinInput) {
             // ── Run both products simultaneously ──────────────────────────────
             [mainCalcResult, twinCalcResult] = await Promise.all([
@@ -689,29 +677,19 @@ function initApp() {
     console.log('🚀 [AIOXY] Initializing application...');
 
     const checkData = setInterval(() => {
-        if (window.aioxyData && window.aioxyData.ingredients &&
-            window.calculationEngine && window.corePhysics &&
-            window.complianceEngine && window.exportEngine) {
+        if (window.aioxyData && window.aioxyData.ingredients) {
             clearInterval(checkData);
-            console.log('✅ [AIOXY] All engines + data loaded. Proceeding...');
+            console.log('✅ [AIOXY] Data loaded. Proceeding...');
             proceedWithInitialization();
         } else {
-            console.log('⏳ [AIOXY] Waiting for engines + data...',
-                { aioxyData: !!window.aioxyData, calculationEngine: !!window.calculationEngine,
-                  corePhysics: !!window.corePhysics, complianceEngine: !!window.complianceEngine,
-                  exportEngine: !!window.exportEngine });
+            console.log('⏳ [AIOXY] Waiting for data...');
         }
     }, 100);
 
     setTimeout(() => {
-        if (!window.aioxyData || !window.aioxyData.ingredients ||
-            !window.calculationEngine || !window.corePhysics ||
-            !window.complianceEngine || !window.exportEngine) {
+        if (!window.aioxyData || !window.aioxyData.ingredients) {
             clearInterval(checkData);
-            console.error('❌ [AIOXY] Engine/data load timeout! Missing:',
-                { aioxyData: !!window.aioxyData, calculationEngine: !!window.calculationEngine,
-                  corePhysics: !!window.corePhysics, complianceEngine: !!window.complianceEngine,
-                  exportEngine: !!window.exportEngine });
+            console.error('❌ [AIOXY] Data load timeout! Fallback demo mode.');
             alert('Data loading timed out. Running in demo mode with limited data.');
             proceedWithInitialization();
         }
