@@ -186,6 +186,7 @@ function buildMasterData() {
         cc_ing:         stageKg('Climate Change', 'Ingredients'),
         cc_mfg:         stageKg('Climate Change', 'Manufacturing'),
         cc_trans:       stageKg('Climate Change', 'Transport'),
+        cc_upstream:    stageKg('Climate Change', 'Upstream'),   // inbound ingredient transport (GLEC v3.2)
         cc_pkg:         stageKg('Climate Change', 'Packaging'),
         cc_waste:       stageKg('Climate Change', 'Waste'),
 
@@ -278,7 +279,8 @@ function generateTescoCSV(d) {
     rows.push([c('Stage breakdown (required for TSN Scope 3 Category 1 disclosure):')]);
     rows.push(['ghg_ingredients_per_kg',               fix(d.cc_ing, 6),            'kg CO2e/kg',  'GHG Protocol Scope 3 Cat.1 — purchased goods'].map(q).join(','));
     rows.push(['ghg_manufacturing_per_kg',             fix(d.cc_mfg, 6),            'kg CO2e/kg',  'Scope 1+2 from manufacturer perspective'].map(q).join(','));
-    rows.push(['ghg_transport_per_kg',                 fix(d.cc_trans, 6),          'kg CO2e/kg',  'GHG Protocol Scope 3 Cat.4 — upstream transport'].map(q).join(','));
+    rows.push(['ghg_transport_per_kg',          fix(d.cc_trans, 6),            'kg CO2e/kg', 'GHG Protocol Scope 3 Cat.4 — outbound transport (GLEC v3.2)'].map(q).join(','));
+    rows.push(['ghg_upstream_transport_per_kg', fix(d.cc_upstream, 6),         'kg CO2e/kg', 'GHG Protocol Scope 3 Cat.4 — inbound ingredient transport (GLEC v3.2)'].map(q).join(','));
     rows.push(['ghg_packaging_per_kg',                 fix(d.cc_pkg, 6),            'kg CO2e/kg',  'GHG Protocol Scope 3 Cat.1 — packaging'].map(q).join(','));
     rows.push(['']);
 
@@ -866,7 +868,9 @@ function generateCSRD_ESRS_CSV(d) {
     rows.push(['esrs_e1_scope1_manufacturing',   fix(d.cc_mfg, 6),         'kg CO2e/kg','ESRS E1', 'E1-6 §44','Scope 1',  'Direct GHG from manufacturing'].map(q).join(','));
     rows.push(['esrs_e1_scope2_energy',          '0',                      'kg CO2e/kg','ESRS E1', 'E1-6 §44','Scope 2',  'Location-based — included in manufacturing above'].map(q).join(','));
     rows.push(['esrs_e1_scope3_cat1_ingredients',fix(d.cc_ing, 6),         'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.1','Purchased goods and services'].map(q).join(','));
-    rows.push(['esrs_e1_scope3_cat4_transport',  fix(d.cc_trans, 6),       'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.4','Upstream transportation'].map(q).join(','));
+    rows.push(['esrs_e1_scope3_cat4_transport',            fix(d.cc_trans + d.cc_upstream, 6), 'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.4','Upstream transportation (inbound + outbound, GLEC v3.2)'].map(q).join(','));
+    rows.push(['esrs_e1_scope3_cat4_outbound_transport',   fix(d.cc_trans, 6),                  'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.4','Outbound transport to retailer'].map(q).join(','));
+    rows.push(['esrs_e1_scope3_cat4_inbound_transport',    fix(d.cc_upstream, 6),               'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.4','Inbound ingredient transport (GLEC v3.2 screening)'].map(q).join(','));
     rows.push(['esrs_e1_scope3_cat1_packaging',  fix(d.cc_pkg, 6),         'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.1','Purchased packaging'].map(q).join(','));
     rows.push(['esrs_e1_ghg_fossil',             fix(d.cc_fossil, 6),      'kg CO2e/kg','ESRS E1', 'E1-6 §44','Fossil',   'Fossil GHG (non-biogenic)'].map(q).join(','));
     rows.push(['esrs_e1_ghg_biogenic',           fix(d.cc_biogenic, 6),    'kg CO2e/kg','ESRS E1', 'E1-6 §44','Biogenic', 'Biogenic CO2 removals and emissions'].map(q).join(','));
@@ -942,7 +946,8 @@ function generateCDP_SC_CSV(d) {
     rows.push([c('C6.5 — SCOPE 3 EMISSIONS — CATEGORY 1: PURCHASED GOODS AND SERVICES')]);
     rows.push([c('Activity-based method: product carbon footprint per ISO 14044 / PEF 3.1')]);
     rows.push(['c6_5_scope3_cat1_intensity_kg_co2e_per_kg', fix(d.cc_ing + d.cc_pkg, 6), 'kg CO2e/kg', 'C6.5', 'Ingredients + packaging — Scope 3 Cat.1 from buyer perspective'].map(q).join(','));
-    rows.push(['c6_5_scope3_cat4_intensity_kg_co2e_per_kg', fix(d.cc_trans, 6),           'kg CO2e/kg', 'C6.5', 'Upstream transport — Scope 3 Cat.4'].map(q).join(','));
+    rows.push(['c6_5_scope3_cat4_intensity_kg_co2e_per_kg',         fix(d.cc_trans + d.cc_upstream, 6), 'kg CO2e/kg', 'C6.5', 'Transport Scope 3 Cat.4 — inbound + outbound (GLEC v3.2)'].map(q).join(','));
+    rows.push(['c6_5_scope3_cat4_inbound_intensity_kg_co2e_per_kg', fix(d.cc_upstream, 6),             'kg CO2e/kg', 'C6.5', 'Inbound ingredient transport (GLEC v3.2 screening)'].map(q).join(','));
     rows.push(['c6_5_total_product_intensity_kg_co2e_per_kg', fix(d.cc, 6),               'kg CO2e/kg', 'C6.5', 'Total product cradle-to-retail'].map(q).join(','));
     rows.push(['c6_5_supplier_scope1_intensity',              fix(d.cc_mfg, 6),            'kg CO2e/kg', 'C6.5', 'Supplier Scope 1+2 from manufacturing'].map(q).join(','));
     rows.push(['c6_5_emissions_boundary',        'Cradle-to-Retail (ISO 14044)',  '',  'C6.5', 'From farm gate to retailer distribution centre'].map(q).join(','));

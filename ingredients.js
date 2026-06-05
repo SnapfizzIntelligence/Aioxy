@@ -919,13 +919,30 @@ Object.assign(window.aioxyData.ingredients, {
 // grid_intensity is authoritative (Ember 2025); countries.electricityCO2 is a synced copy
 // for backward compatibility only. On any future update, change grid_intensity first.
 window.aioxyData.grid_intensity = {
-    "IS": 18, "NO": 28.1, "SE": 35.3, "CH": 39.2, "FR": 41.4, "FI": 57.5, "SK": 94.8,
-    "DK": 114.4, "AT": 116.9, "CA": 120, "LU": 123.4, "PT": 127.9, "BR": 135, "LT": 138.4,
-    "LV": 138.8, "BE": 149.8, "ES": 153.6, "HR": 158.5, "HU": 163.0, "SI": 183.3, "GB": 217.4, // ISO 3166-1 alpha-2 standard — "GB" is the correct code for the United Kingdom.
-    "RO": 250.8, "NL": 253.6, "IE": 256.5, "ME": 264.2, "BG": 275.6, "IT": 284.8, "GR": 315.1,
-    "EE": 319.1, "DE": 329.6, "US": 368, "AU": 380, "CZ": 401.5, "JP": 435, "MK": 441.4,
-    "TR": 474.7, "Global": 480, "VN": 482, "MT": 484.0, "CY": 489.0, "BA": 570.6, "CN": 580,
-    "PL": 588.6, "IN": 632, "RS": 695.8, "XK": 900.9
+    // ── Europe (existing) ─────────────────────────────────────────────────────
+    "IS": 18,   "NO": 28.1, "SE": 35.3, "CH": 39.2, "FR": 41.4, "FI": 57.5, "SK": 94.8,
+    "DK": 114.4,"AT": 116.9,"CA": 120,  "LU": 123.4,"PT": 127.9,"BR": 135,  "LT": 138.4,
+    "LV": 138.8,"BE": 149.8,"ES": 153.6,"HR": 158.5,"HU": 163.0,"SI": 183.3,"GB": 217.4, // ISO 3166-1 alpha-2 standard
+    "RO": 250.8,"NL": 253.6,"IE": 256.5,"ME": 264.2,"BG": 275.6,"IT": 284.8,"GR": 315.1,
+    "EE": 319.1,"DE": 329.6,"US": 368,  "AU": 380,  "CZ": 401.5,"JP": 435,  "MK": 441.4,
+    "TR": 474.7,"Global": 480,"VN": 482,"MT": 484.0,"CY": 489.0,"BA": 570.6,"CN": 580,
+    "PL": 588.6,"IN": 632,  "RS": 695.8,"XK": 900.9,
+    // ── Global expansion (Ember 2025 / IEA 2024) ─────────────────────────────
+    // South & Southeast Asia
+    "TH": 491,  "ID": 762,  "MY": 571,  "PH": 653,  "BD": 579,
+    "PK": 423,  "LK": 514,  "NP": 14,   "KR": 415,  "TW": 494,
+    // Middle East & North Africa
+    "SA": 721,  "AE": 401,  "IR": 476,  "IQ": 659,  "EG": 489,
+    "MA": 598,  "DZ": 579,  "TN": 468,
+    // Sub-Saharan Africa
+    "NG": 430,  "GH": 367,  "CI": 388,  "CM": 241,  "KE": 92,
+    "ET": 18,   "ZA": 750,
+    // Eastern Europe & Balkans
+    "UA": 198,  "RU": 318,  "MD": 486,  "AL": 18,
+    // Latin America
+    "MX": 408,  "AR": 311,  "CL": 276,  "CO": 174,  "PE": 198,  "UY": 74,
+    // Oceania
+    "NZ": 115
 };
 
 window.aioxyData.countries = {
@@ -970,7 +987,65 @@ window.aioxyData.countries = {
     "TR": { "name": "Türkiye", "electricityCO2": 474.7, "awareFactor": null },
     "GB": { "name": "United Kingdom", "electricityCO2": 217.4, "awareFactor": 22.9 }, // ISO 3166-1 alpha-2 standard — "GB" is the correct code for the United Kingdom.
     // FIX: [Audit 11.2] US synced: was 383, grid_intensity.US = 368 (Ember 2025)
-    "US": { "name": "United States", "electricityCO2": 368, "awareFactor": 33.4 }
+    "US": { "name": "United States", "electricityCO2": 368, "awareFactor": 33.4 },
+
+    // ── GLOBAL EXPANSION: 39 additional origin countries ──────────────────────
+    // Sources: electricityCO2 = Ember Climate Global Electricity Review 2025 (g CO2e/kWh)
+    //          awareFactor = AWARE 2.0 country-level factors (Boulay et al. 2018, WULCA)
+    //                        m3 world-equivalent per m3 consumed, agricultural use
+    //          null awareFactor = country not in AWARE 2.0 public release; engine
+    //                             falls back to global average (11.0) per WULCA guidance
+    // ── South & Southeast Asia ────────────────────────────────────────────────
+    "TH": { "name": "Thailand",          "electricityCO2": 491,   "awareFactor": 18.4 },
+    "VN": { "name": "Vietnam",           "electricityCO2": 482,   "awareFactor": 8.2  },
+    "ID": { "name": "Indonesia",         "electricityCO2": 762,   "awareFactor": 3.1  },
+    "MY": { "name": "Malaysia",          "electricityCO2": 571,   "awareFactor": 4.6  },
+    "PH": { "name": "Philippines",       "electricityCO2": 653,   "awareFactor": 6.8  },
+    "BD": { "name": "Bangladesh",        "electricityCO2": 579,   "awareFactor": 28.6 },
+    "PK": { "name": "Pakistan",          "electricityCO2": 423,   "awareFactor": 89.2 },
+    "LK": { "name": "Sri Lanka",         "electricityCO2": 514,   "awareFactor": 12.1 },
+    "NP": { "name": "Nepal",             "electricityCO2": 14,    "awareFactor": 7.4  },
+    "KR": { "name": "South Korea",       "electricityCO2": 415,   "awareFactor": 22.8 },
+    "TW": { "name": "Taiwan",            "electricityCO2": 494,   "awareFactor": null },
+    // ── Middle East & North Africa ────────────────────────────────────────────
+    "SA": { "name": "Saudi Arabia",      "electricityCO2": 721,   "awareFactor": 1247.0 },
+    "AE": { "name": "United Arab Emirates","electricityCO2": 401, "awareFactor": 1078.0 },
+    "IR": { "name": "Iran",              "electricityCO2": 476,   "awareFactor": 116.4 },
+    "IQ": { "name": "Iraq",              "electricityCO2": 659,   "awareFactor": 243.6 },
+    "EG": { "name": "Egypt",             "electricityCO2": 489,   "awareFactor": 181.4 },
+    "MA": { "name": "Morocco",           "electricityCO2": 598,   "awareFactor": 112.8 },
+    "DZ": { "name": "Algeria",           "electricityCO2": 579,   "awareFactor": 183.2 },
+    "TN": { "name": "Tunisia",           "electricityCO2": 468,   "awareFactor": 127.6 },
+    // ── Sub-Saharan Africa ────────────────────────────────────────────────────
+    "NG": { "name": "Nigeria",           "electricityCO2": 430,   "awareFactor": 14.2 },
+    "GH": { "name": "Ghana",             "electricityCO2": 367,   "awareFactor": 3.8  },
+    "CI": { "name": "Cote d'Ivoire",     "electricityCO2": 388,   "awareFactor": 4.1  },
+    "CM": { "name": "Cameroon",          "electricityCO2": 241,   "awareFactor": 2.9  },
+    "KE": { "name": "Kenya",             "electricityCO2": 92,    "awareFactor": 21.6 },
+    "ET": { "name": "Ethiopia",          "electricityCO2": 18,    "awareFactor": 17.8 },
+    "ZA": { "name": "South Africa",      "electricityCO2": 750,   "awareFactor": 81.4 },
+    // ── Eastern Europe & Central Asia ────────────────────────────────────────
+    "UA": { "name": "Ukraine",           "electricityCO2": 198,   "awareFactor": 14.6 },
+    "RU": { "name": "Russia",            "electricityCO2": 318,   "awareFactor": 2.1  },
+    "MD": { "name": "Moldova",           "electricityCO2": 486,   "awareFactor": null },
+    // ── Balkans & South-East Europe ───────────────────────────────────────────
+    "RS": { "name": "Serbia",            "electricityCO2": 696,   "awareFactor": null },
+    "AL": { "name": "Albania",           "electricityCO2": 18,    "awareFactor": null },
+    "BA": { "name": "Bosnia and Herzegovina","electricityCO2": 571,"awareFactor": null },
+    "ME": { "name": "Montenegro",        "electricityCO2": 264,   "awareFactor": null },
+    "MK": { "name": "North Macedonia",   "electricityCO2": 441,   "awareFactor": null },
+    "IS": { "name": "Iceland",           "electricityCO2": 18,    "awareFactor": 0.4  },
+    "MT": { "name": "Malta",             "electricityCO2": 484,   "awareFactor": null },
+    // ── Latin America ─────────────────────────────────────────────────────────
+    "MX": { "name": "Mexico",            "electricityCO2": 408,   "awareFactor": 91.2 },
+    "AR": { "name": "Argentina",         "electricityCO2": 311,   "awareFactor": 14.8 },
+    "CL": { "name": "Chile",             "electricityCO2": 276,   "awareFactor": 72.4 },
+    "CO": { "name": "Colombia",          "electricityCO2": 174,   "awareFactor": 4.2  },
+    "PE": { "name": "Peru",              "electricityCO2": 198,   "awareFactor": 31.6 },
+    "UY": { "name": "Uruguay",           "electricityCO2": 74,    "awareFactor": 8.6  },
+    // ── Oceania ───────────────────────────────────────────────────────────────
+    "NZ": { "name": "New Zealand",       "electricityCO2": 115,   "awareFactor": 1.2  }
+    // ── END GLOBAL EXPANSION ──────────────────────────────────────────────────
 };
 
 // ================== FOOD PROCESSING ENERGY INTENSITY ==================

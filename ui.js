@@ -113,6 +113,7 @@ function showTab(tabName, event) {
         if (dataReady) {
             displayAuditTrail();
             displayCompleteAuditTrail();
+            displaySupplyChainMap();
             displayForegroundBackground();
         } else {
             if (selectedIngredients.length > 0) calculateImpact();
@@ -778,6 +779,7 @@ function updateResultsUI(results) {
     
     // =========== INTEGRATION POINT: CALL ALL FIXES ===========
     displayPEFSingleScore();
+    displaySupplyChainMap();
     displayForegroundBackground();
     displayCompleteAuditTrail();
     displayISOCompliance();
@@ -2631,6 +2633,298 @@ function displayForegroundBackground() {
         </div>
     `;
 }
+
+// ================== UI INTEGRATION: INTERNATIONAL SUPPLY CHAIN MAP ==================
+// Pure SVG — no external library. Coordinates sourced from resolveCountryCode ISO list.
+// Crash-safe: every access guarded. Renders only if ingredients have non-FR origin.
+// Called from updateResultsUI() and showTab('transparency').
+
+(function () {
+    // Approximate centroid coordinates [x%, y%] on a 0-100 Mercator-ish projection
+    // Covers every country in resolveCountryCode + countries object.
+    const COORD = {
+        'FR': [48.0, 37.5], 'DE': [51.5, 34.5], 'GB': [52.5, 32.0], 'NL': [52.4, 33.5],
+        'BE': [50.8, 34.0], 'ES': [40.4, 39.5], 'IT': [42.8, 37.0], 'PT': [39.5, 40.0],
+        'CH': [46.8, 36.0], 'AT': [47.5, 35.5], 'PL': [52.0, 33.0], 'CZ': [50.0, 34.0],
+        'SK': [48.7, 34.5], 'HU': [47.2, 35.0], 'RO': [45.9, 35.5], 'BG': [42.7, 36.0],
+        'GR': [39.1, 38.5], 'HR': [45.1, 36.0], 'SI': [46.1, 35.8], 'RS': [44.0, 35.5],
+        'SE': [60.1, 30.0], 'NO': [60.5, 29.5], 'FI': [61.9, 29.0], 'DK': [56.3, 31.5],
+        'EE': [58.6, 30.5], 'LV': [56.9, 31.0], 'LT': [55.2, 31.5], 'LU': [49.8, 34.5],
+        'IE': [53.4, 33.0], 'IS': [64.9, 27.0], 'MT': [35.9, 39.0], 'CY': [35.1, 38.5],
+        'AL': [41.3, 37.0], 'BA': [44.2, 36.0], 'ME': [42.5, 36.5], 'MK': [41.6, 36.5],
+        'MD': [47.0, 34.5], 'UA': [49.0, 34.0], 'BY': [53.7, 32.5], 'TR': [39.9, 37.5],
+        'RU': [61.5, 28.0], 'XK': [42.6, 36.3],
+        'MA': [31.8, 41.0], 'DZ': [28.0, 41.5], 'TN': [33.9, 40.5], 'EG': [26.8, 40.0],
+        'NG': [9.1, 51.0],  'GH': [7.9, 52.0],  'CI': [7.5, 52.5],  'CM': [3.8, 52.5],
+        'KE': [-1.3, 55.5], 'ET': [9.1, 55.0],  'ZA': [-29.0, 54.5],
+        'IN': [20.6, 62.5], 'CN': [35.9, 68.0], 'JP': [36.2, 75.0], 'KR': [35.9, 74.5],
+        'TW': [23.7, 75.5],
+        'ID': [-5.0, 73.0], 'MY': [4.2, 72.0],  'TH': [15.9, 70.5], 'VN': [14.1, 71.0],
+        'PH': [13.0, 74.0], 'BD': [23.7, 64.0], 'PK': [30.4, 63.0], 'LK': [7.9, 64.5],
+        'NP': [28.4, 63.5], 'IR': [32.4, 59.5], 'IQ': [33.2, 57.5], 'SA': [24.7, 57.0],
+        'AE': [23.4, 58.5],
+        'US': [37.1, 20.0], 'CA': [56.1, 16.0], 'MX': [23.6, 22.5], 'BR': [-14.2, 31.0],
+        'AR': [-38.4, 29.0],'CL': [-35.7, 25.5],'CO': [4.6, 27.5],  'PE': [-9.2, 27.0],
+        'UY': [-32.5, 30.0],
+        'AU': [-25.3, 79.0], 'NZ': [-40.9, 83.0]
+    };
+
+    // Convert [lat, lon] → SVG [x, y] on a 1000×500 canvas
+    // lat range -60..75, lon range -180..180
+    function toSVG(latlon) {
+        const [lat, lon] = latlon;
+        const x = ((lon + 180) / 360) * 1000;
+        const y = ((75 - lat) / 135) * 500;
+        return [Math.round(x * 10) / 10, Math.round(y * 10) / 10];
+    }
+
+    // Destination: distribution centre (manufacturing country or FR default)
+    function getDestCoord(mfgCountry) {
+        const code = mfgCountry || 'FR';
+        return COORD[code] || COORD['FR'];
+    }
+
+    window.displaySupplyChainMap = function () {
+        // 1. Guard: need traceability data
+        if (!window.auditTrailData) return;
+        const traceability = window.auditTrailData.traceability;
+        if (!traceability || !Array.isArray(traceability.ingredients)) return;
+
+        // 2. Use ingredient_routes if available (has real mode/distance/CO2 data)
+        //    Fall back to traceability.ingredients (country only) if not present
+        const routes = Array.isArray(traceability.ingredient_routes)
+            ? traceability.ingredient_routes : null;
+        const ingredients = traceability.ingredients;
+
+        // Build a map of id → route data for quick lookup
+        const routeByName = {};
+        if (routes) {
+            routes.forEach(r => {
+                routeByName[r.name] = r;
+                if (r.upstreamComponents && r.upstreamComponents.length > 0) {
+                    routeByName[r.name].comp = r.upstreamComponents[0];
+                }
+            });
+        }
+
+        // Guard: only render if at least one non-FR origin exists
+        const hasInternational = ingredients.some(ing => {
+            const c = ing.country || 'FR';
+            return c !== 'FR' && c !== '' && COORD[c];
+        });
+
+        // 3. Find or create section
+        const transparencyTab = document.getElementById('transparency-tab');
+        if (!transparencyTab) return;
+        const transparencyCard = transparencyTab.querySelector('.card') || transparencyTab;
+
+        let mapSection = document.getElementById('supplyChainMapSection');
+        if (!mapSection) {
+            mapSection = document.createElement('div');
+            mapSection.id = 'supplyChainMapSection';
+            mapSection.className = 'audit-trail-section';
+            mapSection.style.marginTop = '1.5rem';
+            // Insert before foregroundBackgroundSection if present, else append
+            const fgSection = document.getElementById('foregroundBackgroundSection');
+            if (fgSection && fgSection.parentNode === transparencyCard) {
+                transparencyCard.insertBefore(mapSection, fgSection);
+            } else {
+                transparencyCard.appendChild(mapSection);
+            }
+        }
+
+        // 4. If no international routes, show compact notice and return
+        if (!hasInternational) {
+            mapSection.innerHTML = `
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">
+                    <div class="card-icon" style="background:var(--gradient-primary);">
+                        <i class="fas fa-globe-europe"></i>
+                    </div>
+                    <div>
+                        <h3 style="color:var(--primary);margin:0;">International Supply Chain</h3>
+                        <div style="color:var(--gray);font-size:0.9rem;">Ingredient origin traceability</div>
+                    </div>
+                </div>
+                <div style="background:var(--light);border-radius:8px;padding:1rem;color:var(--gray);font-size:0.9rem;">
+                    All ingredients sourced from France (AGRIBALYSE 3.2 reference country). No international transport adjustments applied.
+                </div>`;
+            return;
+        }
+
+        // 5. Build data: unique origin countries + counts + CO2 contribution
+        const mfgCountry = window.lastInput && window.lastInput.manufacturing
+            ? window.lastInput.manufacturing.country : 'FR';
+        const destCode = mfgCountry || 'FR';
+        const destCoord = COORD[destCode] || COORD['FR'];
+        const destSVG = toSVG(destCoord);
+
+        // Group ingredients by origin country, enriching with route data
+        const byCountry = {};
+        ingredients.forEach(ing => {
+            const code = ing.country || 'FR';
+            if (!byCountry[code]) byCountry[code] = { count: 0, names: [], mode: null, co2: 0, distanceKm: null };
+            byCountry[code].count++;
+            byCountry[code].names.push(ing.name || ing.id || 'Unknown');
+            // Enrich with real route data if available
+            const rd = routeByName[ing.name];
+            if (rd && rd.comp) {
+                byCountry[code].mode       = rd.comp.mode || byCountry[code].mode;
+                byCountry[code].co2       += rd.comp.subtotal || 0;
+                byCountry[code].distanceKm = rd.comp.distanceKm || byCountry[code].distanceKm;
+            }
+        });
+
+        // 6. Build SVG
+        // Colour legend: EU origins = blue, Non-EU = orange, dest = dark teal
+        const EU_CODES = new Set(['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE',
+            'GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','GB']);
+
+        let routeLines = '';
+        let originMarkers = '';
+        let legendRows = '';
+
+        Object.entries(byCountry).forEach(([code, data]) => {
+            if (!COORD[code]) return; // unknown country — skip silently
+            const originSVG = toSVG(COORD[code]);
+            const isEU = EU_CODES.has(code);
+            const isSameAsDest = code === destCode;
+            const lineColor = isSameAsDest ? '#94A3B8' : (isEU ? '#3B82F6' : '#F59E0B');
+            const dotColor  = isSameAsDest ? '#94A3B8' : (isEU ? '#2563EB' : '#D97706');
+
+            // Route arc — quadratic bezier control point bent upward/northward
+            const cx = (originSVG[0] + destSVG[0]) / 2;
+            const cy = Math.min(originSVG[1], destSVG[1]) - 40;
+
+            if (!isSameAsDest) {
+                routeLines += `<path d="M${originSVG[0]},${originSVG[1]} Q${cx},${cy} ${destSVG[0]},${destSVG[1]}"
+                    fill="none" stroke="${lineColor}" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.75">
+                    <title>${data.names.join(', ')} → ${destCode}</title>
+                </path>`;
+            }
+
+            originMarkers += `<circle cx="${originSVG[0]}" cy="${originSVG[1]}" r="${3 + data.count * 1.5}"
+                fill="${dotColor}" opacity="0.85" stroke="white" stroke-width="1.2">
+                <title>${code}: ${data.names.join(', ')}</title>
+            </circle>
+            <text x="${originSVG[0]}" y="${originSVG[1] - 7}" text-anchor="middle"
+                font-size="7" fill="${dotColor}" font-weight="600" font-family="system-ui,sans-serif">${code}</text>`;
+
+            legendRows += `<tr>
+                <td style="padding:4px 8px;">
+                    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};margin-right:6px;vertical-align:middle;"></span>
+                    <strong>${code}</strong>
+                </td>
+                <td style="padding:4px 8px;color:#64748B;">${data.names.slice(0, 2).join(', ')}${data.names.length > 2 ? ' +' + (data.names.length - 2) + ' more' : ''}</td>
+                <td style="padding:4px 8px;color:#64748B;">${data.mode ? data.mode.toUpperCase() : (isEU ? 'ROAD' : 'SEA')}${data.distanceKm ? ' · ' + data.distanceKm.toLocaleString() + ' km' : ''}</td>
+                <td style="padding:4px 8px;color:#64748B;">${data.co2 > 0 ? (data.co2 * 1000).toFixed(2) + ' g CO₂e' : '—'}</td>
+            </tr>`;
+        });
+
+        // Destination marker
+        const destMarker = `<circle cx="${destSVG[0]}" cy="${destSVG[1]}" r="6"
+            fill="#0D9488" stroke="white" stroke-width="2">
+            <title>Manufacturing: ${destCode}</title>
+        </circle>
+        <text x="${destSVG[0]}" y="${destSVG[1] - 9}" text-anchor="middle"
+            font-size="7.5" fill="#0D9488" font-weight="700" font-family="system-ui,sans-serif">MFG (${destCode})</text>`;
+
+        // Simple world outline — minimal continental polygons for visual orientation
+        // Approximate only — enough to orient the viewer without external libs
+        const worldOutline = `
+            <!-- Europe -->
+            <path d="M448,95 L460,90 L470,88 L480,90 L488,95 L490,100 L485,108 L475,112 L465,110 L455,108 L448,100 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- UK -->
+            <path d="M435,88 L440,84 L445,86 L443,92 L437,94 Z" fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- Iberia -->
+            <path d="M432,108 L445,104 L452,110 L448,118 L435,118 Z" fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- Africa rough -->
+            <path d="M450,140 L490,135 L510,155 L510,200 L490,230 L465,235 L445,220 L440,190 L445,165 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- South Asia -->
+            <path d="M595,140 L625,135 L640,150 L635,165 L615,170 L598,160 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- Southeast Asia -->
+            <path d="M660,150 L690,145 L700,160 L685,170 L665,165 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- China rough -->
+            <path d="M635,100 L690,95 L710,110 L705,135 L670,145 L640,140 L625,125 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- Americas rough -->
+            <path d="M120,80 L200,75 L220,90 L215,130 L190,150 L160,155 L130,145 L110,120 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- South America rough -->
+            <path d="M155,155 L200,150 L215,175 L210,240 L185,260 L160,255 L148,225 L148,185 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>
+            <!-- Australia rough -->
+            <path d="M730,225 L790,220 L800,250 L785,270 L745,268 L720,255 Z"
+                fill="#E2E8F0" stroke="#CBD5E0" stroke-width="0.4"/>`;
+
+        mapSection.innerHTML = `
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
+                <div class="card-icon" style="background:var(--gradient-primary);">
+                    <i class="fas fa-globe-europe"></i>
+                </div>
+                <div>
+                    <h3 style="color:var(--primary);margin:0;">International Supply Chain</h3>
+                    <div style="color:var(--gray);font-size:0.9rem;">
+                        Ingredient origin traceability — AGRIBALYSE 3.2 country adjustments applied
+                    </div>
+                </div>
+            </div>
+
+            <!-- SVG Map -->
+            <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:10px;overflow:hidden;margin-bottom:1rem;">
+                <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg"
+                    style="width:100%;height:auto;display:block;">
+                    <!-- Ocean background -->
+                    <rect width="1000" height="500" fill="#DBEAFE"/>
+                    <!-- World landmass outlines -->
+                    ${worldOutline}
+                    <!-- Trade routes -->
+                    ${routeLines}
+                    <!-- Origin markers -->
+                    ${originMarkers}
+                    <!-- Destination marker -->
+                    ${destMarker}
+                </svg>
+            </div>
+
+            <!-- Legend table -->
+            <div style="background:white;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+                <div style="background:#0F172A;color:white;padding:0.5rem 1rem;font-size:0.85rem;font-weight:600;">
+                    Ingredient Origins
+                    <span style="font-weight:400;opacity:0.7;margin-left:1rem;">
+                        Dashed lines = transport routes to manufacturing (${destCode})
+                    </span>
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                    <thead>
+                        <tr style="background:#F8FAFC;border-bottom:1px solid var(--border);">
+                            <th style="padding:6px 8px;text-align:left;color:var(--gray);">Origin</th>
+                            <th style="padding:6px 8px;text-align:left;color:var(--gray);">Ingredients</th>
+                            <th style="padding:6px 8px;text-align:left;color:var(--gray);">Mode · Distance</th>
+                            <th style="padding:6px 8px;text-align:left;color:var(--gray);">Inbound CO₂e</th>
+                        </tr>
+                    </thead>
+                    <tbody>${legendRows}</tbody>
+                </table>
+            </div>
+
+            <!-- Country adjustment note -->
+            <div style="margin-top:0.75rem;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;
+                padding:0.6rem 0.9rem;font-size:0.8rem;color:#92400E;">
+                <strong>Country adjustments applied:</strong>
+                AWARE 2.0 water scarcity ratio, LANCA v2.5 land occupation, FAOSTAT yield delta,
+                and 1.15× CC penalty for non-FR origins without primary data.
+                Grid intensity for manufacturing: ${
+                    window.aioxyData && window.aioxyData.grid_intensity && window.aioxyData.grid_intensity[destCode]
+                        ? window.aioxyData.grid_intensity[destCode] + ' g CO₂/kWh (Ember 2025)'
+                        : 'see manufacturing section'
+                }.
+            </div>`;
+    };
+}());
 
 // ================== UI INTEGRATION: ISO COMPLIANCE DISPLAY ==================
 function displayISOCompliance() {

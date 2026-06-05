@@ -1986,6 +1986,65 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         footer('Transport — Page ' + pageNum + ' of ' + TOTAL_PAGES);
 
         // ================================================================
+        // INBOUND INGREDIENT TRANSPORT — per ingredient (GLEC v3.2)
+        // ================================================================
+        const upstreamComps = audit.contribution_tree?.['Climate Change']?.Upstream?.components || [];
+        if (upstreamComps.length > 0) {
+            newPage('Inbound Ingredient Transport — GLEC v3.2 Screening');
+            T.small(); doc.setTextColor(...C.bodyMid);
+            doc.text(
+                'Inbound transport legs calculated per ingredient. FR origins excluded (AGRIBALYSE 3.2 includes FR domestic transport).',
+                M, Y); Y += 5;
+            doc.text(
+                'Mode: road (EU/near-EU) or sea (intercontinental). Distances: Eurostat road freight / GLEC v3.2 port-to-port.',
+                M, Y); Y += 5;
+            doc.text(
+                'ISO 14044 §4.2.3.3: Screening-level estimate. Replace with primary supplier transport data for regulatory submission.',
+                M, Y); Y += 7;
+
+            const inboundRows = upstreamComps.map(u => [
+                safe(u.name),
+                safe(u.origin) + ' \u2192 ' + safe(u.destination),
+                (u.mode || 'road').toUpperCase(),
+                u.distanceKm ? u.distanceKm.toLocaleString() + ' km' : '—',
+                u.daf_applied ? 'x' + u.daf_applied.toFixed(2) : '—',
+                fix(u.massKg || 0, 4) + ' kg',
+                fix(u.subtotal || 0, 6) + ' kg CO₂e'
+            ]);
+
+            doc.autoTable({
+                head: [['Ingredient', 'Route', 'Mode', 'Distance (pre-DAF)', 'DAF', 'Mass', 'Inbound CO₂e']],
+                body: inboundRows,
+                startY: Y,
+                styles:       { fontSize: 6.5, cellPadding: 2, overflow: 'linebreak' },
+                headStyles:   { fillColor: C.navy, textColor: [255,255,255], fontSize: 6.5 },
+                columnStyles: {
+                    0: { cellWidth: 42 },
+                    1: { cellWidth: 28 },
+                    2: { cellWidth: 16 },
+                    3: { cellWidth: 28 },
+                    4: { cellWidth: 14 },
+                    5: { cellWidth: 18 },
+                    6: { cellWidth: 28 }
+                },
+                margin: { left: M }
+            });
+            Y = doc.lastAutoTable.finalY + 4;
+
+            // Total inbound
+            const totalInbound = upstreamComps.reduce((s, u) => s + (u.subtotal || 0), 0);
+            doc.setTextColor(...C.navy);
+            T.small();
+            doc.text('Total inbound transport (all ingredients): ' + fix(totalInbound, 6) + ' kg CO₂e  |  Per kg product: ' + fix(totalInbound / prodWt, 6) + ' kg CO₂e/kg', M, Y);
+            Y += 5;
+            doc.setTextColor(...C.bodyMid);
+            doc.text('Source: GLEC v3.2 (Smart Freight Centre 2025). DAF: road x1.05, sea x1.15 per GLEC v3.2 Module 2.', M, Y); Y += 5;
+            doc.text('Note: Non-CC categories for inbound transport are included in total impact table (all 16 EF 3.1 categories).', M, Y); Y += 5;
+
+            footer('Inbound Transport — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        }
+
+        // ================================================================
         // PACKAGING PAGE
         // ================================================================
         newPage('Packaging — CFF Glass-Box Calculation (PEF 3.1 Annex C v2.1)');

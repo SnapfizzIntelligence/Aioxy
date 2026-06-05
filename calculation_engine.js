@@ -153,8 +153,8 @@
                 primary_data:           ing.primary_data,
                 universal_adjustments:  ing.universal_adjustments,
                     yieldFactor:            ing.yieldFactor,
-    allCategoryResults:     ing.allCategoryResults
-}));
+                    allCategoryResults:     ing.allCategoryResults
+            }));
             const ingTotal = ingComponents.reduce((s, c) => s + c.subtotal, 0);
 
             let mfgTotal   = 0;
@@ -276,8 +276,24 @@
             // cradle-to-retail system boundary. This exclusion is documented here
             // per ISO 14044 §4.2.3.3 (system boundary definition must be explicit).
             // Phase 3 will add a per-ingredient origin transport input field.
+            // Aggregate inbound upstream transport from all ingredient legs
+            let upstreamTotal = 0;
             const upstreamComponents = [];
-            const upstreamTotal = 0;
+            for (const ing of ingredientResults) {
+                for (const comp of (ing.upstreamComponents || [])) {
+                    let v = 0;
+                    if (cat === 'Climate Change') {
+                        v = comp.subtotal || 0;
+                    } else if (cat === 'Climate Change - Fossil') {
+                        v = comp.fossilCO2 || comp.subtotal || 0;
+                    } else if (cat !== 'Climate Change - Biogenic' && cat !== 'Climate Change - Land Use') {
+                        v = (comp.multiCategoryResults && comp.multiCategoryResults[cat] !== undefined)
+                            ? comp.multiCategoryResults[cat] : 0;
+                    }
+                    upstreamTotal += v;
+                    if (cat === 'Climate Change') upstreamComponents.push(comp);
+                }
+            }
 
             // FIX: [Audit 8.4] Bug 3 fix (Step B): Build Waste (processing) components
             // Previous code used db.processing_archetypes[processingMethod] — vocabulary mismatch.
@@ -576,10 +592,24 @@
             "BD": "Bangladesh",     "NP": "Nepal",            "LK": "Sri Lanka",
             "IR": "Iran",           "IQ": "Iraq",                                        // FIX: was "Iran (Islamic Republic of)" — DB uses "Iran"
             "SA": "Saudi Arabia",   "AE": "United Arab Emirates",
-            "RE": "France",          // Réunion is FR overseas — uses FR as proxy
-            "WI": "France",          // West Indies (FR Antilles) — uses FR as proxy
-            "EU": "France",          // EU aggregate — uses FR as conservative proxy
-            "XK": "Serbia"           // Kosovo — nearest neighbor proxy
+            "TH": "Thailand",       "VN": "Vietnam",              "ID": "Indonesia",
+            "MY": "Malaysia",       "PH": "Philippines",          "BD": "Bangladesh",
+            "PK": "Pakistan",       "LK": "Sri Lanka",            "NP": "Nepal",
+            "KR": "South Korea",    "TW": "Taiwan",               "IR": "Iran",
+            "IQ": "Iraq",           "EG": "Egypt",                "MA": "Morocco",
+            "DZ": "Algeria",        "TN": "Tunisia",              "NG": "Nigeria",
+            "GH": "Ghana",          "CI": "Cote d'Ivoire",        "CM": "Cameroon",
+            "KE": "Kenya",          "ET": "Ethiopia",             "ZA": "South Africa",
+            "UA": "Ukraine",        "RU": "Russia",               "MD": "Moldova",
+            "RS": "Serbia",         "AL": "Albania",              "BA": "Bosnia and Herzegovina",
+            "ME": "Montenegro",     "MK": "The Former Yugoslav Republic of Macedonia",
+            "IS": "Iceland",        "MT": "Malta",                "MX": "Mexico",
+            "AR": "Argentina",      "CL": "Chile",                "CO": "Colombia",
+            "PE": "Peru",           "UY": "Uruguay",              "NZ": "New Zealand",
+            "RE": "France",          // Réunion — FR overseas proxy
+            "WI": "France",          // West Indies (FR Antilles) — FR proxy
+            "EU": "France",          // EU aggregate — FR conservative proxy
+            "XK": "Serbia"           // Kosovo — nearest neighbour proxy
         };
 
         if (MAP[isoCode]) return MAP[isoCode];
@@ -589,6 +619,48 @@
                      '. AWARE/LANCA/FAOSTAT adjustments will be skipped for this country.');
         return isoCode;
     }
+
+    // ── INBOUND TRANSPORT: DISTANCE + MODE LOOKUP ────────────────────────────
+    // Returns { distanceKm, mode, source } or null.
+    // null = FR origin or same country as mfg — AGRIBALYSE already covers it.
+    // Road: EU/near-EU origins. Sea: intercontinental. DAF applied inside calculateTransport().
+    // Sources: GLEC v3.2 port-to-port (sea), Eurostat road freight (road).
+    function resolveInboundTransport(originCode, mfgCode) {
+        if (!originCode || originCode === 'FR') return null;
+        if (originCode === mfgCode) return null;
+
+        const ROAD = {
+            'AT':1100,'BE':310,'BG':2000,'HR':1500,'CZ':880,'DK':1000,'EE':2200,
+            'FI':2500,'DE':550,'GR':2500,'HU':1300,'IE':1800,'IT':1200,'LV':2100,
+            'LT':2000,'LU':360,'NL':500,'NO':2000,'PL':1300,'PT':1700,'RO':2200,
+            'SK':1100,'SI':1200,'ES':1300,'SE':2000,'CH':600,'GB':850,'TR':2800,
+            'AL':2100,'BA':1800,'ME':2000,'MK':2100,'RS':1900,'UA':2500,'MD':2300,
+            'RU':2800,'MA':2500,'DZ':2200,'TN':2100
+        };
+        const SEA = {
+            'IN':10500,'PK':9800,'BD':11000,'LK':11500,'NP':11500,
+            'CN':12000,'JP':13500,'KR':12500,'VN':11500,'TH':10800,
+            'ID':11000,'MY':10500,'PH':12000,'TW':12000,
+            'IR':8500,'IQ':8200,'SA':8500,'AE':9000,
+            'EG':4500,'NG':6500,'GH':6200,'CI':6800,'CM':6500,
+            'KE':8000,'ET':7500,'ZA':9500,'CY':3500,'MT':2200,'IS':2000,
+            'US':7500,'CA':6800,'MX':9500,'BR':9000,'AR':11000,
+            'CL':13000,'CO':9800,'PE':12000,'UY':10500,
+            'AU':15000,'NZ':17500
+        };
+
+        if (ROAD[originCode] !== undefined && ROAD[originCode] !== null) {
+            return { distanceKm: ROAD[originCode], mode: 'road',
+                source: 'Eurostat road freight statistics — origin to Paris/Frankfurt hub' };
+        }
+        if (SEA[originCode] !== undefined) {
+            return { distanceKm: SEA[originCode], mode: 'sea',
+                source: 'GLEC v3.2 port-to-port — Rotterdam reference port (pre-DAF great circle)' };
+        }
+        return { distanceKm: 8000, mode: 'sea',
+            source: 'Global proxy — conservative 8000 km sea (origin not in lookup table)' };
+    }
+    // ── END INBOUND TRANSPORT LOOKUP ─────────────────────────────────────────
 
     function applyCountrySpecificFactors(flatPef, ingredient, ingData, adjustments, traceability) {
 
@@ -1773,6 +1845,52 @@ if (!traceability.usetox) {
                 allCategoryResults[cat] = flatPef[cat] * ingredient.quantityKg;
             }
 
+            // 1h-b. Inbound transport leg (non-FR origins only)
+            // AGRIBALYSE 3.2 already includes FR domestic transport — FR returns null.
+            // Same-country origins also return null. All others get GLEC v3.2 calc.
+            // Wrapped in try-catch: failure logs a warning but never blocks calculation.
+            const upstreamComponents = [];
+            try {
+                const ingOrigin  = ingredient.originCountry || 'FR';
+                const mfgCountry = (input.manufacturing && input.manufacturing.country) || 'FR';
+                const route = resolveInboundTransport(ingOrigin, mfgCountry);
+                if (route) {
+                    const temp = (input.manufacturing &&
+                        input.manufacturing.processingMethod === 'freezing') ? 'frozen' : 'ambient';
+                    const r = window.corePhysics.calculateTransport({
+                        massKg:        ingredient.quantityKg,
+                        distanceKm:    route.distanceKm,
+                        mode:          route.mode,
+                        refrigeration: temp
+                    });
+                    const co2 = (r && r.total) ? r.total : 0;
+                    upstreamComponents.push({
+                        name:                 ingData.name,
+                        id:                   ingredient.id,
+                        origin:               ingOrigin,
+                        destination:          mfgCountry,
+                        mode:                 route.mode,
+                        distanceKm:           route.distanceKm,
+                        massKg:               ingredient.quantityKg,
+                        refrigeration:        temp,
+                        subtotal:             co2,
+                        fossilCO2:            (r && r.fossilCO2) ? r.fossilCO2 : co2,
+                        biogenicCO2:          0,
+                        dlucCO2:              0,
+                        multiCategoryResults: (r && r.multiCategoryResults) ? r.multiCategoryResults : {},
+                        daf_applied:          route.mode === 'road' ? 1.05 : 1.15,
+                        source:               route.source,
+                        notes:                ingOrigin + ' \u2192 ' + mfgCountry +
+                                              ' | ' + route.mode.toUpperCase() +
+                                              ' | ' + route.distanceKm + ' km pre-DAF | GLEC v3.2'
+                    });
+                }
+            } catch (inboundErr) {
+                console.warn('[AIOXY] Inbound transport skipped for "' +
+                    (ingData ? ingData.name : ingredient.id) + '": ' +
+                    (inboundErr ? inboundErr.message : String(inboundErr)));
+            }
+
             // 1i. Build contribution tree entry
             const ingEntry = {
                 name:               ingData.name,
@@ -1792,7 +1910,8 @@ if (!traceability.usetox) {
                 primary_data:       ingredient.primaryData || null,
                 universal_adjustments: adjustments,
                 yieldFactor:        yieldFactor,
-                allCategoryResults: allCategoryResults
+                allCategoryResults: allCategoryResults,
+                upstreamComponents: upstreamComponents
             };
 
             ingredientResults.push(ingEntry);
@@ -2220,7 +2339,22 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 pkgTotal = packagingResult.multiCategoryResults[cat]; // BUGFIX PACKAGING-NON-CC
             }
 
-            const total = ingTotal + mfgTotal + transTotal + pkgTotal;
+            // Inbound upstream transport — sum across all ingredient legs
+            let upstreamTotal = 0;
+            for (const ing of ingredientResults) {
+                for (const comp of (ing.upstreamComponents || [])) {
+                    if (cat === 'Climate Change') {
+                        upstreamTotal += (comp.subtotal || 0);
+                    } else if (cat === 'Climate Change - Fossil') {
+                        upstreamTotal += (comp.fossilCO2 || comp.subtotal || 0);
+                    } else if (cat !== 'Climate Change - Biogenic' && cat !== 'Climate Change - Land Use') {
+                        upstreamTotal += (comp.multiCategoryResults && comp.multiCategoryResults[cat] !== undefined)
+                            ? comp.multiCategoryResults[cat] : 0;
+                    }
+                }
+            }
+
+            const total = ingTotal + mfgTotal + transTotal + pkgTotal + upstreamTotal;
 
             pefResults[cat] = {
                 total:             total,
@@ -2871,6 +3005,12 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
             traceability: {
                 ingredients:             ingredientTraceability,
+                ingredient_routes:       ingredientResults.map(ing => ({
+                    name:               ing.name,
+                    id:                 ing.id,
+                    originCountry:      (ing.universal_adjustments && ing.universal_adjustments.adjusted_for_country) || 'FR',
+                    upstreamComponents: ing.upstreamComponents || []
+                })),
                 manufacturing:           manufacturingTraceability,
                 transport:               { source: 'GLEC v3.2',               parameters: { mode: input.transport.mode, distanceKm: input.transport.distanceKm } },
                 packaging:               { source: 'PEF 3.1 CFF / Ecoinvent', parameters: { material: input.packaging.material, recycledPct: input.packaging.recycledPct } },
