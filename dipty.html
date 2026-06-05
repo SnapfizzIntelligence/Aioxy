@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💌 Dipty's Love Decoder — Just For Momma</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #FFFBF5;
+  --warm: #FFF6EE;
+  --blush: #FDDCD4;
+  --rose: #E8697A;
+  --rose-deep: #C94E60;
+  --peach: #F9A07A;
+  --sage: #6BAF5E;
+  --sage-light: #A8D99E;
+  --sage-pale: #EAF5E6;
+  --soil: #8B5E3C;
+  --gold: #F0B840;
+  --gold-pale: #FDF3D8;
+  --sky: #C5E8F5;
+  --lavender: #E8DCFF;
+  --text: #2E1F15;
+  --soft: #7A5848;
+  --muted: #A08070;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--cream);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── BG BLOBS ── */
+.bg-layer { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.bg-blob { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.3; }
+.blob1 { width:500px; height:500px; background:#FDDCD4; top:-120px; left:-150px; }
+.blob2 { width:350px; height:350px; background:#B8D9AE; bottom:-80px; right:-80px; }
+.blob3 { width:250px; height:250px; background:#FDF3D8; top:35%; left:55%; }
+.blob4 { width:200px; height:200px; background:#C5E8F5; top:60%; left:-60px; }
+
+/* ── FLOATERS ── */
+.floater {
+  position:fixed; pointer-events:none; z-index:0;
+  font-size:1.2rem; opacity:0;
+  animation: rise linear infinite;
+}
+@keyframes rise {
+  0%   { transform:translateY(105vh) rotate(0deg) scale(0.6); opacity:0; }
+  8%   { opacity:0.2; }
+  92%  { opacity:0.2; }
+  100% { transform:translateY(-10vh) rotate(400deg) scale(1.1); opacity:0; }
+}
+
+/* ── SCREENS ── */
+.screen {
+  display:none; min-height:100vh;
+  justify-content:center; align-items:center; flex-direction:column;
+  padding:2.5rem 1.4rem 4rem;
+  position:relative; z-index:1; text-align:center;
+}
+.screen.active { display:flex; animation:screenIn 0.6s cubic-bezier(0.22,1,0.36,1); }
+@keyframes screenIn {
+  from { opacity:0; transform:translateY(28px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* ── ENVELOPE ── */
+.envelope-wrap {
+  position:relative; width:130px; height:95px;
+  margin:0 auto 2.2rem; cursor:pointer;
+  filter:drop-shadow(0 10px 28px rgba(232,105,122,0.3));
+  animation:envFloat 3.5s ease-in-out infinite;
+  transition:transform 0.2s;
+}
+.envelope-wrap:hover { transform:scale(1.07) rotate(2deg); }
+@keyframes envFloat {
+  0%,100% { transform:translateY(0) rotate(-2deg); }
+  50%      { transform:translateY(-12px) rotate(2deg); }
+}
+.env-body {
+  width:100%; height:100%;
+  background:linear-gradient(155deg,#FDE8E0,#FDDCD4,#FAC5B8);
+  border-radius:10px 10px 14px 14px;
+  border:2.5px solid rgba(232,105,122,0.25);
+  position:relative; overflow:hidden;
+}
+.env-flap {
+  position:absolute; top:0; left:0; width:100%;
+  border-left:65px solid transparent;
+  border-right:65px solid transparent;
+  border-top:46px solid rgba(232,105,122,0.15);
+}
+.env-heart {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  font-size:2.4rem;
+  animation:heartbeat 2s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%,100% { transform:translate(-50%,-50%) scale(1); }
+  25%     { transform:translate(-50%,-50%) scale(1.18); }
+  50%     { transform:translate(-50%,-50%) scale(0.95); }
+  75%     { transform:translate(-50%,-50%) scale(1.1); }
+}
+.env-sparkle {
+  position:absolute; font-size:0.8rem;
+  animation:sparkle 2s ease-in-out infinite;
+}
+@keyframes sparkle {
+  0%,100% { opacity:0.5; transform:scale(1); }
+  50%      { opacity:1; transform:scale(1.3); }
+}
+
+/* ── INTRO TEXT ── */
+.intro-tag {
+  font-size:0.7rem; letter-spacing:3.5px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:0.8rem; font-weight:700;
+}
+.intro-title {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.1rem,7vw,3.2rem);
+  color:var(--text); line-height:1.22; margin-bottom:1rem;
+}
+.intro-title span { color:var(--rose); font-style:italic; }
+.intro-sub {
+  color:var(--soft); font-size:0.95rem;
+  max-width:320px; line-height:1.9; margin:0 auto 2.4rem;
+}
+.intro-sub em { color:var(--sage); font-weight:700; font-style:normal; }
+.intro-sub strong { color:var(--rose); }
+
+.garden-strip {
+  font-size:1.5rem; letter-spacing:7px; margin-bottom:2.2rem;
+  opacity:0.7; animation:sway 4s ease-in-out infinite;
+}
+@keyframes sway {
+  0%,100% { letter-spacing:7px; }
+  50%      { letter-spacing:10px; }
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  background:linear-gradient(135deg,var(--rose),var(--rose-deep));
+  color:#fff; border:none;
+  padding:0.95rem 2.4rem; border-radius:50px;
+  font-family:'Nunito',sans-serif;
+  font-size:1rem; font-weight:800;
+  cursor:pointer; letter-spacing:0.3px;
+  box-shadow:0 8px 26px rgba(232,105,122,0.4);
+  transition:transform 0.18s, box-shadow 0.18s;
+  position:relative; overflow:hidden;
+}
+.btn::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.18),transparent);
+  border-radius:inherit;
+}
+.btn:hover { transform:translateY(-4px) scale(1.04); box-shadow:0 14px 34px rgba(232,105,122,0.5); }
+.btn:active { transform:scale(0.95); }
+.btn.sage {
+  background:linear-gradient(135deg,var(--sage),#4A8A40);
+  box-shadow:0 8px 26px rgba(107,175,94,0.4);
+}
+.btn.sage:hover { box-shadow:0 14px 34px rgba(107,175,94,0.5); }
+.btn.outline {
+  background:transparent; border:2.5px solid var(--rose);
+  color:var(--rose); box-shadow:none;
+  font-size:0.9rem; padding:0.7rem 1.6rem;
+}
+.btn.outline:hover { background:#FFF0F2; box-shadow:0 5px 16px rgba(232,105,122,0.22); }
+
+/* ── PROGRESS ── */
+.progress-wrap { width:100%; max-width:420px; margin-bottom:1.8rem; }
+.progress-top {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:0.55rem;
+}
+.q-label {
+  font-size:0.7rem; letter-spacing:2.5px; text-transform:uppercase;
+  color:var(--muted); font-weight:800;
+}
+.q-emoji-trail { font-size:1rem; letter-spacing:2px; }
+.progress-track { height:8px; background:rgba(240,184,64,0.18); border-radius:20px; overflow:hidden; }
+.progress-bar {
+  height:100%;
+  background:linear-gradient(90deg,var(--sage-light),var(--gold),var(--rose));
+  border-radius:20px;
+  transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ── QUIZ CARD ── */
+.qcard {
+  background:#fff; border-radius:30px;
+  padding:2.2rem 1.8rem 1.8rem;
+  max-width:430px; width:100%;
+  box-shadow:0 20px 70px rgba(46,31,21,0.1),0 3px 10px rgba(46,31,21,0.05);
+  position:relative; overflow:hidden;
+}
+.qcard-top {
+  position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--sage-light),var(--blush),var(--gold),var(--rose));
+}
+.q-badge {
+  display:inline-block; background:var(--gold-pale); color:var(--soil);
+  font-size:0.7rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+  padding:0.3rem 0.9rem; border-radius:20px; margin-bottom:1rem;
+}
+.q-icon {
+  font-size:3.2rem; margin-bottom:0.9rem; display:block;
+  animation:iconPop 0.55s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes iconPop {
+  from { transform:scale(0.1) rotate(-25deg); opacity:0; }
+  to   { transform:scale(1) rotate(0deg); opacity:1; }
+}
+.q-question {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.05rem,4vw,1.2rem);
+  color:var(--text); line-height:1.6; margin-bottom:1.6rem;
+}
+
+/* ── OPTIONS ── */
+.options { display:flex; flex-direction:column; gap:0.65rem; }
+.opt {
+  background:var(--cream); border:2.5px solid transparent;
+  border-radius:14px; padding:0.85rem 1.1rem;
+  text-align:left; font-family:'Nunito',sans-serif;
+  font-size:0.92rem; font-weight:700; color:var(--text);
+  cursor:pointer; transition:all 0.22s;
+  display:flex; align-items:center; gap:0.7rem; line-height:1.45;
+}
+.opt:hover { background:#FFF5F7; border-color:var(--blush); transform:translateX(6px); }
+.opt.correct {
+  background:var(--sage-pale); border-color:var(--sage); color:#2A5A20;
+  animation:correctBounce 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes correctBounce {
+  0%,100% { transform:scale(1); }
+  45%     { transform:scale(1.04); }
+}
+.opt.wrong {
+  background:#FFF4F4; border-color:#EBA8A8; color:#A04040;
+  animation:wobble 0.42s ease;
+}
+@keyframes wobble {
+  0%,100% { transform:translateX(0); }
+  20%     { transform:translateX(-9px); }
+  60%     { transform:translateX(7px); }
+}
+.opt.disabled { pointer-events:none; opacity:0.5; }
+
+/* ── FEEDBACK ── */
+.feedback {
+  margin-top:1.2rem; padding:1rem 1.1rem;
+  border-radius:15px; font-size:0.91rem; line-height:1.65;
+  font-weight:700; animation:feedIn 0.38s ease;
+}
+@keyframes feedIn { from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)} }
+.feedback.ok  { background:var(--sage-pale); color:#2A5A1A; }
+.feedback.no  { background:#FFF4F4; color:#904040; }
+
+.lock-msg {
+  background:var(--gold-pale); border:2px dashed var(--gold);
+  border-radius:14px; padding:0.85rem 1rem; margin-top:0.9rem;
+  font-size:0.88rem; color:var(--soil); line-height:1.6; font-weight:700;
+  animation:feedIn 0.3s ease; display:none;
+}
+.next-row { margin-top:1.3rem; display:flex; justify-content:flex-end; gap:0.7rem; }
+
+/* ── MID CARD ── */
+.mid-card {
+  background:#fff; border-radius:30px; padding:2.6rem 2rem;
+  max-width:390px; width:100%;
+  box-shadow:0 20px 70px rgba(46,31,21,0.1);
+  position:relative; overflow:hidden;
+}
+.mid-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:6px;
+  background:linear-gradient(90deg,var(--gold),var(--sage-light),var(--blush),var(--rose));
+}
+.mid-icon { font-size:4.5rem; margin-bottom:1rem; display:block; animation:iconPop 0.55s ease; }
+.mid-title {
+  font-family:'Playfair Display',serif; font-size:1.7rem;
+  color:var(--text); margin-bottom:0.8rem;
+}
+.mid-text { color:var(--soft); font-size:0.93rem; line-height:1.9; margin-bottom:1.8rem; }
+.mid-text strong { color:var(--rose); }
+.mid-text em { color:var(--sage); font-weight:700; font-style:normal; }
+
+/* ══════════════════════════════════
+   HUG SCREEN
+══════════════════════════════════ */
+#s-hug { background:linear-gradient(165deg,#FFF5F8 0%,#FFFBF5 50%,#F0FFF4 100%); }
+.hug-outer { max-width:460px; width:100%; }
+
+.confetti-row {
+  font-size:2.2rem; letter-spacing:6px; margin-bottom:1.2rem;
+  animation:fwRow 2.2s ease-in-out infinite;
+}
+@keyframes fwRow { 0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)} }
+
+.hug-headline {
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:clamp(1.9rem,7vw,3rem);
+  color:var(--rose); line-height:1.2; margin-bottom:0.5rem;
+  animation:fadeUp 0.8s ease both;
+}
+.hug-byline {
+  color:var(--muted); font-size:0.93rem; margin-bottom:2.2rem;
+  animation:fadeUp 0.8s ease 0.2s both;
+}
+
+/* ── HUG ANIMATION ── */
+.hug-stage {
+  position:relative; height:240px;
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 0.8rem; max-width:340px;
+}
+
+/* Warm glow behind */
+.hug-glow {
+  position:absolute; width:200px; height:200px; border-radius:50%;
+  background:radial-gradient(circle,rgba(253,220,212,0.85)0%,rgba(253,220,212,0)70%);
+  animation:glowPulse 2.8s ease-in-out infinite;
+}
+@keyframes glowPulse {
+  0%,100%{transform:scale(1);opacity:0.65}
+  50%{transform:scale(1.35);opacity:1}
+}
+
+/* Person A – Daddy */
+.person-a {
+  position:absolute; left:15px;
+  display:flex; flex-direction:column; align-items:center;
+  animation:personASlide 1.2s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+  z-index:3;
+}
+@keyframes personASlide {
+  from { transform:translateX(-80px); opacity:0; }
+  to   { transform:translateX(0); opacity:1; }
+}
+
+/* Person B – Momma */
+.person-b {
+  position:absolute; right:15px;
+  display:flex; flex-direction:column; align-items:center;
+  animation:personBSlide 1.2s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+  z-index:3;
+}
+@keyframes personBSlide {
+  from { transform:translateX(80px); opacity:0; }
+  to   { transform:translateX(0); opacity:1; }
+}
+
+/* SVG person figure */
+.person-svg {
+  width:80px; height:140px;
+  animation:personRock 2.5s ease-in-out infinite;
+}
+.person-svg.momma { animation:personRockR 2.5s ease-in-out infinite; }
+@keyframes personRock {
+  0%,100%{ transform:rotate(-2deg) translateY(0); }
+  50%    { transform:rotate(3deg) translateY(-5px); }
+}
+@keyframes personRockR {
+  0%,100%{ transform:rotate(2deg) translateY(0); }
+  50%    { transform:rotate(-3deg) translateY(-5px); }
+}
+
+.person-label {
+  font-size:0.72rem; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+  margin-top:0.4rem; color:var(--muted);
+}
+
+/* Arms reaching across */
+.arm-reach-a {
+  position:absolute;
+  left:85px; top:38%;
+  width:70px; height:18px;
+  border-radius:20px;
+  background:linear-gradient(90deg,#F9C0A8,#FDDCD4);
+  transform-origin:left center;
+  animation:armReachA 2.5s ease-in-out infinite;
+  z-index:4; border:2px solid rgba(232,105,122,0.2);
+}
+@keyframes armReachA {
+  0%,100%{ transform:rotate(-8deg) scaleX(1); }
+  50%    { transform:rotate(8deg) scaleX(1.06); }
+}
+.arm-reach-b {
+  position:absolute;
+  right:85px; top:38%;
+  width:70px; height:18px;
+  border-radius:20px;
+  background:linear-gradient(270deg,#F9C0A8,#FDDCD4);
+  transform-origin:right center;
+  animation:armReachB 2.5s ease-in-out infinite;
+  z-index:4; border:2px solid rgba(232,105,122,0.2);
+}
+@keyframes armReachB {
+  0%,100%{ transform:rotate(8deg) scaleX(1); }
+  50%    { transform:rotate(-8deg) scaleX(1.06); }
+}
+
+/* Center heart */
+.center-heart {
+  position:absolute; z-index:5;
+  font-size:2.8rem;
+  animation:heartCenter 1.6s ease-in-out infinite;
+  filter:drop-shadow(0 4px 12px rgba(232,105,122,0.4));
+}
+@keyframes heartCenter {
+  0%,100%{ transform:scale(1) translateY(0); }
+  30%    { transform:scale(1.2) translateY(-4px); }
+  60%    { transform:scale(0.95) translateY(2px); }
+}
+
+/* Hearts floating up from hug */
+.float-hearts { position:absolute; inset:0; pointer-events:none; z-index:6; }
+.fh {
+  position:absolute; font-size:1rem; opacity:0;
+  animation:floatUp 3s ease-in-out infinite;
+}
+.fh:nth-child(1){left:40%;animation-delay:0s;font-size:1.2rem;}
+.fh:nth-child(2){left:50%;animation-delay:0.7s;font-size:0.8rem;}
+.fh:nth-child(3){left:45%;animation-delay:1.4s;font-size:1rem;}
+.fh:nth-child(4){left:55%;animation-delay:2.1s;font-size:0.7rem;}
+@keyframes floatUp {
+  0%   { opacity:0; transform:translateY(0) scale(0.5); }
+  20%  { opacity:1; }
+  100% { opacity:0; transform:translateY(-90px) scale(1.2); }
+}
+
+.hug-caption {
+  font-family:'Playfair Display',serif; font-style:italic;
+  color:var(--rose); font-size:1.1rem; margin-top:0.5rem;
+  animation:fadeUp 1s ease 0.8s both;
+}
+
+/* ── LETTER REVEAL ── */
+.letter-reveal {
+  background:#fff;
+  border-radius:28px;
+  padding:2rem 1.8rem;
+  margin:2rem 0 1.4rem;
+  text-align:left;
+  box-shadow:0 12px 45px rgba(46,31,21,0.09);
+  position:relative; overflow:hidden;
+  animation:fadeUp 0.9s ease 1s both;
+  border-left:5px solid var(--rose);
+}
+.letter-reveal::before {
+  content:'"';
+  font-family:'Playfair Display',serif;
+  font-size:6rem; color:var(--blush);
+  position:absolute; top:-10px; left:12px;
+  line-height:1; z-index:0; pointer-events:none;
+}
+.letter-text {
+  font-size:0.95rem; color:var(--soft); line-height:1.95;
+  position:relative; z-index:1;
+}
+.letter-text strong { color:var(--rose); }
+.letter-text em { color:var(--sage); font-weight:700; font-style:normal; }
+
+/* ── FINAL CARDS ── */
+.final-card {
+  background:#fff; border-radius:22px;
+  padding:1.6rem 1.6rem; margin-bottom:1.2rem; text-align:left;
+  box-shadow:0 8px 30px rgba(46,31,21,0.08);
+  position:relative; overflow:hidden;
+  animation:fadeUp 0.8s ease both;
+}
+.final-card::after {
+  content:''; position:absolute; top:0; left:0; width:5px; height:100%;
+  border-radius:22px 0 0 22px;
+}
+.final-card:nth-child(1)::after { background:var(--sage); }
+.final-card:nth-child(2)::after { background:var(--gold); }
+.final-card:nth-child(3)::after { background:var(--rose); }
+.final-card:nth-child(1){animation-delay:0.3s;}
+.final-card:nth-child(2){animation-delay:0.55s;}
+.final-card:nth-child(3){animation-delay:0.8s;}
+.fch {
+  display:flex; align-items:center; gap:0.6rem; margin-bottom:0.9rem;
+}
+.fch-icon { font-size:1.6rem; }
+.fch-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:600; color:var(--text); }
+.final-card p { font-size:0.91rem; color:var(--soft); line-height:1.9; }
+.final-card p strong { color:var(--rose); font-weight:800; }
+.final-card p em { color:var(--sage); font-weight:700; font-style:normal; }
+
+/* ── SCORE PILL ── */
+.score-pill {
+  display:inline-flex; align-items:center; gap:0.4rem;
+  background:linear-gradient(135deg,var(--gold),#D4A030);
+  color:#fff; padding:0.5rem 1.4rem; border-radius:50px;
+  font-weight:800; font-size:0.88rem; margin-bottom:1.6rem;
+  animation:fadeUp 0.6s ease 0.15s both;
+  box-shadow:0 5px 18px rgba(240,184,64,0.45);
+}
+
+.dipty-row { text-align:center; font-size:1.5rem; letter-spacing:5px; margin:1rem 0; opacity:0.75; }
+
+.sign-off {
+  font-family:'Playfair Display',serif; font-style:italic;
+  color:var(--rose); font-size:1.05rem;
+  text-align:center; margin:1.2rem 0 0.5rem;
+  line-height:1.8; animation:fadeUp 1s ease 1.3s both;
+}
+
+.tease-note {
+  color:var(--muted); font-size:0.83rem; margin-bottom:1.8rem;
+  font-style:italic; text-align:center;
+}
+
+.btn-row { display:flex; flex-direction:column; gap:0.75rem; align-items:center; }
+
+/* ── SPARKS ── */
+.spark {
+  position:fixed; pointer-events:none; z-index:999;
+  animation:sparkFly 1.1s ease-out forwards; font-size:1.2rem;
+}
+@keyframes sparkFly {
+  0%  { transform:translate(0,0) scale(1); opacity:1; }
+  100%{ transform:translate(var(--dx),var(--dy)) scale(0.1); opacity:0; }
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="bg-blob blob1"></div>
+  <div class="bg-blob blob2"></div>
+  <div class="bg-blob blob3"></div>
+  <div class="bg-blob blob4"></div>
+</div>
+
+<!-- ═══ INTRO ═══ -->
+<div class="screen active" id="s-intro">
+  <div class="envelope-wrap" onclick="startQuiz()">
+    <div class="env-body">
+      <div class="env-flap"></div>
+      <div class="env-heart">💌</div>
+    </div>
+    <span class="env-sparkle" style="top:-8px;right:-4px;animation-delay:0s">✨</span>
+    <span class="env-sparkle" style="bottom:-6px;left:-6px;animation-delay:0.8s">🌸</span>
+  </div>
+
+  <p class="intro-tag">✨ A tiny secret made just for you ✨</p>
+  <h1 class="intro-title">Hey,&nbsp;<span>Dipty's Momma…</span><br>this one's yours 🥹</h1>
+  <p class="intro-sub">
+    Someone quietly building a whole universe for you<br>
+    left a little <em>love decoder</em> here today.<br><br>
+    Answer the questions. <strong>Unlock the hug.</strong> 🤗
+  </p>
+  <div class="garden-strip">🌱 🌷 🥕 🌻 🌿</div>
+  <button class="btn" onclick="startQuiz()">Open the letter 💌</button>
+</div>
+
+<!-- ═══ QUIZ ═══ -->
+<div class="screen" id="s-quiz">
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="q-label" id="q-label">Question 1 / 8</span>
+      <span class="q-emoji-trail" id="q-trail"></span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-bar" id="prog" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="qcard">
+    <div class="qcard-top"></div>
+    <div class="q-badge" id="q-badge">Question</div>
+    <span class="q-icon" id="q-icon">🌸</span>
+    <p class="q-question" id="q-text">…</p>
+    <div class="options" id="opts"></div>
+    <div class="lock-msg" id="lock-msg"></div>
+    <div id="feedback"></div>
+    <div class="next-row" id="next-row" style="display:none">
+      <button class="btn" onclick="advance()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MIDPOINT ═══ -->
+<div class="screen" id="s-mid">
+  <div class="mid-card">
+    <span class="mid-icon">🌿</span>
+    <h2 class="mid-title">Halfway there, love 🌸</h2>
+    <p class="mid-text">
+      You're doing so well! 🥰<br><br>
+      He's probably somewhere nearby right now,<br>
+      watching you play this and trying <strong>very hard not to smile too wide</strong>… and failing. 😄<br><br>
+      The best part is still ahead — keep going.<br>
+      <em>A hug is waiting for you at the end.</em> 🤗
+    </p>
+    <div class="garden-strip" style="margin-bottom:1.8rem;">🌻 🥕 🌷 🍃 🌺</div>
+    <button class="btn sage" onclick="resumeQuiz()">I'm ready — let's go! 🌱</button>
+  </div>
+</div>
+
+<!-- ═══ HUG SCREEN ═══ -->
+<div class="screen" id="s-hug">
+  <div class="hug-outer">
+    <div class="confetti-row">🎊 💕 🌸 ✨ 🎊</div>
+
+    <h2 class="hug-headline">You decoded it,<br>Dipty's Momma 🥹</h2>
+    <p class="hug-byline">And here's what was hiding inside every question…</p>
+
+    <!-- THE HUG -->
+    <div class="hug-stage">
+      <div class="hug-glow"></div>
+
+      <!-- Person A – Daddy (left) -->
+      <div class="person-a">
+        <svg class="person-svg" viewBox="0 0 80 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Head -->
+          <circle cx="40" cy="22" r="18" fill="#FDDCD4" stroke="#E8697A" stroke-width="2"/>
+          <!-- Hair -->
+          <ellipse cx="40" cy="8" rx="17" ry="8" fill="#5C3A1E"/>
+          <ellipse cx="26" cy="16" rx="7" ry="10" fill="#5C3A1E"/>
+          <!-- Face -->
+          <circle cx="34" cy="22" r="2.5" fill="#C94E60"/>
+          <circle cx="46" cy="22" r="2.5" fill="#C94E60"/>
+          <path d="M33 30 Q40 36 47 30" stroke="#C94E60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Blush -->
+          <ellipse cx="29" cy="27" rx="5" ry="3" fill="#FAAAB0" opacity="0.5"/>
+          <ellipse cx="51" cy="27" rx="5" ry="3" fill="#FAAAB0" opacity="0.5"/>
+          <!-- Body -->
+          <rect x="22" y="42" width="36" height="52" rx="14" fill="#6BAF5E"/>
+          <!-- Shirt collar detail -->
+          <path d="M36 42 L40 52 L44 42" fill="#4A8A40"/>
+          <!-- Left arm up (hugging) -->
+          <path d="M22 55 Q0 45 8 28" stroke="#FDDCD4" stroke-width="14" stroke-linecap="round" fill="none"/>
+          <!-- Right arm down -->
+          <path d="M58 58 Q72 68 68 82" stroke="#FDDCD4" stroke-width="14" stroke-linecap="round" fill="none"/>
+          <!-- Legs -->
+          <rect x="26" y="90" width="12" height="44" rx="8" fill="#3A2A1A"/>
+          <rect x="42" y="90" width="12" height="44" rx="8" fill="#3A2A1A"/>
+          <!-- Shoes -->
+          <ellipse cx="32" cy="134" rx="10" ry="6" fill="#2A1A0A"/>
+          <ellipse cx="48" cy="134" rx="10" ry="6" fill="#2A1A0A"/>
+        </svg>
+        <span class="person-label">Dipty's Daddy</span>
+      </div>
+
+      <!-- Arms reaching across -->
+      <div class="arm-reach-a"></div>
+      <div class="arm-reach-b"></div>
+
+      <!-- Center heart -->
+      <div class="center-heart" style="top:28%">💕</div>
+
+      <!-- Floating hearts -->
+      <div class="float-hearts">
+        <span class="fh">🩷</span>
+        <span class="fh">💛</span>
+        <span class="fh">🌸</span>
+        <span class="fh">✨</span>
+      </div>
+
+      <!-- Person B – Momma (right) -->
+      <div class="person-b">
+        <svg class="person-svg momma" viewBox="0 0 80 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Head -->
+          <circle cx="40" cy="22" r="18" fill="#FDDCD4" stroke="#E8697A" stroke-width="2"/>
+          <!-- Hair – long -->
+          <ellipse cx="40" cy="8" rx="19" ry="9" fill="#4A2A08"/>
+          <path d="M21 16 Q16 40 20 60" stroke="#4A2A08" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <path d="M59 16 Q64 40 60 60" stroke="#4A2A08" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <!-- Hair bow -->
+          <ellipse cx="55" cy="7" rx="7" ry="4" fill="#E8697A" transform="rotate(-30,55,7)"/>
+          <ellipse cx="65" cy="4" rx="7" ry="4" fill="#E8697A" transform="rotate(30,65,4)"/>
+          <circle cx="60" cy="5" r="3.5" fill="#C94E60"/>
+          <!-- Face -->
+          <circle cx="34" cy="22" r="2.5" fill="#C94E60"/>
+          <circle cx="46" cy="22" r="2.5" fill="#C94E60"/>
+          <path d="M33 30 Q40 36 47 30" stroke="#C94E60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Eyelashes -->
+          <path d="M31 19 L29 16 M34 18 L33 15 M37 18 L37 15" stroke="#4A2A08" stroke-width="1.2" stroke-linecap="round"/>
+          <!-- Blush -->
+          <ellipse cx="29" cy="27" rx="5" ry="3" fill="#FAAAB0" opacity="0.5"/>
+          <ellipse cx="51" cy="27" rx="5" ry="3" fill="#FAAAB0" opacity="0.5"/>
+          <!-- Body – dress -->
+          <path d="M22 42 L18 94 L62 94 L58 42 Z" fill="#E8697A" rx="4"/>
+          <path d="M22 42 Q40 50 58 42 L54 58 Q40 65 26 58 Z" fill="#C94E60"/>
+          <!-- Right arm up (hugging) -->
+          <path d="M58 55 Q80 45 72 28" stroke="#FDDCD4" stroke-width="14" stroke-linecap="round" fill="none"/>
+          <!-- Left arm down -->
+          <path d="M22 58 Q8 68 12 82" stroke="#FDDCD4" stroke-width="14" stroke-linecap="round" fill="none"/>
+          <!-- Legs -->
+          <rect x="26" y="92" width="12" height="42" rx="8" fill="#FDDCD4"/>
+          <rect x="42" y="92" width="12" height="42" rx="8" fill="#FDDCD4"/>
+          <!-- Shoes -->
+          <ellipse cx="32" cy="134" rx="10" ry="6" fill="#C94E60"/>
+          <ellipse cx="48" cy="134" rx="10" ry="6" fill="#C94E60"/>
+        </svg>
+        <span class="person-label">Dipty's Momma</span>
+      </div>
+    </div>
+
+    <p class="hug-caption">A big warm hug — from Dipty's Daddy 💕</p>
+    <div style="height:1.8rem"></div>
+
+    <div class="score-pill" id="score-pill">⭐ 8 / 8 — You know this love perfectly! 💛</div>
+
+    <!-- Personal letter -->
+    <div class="letter-reveal">
+      <div class="letter-text">
+        Hey you. 🥹<br><br>
+        I know I'm a little <strong>workaholic</strong>, always chasing something, always building —
+        but everything I'm building? It has your name quietly written somewhere in it. 🌿<br><br>
+        I want to do this right. <em>Career first, then you, then Dipty</em> — not because you're not first,
+        but because you deserve someone who shows up <strong>whole</strong>. That's all this is. 💛<br><br>
+        Thank you for understanding that. Not everyone would. You do. 🌸
+      </div>
+    </div>
+
+    <!-- Card 1 -->
+    <div class="final-card">
+      <div class="fch"><span class="fch-icon">🌱</span><span class="fch-title">The Dipty Garden — the dream 🌳</span></div>
+      <p>
+        The day <strong>Dipty</strong> arrives, we plant a tree. 🌳<br>
+        Not just any tree — <em>her tree</em>. The one that grows when she grows.<br><br>
+        Every birthday after that: another tree, another flower, another memory pressed into the soil.
+        By age ten she won't just have a garden —
+        she'll have <strong>a whole forest of love</strong> she can always come back to. 🌲🌲🌲<br><br>
+        <strong>Carrots she planted herself 🥕</strong>. Flowers she named. 🌷
+        Homegrown tomatoes she'll be unreasonably proud of. 🍅
+        That's the Dipty Garden. It starts the day she does. 🌿
+      </p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="final-card">
+      <div class="fch"><span class="fch-icon">🖼️</span><span class="fch-title">The wall of her whole life 💕</span></div>
+      <p>
+        One wall. <strong>Every version of Dipty.</strong><br><br>
+        Tiny newborn who fits in one palm. 👶
+        First smile she has no idea she's doing. 😄
+        The phase where she draws on everything including the wall itself. 🖍️
+        First day of school, trying to look brave. 🎒
+        Teenage her, rolling her eyes at us taking pictures again. 📸😂<br><br>
+        All of it. Every single phase. Because she should grow up knowing
+        she was <em>watched over with so much love</em>
+        that someone literally ran out of wall space. 🥹<br><br>
+        <strong>That wall is already being planned, Dipty's Momma.</strong> 💛
+      </p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="final-card">
+      <div class="fch"><span class="fch-icon">🌳</span><span class="fch-title">The birthday ritual 🎂</span></div>
+      <p>
+        Every single birthday — <strong>one more tree together.</strong> 🌳<br><br>
+        By the time she's 18, she has a whole forest with her name on it.
+        Roots that have been growing as long as she has.
+        A place she can always return to and say —<br><br>
+        <em>"My parents planted this the year I turned five."</em><br><br>
+        That's not just a garden. <strong>That's a love story she can walk through.</strong> 🥹💕
+      </p>
+    </div>
+
+    <div class="dipty-row">🌱 🌷 🥕 🌻 🌿 🌸 🌳</div>
+
+    <p class="sign-off">
+      "Some people plant trees they'll never sit under.<br>
+      He's planting a whole forest —<br>
+      and saving the best seat for two people he loves most." 🌿💕
+    </p>
+    <p class="tease-note">
+      (Dipty is going to tease us <em>so much</em> about this quiz one day 😂🌱)
+    </p>
+
+    <div class="btn-row">
+      <button class="btn" onclick="celebrate()">🎊 Celebrate again!</button>
+      <button class="btn outline" onclick="resetAll()">↩ Play from the start</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── FLOATERS ── */
+const FL = ['🌸','🌷','🌺','🌻','🍀','🌿','💕','✨','🥕','🌱','💛','🌼'];
+for(let i=0;i<18;i++){
+  const el=document.createElement('div');
+  el.className='floater';
+  el.textContent=FL[Math.floor(Math.random()*FL.length)];
+  el.style.left=Math.random()*100+'vw';
+  el.style.fontSize=(0.7+Math.random()*1.1)+'rem';
+  el.style.animationDuration=(13+Math.random()*20)+'s';
+  el.style.animationDelay=(-Math.random()*24)+'s';
+  document.body.appendChild(el);
+}
+
+/* ── QUESTIONS ── */
+const QS = [
+  {
+    icon:'🌿',
+    badge:'Warm-up! 🌱',
+    q:'What does Dipty\'s Daddy love more than most people love their weekends?',
+    opts:[
+      {t:'😴 Sleeping in on lazy Sundays',c:false},
+      {t:'🌿 Plants, flowers & anything that grows',c:true},
+      {t:'📱 Doomscrolling at midnight',c:false},
+      {t:'🍕 Finding the perfect pizza slice',c:false},
+    ],
+    ok:'Yes!! 🌿 That man talks to his plants like they\'re family. You know him too well! 💚',
+    no:'Hmm… think about what he checks on every morning before coffee ☕🌱',
+    lock:'What makes his face light up even on the most tired evenings? 🌿',
+  },
+  {
+    icon:'💼',
+    badge:'The Big Dream 🎯',
+    q:'Before marriage, before Dipty, before the whole beautiful life — what does he want to do first?',
+    opts:[
+      {t:'🌍 Travel to 30 countries',c:false},
+      {t:'💼 Build something he\'s truly proud of — achieve first 🎯',c:true},
+      {t:'🏠 Buy a house immediately',c:false},
+      {t:'😌 Honestly just relax for once',c:false},
+    ],
+    ok:'Exactly. 💼 A little workaholic heart with the biggest reasons to work. That\'s him. 🥹',
+    no:'Haha not quite! He\'s the one who says "let me handle things first" — you\'ve heard that line 😄',
+    lock:'Think about what he says when someone asks "when\'s the wedding?" 😄💼',
+  },
+  {
+    icon:'📋',
+    badge:'His Life Plan 🗺️',
+    q:'What is his exact life order? (This one you definitely know 😄)',
+    opts:[
+      {t:'💍 Marry → 🎯 Achieve → 👶 Dipty',c:false},
+      {t:'🎯 Achieve → 💍 Marry → 👶 Dipty',c:true},
+      {t:'👶 Dipty → 💍 Marry → 🎯 Achieve',c:false},
+      {t:'🎯 Achieve → 👶 Dipty → 💍 Marry',c:false},
+    ],
+    ok:'Career → You → Dipty. In that order. Because he wants to show up whole, not half. 🌸',
+    no:'So close! Remember, he wants to earn the life first, then fill it with love 💛',
+    lock:'He says this with that one serious face 😄 Think again! 🗺️',
+  },
+  {
+    icon:'🌳',
+    badge:'The Arrival Plan 🥹',
+    q:'The day Dipty arrives into this world — what\'s the very first thing he wants to plant?',
+    opts:[
+      {t:'🌹 A rose bush for the most loved girl',c:false},
+      {t:'🌳 A tree — one that grows exactly as she grows',c:true},
+      {t:'🌻 Sunflowers because she\'ll be sunshine',c:false},
+      {t:'🥕 Carrots immediately, no delay',c:false},
+    ],
+    ok:'A tree. 🌳 Her very own tree. Growing when she grows, standing when she stands. 🥹💕',
+    no:'Beautiful guess! But he has something even more poetic in mind for day one 🌿',
+    lock:'It\'s something that grows with her, year after year, quietly beside her… 🌳',
+  },
+  {
+    icon:'🥕',
+    badge:'The Garden Dream 🌻',
+    q:'What will the Dipty Garden actually have in it?',
+    opts:[
+      {t:'🌹 Only the most beautiful exotic flowers',c:false},
+      {t:'🌷🥕🌻 Flowers, carrots, homegrown everything — all of it!',c:true},
+      {t:'🏡 Just a neat lawn, very tidy',c:false},
+      {t:'🌊 A pond and some decorative stones',c:false},
+    ],
+    ok:'Everything homegrown, everything hers. 🥕🌷🌻 A garden that tastes and smells like love. 💛',
+    no:'Think bigger! He\'s not a "just a lawn" person — this garden has personality 🌿😄',
+    lock:'It\'s going to have things she can eat AND admire… think full, messy, homegrown glory 🌻',
+  },
+  {
+    icon:'🖼️',
+    badge:'The Wall of Love 📸',
+    q:'What does he want covering the walls of your home as Dipty grows up?',
+    opts:[
+      {t:'🎨 Aesthetic art prints and nice frames',c:false},
+      {t:'📸 Every photo of Dipty — baby to grown-up, every phase',c:true},
+      {t:'🪞 Mirrors and fairy lights everywhere',c:false},
+      {t:'🤍 Nothing — he likes clean minimal walls',c:false},
+    ],
+    ok:'Every version of her face. 📸 From tiny newborn to eye-rolling teenager. ALL of it. 🥹',
+    no:'Ha, he\'s not exactly a minimalist when it comes to her 😄 Think about what he treasures most 💕',
+    lock:'It\'s something that tells her story from day one to forever, covering an entire wall 🖼️💕',
+  },
+  {
+    icon:'🎂',
+    badge:'The Birthday Ritual 🌳',
+    q:'Every single birthday of Dipty\'s — what\'s the ritual?',
+    opts:[
+      {t:'🎉 Big party, lots of people, every year',c:false},
+      {t:'🧸 A new toy or gift, always something special',c:false},
+      {t:'🌳 Plant a tree together — every birthday, one more tree',c:true},
+      {t:'✈️ A family trip somewhere new',c:false},
+    ],
+    ok:'One tree per birthday. 🌳 By age 10 she has a forest. By 18? A whole world of roots. 🥹',
+    no:'Fun idea, but he has a tradition planned that will last her whole life 🌱 Think roots!',
+    lock:'Something you do together, in the garden, that leaves something permanent behind 🌳',
+  },
+  {
+    icon:'💌',
+    badge:'The Final Decode 🗝️',
+    q:'What was hiding inside this little decoder… all along?',
+    opts:[
+      {t:'🎁 A surprise gift hidden somewhere in the house',c:false},
+      {t:'🤗 A big warm hug — from someone who loves you completely',c:true},
+      {t:'🍰 A cake that\'s already been ordered',c:false},
+      {t:'💐 A bouquet being delivered right now',c:false},
+    ],
+    ok:'You found it. 🥹 A hug was hiding inside every question, waiting for you to reach the end. 💕',
+    no:'A lovely thought! But the sweetest things are always free, always warm, always… 🤗',
+    lock:'It was in every question, every clue, every word. What\'s the one thing that costs nothing but means everything? 💕',
+  },
+];
+
+let qi=0, score=0, attempts=0, answered=false;
+const MID=4;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function startQuiz(){ show('s-quiz'); render(); }
+function resumeQuiz(){ show('s-quiz'); render(); }
+
+function render(){
+  const q=QS[qi]; answered=false; attempts=0;
+  document.getElementById('q-label').textContent=`Question ${qi+1} / ${QS.length}`;
+  document.getElementById('q-trail').textContent='⭐'.repeat(score);
+  document.getElementById('prog').style.width=`${(qi/QS.length)*100}%`;
+  document.getElementById('q-badge').textContent=q.badge;
+  document.getElementById('q-icon').textContent=q.icon;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('feedback').innerHTML='';
+  document.getElementById('lock-msg').style.display='none';
+  document.getElementById('next-row').style.display='none';
+  const container=document.getElementById('opts');
+  container.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt'; btn.innerHTML=o.t;
+    btn.onclick=()=>pick(i);
+    container.appendChild(btn);
+  });
+}
+
+function pick(idx){
+  if(answered) return;
+  const q=QS[qi];
+  const btns=document.querySelectorAll('.opt');
+  const isRight=q.opts[idx].c;
+  attempts++;
+  if(isRight){
+    answered=true; score++;
+    btns[idx].classList.add('correct');
+    btns.forEach((b,i)=>{ if(i!==idx) b.classList.add('disabled'); });
+    showFeedback(true,q.ok);
+    sparkBurst(btns[idx]);
+    document.getElementById('lock-msg').style.display='none';
+    document.getElementById('next-row').style.display='flex';
+  } else {
+    btns[idx].classList.add('wrong','disabled');
+    setTimeout(()=>btns[idx].classList.remove('wrong'),500);
+    const lock=document.getElementById('lock-msg');
+    if(attempts===1){
+      lock.textContent='💭 Hmm, not quite! Think again — you know this one 😄';
+      lock.style.display='block';
+      showFeedback(false,q.no);
+    } else {
+      lock.textContent='🌿 Psst… '+q.lock;
+      lock.style.display='block';
+    }
+  }
+}
+
+function showFeedback(ok,msg){
+  const el=document.getElementById('feedback');
+  const div=document.createElement('div');
+  div.className='feedback '+(ok?'ok':'no');
+  div.textContent=(ok?'🌸 ':'💭 ')+msg;
+  el.innerHTML=''; el.appendChild(div);
+}
+
+function advance(){
+  qi++;
+  if(qi===MID){ show('s-mid'); return; }
+  if(qi>=QS.length){ showHug(); return; }
+  show('s-quiz'); render();
+}
+
+function showHug(){
+  document.getElementById('score-pill').textContent=`⭐ ${score} / ${QS.length} — You know this love perfectly! 💛`;
+  show('s-hug');
+  setTimeout(celebrate,600);
+}
+
+function celebrate(){
+  const e=['🎊','💕','🌸','🌻','✨','🌷','🥹','🤗','🌱','💛','🌼','🩷'];
+  for(let i=0;i<32;i++){
+    setTimeout(()=>{
+      const p=document.createElement('div');
+      p.className='spark';
+      p.textContent=e[Math.floor(Math.random()*e.length)];
+      p.style.left=(8+Math.random()*84)+'vw';
+      p.style.top=(15+Math.random()*55)+'vh';
+      const a=Math.random()*360, d=90+Math.random()*140;
+      p.style.setProperty('--dx',Math.cos(a*Math.PI/180)*d+'px');
+      p.style.setProperty('--dy',Math.sin(a*Math.PI/180)*d-100+'px');
+      p.style.fontSize=(0.8+Math.random()*1.1)+'rem';
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),1300);
+    },i*60);
+  }
+}
+
+function sparkBurst(el){
+  const r=el.getBoundingClientRect();
+  const e=['💕','🌸','✨','🌿','💛','🌷'];
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');
+    p.className='spark';
+    p.textContent=e[Math.floor(Math.random()*e.length)];
+    p.style.left=(r.left+r.width/2)+'px';
+    p.style.top=(r.top+r.height/2)+'px';
+    const a=Math.random()*360, d=55+Math.random()*80;
+    p.style.setProperty('--dx',Math.cos(a*Math.PI/180)*d+'px');
+    p.style.setProperty('--dy',Math.sin(a*Math.PI/180)*d-50+'px');
+    p.style.animationDelay=(Math.random()*0.15)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1400);
+  }
+}
+
+function resetAll(){
+  qi=0; score=0; attempts=0; answered=false;
+  show('s-intro');
+}
+</script>
+</body>
+</html>
