@@ -8,6 +8,10 @@ window.aioxyData = window.aioxyData || {};
 // ================== SYNTHESE INGREDIENTS ==================
 // All original numbers preserved exactly
 // Fossil/Biogenic/Land Use added from existing metadata values
+// FIX: Guard ensures window.aioxyData.ingredients is always an object before Object.assign.
+// Without this, if ingredients_db.js ever loads after this file, Object.assign(undefined, {})
+// throws a silent TypeError at page load, breaking the entire synthese DB merge.
+window.aioxyData.ingredients = window.aioxyData.ingredients || {};
 Object.assign(window.aioxyData.ingredients, {
 
     "rice-flour-ciqual-9520": {

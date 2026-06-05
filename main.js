@@ -568,8 +568,20 @@ async function calculateImpact() {
 
     } catch (error) {
         console.error('💥 Calculation error:', error);
-        alert('Calculation error: ' + error.message);
-        throw error;
+        // FIX: Do NOT rethrow. Rethrowing leaves window.finalPefResults / window.auditTrailData
+        // as stale values from the previous session. The UI still shows ingredients (restored
+        // from localStorage) but the PDF exports from old globals showing 0 for ingredients.
+        // Show an inline banner instead — error is visible, app state stays consistent.
+        const _rc = document.getElementById('resultsContent');
+        let _eb = document.getElementById('calcErrorBanner');
+        if (!_eb) {
+            _eb = document.createElement('div');
+            _eb.id = 'calcErrorBanner';
+            _eb.style.cssText = 'background:#FFF3E0;border-left:4px solid #FF9800;padding:0.75rem 1rem;margin:0.5rem 0;border-radius:4px;font-size:0.85rem;color:#7B3F00;';
+            if (_rc) _rc.prepend(_eb);
+        }
+        _eb.innerHTML = '<strong>⚠ Calculation error:</strong> ' + (error.message || String(error)) + ' — check browser console for details.';
+        _eb.style.display = 'block';
     } finally {
         if (loadingElement) loadingElement.classList.add('hidden');
         if (resultsContent)  resultsContent.classList.remove('hidden');

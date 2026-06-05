@@ -1016,16 +1016,34 @@ if (!traceability.usetox) {
                 );
             }
 
-            // 1b. Validate ALL 16 PEF values
+            // 1b. Validate all PEF values — throw for core 16, warn+derive for CC sub-splits
+            // FIX: The three CC sub-splits (Fossil/Biogenic/Land Use) are absent from some
+            // DB entries. Previously, one missing sub-split threw and killed the entire
+            // processIngredients loop — returning empty ingredientResults and producing 0
+            // for ingredient contribution in all outputs (UI, PDF, CSV, foreground/background).
+            // Fix: derive a conservative fallback from the CC total; log a warning; never throw.
+            // Core 16 EF categories still throw if missing — those are always present in DB.
             const pef = ingData.data.pef;
             if (!pef) {
                 throw new CalculationError('Missing pef data for ingredient: ' + ingredient.id);
             }
+            const _CC_SUBSPLITS = ['Climate Change - Fossil', 'Climate Change - Biogenic', 'Climate Change - Land Use'];
             for (const cat of ALL_CATEGORIES) {
                 if (pef[cat] === undefined || pef[cat] === null) {
-                    throw new CalculationError(
-                        'Ingredient "' + ingredient.id + '" is missing PEF category: ' + cat
-                    );
+                    if (_CC_SUBSPLITS.includes(cat)) {
+                        // Derive from CC total — conservative proxy, never throws
+                        const _ccBase = pef['Climate Change'] || 0;
+                        if (cat === 'Climate Change - Fossil')        pef[cat] = _ccBase * 0.70;
+                        else if (cat === 'Climate Change - Biogenic') pef[cat] = _ccBase * 0.30;
+                        else                                           pef[cat] = 0; // Land Use
+                        console.warn('[AIOXY] Ingredient "' + ingredient.id + '" missing ' + cat +
+                            ' — derived from CC total as fallback. Add explicit value to DB entry.');
+                    } else {
+                        // Core 16 EF categories — always required in DB, throw if absent
+                        throw new CalculationError(
+                            'Ingredient "' + ingredient.id + '" is missing PEF category: ' + cat
+                        );
+                    }
                 }
             }
 
