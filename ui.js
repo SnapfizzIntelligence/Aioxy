@@ -2708,10 +2708,18 @@ function displayForegroundBackground() {
         }
 
         // Guard: only render if at least one non-FR origin exists
+        // ROOT CAUSE FIX: The old gate returned a compact "All ingredients sourced from France"
+        // notice and exited early for all-FR products. This hid the supply chain map entirely
+        // even though origin traceability is an AIOXY core principle — zero black box even for
+        // domestic supply chains. FR-origin ingredients ARE part of the supply chain and must
+        // be shown. Fix: always render the full map. FR → manufacturing country lines are shown
+        // in grey (same-origin colour). The "no international transport adjustments" note is
+        // appended as an informational footer when all origins are FR.
         const hasInternational = ingredients.some(ing => {
             const c = ing.country || 'FR';
             return c !== 'FR' && c !== '' && COORD[c];
         });
+        const allDomestic = !hasInternational;
 
         // 3. Find or create section
         const transparencyTab = document.getElementById('transparency-tab');
@@ -2733,24 +2741,6 @@ function displayForegroundBackground() {
             }
         }
 
-        // 4. If no international routes, show compact notice and return
-        if (!hasInternational) {
-            mapSection.innerHTML = `
-                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;">
-                    <div class="card-icon" style="background:var(--gradient-primary);">
-                        <i class="fas fa-globe-europe"></i>
-                    </div>
-                    <div>
-                        <h3 style="color:var(--primary);margin:0;">International Supply Chain</h3>
-                        <div style="color:var(--gray);font-size:0.9rem;">Ingredient origin traceability</div>
-                    </div>
-                </div>
-                <div style="background:var(--light);border-radius:8px;padding:1rem;color:var(--gray);font-size:0.9rem;">
-                    All ingredients sourced from France (AGRIBALYSE 3.2 reference country). No international transport adjustments applied.
-                </div>`;
-            return;
-        }
-
         // 5. Build data: unique origin countries + counts + CO2 contribution
         const mfgCountry = window.lastInput && window.lastInput.manufacturing
             ? window.lastInput.manufacturing.country : 'FR';
@@ -2758,7 +2748,7 @@ function displayForegroundBackground() {
         const destCoord = COORD[destCode] || COORD['FR'];
         const destSVG = toSVG(destCoord);
 
-        // Group ingredients by origin country, enriching with route data
+        // Group ingredients by origin country — ALL origins including FR
         const byCountry = {};
         ingredients.forEach(ing => {
             const code = ing.country || 'FR';
@@ -2922,7 +2912,15 @@ function displayForegroundBackground() {
                         ? window.aioxyData.grid_intensity[destCode] + ' g CO₂/kWh (Ember 2025)'
                         : 'see manufacturing section'
                 }.
-            </div>`;
+            </div>
+            ${allDomestic ? `
+            <div style="margin-top:0.5rem;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:6px;
+                padding:0.6rem 0.9rem;font-size:0.8rem;color:#0369A1;">
+                <strong>Domestic supply chain:</strong>
+                All ingredients sourced from France (AGRIBALYSE 3.2 reference country).
+                No international transport adjustments applied. AGRIBALYSE 3.2 includes
+                representative French domestic transport within its system boundary.
+            </div>` : ''}`;
     };
 }());
 

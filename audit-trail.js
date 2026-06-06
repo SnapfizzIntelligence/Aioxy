@@ -1024,6 +1024,37 @@ function exportCSRDMatrix() {
         if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
         const fromPef = pef['Climate Change']?.contribution_tree?.Ingredients?.components;
         if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
+        // CHAIN-OF-CUSTODY FIX (CSV path): contribution_tree.Ingredients.components was empty.
+        // Fall back to audit.ingredientResults — same fix already applied in displayAuditTrail()
+        // (audit-trail.js line ~217) and pdf-generator.js (line ~394). Without this, Block 6
+        // ingredient traceability rows were always empty even when the engine ran successfully,
+        // because aggregateAllCategories() initialises components=[] and buildContributionTree()
+        // writes back to pefResults[cat].contribution_tree — but the CSV path never fell through
+        // to ingredientResults. Root cause: missing third fallback arm. Fix: add it here.
+        const fromResults = audit.ingredientResults;
+        if (Array.isArray(fromResults) && fromResults.length > 0) {
+            return fromResults.map(function(r) {
+                return {
+                    name:                  r.name,
+                    id:                    r.id,
+                    quantity_kg:           r.quantityKg,
+                    subtotal:              (r.allCategoryResults && r.allCategoryResults['Climate Change']) || 0,
+                    fossilCO2:             r.fossilCO2,
+                    biogenicCO2:           r.biogenicCO2,
+                    dlucCO2:               r.dlucCO2,
+                    dqr:                   r.dqr,
+                    source:                r.source,
+                    uuid:                  r.uuid,
+                    processingState:       r.processingState,
+                    primary_data_used:     r.primary_data_used,
+                    primary_data:          r.primary_data,
+                    universal_adjustments: r.universal_adjustments,
+                    yieldFactor:           r.yieldFactor,
+                    allCategoryResults:    r.allCategoryResults
+                };
+            });
+        }
+        console.warn('[AIOXY CSV] ingComps: no ingredient data in contribution_tree or ingredientResults. Block 6 will be empty.');
         return [];
     })();
     const ccPerKg   = pWeightKg > 0 ? (pef['Climate Change']?.total || 0) / pWeightKg : 0;
