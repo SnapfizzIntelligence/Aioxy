@@ -1744,6 +1744,14 @@ if (!traceability.usetox) {
                 }
                 } // end else (crop primary data path)
             } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (ingredient.primaryData)
+            } // ROOT CAUSE FIX (2026-06-06): This brace was missing. All code from "1f. Apply
+              // processing archetype" down through ingredientResults.push(ingEntry) was trapped
+              // inside if (ingredient.primaryData), meaning every standard AGRIBALYSE ingredient
+              // (primaryData = null) was silently skipped — ingredientResults stayed empty,
+              // every ingredient showed 0.0000 in web audit trail, CSV Block 6, and PDF page 6.
+              // Fix: close the if (ingredient.primaryData) block here so processing archetype,
+              // geo proxy, country factors, calculateIngredientImpact, and the push all run
+              // for EVERY ingredient regardless of whether primary data was supplied.
 
             // 1f. Apply processing archetype
             let processingMultiplier = 1.0;
@@ -1950,7 +1958,6 @@ if (!traceability.usetox) {
         }
 
         return { ingredientResults, ingredientTraceability };
-    }
     }
 
     // ── STEP 2: MANUFACTURING ────────────────────────────────────────────────
@@ -2948,42 +2955,9 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         const foregroundCO2 = foregroundIngredients.reduce(
             (s, ing) => s + (ing.allCategoryResults['Climate Change'] || 0), 0
         );
-
-        // FG/BG FIX: Per PEF 3.1 §5.6, background = all processes NOT under direct operational
-        // control. This includes secondary-data ingredients AND manufacturing (benchmark energy),
-        // outbound transport (GLEC v3.2 modelled), and packaging (CFF secondary data).
-        // Only manufacturing where usePrimaryFactoryData=true is foreground.
-        // Previously backgroundCO2 only summed background ingredients — transport and packaging
-        // CC contributions were excluded, making background_contribution always understate reality
-        // and leaving background_count = 0 when all ingredients had primary data.
-        const mfgCC   = mfgResult.co2 || 0;
-        const transCC = transportResult.total || 0;
-        const pkgCC   = packagingResult.totalImpact || 0;
-
-        // Manufacturing is foreground only if user supplied primary factory data
-        const mfgIsForeground = !!(input.manufacturing.usePrimaryFactoryData && input.manufacturing.primaryFactoryData);
-
-        const bgIngredientCO2 = backgroundIngredients.reduce(
+        const backgroundCO2 = backgroundIngredients.reduce(
             (s, ing) => s + (ing.allCategoryResults['Climate Change'] || 0), 0
         );
-        const backgroundCO2 = bgIngredientCO2
-            + (mfgIsForeground ? 0 : mfgCC)
-            + transCC
-            + pkgCC;
-
-        // Build background process list: background ingredients + always-background stages
-        const backgroundProcessList = [
-            ...backgroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 })),
-            ...(mfgIsForeground ? [] : [{ name: 'Factory Operations (benchmark energy)', co2: mfgCC }]),
-            { name: 'Outbound Transport (GLEC v3.2)', co2: transCC },
-            { name: 'Primary Packaging (PEF 3.1 CFF)', co2: pkgCC }
-        ];
-
-        // Build foreground process list: foreground ingredients + primary factory if applicable
-        const foregroundProcessList = [
-            ...foregroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 })),
-            ...(mfgIsForeground ? [{ name: 'Factory Operations (primary data)', co2: mfgCC }] : [])
-        ];
 
         // GAP D: validateCutoff — PEF 3.1 §5.2 5% cut-off threshold
         const cutoffValidation = window.complianceEngine.validateCutoff(
@@ -3029,7 +3003,6 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
             pefCategories:    pefResults,
             contribution_tree: fullContribTree, // BUG M1 FIX: was fullContribTree['Climate Change'] — now stores all 16 category trees. PDF/audit trail reads specific categories as needed (e.g. auditTrailData.contribution_tree['Climate Change']).
-            ingredientResults: ingredientResults, // CHAIN-OF-CUSTODY FIX: store raw results so PDF and audit-trail always source ingredient rows from the current run, even when contribution_tree.Ingredients.components is stale or empty from a prior session.
             mass_balance:     massBalanceData,
 
             dqr_summary: {
@@ -3079,12 +3052,12 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             },
 
             foreground_background: {
-                foreground_count:        foregroundProcessList.length,
-                background_count:        backgroundProcessList.length,
+                foreground_count:        foregroundIngredients.length,
+                background_count:        backgroundIngredients.length,
                 cutoff_percentage:       0.05,
                 components: {
-                    foreground: foregroundProcessList,
-                    background: backgroundProcessList
+                    foreground: foregroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 })),
+                    background: backgroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 }))
                 },
                 foreground_dqr:          foregroundIngredients.length > 0
                     ? foregroundIngredients.reduce((s, i) => s + i.dqr, 0) / foregroundIngredients.length
