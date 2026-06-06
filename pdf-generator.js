@@ -391,8 +391,32 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
             const fromPef   = pef['Climate Change']?.contribution_tree?.Ingredients?.components;
             if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
-            console.warn('[AIOXY PDF] ingComps: no ingredient components found in contribution_tree. ' +
-                'PDF ingredient sections will be empty. Re-run the calculation before exporting PDF.');
+            // CHAIN-OF-CUSTODY FIX: contribution_tree.Ingredients.components was empty (stale
+            // session or components array never populated for this run). Fall back to
+            // audit.ingredientResults which is stored directly from the current engine run
+            // and is always the authoritative current-run ingredient data.
+            const fromResults = audit.ingredientResults;
+            if (Array.isArray(fromResults) && fromResults.length > 0) {
+                return fromResults.map(r => ({
+                    name:                  r.name,
+                    id:                    r.id,
+                    quantity_kg:           r.quantityKg,
+                    subtotal:              r.allCategoryResults?.['Climate Change'] || 0,
+                    fossilCO2:             r.fossilCO2,
+                    biogenicCO2:           r.biogenicCO2,
+                    dlucCO2:               r.dlucCO2,
+                    dqr:                   r.dqr,
+                    source:                r.source,
+                    uuid:                  r.uuid,
+                    processingState:       r.processingState,
+                    primary_data_used:     r.primary_data_used,
+                    primary_data:          r.primary_data,
+                    universal_adjustments: r.universal_adjustments,
+                    yieldFactor:           r.yieldFactor,
+                    allCategoryResults:    r.allCategoryResults
+                }));
+            }
+            console.warn('[AIOXY PDF] ingComps: no ingredient data in contribution_tree or ingredientResults. PDF ingredient sections will be empty.');
             return [];
         })();
         const mfgCC    = ccTree.Manufacturing?.total || 0;

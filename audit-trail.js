@@ -210,7 +210,34 @@ function displayAuditTrail() {
         if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
         var fromPef = catCC.contribution_tree && catCC.contribution_tree.Ingredients && catCC.contribution_tree.Ingredients.components;
         if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
-        console.warn('[AIOXY AuditTrail] No ingredient components found in contribution_tree. Section A will be empty. Re-run the calculation.');
+        // CHAIN-OF-CUSTODY FIX: contribution_tree.Ingredients.components was empty (stale
+        // session or components array never populated for this run). Fall back to
+        // window.auditTrailData.ingredientResults which is stored directly from the
+        // current engine run and is always the authoritative current-run ingredient data.
+        var fromResults = window.auditTrailData.ingredientResults;
+        if (Array.isArray(fromResults) && fromResults.length > 0) {
+            return fromResults.map(function(r) {
+                return {
+                    name:                  r.name,
+                    id:                    r.id,
+                    quantity_kg:           r.quantityKg,
+                    subtotal:              (r.allCategoryResults && r.allCategoryResults['Climate Change']) || 0,
+                    fossilCO2:             r.fossilCO2,
+                    biogenicCO2:           r.biogenicCO2,
+                    dlucCO2:               r.dlucCO2,
+                    dqr:                   r.dqr,
+                    source:                r.source,
+                    uuid:                  r.uuid,
+                    processingState:       r.processingState,
+                    primary_data_used:     r.primary_data_used,
+                    primary_data:          r.primary_data,
+                    universal_adjustments: r.universal_adjustments,
+                    yieldFactor:           r.yieldFactor,
+                    allCategoryResults:    r.allCategoryResults
+                };
+            });
+        }
+        console.warn('[AIOXY AuditTrail] No ingredient data in contribution_tree or ingredientResults. Section A will be empty.');
         return [];
     })();
 

@@ -2996,6 +2996,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
             pefCategories:    pefResults,
             contribution_tree: fullContribTree, // BUG M1 FIX: was fullContribTree['Climate Change'] — now stores all 16 category trees. PDF/audit trail reads specific categories as needed (e.g. auditTrailData.contribution_tree['Climate Change']).
+            ingredientResults: ingredientResults, // CHAIN-OF-CUSTODY FIX: store raw results so PDF and audit-trail always source ingredient rows from the current run, even when contribution_tree.Ingredients.components is stale or empty from a prior session.
             mass_balance:     massBalanceData,
 
             dqr_summary: {
