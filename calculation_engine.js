@@ -2948,9 +2948,42 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         const foregroundCO2 = foregroundIngredients.reduce(
             (s, ing) => s + (ing.allCategoryResults['Climate Change'] || 0), 0
         );
-        const backgroundCO2 = backgroundIngredients.reduce(
+
+        // FG/BG FIX: Per PEF 3.1 §5.6, background = all processes NOT under direct operational
+        // control. This includes secondary-data ingredients AND manufacturing (benchmark energy),
+        // outbound transport (GLEC v3.2 modelled), and packaging (CFF secondary data).
+        // Only manufacturing where usePrimaryFactoryData=true is foreground.
+        // Previously backgroundCO2 only summed background ingredients — transport and packaging
+        // CC contributions were excluded, making background_contribution always understate reality
+        // and leaving background_count = 0 when all ingredients had primary data.
+        const mfgCC   = mfgResult.co2 || 0;
+        const transCC = transportResult.total || 0;
+        const pkgCC   = packagingResult.totalImpact || 0;
+
+        // Manufacturing is foreground only if user supplied primary factory data
+        const mfgIsForeground = !!(input.manufacturing.usePrimaryFactoryData && input.manufacturing.primaryFactoryData);
+
+        const bgIngredientCO2 = backgroundIngredients.reduce(
             (s, ing) => s + (ing.allCategoryResults['Climate Change'] || 0), 0
         );
+        const backgroundCO2 = bgIngredientCO2
+            + (mfgIsForeground ? 0 : mfgCC)
+            + transCC
+            + pkgCC;
+
+        // Build background process list: background ingredients + always-background stages
+        const backgroundProcessList = [
+            ...backgroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 })),
+            ...(mfgIsForeground ? [] : [{ name: 'Factory Operations (benchmark energy)', co2: mfgCC }]),
+            { name: 'Outbound Transport (GLEC v3.2)', co2: transCC },
+            { name: 'Primary Packaging (PEF 3.1 CFF)', co2: pkgCC }
+        ];
+
+        // Build foreground process list: foreground ingredients + primary factory if applicable
+        const foregroundProcessList = [
+            ...foregroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 })),
+            ...(mfgIsForeground ? [{ name: 'Factory Operations (primary data)', co2: mfgCC }] : [])
+        ];
 
         // GAP D: validateCutoff — PEF 3.1 §5.2 5% cut-off threshold
         const cutoffValidation = window.complianceEngine.validateCutoff(
@@ -3046,12 +3079,12 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             },
 
             foreground_background: {
-                foreground_count:        foregroundIngredients.length,
-                background_count:        backgroundIngredients.length,
+                foreground_count:        foregroundProcessList.length,
+                background_count:        backgroundProcessList.length,
                 cutoff_percentage:       0.05,
                 components: {
-                    foreground: foregroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 })),
-                    background: backgroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 }))
+                    foreground: foregroundProcessList,
+                    background: backgroundProcessList
                 },
                 foreground_dqr:          foregroundIngredients.length > 0
                     ? foregroundIngredients.reduce((s, i) => s + i.dqr, 0) / foregroundIngredients.length

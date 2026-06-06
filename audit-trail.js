@@ -358,8 +358,9 @@ function displayAuditTrail() {
         const isProxy = adj.is_proxy;
 
         let bridgeHTML = '';
-        if (isPrimary && ing.primaryData) {
-            const pd = ing.primaryData;
+        const _pd = ing.primaryData || ing.primary_data || null;
+        if (isPrimary && _pd) {
+            const pd = _pd;
             const farmRegionText = pd.farmRegion ? `${pd.farmRegion}` : 'Not specified';
             const ddsText = pd.ddsReference ? `DDS Ref: ${pd.ddsReference}` : '';
             const adjustmentSummary = adj.adjustment_summary || '';
