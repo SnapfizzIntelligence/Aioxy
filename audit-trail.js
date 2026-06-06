@@ -191,19 +191,18 @@ function displayAuditTrail() {
         return;
     }
 
-    // Guard: contribution_tree must exist
-    if (!catCC.contribution_tree || !catCC.contribution_tree.Ingredients || !Array.isArray(catCC.contribution_tree.Ingredients.components)) {
-        auditContent.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Contribution Tree Not Available</h3><p>No lifecycle stage breakdown available. Re-run calculation.</p></div>';
-        return;
-    }
-
-    // FIX: ingredient components sourced from the authoritative contribution_tree.
-    // window.auditTrailData.contribution_tree IS fullContribTree (engine line 3329) —
-    // built by buildContributionTree() with all ingredient components fully populated.
-    // catCC.contribution_tree (= pefResults['Climate Change'].contribution_tree) is also
-    // correct because the engine overwrites it at line 3167 before auditTrailData is set.
-    // Using audit.contribution_tree is the most direct, unambiguous path.
-    // Priority: audit.contribution_tree → catCC.contribution_tree → [] with console warning.
+    // ROOT CAUSE FIX (2025-06-05):
+    // The old guard checked catCC.contribution_tree.Ingredients.components — but that array
+    // is initialised as [] by aggregateAllCategories() (engine line 2381) and only populated
+    // by buildContributionTree() whose output is written to auditTrailData.contribution_tree
+    // (engine line 2998, fullContribTree). The writeback to pefResults[cat].contribution_tree
+    // (engine line 2836) DOES also happen, so both sources should be correct — but the old
+    // guard fired on the [] before either source was consulted, returning early and blanking
+    // every ingredient row regardless of how many ingredients exist.
+    //
+    // Fix: source _auditIngComps from auditTrailData.contribution_tree FIRST (authoritative),
+    // then fall back to catCC.contribution_tree (also correct post-writeback), then [].
+    // The early-return guard is removed; a zero-ingredient state is handled gracefully below.
     const _auditFullTree = window.auditTrailData.contribution_tree || {};
     const _auditCCTree   = _auditFullTree['Climate Change'] || catCC.contribution_tree || {};
     const _auditIngComps = (function(){
@@ -272,7 +271,7 @@ function displayAuditTrail() {
                 <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
                 ${(() => {
                     const eudrHighRisk = ['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD'];
-                    const ingComponents = catCC.contribution_tree?.Ingredients?.components || [];
+                    const ingComponents = _auditCCTree.Ingredients?.components || [];
                     const highRiskIngs = ingComponents.filter(ing => {
                         const country = ing.universal_adjustments?.adjusted_for_country || '';
                         return eudrHighRisk.includes(country);
@@ -469,7 +468,7 @@ function displayAuditTrail() {
             </div>
             <div style="padding: 10px;">
                 <div style="font-weight:bold; border-bottom:1px solid #eee; margin-bottom:5px;">ENERGY CALCULATION</div>
-                ${(catCC.contribution_tree.Manufacturing?.components || []).map(m => `
+                ${(_auditCCTree.Manufacturing?.components || []).map(m => `
                     <div style="display:flex; justify-content:space-between;"><span>Process:</span><span>${m.name}</span></div>
                     <div style="display:flex; justify-content:space-between;"><span>Energy Intensity:</span><span>${m.details || 'N/A'}</span></div>
                     <div style="display:flex; justify-content:space-between;"><span>Energy Source:</span><span style="font-weight:600; color:var(--primary);">${m.energy_source || 'Grid Mix'}</span></div>
@@ -499,7 +498,7 @@ function displayAuditTrail() {
                 </thead>
                 <tbody>`;
 
-    const allUpstream     = catCC.contribution_tree.Upstream?.components || [];
+    const allUpstream     = _auditCCTree.Upstream?.components || [];
     const upstream        = allUpstream.filter(c => !c.name.includes('End-of-Life'));
     const eolComponents   = allUpstream.filter(c => c.name.includes('End-of-Life'));
 
@@ -524,7 +523,7 @@ function displayAuditTrail() {
         html += `<tr><td colspan="5" style="padding:8px; font-style:italic; color:#777;">Inbound ingredient transport excluded from system boundary per ISO 14044 §4.2.3.3 — AGRIBALYSE 3.2 data includes representative farm-gate transport within the LCI; cross-border inbound transport is a declared gap.</td></tr>`;
     }
 
-    const outbound = catCC.contribution_tree.Transport?.total || 0;
+    const outbound = _auditCCTree.Transport?.total || 0;
     let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
     const rawMode = document.getElementById('transportMode')?.value || 'road';
     const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
@@ -575,7 +574,7 @@ function displayAuditTrail() {
                 </div>
                 <div style="padding-top: 5px;">
                     <strong style="color:var(--primary);">TERTIARY LOGISTICS PACKAGING (PEF Proxy)</strong><br>
-                    ${(catCC.contribution_tree.Packaging?.components || []).map(p => `
+                    ${(_auditCCTree.Packaging?.components || []).map(p => `
                         <div style="display:flex; justify-content:space-between; color: #555;">
                             <span>• ${p.name}</span><span>${(p.subtotal || 0).toFixed(4)} kg CO₂e</span>
                         </div>
@@ -583,13 +582,13 @@ function displayAuditTrail() {
                 </div>
                 <div style="text-align:right; border-top: 1px solid #ccc; margin-top: 10px; padding-top: 10px;">
                     <strong>Total Packaging Impact:</strong><br>
-                    <span style="font-weight:bold; font-size:1rem; color: #C0392B;">${(catCC.contribution_tree.Packaging?.total || 0).toFixed(4)} kg CO₂e</span>
+                    <span style="font-weight:bold; font-size:1rem; color: #C0392B;">${(_auditCCTree.Packaging?.total || 0).toFixed(4)} kg CO₂e</span>
                 </div>
             </div>
         </div>`;
 
     // ========== E. END-OF-LIFE ==========
-    const wasteComponents = catCC.contribution_tree.Waste?.components || [];
+    const wasteComponents = _auditCCTree.Waste?.components || [];
     const allEoL = [...wasteComponents, ...eolComponents];
 
     if (allEoL.length > 0) {
@@ -984,8 +983,21 @@ function exportCSRDMatrix() {
     const uncPct    = (audit.uncertainty_analysis?.overall_uncertainty || 15).toFixed(1);
     const mcP5      = (uncCC.p5  || 0).toFixed(6);
     const mcP95     = (uncCC.p95 || 0).toFixed(6);
-    const ccTree    = pef['Climate Change']?.contribution_tree || {};
-    const ingComps  = ccTree.Ingredients?.components || [];
+    // ROOT CAUSE FIX (2025-06-05):
+    // pef['Climate Change'].contribution_tree starts as { Ingredients: { components: [] } }
+    // from aggregateAllCategories() (engine line 2381). buildContributionTree() overwrites it
+    // (engine line 2836) but audit.contribution_tree IS fullContribTree directly (engine line
+    // 2998) — always the authoritative source. Use audit.contribution_tree as primary.
+    const _csvFullTree = audit.contribution_tree || {};
+    const _csvCCTree   = _csvFullTree['Climate Change'] || pef['Climate Change']?.contribution_tree || {};
+    const ccTree       = _csvCCTree;
+    const ingComps     = (()=>{
+        const fromAudit = _csvCCTree.Ingredients?.components;
+        if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
+        const fromPef = pef['Climate Change']?.contribution_tree?.Ingredients?.components;
+        if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
+        return [];
+    })();
     const ccPerKg   = pWeightKg > 0 ? (pef['Climate Change']?.total || 0) / pWeightKg : 0;
 
     // GAP-4: Detect whether any ingredient used primary data
