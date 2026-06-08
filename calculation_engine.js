@@ -592,20 +592,16 @@
             "BD": "Bangladesh",     "NP": "Nepal",            "LK": "Sri Lanka",
             "IR": "Iran",           "IQ": "Iraq",                                        // FIX: was "Iran (Islamic Republic of)" — DB uses "Iran"
             "SA": "Saudi Arabia",   "AE": "United Arab Emirates",
-            "TH": "Thailand",       "VN": "Vietnam",              "ID": "Indonesia",
-            "MY": "Malaysia",       "PH": "Philippines",          "BD": "Bangladesh",
-            "PK": "Pakistan",       "LK": "Sri Lanka",            "NP": "Nepal",
-            "KR": "South Korea",    "TW": "Taiwan",               "IR": "Iran",
-            "IQ": "Iraq",           "EG": "Egypt",                "MA": "Morocco",
-            "DZ": "Algeria",        "TN": "Tunisia",              "NG": "Nigeria",
-            "GH": "Ghana",          "CI": "Cote d'Ivoire",        "CM": "Cameroon",
-            "KE": "Kenya",          "ET": "Ethiopia",             "ZA": "South Africa",
-            "UA": "Ukraine",        "RU": "Russia",               "MD": "Moldova",
-            "RS": "Serbia",         "AL": "Albania",              "BA": "Bosnia and Herzegovina",
-            "ME": "Montenegro",     "MK": "The Former Yugoslav Republic of Macedonia",
-            "IS": "Iceland",        "MT": "Malta",                "MX": "Mexico",
-            "AR": "Argentina",      "CL": "Chile",                "CO": "Colombia",
-            "PE": "Peru",           "UY": "Uruguay",              "NZ": "New Zealand",
+            // Finding 18 FIX (2026-06-07): Duplicate ISO code block removed.
+            // Lines previously repeated TH, VN, ID, MY, PH, BD, PK, LK, NP, KR,
+            // IR, IQ, EG, MA, DZ, TN, NG, GH, CI, CM, KE, ET, ZA, UA, RU, MD,
+            // RS, AL, BA, ME, MK, IS, MT, MX, AR, CL, CO, PE, UY — all identical
+            // to values already present above. JS objects silently use last write
+            // for duplicate keys, making the map non-deterministic by inspection.
+            // TW (Taiwan) added here — was only in the duplicate block, not above.
+            "TW": "Taiwan",
+            "DZ": "Algeria",        "TN": "Tunisia",
+            "NZ": "New Zealand",
             "RE": "France",          // Réunion — FR overseas proxy
             "WI": "France",          // West Indies (FR Antilles) — FR proxy
             "EU": "France",          // EU aggregate — FR conservative proxy
@@ -1389,10 +1385,12 @@ if (!traceability.usetox) {
                         const manureEF      = TIER1_CONST.manureEF[manureSystem] || 0;
                         const manureN2OPerKg = manureN2OCO2e / ingredient.quantityKg;
 
-                        // Apply manure N2O to Climate Change total
-                        flatPef['Climate Change']            += manureN2OPerKg;
-                        // Manure N2O is from agricultural N management — allocate to CC-Land Use
-                        flatPef['Climate Change - Land Use'] += manureN2OPerKg;
+                        // Finding 10 FIX (2026-06-07): Manure N2O reallocated from CC-Land Use to CC-Fossil.
+                        // CC-Land Use is for soil carbon stock changes (dLUC/SOC) only per EF 3.1.
+                        // N2O from manure management is a direct agricultural process emission ->  CC-Fossil.
+                        // Source: EF 3.1 (JRC EUR 29540 EN §4.4.2); AGRIBALYSE 3.2 methodology report.
+                        flatPef['Climate Change']          += manureN2OPerKg;
+                        flatPef['Climate Change - Fossil'] += manureN2OPerKg;
 
                         // FIX: [Audit A1] Eutrophication, terrestrial — correct units via EF 3.1 NH3 CF
                         // Previous formula produced kg CO2e (wrong category & wrong units).
@@ -1565,11 +1563,12 @@ if (!traceability.usetox) {
                     const N2O_volatilization = F_SN * IPCC.FRAC_GASF * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF4, volatilization/atmospheric deposition)
                     const N2O_total = N2O_direct + N2O_indirect_leach + N2O_volatilization;
 
-                    // Add N2O to per-kg flatPef so it flows correctly through quantityKg multiplication later
+                    // Finding 10 FIX (2026-06-07): Synthetic N N2O reallocated from CC-Land Use to CC-Fossil.
+                    // CC-Land Use covers soil carbon stock changes (dLUC/SOC), not process N2O emissions.
+                    // N2O from synthetic N application is a direct soil emission -> CC-Fossil sub-split.
+                    // Source: EF 3.1 (JRC EUR 29540 EN §4.4.2); AGRIBALYSE 3.2 methodology report.
                     flatPef['Climate Change']          += N2O_total / ingredient.quantityKg;
-                    // FIX A [Audit Finding A]: N₂O from synthetic N is agricultural soil emission —
-                    // allocated to CC-Land Use per IPCC 2006 Vol. 4, Ch. 11, not CC-Fossil
-                    flatPef['Climate Change - Land Use'] += N2O_total / ingredient.quantityKg;
+                    flatPef['Climate Change - Fossil'] += N2O_total / ingredient.quantityKg;
 
                     adjustments.n2o_applied = {
                         applied:                 true,
@@ -1594,8 +1593,10 @@ if (!traceability.usetox) {
                     const N2O_on_volatilization = F_ON * FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
                     const N2O_on_total = N2O_on_direct + N2O_on_leach + N2O_on_volatilization;
 
-                    flatPef['Climate Change']            += N2O_on_total / ingredient.quantityKg;
-                    flatPef['Climate Change - Land Use'] += N2O_on_total / ingredient.quantityKg;
+                    // Finding 10 FIX (2026-06-07): Organic N N2O reallocated from CC-Land Use to CC-Fossil.
+                    // Same rationale as synthetic N above — direct soil emission, not dLUC/SOC.
+                    flatPef['Climate Change']          += N2O_on_total / ingredient.quantityKg;
+                    flatPef['Climate Change - Fossil'] += N2O_on_total / ingredient.quantityKg;
 
                     adjustments.n2o_organic_applied = {
                         applied:                 true,
@@ -1996,7 +1997,17 @@ if (!traceability.usetox) {
     //   for Local Energy Use, 2024 Edition, JRC
     gridIntensity = 36;
         } else if (mfgIn.energySource === 'natural_gas') {
-            gridIntensity = 490; // Source: IPCC 2006 Vol. 2, Ch. 2, Table 2.2: Natural gas CO₂ = 56,100 kg/TJ. At 42% electrical efficiency: 56,100 × 0.0036 / 0.42 ≈ 481 ≈ 490 g CO₂/kWh (rounded per IEA 2023 convention)
+            // Finding 8 FIX (2026-06-07): 42% efficiency assumption now explicitly sourced.
+            // Derivation: IPCC 2006 Vol. 2, Ch. 2, Table 2.2: Natural gas CO2 = 56,100 kg/TJ.
+            // Electrical efficiency 42%: IEA (2023) "World Energy Outlook" Annex A,
+            // Table A.2: EU average combined-cycle gas turbine (CCGT) efficiency = 42%
+            // (net electrical efficiency, existing fleet average).
+            // Calculation: 56,100 kg CO2/TJ × (1 TJ/1000 GJ) × (1 GJ/277.78 kWh) / 0.42
+            //   = 56,100 × 0.0036 / 0.42 = 481 g CO2/kWh → rounded to 490 per IEA 2023
+            //   convention (IEA rounds fuel combustion emission factors to nearest 10).
+            // Source 1: IPCC 2006 Guidelines Vol. 2, Table 2.2 (CO2 emission factor).
+            // Source 2: IEA World Energy Outlook 2023, Annex A Table A.2 (CCGT efficiency).
+            gridIntensity = 490;
         } else if (mfgIn.energySource === 'coal') {
     // CoM 2024 Table 1: Anthracite = 0.35388 t CO2/MWh direct combustion
     // At 36% electrical efficiency: 0.35388 ÷ 0.36 × 1,000 = 983 g/kWh
@@ -2969,10 +2980,18 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             0.05  // 5% cutoff threshold per PEF 3.1
         );
 
-        // F7 FIX: dppId is now the SHA-256-finalized value from the awaited auditTrail,
-        // not the Math.random() placeholder that was returned before the Promise resolved.
-        const dppIdPlaceholder = auditTrail.dppId ||
-            'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        // Finding 17 FIX (2026-06-07): Math.random() fallback removed — throws instead.
+        // A random dppId cannot be reproduced and has no audit trail integrity.
+        // If auditTrail.dppId is missing, the SHA-256 finalization failed and must surface loudly.
+        // ISO 14044 §4.5 requires reproducibility — a random ID breaks that requirement.
+        if (!auditTrail.dppId) {
+            throw new Error(
+                '[AIOXY] CRITICAL: auditTrail.dppId is missing after finalizeAuditTrail(). ' +
+                'SHA-256 hash generation failed. Check that crypto.subtle is available in this ' +
+                'browser context and that finalizeAuditTrail() was awaited correctly.'
+            );
+        }
+        const dppIdPlaceholder = auditTrail.dppId;
 
         // === PHASE 2: Extended manufacturing traceability with residual mix ===
         const manufacturingTraceability = {

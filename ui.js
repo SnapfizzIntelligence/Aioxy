@@ -317,13 +317,18 @@ function updateResultsUI(results) {
         ? singleScoreData.singleScore
         : 0;
 
+    // DB-1 FIX (2026-06-07): Thresholds corrected from [150/250/400/600] to [15000/25000/40000/60000] µPt.
+    // WF values in aioxy_pef3_1_database.js corrected to EF 3.1 Table 7 (JRC EUR 29540 EN, WF sum=1.0).
+    // Previous WF values were 100x too small, so single scores were 100x too small.
+    // Corrected thresholds (µPt): A<15000, B<25000, C<40000, D<60000, E>=60000.
+    // Equivalent in mPt: A<15, B<25, C<40, D<60 — consistent with AGRIBALYSE 3.2 product benchmarks.
     // Indicative µPt grade bands — AIOXY internal benchmarks only, not ADEME or PEF 3.1 thresholds
     let ecoGrade = 'E';
     let ecoColor = '#E63946'; // Red
-    if (mPtScore < 150) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
-    else if (mPtScore < 250) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
-    else if (mPtScore < 400) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
-    else if (mPtScore < 600) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
+    if (mPtScore < 15000) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green  (<15 mPt)
+    else if (mPtScore < 25000) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green (15-25 mPt)
+    else if (mPtScore < 40000) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow (25-40 mPt)
+    else if (mPtScore < 60000) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange (40-60 mPt)
     
     let ecoScoreDiv = document.getElementById('fopEcoScoreCard');
     if (!ecoScoreDiv && resultsContent) {

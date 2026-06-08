@@ -414,13 +414,16 @@ function generateLidlCSV(d) {
     rows.push(['product_name',                    d.productName,            '',  'E0', ''].map(q).join(','));
     rows.push(['supplier_reference',              d.dppId,                  '',  'E0', 'AIOXY assessment reference'].map(q).join(','));
     rows.push(['assessment_year',                 d.assessDate.slice(0,4),  '',  'E0', ''].map(q).join(','));
-    rows.push(['co2_footprint_kg_per_kg_product', fix(d.cc, 6),             'kg CO2e', 'E1.1', 'Cradle-to-retail gate'].map(q).join(','));
-    rows.push(['co2_ingredient_stage',            fix(d.cc_ing, 6),         'kg CO2e', 'E1.2', 'Agricultural + processing inputs'].map(q).join(','));
-    rows.push(['co2_production_stage',            fix(d.cc_mfg, 6),         'kg CO2e', 'E1.3', 'Factory energy use'].map(q).join(','));
-    rows.push(['co2_logistics_stage',             fix(d.cc_trans, 6),       'kg CO2e', 'E1.4', 'Transport to Lidl DC'].map(q).join(','));
-    rows.push(['co2_packaging_stage',             fix(d.cc_pkg, 6),         'kg CO2e', 'E1.5', 'Primary packaging (CFF)'].map(q).join(','));
-    rows.push(['co2_fossil_fraction',             fix(d.cc_fossil, 6),      'kg CO2e', 'E1.6', ''].map(q).join(','));
-    rows.push(['co2_biogenic_fraction',           fix(d.cc_biogenic, 6),    'kg CO2e', 'E1.7', 'Biogenic — stored C in bio-based materials'].map(q).join(','));
+    // Session 5 FIX: Unit corrected from 'kg CO2e' to 'kg CO2e/kg' for all stage rows.
+    // Values are per-kg-of-product intensities, not absolute masses. Missing /kg was
+    // a unit label error — the values themselves are correct.
+    rows.push(['co2_footprint_kg_per_kg_product', fix(d.cc, 6),             'kg CO2e/kg', 'E1.1', 'Cradle-to-retail gate'].map(q).join(','));
+    rows.push(['co2_ingredient_stage',            fix(d.cc_ing, 6),         'kg CO2e/kg', 'E1.2', 'Agricultural + processing inputs'].map(q).join(','));
+    rows.push(['co2_production_stage',            fix(d.cc_mfg, 6),         'kg CO2e/kg', 'E1.3', 'Factory energy use'].map(q).join(','));
+    rows.push(['co2_logistics_stage',             fix(d.cc_trans, 6),       'kg CO2e/kg', 'E1.4', 'Transport to Lidl DC'].map(q).join(','));
+    rows.push(['co2_packaging_stage',             fix(d.cc_pkg, 6),         'kg CO2e/kg', 'E1.5', 'Primary packaging (CFF)'].map(q).join(','));
+    rows.push(['co2_fossil_fraction',             fix(d.cc_fossil, 6),      'kg CO2e/kg', 'E1.6', ''].map(q).join(','));
+    rows.push(['co2_biogenic_fraction',           fix(d.cc_biogenic, 6),    'kg CO2e/kg', 'E1.7', 'Biogenic — stored C in bio-based materials'].map(q).join(','));
     rows.push(['production_country',              d.mfgCountry,             '',        'E1.8', ''].map(q).join(','));
     rows.push(['grid_intensity_g_co2_per_kwh',    fix(d.gridIntensity, 2),  'g CO2/kWh','E1.9', 'Ember 2025'].map(q).join(','));
     rows.push(['energy_source',                   d.mfgEnergySource,        '',        'E1.10','grid/renewable/gas/coal'].map(q).join(','));
@@ -666,7 +669,7 @@ function generateCarrefourCSV(d) {
     rows.push(['']);
 
     rows.push([c('RUBRIQUE 3 — EAU')]);
-    rows.push(['rarete_eau_m3_eq_monde_par_kg',   fix(d.water, 7),          'm3 eq. monde/kg','R3', 'Methode AWARE 2.0'].map(q).join(','));
+    rows.push(['rarete_eau_m3_eq_monde_par_kg',   fix(d.water, 7),          'm3 world eq./kg', /* Session 5 FIX: was 'm3 eq. monde/kg' — corrected to AWARE 2.0 standard unit */'R3', 'Methode AWARE 2.0'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('RUBRIQUE 4 — BIODIVERSITE')]);
@@ -726,7 +729,7 @@ function generateLeclercCSV(d) {
     rows.push(['']);
 
     rows.push([c('SECTION EAU ET BIODIVERSITE')]);
-    rows.push(['consommation_eau_m3_par_kg',      fix(d.water, 7),          'm3 eq./kg',  'E1', 'AWARE 2.0'].map(q).join(','));
+    rows.push(['consommation_eau_m3_par_kg',      fix(d.water, 7),          'm3 world eq./kg', /* Session 5 FIX: was 'm3 eq./kg' */ 'E1', 'AWARE 2.0'].map(q).join(','));
     rows.push(['utilisation_sol_pt_par_kg',       fix(d.land, 4),           'Pt/kg',      'E2', ''].map(q).join(','));
     rows.push(['eutrophisation_fw_par_kg',        fix(d.eutr_fw, 8),        'kg Pe/kg',   'E3', ''].map(q).join(','));
     rows.push(['risque_deforestation',            d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'OUI' : 'NON', '', 'E4', 'EUDR'].map(q).join(','));
@@ -771,7 +774,7 @@ function generateIntermarcheCSV(d) {
     rows.push(['empreinte_fabrication',           fix(d.cc_mfg, 6),         'kg CO2e/kg','A7',''].map(q).join(','));
     rows.push(['empreinte_transport',             fix(d.cc_trans, 6),       'kg CO2e/kg','A8',''].map(q).join(','));
     rows.push(['empreinte_emballage',            fix(d.cc_pkg, 6),         'kg CO2e/kg','A9',''].map(q).join(','));
-    rows.push(['eau_m3_par_kg',                  fix(d.water, 7),          'm3/kg',     'A10','AWARE 2.0'].map(q).join(','));
+    rows.push(['eau_m3_par_kg',                  fix(d.water, 7),          'm3 world eq./kg', /* Session 5 FIX: was 'm3/kg' — AWARE 2.0 unit */ 'A10','AWARE 2.0'].map(q).join(','));
     rows.push(['utilisation_sol',                fix(d.land, 4),           'Pt/kg',     'A11',''].map(q).join(','));
     rows.push(['materiau_emballage',             d.pkgMaterial,            '',          'A12',''].map(q).join(','));
     rows.push(['taux_recycle_emballage_pct',     fix(d.pkgRecycledPct,1),  '%',         'A13',''].map(q).join(','));
@@ -1080,11 +1083,29 @@ function generateRetailerCSV(retailerKey) {
     try {
         const masterData = buildMasterData();
         const csvContent = config.fn(masterData);
+
+        // Finding 15 FIX (2026-06-07): Schema disclaimer prepended to every CSV output.
+        // Previously this disclaimer only existed in the JS source file comment (lines 38-45)
+        // and was invisible to any recipient of the exported CSV. Every CSV now begins
+        // with these rows so the recipient sees the methodology basis before the data.
+        // Rows starting with # are comment rows — standard parsers should skip them.
+        const disclaimerRows = [
+            c('AIOXY ENVIRONMENTAL FOOTPRINT PLATFORM — RETAILER CSV EXPORT'),
+            c('Methodology: PEF 3.1 / EF 3.1 / ISO 14044. Database: AGRIBALYSE 3.2 / GLEC v3.2.'),
+            c('SCHEMA NOTE: No European retailer publishes a machine-readable CSV schema.'),
+            c('Field names match each retailer\'s published questionnaire templates as of 2024.'),
+            c('Field names are normalised to snake_case; display labels match retailer\'s published forms.'),
+            c('Retailers update their formats annually — verify against the latest version before submission.'),
+            c('DPP ID: ' + (masterData.dppId || 'N/A') + '  |  Assessment date: ' + (masterData.assessDate || 'N/A')),
+            c('Generated by AIOXY. SHA-256 audit hash available in the full audit trail export.'),
+            ''
+        ].join('\n') + '\n';
+
         const pName = (masterData.productName || 'product').replace(/[^a-z0-9]/gi, '_').slice(0, 25);
         const dateStr = masterData.assessDate.replace(/-/g, '');
         const filename = config.filename + '_' + pName + '_' + masterData.dppId + '_' + dateStr + '.csv';
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([disclaimerRows + csvContent], { type: 'text/csv;charset=utf-8;' });
         const url  = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);

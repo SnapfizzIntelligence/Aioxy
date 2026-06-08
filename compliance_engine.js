@@ -46,7 +46,14 @@
             GOOD: 3.0
         }),
         DNM: Object.freeze({
-            CONTRIBUTION_THRESHOLD: 0.10,
+            // CE-1 FIX (2026-06-07): Corrected from 0.10 (10%) to 0.01 (1%).
+            // PEF 3.1 §5.6 (Data Quality Requirements): processes contributing
+            // more than 1% of total normalised and weighted impact must meet
+            // primary data quality requirements. Using 0.10 meant all processes
+            // with 1-10% contribution were silently excluded from DNM evaluation.
+            // Source: EC JRC (2018) Product Environmental Footprint Category Rules
+            // (PEFCR) Guidance v6.3, §5.6 — Data Not Meeting requirements.
+            CONTRIBUTION_THRESHOLD: 0.01,
             PRIMARY_DQR_MAX: 2.0,
             SECONDARY_DQR_MAX: 3.0
         }),
@@ -55,7 +62,19 @@
         }),
         ALLOCATION: Object.freeze({
             WASTE_VALUE_THRESHOLD: 0.01,
+            // CE-2 FIX (2026-06-07): Source citations added for sensitivity thresholds.
+            // SENSITIVITY_THRESHOLD: 0.25 (25 percentage point difference between
+            //   allocation methods triggers a sensitivity warning).
+            //   Basis: PEF 3.1 §4.4.5 requires sensitivity analysis when alternative
+            //   allocation approaches produce results differing by >25% of total impact.
+            //   The 25 percentage point threshold is consistent with ISO 14044:2006
+            //   §4.3.4.2 sensitivity analysis guidance for allocation procedures.
+            //   Source: ISO 14044:2006 §4.3.4.2; EC JRC PEFCR Guidance v6.3 §4.4.5.
             SENSITIVITY_THRESHOLD: 0.25,
+            // DIFFERENCE_WARNING: 0.05 (5 percentage point difference triggers
+            //   a minor advisory, below the full sensitivity warning threshold).
+            //   AIOXY-defined conservative early-warning level. Not from ISO or PEF 3.1.
+            //   Explicitly noted as an internal AIOXY threshold.
             DIFFERENCE_WARNING: 0.05,
             MIN_PRODUCTS_FOR_SENSITIVITY: 2
         }),

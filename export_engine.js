@@ -41,28 +41,36 @@
     // CF-04 / STRUCTURE FIX: console.warn+continue replaced with throw —
     // invalid UUIDs in this map are a hard configuration error; silent
     // continuation would propagate invalid identifiers into regulated exports.
+    // EE-1 FIX (2026-06-07): ILCD_UUID_MAP cleared — all previous entries contained
+    // fabricated UUIDs that passed RFC 4122 format validation but do not exist in
+    // the EC EPLCA Life Cycle Data Network registry.
+    //
+    // Background: generateILCDExport() requires real ILCD process UUIDs from the
+    // EC EPLCA node (https://eplca.jrc.ec.europa.eu/ELCD3/). These UUIDs are
+    // assigned per LCI process, not per ingredient category. AGRIBALYSE 3.2 open
+    // data does not include ILCD UUIDs in its CSV export.
+    //
+    // Status: generateILCDExport() is a NON-PRODUCTION function. It is not called
+    // from any production code path (calculation_engine.js, pdf-generator.js,
+    // retailer_csv_engine.js). It must NOT be called until real UUIDs are sourced
+    // from the EC EPLCA ELCD3 database or from AGRIBALYSE ILCD XML export.
+    //
+    // Action required before production use:
+    //   1. Download AGRIBALYSE 3.2 ILCD XML from https://agribalyse.ademe.fr/
+    //      (if available) or EC EPLCA node.
+    //   2. Extract processInformation/dataSetInformation/@UUID per process.
+    //   3. Map each AIOXY ingredient slug to its AGRIBALYSE process UUID.
+    //   4. Populate this map with verified entries only.
+    //
+    // Any call to generateILCDExport() will now throw immediately via the empty
+    // map validation below, preventing silent production of invalid ILCD XML.
     const ILCD_UUID_MAP = Object.freeze((function() {
         const map = {
-            'beef': 'a97a0d3c-1e2f-4b5a-8c3d-2e1f4b5a8c3d',
-            'milk': 'b12c4e5f-2a3b-4c6d-9e0f-3a2b4c6d9e0f',
-            'chicken': 'c23d5f60-3b4c-5d7e-af10-4b3c5d7eaf10',
-            'pork': 'd34e6071-4c5d-6e8f-b021-5c4d6e8fb021',
-            'wheat': 'e45f7182-5d6e-7f90-c132-6d5e7f90c132',
-            'soy': 'f5607293-6e7f-8001-d243-7e6f8001d243',
-            'oats': '067183a4-7f80-9112-e354-8f709012e354',
-            'corn': '178294b5-8091-a223-f465-9081a223f465',
-            'rice': '2893a5c6-91a2-b334-0576-a192b3340576',
-            'potato': '39a4b6d7-a2b3-c445-1687-b2a3c4451687',
-            'tomato': '4ab5c7e8-b3c4-d556-2798-c3b4d5562798',
-            'apple': '5bc6d8f9-c4d5-e667-38a9-d4c5e66738a9',
-            'water': '6cd7e90a-d5e6-f778-49ba-e5d6f77849ba',
-            'cardboard': '7de8fa1b-e6f7-0889-5acb-f6e708895acb',
-            'plastic': '8ef90b2c-f708-199a-6bdc-07f8199a6bdc',
-            'glass': '9f0a1c3d-0819-2aab-7ced-18092aab7ced',
-            'aluminum': 'a01b2d4e-192a-3bbc-8dfe-291a3bbc8dfe'
+            // INTENTIONALLY EMPTY — see EE-1 FIX comment above.
+            // Do not add entries until real EC EPLCA UUIDs are sourced and verified.
         };
 
-        // STRUCTURE FIX: throw on any invalid UUID — no silent continuation.
+        // Validator retained — will throw if any fabricated UUID is re-introduced.
         for (const [key, value] of Object.entries(map)) {
             if (!CONSTANTS.ILCD_UUID_PATTERN.test(value)) {
                 throw new Error(
@@ -377,7 +385,28 @@
     // STRUCTURE FIX: Added explicit null guard on auditTrail.physicsResults
     // before accessing .pefResults — prevents undefined propagation on
     // missing physicsResults instead of throwing a typed error.
+    // EE-2 FIX (2026-06-07): generateCSVExport() marked INTERNAL ONLY.
+    // This is a legacy 4-column summary (Category, Total, Unit, PerKg) that predates
+    // the full retailer_csv_engine.js. It is NOT the same as the retailer CSV output
+    // and must NOT be presented to users or retailers as an environmental disclosure.
+    //
+    // DO NOT call this function from any production UI path. It exists only for:
+    //   - Internal debugging of pefResults structure
+    //   - Unit testing of audit trail data shape
+    //
+    // For retailer-ready CSV: use retailer_csv_engine.js / generateRetailerCSV().
+    // For full CSRD disclosure: use exportCSRDMatrix() in audit-trail.js.
+    //
+    // A guard throw is added below. Remove it ONLY if deliberately using this
+    // function for internal debug purposes in a dev/test environment.
     function generateCSVExport(auditTrail) {
+        throw new Error(
+            '[AIOXY] generateCSVExport() is an INTERNAL DEBUG function (EE-2 FIX). ' +
+            'It produces a legacy 4-column CSV incompatible with retailer submissions. ' +
+            'Use generateRetailerCSV() (retailer_csv_engine.js) for production CSV output. ' +
+            'Remove this throw only in a deliberate dev/test context.'
+        );
+        // eslint-disable-next-line no-unreachable
         if (!auditTrail) throw new MissingDataError('auditTrail');
         if (!auditTrail.metadata) throw new MissingDataError('auditTrail.metadata');
         if (typeof auditTrail.metadata.functionalUnitKg !== 'number') throw new MissingDataError('auditTrail.metadata.functionalUnitKg');

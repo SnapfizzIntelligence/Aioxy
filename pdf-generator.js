@@ -391,32 +391,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
             const fromPef   = pef['Climate Change']?.contribution_tree?.Ingredients?.components;
             if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
-            // CHAIN-OF-CUSTODY FIX: contribution_tree.Ingredients.components was empty (stale
-            // session or components array never populated for this run). Fall back to
-            // audit.ingredientResults which is stored directly from the current engine run
-            // and is always the authoritative current-run ingredient data.
-            const fromResults = audit.ingredientResults;
-            if (Array.isArray(fromResults) && fromResults.length > 0) {
-                return fromResults.map(r => ({
-                    name:                  r.name,
-                    id:                    r.id,
-                    quantity_kg:           r.quantityKg,
-                    subtotal:              r.allCategoryResults?.['Climate Change'] || 0,
-                    fossilCO2:             r.fossilCO2,
-                    biogenicCO2:           r.biogenicCO2,
-                    dlucCO2:               r.dlucCO2,
-                    dqr:                   r.dqr,
-                    source:                r.source,
-                    uuid:                  r.uuid,
-                    processingState:       r.processingState,
-                    primary_data_used:     r.primary_data_used,
-                    primary_data:          r.primary_data,
-                    universal_adjustments: r.universal_adjustments,
-                    yieldFactor:           r.yieldFactor,
-                    allCategoryResults:    r.allCategoryResults
-                }));
-            }
-            console.warn('[AIOXY PDF] ingComps: no ingredient data in contribution_tree or ingredientResults. PDF ingredient sections will be empty.');
+            console.warn('[AIOXY PDF] ingComps: no ingredient components found in contribution_tree. ' +
+                'PDF ingredient sections will be empty. Re-run the calculation before exporting PDF.');
             return [];
         })();
         const mfgCC    = ccTree.Manufacturing?.total || 0;
@@ -1178,7 +1154,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  Manure system   : ' + safe(m.manure_system));
                 layerBLines.push('  Formula: heads x N_excreted x EF_manure[system] x (44/28) x GWP_N2O(265)');
                 layerBLines.push('  EF_manure       : ' + fix(m.ef_manure||0,4) + ' kg N2O-N / kg N');
-                layerBLines.push('  Manure N2O CO2e : ' + fix(m.manure_n2o_co2e_total||0,4) + ' kg CO2e  [added to CC + CC-Land Use]');
+                layerBLines.push('  Manure N2O CO2e : ' + fix(m.manure_n2o_co2e_total||0,4) + ' kg CO2e  [added to CC + CC-Fossil]');
+                // PDF-1 FIX (2026-06-07): Updated from CC-Land Use to CC-Fossil.
+                // Consistent with Finding 10 fix in calculation_engine.js.
+                // CC-Land Use covers dLUC/SOC only. Manure N2O is a direct process
+                // emission -> CC-Fossil per EF 3.1 (JRC EUR 29540 EN §4.4.2).
                 layerBLines.push('  Eutrophication (terrestrial): +' + fix(m.eutrophication_add_mol_n_eq||0,6) + ' mol Ne');
                 layerBLines.push('    Formula: 0.5 x N_excreted/kg x (17/14) x 1000g/kg x 0.0316 mol Ne/g NH3');
                 layerBLines.push('    CF source: ' + safe(m.eutrophication_cf_source));
@@ -2305,10 +2285,16 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         // CC sub-splits
         subHeader('Climate Change Sub-Splits');
+        // PDF-2 FIX (2026-06-07): CC-Land Use description corrected.
+        // Previous: 'dLUC + agricultural N2O (IPCC Tier 1)' — WRONG.
+        // CC-Land Use = soil organic carbon stock changes (dLUC/SOC) only per EF 3.1.
+        // Agricultural N2O (manure, synthetic N, organic N) is now in CC-Fossil
+        // per Finding 10 fix in calculation_engine.js (2026-06-07).
+        // Source: EF 3.1 (JRC EUR 29540 EN §4.4.2); AGRIBALYSE 3.2 methodology.
         const subRows = [
-            ['Climate Change - Fossil',   'kg CO2e', numFmt(fossilCC/pWeightKg, 4), 'Combustion + fossil process emissions'],
+            ['Climate Change - Fossil',   'kg CO2e', numFmt(fossilCC/pWeightKg, 4), 'Combustion + fossil process emissions + agricultural N2O (IPCC Tier 1)'],
             ['Climate Change - Biogenic', 'kg CO2e', numFmt(bioCC/pWeightKg, 4),    'Biogenic CO2 + enteric CH4 (GWP=28)'],
-            ['Climate Change - Land Use', 'kg CO2e', numFmt(dlucCC/pWeightKg, 4),   'dLUC + agricultural N2O (IPCC Tier 1)'],
+            ['Climate Change - Land Use', 'kg CO2e', numFmt(dlucCC/pWeightKg, 4),   'Soil organic carbon stock changes (dLUC/SOC) only — no N2O'],
             ['TOTAL Climate Change',      'kg CO2e', numFmt(ccPerKg, 4),             'Sum of above (engine value)']
         ];
         doc.autoTable({
@@ -2942,11 +2928,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('Internal consumer-facing environmental grade. Based on PEF Single Score (mPt/kg). NOT for external environmental claims.', M, Y); Y += 6;
 
         const ecoMpt   = mPt;  // already computed above
-        let ecoGrade   = 'E', ecoThreshNote = '≥ 600 mPt';
-        if (ecoMpt < 150)       { ecoGrade = 'A'; ecoThreshNote = '< 150 mPt'; }
-        else if (ecoMpt < 250)  { ecoGrade = 'B'; ecoThreshNote = '150–249 mPt'; }
-        else if (ecoMpt < 400)  { ecoGrade = 'C'; ecoThreshNote = '250–399 mPt'; }
-        else if (ecoMpt < 600)  { ecoGrade = 'D'; ecoThreshNote = '400–599 mPt'; }
+        // DB-1 FIX (2026-06-07): Thresholds corrected from [150/250/400/600] to [15000/25000/40000/60000] µPt.
+        // WF values corrected to EF 3.1 Table 7 (JRC EUR 29540 EN, WF sum=1.0).
+        // Previous WF values were 100x too small; thresholds now match corrected µPt output scale.
+        let ecoGrade   = 'E', ecoThreshNote = '>= 60000 uPt (>= 60 mPt)';
+        if (ecoMpt < 15000)       { ecoGrade = 'A'; ecoThreshNote = '< 15000 uPt (< 15 mPt)'; }
+        else if (ecoMpt < 25000)  { ecoGrade = 'B'; ecoThreshNote = '15000-24999 uPt (15-25 mPt)'; }
+        else if (ecoMpt < 40000)  { ecoGrade = 'C'; ecoThreshNote = '25000-39999 uPt (25-40 mPt)'; }
+        else if (ecoMpt < 60000)  { ecoGrade = 'D'; ecoThreshNote = '40000-59999 uPt (40-60 mPt)'; }
 
         const ecoCol = ecoGrade === 'A' ? C.teal : ecoGrade === 'B' ? C.green :
                        ecoGrade === 'C' ? C.amber : ecoGrade === 'D' ? [244,162,97] : C.red;
@@ -2965,13 +2954,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'ECO-SCORE DERIVATION (glass-box — full arithmetic):',
             '',
             'Step 1 — PEF Single Score (from Normalisation & Weighting page):',
-            '  mPt/kg product = ' + numFmt(ecoMpt, 4) + ' mPt',
+            '  uPt/kg product = ' + numFmt(ecoMpt, 2) + ' uPt',
             '  Source: SUM_i [ (impact_i/kg) / NF_i x WF_i ] x 1,000,000  (JRC EUR 29540 EN)',
+            '  WF values: EF 3.1 Table 7 canonical values (sum=1.0000) -- DB-1 FIX 2026-06-07',
             '',
-            'Step 2 — Threshold lookup (internal AIOXY benchmarks):',
-            '  A: mPt < 150   B: 150 <= mPt < 250   C: 250 <= mPt < 400',
-            '  D: 400 <= mPt < 600   E: mPt >= 600',
-            '  This product: ' + numFmt(ecoMpt,4) + ' mPt  →  Grade ' + ecoGrade + '  (' + ecoThreshNote + ')',
+            'Step 2 — Threshold lookup (internal AIOXY benchmarks, calibrated to corrected WF scale):',
+            '  A: uPt < 15000   B: 15000 <= uPt < 25000   C: 25000 <= uPt < 40000',
+            '  D: 40000 <= uPt < 60000   E: uPt >= 60000',
+            '  Equivalent in mPt: A<15  B<25  C<40  D<60  E>=60',
+            '  This product: ' + numFmt(ecoMpt,2) + ' uPt  ->  Grade ' + ecoGrade + '  (' + ecoThreshNote + ')',
             '',
             'Step 3 — Grade assigned: ' + ecoGrade,
             '',
@@ -2980,15 +2971,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  - NOT equivalent to the official French Eco-Score or Planet-Score methodologies.',
             '  - NOT for use in external environmental claims or marketing.',
             '  - Suitable for: internal hotspot benchmarking, supplier engagement, CSRD screening.',
-            '  - For external claims: requires third-party verification per EU Green Claims Directive 2024.',
+            '  - For external claims: requires third-party verification per applicable national regulation.',
             '',
-            'Reference — industry mPt benchmarks (approximate, for context only):',
-            '  Beef burger (250g)    : ~2,500–4,000 mPt/kg  (very high — livestock emissions)',
-            '  Chicken breast        : ~400–800 mPt/kg',
-            '  Typical ready meal    : ~200–600 mPt/kg  (depends on meat content)',
-            '  Plant-based burger    : ~100–300 mPt/kg',
-            '  Oat milk              : ~50–150 mPt/kg',
-            '  Source: AGRIBALYSE 3.2 / ADEME product benchmarks (indicative ranges)'
+            'Reference -- industry uPt benchmarks (approximate, for context only):',
+            '  Beef burger (250g)    : ~2,500,000-4,000,000 uPt/kg  (very high -- livestock emissions)',
+            '  Chicken breast        : ~400,000-800,000 uPt/kg',
+            '  Typical ready meal    : ~200,000-600,000 uPt/kg  (depends on meat content)',
+            '  Plant-based burger    : ~100,000-300,000 uPt/kg',
+            '  Oat milk              : ~50,000-150,000 uPt/kg',
+            '  Source: AGRIBALYSE 3.2 / ADEME product benchmarks (indicative ranges, converted to uPt)'
         ], { sectionLabel: 'Eco-Score (continued)' });
 
         footer('Eco-Score — Page ' + pageNum + ' of ' + TOTAL_PAGES);
