@@ -296,8 +296,8 @@ function updateResultsUI(results) {
                     <i class="fas fa-gavel"></i>
                 </div>
                 <div>
-                    <strong style="color: #E65100;">Green Claims Directive Warning</strong><br>
-                    <span style="color: #9C4221;">Comparative assertion is based on an unsubstantiated custom user baseline. Requires external LCA verification and PEF-compliant dataset comparison for any public or B2B claims.</span>
+                    <strong style="color: #E65100;">EmpCo Compliance Warning (EU 2024/825)</strong><br>
+                    <span style="color: #9C4221;">Comparative assertion is based on an unsubstantiated custom user baseline. Requires external LCA verification and PEF-compliant dataset comparison for any public or B2B claims per EmpCo Directive (EU 2024/825), applying September 27, 2026.</span>
                 </div>
             `;
             resultsContent.insertBefore(customWarningDiv, resultsContent.firstChild);
@@ -317,18 +317,13 @@ function updateResultsUI(results) {
         ? singleScoreData.singleScore
         : 0;
 
-    // DB-1 FIX (2026-06-07): Thresholds corrected from [150/250/400/600] to [15000/25000/40000/60000] µPt.
-    // WF values in aioxy_pef3_1_database.js corrected to EF 3.1 Table 7 (JRC EUR 29540 EN, WF sum=1.0).
-    // Previous WF values were 100x too small, so single scores were 100x too small.
-    // Corrected thresholds (µPt): A<15000, B<25000, C<40000, D<60000, E>=60000.
-    // Equivalent in mPt: A<15, B<25, C<40, D<60 — consistent with AGRIBALYSE 3.2 product benchmarks.
     // Indicative µPt grade bands — AIOXY internal benchmarks only, not ADEME or PEF 3.1 thresholds
     let ecoGrade = 'E';
     let ecoColor = '#E63946'; // Red
-    if (mPtScore < 15000) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green  (<15 mPt)
-    else if (mPtScore < 25000) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green (15-25 mPt)
-    else if (mPtScore < 40000) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow (25-40 mPt)
-    else if (mPtScore < 60000) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange (40-60 mPt)
+    if (mPtScore < 150) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
+    else if (mPtScore < 250) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
+    else if (mPtScore < 400) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
+    else if (mPtScore < 600) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
     
     let ecoScoreDiv = document.getElementById('fopEcoScoreCard');
     if (!ecoScoreDiv && resultsContent) {
@@ -485,7 +480,7 @@ function updateResultsUI(results) {
             document.getElementById('co2Value').parentNode.appendChild(removalsDiv);
         }
         const removalsPerKg = totalRemovals / (massBalanceData?.final_content_weight_kg || 0.2);
-        removalsDiv.innerHTML = `<i class="fas fa-arrow-down"></i> ${removalsPerKg.toFixed(2)} kg biogenic removals<br><span style="font-size: 0.7rem; font-weight: normal; color: var(--gray);">*Reported separately per EU Green Claims</span>`;
+        removalsDiv.innerHTML = `<i class="fas fa-arrow-down"></i> ${removalsPerKg.toFixed(2)} kg biogenic removals<br><span style="font-size: 0.7rem; font-weight: normal; color: var(--gray);">*Reported separately per EmpCo (EU 2024/825)</span>`;
     } else if (removalsDiv) {
         removalsDiv.remove();
     }
@@ -1029,7 +1024,7 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         'Uncertainty: +/-' + uncertainty + '% Monte Carlo',
         '',
         'Not third-party verified.',
-        'ISO 14044 / EU GCD COM/2023/166.',
+        'ISO 14044 / EmpCo EU 2024/825.',
         'AIOXY Environmental Intelligence'
     ];
 
@@ -1197,7 +1192,7 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                 (EEA 2023, ICAO 2023, IEA 2022, Ember 2025). This product still generates
                 ${thisProductCO2.toFixed(3)} kg CO₂e/kg — equivalences show only the
                 <em>difference</em> vs ${baselineName}. Not for comparative advertising
-                per ISO 14044 §6 / EU Green Claims Directive COM/2023/166.
+                per ISO 14044 §6 / EmpCo Directive (EU 2024/825, applies 27 Sep 2026).
             </div>
 
         </div>

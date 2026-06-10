@@ -673,6 +673,33 @@ function displayAuditTrail() {
                 <div style="margin-top: 6px; color: #888; font-size: 0.75rem; font-style: italic;"><i class="fas fa-info-circle"></i> Twin uses AGRIBALYSE 3.2 baseline for all ingredients. Supplier primary data adjustments (yield, nitrogen) are applied in the main assessment only and are not carried into the parametric twin. This is intentional: the twin compares standard industry baselines, not supplier-specific actuals.</div>
             </div>
         </div>`;
+    } else {
+        // Twin not run — show placeholder so section F is always visible
+        html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                F. PARAMETRIC TWIN VERIFICATION (ISO 14044 §4.2.3.2)
+            </h4>
+            <div style="border: 1px solid #B2DFDB; padding: 15px; font-size: 0.85rem; background: #F0FAFA;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="fas fa-info-circle" style="color: #0A9396; margin-top: 2px; flex-shrink: 0;"></i>
+                    <div>
+                        <strong style="color: #0A2540;">Twin comparison not yet run.</strong>
+                        <div style="margin-top: 6px; color: #4A5568; line-height: 1.6;">
+                            The Parametric Twin section compares this product against a conventional baseline
+                            using identical system boundaries. It covers all 16 EF 3.1 impact categories.<br><br>
+                            <strong>To activate:</strong> Go to the <em>Parametric Twin</em> tab → configure your
+                            comparison ingredient or scenario → click <em>Run Twin Comparison</em> →
+                            return here to see sections F and G populated with full glass-box derivation.
+                        </div>
+                        <div style="margin-top: 10px; color: #718096; font-size: 0.78rem; font-style: italic;">
+                            The main cradle-to-retail calculation above is not affected by the twin.
+                            Twin results are a separate independent calculation for decision support only.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
     }
 
     // ========== G. PARAMETRIC TWIN INGREDIENT COMPARISON ==========
@@ -725,6 +752,34 @@ function displayAuditTrail() {
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+        </div>`;
+    } else {
+        // G placeholder — shown when twin not run or no ingredient pairs available
+        html += `
+        <div style="margin-bottom: 25px;">
+            <h4 style="background: #0A2540; color: white; padding: 8px; margin: 0; font-size: 0.9rem;">
+                G. PARAMETRIC TWIN — INGREDIENT COMPARISON
+            </h4>
+            <div style="border: 1px solid #B2DFDB; padding: 15px; font-size: 0.85rem; background: #F0FAFA;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="fas fa-info-circle" style="color: #0A9396; margin-top: 2px; flex-shrink: 0;"></i>
+                    <div>
+                        <strong style="color: #0A2540;">Ingredient-level comparison not yet available.</strong>
+                        <div style="margin-top: 6px; color: #4A5568; line-height: 1.6;">
+                            Section G shows the per-ingredient CO₂ delta between the assessed product
+                            and the conventional baseline — for every ingredient pair across the full recipe.<br><br>
+                            This section populates automatically once the Parametric Twin comparison is run
+                            (see Section F instructions above).
+                        </div>
+                        <div style="margin-top: 10px; padding: 8px 12px; background: #E6FFFA;
+                             border-left: 3px solid #0A9396; font-size: 0.8rem; color: #2D6A4F;">
+                            <strong>What-If scenario tip:</strong> Switch to What-If mode in the Twin tab to model
+                            specific ingredient swaps (e.g. pea protein from Spain vs India) and see the
+                            impact difference across all 16 EF 3.1 categories.
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>`;
     }

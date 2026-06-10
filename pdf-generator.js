@@ -3152,19 +3152,73 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // Reads window._twinResultsForPDF written by twin_module.js
         // renderTwinResults(). No-op if twin was not calculated.
         // ================================================================
-        if (window._twinResultsForPDF && typeof window.buildTwinPDFSection === 'function') {
-            // Build the helpers object the twin builder expects
-            const twinHelpers = {
-                C, M, CW, PH,
-                safe, fix, numFmt, pct,
-                ensureSpace, subHeader, hRule, footer,
-                newPage,
-                get Y()      { return Y; },
-                set Y(v)     { Y = v; },
-                get pageNum(){ return pageNum; },
-                set pageNum(v){ pageNum = v; }
-            };
-            window.buildTwinPDFSection(doc, twinHelpers);
+        // ================================================================
+        // PARAMETRIC TWIN — FULL GLASS-BOX SECTION
+        // Reads window._twinResultsForPDF written by twin_module.js
+        // renderTwinResults(). Shows placeholder if twin not yet run.
+        // ================================================================
+        const twinHelpers = {
+            C, M, CW, PH,
+            safe, fix, numFmt, pct,
+            ensureSpace, subHeader, hRule, footer,
+            newPage,
+            get Y()       { return Y; },
+            set Y(v)      { Y = v; },
+            get pageNum() { return pageNum; },
+            set pageNum(v){ pageNum = v; }
+        };
+
+        // Try both window.buildTwinPDFSection and window._aioxy_twinPDFBuilder
+        const twinBuilder = (typeof window.buildTwinPDFSection === 'function')
+            ? window.buildTwinPDFSection
+            : (typeof window._aioxy_twinPDFBuilder === 'function')
+                ? window._aioxy_twinPDFBuilder
+                : null;
+
+        if (window._twinResultsForPDF && twinBuilder) {
+            // Twin was run — render full glass-box twin section
+            twinBuilder(doc, twinHelpers);
+        } else {
+            // Twin not run — render informational placeholder page
+            // so the PDF recipient knows the section exists and how to activate it
+            newPage('Parametric Twin — Not Run');
+
+            doc.setFillColor(...C.teal);
+            doc.rect(M, Y, CW, 10, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+            doc.setTextColor(...C.white);
+            doc.text('PARAMETRIC TWIN ANALYSIS', M + 3, Y + 6.5);
+            Y += 14;
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+            doc.setTextColor(...C.bodyMid);
+            const placeholderLines = [
+                'The Parametric Twin comparison was not run before this PDF was generated.',
+                '',
+                'The twin section includes:',
+                '  - Apple-to-Apple comparison: identical system boundary, only ingredient(s) differ',
+                '  - What-If scenario: full independent PEF 3.1 calculation with changed parameters',
+                '  - All 16 EF 3.1 impact categories: Main vs Twin with delta and percentage change',
+                '  - Stage breakdown: Ingredients / Manufacturing / Transport / Packaging',
+                '  - Twin ingredient bill of materials with origin and processing state',
+                '  - 3-layer glass-box derivation per twin ingredient (Layer A / B / C)',
+                '',
+                'To generate the twin section:',
+                '  1. Run the main product calculation first',
+                '  2. Go to the Parametric Twin tab',
+                '  3. Configure the twin (ingredient swap or operational parameters)',
+                '  4. Click "Run Twin Comparison"',
+                '  5. Download the PDF Report — the twin section will be included automatically',
+                '',
+                'The twin calculation is independent of the main product LCA result.',
+                'The cradle-to-retail footprint shown in this report is not affected by the twin.',
+            ];
+            placeholderLines.forEach(line => {
+                doc.text(safe(line), M, Y);
+                Y += 5;
+            });
+
+            footer('Parametric Twin — Page ' + pageNum + ' of ' + TOTAL_PAGES);
         }
 
         // ================================================================
