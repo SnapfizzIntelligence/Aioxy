@@ -24,23 +24,30 @@ window.aioxyData.pef_factors = {
     "Resource depletion, minerals and metals": 0.06362261523695466,
     "Water use": 11468.708640759718
   },
+  // DB-1 FIX (2026-06-07): WF values corrected from 100x-too-small to canonical EF 3.1 values.
+  // Source: JRC Technical Report EUR 29540 EN, Table 7 — EF 3.1 Normalisation and Weighting Factors.
+  // Previous values summed to 0.01 (incorrect). Correct values sum to 1.0000 (verified).
+  // Every previous value was exactly WF_correct / 100. Multiplied all by 100.
+  // Effect: PEF single score (µPt) output is now 100x larger — correctly scaled to µPt.
+  // Eco-score thresholds in ui.js and pdf-generator.js updated from [150/250/400/600]
+  // to [15000/25000/40000/60000] µPt in the same fix pass.
   "weighting_factors": {
-    "Acidification": 0.00062,
-    "Climate change": 0.002106,
-    "Ecotoxicity, freshwater": 0.000192,
-    "EF-particulate matter": 0.000896,
-    "Eutrophication, freshwater": 0.00028,
-    "Eutrophication, marine": 0.000296,
-    "Eutrophication, terrestrial": 0.000371,
-    "Human toxicity, cancer": 0.000213,
-    "Human toxicity, non-cancer": 0.000184,
-    "Ionising radiation": 0.000501,
-    "Land use": 0.000794,
-    "Ozone depletion": 0.000631,
-    "Photochemical ozone formation": 0.000478,
-    "Resource depletion, fossils": 0.000832,
-    "Resource depletion, minerals and metals": 0.000755,
-    "Water use": 0.000851
+    "Acidification":                          0.0620,
+    "Climate change":                         0.2106,
+    "Ecotoxicity, freshwater":                0.0192,
+    "EF-particulate matter":                  0.0896,
+    "Eutrophication, freshwater":             0.0280,
+    "Eutrophication, marine":                 0.0296,
+    "Eutrophication, terrestrial":            0.0371,
+    "Human toxicity, cancer":                 0.0213,
+    "Human toxicity, non-cancer":             0.0184,
+    "Ionising radiation":                     0.0501,
+    "Land use":                               0.0794,
+    "Ozone depletion":                        0.0631,
+    "Photochemical ozone formation":          0.0478,
+    "Resource depletion, fossils":            0.0832,
+    "Resource depletion, minerals and metals":0.0755,
+    "Water use":                              0.0851
   },
   "global_population": 6895889018,
   "version": "EF 3.1",
