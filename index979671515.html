@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tulasi Pariyar — Customer Engagement Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080E06;--s1:#0E1A0A;--s2:#121E0E;
+  --acc:#4CAF50;--gold:#C8A020;--pale:#EDF5EB;
+  --text:#E8F5E4;--mid:#9AB894;--muted:#5A7A54;
+  --rule:rgba(76,175,80,.12);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:16px 48px;background:rgba(8,14,6,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--rule)}
+.nav-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:var(--text);letter-spacing:.5px}
+.nav-links{display:flex;gap:24px}
+.nav-links a{font-size:.78rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:.5px;transition:color .2s}
+.nav-links a:hover{color:var(--acc)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:100px 24px 60px;position:relative}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(76,175,80,.06) 0%,transparent 70%);pointer-events:none}
+.badge{display:inline-block;border:1px solid rgba(76,175,80,.35);color:var(--acc);background:rgba(76,175,80,.07);font-size:.66rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;padding:6px 18px;border-radius:30px;margin-bottom:28px}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,7vw,4.4rem);font-weight:700;line-height:1.08;color:var(--text);margin-bottom:20px;letter-spacing:-.5px;max-width:800px}
+.hero h1 em{color:var(--acc);font-style:normal}
+.hero-sub{font-size:clamp(.88rem,2.5vw,1.08rem);color:var(--muted);max-width:500px;line-height:1.78;font-weight:300;margin-bottom:44px}
+
+/* COMPARISON BLOCK */
+.compare{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:44px}
+.compare-box{border-radius:16px;padding:20px 28px;text-align:center;min-width:160px}
+.box-old{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.box-old .box-tag{font-size:.6rem;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;margin-bottom:8px}
+.box-old .box-val{font-size:1.5rem;font-weight:700;color:rgba(255,255,255,.35);text-decoration:line-through}
+.box-old .box-sub{font-size:.7rem;color:rgba(255,255,255,.25);margin-top:4px}
+.compare-arrow{font-size:1.4rem;color:var(--muted)}
+.box-new{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3)}
+.box-new .box-tag{font-size:.6rem;font-weight:700;letter-spacing:2px;color:var(--acc);text-transform:uppercase;margin-bottom:8px}
+.box-new .box-val{font-size:1.5rem;font-weight:700;color:var(--text)}
+.box-new .box-sub{font-size:.7rem;color:var(--mid);margin-top:4px}
+
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn-p{background:var(--acc);color:#fff;padding:13px 32px;border-radius:50px;font-size:.88rem;font-weight:600;text-decoration:none;letter-spacing:.3px;box-shadow:0 4px 24px rgba(76,175,80,.32);transition:transform .2s,box-shadow .2s;display:inline-block}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(76,175,80,.48)}
+.btn-g{border:1px solid rgba(76,175,80,.35);color:var(--mid);padding:13px 32px;border-radius:50px;font-size:.88rem;font-weight:600;text-decoration:none;letter-spacing:.3px;transition:border-color .2s,color .2s;display:inline-block}
+.btn-g:hover{border-color:var(--acc);color:var(--text)}
+
+/* SECTIONS */
+section{padding:80px 24px;position:relative}
+.inner{max-width:1000px;margin:0 auto}
+.sec-label{font-size:.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
+.sec-h{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:700;color:var(--text);margin-bottom:14px;line-height:1.18}
+.sec-d{font-size:.92rem;color:var(--muted);max-width:500px;line-height:1.75;margin-bottom:48px;font-weight:300}
+
+/* VALUE PILLS */
+.values{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:16px;overflow:hidden;margin-bottom:80px}
+.val{background:var(--s1);padding:28px 24px;text-align:center}
+.val-ico{font-size:1.8rem;margin-bottom:10px}
+.val-t{font-size:.84rem;font-weight:600;color:var(--text);margin-bottom:5px}
+.val-d{font-size:.74rem;color:var(--muted);line-height:1.55}
+
+/* PROJECT CARDS */
+.projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.pcard{background:var(--s1);border:1px solid var(--rule);border-radius:20px;overflow:hidden;text-decoration:none;display:flex;flex-direction:column;transition:transform .25s,border-color .25s,box-shadow .25s;position:relative}
+.pcard:hover{transform:translateY(-5px);border-color:rgba(76,175,80,.35);box-shadow:0 20px 48px rgba(0,0,0,.4)}
+.pcard-preview{height:160px;display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative}
+.tree-bg{background:linear-gradient(135deg,#0A2808,#1A4412,#0C3208)}
+.autumn-bg{background:linear-gradient(135deg,#200A02,#3A1804,#281005)}
+.lantern-bg{background:linear-gradient(135deg,#1A0A04,#2E1208,#180C04)}
+.blog-bg{background:linear-gradient(135deg,#0A1A2E,#122040,#0C1A32)}
+.pcard-feat .pcard-preview{height:220px;font-size:5rem}
+.pcard-feat{grid-column:1/-1}
+.pcard-body{padding:20px 22px 22px;flex:1;display:flex;flex-direction:column}
+.ptag{font-size:.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:7px}
+.ptitle{font-family:'Cormorant Garamond',serif;font-size:1.12rem;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.3}
+.pdesc{font-size:.78rem;color:var(--muted);line-height:1.65;flex:1;margin-bottom:14px}
+.pcta{font-size:.74rem;font-weight:600;color:var(--acc);display:inline-flex;align-items:center;gap:5px}
+.pcta::after{content:'→';transition:transform .2s}
+.pcard:hover .pcta::after{transform:translateX(4px)}
+.pnew{position:absolute;top:12px;right:12px;background:var(--acc);color:#fff;font-size:.55rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:10px}
+
+/* BRAND MOCKUP SECTION */
+.mockup-wrap{border:1px solid var(--rule);border-radius:20px;overflow:hidden;background:var(--s2)}
+.mockup-header{padding:20px 28px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.mockup-label{font-size:.7rem;color:var(--muted);font-weight:500}
+.mockup-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--text)}
+.mockup-tag{background:rgba(200,160,32,.12);border:1px solid rgba(200,160,32,.3);color:var(--gold);font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:20px}
+.mockup-body{padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
+.mockup-text .mt-tag{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:8px}
+.mockup-text h3{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.2}
+.mockup-text p{font-size:.8rem;color:var(--muted);line-height:1.68;margin-bottom:18px}
+.mockup-stats{display:flex;flex-direction:column;gap:8px}
+.mstat{display:flex;align-items:center;gap:10px;background:rgba(76,175,80,.06);border:1px solid rgba(76,175,80,.12);border-radius:10px;padding:9px 14px}
+.mstat-ico{font-size:1.1rem;flex-shrink:0}
+.mstat-text{font-size:.76rem;color:var(--mid);line-height:1.4}
+.mstat-text strong{color:var(--text);display:block;font-size:.8rem}
+.mockup-preview{background:var(--autumn-bg,#1A0A04);border-radius:12px;height:180px;display:flex;align-items:center;justify-content:center;font-size:5rem;position:relative;overflow:hidden;background:linear-gradient(135deg,#200A02,#3A1804)}
+.mockup-cta{margin-top:18px}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.astat{background:var(--s1);border:1px solid var(--rule);border-radius:12px;padding:16px;text-align:center}
+.astat-n{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--acc)}
+.astat-l{font-size:.68rem;color:var(--muted);margin-top:3px;font-weight:500}
+
+/* CONTACT */
+.contact-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;max-width:580px}
+.ccard{background:var(--s1);border:1px solid var(--rule);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;text-decoration:none;transition:border-color .2s}
+.ccard:hover{border-color:rgba(76,175,80,.35)}
+.ccard-ico{font-size:1.15rem;flex-shrink:0}
+.ccard-label{font-size:.58rem;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.ccard-val{font-size:.76rem;color:var(--text);font-weight:500;word-break:break-all}
+
+/* QUOTE */
+.quote{background:linear-gradient(135deg,rgba(76,175,80,.08),rgba(76,175,80,.03));border:1px solid rgba(76,175,80,.2);border-radius:16px;padding:28px 32px;max-width:600px;margin:32px 0}
+.quote-text{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;color:var(--text);line-height:1.65;margin-bottom:10px}
+.quote-attr{font-size:.72rem;color:var(--muted)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--rule);padding:24px 48px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot-name{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:700;color:var(--muted)}
+.foot-note{font-size:.68rem;color:rgba(90,122,84,.5)}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  nav{padding:14px 18px}.nav-links{gap:14px}
+  .mockup-body{grid-template-columns:1fr}.about-grid{grid-template-columns:1fr}
+  footer{padding:20px 18px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-name">Tulasi Pariyar</div>
+  <div class="nav-links">
+    <a href="#work">Work</a>
+    <a href="#brand">For Brands</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">📍 Doha, Qatar · Available Now</div>
+  <h1>Your discount is <em>invisible.</em><br>Make it a moment instead.</h1>
+  <p class="hero-sub">A series of interactive campaigns that turn flat offers into something customers actually feel — and come back for.</p>
+
+  <div class="compare">
+    <div class="compare-box box-old">
+      <div class="box-tag">Standard Banner</div>
+      <div class="box-val">FLAT 20% OFF</div>
+      <div class="box-sub">Scrolled past. Forgotten.</div>
+    </div>
+    <div class="compare-arrow">→</div>
+    <div class="compare-box box-new">
+      <div class="box-tag">Wishing Tree</div>
+      <div class="box-val">Pick a Leaf</div>
+      <div class="box-sub">Remembered. Shared. Returned to.</div>
+    </div>
+  </div>
+
+  <div class="hero-btns">
+    <a href="#work" class="btn-p">See the Campaigns</a>
+    <a href="#contact" class="btn-g">Get in Touch</a>
+  </div>
+</section>
+
+<!-- VALUES -->
+<div style="padding:0 24px 0;position:relative;z-index:1">
+<div class="inner">
+<div class="values">
+  <div class="val"><div class="val-ico">💡</div><div class="val-t">Low Cost</div><div class="val-d">No production budget. No agency fees. Runs in a browser.</div></div>
+  <div class="val"><div class="val-ico">❤️</div><div class="val-t">High Emotion</div><div class="val-d">Surprise + discovery = dopamine. That's why customers return.</div></div>
+  <div class="val"><div class="val-ico">🔁</div><div class="val-t">Any Season</div><div class="val-d">Wishing Tree. Lantern Festival. Cherry Blossom. Heart. One idea, infinite skins.</div></div>
+  <div class="val"><div class="val-ico">🎯</div><div class="val-t">One Touch Only</div><div class="val-d">Each customer gets one moment. Scarcity makes it real.</div></div>
+</div>
+</div>
+</div>
+
+<!-- WORK -->
+<section id="work">
+<div class="inner">
+  <div class="sec-label">The Campaign Series</div>
+  <div class="sec-h">Four campaigns.<br>One consistent idea.</div>
+  <p class="sec-d">Each one is a working prototype — open it, touch it, experience it. Not a mockup. Not a slide. Real and running.</p>
+
+  <div class="projects">
+    <a href="wishing-tree.html" class="pcard pcard-feat" target="_blank">
+      <div class="pcard-preview tree-bg">🌳</div>
+      <div class="pcard-body">
+        <div class="ptag">Flagship · Live Demo</div>
+        <div class="ptitle">The Wishing Tree — Everyday Retail</div>
+        <p class="pdesc">A realistic fractal tree. Each leaf hides a gift or discount. One customer, one touch, one surprise. The same offer that gets ignored on a banner becomes a moment they talk about. Lower spend, more footprint.</p>
+        <div class="pcta">Open Live Demo</div>
+      </div>
+    </a>
+
+    <a href="brand-demo.html" class="pcard" target="_blank">
+      <span class="pnew">NEW</span>
+      <div class="pcard-preview autumn-bg">🍂</div>
+      <div class="pcard-body">
+        <div class="ptag">Brand Mockup · Café Example</div>
+        <div class="ptitle">Amber Café — Branded Version</div>
+        <p class="pdesc">The same concept, branded for a café. Autumn colours, coffee-specific offers, custom name. Shows exactly how the campaign adapts to any brand identity in minutes.</p>
+        <div class="pcta">See Branded Demo</div>
+      </div>
+    </a>
+
+    <a href="lantern-festival.html" class="pcard" target="_blank">
+      <div class="pcard-preview lantern-bg">🏮</div>
+      <div class="pcard-body">
+        <div class="ptag">Seasonal · Eid · Diwali · CNY</div>
+        <div class="ptitle">Lantern Festival</div>
+        <p class="pdesc">Physics-based lanterns drifting through a twilight sky. Tap one and a gift appears. Perfect for Ramadan, Diwali, Chinese New Year — any festive campaign period across any culture.</p>
+        <div class="pcta">Open Live Demo</div>
+      </div>
+    </a>
+
+    <a href="https://snapfizz.blogspot.com" class="pcard" target="_blank">
+      <div class="pcard-preview blog-bg">✍️</div>
+      <div class="pcard-body">
+        <div class="ptag">Content · SnapFizz Blog</div>
+        <div class="ptitle">9,600+ International Readers</div>
+        <p class="pdesc">Grew a personal blog to readers in 9 countries — US, Singapore, Hong Kong, Canada — without paid promotion. Proves the ability to create content people actually find and read.</p>
+        <div class="pcta">Read the Blog</div>
+      </div>
+    </a>
+  </div>
+</div>
+</section>
+
+<!-- BRAND SECTION -->
+<section id="brand" style="background:var(--s1);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)">
+<div class="inner">
+  <div class="sec-label">For Your Brand</div>
+  <div class="sec-h">What this looks like<br>deployed for you.</div>
+  <p class="sec-d">The Amber Café demo above shows exactly how it adapts. Your name. Your colours. Your offers. Your customers.</p>
+
+  <div class="mockup-wrap">
+    <div class="mockup-header">
+      <div>
+        <div class="mockup-label">Example deployment</div>
+        <div class="mockup-title">Amber Café · Wishing Tree Campaign</div>
+      </div>
+      <div class="mockup-tag">Ready to Deploy</div>
+    </div>
+    <div class="mockup-body">
+      <div>
+        <div class="mockup-text">
+          <div class="mt-tag">What changes for your brand</div>
+          <h3>Your name.<br>Your colours.<br>Your offers.</h3>
+          <p>Everything else stays. The fractal tree, the falling animation, the gift reveal — all ready. A brand customisation takes hours, not weeks.</p>
+        </div>
+        <div class="mockup-stats">
+          <div class="mstat"><span class="mstat-ico">🎨</span><div class="mstat-text"><strong>Brand colours + name</strong>Autumn, spring, dark, light — any palette</div></div>
+          <div class="mstat"><span class="mstat-ico">🎁</span><div class="mstat-text"><strong>Your specific offers</strong>Free coffee, 10% off, VIP access — you decide</div></div>
+          <div class="mstat"><span class="mstat-ico">📅</span><div class="mstat-text"><strong>Any campaign season</strong>Eid, Valentine's, summer drops, loyalty days</div></div>
+        </div>
+        <div class="mockup-cta">
+          <a href="brand-demo.html" class="btn-p" target="_blank" style="font-size:.82rem;padding:11px 24px">See the Café Demo Live →</a>
+        </div>
+      </div>
+      <div class="mockup-preview">🍂</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+<div class="inner">
+  <div class="about-grid">
+    <div>
+      <div class="sec-label">About</div>
+      <div class="sec-h" style="margin-bottom:16px">Self-taught.<br>Already in Doha.<br>Available now.</div>
+      <p style="font-size:.88rem;color:var(--muted);line-height:1.78;margin-bottom:20px">No agency background. No formal marketing degree. Everything here was built independently — the concept, the code, the content. The blog proved I can build an international audience. The Wishing Tree proves I think about why customers return, not just how to serve them today.</p>
+      <div class="quote">
+        <p class="quote-text">"A flat 5% off and a gamified 5% off cost the brand exactly the same. Only one of them gets remembered."</p>
+        <div class="quote-attr">— The entire point of this series</div>
+      </div>
+    </div>
+    <div>
+      <div class="about-stats">
+        <div class="astat"><div class="astat-n">9.6K+</div><div class="astat-l">Blog readers across 9 countries</div></div>
+        <div class="astat"><div class="astat-n">4</div><div class="astat-l">Campaign concepts built & working</div></div>
+        <div class="astat"><div class="astat-n">3</div><div class="astat-l">Languages: English, Hindi, Nepali</div></div>
+        <div class="astat"><div class="astat-n">0</div><div class="astat-l">Budget used to build any of this</div></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+        <span style="background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.22);color:var(--mid);font-size:.7rem;font-weight:600;padding:5px 12px;border-radius:20px">Customer Engagement</span>
+        <span style="background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.22);color:var(--mid);font-size:.7rem;font-weight:600;padding:5px 12px;border-radius:20px">Gamification Design</span>
+        <span style="background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.22);color:var(--mid);font-size:.7rem;font-weight:600;padding:5px 12px;border-radius:20px">Content Strategy</span>
+        <span style="background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.22);color:var(--mid);font-size:.7rem;font-weight:600;padding:5px 12px;border-radius:20px">HTML · CSS · JS</span>
+        <span style="background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.22);color:var(--mid);font-size:.7rem;font-weight:600;padding:5px 12px;border-radius:20px">Campaign Concepts</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" style="background:var(--s1);border-top:1px solid var(--rule)">
+<div class="inner">
+  <div class="sec-label">Contact</div>
+  <div class="sec-h" style="margin-bottom:10px">Let's talk.</div>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:28px">Based in Doha. Available immediately. Open to full-time roles and brand partnerships.</p>
+  <div class="contact-cards">
+    <a href="tel:+97472356431" class="ccard"><span class="ccard-ico">📞</span><div><div class="ccard-label">Phone</div><div class="ccard-val">+974 7235 6431</div></div></a>
+    <a href="mailto:pariyartulasi766@gmail.com" class="ccard"><span class="ccard-ico">✉️</span><div><div class="ccard-label">Email</div><div class="ccard-val">pariyartulasi766@gmail.com</div></div></a>
+    <a href="https://snapfizz.blogspot.com" target="_blank" class="ccard"><span class="ccard-ico">🌐</span><div><div class="ccard-label">Blog</div><div class="ccard-val">snapfizz.blogspot.com</div></div></a>
+    <a href="wishing-tree.html" target="_blank" class="ccard"><span class="ccard-ico">🌳</span><div><div class="ccard-label">Live Demo</div><div class="ccard-val">The Wishing Tree</div></div></a>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="foot-name">Tulasi Pariyar</div>
+  <div class="foot-note">Customer Engagement Designer · Doha, Qatar · 2025</div>
+</footer>
+
+</body>
+</html>
