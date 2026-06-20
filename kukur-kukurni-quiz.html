@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kukur 🐾 kukurni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF8F0;
+    --blush:#F4D9D0;
+    --terracotta:#E8927C;
+    --terracotta-dark:#D97A62;
+    --plum:#4A3034;
+    --gold:#D4A574;
+    --white-soft:#FFFDFB;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:
+      radial-gradient(circle at 15% 20%, rgba(232,146,124,0.10) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(212,165,116,0.12) 0%, transparent 45%),
+      var(--cream);
+    min-height:100vh;
+    font-family:'Lora', serif;
+    color:var(--plum);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow-x:hidden;
+  }
+
+  .stage{
+    width:100%;
+    max-width:480px;
+    position:relative;
+  }
+
+  /* ambient floating paws */
+  .ambient-paw{
+    position:fixed;
+    font-size:22px;
+    opacity:0.10;
+    pointer-events:none;
+    animation:float-paw 14s ease-in-out infinite;
+    z-index:0;
+  }
+  @keyframes float-paw{
+    0%,100%{ transform:translateY(0) rotate(-8deg); }
+    50%{ transform:translateY(-30px) rotate(8deg); }
+  }
+
+  /* progress trail */
+  .trail{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:28px;
+    position:relative;
+    z-index:1;
+  }
+  .paw-dot{
+    font-size:18px;
+    opacity:0.25;
+    transform:scale(0.85) rotate(-15deg);
+    transition:all 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .paw-dot.done{
+    opacity:1;
+    transform:scale(1.05) rotate(-15deg);
+    filter:drop-shadow(0 2px 4px rgba(217,122,98,0.3));
+  }
+  .paw-dot.current{
+    opacity:1;
+    transform:scale(1.3) rotate(-15deg);
+  }
+
+  .card{
+    background:var(--white-soft);
+    border-radius:28px;
+    padding:38px 30px;
+    box-shadow:0 20px 50px -15px rgba(74,48,52,0.18), 0 2px 8px rgba(74,48,52,0.06);
+    position:relative;
+    z-index:1;
+    animation:bounce-in 0.55s cubic-bezier(.34,1.56,.64,1);
+    border:1px solid rgba(232,146,124,0.15);
+  }
+
+  @keyframes bounce-in{
+    0%{ opacity:0; transform:translateY(24px) scale(0.96); }
+    100%{ opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  .eyebrow{
+    font-family:'Fredoka', sans-serif;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--terracotta-dark);
+    text-align:center;
+    margin-bottom:10px;
+    opacity:0.85;
+  }
+
+  .question{
+    font-family:'Fredoka', sans-serif;
+    font-size:23px;
+    font-weight:600;
+    text-align:center;
+    line-height:1.35;
+    margin-bottom:28px;
+    color:var(--plum);
+  }
+
+  .question .name{
+    color:var(--terracotta-dark);
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .option-btn{
+    font-family:'Fredoka', sans-serif;
+    font-size:16.5px;
+    font-weight:500;
+    background:var(--cream);
+    border:2px solid transparent;
+    border-radius:16px;
+    padding:16px 18px;
+    text-align:left;
+    cursor:pointer;
+    color:var(--plum);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    transition:all 0.22s ease;
+  }
+  .option-btn:hover{
+    background:var(--blush);
+    border-color:var(--terracotta);
+    transform:translateX(3px);
+  }
+  .option-btn:focus-visible{
+    outline:3px solid var(--terracotta-dark);
+    outline-offset:2px;
+  }
+  .option-btn .emoji{
+    font-size:20px;
+  }
+
+  /* reveal panel */
+  .reveal{
+    text-align:center;
+    animation:bounce-in 0.5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .reveal .big-emoji{
+    font-size:54px;
+    display:block;
+    margin-bottom:14px;
+    animation:pop 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes pop{
+    0%{ transform:scale(0.4) rotate(-10deg); opacity:0; }
+    60%{ transform:scale(1.12) rotate(4deg); }
+    100%{ transform:scale(1) rotate(0deg); opacity:1; }
+  }
+  .reveal .label{
+    font-family:'Fredoka', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    color:var(--terracotta-dark);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .reveal .note{
+    font-family:'Lora', serif;
+    font-style:italic;
+    font-size:17.5px;
+    line-height:1.6;
+    color:var(--plum);
+    padding:0 6px;
+    margin-bottom:26px;
+  }
+
+  .next-btn{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:15.5px;
+    background:var(--terracotta);
+    color:white;
+    border:none;
+    border-radius:14px;
+    padding:14px 28px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    box-shadow:0 8px 20px -6px rgba(217,122,98,0.5);
+  }
+  .next-btn:hover{
+    background:var(--terracotta-dark);
+    transform:translateY(-2px);
+    box-shadow:0 10px 24px -6px rgba(217,122,98,0.6);
+  }
+  .next-btn:focus-visible{
+    outline:3px solid var(--plum);
+    outline-offset:2px;
+  }
+
+  /* intro */
+  .intro{
+    text-align:center;
+  }
+  .intro .characters{
+    font-size:50px;
+    margin-bottom:18px;
+  }
+  .intro h1{
+    font-family:'Fredoka', sans-serif;
+    font-size:27px;
+    font-weight:700;
+    margin-bottom:10px;
+    color:var(--plum);
+  }
+  .intro p{
+    font-size:16px;
+    line-height:1.6;
+    color:#7A5C5F;
+    margin-bottom:26px;
+  }
+
+  /* final hug screen */
+  .finale{
+    text-align:center;
+  }
+  @keyframes burst{
+    0%{ opacity:0; transform:translateY(0) scale(0.5); }
+    30%{ opacity:1; }
+    100%{ opacity:0; transform:translateY(-50px) scale(1.3); }
+  }
+
+  .finale h2{
+    font-family:'Fredoka', sans-serif;
+    font-size:22px;
+    font-weight:700;
+    color:var(--terracotta-dark);
+    margin:18px 0 22px;
+  }
+
+  .letter{
+    background:var(--blush);
+    border-radius:20px;
+    padding:26px 22px;
+    text-align:left;
+    margin-bottom:20px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .letter p{
+    font-family:'Lora', serif;
+    font-size:15.5px;
+    line-height:1.85;
+    color:var(--plum);
+    margin-bottom:14px;
+  }
+  .letter p:last-child{ margin-bottom:0; }
+  .letter .signoff{
+    font-style:italic;
+    font-weight:600;
+    text-align:right;
+    color:var(--terracotta-dark);
+  }
+
+  .restart-link{
+    display:block;
+    text-align:center;
+    margin-top:22px;
+    font-family:'Fredoka', sans-serif;
+    font-size:13.5px;
+    color:#B89A85;
+    cursor:pointer;
+    background:none;
+    border:none;
+    text-decoration:underline;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  /* floating tease bubble */
+  .tease-bubble{
+    position:fixed;
+    left:50%;
+    bottom:60px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--plum);
+    color:var(--cream);
+    font-family:'Fredoka', sans-serif;
+    font-size:14.5px;
+    font-weight:500;
+    padding:14px 20px;
+    border-radius:18px;
+    max-width:340px;
+    text-align:center;
+    line-height:1.5;
+    box-shadow:0 14px 34px -10px rgba(74,48,52,0.45);
+    opacity:0;
+    pointer-events:none;
+    z-index:50;
+    transition:all 0.35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .tease-bubble::after{
+    content:'';
+    position:absolute;
+    bottom:-7px;
+    left:50%;
+    transform:translateX(-50%);
+    border-width:8px 7px 0 7px;
+    border-style:solid;
+    border-color:var(--plum) transparent transparent transparent;
+  }
+  .tease-bubble.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+
+  .option-btn .tap-hint{
+    margin-left:auto;
+    font-size:11.5px;
+    opacity:0.4;
+    font-style:italic;
+    white-space:nowrap;
+  }
+
+  /* real svg hug characters */
+  .hug-stage-v2{
+    position:relative;
+    height:150px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    margin-bottom:6px;
+  }
+  .char-wrap{
+    position:absolute;
+    bottom:0;
+    width:90px;
+    transition:transform 1.2s cubic-bezier(.32,1.3,.6,1);
+  }
+  .char-wrap.kukur-wrap{ transform:translateX(-58px); }
+  .char-wrap.kukurni-wrap{ transform:translateX(58px); }
+  .hug-stage-v2.hugging .char-wrap.kukur-wrap{ transform:translateX(-13px) rotate(-4deg); }
+  .hug-stage-v2.hugging .char-wrap.kukurni-wrap{ transform:translateX(13px) rotate(4deg); }
+  .char-wrap svg{ width:100%; height:auto; display:block; }
+
+  .hug-sparkle{
+    position:absolute;
+    top:6px;
+    font-size:16px;
+    opacity:0;
+  }
+  .hug-stage-v2.hugging .hug-sparkle{
+    animation:burst 1.7s ease-out 1s forwards;
+  }
+</style>
+</head>
+<body>
+
+<span class="ambient-paw" style="top:8%; left:6%;">🐾</span>
+<span class="ambient-paw" style="top:75%; left:10%; animation-delay:3s;">🐾</span>
+<span class="ambient-paw" style="top:20%; right:8%; animation-delay:6s;">🐾</span>
+<span class="ambient-paw" style="top:65%; right:6%; animation-delay:9s;">🐾</span>
+
+<div class="stage" id="stage"></div>
+
+<script>
+const KUKUR_SVG = `
+<svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="50" cy="118" rx="22" ry="6" fill="#4A3034" opacity="0.08"/>
+  <path d="M30 70 Q28 110 35 122 L65 122 Q72 110 70 70 Z" fill="#C98B5E"/>
+  <path d="M30 70 Q28 110 35 122 L48 122 L46 70 Z" fill="#B97A4D"/>
+  <ellipse cx="50" cy="48" rx="26" ry="24" fill="#D9A06B"/>
+  <path d="M28 30 Q18 12 26 8 Q36 8 36 26 Z" fill="#C98B5E"/>
+  <path d="M72 30 Q82 12 74 8 Q64 8 64 26 Z" fill="#C98B5E"/>
+  <ellipse cx="38" cy="48" rx="4.2" ry="5.2" fill="#3A2628"/>
+  <ellipse cx="62" cy="48" rx="4.2" ry="5.2" fill="#3A2628"/>
+  <ellipse cx="39.3" cy="46" rx="1.3" ry="1.6" fill="#fff"/>
+  <ellipse cx="63.3" cy="46" rx="1.3" ry="1.6" fill="#fff"/>
+  <ellipse cx="50" cy="56" rx="6" ry="4.5" fill="#7A5036"/>
+  <path d="M44 62 Q50 67 56 62" stroke="#7A5036" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M50 60 L50 56" stroke="#7A5036" stroke-width="2" stroke-linecap="round"/>
+</svg>
+`;
+
+const KUKURNI_SVG = `
+<svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="50" cy="118" rx="22" ry="6" fill="#4A3034" opacity="0.08"/>
+  <path d="M30 72 Q26 112 34 122 L66 122 Q74 112 70 72 Z" fill="#F4D9D0"/>
+  <path d="M30 72 Q26 112 34 122 L50 122 L48 72 Z" fill="#E8C2B5"/>
+  <circle cx="50" cy="46" r="27" fill="#FBE9DD"/>
+  <circle cx="22" cy="30" r="11" fill="#F4D9D0"/>
+  <circle cx="78" cy="30" r="11" fill="#F4D9D0"/>
+  <circle cx="15" cy="22" r="8" fill="#F4D9D0"/>
+  <circle cx="85" cy="22" r="8" fill="#F4D9D0"/>
+  <circle cx="50" cy="16" r="9" fill="#F4D9D0"/>
+  <ellipse cx="39" cy="48" rx="4" ry="5" fill="#3A2628"/>
+  <ellipse cx="61" cy="48" rx="4" ry="5" fill="#3A2628"/>
+  <ellipse cx="40.2" cy="46" rx="1.2" ry="1.5" fill="#fff"/>
+  <ellipse cx="62.2" cy="46" rx="1.2" ry="1.5" fill="#fff"/>
+  <path d="M34 40 Q39 36 44 40" stroke="#C98B5E" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <path d="M56 40 Q61 36 66 40" stroke="#C98B5E" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <ellipse cx="50" cy="55" rx="4.5" ry="3.5" fill="#D98B7A"/>
+  <path d="M45 61 Q50 65 55 61" stroke="#B5675A" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="30" cy="56" r="4" fill="#F2A99A" opacity="0.55"/>
+  <circle cx="70" cy="56" r="4" fill="#F2A99A" opacity="0.55"/>
+</svg>
+`;
+
+const QUESTIONS = [
+  {
+    q: "What does kukur notice first about kukurni?",
+    options: [
+      { emoji: "👀", label: "Her eyes", note: "Always her eyes. There's a whole conversation happening in them before she even says a word — and kukur is always listening." },
+      { emoji: "💇‍♀️", label: "Her hair", note: "The way it falls, the way she pushes it back without thinking — kukur notices. Kukur always notices." },
+      { emoji: "🗣️", label: "Her voice", note: "Doesn't matter what she's saying — could be the most random kukurni nonsense — kukur could listen to that voice on loop." }
+    ]
+  },
+  {
+    q: "When kukurni smiles, what happens?",
+    options: [
+      { emoji: "😊", label: "Whole room gets warmer", note: "That smile is unfairly powerful. It shows up and suddenly everything feels softer." },
+      { emoji: "🌞", label: "Kukur's whole mood shifts", note: "One smile from kukurni and kukur's bad day just... forgets to be bad anymore." },
+      { emoji: "😍", label: "Kukur stares a little too long", note: "Yes, obviously. Sue kukur." }
+    ]
+  },
+  {
+    q: "What about kukurni's laugh?",
+    options: [
+      { emoji: "🤣", label: "It's loud and unfiltered", note: "The real, snorty, no-holding-back laugh — kukur's actual favorite sound in the world, don't tell her." },
+      { emoji: "🎵", label: "It's basically music", note: "Could put it on a playlist honestly. Top hit." },
+      { emoji: "😂", label: "It's contagious", note: "Kukurni laughs, kukur laughs, neither of them even remember why anymore." }
+    ]
+  },
+  {
+    q: "Pick the thing kukur secretly brags about (kukurni's personality)",
+    options: [
+      { emoji: "🦋", label: "She's so kind it's unfair", note: "Kukurni has main-character kindness. It's genuinely one of kukur's favorite things about her, no cap." },
+      { emoji: "🔥", label: "She's a little unhinged (affectionate)", note: "The chaos. The randomness. Kukur wouldn't change a single weird thing about her." },
+      { emoji: "🧠", label: "She just *gets it*, gets kukur", note: "Best friend privileges: she understands kukur without the long explanation. That's rare, kukurni." }
+    ]
+  },
+  {
+    q: "What does kukurni's voice do to kukur, really?",
+    options: [
+      { emoji: "📞", label: "Calls just to hear it", note: "Sometimes there's no real reason to call. The reason is just... her voice. That's it. That's the whole reason." },
+      { emoji: "💬", label: "Even her texts have a 'voice'", note: "Kukur can hear exactly how she'd say it, just from reading it. That's a whole skillset, kukurni." },
+      { emoji: "🥹", label: "It's just... home", note: "There's a comfort in it that kukur doesn't really have words for. So this quiz had to find some." }
+    ]
+  },
+  {
+    q: "Quick one — how long have kukur &amp; kukurni been talking?",
+    options: [
+      { emoji: "1️⃣", label: "1 year", note: "A solid guess, kukurni. But that's not even close, hihi." },
+      { emoji: "2️⃣", label: "2 years", note: "Closer... but still not it. Try again next time you see kukur, ta." },
+      { emoji: "4️⃣", label: "4 years", note: "Getting warmer. Still not the real answer though 😏" },
+      { emoji: "♾️", label: "No, it feels like purano janma dekhi", note: "Exactly. Doesn't even feel like it has a start date — feels like knowing each other from past lives. Some friendships just don't follow normal timelines, kukurni." }
+    ]
+  },
+  {
+    q: "One thing kukurni always complains about herself...",
+    options: [
+      { emoji: "📏", label: "Her height, obviously", isHeight: true, note: "HEIGHT_TEASE" },
+      { emoji: "🍝", label: "Her cooking", note: "Not even on the list, kukurni. Stop self-reporting things kukur never said." },
+      { emoji: "😤", label: "Her temper", note: "A little spicy sometimes, sure — but kukur signed up for the whole package, lati." }
+    ]
+  },
+  {
+    q: "And what does kukur complain about most?",
+    options: [
+      { emoji: "🐢", label: "She replies SO slow", isWait: true, note: "WAIT_TEASE" },
+      { emoji: "🥘", label: "She steals his food", note: "Hasn't happened. Yet. But kukur is keeping an eye on you, kukurni." },
+      { emoji: "📺", label: "She picks bad movies", note: "Untrue propaganda. Kukur has zero complaints about movie picks. (Okay, maybe one.)" }
+    ]
+  }
+];
+
+let current = 0;
+let phase = "question"; // question -> reveal -> question ... -> finale
+let selectedOption = null;
+
+const stage = document.getElementById('stage');
+
+function renderTrail(){
+  let dots = '';
+  for(let i=0;i<QUESTIONS.length;i++){
+    let cls = 'paw-dot';
+    if(i < current) cls += ' done';
+    else if(i === current) cls += ' current';
+    dots += `<span class="${cls}">🐾</span>`;
+  }
+  return `<div class="trail">${dots}</div>`;
+}
+
+function renderIntro(){
+  stage.innerHTML = `
+    <div class="card intro">
+      <div class="characters">🐶 ❤️ 🐩</div>
+      <h1>kukur &amp; kukurni</h1>
+      <p>a tiny quiz about everything kukur loves about his kukurni.<br>tap through, kukurni. this one's for you. 🐾</p>
+      <button class="next-btn" id="start-btn">Start →</button>
+    </div>
+  `;
+  document.getElementById('start-btn').addEventListener('click', () => {
+    phase = "question";
+    render();
+  });
+}
+
+function renderQuestion(){
+  const item = QUESTIONS[current];
+  let optsHtml = item.options.map((opt, idx) => {
+    const isTease = opt.isHeight || opt.isWait;
+    const hint = isTease ? `<span class="tap-hint">tap me</span>` : '';
+    return `
+    <button class="option-btn" data-idx="${idx}">
+      <span class="emoji">${opt.emoji}</span>
+      <span>${opt.label}</span>
+      ${hint}
+    </button>
+  `;
+  }).join('');
+
+  stage.innerHTML = `
+    ${renderTrail()}
+    <div class="card">
+      <div class="eyebrow">Question ${current + 1} of ${QUESTIONS.length}</div>
+      <div class="question">${item.q}</div>
+      <div class="options">${optsHtml}</div>
+    </div>
+    <div class="tease-bubble" id="tease-bubble"></div>
+  `;
+
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const opt = item.options[parseInt(btn.dataset.idx)];
+      selectedOption = opt;
+
+      if(opt.isHeight){
+        showTease("Hoina ta, your height is not even a flaw — tyo nai ta cute part ho. Lati, you don't even know how adorable you look from kukur's eyes. Stop complaining and accept the compliment 🥹📏");
+        return;
+      }
+      if(opt.isWait){
+        showTease("Kukur: *checks phone every 4 minutes* 🥲⏳ Still nothing. Still loading. Kukur is out here doing full sit-ups waiting for 'seen' to turn into a reply, kukurni 😭");
+        return;
+      }
+
+      phase = "reveal";
+      render();
+    });
+  });
+}
+
+function showTease(msg){
+  const bubble = document.getElementById('tease-bubble');
+  bubble.innerHTML = msg + `<br><br><span style="font-size:12px; opacity:0.75;">tap anywhere to continue →</span>`;
+  bubble.classList.add('show');
+  const advance = () => {
+    phase = "reveal";
+    render();
+  };
+  setTimeout(() => {
+    document.body.addEventListener('click', advance, { once:true });
+  }, 50);
+}
+
+function renderReveal(){
+  const isLast = current === QUESTIONS.length - 1;
+  let noteText = selectedOption.note;
+  if(noteText === "HEIGHT_TEASE"){
+    noteText = "Hoina ta, your height is not even a flaw — tyo nai ta cute part ho. You don't even know how adorable you look from kukur's eyes, lati. Stop complaining and accept the compliment.";
+  }
+  if(noteText === "WAIT_TEASE"){
+    noteText = "Guilty as charged. Kukur checks the phone every few minutes, does the full waiting-room sigh, refreshes for no reason — kukurni really has him on read-receipt-watch duty 😭⏳";
+  }
+  stage.innerHTML = `
+    ${renderTrail()}
+    <div class="card reveal">
+      <span class="big-emoji">${selectedOption.emoji}</span>
+      <div class="label">what kukur really thinks</div>
+      <div class="note">"${noteText}"</div>
+      <button class="next-btn" id="next-btn">${isLast ? 'See the ending →' : 'Next →'}</button>
+    </div>
+  `;
+  document.getElementById('next-btn').addEventListener('click', () => {
+    if(isLast){
+      phase = "finale";
+    } else {
+      current++;
+      phase = "question";
+    }
+    render();
+  });
+}
+
+function renderFinale(){
+  stage.innerHTML = `
+    <div class="card finale">
+      <div class="hug-stage-v2" id="hug-stage">
+        <div class="char-wrap kukur-wrap">
+          ${KUKUR_SVG}
+        </div>
+        <div class="char-wrap kukurni-wrap">
+          ${KUKURNI_SVG}
+        </div>
+        <span class="hug-sparkle" style="left:36%;">💕</span>
+        <span class="hug-sparkle" style="left:48%; animation-delay:0.15s;">✨</span>
+        <span class="hug-sparkle" style="left:60%; animation-delay:0.3s;">💕</span>
+      </div>
+      <h2>that's everything, kukurni 🐾</h2>
+      <div class="letter">
+        <p>Hihi okay but for real — I can't even fully explain how much I love and admire you. You're sadai special xas, like genuinely, not just "nice best friend" special — the "my world is better with you in it" kind of special.</p>
+        <p>No matter what happens, where life drags us, how busy or far or annoying things get — I always want us together. Always. That part isn't even a question for me.</p>
+        <p>Also you snort when you laugh and I will be bringing that up forever, so. 😌</p>
+        <p class="signoff">— kukur 🐶</p>
+      </div>
+      <button class="restart-link" id="restart-btn">↺ play again</button>
+    </div>
+  `;
+
+  setTimeout(() => {
+    document.getElementById('hug-stage').classList.add('hugging');
+  }, 400);
+
+  document.getElementById('restart-btn').addEventListener('click', () => {
+    current = 0;
+    phase = "question";
+    selectedOption = null;
+    render();
+  });
+}
+
+function render(){
+  if(phase === "question") renderQuestion();
+  else if(phase === "reveal") renderReveal();
+  else if(phase === "finale") renderFinale();
+}
+
+renderIntro();
+</script>
+
+</body>
+</html>
