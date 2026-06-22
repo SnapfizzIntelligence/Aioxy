@@ -328,9 +328,41 @@ function renderTwinResults(mainResult, twinCalcResult) {
 
     var mainIngs = window.selectedIngredients        || [];
     var twinIngs = window.twinSelectedIngredients    || [];
-    var modeLabel = (twinIngs.length === mainIngs.length) ? 'Apple-to-Apple' : 'What-If Scenario';
-    var modeColor = (twinIngs.length === mainIngs.length) ? '#2C7A7B'        : '#8E44AD';
-    var modeIcon  = (twinIngs.length === mainIngs.length) ? 'fa-exchange-alt': 'fa-flask';
+
+    // K1-F1 FIX (Audit Session 13): Apple-to-apple label now based on operational parameter
+    // parity, not ingredient count. PEF 3.1 §6 requires same functional unit, system boundary,
+    // manufacturing, transport, and packaging for a valid comparative assertion.
+    // Checks: manufacturing country, energy source, transport mode, distance, packaging material, weight.
+    var twinMfgCountry  = (typeof gv === 'function') ? gv('twinManufacturingCountry') : '';
+    var mainMfgCountry  = (mainAudit.manufacturing && mainAudit.manufacturing.country) || '';
+    var twinEnergySource = (typeof gv === 'function') ? gv('twinEnergySource') : '';
+    var mainEnergySource = (mainAudit.manufacturing && mainAudit.manufacturing.energySource) || '';
+    var twinTransMode   = (typeof gv === 'function') ? gv('twinTransportMode') : '';
+    var mainTransMode   = (mainAudit.transport && mainAudit.transport.mode) || '';
+    var twinPkgMat      = (typeof gv === 'function') ? gv('twinPackagingMaterial') : '';
+    var mainPkgMat      = (mainAudit.packaging && mainAudit.packaging.material) || '';
+
+    var operationalParityMet = (
+        twinMfgCountry   === mainMfgCountry   &&
+        twinEnergySource === mainEnergySource  &&
+        twinTransMode    === mainTransMode     &&
+        twinPkgMat       === mainPkgMat        &&
+        Math.abs(twinMass - mainMass) < 0.001
+    );
+
+    var modeLabel = operationalParityMet ? 'Apple-to-Apple' : 'What-If Scenario';
+    var modeColor = operationalParityMet ? '#2C7A7B'        : '#8E44AD';
+    var modeIcon  = operationalParityMet ? 'fa-exchange-alt': 'fa-flask';
+
+    // K2-F1 FIX (Audit Session 13): Add visible warning when product weights differ.
+    // Per-kg metrics use each product's own weight as denominator — results are not
+    // directly comparable on an equal-portion basis when weights differ.
+    var massMismatchWarning = Math.abs(twinMass - mainMass) > 0.001
+        ? '<div style="background:#FFF3CD;border:1px solid #F0AD4E;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:0.78rem;color:#856404;">' +
+          '\u26A0\uFE0F <strong>Different declared weights:</strong> Main = ' + (mainMass*1000).toFixed(0) + 'g, Twin = ' + (twinMass*1000).toFixed(0) + 'g. ' +
+          'Per-kg comparison uses each product\'s own weight as functional unit denominator. ' +
+          'Results are not directly comparable on an equal-portion basis.</div>'
+        : '';
 
     var co2Delta    = twinCO2 - mainCO2;
     var co2DeltaPct = mainCO2 !== 0 ? (co2Delta / Math.abs(mainCO2)) * 100 : 0;
@@ -494,6 +526,9 @@ function renderTwinResults(mainResult, twinCalcResult) {
             '<div style="font-weight:700;color:' + summaryCol + ';font-size:0.9rem;"><i class="fas ' + summaryArrow + '"></i> ' + verdictText + '</div>' +
             '<div style="font-size:0.72rem;color:var(--gray);margin-top:0.3rem;">' + disclaimer + '</div>' +
         '</div>' +
+
+        // K2-F1 FIX: Mass mismatch warning (empty string when masses match)
+        massMismatchWarning +
 
         // 4 metric cards
         '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.25rem;">' +
@@ -876,7 +911,7 @@ function buildTwinPDFSection(doc, h) {
 
     var U16 = {
         'Climate Change':'kg CO2e','Water Use/Scarcity (AWARE)':'m3 world eq.',
-        'Land Use':'Pt','Resource Use, fossils':'MJ',
+        'Land Use':'Pt','Resource Use, fossils':'MJ', // K7-F1 FIX: EF 3.1 dimensionless/Pt — LANCA output
         'Eutrophication, terrestrial':'mol Ne','Eutrophication, freshwater':'kg Pe',
         'Eutrophication, marine':'kg Ne','Acidification':'mol H+e',
         'Particulate Matter':'disease inc.','Photochemical Ozone Formation':'kg NMVOCe',
@@ -967,6 +1002,12 @@ function buildTwinPDFSection(doc, h) {
 
             // Get AGRIBALYSE base EF from DB (same path as main product)
             var dbIng    = (window.aioxyData && window.aioxyData.ingredients) ? (window.aioxyData.ingredients[ingId] || null) : null;
+            // K3-F1 NOTE (Audit Session 13): pefVals here is the raw AGRIBALYSE base EF
+            // used only for Layer A display in this PDF section.
+            // The per-category deltas in the UI comparison come from the twin's full
+            // calculateImpact() run (twinAudit.pef_results) which has ALL adjustments
+            // applied — AWARE, LANCA, co2Mult, primary data. The raw pef is correct
+            // for Layer A traceability but should not be used for comparison deltas.
             var pefVals  = (dbIng && dbIng.data && dbIng.data.pef) ? dbIng.data.pef : null;
 
             h.ensureSpace(18, 'Twin Ingredient Glass-Box (continued)');

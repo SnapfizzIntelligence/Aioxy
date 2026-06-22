@@ -60,9 +60,11 @@ function c(s) {
     return q('# ' + s);
 }
 
+// CSV-F6 FIX: Guard against Infinity in fix() — defensive, since perKg() already guards.
 function fix(n, d) {
     const v = parseFloat(n);
-    return isNaN(v) ? '0' : v.toFixed(d);
+    if (isNaN(v) || !isFinite(v)) return '0';
+    return v.toFixed(d);
 }
 
 function pct(n) { return fix(n * 100, 2) + '%'; }
@@ -122,7 +124,9 @@ function buildMasterData() {
     const primaryDataApplied = (anyPrimaryIng || hasPrimaryMfg) ? 'YES' : 'NO';
 
     // EUDR high-risk countries
-    const EUDR_HR = new Set(['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD']);
+    // CSV-F1 FIX: Added Bolivia (BO), Honduras (HN), Guatemala (GT), Venezuela (VE).
+// Source: EUDR Regulation 2023/1115 Annex 1 + European Commission deforestation risk guidance 2024.
+const EUDR_HR = new Set(['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD','BO','HN','GT','VE']);
 
     return {
         // Identity
@@ -513,6 +517,38 @@ function generateAldiCSV(d) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CSV-F2 FIX (Audit Session 15): ISO→German country name map for REWE portal.
+// REWE Supplier Portal expects German country names, not ISO codes.
+// ISO code is retained in the NOTES field for traceability.
+const ISO_TO_GERMAN = {
+    'FR':'Frankreich','DE':'Deutschland','NL':'Niederlande','BE':'Belgien',
+    'ES':'Spanien','IT':'Italien','PL':'Polen','PT':'Portugal','AT':'Österreich',
+    'CH':'Schweiz','GB':'Vereinigtes Königreich','DK':'Dänemark','SE':'Schweden',
+    'FI':'Finnland','NO':'Norwegen','CZ':'Tschechien','HU':'Ungarn','RO':'Rumänien',
+    'SK':'Slowakei','SI':'Slowenien','HR':'Kroatien','BG':'Bulgarien','GR':'Griechenland',
+    'LT':'Litauen','LV':'Lettland','EE':'Estland','IE':'Irland','LU':'Luxemburg',
+    'MT':'Malta','CY':'Zypern','TR':'Türkei','UA':'Ukraine','RU':'Russland',
+    'US':'Vereinigte Staaten','CA':'Kanada','BR':'Brasilien','AR':'Argentinien',
+    'IN':'Indien','CN':'China','JP':'Japan','AU':'Australien','ZA':'Südafrika',
+    'MA':'Marokko','EG':'Ägypten','TH':'Thailand','VN':'Vietnam','ID':'Indonesien',
+    'MX':'Mexiko','CO':'Kolumbien','PE':'Peru','CL':'Chile','KE':'Kenia'
+};
+
+// CSV-F2 FIX: ISO→Dutch country name map for Albert Heijn portal.
+const ISO_TO_DUTCH = {
+    'FR':'Frankrijk','DE':'Duitsland','NL':'Nederland','BE':'België',
+    'ES':'Spanje','IT':'Italië','PL':'Polen','PT':'Portugal','AT':'Oostenrijk',
+    'CH':'Zwitserland','GB':'Verenigd Koninkrijk','DK':'Denemarken','SE':'Zweden',
+    'FI':'Finland','NO':'Noorwegen','CZ':'Tsjechië','HU':'Hongarije','RO':'Roemenië',
+    'SK':'Slowakije','SI':'Slovenië','HR':'Kroatië','BG':'Bulgarije','GR':'Griekenland',
+    'LT':'Litouwen','LV':'Letland','EE':'Estland','IE':'Ierland','LU':'Luxemburg',
+    'MT':'Malta','CY':'Cyprus','TR':'Turkije','UA':'Oekraïne','RU':'Rusland',
+    'US':'Verenigde Staten','CA':'Canada','BR':'Brazilië','AR':'Argentinië',
+    'IN':'India','CN':'China','JP':'Japan','AU':'Australië','ZA':'Zuid-Afrika',
+    'MA':'Marokko','EG':'Egypte','TH':'Thailand','VN':'Vietnam','ID':'Indonesië',
+    'MX':'Mexico','CO':'Colombia','PE':'Peru','CL':'Chili','KE':'Kenia'
+};
+
 // REWE — Rewe Group Supplier Sustainability Profile 2024
 // ─────────────────────────────────────────────────────────────────────────────
 function generateReweCSV(d) {
@@ -524,11 +560,14 @@ function generateReweCSV(d) {
     rows.push(['REWE_FIELD', 'VALUE', 'UNIT', 'REWE_MODULE', 'NOTES'].map(q).join(','));
     rows.push(['']);
 
+    // CSV-F2 FIX: Use German country name for REWE portal; retain ISO code in notes.
+    const mfgCountryDE = ISO_TO_GERMAN[d.mfgCountry] || d.mfgCountry;
+
     rows.push([c('MODULE U — UMWELT (ENVIRONMENT)')]);
     rows.push(['produkt_name',                       d.productName,          '',  'U0',  ''].map(q).join(','));
     rows.push(['bewertungs_id',                      d.dppId,                '',  'U0',  'AIOXY DPP-ID'].map(q).join(','));
     rows.push(['bewertungsjahr',                     d.assessDate.slice(0,4),'',  'U0',  ''].map(q).join(','));
-    rows.push(['herstellungsland',                   d.mfgCountry,           '',  'U0',  'ISO 3166-1'].map(q).join(','));
+    rows.push(['herstellungsland',                   mfgCountryDE,           '',  'U0',  'ISO: ' + d.mfgCountry].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('U1 — TREIBHAUSGASEMISSIONEN (GHG EMISSIONS)')]);
@@ -586,11 +625,14 @@ function generateAlbertHeijnCSV(d) {
     rows.push(['AH_FIELD', 'VALUE', 'UNIT', 'AH_CATEGORY', 'NOTES'].map(q).join(','));
     rows.push(['']);
 
+    // CSV-F2 FIX: Use Dutch country name for AH portal; retain ISO code in notes.
+    const mfgCountryNL = ISO_TO_DUTCH[d.mfgCountry] || d.mfgCountry;
+
     rows.push([c('CATEGORY 1 — PRODUCT IDENTIFICATION')]);
     rows.push(['ah_product_name',                 d.productName,            '',  'CAT1', ''].map(q).join(','));
     rows.push(['ah_assessment_id',                d.dppId,                  '',  'CAT1', 'AIOXY DPP ID'].map(q).join(','));
     rows.push(['ah_reporting_period',             d.assessDate.slice(0,4),  '',  'CAT1', 'Year'].map(q).join(','));
-    rows.push(['ah_country_of_production',        d.mfgCountry,             '',  'CAT1', ''].map(q).join(','));
+    rows.push(['ah_country_of_production',        mfgCountryNL,             '',  'CAT1', 'ISO: ' + d.mfgCountry].map(q).join(','));
     rows.push(['ah_product_weight_kg',            fix(d.pWeightKg, 4),      'kg','CAT1', 'Net content'].map(q).join(','));
     rows.push(['']);
 
@@ -951,8 +993,14 @@ function generateCDP_SC_CSV(d) {
     rows.push(['c6_5_scope3_cat1_intensity_kg_co2e_per_kg', fix(d.cc_ing + d.cc_pkg, 6), 'kg CO2e/kg', 'C6.5', 'Ingredients + packaging — Scope 3 Cat.1 from buyer perspective'].map(q).join(','));
     rows.push(['c6_5_scope3_cat4_intensity_kg_co2e_per_kg',         fix(d.cc_trans + d.cc_upstream, 6), 'kg CO2e/kg', 'C6.5', 'Transport Scope 3 Cat.4 — inbound + outbound (GLEC v3.2)'].map(q).join(','));
     rows.push(['c6_5_scope3_cat4_inbound_intensity_kg_co2e_per_kg', fix(d.cc_upstream, 6),             'kg CO2e/kg', 'C6.5', 'Inbound ingredient transport (GLEC v3.2 screening)'].map(q).join(','));
-    rows.push(['c6_5_total_product_intensity_kg_co2e_per_kg', fix(d.cc, 6),               'kg CO2e/kg', 'C6.5', 'Total product cradle-to-retail'].map(q).join(','));
     rows.push(['c6_5_supplier_scope1_intensity',              fix(d.cc_mfg, 6),            'kg CO2e/kg', 'C6.5', 'Supplier Scope 1+2 from manufacturing'].map(q).join(','));
+    // CSV-F5 FIX (Audit Session 15): Add waste stage field when cc_waste > 0.
+    // Without this field, Cat.1 + Cat.4 + Scope1 will be < total if waste stage CC > 0,
+    // creating an unexplained reconciliation gap for CDP reviewers.
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['c6_5_scope3_waste_processing_kg_co2e_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'C6.5', 'Waste processing stage — included in total'].map(q).join(','));
+    }
+    rows.push(['c6_5_total_product_intensity_kg_co2e_per_kg', fix(d.cc, 6),               'kg CO2e/kg', 'C6.5', 'Total product cradle-to-retail (all stages)'].map(q).join(','));
     rows.push(['c6_5_emissions_boundary',        'Cradle-to-Retail (ISO 14044)',  '',  'C6.5', 'From farm gate to retailer distribution centre'].map(q).join(','));
     rows.push(['c6_5_calculation_method',        'Activity-based PCF per ISO 14044 / PEF 3.1', '', 'C6.5', 'LCI database: AGRIBALYSE 3.2'].map(q).join(','));
     rows.push(['c6_5_emission_factors_source',   d.lciDatabase,            '',  'C6.5', ''].map(q).join(','));

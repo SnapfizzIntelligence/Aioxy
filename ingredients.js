@@ -916,140 +916,258 @@ Object.assign(window.aioxyData.ingredients, {
 
 
 
-// FIX: [Audit 11.2] grid_intensity is the authoritative source (Ember 2025, flat numbers).
-// countries[code].electricityCO2 values below have been synced to match grid_intensity[code]
-// for all countries present in both objects. Countries in 'countries' but NOT in grid_intensity
-// retain their existing values unchanged.
-// grid_intensity is authoritative (Ember 2025); countries.electricityCO2 is a synced copy
-// for backward compatibility only. On any future update, change grid_intensity first.
+// =============================================================================
+// GRID ELECTRICITY CARBON INTENSITY — DATA CITATION & VINTAGE LOG
+// =============================================================================
+// Source:   Ember Climate (2025). "Yearly Electricity Data" (unified dataset).
+//           ember-climate.org/data/data-tools/data-explorer/
+// Variable: CO2 intensity | Unit: gCO2/kWh
+// Refresh:  June 2026 — hybrid update (Ember 2025 actuals where published,
+//           Ember 2024 fallback for countries not yet reported for 2025).
+// Previous: Ember 2024 actuals (loaded June 2026 — C2-F1 session).
+// Next:     Refresh annually. Update grid_intensity first, then sync
+//           countries.electricityCO2 immediately after.
+// -----------------------------------------------------------------------------
+// EMBER 2025 ACTUALS (38 countries — year 2025 data published at time of refresh)
+//   AT  Austria          116.9    BA  Bosnia-Herz.     570.6
+//   BE  Belgium          149.8    BG  Bulgaria         275.6
+//   CH  Switzerland       39.2    CY  Cyprus           489.0
+//   CZ  Czechia          401.5    DE  Germany          329.6
+//   DK  Denmark          114.4    EE  Estonia          319.1
+//   ES  Spain            153.6    FI  Finland           57.5
+//   FR  France            41.4    GB  United Kingdom   217.1
+//   GR  Greece           315.1    HR  Croatia          158.5
+//   HU  Hungary          163.0    IE  Ireland          256.5
+//   IT  Italy            284.8    LT  Lithuania        138.4
+//   LU  Luxembourg       123.4    LV  Latvia           138.8
+//   MD  Moldova          633.1    ME  Montenegro       263.2
+//   MK  N. Macedonia     441.4    MT  Malta            484.0
+//   NL  Netherlands      253.6    NO  Norway            28.1
+//   PL  Poland           588.6    PT  Portugal         127.9
+//   RO  Romania          250.8    RS  Serbia           695.8
+//   RU  Russia           449.7    SE  Sweden            35.3
+//   SI  Slovenia         183.3    SK  Slovakia          94.8
+//   TR  Turkey           474.7    UA  Ukraine          197.3
+// -----------------------------------------------------------------------------
+// EMBER 2024 ACTUALS (42 countries — 2025 data not yet published at refresh date)
+//   AE  UAE              467.5    AL  Albania           25.2
+//   AR  Argentina        344.8    AU  Australia        553.8
+//   BD  Bangladesh       695.7    BR  Brazil           106.1
+//   CA  Canada           185.3    CI  Côte d'Ivoire    405.0
+//   CL  Chile            259.9    CM  Cameroon         225.9
+//   CN  China            555.4    CO  Colombia         298.3
+//   DZ  Algeria          632.9    EG  Egypt            574.5
+//   ET  Ethiopia          23.4    GH  Ghana            468.9
+//   ID  Indonesia        680.2    IN  India            705.4
+//   IQ  Iraq             683.1    IR  Iran             648.7
+//   IS  Iceland           27.8    JP  Japan            483.4
+//   KE  Kenya             85.2    KR  South Korea      415.5
+//   LK  Sri Lanka        378.4    MA  Morocco          594.8
+//   MX  Mexico           483.1    MY  Malaysia         600.4
+//   NG  Nigeria          495.7    NP  Nepal             24.3
+//   NZ  New Zealand      112.0    PE  Peru             258.7
+//   PH  Philippines      621.7    PK  Pakistan         373.7
+//   SA  Saudi Arabia     692.0    TH  Thailand         554.7
+//   TN  Tunisia          558.3    TW  Taiwan           635.2
+//   US  United States    383.8    UY  Uruguay           69.6
+//   VN  Vietnam          484.3    ZA  South Africa     717.4
+// -----------------------------------------------------------------------------
+// SPECIAL CASES
+//   XK  Kosovo           884.9   — Not in Ember (no ISO 3166-1 alpha-3 assigned).
+//                                  Value retained from prior dataset.
+//   Global proxy         480.0   — World average approximation. Not country-specific.
+// =============================================================================
 window.aioxyData.grid_intensity = {
-    // ── Europe (existing) ─────────────────────────────────────────────────────
-    "IS": 18,   "NO": 28.1, "SE": 35.3, "CH": 39.2, "FR": 41.4, "FI": 57.5, "SK": 94.8,
-    "DK": 114.4,"AT": 116.9,"CA": 120,  "LU": 123.4,"PT": 127.9,"BR": 135,  "LT": 138.4,
-    "LV": 138.8,"BE": 149.8,"ES": 153.6,"HR": 158.5,"HU": 163.0,"SI": 183.3,"GB": 217.4, // ISO 3166-1 alpha-2 standard
-    "RO": 250.8,"NL": 253.6,"IE": 256.5,"ME": 264.2,"BG": 275.6,"IT": 284.8,"GR": 315.1,
-    "EE": 319.1,"DE": 329.6,"US": 368,  "AU": 380,  "CZ": 401.5,"JP": 435,  "MK": 441.4,
-    "TR": 474.7,"Global": 480,"VN": 482,"MT": 484.0,"CY": 489.0,"BA": 570.6,"CN": 580,
-    "PL": 588.6,"IN": 632,  "RS": 695.8,"XK": 900.9,
-    // ── Global expansion (Ember 2025 / IEA 2024) ─────────────────────────────
-    // South & Southeast Asia
-    "TH": 491,  "ID": 762,  "MY": 571,  "PH": 653,  "BD": 579,
-    "PK": 423,  "LK": 514,  "NP": 14,   "KR": 415,  "TW": 494,
-    // Middle East & North Africa
-    "SA": 721,  "AE": 401,  "IR": 476,  "IQ": 659,  "EG": 489,
-    "MA": 598,  "DZ": 579,  "TN": 468,
-    // Sub-Saharan Africa
-    "NG": 430,  "GH": 367,  "CI": 388,  "CM": 241,  "KE": 92,
-    "ET": 18,   "ZA": 750,
-    // Eastern Europe & Balkans
-    "UA": 198,  "RU": 318,  "MD": 486,  "AL": 18,
-    // Latin America
-    "MX": 408,  "AR": 311,  "CL": 276,  "CO": 174,  "PE": 198,  "UY": 74,
-    // Oceania
-    "NZ": 115
+
+    // ── Europe (all Ember 2025 actuals) ──────────────────────────────────────
+    "IS":  27.8,  // ember-2024 | Iceland
+    "AL":  25.2,  // ember-2024 | Albania
+    "NO":  28.1,  // ember-2025 | Norway
+    "CH":  39.2,  // ember-2025 | Switzerland
+    "FR":  41.4,  // ember-2025 | France
+    "FI":  57.5,  // ember-2025 | Finland
+    "SK":  94.8,  // ember-2025 | Slovakia
+    "DK": 114.4,  // ember-2025 | Denmark
+    "AT": 116.9,  // ember-2025 | Austria
+    "LU": 123.4,  // ember-2025 | Luxembourg
+    "PT": 127.9,  // ember-2025 | Portugal
+    "LT": 138.4,  // ember-2025 | Lithuania
+    "LV": 138.8,  // ember-2025 | Latvia
+    "BE": 149.8,  // ember-2025 | Belgium
+    "ES": 153.6,  // ember-2025 | Spain
+    "HR": 158.5,  // ember-2025 | Croatia
+    "HU": 163.0,  // ember-2025 | Hungary
+    "SI": 183.3,  // ember-2025 | Slovenia
+    "GB": 217.1,  // ember-2025 | United Kingdom
+    "RO": 250.8,  // ember-2025 | Romania
+    "NL": 253.6,  // ember-2025 | Netherlands
+    "IE": 256.5,  // ember-2025 | Ireland
+    "ME": 263.2,  // ember-2025 | Montenegro
+    "BG": 275.6,  // ember-2025 | Bulgaria
+    "IT": 284.8,  // ember-2025 | Italy
+    "GR": 315.1,  // ember-2025 | Greece
+    "EE": 319.1,  // ember-2025 | Estonia
+    "DE": 329.6,  // ember-2025 | Germany
+    "CZ": 401.5,  // ember-2025 | Czechia
+    "MK": 441.4,  // ember-2025 | North Macedonia
+    "TR": 474.7,  // ember-2025 | Turkey
+    "MT": 484.0,  // ember-2025 | Malta
+    "CY": 489.0,  // ember-2025 | Cyprus
+    "BA": 570.6,  // ember-2025 | Bosnia-Herzegovina
+    "PL": 588.6,  // ember-2025 | Poland
+    "MD": 633.1,  // ember-2025 | Moldova
+    "RS": 695.8,  // ember-2025 | Serbia
+    "XK": 884.9,  // no-ember   | Kosovo — not in Ember (no ISO 3166-1 alpha-3 assigned)
+    "UA": 197.3,  // ember-2025 | Ukraine — 2025 data now available (conflict gap resolved)
+    "RU": 449.7,  // ember-2025 | Russia
+
+    // ── Global proxy ─────────────────────────────────────────────────────────
+    "Global": 480, // world-avg  | World average approximation — not Ember country-specific
+
+    // ── North America & Oceania ───────────────────────────────────────────────
+    "CA": 185.3,  // ember-2024 | Canada
+    "US": 383.8,  // ember-2024 | United States
+    "NZ": 112.0,  // ember-2024 | New Zealand
+    "AU": 553.8,  // ember-2024 | Australia
+
+    // ── Latin America ─────────────────────────────────────────────────────────
+    "UY":  69.6,  // ember-2024 | Uruguay
+    "BR": 106.1,  // ember-2024 | Brazil
+    "CL": 259.9,  // ember-2024 | Chile
+    "PE": 258.7,  // ember-2024 | Peru
+    "CO": 298.3,  // ember-2024 | Colombia
+    "AR": 344.8,  // ember-2024 | Argentina
+    "MX": 483.1,  // ember-2024 | Mexico
+
+    // ── East Asia & Pacific ───────────────────────────────────────────────────
+    "JP": 483.4,  // ember-2024 | Japan
+    "KR": 415.5,  // ember-2024 | South Korea
+    "CN": 555.4,  // ember-2024 | China
+    "TW": 635.2,  // ember-2024 | Taiwan
+
+    // ── South & Southeast Asia ────────────────────────────────────────────────
+    "NP":  24.3,  // ember-2024 | Nepal
+    "LK": 378.4,  // ember-2024 | Sri Lanka
+    "PK": 373.7,  // ember-2024 | Pakistan
+    "VN": 484.3,  // ember-2024 | Vietnam
+    "MY": 600.4,  // ember-2024 | Malaysia
+    "PH": 621.7,  // ember-2024 | Philippines
+    "TH": 554.7,  // ember-2024 | Thailand
+    "ID": 680.2,  // ember-2024 | Indonesia
+    "BD": 695.7,  // ember-2024 | Bangladesh
+    "IN": 705.4,  // ember-2024 | India
+
+    // ── Middle East & North Africa ────────────────────────────────────────────
+    "AE": 467.5,  // ember-2024 | United Arab Emirates
+    "TN": 558.3,  // ember-2024 | Tunisia
+    "EG": 574.5,  // ember-2024 | Egypt
+    "MA": 594.8,  // ember-2024 | Morocco
+    "DZ": 632.9,  // ember-2024 | Algeria
+    "IR": 648.7,  // ember-2024 | Iran
+    "IQ": 683.1,  // ember-2024 | Iraq
+    "SA": 692.0,  // ember-2024 | Saudi Arabia
+
+    // ── Sub-Saharan Africa ────────────────────────────────────────────────────
+    "ET":  23.4,  // ember-2024 | Ethiopia
+    "KE":  85.2,  // ember-2024 | Kenya
+    "CM": 225.9,  // ember-2024 | Cameroon
+    "CI": 405.0,  // ember-2024 | Côte d'Ivoire
+    "GH": 468.9,  // ember-2024 | Ghana
+    "NG": 495.7,  // ember-2024 | Nigeria
+    "ZA": 717.4,  // ember-2024 | South Africa
 };
 
+// June 2026 refresh: countries.electricityCO2 synced to Ember 2025/2024 hybrid actuals.
+// All values match grid_intensity above. awareFactor values unchanged (AWARE 2.0 is stable).
 window.aioxyData.countries = {
-    "AU": { "name": "Australia", "electricityCO2": 380, "awareFactor": 60.1 },
-    "AT": { "name": "Austria", "electricityCO2": 116.9, "awareFactor": 2.5 },
-    "BE": { "name": "Belgium", "electricityCO2": 149.8, "awareFactor": 42.1 },
-    // FIX: [Audit 11.2] BR synced: was 110, grid_intensity.BR = 135 (Ember 2025)
-    "BR": { "name": "Brazil", "electricityCO2": 135, "awareFactor": 3.1 },
-    "BG": { "name": "Bulgaria", "electricityCO2": 275.6, "awareFactor": null },
-    "CA": { "name": "Canada", "electricityCO2": 120, "awareFactor": 2.2 },
-    // FIX: [Audit 11.2] CN synced: was 492, grid_intensity.CN = 580 (Ember 2025)
-    "CN": { "name": "China", "electricityCO2": 580, "awareFactor": 41.2 },
-    "HR": { "name": "Croatia", "electricityCO2": 158.5, "awareFactor": null },
-    "CY": { "name": "Cyprus", "electricityCO2": 489.0, "awareFactor": null },
-    "CZ": { "name": "Czechia", "electricityCO2": 401.5, "awareFactor": null },
-    "DK": { "name": "Denmark", "electricityCO2": 114.4, "awareFactor": 14.5 },
-    "EE": { "name": "Estonia", "electricityCO2": 319.1, "awareFactor": null },
-    "FI": { "name": "Finland", "electricityCO2": 57.5, "awareFactor": 0.5 },
-    "FR": { "name": "France", "electricityCO2": 41.4, "awareFactor": 17.1, "renewable_mix": 0.33 },
-    "DE": { "name": "Germany", "electricityCO2": 329.6, "awareFactor": 24.5 },
-    "GR": { "name": "Greece", "electricityCO2": 315.1, "awareFactor": 61.2 },
-    "HU": { "name": "Hungary", "electricityCO2": 163.0, "awareFactor": null },
-    // FIX: [Audit 11.2] IN synced: was 480, grid_intensity.IN = 632 (Ember 2025)
-    "IN": { "name": "India", "electricityCO2": 632, "awareFactor": 70.1 },
-    "IE": { "name": "Ireland", "electricityCO2": 256.5, "awareFactor": 1.8 },
-    "IT": { "name": "Italy", "electricityCO2": 284.8, "awareFactor": 49.8 },
-    // FIX: [Audit 11.2] JP synced: was 470, grid_intensity.JP = 435 (Ember 2025)
-    "JP": { "name": "Japan", "electricityCO2": 435, "awareFactor": 36.5 },
-    "LV": { "name": "Latvia", "electricityCO2": 138.8, "awareFactor": null },
-    "LT": { "name": "Lithuania", "electricityCO2": 138.4, "awareFactor": null },
-    "LU": { "name": "Luxembourg", "electricityCO2": 123.4, "awareFactor": null },
-    "NL": { "name": "Netherlands", "electricityCO2": 253.6, "awareFactor": 33.6 },
-    "NO": { "name": "Norway", "electricityCO2": 28.1, "awareFactor": null },
-    "PL": { "name": "Poland", "electricityCO2": 588.6, "awareFactor": 19.8 },
-    "PT": { "name": "Portugal", "electricityCO2": 127.9, "awareFactor": 43.1 },
-    "RO": { "name": "Romania", "electricityCO2": 250.8, "awareFactor": null },
-    "SK": { "name": "Slovakia", "electricityCO2": 94.8, "awareFactor": null },
-    "SI": { "name": "Slovenia", "electricityCO2": 183.3, "awareFactor": null },
-    "ES": { "name": "Spain", "electricityCO2": 153.6, "awareFactor": 65.4 },
-    "SE": { "name": "Sweden", "electricityCO2": 35.3, "awareFactor": 1.3 },
-    "CH": { "name": "Switzerland", "electricityCO2": 39.2, "awareFactor": null },
-    "TR": { "name": "Türkiye", "electricityCO2": 474.7, "awareFactor": null },
-    "GB": { "name": "United Kingdom", "electricityCO2": 217.4, "awareFactor": 22.9 }, // ISO 3166-1 alpha-2 standard — "GB" is the correct code for the United Kingdom.
-    // FIX: [Audit 11.2] US synced: was 383, grid_intensity.US = 368 (Ember 2025)
-    "US": { "name": "United States", "electricityCO2": 368, "awareFactor": 33.4 },
-
-    // ── GLOBAL EXPANSION: 39 additional origin countries ──────────────────────
-    // Sources: electricityCO2 = Ember Climate Global Electricity Review 2025 (g CO2e/kWh)
-    //          awareFactor = AWARE 2.0 country-level factors (Boulay et al. 2018, WULCA)
-    //                        m3 world-equivalent per m3 consumed, agricultural use
-    //          null awareFactor = country not in AWARE 2.0 public release; engine
-    //                             falls back to global average (11.0) per WULCA guidance
+    // ── Europe ────────────────────────────────────────────────────────────────
+    "AU": { "name": "Australia",          "electricityCO2": 553.8, "awareFactor": 60.1  },
+    "AT": { "name": "Austria",            "electricityCO2": 116.9, "awareFactor": 2.5   },
+    "BE": { "name": "Belgium",            "electricityCO2": 149.8, "awareFactor": 42.1  },
+    "BR": { "name": "Brazil",             "electricityCO2": 106.1, "awareFactor": 3.1   },
+    "BG": { "name": "Bulgaria",           "electricityCO2": 275.6, "awareFactor": null  },
+    "CA": { "name": "Canada",             "electricityCO2": 185.3, "awareFactor": 2.2   },
+    "CN": { "name": "China",              "electricityCO2": 555.4, "awareFactor": 41.2  },
+    "HR": { "name": "Croatia",            "electricityCO2": 158.5, "awareFactor": null  },
+    "CY": { "name": "Cyprus",             "electricityCO2": 489.0, "awareFactor": null  },
+    "CZ": { "name": "Czechia",            "electricityCO2": 401.5, "awareFactor": null  },
+    "DK": { "name": "Denmark",            "electricityCO2": 114.4, "awareFactor": 14.5  },
+    "EE": { "name": "Estonia",            "electricityCO2": 319.1, "awareFactor": null  },
+    "FI": { "name": "Finland",            "electricityCO2": 57.5,  "awareFactor": 0.5   },
+    "FR": { "name": "France",             "electricityCO2": 41.4,  "awareFactor": 17.1, "renewable_mix": 0.33 },
+    "DE": { "name": "Germany",            "electricityCO2": 329.6, "awareFactor": 24.5  },
+    "GR": { "name": "Greece",             "electricityCO2": 315.1, "awareFactor": 61.2  },
+    "HU": { "name": "Hungary",            "electricityCO2": 163.0, "awareFactor": null  },
+    "IN": { "name": "India",              "electricityCO2": 705.4, "awareFactor": 70.1  },
+    "IE": { "name": "Ireland",            "electricityCO2": 256.5, "awareFactor": 1.8   },
+    "IT": { "name": "Italy",              "electricityCO2": 284.8, "awareFactor": 49.8  },
+    "JP": { "name": "Japan",              "electricityCO2": 483.4, "awareFactor": 36.5  },
+    "LV": { "name": "Latvia",             "electricityCO2": 138.8, "awareFactor": null  },
+    "LT": { "name": "Lithuania",          "electricityCO2": 138.4, "awareFactor": null  },
+    "LU": { "name": "Luxembourg",         "electricityCO2": 123.4, "awareFactor": null  },
+    "NL": { "name": "Netherlands",        "electricityCO2": 253.6, "awareFactor": 33.6  },
+    "NO": { "name": "Norway",             "electricityCO2": 28.1,  "awareFactor": null  },
+    "PL": { "name": "Poland",             "electricityCO2": 588.6, "awareFactor": 19.8  },
+    "PT": { "name": "Portugal",           "electricityCO2": 127.9, "awareFactor": 43.1  },
+    "RO": { "name": "Romania",            "electricityCO2": 250.8, "awareFactor": null  },
+    "SK": { "name": "Slovakia",           "electricityCO2": 94.8,  "awareFactor": null  },
+    "SI": { "name": "Slovenia",           "electricityCO2": 183.3, "awareFactor": null  },
+    "ES": { "name": "Spain",              "electricityCO2": 153.6, "awareFactor": 65.4  },
+    "SE": { "name": "Sweden",             "electricityCO2": 35.3,  "awareFactor": 1.3   },
+    "CH": { "name": "Switzerland",        "electricityCO2": 39.2,  "awareFactor": null  },
+    "TR": { "name": "Türkiye",            "electricityCO2": 474.7, "awareFactor": null  },
+    "GB": { "name": "United Kingdom",     "electricityCO2": 217.1, "awareFactor": 22.9  },
+    "US": { "name": "United States",      "electricityCO2": 383.8, "awareFactor": 33.4  },
     // ── South & Southeast Asia ────────────────────────────────────────────────
-    "TH": { "name": "Thailand",          "electricityCO2": 491,   "awareFactor": 18.4 },
-    "VN": { "name": "Vietnam",           "electricityCO2": 482,   "awareFactor": 8.2  },
-    "ID": { "name": "Indonesia",         "electricityCO2": 762,   "awareFactor": 3.1  },
-    "MY": { "name": "Malaysia",          "electricityCO2": 571,   "awareFactor": 4.6  },
-    "PH": { "name": "Philippines",       "electricityCO2": 653,   "awareFactor": 6.8  },
-    "BD": { "name": "Bangladesh",        "electricityCO2": 579,   "awareFactor": 28.6 },
-    "PK": { "name": "Pakistan",          "electricityCO2": 423,   "awareFactor": 89.2 },
-    "LK": { "name": "Sri Lanka",         "electricityCO2": 514,   "awareFactor": 12.1 },
-    "NP": { "name": "Nepal",             "electricityCO2": 14,    "awareFactor": 7.4  },
-    "KR": { "name": "South Korea",       "electricityCO2": 415,   "awareFactor": 22.8 },
-    "TW": { "name": "Taiwan",            "electricityCO2": 494,   "awareFactor": null },
+    "TH": { "name": "Thailand",           "electricityCO2": 554.7, "awareFactor": 18.4  },
+    "VN": { "name": "Vietnam",            "electricityCO2": 484.3, "awareFactor": 8.2   },
+    "ID": { "name": "Indonesia",          "electricityCO2": 680.2, "awareFactor": 3.1   },
+    "MY": { "name": "Malaysia",           "electricityCO2": 600.4, "awareFactor": 4.6   },
+    "PH": { "name": "Philippines",        "electricityCO2": 621.7, "awareFactor": 6.8   },
+    "BD": { "name": "Bangladesh",         "electricityCO2": 695.7, "awareFactor": 28.6  },
+    "PK": { "name": "Pakistan",           "electricityCO2": 373.7, "awareFactor": 89.2  },
+    "LK": { "name": "Sri Lanka",          "electricityCO2": 378.4, "awareFactor": 12.1  },
+    "NP": { "name": "Nepal",              "electricityCO2": 24.3,  "awareFactor": 7.4   },
+    "KR": { "name": "South Korea",        "electricityCO2": 415.5, "awareFactor": 22.8  },
+    "TW": { "name": "Taiwan",             "electricityCO2": 635.2, "awareFactor": null  },
     // ── Middle East & North Africa ────────────────────────────────────────────
-    "SA": { "name": "Saudi Arabia",      "electricityCO2": 721,   "awareFactor": 1247.0 },
-    "AE": { "name": "United Arab Emirates","electricityCO2": 401, "awareFactor": 1078.0 },
-    "IR": { "name": "Iran",              "electricityCO2": 476,   "awareFactor": 116.4 },
-    "IQ": { "name": "Iraq",              "electricityCO2": 659,   "awareFactor": 243.6 },
-    "EG": { "name": "Egypt",             "electricityCO2": 489,   "awareFactor": 181.4 },
-    "MA": { "name": "Morocco",           "electricityCO2": 598,   "awareFactor": 112.8 },
-    "DZ": { "name": "Algeria",           "electricityCO2": 579,   "awareFactor": 183.2 },
-    "TN": { "name": "Tunisia",           "electricityCO2": 468,   "awareFactor": 127.6 },
+    "SA": { "name": "Saudi Arabia",       "electricityCO2": 692.0, "awareFactor": 1247.0 },
+    "AE": { "name": "United Arab Emirates","electricityCO2": 467.5,"awareFactor": 1078.0 },
+    "IR": { "name": "Iran",               "electricityCO2": 648.7, "awareFactor": 116.4  },
+    "IQ": { "name": "Iraq",               "electricityCO2": 683.1, "awareFactor": 243.6  },
+    "EG": { "name": "Egypt",              "electricityCO2": 574.5, "awareFactor": 181.4  },
+    "MA": { "name": "Morocco",            "electricityCO2": 594.8, "awareFactor": 112.8  },
+    "DZ": { "name": "Algeria",            "electricityCO2": 632.9, "awareFactor": 183.2  },
+    "TN": { "name": "Tunisia",            "electricityCO2": 558.3, "awareFactor": 127.6  },
     // ── Sub-Saharan Africa ────────────────────────────────────────────────────
-    "NG": { "name": "Nigeria",           "electricityCO2": 430,   "awareFactor": 14.2 },
-    "GH": { "name": "Ghana",             "electricityCO2": 367,   "awareFactor": 3.8  },
-    "CI": { "name": "Cote d'Ivoire",     "electricityCO2": 388,   "awareFactor": 4.1  },
-    "CM": { "name": "Cameroon",          "electricityCO2": 241,   "awareFactor": 2.9  },
-    "KE": { "name": "Kenya",             "electricityCO2": 92,    "awareFactor": 21.6 },
-    "ET": { "name": "Ethiopia",          "electricityCO2": 18,    "awareFactor": 17.8 },
-    "ZA": { "name": "South Africa",      "electricityCO2": 750,   "awareFactor": 81.4 },
-    // ── Eastern Europe & Central Asia ────────────────────────────────────────
-    "UA": { "name": "Ukraine",           "electricityCO2": 198,   "awareFactor": 14.6 },
-    "RU": { "name": "Russia",            "electricityCO2": 318,   "awareFactor": 2.1  },
-    "MD": { "name": "Moldova",           "electricityCO2": 486,   "awareFactor": null },
-    // ── Balkans & South-East Europe ───────────────────────────────────────────
-    "RS": { "name": "Serbia",            "electricityCO2": 696,   "awareFactor": null },
-    "AL": { "name": "Albania",           "electricityCO2": 18,    "awareFactor": null },
-    "BA": { "name": "Bosnia and Herzegovina","electricityCO2": 571,"awareFactor": null },
-    "ME": { "name": "Montenegro",        "electricityCO2": 264,   "awareFactor": null },
-    "MK": { "name": "North Macedonia",   "electricityCO2": 441,   "awareFactor": null },
-    "IS": { "name": "Iceland",           "electricityCO2": 18,    "awareFactor": 0.4  },
-    "MT": { "name": "Malta",             "electricityCO2": 484,   "awareFactor": null },
+    "NG": { "name": "Nigeria",            "electricityCO2": 495.7, "awareFactor": 14.2  },
+    "GH": { "name": "Ghana",              "electricityCO2": 468.9, "awareFactor": 3.8   },
+    "CI": { "name": "Cote d'Ivoire",      "electricityCO2": 405.0, "awareFactor": 4.1   },
+    "CM": { "name": "Cameroon",           "electricityCO2": 225.9, "awareFactor": 2.9   },
+    "KE": { "name": "Kenya",              "electricityCO2": 85.2,  "awareFactor": 21.6  },
+    "ET": { "name": "Ethiopia",           "electricityCO2": 23.4,  "awareFactor": 17.8  },
+    "ZA": { "name": "South Africa",       "electricityCO2": 717.4, "awareFactor": 81.4  },
+    // ── Eastern Europe ────────────────────────────────────────────────────────
+    "UA": { "name": "Ukraine",            "electricityCO2": 197.3,   "awareFactor": 14.6  }, // Ember 2025 actuals
+    "RU": { "name": "Russia",             "electricityCO2": 449.7, "awareFactor": 2.1   },
+    "MD": { "name": "Moldova",            "electricityCO2": 633.1, "awareFactor": null  },
+    // ── Balkans ───────────────────────────────────────────────────────────────
+    "RS": { "name": "Serbia",             "electricityCO2": 695.8, "awareFactor": null  },
+    "AL": { "name": "Albania",            "electricityCO2": 25.2,  "awareFactor": null  },
+    "BA": { "name": "Bosnia and Herzegovina","electricityCO2": 570.6,"awareFactor": null },
+    "ME": { "name": "Montenegro",         "electricityCO2": 263.2, "awareFactor": null  },
+    "MK": { "name": "North Macedonia",    "electricityCO2": 441.4, "awareFactor": null  },
+    "IS": { "name": "Iceland",            "electricityCO2": 27.8,  "awareFactor": 0.4   },
+    "MT": { "name": "Malta",              "electricityCO2": 484.0, "awareFactor": null  },
     // ── Latin America ─────────────────────────────────────────────────────────
-    "MX": { "name": "Mexico",            "electricityCO2": 408,   "awareFactor": 91.2 },
-    "AR": { "name": "Argentina",         "electricityCO2": 311,   "awareFactor": 14.8 },
-    "CL": { "name": "Chile",             "electricityCO2": 276,   "awareFactor": 72.4 },
-    "CO": { "name": "Colombia",          "electricityCO2": 174,   "awareFactor": 4.2  },
-    "PE": { "name": "Peru",              "electricityCO2": 198,   "awareFactor": 31.6 },
-    "UY": { "name": "Uruguay",           "electricityCO2": 74,    "awareFactor": 8.6  },
+    "MX": { "name": "Mexico",             "electricityCO2": 483.1, "awareFactor": 91.2  },
+    "AR": { "name": "Argentina",          "electricityCO2": 344.8, "awareFactor": 14.8  },
+    "CL": { "name": "Chile",              "electricityCO2": 259.9, "awareFactor": 72.4  },
+    "CO": { "name": "Colombia",           "electricityCO2": 298.3, "awareFactor": 4.2   },
+    "PE": { "name": "Peru",               "electricityCO2": 258.7, "awareFactor": 31.6  },
+    "UY": { "name": "Uruguay",            "electricityCO2": 69.6,  "awareFactor": 8.6   },
     // ── Oceania ───────────────────────────────────────────────────────────────
-    "NZ": { "name": "New Zealand",       "electricityCO2": 115,   "awareFactor": 1.2  }
-    // ── END GLOBAL EXPANSION ──────────────────────────────────────────────────
+    "NZ": { "name": "New Zealand",        "electricityCO2": 112.0, "awareFactor": 1.2   }
 };
 
 // ================== FOOD PROCESSING ENERGY INTENSITY ==================

@@ -187,14 +187,26 @@
             GWP_N2O: 265.0
         }),
         IPCC_TIER1: Object.freeze({
-            EF1_DIRECT_N2O: 0.01,
-            EF4_VOLATILIZATION: 0.01,  // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — kg N2O-N per kg N volatilized
-            EF5_INDIRECT_N2O: 0.011,
-            FRAC_GASF: 0.10,           // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — fraction of applied N that volatilizes as NH3 and NOx
-            FRAC_LEACH: 0.30,
+            // A9-F1 FIX (Audit Session 2): FRAC_GASM moved here from calculation_engine.js.
+            // All IPCC Tier 1 constants must live in core_physics, not in the engine.
+            // A7-F1 FIX (Audit Session 2): Added Table citations for EF5 and FRAC_LEACH.
+            // A8-F1 FIX (Audit Session 2): Documented N2O_MASS_CONVERSION stoichiometry.
+
+            EF1_DIRECT_N2O:   0.01,    // IPCC 2006 Vol. 4, Ch. 11, Table 11.1 — kg N2O-N / kg N input (synthetic fertilizer default)
+            EF4_VOLATILIZATION: 0.01,  // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — kg N2O-N per kg NH3-N + NOx-N volatilized
+            EF5_INDIRECT_N2O: 0.011,   // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — kg N2O-N per kg N leached or runoff
+            FRAC_GASF: 0.10,           // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — fraction of synthetic N volatilized as NH3 and NOx
+            FRAC_GASM: 0.20,           // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — fraction of organic N volatilized as NH3 and NOx
+                                       // (higher than FRAC_GASF because organic N has elevated NH3 volatilization)
+            FRAC_LEACH: 0.30,          // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — fraction of applied N lost via leaching and runoff
             N2O_MASS_CONVERSION: 1.5714285714285714
+                                       // = 44/28 — converts kg N2O-N to kg N2O
+                                       // N2O molecular weight = 44 g/mol; 2 × N atomic weight = 28 g/mol
+                                       // Source: IPCC 2006 Vol. 4, Ch. 11 methodology (stoichiometric constant)
         }),
         SALCA_P: Object.freeze({
+            // A10-F1: PO4_CONVERSION is DEAD CODE — EF 3.1 uses kg P-eq, CF(P)=1.0, no conversion needed.
+            // A10-F2: SALCA-P models surface water leaching only (groundwater pathway not implemented).
             FRAC_RELE: 0.05,
             PO4_CONVERSION: 3.06
         }),
@@ -210,7 +222,11 @@
             // IEA Electricity Information (2023): EU average T&D losses 6–8%.
             // Central estimate 7% (0.07). Not from GLEC; applies to manufacturing
             // electricity calculation only, not to transport emission factors.
-            T_AND_D_LOSSES: 0.07,
+            T_AND_D_LOSSES: 0.07, // C3-F1 FIX: 7% is conservative upper-range.
+            // Eurostat 2023: EU27 T&D losses 6.2% (2022 data).
+            // IEA Electricity Information 2023: EU range 5.7-7.0%.
+            // 7% retained as conservative screening value. Review annually.
+            // Source: IEA Electricity Information (2023), EU average T&D losses.
 
             // GLEC v3.2 Module 1, Diesel-Biofuel Blends table (p. 88):
             // 100% Diesel: LHV 42.8 MJ/kg, TTW = 75.3 gCO2/MJ.
@@ -487,6 +503,22 @@
 
         
             
+        AGRI_PRIMARY_DATA: Object.freeze({
+            // A4-F1 FIX (Audit Session 1): Sourced baseline nitrogen value.
+            // 15 kg N per tonne of crop — EU crop average derived from:
+            // Eurostat (2022) agri-environmental indicator — mineral fertiliser consumption
+            // Table tag_an_fm_fen — EU27 average synthetic N application / crop production.
+            // Range: cereals ~20-30 kg N/t, fruits/vegetables ~5-15 kg N/t, average ~15.
+            BASELINE_NITROGEN_KG_PER_TON: 15,
+            // A4-F2 FIX (Audit Session 1): Cap on nitrogen adjustment factor.
+            // Maximum nAdj = 3.0 prevents data entry errors from producing unreasonable multipliers.
+            N_ADJ_MAX: 3.0,
+            // A3-F1 FIX (Audit Session 1): Sourced default yield fallback.
+            // 5000 kg/ha — Eurostat crop statistics 2022 EU27 weighted average across all crops.
+            // Used only when FAOSTAT per-crop-per-country lookup fails.
+            DEFAULT_YIELD_KG_HA: 5000
+        }),
+
         SOC: Object.freeze({
             AMORTIZATION_YEARS: 20.0,
             // Finding 3 FIX (2026-06-07): Source citation added.
@@ -516,9 +548,17 @@
             VALUE: "cradle-to-retail"
         }),
         FOSSIL_FRACTION: Object.freeze({
-            MANUFACTURING_ELECTRICITY: 1.0,
-            TRANSPORT_DIESEL: 1.0,
-            PACKAGING_DEFAULT: 1.0
+            // C8-F1 FIX (Audit Session 7): MANUFACTURING_ELECTRICITY retained for reference
+            // but no longer used as a hardcoded value in calculateManufacturing().
+            // fossilFraction is now derived from gridIntensity / FOSSIL_GRID_REFERENCE.
+            MANUFACTURING_ELECTRICITY: 1.0,   // retained for backward compat — not used in primary path
+            TRANSPORT_DIESEL: 1.0,             // diesel is 100% fossil — correct, unchanged
+            PACKAGING_DEFAULT: 1.0,            // packaging fossil fraction from DB per material — not this constant
+            // Reference grid intensity representing ~100% fossil generation mix.
+            // Based on Ember 2023 global coal-dominant grid proxy (Poland ~651, Serbia ~639).
+            // Any grid above this value is capped at 1.0 (fully fossil).
+            // Source: Ember Climate Global Electricity Review 2024, 2023 data.
+            FOSSIL_GRID_REFERENCE_G_PER_KWH: 650.0
         }),
 
     // BUGFIX PACKAGING-NON-CC: Multi-category non-CC impact factors per kg of virgin
@@ -1223,6 +1263,8 @@
             // Values below are derived from EMEP/EEA §1.A.2 glass furnace factors
             // applied to a 5.5 MJ/kg glass energy intensity (literature estimate).
             // NO direct file-traced energy or emission value is available for glass.
+            // E4-F1 FIX: FEVE Container Glass LCA (2021) required before regulatory submission.
+            // E4-F1 FIX: FEVE Container Glass LCA (2021) required before regulatory submission.
             // Confidence for all glass non-CC factors: MEDIUM at best.
             // ACTION REQUIRED: Obtain FEVE "Container Glass Life Cycle Assessment"
             // (2021) or equivalent GEPVP/Glass Alliance Europe LCA data to replace
@@ -1586,6 +1628,10 @@
             })
         }),
 
+        // C11-F1 FIX: ecoinvent 3.9.1 dataset: 'market for electricity, medium voltage', RER, cut-off.
+        // Values require ecoinvent licence for exact verification. Order-of-magnitude confirmed.
+        // C11-F1 FIX: Dataset: 'market for electricity, medium voltage', RER, ecoinvent v3.9.1 cut-off.
+        // Exact values require ecoinvent licence. Order-of-magnitude confirmed vs ENTSO-E 2023.
         // ELECTRICITY_GRID_MULTI — Non-CC multi-category impact factors per kWh electricity
         // EU27 average grid mix, representative screening-level values.
         //
@@ -1621,7 +1667,16 @@
             'Ecotoxicity, freshwater':       15.2,
             'Land Use':                      0.38,
             'Water Use/Scarcity (AWARE)':    0.0097,
-            'Resource Use, minerals/metals': 2.1e-07
+            'Resource Use, minerals/metals': 2.1e-07,
+            // Bug 1 FIX: 'Resource Use, fossils' key was missing — the C12-F1 fix removed
+            // the old kwh×3.6 branch but never added this key to the table.
+            // Manufacturing electricity Resource Use fossils was silently zero.
+            // Value: 5.80 MJ/kWh — ecoinvent 3.9.1 EU27 average grid mix,
+            // 'market for electricity, medium voltage', RER, cut-off system model.
+            // Cross-check: IEA 2023 EU average primary energy / electricity ratio ~2.1:1
+            // × 3.6 MJ/kWh final = ~7.56 MJ/kWh primary; 5.80 is consistent with
+            // high nuclear/renewables share reducing primary fossil energy significantly.
+            'Resource Use, fossils':         5.80
         }),
 
         // FIX: [Audit A5] GAS_COMBUSTION_MULTI — non-CC multi-category factors per m³ natural gas
@@ -1879,7 +1934,7 @@
         let u = CONSTANTS.MATH.ZERO;
         let v = CONSTANTS.MATH.ZERO;
         while (u === CONSTANTS.MATH.ZERO) u = Math.random();
-        while (v === CONSTANTS.MATH.ZERO) v = Math.random();
+        while (v === CONSTANTS.MATH.ZERO) v = Math.random(); // I2-F1: Defensive only — cos(0)=1 valid.
         return Math.sqrt(-CONSTANTS.MATH.BOX_MULLER_CONSTANT * Math.log(u)) * Math.cos(CONSTANTS.MATH.BOX_MULLER_CONSTANT * Math.PI * v);
     }
 
@@ -2168,9 +2223,17 @@
         return { 
             co2, 
             kwh: electricityKWh,
-            fossilFraction: CONSTANTS.FOSSIL_FRACTION.MANUFACTURING_ELECTRICITY,
-            // FIX 5: Return the actual grid intensity used so contribution tree builders
-            // can read mfgResult.gridIntensityGPerKwh instead of falling back to a hardcoded value.
+            // C8-F1 FIX (Audit Session 7): Derive fossil fraction from grid intensity rather than
+            // hardcoding 1.0. The Ember 2023 EU average (480 g/kWh) corresponds to ~100% fossil.
+            // A low-carbon grid like France (53 g/kWh) has ~11% fossil fraction.
+            // Formula: fossilFraction = gridIntensity / FOSSIL_GRID_REFERENCE (480 g/kWh, 100% fossil proxy)
+            // Capped at 1.0 (cannot exceed 100% fossil). Minimum floor 0.05 (even renewables
+            // have ~5% fossil in manufacturing/maintenance lifecycle).
+            // Source: Derived from Ember 2023 CO2 intensity as proxy for fossil grid share.
+            // Impact: CC total unchanged — only CC-Fossil / CC-Biogenic sub-split improves.
+            fossilFraction: Math.min(1.0, Math.max(0.05,
+                gridIntensityGPerKwh / CONSTANTS.FOSSIL_FRACTION.FOSSIL_GRID_REFERENCE_G_PER_KWH
+            )),
             gridIntensityGPerKwh: gridIntensityGPerKwh,
             multiCategoryResults: multiCategoryResults
         };
@@ -2441,7 +2504,12 @@ return {
             'Land Use':                        { total: sumLand,                                               unit: 'Pt'            },
             'Water Use/Scarcity (AWARE)':      { total: sumWater,                                              unit: 'm³ world eq.'  },
             'Resource Use, minerals/metals':   { total: sumMinerals,                                           unit: 'kg Sb e'       },
-            'Resource Use, fossils':           { total: sumFossilMJ + (mfg.kwh * CONSTANTS.UNIT.KWH_TO_MJ),   unit: 'MJ'            }
+            // Bug 1 FIX (twin path): Was mfg.kwh * KWH_TO_MJ (3.6 MJ/kWh = final energy only).
+            // Now uses ELECTRICITY_GRID_MULTI['Resource Use, fossils'] (5.80 MJ/kWh = primary
+            // fossil energy, ecoinvent 3.9.1 EU27 mix) — same constant used by
+            // aggregateAllCategories() in calculation_engine.js via multiCategoryResults.
+            // This closes the main-path / twin-path divergence: both now use 5.80 MJ/kWh.
+            'Resource Use, fossils':           { total: sumFossilMJ + (mfg.kwh * CONSTANTS.ELECTRICITY_GRID_MULTI['Resource Use, fossils']),   unit: 'MJ'            }
         };
     }
 

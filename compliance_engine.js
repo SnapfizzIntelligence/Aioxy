@@ -133,6 +133,12 @@
         const components = { TeR, TiR, GeR, CoR, RR };
         for (const [name, value] of Object.entries(components)) {
             if (value === undefined) throw new MissingDataError(name);
+            // H1-F1 FIX (Audit Session 11): Skip range validation for CoR when it is 0.
+            // CoR is excluded from the DQR calculation (AGRIBALYSE DQI 4-indicator scheme).
+            // It is hardcoded to 0 in calculation_engine.js for API compatibility.
+            // 0 is outside the normal [1,5] range but is the correct sentinel value for
+            // "not scored". Validating it against [1,5] caused ValidationError on every call.
+            if (name === 'CoR' && value === 0) continue;
             if (typeof value !== 'number' || value < CONSTANTS.DQR.MIN || value > CONSTANTS.DQR.MAX) {
                 throw new ValidationError(`Invalid ${name}: ${value}`);
             }
@@ -151,6 +157,9 @@
         return { dqr, qualityLevel };
     }
 
+    // H2-F1 FIX: CC-weighted DQR — AIOXY methodological choice.
+    // AGRIBALYSE DQI §6.2 specifies mass-weighted. CC-weighting prioritises high-impact ingredients.
+    // Document in audit trail for regulatory submissions.
     function calculateWeightedDQR(components) {
         if (!components || components.length === SHARED_CONSTANTS.MATH.ZERO) throw new MissingDataError('components');
         
@@ -302,36 +311,81 @@
     }
 
     function runJRCValidation(product) {
+        // PKG-F1 FIX (Audit Session 12/6B): Changed from throw to audit warning.
+        // Previous behaviour: throw ValidationError if deviation > 1% — crashed every
+        // PET-packaged product because AIOXY Ev=3.40 kg CO2e/kg (feedstock-inclusive)
+        // vs JRC BAT reference 2.15 kg CO2e/kg (granulate only) use different system
+        // boundaries. A 58% difference is expected and correct — not a calculation error.
+        // Fix: collect deviations as warnings, return structured result. Never throws.
+        // Caller stores warnings in auditTrailData.jrc_validation for PDF display.
         if (!product) throw new MissingDataError('product');
         if (!product.calculatedImpact) throw new MissingDataError('product.calculatedImpact');
         if (typeof product.materialType !== 'string') throw new MissingDataError('product.materialType');
-        
+
         const referenceValues = CONSTANTS.JRC.REFERENCE_VALUES[product.materialType];
-        
+
         if (!referenceValues) {
-            return true;
+            return { pass: true, warnings: [], score: 100, checks: [] };
         }
-        
+
+        const warnings = [];
+        const checks   = [];
+        let   passCount = 0;
+
         for (const category in referenceValues) {
             const calculated = product.calculatedImpact[category];
-            const reference = referenceValues[category];
-            
+            const reference  = referenceValues[category];
+
             if (typeof calculated !== 'number') {
-                throw new ValidationError(`JRC validation failed: missing calculated impact for ${category}`);
+                // Missing data: record as warning, do not throw
+                warnings.push({
+                    category,
+                    type:    'MISSING_DATA',
+                    message: `JRC validation: missing calculated impact for ${category}`
+                });
+                checks.push({ category, pass: false, deviation: null, note: 'missing data' });
+                continue;
             }
-            
+
             const deviation = Math.abs(calculated - reference) / reference;
-            // FIX 7: Use CONSTANTS for formatting values
+            const deviationPct = (deviation * SHARED_CONSTANTS.UNIT.PERCENT_MAX)
+                .toFixed(CONSTANTS.FORMAT.PERCENT_DECIMALS);
+            const marginPct = (CONSTANTS.JRC.ERROR_MARGIN * SHARED_CONSTANTS.UNIT.PERCENT_MAX)
+                .toFixed(CONSTANTS.FORMAT.PERCENT_DECIMALS);
+
             if (deviation > CONSTANTS.JRC.ERROR_MARGIN) {
-                throw new ValidationError(
-                    `JRC validation failed: ${category} deviation ` +
-                    `${(deviation * SHARED_CONSTANTS.UNIT.PERCENT_MAX).toFixed(CONSTANTS.FORMAT.PERCENT_DECIMALS)}% exceeds ` +
-                    `${(CONSTANTS.JRC.ERROR_MARGIN * SHARED_CONSTANTS.UNIT.PERCENT_MAX).toFixed(CONSTANTS.FORMAT.PERCENT_DECIMALS)}%`
-                );
+                // PKG-F1: warn instead of throw
+                warnings.push({
+                    category,
+                    type:       'JRC_BAT_DEVIATION',
+                    calculated,
+                    reference,
+                    deviationPct: parseFloat(deviationPct),
+                    marginPct:    parseFloat(marginPct),
+                    message:    `JRC BAT deviation ${deviationPct}% exceeds ${marginPct}% for ` +
+                                `${product.materialType} ${category}. ` +
+                                `Note: boundary differences (e.g. feedstock-inclusive vs granulate) ` +
+                                `are expected and not indicative of a calculation error.`
+                });
+                checks.push({ category, pass: false, deviation: parseFloat(deviationPct), reference, calculated });
+            } else {
+                passCount++;
+                checks.push({ category, pass: true,  deviation: parseFloat(deviationPct), reference, calculated });
             }
         }
-        
-        return true;
+
+        const totalChecks = checks.length;
+        const score = totalChecks > 0
+            ? Math.round((passCount / totalChecks) * SHARED_CONSTANTS.UNIT.PERCENT_MAX)
+            : 100;
+
+        return {
+            pass:     warnings.length === 0,
+            warnings,
+            score,
+            checks,
+            overall_pass: warnings.length === 0
+        };
     }
 
     function validateSystemBoundary(boundary) {

@@ -191,7 +191,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // ── PAGE MANAGEMENT ──────────────────────────────────
         let pageNum = 0;
         const _pageSectionLabels = {};
-        let TOTAL_PAGES = '??';
+        // PDF-F4 FIX (Audit Session 14): TOTAL_PAGES replaced with jsPDF putTotalPages placeholder.
+        // '{total_pages_count}' is resolved by doc.putTotalPages() after all pages are generated.
+        // Previous '??' was never resolved — all footers showed 'Page N of ??'.
+        let TOTAL_PAGES = '{total_pages_count}'; // retained for any direct references
 
         const newPage = (sectionTitle) => {
             doc.addPage();
@@ -202,7 +205,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.white);
             doc.text(safe(sectionTitle).toUpperCase(), M, 6.8);
             doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.white);
-            doc.text('Page ' + pageNum + ' of ' + TOTAL_PAGES, PW - M, 6.8, {align:'right'});
+            doc.text('Page ' + pageNum + ' of {total_pages_count}', PW - M, 6.8, {align:'right'}); // PDF-F4 FIX
             Y = 16;
         };
 
@@ -233,7 +236,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.white);
                 doc.text(safe(sectionLabel || 'CONTINUED'), M, 6.8);
                 doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.white);
-                doc.text('Page ' + pageNum + ' of ' + TOTAL_PAGES, PW - M, 6.8, {align:'right'});
+                doc.text('Page ' + pageNum + ' of {total_pages_count}', PW - M, 6.8, {align:'right'}); // PDF-F4 FIX
                 Y = 16;
             }
         };
@@ -342,10 +345,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // Priority: mass_balance.final_content_weight_kg (set by engine from input.product.weightKg)
         // → lastInput.product.weightKg (direct from user form) → 0.2 (documented PEF default,
         // matches form default, logged to console so it is traceable).
+        // PDF-F1 FIX (Audit Session 14): pWeightKg fallback now sets a visible warning flag.
+        // Previous: console.warn only — invisible on printed PDF.
+        // Fix: set pWeightFallbackWarning = true when 0.2 default is used. This flag
+        // triggers a visible red warning box on the cover page so any auditor reading
+        // the printed PDF can see that the product weight was not confirmed by the engine.
+        let pWeightFallbackWarning = false;
         const pWeightKg  = mb.final_content_weight_kg
                         || window.lastInput?.product?.weightKg
-                        || (() => { console.warn('[AIOXY PDF] pWeightKg fallback to 0.2 — mass_balance missing. Verify engine ran before PDF export.'); return 0.2; })();
-        const dppId      = safe(audit.dppId || 'N/A');
+                        || (() => {
+                            console.warn('[AIOXY PDF] pWeightKg fallback to 0.2 — mass_balance missing. Verify engine ran before PDF export.');
+                            pWeightFallbackWarning = true;
+                            return 0.2;
+                        })();
+        const // PDF-F3: Verify QR URL in live environment before production.
+        // const dppId      = safe(audit.dppId || 'N/A');
         const auditHash  = safe(audit.auditHash || '');
 
         // Manufacturing traceability sources (confirmed from calculation_engine.js buildContributionTree):
@@ -555,7 +569,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             Y += 10;
         }
 
-        footer('Page 1 of ' + TOTAL_PAGES);
+        // PDF-F1 FIX (Audit Session 14): Visible warning when pWeightKg fell back to default.
+        // Previous: console.warn only — invisible on printed PDF.
+        if (pWeightFallbackWarning) {
+            doc.setFillColor(255, 243, 205);
+            doc.rect(M, Y, CW, 10, 'F');
+            doc.setDrawColor(240, 173, 78); doc.setLineWidth(0.3);
+            doc.rect(M, Y, CW, 10, 'S');
+            doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(133, 100, 4);
+            doc.text('\u26A0 DATA WARNING: Product weight not confirmed by engine. Defaulted to 0.2 kg.', M + 2, Y + 4.5);
+            doc.setFont('helvetica','normal');
+            doc.text('Per-kg metrics on this report may be incorrect. Re-run the calculation before using this report.', M + 2, Y + 8.5);
+            Y += 12;
+        }
+
+        footer('Page 1 of {total_pages_count}');
 
         // ================================================================
         // PAGE 2 — EXECUTIVE SUMMARY
@@ -646,7 +674,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             Y += 33;
         }
 
-        footer('Page 2 of ' + TOTAL_PAGES);
+        footer('Page 2 of {total_pages_count}');
 
         // ================================================================
         // PAGE 3 — RESULTS SCORECARD
@@ -726,7 +754,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text(numFmt(mPt,2) + ' mPt / kg product', PW - M - 3, Y + 13, {align:'right'});
         Y += 22;
 
-        footer('Page 3 of ' + TOTAL_PAGES);
+        footer('Page 3 of {total_pages_count}');
 
         // ================================================================
         // PAGE 4 — NORMALISATION & WEIGHTING FULL DERIVATION
@@ -863,7 +891,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             Y = doc.lastAutoTable.finalY + 4;
         }
 
-        footer('Normalisation & Weighting — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Normalisation & Weighting — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // PAGE 5 — INGREDIENT CHAIN OF CUSTODY
@@ -930,7 +958,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('[PD] = Primary data adjustment applied. DQR scale: 1=best, 5=worst per AGRIBALYSE DQI Matrix v3.0.1 (4-indicator: TeR+TiR+GR+P)/4.', M, Y); Y += 4;
         doc.text('Allocation method per ingredient inherited from AGRIBALYSE 3.2 system boundary (economic allocation, ADEME methodology).', M, Y); Y += 3;
 
-        footer('Page 5 of ' + TOTAL_PAGES);
+        footer('Page 5 of {total_pages_count}');
 
         // ================================================================
         // PAGES 6+ — INGREDIENT GLASS-BOX CALCULATION
@@ -1768,7 +1796,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             ''
         ].concat(mfgCatLines), { sectionLabel: 'Manufacturing (continued)' });
 
-        footer('Manufacturing — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Manufacturing — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // TRANSPORT PAGE
@@ -1987,7 +2015,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
         Y = doc.lastAutoTable.finalY + 4;
 
-        footer('Transport — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Transport — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // PACKAGING PAGE
@@ -2201,7 +2229,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
         Y = doc.lastAutoTable.finalY + 4;
 
-        footer('Packaging — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Packaging — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // TOTAL IMPACT SUMMARY PAGE
@@ -2358,7 +2386,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text(numFmt(mPt,2) + ' mPt / kg product', PW - M - 3, Y + 6, {align:'right'});
         Y += 13;
 
-        footer('Total Impact — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Total Impact — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // DATA QUALITY + UNCERTAINTY
@@ -2487,7 +2515,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('P95: ' + numFmt(mcP95/pWeightKg,3), p95X, barRangeY + 6, {align:'center'});
         Y += 18;
 
-        footer('DQR & Uncertainty — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('DQR & Uncertainty — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // AUDIT TRAIL + DATA SOURCES
@@ -2593,7 +2621,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
         Y = doc.lastAutoTable.finalY + 4;
 
-        footer('Audit Trail — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Audit Trail — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // GAP-11 FIX: FOREGROUND / BACKGROUND ANALYSIS PAGE
@@ -2638,8 +2666,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  Data source      : AGRIBALYSE 3.2 (ADEME/INRAE 2022) + benchmark factors',
             '',
             'DQR THRESHOLDS (PEF 3.1 §5.7):',
-            '  Foreground processes : DQR <= 3.0 required. Actual: ' + fix(fbFgDQR,2) + '  -> ' + (fbFgDQR<=3?'PASS':'FAIL'),
-            '  Background processes : DQR <= 4.0 required. Actual: ' + fix(fbBgDQR,2) + '  -> ' + (fbBgDQR<=4?'PASS':'FAIL'),
+            '  Foreground processes : DQR <= 2.0 required (PEF 3.1 §5.6 foreground). Actual: ' + fix(fbFgDQR,2) + '  -> ' + (fbFgDQR<=2?'PASS':'FAIL'),
+            '  Background processes : DQR <= 3.0 required (PEF 3.1 §5.6 background). Actual: ' + fix(fbBgDQR,2) + '  -> ' + (fbBgDQR<=3?'PASS':'FAIL'),
             '',
             'NOTE: If foreground_background data is not populated (zeros above), no primary factory',
             '  data was supplied. All processes are treated as background (AGRIBALYSE secondary data).',
@@ -2671,7 +2699,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 isFg ? 'FOREGROUND' : 'BACKGROUND',
                 fix(ingDQR, 2),
                 isFg ? 'Primary data (user-supplied)' : 'AGRIBALYSE 3.2 secondary',
-                isFg ? (ingDQR <= 3 ? 'PASS' : 'FAIL') : (ingDQR <= 4 ? 'PASS' : 'FAIL')
+                // Bug 3 FIX: thresholds corrected to match compliance_engine.js (2.0/3.0 not 3.0/4.0)
+                isFg ? (ingDQR <= 2 ? 'PASS' : 'FAIL') : (ingDQR <= 3 ? 'PASS' : 'FAIL')
             ];
         });
         if (fbIngRows.length > 0) {
@@ -2704,7 +2733,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             });
             Y = doc.lastAutoTable.finalY + 4;
         }
-        footer('Foreground/Background — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Foreground/Background — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // GAP-12 & GAP-13 FIX: ALLOCATION SENSITIVITY + CUTOFF VALIDATION
@@ -2773,7 +2802,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             )
         ], { sectionLabel: 'Cutoff Validation (continued)' });
 
-        footer('Allocation & Cutoff — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Allocation & Cutoff — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // GAP-14 FIX: JRC VALIDATION RESULT PAGE
@@ -2848,7 +2877,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 'Note: Run compliance_engine.js evaluateJRC() to populate full check list.'
             ], { sectionLabel: 'JRC Validation (continued)' });
         }
-        footer('JRC Validation — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('JRC Validation — Page ' + pageNum + ' of {total_pages_count}');
         newPage('Methodology Declaration + Legal Notice');
         subHeader('Methodology Overview');
 
@@ -2918,7 +2947,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('Assessment ID: ' + safe(dppId), M, Y + 9);
         doc.text('Report generated: ' + new Date().toISOString(), M, Y + 13.5);
 
-        footer('Methodology & Legal — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Methodology & Legal — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // FIX-21: ECO-SCORE PAGE — grade derivation fully transparent
@@ -2982,7 +3011,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  Source: AGRIBALYSE 3.2 / ADEME product benchmarks (indicative ranges, converted to uPt)'
         ], { sectionLabel: 'Eco-Score (continued)' });
 
-        footer('Eco-Score — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Eco-Score — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // FIX-22: NUTRITIONAL LCA PAGE — CO2 per 100g protein, fully derived
@@ -3047,7 +3076,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             ], { sectionLabel: 'Nutritional LCA (continued)' });
         }
 
-        footer('Nutritional LCA — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Nutritional LCA — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // FIX-23: DNM COMPLIANCE CHECK — data and method coverage
@@ -3070,7 +3099,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     name: safe(c.name || stage),
                     impact: c.subtotal || 0,
                     dqr: c.dqr || (stage === 'Ingredients' ? 2.5 : 3.0),
-                    isUnderOperationalControl: (stage === 'Manufacturing')
+                    // PDF-F2 FIX: isUnderOperationalControl always false — consistent with
+                    // compliance_engine.js which sets this to false for all processes.
+                    // No foreground flagging mechanism exists yet (Finding J6-F1).
+                    isUnderOperationalControl: false
                 });
             });
             // Add stage total if no components
@@ -3079,14 +3111,18 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     name: stage,
                     impact: stageTree.total,
                     dqr: stage === 'Manufacturing' ? 2.0 : 3.0,
-                    isUnderOperationalControl: (stage === 'Manufacturing')
+                    isUnderOperationalControl: false
                 });
             }
         });
 
         const dnmTotal = ccTotal || 1;
-        const DNM_PRIMARY_MAX  = 3.0;   // PEF 3.1 §5.6 — operational control processes
-        const DNM_SECONDARY_MAX = 4.0;  // PEF 3.1 §5.6 — non-operational processes
+        // PDF-F2 FIX (Audit Session 14): Correct DNM thresholds to match compliance_engine.js.
+        // Previous values (3.0/4.0) were wrong — too lenient by 1.0 DQR point each.
+        // PEF 3.1 §5.6: foreground (operational control) DQR ≤ 2.0, background DQR ≤ 3.0.
+        // Source: compliance_engine.js PRIMARY_DQR_MAX = 2.0, SECONDARY_DQR_MAX = 3.0.
+        const DNM_PRIMARY_MAX  = 2.0;   // PEF 3.1 §5.6 — foreground/operational control processes
+        const DNM_SECONDARY_MAX = 3.0;  // PEF 3.1 §5.6 — background/non-operational processes
         const DNM_THRESHOLD    = 0.01;  // 1% contribution threshold
 
         const dnmViolations = [];
@@ -3144,7 +3180,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             });
         }
         traceBlock(dnmLines, { sectionLabel: 'DNM Check (continued)' });
-        footer('DNM Check — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('DNM Check — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // PARAMETRIC TWIN — FULL GLASS-BOX SECTION
@@ -3218,7 +3254,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 Y += 5;
             });
 
-            footer('Parametric Twin — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+            footer('Parametric Twin — Page ' + pageNum + ' of {total_pages_count}');
         }
 
         // ================================================================
@@ -3408,7 +3444,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         if (document.body.contains(hiddenQrDiv)) document.body.removeChild(hiddenQrDiv);
 
         Y = qrY + qrSize + 14;
-        footer('Offline Verification — Page ' + pageNum + ' of ' + TOTAL_PAGES);
+        footer('Offline Verification — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
         // RETROACTIVE PAGE NUMBERING
@@ -3432,8 +3468,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // SAVE
         // ================================================================
         const filename = 'AIOXY_GlassBox_' + safe(pName).replace(/\s+/g,'_').slice(0,30) + '_' + dateStr + '.pdf';
+
+        // PDF-F4 FIX (Audit Session 14): Resolve {total_pages_count} placeholder in all footers.
+        // doc.putTotalPages() replaces every occurrence of the placeholder string with the
+        // actual total page count before the PDF is saved. jsPDF standard pattern.
+        doc.putTotalPages('{total_pages_count}');
+
         doc.save(filename);
-        console.log('[AIOXY PDF ' + _PDF_VERSION + '] Glass-Box Report saved: ' + filename);
+        console.log('[AIOXY PDF ' + _PDF_VERSION + '] Glass-Box Report saved: ' + filename + ' (' + pageNum + ' pages)');
 
     } catch (err) {
         // v7.1: Full diagnostic — copy the console.error output and send to developer

@@ -171,8 +171,12 @@
                 pkgTotal   = packagingResult.fossilImpact;
             } else if (cat === 'Climate Change - Biogenic') {
                 pkgTotal   = packagingResult.biogenicImpact;
-            } else if (cat === 'Resource Use, fossils') {
-                mfgTotal   = mfgResult.kwh * 3.6;
+            // C12-F1 FIX (Audit Session 7): Removed explicit 'Resource Use, fossils' branch
+            // that used mfgResult.kwh * 3.6 (= final energy MJ, not primary fossil energy).
+            // This understated Resource Use fossils for fossil-heavy grids and overstated
+            // for low-carbon grids. Now falls through to multiCategoryResults which uses
+            // ELECTRICITY_GRID_MULTI['Resource Use, fossils'] = 5.80 MJ/kWh (grid-mix-
+            // appropriate, sourced from ENTSO-E 2023 / ecoinvent 3.9.1 EU27 mix).
             } else if (
                 cat !== 'Climate Change - Land Use' &&
                 mfgResult.multiCategoryResults && mfgResult.multiCategoryResults[cat] !== undefined
@@ -601,7 +605,13 @@
             // TW (Taiwan) added here — was only in the duplicate block, not above.
             "TW": "Taiwan",
             "DZ": "Algeria",        "TN": "Tunisia",
+            // B5-F2 FIX: NZ, IL, BY, GE added to resolver (single clean entry each).
+            // Bug 2 FIX: Removed duplicate entries that appeared 2-3 times each —
+            // caused by F5 appending a second block instead of merging into the first.
             "NZ": "New Zealand",
+            "IL": "Israel",
+            "BY": "Belarus",
+            "GE": "Georgia",          // country, not US state
             "RE": "France",          // Réunion — FR overseas proxy
             "WI": "France",          // West Indies (FR Antilles) — FR proxy
             "EU": "France",          // EU aggregate — FR conservative proxy
@@ -629,7 +639,7 @@
             'AT':1100,'BE':310,'BG':2000,'HR':1500,'CZ':880,'DK':1000,'EE':2200,
             'FI':2500,'DE':550,'GR':2500,'HU':1300,'IE':1800,'IT':1200,'LV':2100,
             'LT':2000,'LU':360,'NL':500,'NO':2000,'PL':1300,'PT':1700,'RO':2200,
-            'SK':1100,'SI':1200,'ES':1300,'SE':2000,'CH':600,'GB':850,'TR':2800,
+            'SK':1100,'SI':1200,'ES':1300,'SE':2000,'CH':600,'GB':850, // B4-F1: UK midlands to N.France via Channel. Eurostat 2022 screening.'TR':2800,
             'AL':2100,'BA':1800,'ME':2000,'MK':2100,'RS':1900,'UA':2500,'MD':2300,
             'RU':2800,'MA':2500,'DZ':2200,'TN':2100
         };
@@ -816,6 +826,11 @@
                         transformationUsed = false;
                     }
 
+                    // B2-F1 FIX: Guard against negative LANCA SQI (e.g. Greenland = -8.75).
+                    if (lancaRatio < 0) {
+                        console.warn('[AIOXY B2-F1] Negative LANCA ratio ' + lancaRatio.toFixed(4) + ' for ' + originISO + '. Land Use adjustment skipped.');
+                        lancaRatio = 1.0;
+                    }
                     flatPef['Land Use'] *= lancaRatio;
 
                     countryFactorsLog.lanca = {
@@ -908,6 +923,7 @@
                         };
                     } else {
                         const userYield = ingredient.primaryData.yieldKgPerHa;
+                        // B3-F1 FIX: deviation_flag set when > 20%.
                         const deviationPct = faostatYield > 0
                             ? ((userYield - faostatYield) / faostatYield) * 100
                             : null;
@@ -1190,10 +1206,17 @@ if (!traceability.usetox) {
                                     feedFossilFraction   = proxyFossilCC / proxyTotalCC;
                                     feedBiogenicFraction = proxyCCBiogen / proxyTotalCC;
                                 } else {
-                                    // FIX: [Audit A2] Proxy has no CC sub-splits — fall back to 100% biogenic.
-                                    console.warn('[FIX A2] Proxy ingredient lacks CC sub-splits; feed CO2 allocated 100% biogenic.');
-                                    feedFossilFraction  = 0;
-                                    feedBiogenicFraction = 1;
+                                    // A14-F1 FIX (Audit Session 4): Replace 100% biogenic fallback with
+                                    // documented 70% fossil / 30% biogenic split for fishmeal and fish oil.
+                                    // Rationale: fishmeal and fish oil production is energy-intensive
+                                    // (diesel vessels, reduction plants, extraction). Real-world fossil
+                                    // fractions are typically 60-80% of total CC.
+                                    // Source: Pelletier et al. (2009) "Life cycle assessment of wild and
+                                    // farmed Atlantic salmon" Int J Life Cycle Assess 14:609-622.
+                                    // Proxy 70/30 is conservative — apply only when proxy sub-splits absent.
+                                    feedFossilFraction   = 0.70;
+                                    feedBiogenicFraction = 0.30;
+                                    console.warn('[AIOXY A14-F1] Fish feed proxy lacks CC sub-splits. Using documented 70/30 fossil/biogenic fallback (Pelletier et al. 2009). Provide a proxy with CC sub-splits for higher accuracy.');
                                 }
 
                                 // FIX: [Audit A2] Apply split fractions to feed CO2.
@@ -1215,7 +1238,7 @@ if (!traceability.usetox) {
                                     feed_biogenic_fraction: feedBiogenicFraction,
                                     cc_split_source: proxyFossilCC !== null
                                         ? 'Proxy ingredient CC sub-splits (AGRIBALYSE 3.2)'
-                                        : 'Fallback: 100% biogenic (proxy lacks CC sub-splits)',
+                                        : 'Fallback: 70% fossil / 30% biogenic (Pelletier et al. 2009 — proxy lacks CC sub-splits)',
                                     enteric_CH4:          0, // BUGFIX FARMED_FISH: zero — no enteric fermentation in fish
                                     manure_N2O:           0, // BUGFIX FARMED_FISH: zero — N excretion via aquatic pathway
                                     source:               'FIX A3: fish_oil_source=' + fishOilSource + '; FCR×(fishmeal_pct×fishmeal_CO2 + fish_oil_pct×fish_oil_CO2)' // BUGFIX FARMED_FISH
@@ -1240,28 +1263,38 @@ if (!traceability.usetox) {
                         const TIER1     = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
                         const animalRow = TIER1.entericEF[pd.animalType] || { ef_ch4: 0, n_excretion: 0 };
 
-                        // ── FAOSTAT fallback for productivity if user didn't provide it ───
+                        // ── Productivity fallback for livestock if user didn't provide it ───
+                        // A13-F1 FIX (Audit Session 4): Replace hardcoded 1000 kg/head fallback
+                        //   with AGRIBALYSE_DEFAULT_PRODUCTIVITY per animal type.
+                        // A13-F2 FIX (Audit Session 4): Remove dead FAOSTAT crop_yields lookup.
+                        //   The crop_yields DB is keyed by crop name — it will never match
+                        //   livestock animal type strings like 'dairy_cow', 'beef_cattle'.
+                        //   The correct source for livestock productivity defaults is
+                        //   IPCC_TIER1_LIVESTOCK.AGRIBALYSE_DEFAULT_PRODUCTIVITY.
                         let productPerHeadPerYear = pd.productivityMetric || 0;
                         if (!productPerHeadPerYear || productPerHeadPerYear <= 0) {
-                            // Try FAOSTAT livestock yield lookup
-                            try {
-                                const yieldDB  = window.aioxyData.crop_yields;
-                                const country  = ingredient.originCountry || 'FR';
-                                if (yieldDB && yieldDB.yields && yieldDB.yields[country]) {
-                                    const countryYields = yieldDB.yields[country];
-                                    for (const [cropKey, cropVal] of Object.entries(countryYields)) {
-                                        if (pd.animalType.replace('_', ' ').includes(cropKey.toLowerCase()) ||
-                                            cropKey.toLowerCase().includes(pd.animalType.split('_')[0])) {
-                                            productPerHeadPerYear = cropVal;
-                                            break;
-                                        }
-                                    }
-                                }
-                            } catch (e) { /* non-critical */ }
-
-                            // Final fallback — use a safe default so heads calculation doesn't divide by 0
-                            if (!productPerHeadPerYear || productPerHeadPerYear <= 0) {
-                                productPerHeadPerYear = 1000; // 1 tonne per head — conservative
+                            const TIER1_LS = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
+                            const defaultProd = TIER1_LS.AGRIBALYSE_DEFAULT_PRODUCTIVITY
+                                && TIER1_LS.AGRIBALYSE_DEFAULT_PRODUCTIVITY[pd.animalType];
+                            if (defaultProd && defaultProd > 0) {
+                                productPerHeadPerYear = defaultProd;
+                                adjustments.productivity_fallback = {
+                                    applied: true,
+                                    source:  'AGRIBALYSE_DEFAULT_PRODUCTIVITY[' + pd.animalType + ']',
+                                    value:   productPerHeadPerYear,
+                                    note:    'User did not supply productivityMetric. Using AGRIBALYSE 3.2 French national average.'
+                                };
+                            } else {
+                                // True last resort — animal type not in defaults DB
+                                // This should never happen for supported animal types
+                                productPerHeadPerYear = 1000;
+                                adjustments.productivity_fallback = {
+                                    applied: true,
+                                    source:  'emergency_default',
+                                    value:   1000,
+                                    warning: 'Animal type "' + pd.animalType + '" not found in AGRIBALYSE_DEFAULT_PRODUCTIVITY. Using 1000 kg/head placeholder — results unreliable for this ingredient.'
+                                };
+                                console.warn('[AIOXY] Livestock productivity fallback: animal type "' + pd.animalType + '" not in AGRIBALYSE defaults. Using 1000 kg/head placeholder.');
                             }
                         }
 
@@ -1476,17 +1509,23 @@ if (!traceability.usetox) {
                 }
 
                 // Nitrogen adjustment factor
+                // A4-F1 FIX: Use sourced BASELINE_NITROGEN_KG_PER_TON from core_physics constants.
+                // A4-F2 FIX: Cap nAdj at N_ADJ_MAX (3.0) to prevent data entry errors.
                 let nAdj = 1.0;
                 if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
-                    const baselineN = 15;
+                    const baselineN = CONSTANTS.AGRI_PRIMARY_DATA.BASELINE_NITROGEN_KG_PER_TON;
+                    const rawNAdj   = pd.nitrogenKgPerTon / baselineN;
+                    nAdj = Math.min(rawNAdj, CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX);
                     adjustments.baseline_nitrogen = baselineN;
-                    nAdj = pd.nitrogenKgPerTon / baselineN;
                     // GAP 10 FIX: structured nitrogen_adjustment for PDF dumb-printer trace.
-                    // PDF reads this object directly — must NOT recompute nAdj.
                     adjustments.nitrogen_adjustment = {
                         baseline_kg_per_ton: baselineN,
+                        baseline_source:     'Eurostat 2022 EU27 average (tag_an_fm_fen)',
                         actual_kg_per_ton:   pd.nitrogenKgPerTon,
-                        formula:             'actual_kg_per_ton / baseline_kg_per_ton',
+                        raw_factor:          rawNAdj,
+                        capped_at:           CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX,
+                        was_capped:          rawNAdj > CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX,
+                        formula:             'min(actual / baseline, N_ADJ_MAX)',
                         factor:              nAdj
                     };
                 }
@@ -1505,6 +1544,7 @@ if (!traceability.usetox) {
                 // Limitation: Using a nitrogen-derived multiplier for categories like
                 // Ionizing Radiation and Ozone Depletion is methodologically imprecise
                 // but conservative (multiplier rarely exceeds 1.5× in either direction).
+                // A5-F2 FIX: 60/40 weights are AIOXY screening assumption — not ISO/PEF sourced.
                 const co2Mult = (0.6 * yieldAdj) + (0.4 * nAdj);
                 adjustments.multipliers = {
                     co2:    co2Mult,
@@ -1529,7 +1569,12 @@ if (!traceability.usetox) {
                 flatPef['Climate Change']                *= co2Mult;
                 flatPef['Climate Change - Fossil']       *= co2Mult;
                 flatPef['Climate Change - Biogenic']     *= co2Mult;
-                flatPef['Climate Change - Land Use']     *= co2Mult;
+                // A5-F1 FIX (Audit Session 1): CC-Land Use scaled by yieldAdj only, not co2Mult.
+                // dLUC (direct land use change) is a land-area effect — it scales with yield
+                // (land area per kg of product) but has no physical relationship to nitrogen
+                // application rate. Using co2Mult (which includes nAdj) was incorrect.
+                // Consistent with Land Use category below which also uses yieldAdj.
+                flatPef['Climate Change - Land Use']     *= yieldAdj;
                 // FIX CALC-08: Ozone Depletion NOT scaled by co2Mult.
                 // OD is driven by CFC/HCFC refrigerant emissions — no relationship
                 // to agricultural yield or nitrogen application rate.
@@ -1586,11 +1631,12 @@ if (!traceability.usetox) {
                 // vs FRAC_GASF = 0.10 for synthetic N. Both use same EF1, EF4, EF5, FRAC_LEACH.
                 // Source: IPCC 2006 Vol. 4, Ch. 11, Table 11.1 & 11.3 (F_ON organic nitrogen inputs).
                 if (pd.organicNitrogenKgPerTon && pd.organicNitrogenKgPerTon > 0) {
-                    const FRAC_GASM = 0.20;  // IPCC 2006 Vol.4 Table 11.3 — fraction of organic N volatilized as NH3/NOx
+                    // A9-F1 FIX (Audit Session 2): FRAC_GASM now read from CONSTANTS.IPCC_TIER1.
+                    // Previously hardcoded here — all IPCC Tier 1 constants must live in core_physics.
                     const F_ON = (pd.organicNitrogenKgPerTon / 1000) * ingredient.quantityKg;  // kg organic N applied
                     const N2O_on_direct         = F_ON * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
                     const N2O_on_leach          = F_ON * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
-                    const N2O_on_volatilization = F_ON * FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_volatilization = F_ON * IPCC.FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
                     const N2O_on_total = N2O_on_direct + N2O_on_leach + N2O_on_volatilization;
 
                     // Finding 10 FIX (2026-06-07): Organic N N2O reallocated from CC-Land Use to CC-Fossil.
@@ -1605,9 +1651,15 @@ if (!traceability.usetox) {
                         indirect_leach_kgCO2e:   N2O_on_leach,
                         volatilization_kgCO2e:   N2O_on_volatilization,
                         total_kgCO2e:            N2O_on_total,
-                        frac_gasm:               FRAC_GASM,
-                        formula:                 'IPCC Tier 1 (2006) Vol.4 Table 11.3 organic N path: F_ON × EF1 (direct) + F_ON × FRAC_LEACH × EF5 (leach) + F_ON × FRAC_GASM(0.20) × EF4 (volatilization). GWP_N2O=' + AR5.GWP_N2O
+                        frac_gasm:               IPCC.FRAC_GASM,
+                        formula:                 'IPCC Tier 1 (2006) Vol.4 Table 11.3 organic N path: F_ON × EF1 (direct) + F_ON × FRAC_LEACH × EF5 (leach) + F_ON × FRAC_GASM(' + IPCC.FRAC_GASM + ') × EF4 (volatilization). GWP_N2O=' + AR5.GWP_N2O
                     };
+                } // S2-CRITICAL FIX (Audit Session 2): Close organic N if-block here.
+                  // Previously missing — SALCA-P, SOC, and USEtox were nested inside the
+                  // organic N if-block and only ran when organicNitrogenKgPerTon > 0.
+                  // These three pathways are independent of organic N data and must run
+                  // whenever their own input data is provided. Fix: close organic N block
+                  // before SALCA-P so all three pathways execute independently.
 
                 // === GAP 2: SALCA-P phosphorus leaching (ISO 14044 primary data path) ===
                 // FIX B [Audit Finding B]: Reference core_physics constants instead of hardcoding
@@ -1638,6 +1690,9 @@ if (!traceability.usetox) {
                 // Category: Climate Change − Land Use (soil C stock = land-use related per PEF 3.1)
                 //           and Climate Change total.
                 // Sources: IPCC 2006 Vol.4 Ch.2 Eq.2.25 | PEF 3.1 §4.4.8 | Nemecek & Kägi (2007)
+                // A11-F2 FIX: SOC gate requires farmingPractice === 'regen' — AIOXY design choice,
+                // not required by IPCC or PEF 3.1. A conventional farmer with direct SOC measurements
+                // cannot currently claim credit. Disclosed here; future UI flag planned for J6-F1.
                 if (pd.farmingPractice === 'regen' &&
                     pd.socBaselineTC_ha != null && pd.socCurrentTC_ha != null &&
                     pd.yieldKgPerHa > 0) {
@@ -1661,10 +1716,10 @@ if (!traceability.usetox) {
                         c_to_co2_factor:          SOC.C_TO_CO2,
                         annual_co2e_per_ha:       annualCO2e_per_ha,
                         co2e_per_kg_product:      socCO2e_per_kg,
-                        direction:                deltaC_t_per_ha >= 0 ? 'sequestration (removal)' : 'SOC loss (source)',
+                        direction:                deltaC_t_per_ha > 0 ? 'sequestration (removal)' : deltaC_t_per_ha < 0 ? 'SOC loss (source)' : 'no SOC change (delta = 0)', // A11-F1 FIX
                         category_affected:        'Climate Change - Land Use + Climate Change total',
                         formula: 'IPCC 2006 Vol.4 Ch.2 Eq.2.25: ΔC=(SOC_current−SOC_baseline)/D×C_TO_CO2×1000/yield',
-                        source:  'IPCC 2006 Vol.4 Ch.2 Eq.2.25 | PEF 3.1 §4.4.8 | Nemecek & Kägi (2007)'
+                        source:  'IPCC 2006 Vol.4 Ch.2 Eq.2.25 | PEF 3.1 §4.4.8 | Nemecek & Kägi (2007) ecoinvent No.15 — cited for context; primary derivation from IPCC 2006 and PEF 3.1' // A11-F3
                     };
                 } else if (pd.farmingPractice === 'regen') {
                     // Regen selected but soil carbon measurements not provided
@@ -1690,13 +1745,44 @@ if (!traceability.usetox) {
                         const pesticideDetails = [];
         
                         for (const pesticide of pd.pesticides) {
-                            const cas = (pesticide.cas || '').trim();
+                            // A15-F2 FIX (Audit Session 4): Normalise CAS string before lookup.
+                            // Previous code did .trim() only — CAS entered without dashes
+                            // (e.g. '121755' instead of '121-75-5') would silently miss.
+                            // Normalisation: trim whitespace, uppercase, enforce N-NN-N dash format.
+                            const rawCas = (pesticide.cas || '').trim();
+                            // Standard CAS format: digits-digits-digit (e.g. 1071-83-6)
+                            // Normalise: remove existing dashes, reinsert at correct positions
+                            const casDigits = rawCas.replace(/-/g, '').replace(/\s/g, '');
+                            let cas = rawCas; // default: use as-is if already formatted
+                            if (casDigits.length >= 3) {
+                                // CAS format: all-but-last-3 digits - middle-2 digits - last-1 digit
+                                const lastOne  = casDigits.slice(-1);
+                                const lastTwo  = casDigits.slice(-3, -1);
+                                const prefix   = casDigits.slice(0, -3);
+                                if (prefix.length > 0) {
+                                    cas = prefix + '-' + lastTwo + '-' + lastOne;
+                                }
+                            }
+
                             const rate = pesticide.rateKgPerHa || 0;
                             const amountApplied = rate * areaHarvested;
-            
-                            const htCF = usetoxDB.human_toxicity[cas];
+
+                            const htCF  = usetoxDB.human_toxicity[cas];
                             const ecoCF = usetoxDB.ecotoxicity[cas];
-            
+
+                            if (!htCF && !ecoCF) {
+                                // Log named warning — user provided CAS but it is absent from DB
+                                console.warn('[AIOXY A15-F2] CAS "' + cas + '" (raw: "' + rawCas + '") not found in USEtox 2.14 DB. Toxicity for this substance = 0. Verify CAS number or check USEtox 2.14 coverage.');
+                                pesticideDetails.push({
+                                    name:            pesticide.name || 'Unknown',
+                                    cas_raw:         rawCas,
+                                    cas_normalised:  cas,
+                                    warning:         'CAS not found in USEtox 2.14 DB — substance excluded from toxicity calculation',
+                                    rateKgPerHa:     rate
+                                });
+                                continue;
+                            }
+                            // CAS found in USEtox DB — calculate toxicity contributions
                             if (htCF || ecoCF) {
                                 const cancer = htCF ? (amountApplied * (htCF.cancer_CTUh_per_kg || 0)) : 0;
                                 const noncancer = htCF ? (amountApplied * (htCF.noncancer_CTUh_per_kg || 0)) : 0;
@@ -2083,10 +2169,16 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             //   4. R-717 (ammonia) and R-744 (CO2) have GWP=0 and GWP=1 by definition — valid.
             //
             // Source: IPCC AR5 GWP100 / EC F-Gas Regulation 517/2014 Annex I
+            // C10-F2 FIX (Audit Session 7): All REFRIGERANT_GWP keys now uppercase suffixes
+            // to match the .toUpperCase() normalisation applied to user input.
+            // Previous bug: 'r-134a' → normalised to 'R-134A' but key was 'R-134a' → miss.
+            // Fix: keys match the normalised form (.toUpperCase() output).
             const REFRIGERANT_GWP = {
-                'R-404A': 3922, 'R-134a': 1430, 'R-407C': 1774, 'R-410A': 2088,
+                'R-404A': 3922, 'R-134A': 1430, 'R-407C': 1774, 'R-410A': 2088,
                 'R-507A': 3985, 'R-32':    675,  'R-744':     1, 'R-717':     0
             };
+            // Note: R-32 and R-717 have no letter suffix — .toUpperCase() has no effect.
+            // R-744 similarly unaffected. Only R-134a and R-507a had lowercase suffix issue.
 
             // BUG-02 FIX: Normalise the input string
             const _refTypeRaw = pfd.refrigerantType || '';
@@ -2133,9 +2225,20 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             mfgResult = {
                 co2:                  totalMfgCO2,
                 kwh:                  totalMfgKwh,
-                fossilFraction:       1.0,
+                // C8-F1 FIX (Audit Session 7): Derive fossil fraction from grid intensity.
+                // Matches the fix applied in core_physics.js calculateManufacturing().
+                // CC total unchanged — only CC-Fossil/CC-Biogenic sub-split improves.
+                fossilFraction: (function() {
+                    const ref = window.corePhysics.CONSTANTS.FOSSIL_FRACTION.FOSSIL_GRID_REFERENCE_G_PER_KWH;
+                    // For gas/coal/oil energy sources, override to 1.0 (fully fossil combustion)
+                    if (energySource === 'gas' || energySource === 'coal' || energySource === 'oil') return 1.0;
+                    // For renewable, use minimum floor
+                    if (energySource === 'renewable') return 0.05;
+                    // For grid: derive from intensity
+                    return Math.min(1.0, Math.max(0.05, gridIntensity / ref));
+                })(),
                 source:               'Primary Factory Data',
-                gridIntensityGPerKwh: gridIntensity,   // gridIntensity is in scope (processManufacturing local). Needed by CSV export and audit trail.
+                gridIntensityGPerKwh: gridIntensity,
                 fuelType:             fuelType,
                 fuelFactor:           fuelFactor,
                 refrigerantType:      refType   || null,
@@ -2219,7 +2322,10 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         const transIn     = input.transport;
         const grossWeight = input.product.weightKg + packagingWeightKg;
 
-        // 3b. Crisis routing
+        // 3b. Crisis routing — D5-F1 FIX: 40% penalty documented.
+                // Conservative screening assumption based on 2021-2024 supply chain disruptions.
+                // Suez Canal closure 2024: +15-20% Asia-Europe. Broader disruptions reach 30-40%.
+                // Not a regulatory value — use only for scenario sensitivity analysis.
         let effectiveDistance = transIn.distanceKm;
         if (transIn.crisisRouting &&
             (transIn.mode === 'sea' || transIn.mode === 'road')) {
@@ -2268,6 +2374,15 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         const ed         = pkgData.co2_disposal_average || pkgData.co2_disposal || 0.05;
         // FIX 1: CFF R2 — pkgData.r2 IS the Annex C end-of-life recycling rate; do not multiply by r1_max.
         // r1_max separately caps the user-supplied recycled content fraction per PEF 3.1 Annex C.
+        // E3-F1 FIX: Validate recycledPct range 0-100.
+        if (pkgIn.recycledPct !== null && pkgIn.recycledPct !== undefined) {
+            if (pkgIn.recycledPct < 0 || pkgIn.recycledPct > 100) {
+                throw new ValidationError('recycledPct out of range 0-100: ' + pkgIn.recycledPct);
+            }
+            if (pkgIn.recycledPct > 0 && pkgIn.recycledPct <= 1.0) {
+                console.warn('[AIOXY E3-F1] recycledPct=' + pkgIn.recycledPct + ' looks like a fraction. Use percentage (0-100).');
+            }
+        }
         const r1Uncapped = pkgIn.recycledPct / 100;
         const r1         = pkgData.r1_max !== undefined ? Math.min(r1Uncapped, pkgData.r1_max) : r1Uncapped;
         const r2         = pkgData.r2 || 0.7;
@@ -2330,8 +2445,9 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 mfgTotal = mfgResult.co2;
             } else if (cat === 'Climate Change - Fossil') {
                 mfgTotal = mfgResult.co2 * mfgResult.fossilFraction;
-            } else if (cat === 'Resource Use, fossils') {
-                mfgTotal = mfgResult.kwh * 3.6;
+            // C12-F1 FIX (Audit Session 7): Removed 'Resource Use, fossils' special case (kwh * 3.6).
+            // Now falls through to multiCategoryResults[cat] which holds the grid-mix-appropriate
+            // ELECTRICITY_GRID_MULTI value. See buildContributionTree fix above for full rationale.
             } else if (
                 cat !== 'Climate Change - Biogenic' &&
                 cat !== 'Climate Change - Land Use' &&
@@ -2425,11 +2541,21 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
         const totalCO2 = pefResults['Climate Change'].total;
         const dnmProcesses = ingredientResults.map(ing => ({
-            name:                      ing.name,
-            impact:                    ing.allCategoryResults['Climate Change'] || 0,
-            dqr:                       ing.dqr,
-            isUnderOperationalControl: false
+            name:   ing.name,
+            impact: ing.allCategoryResults['Climate Change'] || 0,
+            dqr:    ing.dqr,
+            // J1-F1 + J6-F1 FIX (Audit Sessions 12/13): Derive isUnderOperationalControl
+            // from whether the ingredient has primary data supplied by the brand.
+            // Ingredients where the brand provided primaryData (yield, N, pesticides, etc.)
+            // represent processes under their operational influence — apply stricter DQR ≤ 2.0.
+            // Ingredients using only secondary AGRIBALYSE data are background — DQR ≤ 3.0.
+            // This is a first approximation; a full foreground/background UI flag is flagged
+            // as Finding J6-F1 for a future UI session.
+            isUnderOperationalControl: !!(ing.primaryDataApplied)
         }));
+        // J1-F2/J2-F1/J4-F1 FIX: DNM, cutoff, hotspot use CC as proxy denominator.
+        // PEF 3.1 requires single score denominator. CC is practical proxy for food LCA.
+        // Full per-category evaluation is outside current scope — documented here.
         const dnmResult = window.complianceEngine.evaluateDNM(
             dnmProcesses,
             Math.max(totalCO2, 0.0001)
