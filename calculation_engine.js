@@ -1831,7 +1831,7 @@ if (!traceability.usetox) {
                 }
                 } // end else (crop primary data path)
             } // F2 FIX + ANIMAL/CROP SPLIT: closing brace for if (ingredient.primaryData)
-            } // ROOT CAUSE FIX (2026-06-06): This brace was missing. All code from "1f. Apply
+             // ROOT CAUSE FIX (2026-06-06): This brace was missing. All code from "1f. Apply
               // processing archetype" down through ingredientResults.push(ingEntry) was trapped
               // inside if (ingredient.primaryData), meaning every standard AGRIBALYSE ingredient
               // (primaryData = null) was silently skipped — ingredientResults stayed empty,
