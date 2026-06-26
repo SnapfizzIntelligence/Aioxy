@@ -260,56 +260,86 @@ function clearResults() {
 }
 
 // ================== UPDATE RESULTS UI ==================
-function updateResultsUI(results) {
+function updateResultsUI(results, twinCalcResult) {
     // 1. Force Consistency: Pull the UNIFIED metric directly
     const unifiedCO2 = results.co2PerKg;
-    
-    // 🛡️ CRASH FIX 1: Define baseline variables at the absolute TOP before anything else runs
+
+    // =====================================================================
+    // BUG-UI-02 FIX: Environmental Impact Story and Universal Product
+    // Comparison bar now use twinCalcResult as the baseline source when a
+    // Parametric Twin calculation has been run.
     //
-    // BUG-UI-01 FIX: Environmental Impact Story and Universal Product Comparison bar
-    // were showing the raw Agribalyse ingredient-only CO2 value (e.g. 0.326 kg for
-    // Moroccan tomatoes) instead of the full PEF 3.1 lifecycle value (e.g. 0.5331 kg)
-    // that the Parametric Twin breakdown correctly displayed.
+    // ROOT CAUSE OF THE ORIGINAL BUG:
     //
-    // ROOT CAUSE:
-    //   results.comparison.baseline.co2PerKg  ← full lifecycle (ingredients + mfg +
-    //                                             transport + packaging), computed in
-    //                                             core_physics.js calculateParametricTwin()
-    //                                             conventionalTotal.co2PerKg — CORRECT
-    //   currentComparisonBaseline.co2PerKg    ← raw Agribalyse pef['Climate Change']
-    //                                             lookup, ingredient-only — WRONG for
-    //                                             the story/bar when a twin is active
+    // The app runs TWO separate full calculations:
+    //   mainCalcResult  → Dutch tomatoes (the assessed product)
+    //   twinCalcResult  → Moroccan tomatoes (the parametric twin)
     //
-    //   The old `results.comparison?.baseline || currentComparisonBaseline` chain
-    //   evaluated correctly in theory, BUT in practice currentComparisonBaseline is
-    //   also written from mainCalcResult.comparison.baseline in main.js (line 659),
-    //   so after the FIRST calculation both are set. On subsequent re-renders
-    //   (tab switches, UI refresh calls) `results` may be re-passed with the fresh
-    //   engine output while `currentComparisonBaseline` still holds a stale value
-    //   from a prior Universal Product Comparison dropdown selection, causing the
-    //   `||` to silently prefer the stale ingredient-only number whenever
-    //   results.comparison.baseline resolves to a falsy path.
+    // The Twin Breakdown (renderTwinResults) correctly compares these two
+    // full lifecycle results, showing 0.3929 vs 0.5331 kg CO2e/kg.
     //
-    // FIX:
-    //   Prefer results.comparison.baseline unconditionally when it carries a valid
-    //   co2PerKg > 0 — this is always the full lifecycle value from the engine.
-    //   Only fall back to currentComparisonBaseline when the engine result is absent
-    //   or its co2PerKg is missing/zero (e.g. before any twin calculation has run).
-    //   The final object fallback (self-comparison) is unchanged.
+    // But updateResultsUI was only reading results (mainCalcResult) and
+    // building resolvedBaseline from mainCalcResult.comparison.baseline —
+    // which comes from the legacy dropdown selector (PATH 3 in
+    // computeComparison). That path calls calculateParametricTwin with the
+    // Moroccan tomato Agribalyse pef value and sharedParams from the MAIN
+    // product input. Because the main product's transport/manufacturing/
+    // packaging are modeled for Dutch tomatoes (short distances, FR grid),
+    // the conventional baseline co2PerKg ends up close to the raw
+    // Agribalyse ingredient value of 0.326 — not the 0.5331 that the full
+    // twin calculation produces using the correct Moroccan parameters.
     //
-    //   This makes the Environmental Impact Story and Universal Product Comparison bar
-    //   consistent with the Parametric Twin breakdown at all times.
-    const _engineBaseline = results.comparison?.baseline;
-    const resolvedBaseline =
-        (_engineBaseline && typeof _engineBaseline.co2PerKg === 'number' && _engineBaseline.co2PerKg > 0)
-            ? _engineBaseline
-            : (currentComparisonBaseline && typeof currentComparisonBaseline.co2PerKg === 'number' && currentComparisonBaseline.co2PerKg > 0)
-                ? currentComparisonBaseline
-                : {
-                    name: 'Benchmark',
-                    co2PerKg: unifiedCO2,
-                    waterPerKg: 0
-                };
+    // THE FIX:
+    //
+    // When twinCalcResult is present (Parametric Twin has been calculated),
+    // build resolvedBaseline directly from twinCalcResult — the same object
+    // that renderTwinResults uses. This gives the Environmental Impact Story
+    // and the Universal Product Comparison bar the identical numbers shown
+    // in the Twin Breakdown.
+    //
+    // resolvedBaseline shape expected by updateEnvironmentalStory() and
+    // renderUniversalComparisons():
+    //   { name, co2PerKg, waterPerKg, breakdown? }
+    //
+    // twinCalcResult supplies all of these via its own auditTrailData and
+    // finalPefResults — same full PEF 3.1 lifecycle calculation.
+    // =====================================================================
+    let resolvedBaseline;
+
+    if (twinCalcResult && twinCalcResult.finalPefResults &&
+            twinCalcResult.co2PerKg > 0) {
+        // Twin is active — use twinCalcResult as the baseline.
+        // co2PerKg, waterScarcityPerKg, landUsePerKg are top-level on the
+        // engine return object (calculation_engine.js lines 3248-3251).
+        const twinName = (twinCalcResult.auditTrailData &&
+                          twinCalcResult.auditTrailData.productName)
+            || 'Parametric Twin';
+        resolvedBaseline = {
+            name:       twinName,
+            co2PerKg:   twinCalcResult.co2PerKg,
+            waterPerKg: twinCalcResult.waterScarcityPerKg  || 0,
+            landUsePerKg: twinCalcResult.landUsePerKg      || 0,
+            fossilPerKg:  twinCalcResult.fossilPerKg       || 0,
+            breakdown:    (twinCalcResult.comparison && twinCalcResult.comparison.baseline &&
+                           twinCalcResult.comparison.baseline.breakdown) || null,
+            // Flag so downstream code knows this came from the twin engine
+            _fromTwinCalc: true
+        };
+    } else {
+        // No twin — fall back to engine-produced comparison baseline,
+        // then stale global, then self-comparison.
+        const _engineBaseline = results.comparison?.baseline;
+        resolvedBaseline =
+            (_engineBaseline && typeof _engineBaseline.co2PerKg === 'number' && _engineBaseline.co2PerKg > 0)
+                ? _engineBaseline
+                : (currentComparisonBaseline && typeof currentComparisonBaseline.co2PerKg === 'number' && currentComparisonBaseline.co2PerKg > 0)
+                    ? currentComparisonBaseline
+                    : {
+                        name:      'Benchmark',
+                        co2PerKg:  unifiedCO2,
+                        waterPerKg: 0
+                    };
+    }
     const baselineCO2 = resolvedBaseline.co2PerKg || 0;
     const baselineWater = resolvedBaseline.waterPerKg || 0;
     const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
