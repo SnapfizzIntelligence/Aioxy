@@ -682,7 +682,7 @@ function gv(id) { return (document.getElementById(id) || {}).value || '—'; }
     function applyPatch(fn) {
         if (fn._twinPatched) return;
         window.updateResultsUI = function (mainResult, twinCalcResult) {
-            fn(mainResult);
+            fn(mainResult, twinCalcResult);
             if (twinCalcResult) {
                 renderTwinResults(mainResult, twinCalcResult);
             } else {
