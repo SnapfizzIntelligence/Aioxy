@@ -265,13 +265,51 @@ function updateResultsUI(results) {
     const unifiedCO2 = results.co2PerKg;
     
     // 🛡️ CRASH FIX 1: Define baseline variables at the absolute TOP before anything else runs
-    // FIX: Use results.comparison.baseline (engine-produced, always valid) as primary source.
-    // Fall back to currentComparisonBaseline only if engine baseline somehow absent.
-    const resolvedBaseline = results.comparison?.baseline || currentComparisonBaseline || {
-        name: 'Benchmark',
-        co2PerKg: unifiedCO2,
-        waterPerKg: 0
-    };
+    //
+    // BUG-UI-01 FIX: Environmental Impact Story and Universal Product Comparison bar
+    // were showing the raw Agribalyse ingredient-only CO2 value (e.g. 0.326 kg for
+    // Moroccan tomatoes) instead of the full PEF 3.1 lifecycle value (e.g. 0.5331 kg)
+    // that the Parametric Twin breakdown correctly displayed.
+    //
+    // ROOT CAUSE:
+    //   results.comparison.baseline.co2PerKg  ← full lifecycle (ingredients + mfg +
+    //                                             transport + packaging), computed in
+    //                                             core_physics.js calculateParametricTwin()
+    //                                             conventionalTotal.co2PerKg — CORRECT
+    //   currentComparisonBaseline.co2PerKg    ← raw Agribalyse pef['Climate Change']
+    //                                             lookup, ingredient-only — WRONG for
+    //                                             the story/bar when a twin is active
+    //
+    //   The old `results.comparison?.baseline || currentComparisonBaseline` chain
+    //   evaluated correctly in theory, BUT in practice currentComparisonBaseline is
+    //   also written from mainCalcResult.comparison.baseline in main.js (line 659),
+    //   so after the FIRST calculation both are set. On subsequent re-renders
+    //   (tab switches, UI refresh calls) `results` may be re-passed with the fresh
+    //   engine output while `currentComparisonBaseline` still holds a stale value
+    //   from a prior Universal Product Comparison dropdown selection, causing the
+    //   `||` to silently prefer the stale ingredient-only number whenever
+    //   results.comparison.baseline resolves to a falsy path.
+    //
+    // FIX:
+    //   Prefer results.comparison.baseline unconditionally when it carries a valid
+    //   co2PerKg > 0 — this is always the full lifecycle value from the engine.
+    //   Only fall back to currentComparisonBaseline when the engine result is absent
+    //   or its co2PerKg is missing/zero (e.g. before any twin calculation has run).
+    //   The final object fallback (self-comparison) is unchanged.
+    //
+    //   This makes the Environmental Impact Story and Universal Product Comparison bar
+    //   consistent with the Parametric Twin breakdown at all times.
+    const _engineBaseline = results.comparison?.baseline;
+    const resolvedBaseline =
+        (_engineBaseline && typeof _engineBaseline.co2PerKg === 'number' && _engineBaseline.co2PerKg > 0)
+            ? _engineBaseline
+            : (currentComparisonBaseline && typeof currentComparisonBaseline.co2PerKg === 'number' && currentComparisonBaseline.co2PerKg > 0)
+                ? currentComparisonBaseline
+                : {
+                    name: 'Benchmark',
+                    co2PerKg: unifiedCO2,
+                    waterPerKg: 0
+                };
     const baselineCO2 = resolvedBaseline.co2PerKg || 0;
     const baselineWater = resolvedBaseline.waterPerKg || 0;
     const safeBaseCO2 = baselineCO2 > 0 ? baselineCO2 : 1;
