@@ -93,7 +93,7 @@ var PHYSICS_CONSTANTS = {
     HOUSEHOLD_ELEC_KG_DAY: 2.3375,
 
     // ── SMARTPHONE_CHARGES_PER_KG_CO2 ───────────────────────────────────────
-    // 344 full smartphone charges equivalent to 1 kg CO2e avoided
+    // 397 full smartphone charges equivalent to 1 kg CO2e avoided
     // Derivation:
     //   Step 1 — Charge energy: 12 Wh (0.012 kWh) per full charge.
     //     Basis: average smartphone battery 3,800 mAh at 3.7 V nominal
@@ -104,18 +104,18 @@ var PHYSICS_CONSTANTS = {
     //     Source: European Commission Ecodesign Impact Accounting Overview
     //     Report 2024 (smartphones & tablets section); IEA (2022)
     //     "The Role of Critical Minerals in Clean Energy Transitions".
-    //   Step 2 — EU grid intensity: 0.242 kg CO2e/kWh (EU-27 average, 2023)
-    //     Source: Ember (2024) "European Electricity Review 2024",
-    //     Table: EU average carbon intensity of electricity generation 2023.
-    //     URL: https://ember-energy.org/latest-insights/european-electricity-review-2024/
-    //     Cross-check: IEA "Emission Factors 2024" — EU 2023 grid: 242 g CO2/kWh.
-    //     URL: https://www.iea.org/data-and-statistics/data-product/emissions-factors-2024
-    //   Step 3 — CO2 per charge: 0.012 kWh × 0.242 kg CO2/kWh = 0.002904 kg CO2
-    //   Step 4 — Charges per kg CO2: 1 / 0.002904 = 344.3 → rounded to 344
-    // Note: prior value was 440.7, implying EU grid ~189 g CO2/kWh (~2020 level).
-    //   Updated to 2023 grid intensity. Update annually with Ember EU review.
+    //   Step 2 — EU grid intensity: 0.2099 kg CO2e/kWh (EU-27 average, 2024)
+    //     Source: Ember (2025) "European Electricity Review 2025",
+    //     EU average carbon intensity of electricity generation 2024: 209.9 g CO2/kWh.
+    //     URL: https://ember-energy.org/latest-insights/european-electricity-review-2025/
+    //     Same value confirmed in AIOXY's own Ember 2025 dataset (europe_yearly CSV,
+    //     EU row, 2025 publication, CO2 intensity = 209.9 gCO2e per kWh).
+    //   Step 3 — CO2 per charge: 0.012 kWh × 0.2099 kg CO2/kWh = 0.0025188 kg CO2
+    //   Step 4 — Charges per kg CO2: 1 / 0.0025188 = 397.0 → rounded to 397
+    // Note: prior value was 344, using EU 2023 grid 242 g CO2/kWh (Ember 2024).
+    //   Updated to EU 2024 grid 209.9 g CO2/kWh (Ember 2025). Update annually.
     // Confidence: HIGH (derivation fully reproducible from cited sources).
-    SMARTPHONE_CHARGES_PER_KG_CO2: 344,
+    SMARTPHONE_CHARGES_PER_KG_CO2: 397,
 
     // ── FLIGHT_KM_PER_KG_CO2 ────────────────────────────────────────────────
     // 8.33 km of economy-class flight equivalent to 1 kg CO2 avoided
@@ -139,7 +139,7 @@ var PHYSICS_CONSTANTS = {
     FLIGHT_KM_PER_KG_CO2: 8.33,
 
     // ── LED_HOURS_PER_KG_CO2 ─────────────────────────────────────────────────
-    // 413 hours of 10W LED lighting equivalent to 1 kg CO2e avoided
+    // 476 hours of 10W LED lighting equivalent to 1 kg CO2e avoided
     // Derivation:
     //   Step 1 — LED power: 10 W (standard EU household LED, 806–1000 lm output)
     //     Basis: EU Ecodesign Regulation (EU) 2019/2020 on light sources.
@@ -147,15 +147,18 @@ var PHYSICS_CONSTANTS = {
     //     Source: European Commission, "Light Sources — Ecodesign",
     //     URL: https://energy-efficient-products.ec.europa.eu/product-list/light-sources_en
     //   Step 2 — Energy per hour: 10 W × 1 h = 0.010 kWh
-    //   Step 3 — EU grid intensity: 0.242 kg CO2e/kWh (EU-27 average, 2023)
-    //     Source: Ember (2024) "European Electricity Review 2024" (same source
-    //     as SMARTPHONE_CHARGES_PER_KG_CO2 above).
-    //   Step 4 — CO2 per hour: 0.010 kWh × 0.242 kg CO2/kWh = 0.002420 kg CO2
-    //   Step 5 — Hours per kg CO2: 1 / 0.002420 = 413.2 → rounded to 413
-    // Note: prior value was 363.6, implying EU grid ~275 g CO2/kWh (~2022 level).
-    //   Updated to 2023 grid intensity. Update annually with Ember EU review.
+    //   Step 3 — EU grid intensity: 0.2099 kg CO2e/kWh (EU-27 average, 2024)
+    //     Source: Ember (2025) "European Electricity Review 2025" (same source
+    //     as SMARTPHONE_CHARGES_PER_KG_CO2 above). 209.9 g CO2/kWh.
+    //     URL: https://ember-energy.org/latest-insights/european-electricity-review-2025/
+    //     Same value confirmed in AIOXY's own Ember 2025 dataset (europe_yearly CSV,
+    //     EU row, 2025 publication, CO2 intensity = 209.9 gCO2e per kWh).
+    //   Step 4 — CO2 per hour: 0.010 kWh × 0.2099 kg CO2/kWh = 0.0020990 kg CO2
+    //   Step 5 — Hours per kg CO2: 1 / 0.0020990 = 476.4 → rounded to 476
+    // Note: prior value was 413, using EU 2023 grid 242 g CO2/kWh (Ember 2024).
+    //   Updated to EU 2024 grid 209.9 g CO2/kWh (Ember 2025). Update annually.
     // Confidence: HIGH (derivation fully reproducible from cited sources).
-    LED_HOURS_PER_KG_CO2: 413,
+    LED_HOURS_PER_KG_CO2: 476,
 
     // ── WATER_BOTTLE_LITERS ──────────────────────────────────────────────────
     // 0.5 litres per standard single-serve water bottle (EU standard)
