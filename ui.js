@@ -259,6 +259,80 @@ function clearResults() {
     }
 }
 
+// ================== SECONDARY CATEGORY RANKING (dynamic "Also Measured") ==
+// Surfaces the categories (of the 16 EF 3.1 categories) with the largest
+// genuine % difference between this product and the reference, beyond
+// Climate Change (which always displays as the primary hero metric).
+//
+// IMPORTANT — no invented equivalences here: AWARE's m³ world-eq is a
+// scarcity-WEIGHTED index, not a raw water volume (Vanham & Mekonnen 2021
+// document why treating it as a simple volume can mislead). Land Use (Pt)
+// is a weighted soil-quality score, not a physical area. Converting either
+// into a relatable "equivalent to X" phrase would require an unsourced,
+// invented conversion — inconsistent with AIOXY's zero-fallback-values
+// standard. These categories are shown as raw sourced numbers only.
+const SECONDARY_CATEGORY_META = {
+    'Water Use/Scarcity (AWARE)':      { unit: 'm³ world eq.',  dec: 4 },
+    'Land Use':                        { unit: 'Pt',            dec: 2 },
+    'Resource Use, fossils':           { unit: 'MJ',            dec: 2 },
+    'Eutrophication, terrestrial':     { unit: 'mol N e',       dec: 4 },
+    'Eutrophication, freshwater':      { unit: 'kg P e',        dec: 5 },
+    'Eutrophication, marine':          { unit: 'kg N e',        dec: 4 },
+    'Acidification':                   { unit: 'mol H+e',       dec: 4 },
+    'Particulate Matter':              { unit: 'disease inc.',  dec: 6 },
+    'Photochemical Ozone Formation':   { unit: 'kg NMVOCe',     dec: 4 },
+    'Ozone Depletion':                 { unit: 'kg CFC11e',     dec: 7 },
+    'Human Toxicity, non-cancer':      { unit: 'CTUh',          dec: 7 },
+    'Human Toxicity, cancer':          { unit: 'CTUh',          dec: 8 },
+    'Ecotoxicity, freshwater':         { unit: 'CTUe',          dec: 2 },
+    'Ionizing Radiation':              { unit: 'kBq U235e',     dec: 3 },
+    'Resource Use, minerals/metals':   { unit: 'kg Sb e',       dec: 7 }
+};
+
+// Builds { categoryName: valuePerKg } for the 15 non-climate categories from
+// a finalPefResults object (same shape calculation_engine.js already
+// produces) and the declared product weight used as the PEF functional unit
+// denominator. Returns {} (not throw) if inputs are missing — this is a
+// display-layer convenience, not a compliance calculation.
+function buildCategoryPerKgMap(finalPefResults, weightKg) {
+    const map = {};
+    if (!finalPefResults || !weightKg || weightKg <= 0) return map;
+    Object.keys(SECONDARY_CATEGORY_META).forEach(function (cat) {
+        const entry = finalPefResults[cat];
+        if (entry && typeof entry.total === 'number' && isFinite(entry.total)) {
+            map[cat] = entry.total / weightKg;
+        }
+    });
+    return map;
+}
+
+// Heuristic noise floor: a category is only eligible for ranking if BOTH
+// sides have a measurable non-zero value, avoiding inflated percentages
+// from near-zero denominators (e.g. 0.0000001 -> 0.0000003 reads as "+200%"
+// but is not a meaningful real-world difference). This is a pragmatic
+// display floor, not a statistical significance test — recommend the team
+// calibrate per-category if real product data shows this needs tightening.
+const CATEGORY_NOISE_FLOOR = 1e-9;
+
+// Returns the topN categories (excluding Climate Change, handled separately
+// as the primary metric) ranked by absolute % difference, largest first.
+function rankSecondaryCategories(mainMap, twinMap, topN) {
+    return Object.keys(mainMap)
+        .filter(function (cat) { return twinMap.hasOwnProperty(cat); })
+        .map(function (cat) {
+            const mainVal = mainMap[cat];
+            const twinVal = twinMap[cat];
+            const delta   = twinVal - mainVal;
+            const pct     = mainVal !== 0 ? (delta / Math.abs(mainVal)) * 100 : 0;
+            return { cat: cat, mainVal: mainVal, twinVal: twinVal, delta: delta, pct: pct };
+        })
+        .filter(function (row) {
+            return Math.abs(row.mainVal) > CATEGORY_NOISE_FLOOR && Math.abs(row.twinVal) > CATEGORY_NOISE_FLOOR;
+        })
+        .sort(function (a, b) { return Math.abs(b.pct) - Math.abs(a.pct); })
+        .slice(0, topN);
+}
+
 // ================== UPDATE RESULTS UI ==================
 function updateResultsUI(results, twinCalcResult) {
     // 1. Force Consistency: Pull the UNIFIED metric directly
@@ -322,6 +396,14 @@ function updateResultsUI(results, twinCalcResult) {
             fossilPerKg:  twinCalcResult.fossilPerKg       || 0,
             breakdown:    (twinCalcResult.comparison && twinCalcResult.comparison.baseline &&
                            twinCalcResult.comparison.baseline.breakdown) || null,
+            // FIX: full 15-category (non-climate) per-kg map for the "Also
+            // Measured" dynamic ranking block in updateEnvironmentalStory().
+            // Only populated for a real twin calculation — the legacy
+            // fallback baseline below has no finalPefResults to draw from.
+            allCategoryPerKg: buildCategoryPerKgMap(
+                twinCalcResult.finalPefResults,
+                twinCalcResult.unifiedMetrics && twinCalcResult.unifiedMetrics.weightUsed
+            ),
             // Flag so downstream code knows this came from the twin engine
             _fromTwinCalc: true
         };
@@ -1011,17 +1093,65 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     const baselineName    = (resolvedBaseline.name || 'Benchmark')
                              .replace(' (Cradle-to-Retail)', '');
 
-    // ── OFFICIAL EQUIVALENCES — applied to actualSaving per kg ───────────────
+    // ── SECONDARY CATEGORIES — dynamic top-N beyond Climate Change ───────────
+    // Only populated when a real twin calculation ran (_fromTwinCalc), since
+    // that's the only path with full 16-category data on both sides. Raw
+    // numbers only, no equivalence phrases (see SECONDARY_CATEGORY_META note).
+    const mainAllCategoryPerKg = buildCategoryPerKgMap(
+        results.finalPefResults,
+        results.unifiedMetrics && results.unifiedMetrics.weightUsed
+    );
+    const secondaryCategories = (resolvedBaseline._fromTwinCalc && resolvedBaseline.allCategoryPerKg)
+        ? rankSecondaryCategories(mainAllCategoryPerKg, resolvedBaseline.allCategoryPerKg, 2)
+        : [];
+
+    function fmtCat(v, dec) {
+        if (!isFinite(v)) return '—';
+        if (Math.abs(v) < 0.0001 && v !== 0) return v.toExponential(2);
+        return v.toFixed(dec);
+    }
+
+    const secondaryCategoriesHTML = secondaryCategories.length ? `
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;
+                    padding: 1rem 1.25rem; margin-bottom: 1rem;">
+            <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+                        text-transform: uppercase; color: #475569; margin-bottom: 0.7rem;">
+                📊 Also measured — largest differences beyond Climate Change
+            </div>
+            ${secondaryCategories.map(function (row) {
+                const meta = SECONDARY_CATEGORY_META[row.cat] || { unit: '', dec: 4 };
+                return `
+                <div style="display: flex; align-items: center; justify-content: space-between;
+                            padding: 0.6rem 0; border-bottom: 1px solid #E2E8F0;">
+                    <div style="font-size: 0.78rem; color: #334155; font-weight: 600;">${row.cat}</div>
+                    <div style="text-align: right; font-size: 0.78rem; color: #334155;">
+                        <strong>${fmtCat(row.mainVal, meta.dec)}</strong> vs ${fmtCat(row.twinVal, meta.dec)} ${meta.unit}
+                        <span style="color: #64748B;"> (${row.pct > 0 ? '+' : ''}${row.pct.toFixed(1)}%)</span>
+                    </div>
+                </div>`;
+            }).join('')}
+            <div style="font-size: 0.65rem; color: #94A3B8; margin-top: 0.6rem; line-height: 1.4;">
+                Raw measured values, PEF 3.1 / EF 3.1 methodology. No equivalence phrase is
+                shown for these categories — see full 16-category breakdown in the PDF/CSV.
+            </div>
+        </div>` : '';
+
+    // ── OFFICIAL EQUIVALENCES — applied to THIS PRODUCT'S OWN FOOTPRINT ───────
     // Sources: PHYSICS_CONSTANTS in main.js (EEA 2023, ICAO 2023, IEA 2022)
     // No tree equivalence — greenwashing risk acknowledged
-    const carKmStory     = actualSaving > 0
-        ? Math.round(actualSaving / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM)    : 0;
-    const smartCharges   = actualSaving > 0
-        ? Math.round(actualSaving * PHYSICS_CONSTANTS.SMARTPHONE_CHARGES_PER_KG_CO2) : 0;
-    const flightKmStory  = actualSaving > 0
-        ? (actualSaving * PHYSICS_CONSTANTS.FLIGHT_KM_PER_KG_CO2).toFixed(1)       : 0;
-    const ledHours       = actualSaving > 0
-        ? Math.round(actualSaving * PHYSICS_CONSTANTS.LED_HOURS_PER_KG_CO2)         : 0;
+    // FIX (EmpCo framing review): equivalences previously scaled to actualSaving
+    // (the delta vs baseline), which framed them as "what you gain by choosing
+    // this product" — a comparative assertion. Equivalences now scale to this
+    // product's own measured footprint (thisProductCO2), making them a plain
+    // illustration of a single measurement, not a claim about the comparison.
+    const carKmStory     = thisProductCO2 > 0
+        ? Math.round(thisProductCO2 / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM)    : 0;
+    const smartCharges   = thisProductCO2 > 0
+        ? Math.round(thisProductCO2 * PHYSICS_CONSTANTS.SMARTPHONE_CHARGES_PER_KG_CO2) : 0;
+    const flightKmStory  = thisProductCO2 > 0
+        ? (thisProductCO2 * PHYSICS_CONSTANTS.FLIGHT_KM_PER_KG_CO2).toFixed(1)       : 0;
+    const ledHours       = thisProductCO2 > 0
+        ? Math.round(thisProductCO2 * PHYSICS_CONSTANTS.LED_HOURS_PER_KG_CO2)         : 0;
 
     // ── QR TEXT PAYLOAD ──────────────────────────────────────────────────────
     // Plain text only — no special unicode chars (no +/-, m3, CO2e are ASCII-safe)
@@ -1044,27 +1174,28 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     const fossil   = (typeof fossilVal === 'number' && isFinite(fossilVal)) ? fossilVal.toFixed(2) + ' MJ/kg' : 'N/A';
 
     // Section 1 — real-world story (works for any footprint, zero saving or positive)
-    const storyLines = isBetter ? [
-        pName + ' vs ' + baselineName,
-        '',
-        'Choosing this product over ' + baselineName + ':',
-        '',
-        '  ' + carKmStory + ' km not driven by car',
-        '  ' + smartCharges + ' smartphone charges avoided',
-        '  ' + flightKmStory + ' km economy flight equivalent',
-        '  ' + ledHours + ' hours of LED lighting powered',
-        '',
-        'Footprint: ' + thisProductCO2.toFixed(3) + ' kg CO2e per kg product',
-        'vs ' + baselineName + ': ' + baselineCO2.toFixed(3) + ' kg CO2e per kg',
-        'Reduction: ' + pctReduction.toFixed(1) + '% (' + actualSaving.toFixed(3) + ' kg CO2e/kg)',
-        'Conservative at +/-' + uncertainty + '% uncertainty: ' + conservativeSaving.toFixed(3) + ' kg CO2e/kg'
-    ] : [
+    // FIX (EmpCo framing review): removed "choosing this product over X" /
+    // "avoided" / "reduction" language, which framed a measurement as a
+    // comparative benefit claim. Now: this product's footprint is disclosed
+    // on its own terms with equivalences attached to it directly; the
+    // reference product's figure is listed alongside for context only,
+    // with a neutral, non-evaluative "difference" line.
+    const storyLines = [
         pName,
         '',
-        'Footprint: ' + thisProductCO2.toFixed(3) + ' kg CO2e per kg product',
-        'vs ' + baselineName + ': ' + baselineCO2.toFixed(3) + ' kg CO2e per kg',
+        'Measured footprint: ' + thisProductCO2.toFixed(3) + ' kg CO2e per kg product',
+        'This is equivalent to (per kg):',
         '',
-        'Footprint on par with conventional benchmark.',
+        '  ' + carKmStory + ' km travelled by car',
+        '  ' + smartCharges + ' smartphone charges',
+        '  ' + flightKmStory + ' km economy flight',
+        '  ' + ledHours + ' hours of LED lighting',
+        '',
+        'Reference for context — ' + baselineName + ': ' + baselineCO2.toFixed(3) + ' kg CO2e per kg',
+        'Difference: ' + actualSaving.toFixed(3) + ' kg CO2e/kg (' + pctReduction.toFixed(1) + '%)',
+        'At +/-' + uncertainty + '% uncertainty band: ' + conservativeSaving.toFixed(3) + ' kg CO2e/kg',
+        '',
+        'This is a measurement, not a comparative or environmental claim.',
         'See methodology section below for full data.'
     ];
 
@@ -1139,26 +1270,22 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                         <div style="font-size: 0.68rem; color: #CBD5E0;">kg CO₂e / kg product</div>
                     </div>
 
-                    ${isBetter ? `
-                    <!-- REDUCTION BADGE -->
-                    <div style="background: rgba(0,212,170,0.15); border: 1px solid rgba(0,212,170,0.4);
+                    <!-- DIFFERENCE — neutral disclosure, same style regardless of direction -->
+                    <!-- FIX (EmpCo framing review): removed "Potential reduction" /
+                         "Higher footprint" evaluative labels and the green/red
+                         good-bad coloring. A measured difference is disclosed
+                         the same way whichever direction it runs. -->
+                    <div style="background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.4);
                                 border-radius: 10px; padding: 0.7rem 1rem; min-width: 110px; text-align: center;">
-                        <div style="font-size: 0.62rem; color: #00D4AA; font-weight: 700;
-                                    text-transform: uppercase; letter-spacing: 0.08em;">Potential reduction</div>
-                        <div style="font-size: 1.6rem; font-weight: 900; color: #00D4AA; line-height: 1.1;">
-                            ${pctReduction.toFixed(1)}%
-                        </div>
-                        <div style="font-size: 0.6rem; color: #94A3B8; margin-top: 0.2rem;">
-                            ${actualSaving.toFixed(3)} kg CO₂e/kg lower
-                        </div>
-                    </div>` : `
-                    <div style="background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.4);
-                                border-radius: 10px; padding: 0.7rem 1rem; text-align: center;">
-                        <div style="font-size: 0.62rem; color: #F87171; font-weight: 700;">Higher footprint</div>
-                        <div style="font-size: 1.4rem; font-weight: 900; color: #F87171;">
+                        <div style="font-size: 0.62rem; color: #94A3B8; font-weight: 700;
+                                    text-transform: uppercase; letter-spacing: 0.08em;">Difference vs reference</div>
+                        <div style="font-size: 1.6rem; font-weight: 900; color: #CBD5E0; line-height: 1.1;">
                             ${Math.abs(pctReduction).toFixed(1)}%
                         </div>
-                    </div>`}
+                        <div style="font-size: 0.6rem; color: #94A3B8; margin-top: 0.2rem;">
+                            ${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg ${isBetter ? 'lower' : 'higher'}
+                        </div>
+                    </div>
                 </div>
 
                 <!-- UNCERTAINTY LINE -->
@@ -1170,23 +1297,28 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                 </div>
             </div>
 
-            ${isBetter ? `
-            <!-- WHAT THIS MEANS -->
+            ${secondaryCategoriesHTML}
+
+            <!-- MEASUREMENT IN CONTEXT -->
+            <!-- FIX (EmpCo framing review): section renamed and reworded from
+                 "what choosing this product potentially means" (a comparative
+                 benefit claim) to a plain disclosure of this product's own
+                 measured footprint, illustrated with equivalences. The
+                 reference product's figure is shown for context, not framed
+                 as something "avoided" by a choice. Section now always shows
+                 (previously gated on isBetter), since a measurement is
+                 disclosed the same way regardless of which product is higher. -->
             <div style="background: #F0FDF9; border: 1px solid #99F6E4;
                         border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem;">
 
                 <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
                             text-transform: uppercase; color: #0D9488; margin-bottom: 0.8rem;">
-                    💡 What choosing this product potentially means — per kg consumed
+                    💡 This product's footprint, in context — per kg consumed
                 </div>
 
                 <div style="font-size: 0.9rem; color: #134E4A; line-height: 1.6; margin-bottom: 0.7rem;">
-                    Every kilogram of this product has a footprint of
-                    <strong>${thisProductCO2.toFixed(3)} kg CO₂e</strong>.
-                    Compared to <strong>${baselineName}</strong> at
-                    <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong>, choosing this
-                    product potentially avoids <strong>${actualSaving.toFixed(3)} kg CO₂e per kg</strong>
-                    under modelled conditions — equivalent to:
+                    Every kilogram of this product has a measured footprint of
+                    <strong>${thisProductCO2.toFixed(3)} kg CO₂e</strong>, equivalent to:
                 </div>
 
                 <!-- EQUIVALENCE CARDS -->
@@ -1226,11 +1358,17 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
 
                 </div>
 
-                <div style="font-size: 0.68rem; color: #64748B; font-style: italic;">
-                    Note: This product itself still generates ${thisProductCO2.toFixed(3)} kg CO₂e/kg consumed.
-                    Equivalences represent the <em>difference</em> vs ${baselineName} only.
+                <div style="font-size: 0.78rem; color: #134E4A; line-height: 1.5; margin-top: 0.8rem;
+                            padding-top: 0.7rem; border-top: 1px dashed #99F6E4;">
+                    For context — <strong>${baselineName}</strong> (reference): <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong>.
+                    Difference: ${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg ${isBetter ? 'lower' : 'higher'} than the reference.
                 </div>
-            </div>` : ''}
+
+                <div style="font-size: 0.68rem; color: #64748B; font-style: italic; margin-top: 0.5rem;">
+                    Note: Equivalences above are based on this product's own footprint,
+                    not on the difference vs ${baselineName}.
+                </div>
+            </div>
 
             <!-- METHODOLOGY -->
             <div style="background: #F8FAFC; border: 1px solid #E2E8F0;
@@ -1251,16 +1389,23 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
             </div>
 
             <!-- DISCLAIMER -->
+            <!-- FIX (EmpCo framing review): reworded from "modelled potential
+                 reductions" (comparative claim language) to a plain statement
+                 that this is a measurement of this product, with the reference
+                 figure shown for context. Equivalences now attach to the
+                 product's own footprint, not to the delta, so the disclaimer
+                 no longer needs to caveat them as difference-only. -->
             <div style="background: #FFFBEB; border-left: 3px solid #F59E0B;
                         border-radius: 0 8px 8px 0; padding: 0.75rem 1rem;
                         font-size: 0.68rem; color: #78350F; line-height: 1.5;">
-                <strong>Important:</strong> All figures represent modelled potential reductions
-                based on AGRIBALYSE 3.2 secondary data and a parametric scenario comparison.
-                Not verified by a third party. Equivalences use official published factors
-                (EEA 2023, ICAO 2023, IEA 2022, Ember 2025). This product still generates
-                ${thisProductCO2.toFixed(3)} kg CO₂e/kg — equivalences show only the
-                <em>difference</em> vs ${baselineName}. Not for comparative advertising
-                per ISO 14044 §6 / EmpCo Directive (EU 2024/825, applies 27 Sep 2026).
+                <strong>Important:</strong> The measured footprint above
+                (${thisProductCO2.toFixed(3)} kg CO₂e/kg) is a modelled figure based on
+                AGRIBALYSE 3.2 secondary data, not independently verified by a third party.
+                Equivalences use official published factors (EEA 2023, ICAO 2023, IEA 2022,
+                Ember 2025) and are based on this product's own footprint. The reference
+                figure for ${baselineName} is shown for context; this is a measurement
+                disclosure, not a comparative or environmental claim, per ISO 14044 §6 /
+                EmpCo Directive (EU 2024/825, applies 27 Sep 2026).
             </div>
 
         </div>
@@ -1289,10 +1434,10 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                 QR encodes:
             </div>
             <div style="font-size: 0.68rem; color: #4A5568; line-height: 1.7;">
-                ✓ This product: <strong>${thisProductCO2.toFixed(3)} kg CO₂e/kg</strong><br>
-                ✓ vs ${baselineName}: <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong><br>
-                ✓ Potential reduction: <strong>${pctReduction.toFixed(1)}%</strong><br>
-                ✓ Equivalences (car, phone, flight, LED)<br>
+                ✓ This product's measured footprint: <strong>${thisProductCO2.toFixed(3)} kg CO₂e/kg</strong><br>
+                ✓ Reference for context — ${baselineName}: <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong><br>
+                ✓ Difference: <strong>${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg (${pctReduction.toFixed(1)}%)</strong><br>
+                ✓ Equivalences for this product (car, phone, flight, LED)<br>
                 ✓ Full methodology references<br>
                 ✓ Assessment ID + legal disclaimer<br>
                 ✓ No server · No expiry · Works offline
