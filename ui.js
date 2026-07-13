@@ -899,30 +899,52 @@ function updateResultsUI(results, twinCalcResult) {
         if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = "—";
     }
     
-    // === REGULATOR-PROOF EQUIVALENCIES ENGINE ===
-    const co2SavedPerKg = results.comparison?.co2SavedPerKg || 0;
-    const carKm = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
-    const treeYears = (co2SavedPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
-    const householdDays = Math.round(co2SavedPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
+    // === EQUIVALENCIES ENGINE ===
+    // FIX: [ui.js audit] Previously used results.comparison?.co2SavedPerKg, which is
+    // computed entirely inside the main product's own calculate() call using the legacy
+    // computeComparison() baseline — it has no knowledge of twinCalcResult at all. This
+    // meant that when a real Parametric Twin was active, the % badges above (correctly
+    // twin-aware via resolvedBaseline) and these equivalences below could be based on
+    // two different baselines and tell inconsistent stories in the same card.
+    // Fixed: derive the delta from the same resolvedBaseline/baselineCO2 used by the
+    // honesty badges above, so every number in this card traces to one substantiated
+    // comparison.
+    //
+    // WORDING FIX: [cofounder decision] Changed from achievement framing ("avoided
+    // driving", "tree-years absorbed") to neutral measured-difference framing ("measured
+    // difference equivalent to"). A specific, sourced, methodology-disclosed comparison
+    // between two real product configurations (e.g. Spain-origin vs Morocco-origin,
+    // identical system boundary) is not the kind of claim EmpCo (EU 2024/825) prohibits —
+    // it's the substantiated alternative to the vague/offset-based claims EmpCo targets.
+    // But "avoided" implies an achievement/credit framing that isn't needed and edges
+    // closer to an environmental-benefit assertion. Stating the measured difference and
+    // translating its magnitude into a relatable unit — without claiming credit for it —
+    // keeps the same real math while staying unambiguously on the measurement side of
+    // the line. Direction (higher/lower) is already carried by the % badges above;
+    // these equivalences now only communicate magnitude, not benefit.
+    const co2DeltaPerKg = Math.abs(baselineCO2 - unifiedCO2);
+    const carKm = Math.round(co2DeltaPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
+    const treeYears = (co2DeltaPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
+    const householdDays = Math.round(co2DeltaPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
     const currentWater = results.waterScarcityPerKg;
-    const waterScoreDiff = Math.max(0, baselineWater - currentWater);
+    const waterScoreDiff = Math.abs(baselineWater - currentWater);
 
     if(document.getElementById('carKm')) {
         document.getElementById('carKm').innerHTML = 
-            carKm > 0 ? `${carKm} km <div style="font-size:0.7em; opacity:0.8">avoided driving</div>` : '—';
+            carKm > 0 ? `${carKm} km <div style="font-size:0.7em; opacity:0.8">measured difference, equiv. driving</div>` : '—';
     }
     if(document.getElementById('treeYears')) {
         document.getElementById('treeYears').innerHTML = 
-            treeYears > 0 ? `${treeYears} <div style="font-size:0.7em; opacity:0.8">mature tree-years</div>` : '—';
+            treeYears > 0 ? `${treeYears} <div style="font-size:0.7em; opacity:0.8">measured difference, equiv. mature tree-years</div>` : '—';
     }
     if(document.getElementById('householdEnergy')) {
         document.getElementById('householdEnergy').innerHTML = 
-            householdDays > 0 ? `${householdDays} days <div style="font-size:0.7em; opacity:0.8">avg. electricity</div>` : '—';
+            householdDays > 0 ? `${householdDays} days <div style="font-size:0.7em; opacity:0.8">measured difference, equiv. avg. electricity</div>` : '—';
     }
     if(document.getElementById('waterScarcity')) {
         document.getElementById('waterScarcity').innerHTML = 
             waterScoreDiff > 0.01 ? 
-            `${waterScoreDiff.toFixed(1)} <div style="font-size:0.7em; opacity:0.8">m³ world eq. (AWARE)</div>` : '—';
+            `${waterScoreDiff.toFixed(1)} <div style="font-size:0.7em; opacity:0.8">m³ world eq. (AWARE), measured difference</div>` : '—';
     }
 
     createEmissionChart(results);
@@ -1081,7 +1103,14 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     // This is the correct simple subtraction: e.g. 14.773 - 0.635 = 14.138
     const thisProductCO2  = results.co2PerKg || 0;
     const baselineCO2     = resolvedBaseline.co2PerKg || 0;
-    const actualSaving    = Math.max(0, baselineCO2 - thisProductCO2); // e.g. 14.138
+    // FIX: [ui.js audit] Was Math.max(0, baselineCO2 - thisProductCO2), which silently
+    // floored the difference to 0 whenever this product's footprint was HIGHER than the
+    // reference — hiding the true magnitude of an unfavorable result (e.g. a real 0.200
+    // kg CO2e/kg deficit would render as "0.000 kg CO2e/kg higher"). A measurement tool
+    // has to disclose unfavorable results with the same fidelity as favorable ones.
+    // Downstream code already uses Math.abs(actualSaving) for display and isBetter for
+    // direction, so removing the clamp doesn't require changing anything else.
+    const actualSaving    = baselineCO2 - thisProductCO2; // signed: positive = this product lower
     const uncertainty     = results.overallUncertainty || 15;
     const pctReduction    = baselineCO2 > 0 ? (actualSaving / baselineCO2) * 100 : 0;
     // Conservative = apply uncertainty band to the actual saving
@@ -1152,6 +1181,32 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         ? (thisProductCO2 * PHYSICS_CONSTANTS.FLIGHT_KM_PER_KG_CO2).toFixed(1)       : 0;
     const ledHours       = thisProductCO2 > 0
         ? Math.round(thisProductCO2 * PHYSICS_CONSTANTS.LED_HOURS_PER_KG_CO2)         : 0;
+
+    // FIX: [ui.js audit — cofounder wording pass] The punch headline previously
+    // hardcoded car-km every time. For a very low-footprint product that gives a
+    // flat "0.1 km" headline; for a very high one it can give an absurd number.
+    // Pick whichever of the four equivalences lands closest to a range a person
+    // can actually picture (roughly 1–500), so the single loudest number on the
+    // page is always the most graspable one for THIS product, not a fixed choice.
+    // This does not change what's measured or how — only which already-computed,
+    // already-sourced number is promoted to the headline position.
+    const EQUIV_SWEET_SPOT = 40; // rough midpoint of "easily picturable" range
+    const equivCandidates = [
+        { value: carKmStory,   label: 'driving',                 unit: 'km',      icon: '🚗' },
+        { value: smartCharges, label: 'smartphone charges',      unit: '',        icon: '📱' },
+        { value: Number(flightKmStory), label: 'of an economy flight', unit: 'km', icon: '✈️' },
+        { value: ledHours,     label: 'of LED lighting',         unit: 'hours',   icon: '💡' }
+    ].filter(c => c.value > 0);
+    let bestEquiv = equivCandidates.reduce((best, c) => {
+        const dist = Math.abs(Math.log10(c.value) - Math.log10(EQUIV_SWEET_SPOT));
+        return (!best || dist < best.dist) ? { ...c, dist } : best;
+    }, null);
+    if (!bestEquiv) {
+        bestEquiv = { value: carKmStory, label: 'driving', unit: 'km', icon: '🚗' };
+    }
+    const headlineText = bestEquiv.unit
+        ? `Every kg = ${bestEquiv.label} ${bestEquiv.value} ${bestEquiv.unit}`
+        : `Every kg = ${bestEquiv.value} ${bestEquiv.label}`;
 
     // ── QR TEXT PAYLOAD ──────────────────────────────────────────────────────
     // Plain text only — no special unicode chars (no +/-, m3, CO2e are ASCII-safe)
@@ -1239,6 +1294,22 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     // ── STORY HTML ───────────────────────────────────────────────────────────
     storyContent.innerHTML = `
         <div style="font-family: Inter, Arial, sans-serif;">
+
+            <!-- PUNCH HEADLINE — leads with the equivalence, not the raw number.
+                 A human brain grasps "driving 1.6 km" faster than "0.393 kg CO2e/kg".
+                 Same measurement, same source, just sequenced for impact instead of
+                 methodology-first. The raw number and full methodology follow
+                 immediately below for anyone (retailer, auditor) who wants it first. -->
+            <div style="background: linear-gradient(135deg, #00D4AA 0%, #0D9488 100%);
+                        border-radius: 14px; padding: 1.2rem 1.5rem; margin-bottom: 0.8rem;
+                        color: white; text-align: center;">
+                <div style="font-size: 1.5rem; font-weight: 900; line-height: 1.25;">
+                    ${headlineText}
+                </div>
+                <div style="font-size: 0.7rem; color: rgba(255,255,255,0.85); margin-top: 0.3rem;">
+                    Measured, not modelled as a claim — ${thisProductCO2.toFixed(3)} kg CO₂e/kg, EF 3.1 / AGRIBALYSE 3.2
+                </div>
+            </div>
 
             <!-- HERO: THIS PRODUCT vs COMPARISON -->
             <div style="background: linear-gradient(135deg, #0A2540 0%, #1A4A6B 100%);
@@ -1328,8 +1399,17 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                                 padding: 0.75rem; text-align: center;">
                         <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🚗</div>
                         <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${carKmStory}</div>
-                        <div style="font-size: 0.68rem; font-weight: 600; color: #0369A1;">km not driven</div>
-                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">EEA 2023 — EU fleet avg 158.4 g/km</div>
+                        <!-- FIX: [ui.js audit] "km not driven" is achievement/avoided framing —
+                             inconsistent with this card's own documented design (equivalences
+                             scale to this product's OWN footprint, not a comparative delta).
+                             Reworded to a plain translation of the measurement. -->
+                        <div style="font-size: 0.68rem; font-weight: 600; color: #0369A1;">km of driving</div>
+                        <!-- FIX: [ui.js audit] Card previously cited "EEA 2023 — 158.4 g/km",
+                             but the actual constant (main.js CAR_EMISSIONS_KG_PER_KM = 0.1700)
+                             is sourced from UK DESNZ 2025 at 170 g/km (WTT+TTW, full EU fleet).
+                             The displayed citation named the wrong organization and the wrong
+                             number — corrected to match the real source powering this number. -->
+                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">UK DESNZ 2025 — EU fleet avg 170 g/km (WTT+TTW)</div>
                     </div>
 
                     <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
@@ -1337,7 +1417,11 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                         <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">📱</div>
                         <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${smartCharges.toLocaleString()}</div>
                         <div style="font-size: 0.68rem; font-weight: 600; color: #92400E;">smartphone charges</div>
-                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">IEA 2022 + Ember 2025 — 8.25 Wh/charge</div>
+                        <!-- FIX: [ui.js audit] Card previously said "8.25 Wh/charge" — the
+                             actual constant (SMARTPHONE_CHARGES_PER_KG_CO2 = 397) is derived
+                             from 12 Wh/charge (EC Ecodesign Impact Accounting 2024 + IEA 2022),
+                             not 8.25. Corrected to the real figure behind this number. -->
+                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">EC Ecodesign 2024 + IEA 2022 — 12 Wh/charge</div>
                     </div>
 
                     <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;

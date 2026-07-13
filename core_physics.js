@@ -717,7 +717,7 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 2.1e-3,
+                'Photochemical Ozone Formation': 0.1345,
                 // Unit: kg NMVOCe / kg PET.
                 // Derivation:
                 //   Step 1 — NOx from process heat 40 MJ/kg: 4.0 g/kg PET
@@ -727,8 +727,12 @@
                 //     PlasticsEurope: ~0.5 g NMVOC/kg PET
                 //     EF 3.1 CF for NMVOC: 0.045 kg NMVOCe/g
                 //     → 0.5 × 0.045 = 0.0225 kg NMVOCe/kg PET
-                //   ∑ = 0.1345 → corrected to 2.1e-3 after EF3.1 mol-based
-                //     normalization (EF3.1 POF in mol NMVOCe, scale factor ~64×).
+                //   ∑ = 0.1345 kg NMVOCe/kg PET.
+                // FIX: [core_physics audit] Removed a fabricated "EF3.1 mol-based
+                // normalization, scale factor ~64x" that had no basis in the actual
+                // methodology — JRC EF 3.1 defines Photochemical Ozone Formation in
+                // kg NMVOC-eq (mass-based), not mol-based. Verified against JRC/EPLCA
+                // documentation. The properly-derived value above is used directly.
                 // Sources: PlasticsEurope (2021); EMEP/EEA §1.A.2; JRC EF 3.1.
                 // Confidence: MEDIUM. DERIVED.
 
@@ -837,9 +841,11 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 7.9e-4,
+                'Photochemical Ozone Formation': 0.051,
                 // NOx = 1.5 g/kg rPET × 0.028 = 0.042; NMVOC ~0.2 g/kg × 0.045 = 0.009
-                // ∑ = 0.051 → EF3.1 normaliz. → 7.9e-4.
+                // ∑ = 0.051 kg NMVOCe/kg rPET.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1 normalization"
+                // scale-down (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -925,9 +931,11 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 1.8e-3,
+                'Photochemical Ozone Formation': 0.116,
                 // NOx = 3.5 g/kg × 0.028 = 0.098; NMVOC (cracker off-gas) ~0.4 g/kg × 0.045 = 0.018
-                // ∑ = 0.116 → EF3.1 normaliz. → 1.8e-3.
+                // ∑ = 0.116 kg NMVOCe/kg HDPE.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1 normalization"
+                // scale-down (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -990,8 +998,10 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 1.9e-3,
-                // NOx = 3.8 × 0.028 = 0.106; NMVOC ≈ 0.4 × 0.045 = 0.018; ∑ = 0.124 → normaliz. → 1.9e-3.
+                'Photochemical Ozone Formation': 0.124,
+                // NOx = 3.8 × 0.028 = 0.106; NMVOC ≈ 0.4 × 0.045 = 0.018; ∑ = 0.124 kg NMVOCe/kg LDPE.
+                // FIX: [core_physics audit] Removed fabricated "normaliz." scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -1063,8 +1073,10 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 1.85e-3,
-                // NOx = 3.6 × 0.028 = 0.101; NMVOC ≈ 0.4 × 0.045 = 0.018; ∑ = 0.119 → EF3.1 → 1.85e-3.
+                'Photochemical Ozone Formation': 0.119,
+                // NOx = 3.6 × 0.028 = 0.101; NMVOC ≈ 0.4 × 0.045 = 0.018; ∑ = 0.119 kg NMVOCe/kg PP.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1" scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -1150,9 +1162,11 @@
                 // Sources: EMEP/EEA §1.A.2; Cepi LCA (2021). Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 1.45e-3,
+                'Photochemical Ozone Formation': 0.124,
                 // NOx = 4.2 g/kg × 0.028 = 0.118; NMVOC (pulp off-gas) ≈ 0.15 g/kg × 0.045 = 0.00675
-                // ∑ = 0.124 → EF3.1 normaliz. → 1.45e-3.
+                // ∑ = 0.124 kg NMVOCe/kg cardboard (rounded).
+                // FIX: [core_physics audit] Removed fabricated "EF3.1 normaliz." scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -1221,9 +1235,11 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 1.16e-3,
+                'Photochemical Ozone Formation': 0.1006,
                 // NOx = 3.4 × 0.028 = 0.0952; NMVOC (vent) ≈ 0.12 × 0.045 = 0.0054
-                // ∑ = 0.1006 → EF3.1 → 1.16e-3.
+                // ∑ = 0.1006 kg NMVOCe/kg paper.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1" scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -1315,9 +1331,11 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 8.0e-4,
+                'Photochemical Ozone Formation': 0.070,
                 // NOx = 2.5 g/kg × 0.028 = 0.070; NMVOC (furnace) negligible
-                // ∑ = 0.070 → EF3.1 normaliz. → 8.0e-4.
+                // ∑ = 0.070 kg NMVOCe/kg glass.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1 normaliz." scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -1414,9 +1432,11 @@
                 // Confidence: HIGH (EA 2018 PM figure directly cited).
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 1.5e-4,
+                'Photochemical Ozone Formation': 0.0130,
                 // NOx = 0.45 × 0.028 = 0.0126; NMVOC (anode) ≈ 0.008 g/kg × 0.045 = 3.6e-4
-                // ∑ = 0.0130 → EF3.1 normaliz. → 1.5e-4.
+                // ∑ = 0.0130 kg NMVOCe/kg aluminum.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1 normaliz." scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -1513,9 +1533,11 @@
                 // Confidence: HIGH (WS LCI directly cited PM figure).
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 2.0e-4,
+                'Photochemical Ozone Formation': 0.0179,
                 // NOx = 0.60 × 0.028 = 0.0168; NMVOC (coke oven) ≈ 0.025 × 0.045 = 0.00113
-                // ∑ = 0.0179 → EF3.1 normaliz. → 2.0e-4.
+                // ∑ = 0.0179 kg NMVOCe/kg steel.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1 normaliz." scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -1590,8 +1612,10 @@
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
-                'Photochemical Ozone Formation': 8.0e-4,
-                // NOx = 2.5 × 0.028 = 0.070; NMVOC = 0.1 × 0.045 = 0.0045; ∑ = 0.0745 → EF3.1 → 8.0e-4.
+                'Photochemical Ozone Formation': 0.0745,
+                // NOx = 2.5 × 0.028 = 0.070; NMVOC = 0.1 × 0.045 = 0.0045; ∑ = 0.0745 kg NMVOCe/kg PLA.
+                // FIX: [core_physics audit] Removed fabricated "EF3.1" scale-down
+                // (no basis in real methodology). Using derived value directly.
                 // Confidence: MEDIUM. DERIVED.
 
                 // BUGFIX PACKAGING-NON-CC:
@@ -2224,12 +2248,13 @@
             co2, 
             kwh: electricityKWh,
             // C8-F1 FIX (Audit Session 7): Derive fossil fraction from grid intensity rather than
-            // hardcoding 1.0. The Ember 2023 EU average (480 g/kWh) corresponds to ~100% fossil.
-            // A low-carbon grid like France (53 g/kWh) has ~11% fossil fraction.
-            // Formula: fossilFraction = gridIntensity / FOSSIL_GRID_REFERENCE (480 g/kWh, 100% fossil proxy)
+            // hardcoding 1.0. FOSSIL_GRID_REFERENCE_G_PER_KWH = 650 g/kWh (Poland/Serbia coal-heavy
+            // grids) is used as the ~100% fossil reference point.
+            // A low-carbon grid like France (53 g/kWh) has ~8% fossil fraction on this basis.
+            // Formula: fossilFraction = gridIntensity / FOSSIL_GRID_REFERENCE (650 g/kWh, 100% fossil proxy)
             // Capped at 1.0 (cannot exceed 100% fossil). Minimum floor 0.05 (even renewables
             // have ~5% fossil in manufacturing/maintenance lifecycle).
-            // Source: Derived from Ember 2023 CO2 intensity as proxy for fossil grid share.
+            // Source: Ember 2023, Poland/Serbia grid intensity as proxy for fossil grid share.
             // Impact: CC total unchanged — only CC-Fossil / CC-Biogenic sub-split improves.
             fossilFraction: Math.min(1.0, Math.max(0.05,
                 gridIntensityGPerKwh / CONSTANTS.FOSSIL_FRACTION.FOSSIL_GRID_REFERENCE_G_PER_KWH
@@ -2514,6 +2539,23 @@ return {
     }
 
     function calculateParametricTwin(input) {
+        // FIX: [core_physics audit] Shared list of the 12 EF 3.1 categories that
+        // both twin paths (legacy single-ingredient and full-recipe) need to
+        // compute and return, in addition to Climate Change / Water / Land / Fossil.
+        const EXTRA_CATEGORY_FIELD_MAP_SHARED = {
+            'Ozone Depletion':               'ozoneDepletion',
+            'Human Toxicity, non-cancer':    'humanToxicityNonCancer',
+            'Human Toxicity, cancer':        'humanToxicityCancer',
+            'Particulate Matter':            'particulateMatter',
+            'Ionizing Radiation':            'ionizingRadiation',
+            'Photochemical Ozone Formation': 'photochemicalOzoneFormation',
+            'Acidification':                 'acidification',
+            'Eutrophication, terrestrial':   'eutrophicationTerrestrial',
+            'Eutrophication, freshwater':    'freshwaterEutrophication_P',
+            'Eutrophication, marine':        'marineEutrophication_N',
+            'Ecotoxicity, freshwater':       'ecotoxicityFreshwater',
+            'Resource Use, minerals/metals': 'resourceUseMineralsMetals'
+        };
         // ── MODE DETECTION ────────────────────────────────────────────────────
         // Legacy single-ingredient path: input.anchorIngredient present
         // New full-recipe path:          input.assessedRecipe present
@@ -2552,6 +2594,7 @@ return {
             let mfgCO2 = CONSTANTS.MATH.ZERO;
             let mfgKwh = CONSTANTS.MATH.ZERO;
             let mfgFossilCO2 = CONSTANTS.MATH.ZERO;
+            let mfgMultiCategoryResults = {};
             if (cloned.processingMethod) {
                 if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
                 if (!db.gridIntensity) throw new MissingDataError('databases.gridIntensity');
@@ -2580,10 +2623,12 @@ return {
                 mfgCO2       = mfg.co2;
                 mfgKwh       = mfg.kwh;
                 mfgFossilCO2 = mfgCO2 * mfg.fossilFraction;
+                mfgMultiCategoryResults = mfg.multiCategoryResults || {};
             }
 
             let transportCO2       = CONSTANTS.MATH.ZERO;
             let transportFossilCO2 = CONSTANTS.MATH.ZERO;
+            let transportMultiCategoryResults = {};
             if (cloned.transportDistance !== undefined && cloned.transportMode) {
                 const t = calculateTransport({
                     massKg:       ratio,
@@ -2593,11 +2638,13 @@ return {
                 });
                 transportCO2       = t.total;
                 transportFossilCO2 = transportCO2 * t.fossilFraction;
+                transportMultiCategoryResults = t.multiCategoryResults || {};
             }
 
             let packagingCO2       = CONSTANTS.MATH.ZERO;
             let packagingFossilCO2 = CONSTANTS.MATH.ZERO;
             let packagingBiogenicCO2 = CONSTANTS.MATH.ZERO;
+            let packagingMultiCategoryResults = {};
             if (cloned.packagingMaterial && cloned.packagingWeightKg !== undefined) {
                 if (!db.packaging) throw new MissingDataError('databases.packaging');
 
@@ -2633,21 +2680,39 @@ return {
                 packagingCO2        = cff.totalImpact;
                 packagingFossilCO2  = cff.fossilImpact;
                 packagingBiogenicCO2 = cff.biogenicImpact;
+                packagingMultiCategoryResults = cff.multiCategoryResults || {};
             }
 
             const totalCO2        = farmCO2      + mfgCO2      + transportCO2      + packagingCO2;
             const totalFossilCO2  = farmFossil   + mfgFossilCO2 + transportFossilCO2 + packagingFossilCO2;
             const totalBiogenicCO2 = farmBiogenic + packagingBiogenicCO2;
 
+            // FIX: [core_physics audit] Combine the 12 previously-discarded categories:
+            // anchor ingredient's own pef value (× ratio) + mfg + transport + packaging
+            // multi-category contributions. Missing anchor.pef fields default to 0
+            // (these 12 are not in the `required` list above, unlike the core 7).
+            const legacyCategories = {};
+            for (const [catName, _fieldName] of Object.entries(EXTRA_CATEGORY_FIELD_MAP_SHARED)) {
+                const anchorVal = (pef[catName] !== undefined ? pef[catName] * ratio : CONSTANTS.MATH.ZERO);
+                const mfgVal    = mfgMultiCategoryResults[catName]        || CONSTANTS.MATH.ZERO;
+                const transVal  = transportMultiCategoryResults[catName]  || CONSTANTS.MATH.ZERO;
+                const pkgVal    = packagingMultiCategoryResults[catName]  || CONSTANTS.MATH.ZERO;
+                legacyCategories[catName] = anchorVal + mfgVal + transVal + pkgVal;
+            }
+
             return {
                 name:            `Parametric Twin: ${anchor.name}`,
                 co2PerKg:        totalCO2,
                 waterPerKg:      farmWater,
                 landUsePerKg:    farmLand,
-                fossilPerKg:     farmFossilMJ + (mfgKwh * CONSTANTS.UNIT.KWH_TO_MJ) + (transportCO2 * CONSTANTS.GLEC.DIESEL_MJ_PER_KG_CO2) + (packagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2),
+                fossilPerKg:     farmFossilMJ + (mfgKwh * CONSTANTS.ELECTRICITY_GRID_MULTI['Resource Use, fossils']) + (transportCO2 * CONSTANTS.GLEC.DIESEL_MJ_PER_KG_CO2) + (packagingCO2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2),
                 fossilCO2PerKg:  totalFossilCO2,
                 biogenicCO2PerKg: totalBiogenicCO2,
                 dlucCO2PerKg:    farmDLUC,
+                // FIX: [core_physics audit] the remaining 12 EF 3.1 categories —
+                // previously computed nowhere in this path; now sourced from the
+                // anchor ingredient's own pef plus mfg/transport/packaging multi-category results.
+                categories:      legacyCategories,
                 breakdown:       { ingredients: farmCO2, manufacturing: mfgCO2, transport: transportCO2, packaging: packagingCO2 }
             };
         }
@@ -2776,8 +2841,9 @@ return {
         // ── Helper: calculate manufacturing CO2 for one side ────────────────
         function calcMfgSide(processingMethod, countryCode, recipeMassKg) {
             let co2 = CONSTANTS.MATH.ZERO, kwh = CONSTANTS.MATH.ZERO,
-                fossilCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO;
-            if (!processingMethod) return { co2, kwh, fossilCO2, fossilMJ };
+                fossilCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO,
+                multiCategoryResults = {};
+            if (!processingMethod) return { co2, kwh, fossilCO2, fossilMJ, multiCategoryResults };
             if (!db.processBenchmarks) throw new MissingDataError('databases.processBenchmarks');
             if (!db.gridIntensity)     throw new MissingDataError('databases.gridIntensity');
             const benchmark = db.processBenchmarks[processingMethod];
@@ -2800,14 +2866,16 @@ return {
             co2      = mfg.co2;
             kwh      = mfg.kwh;
             fossilCO2 = co2 * mfg.fossilFraction;
-            fossilMJ  = kwh * CONSTANTS.UNIT.KWH_TO_MJ;
-            return { co2, kwh, fossilCO2, fossilMJ };
+            fossilMJ  = kwh * CONSTANTS.ELECTRICITY_GRID_MULTI['Resource Use, fossils'];
+            multiCategoryResults = mfg.multiCategoryResults || {};
+            return { co2, kwh, fossilCO2, fossilMJ, multiCategoryResults };
         }
 
         // ── Helper: calculate transport CO2 for one side ─────────────────────
         function calcTransportSide(transportMode, transportDistance, refrigeration, recipeMassKg) {
-            let co2 = CONSTANTS.MATH.ZERO, fossilCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO;
-            if (transportDistance === undefined || !transportMode) return { co2, fossilCO2, fossilMJ };
+            let co2 = CONSTANTS.MATH.ZERO, fossilCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO,
+                multiCategoryResults = {};
+            if (transportDistance === undefined || !transportMode) return { co2, fossilCO2, fossilMJ, multiCategoryResults };
             const t = calculateTransport({
                 massKg:        recipeMassKg,
                 distanceKm:    transportDistance,
@@ -2817,14 +2885,16 @@ return {
             co2      = t.total;
             fossilCO2 = co2 * t.fossilFraction;
             fossilMJ  = co2 * CONSTANTS.GLEC.DIESEL_MJ_PER_KG_CO2;
-            return { co2, fossilCO2, fossilMJ };
+            multiCategoryResults = t.multiCategoryResults || {};
+            return { co2, fossilCO2, fossilMJ, multiCategoryResults };
         }
 
         // ── Helper: calculate packaging CO2 for one side ─────────────────────
         function calcPackagingSide(packagingMaterial, packagingWeightKg, recycledContentPercent) {
             let co2 = CONSTANTS.MATH.ZERO, fossilCO2 = CONSTANTS.MATH.ZERO,
-                biogenicCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO;
-            if (!packagingMaterial || packagingWeightKg === undefined) return { co2, fossilCO2, biogenicCO2, fossilMJ };
+                biogenicCO2 = CONSTANTS.MATH.ZERO, fossilMJ = CONSTANTS.MATH.ZERO,
+                multiCategoryResults = {};
+            if (!packagingMaterial || packagingWeightKg === undefined) return { co2, fossilCO2, biogenicCO2, fossilMJ, multiCategoryResults };
             if (!db.packaging) throw new MissingDataError('databases.packaging');
             const pkg = db.packaging[packagingMaterial];
             if (!pkg) throw new MissingDataError(`packaging.${packagingMaterial}`);
@@ -2850,7 +2920,8 @@ return {
             fossilCO2  = cff.fossilImpact;
             biogenicCO2 = cff.biogenicImpact;
             fossilMJ    = co2 * CONSTANTS.GLEC.PACKAGING_FOSSIL_MJ_PER_KG_CO2;
-            return { co2, fossilCO2, biogenicCO2, fossilMJ };
+            multiCategoryResults = cff.multiCategoryResults || {};
+            return { co2, fossilCO2, biogenicCO2, fossilMJ, multiCategoryResults };
         }
 
         // ── STEP 3: Manufacturing — assessed side uses sharedParams, twin side
@@ -2887,6 +2958,29 @@ return {
         const conventionalFossilCO2 = conventionalTotals.fossilCO2 + conventionalMfg.fossilCO2 + conventionalTransport.fossilCO2 + conventionalPackaging.fossilCO2;
         const conventionalBiogenicCO2 = conventionalTotals.biogenicCO2 + conventionalPackaging.biogenicCO2;
         const conventionalFossilMJ  = conventionalTotals.totalFossil + conventionalMfg.fossilMJ + conventionalTransport.fossilMJ + conventionalPackaging.fossilMJ;
+
+        // ── STEP 6b: Combine the 12 non-CC categories that were previously
+        // computed (via accumulateImpact) but never returned. Each side's total
+        // per category = ingredient sum + manufacturing + transport + packaging
+        // multi-category contribution, mirroring the pattern used by
+        // aggregateAllCategories() in calculation_engine.js for the main path.
+        // FIX: [core_physics audit] Categories were being discarded at the
+        // return statement even though calculateIngredientImpact/calculateManufacturing/
+        // calculateTransport/calculatePackaging all compute them correctly.
+        const EXTRA_CATEGORY_FIELD_MAP = EXTRA_CATEGORY_FIELD_MAP_SHARED;
+        function combineExtraCategories(ingredientTotals, mfgSide, transportSide, packagingSide) {
+            const combined = {};
+            for (const [catName, fieldName] of Object.entries(EXTRA_CATEGORY_FIELD_MAP)) {
+                const ingVal   = ingredientTotals[fieldName] || CONSTANTS.MATH.ZERO;
+                const mfgVal   = (mfgSide.multiCategoryResults        && mfgSide.multiCategoryResults[catName])        || CONSTANTS.MATH.ZERO;
+                const transVal = (transportSide.multiCategoryResults  && transportSide.multiCategoryResults[catName])  || CONSTANTS.MATH.ZERO;
+                const pkgVal   = (packagingSide.multiCategoryResults  && packagingSide.multiCategoryResults[catName])  || CONSTANTS.MATH.ZERO;
+                combined[catName] = ingVal + mfgVal + transVal + pkgVal;
+            }
+            return combined;
+        }
+        const assessedExtraCategories     = combineExtraCategories(assessedTotals,     assessedMfg,     assessedTransport,     assessedPackaging);
+        const conventionalExtraCategories = combineExtraCategories(conventionalTotals, conventionalMfg, conventionalTransport, conventionalPackaging);
 
         // ── STEP 7: Build ingredientPairs array ──────────────────────────────
         const ingredientPairs = assessedRecipe.map((ing, i) => {
@@ -2932,6 +3026,24 @@ return {
         const safeAssessedMassKg     = safeProductWeightKg;
         const safeConventionalMassKg = safeProductWeightKg;
 
+        // FIX: [core_physics audit] Build a full 16-category per-kg map for each
+        // side, so downstream code (computeComparison PATH 2 in calculation_engine.js,
+        // and any UI/PDF reading this object) can show a genuine 16-category twin
+        // comparison — not just Climate Change/Water/Land/Fossil.
+        function buildFullCategoryPerKg(extraCategories, safeMassKg) {
+            const out = {};
+            for (const catName of Object.keys(EXTRA_CATEGORY_FIELD_MAP)) {
+                out[catName] = extraCategories[catName] / safeMassKg;
+            }
+            return out;
+        }
+        const assessedCategoriesPerKg     = buildFullCategoryPerKg(assessedExtraCategories,     safeAssessedMassKg);
+        const conventionalCategoriesPerKg = buildFullCategoryPerKg(conventionalExtraCategories, safeConventionalMassKg);
+        const categoryDeltas = {};
+        for (const catName of Object.keys(EXTRA_CATEGORY_FIELD_MAP)) {
+            categoryDeltas[catName] = conventionalCategoriesPerKg[catName] - assessedCategoriesPerKg[catName];
+        }
+
         return {
             name: `Parametric Twin: ${assessedRecipe.map(i => i.name || i.id).join(', ')} vs Conventional`,
             assessedTotal: {
@@ -2942,6 +3054,9 @@ return {
                 fossilCO2PerKg:  assessedFossilCO2      / safeAssessedMassKg,
                 biogenicCO2PerKg: assessedBiogenicCO2   / safeAssessedMassKg,
                 dlucCO2PerKg:    assessedTotals.dlucCO2  / safeAssessedMassKg,
+                // FIX: [core_physics audit] the remaining 12 EF 3.1 categories —
+                // previously computed internally and discarded before return.
+                categories:      assessedCategoriesPerKg,
                 breakdown:       assessedBreakdown
             },
             conventionalTotal: {
@@ -2952,6 +3067,7 @@ return {
                 fossilCO2PerKg:  conventionalFossilCO2       / safeConventionalMassKg,
                 biogenicCO2PerKg: conventionalBiogenicCO2    / safeConventionalMassKg,
                 dlucCO2PerKg:    conventionalTotals.dlucCO2   / safeConventionalMassKg,
+                categories:      conventionalCategoriesPerKg,
                 breakdown:       conventionalBreakdown
             },
             delta: conventionalCO2Total - assessedCO2Total,
@@ -2959,7 +3075,9 @@ return {
                 co2Delta:    conventionalCO2Total  - assessedCO2Total,
                 waterDelta:  conventionalTotals.totalWater - assessedTotals.totalWater,
                 landDelta:   conventionalTotals.totalLand  - assessedTotals.totalLand,
-                fossilDelta: conventionalFossilMJ  - assessedFossilMJ
+                fossilDelta: conventionalFossilMJ  - assessedFossilMJ,
+                // FIX: [core_physics audit] deltas for the remaining 12 categories.
+                categoryDeltas: categoryDeltas
             },
             ingredientPairs
         };

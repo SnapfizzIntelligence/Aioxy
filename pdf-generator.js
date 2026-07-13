@@ -358,8 +358,13 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                             pWeightFallbackWarning = true;
                             return 0.2;
                         })();
-        const // PDF-F3: Verify QR URL in live environment before production.
-        // const dppId      = safe(audit.dppId || 'N/A');
+        // PDF-F3: Verify QR URL in live environment before production.
+        // FIX: [pdf-generator audit] dppId was commented out here (a prior "PDF-F3"
+        // edit left a dangling `const` that also broke the file's syntax entirely —
+        // see Y-2026-... fix), but is used in 5 places later in this file (cover page,
+        // audit trail page, tables, QR code). Restored using the same fallback pattern
+        // audit-trail.js already uses (audit.dppId || 'N/A').
+        const dppId      = safe(audit.dppId || 'N/A');
         const auditHash  = safe(audit.auditHash || '');
 
         // Manufacturing traceability sources (confirmed from calculation_engine.js buildContributionTree):
@@ -525,7 +530,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         const cardY = 78; const cardH = 30; const cardW = (CW - 8) / 3;
         metricCard(M,             cardY, cardW, cardH, 'Climate Change', numFmt(ccPerKg, 3), 'kg CO2e / kg product', C.teal);
-        metricCard(M + cardW + 4, cardY, cardW, cardH, 'PEF Single Score', numFmt(mPt, 1), 'mPt / kg product', C.navyMid);
+        metricCard(M + cardW + 4, cardY, cardW, cardH, 'PEF Single Score', numFmt(mPt, 1), 'uPt / kg product', C.navyMid);
         const dqrCol = dqrVal <= 2 ? C.green : dqrVal <= 3 ? C.amber : C.red;
         metricCard(M + (cardW + 4)*2, cardY, cardW, cardH, 'Data Quality (DQR)', fix(dqrVal,2) + ' / 5.0', 'PEF 3.1 §5.7', dqrCol);
 
@@ -715,7 +720,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         doc.autoTable({
             startY: Y,
-            head: [['Impact Category','Unit','Total/kg','Ingr.','Mfg.','Trans.','Pkg.','mPt','Conf.']],
+            head: [['Impact Category','Unit','Total/kg','Ingr.','Mfg.','Trans.','Pkg.','uPt','Conf.']],
             body: scorecardRows,
             theme: 'plain',
             styles: { fontSize: 6.2, cellPadding: 1.8, overflow: 'linebreak' },
@@ -751,7 +756,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('Formula: SUM_i [ (result_i / kg product) / NF_i x WF_i ] x 1,000,000   |   Source: JRC EUR 29540 EN (EF 3.1)', M + 3, Y + 11);
         doc.text('NF and WF values from window.aioxyData.pef_factors — full derivation on Normalisation & Weighting page', M + 3, Y + 15.5);
         doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...C.teal);
-        doc.text(numFmt(mPt,2) + ' mPt / kg product', PW - M - 3, Y + 13, {align:'right'});
+        doc.text(numFmt(mPt,2) + ' uPt / kg product', PW - M - 3, Y + 13, {align:'right'});
         Y += 22;
 
         footer('Page 3 of {total_pages_count}');
@@ -762,7 +767,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         newPage('Normalisation & Weighting — Full Derivation (PEF 3.1 / EF 3.1 JRC)');
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('Source: window.aioxyData.pef_factors (JRC EUR 29540 EN, EF 3.1). All NF and WF values read from database — not hardcoded here.', M, Y); Y += 4;
-        doc.text('Formula per category:  mPt_i = [ (impact_i / product_kg) / NF_i ] x WF_i x 1,000,000', M, Y); Y += 4;
+        doc.text('Formula per category:  uPt_i = [ (impact_i / product_kg) / NF_i ] x WF_i x 1,000,000', M, Y); Y += 4;
         doc.text('NF_i = normalisation factor (person-equivalent per year), WF_i = dimensionless weighting factor.', M, Y); Y += 6;
 
         const nfwfRows = [];
@@ -808,7 +813,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         doc.autoTable({
             startY: Y,
-            head: [['Category','Unit','Impact/kg','NF (person-yr)','After ÷NF','WF','After xWF','mPt/kg']],
+            head: [['Category','Unit','Impact/kg','NF (person-yr)','After ÷NF','WF','After xWF','uPt/kg']],
             body: nfwfRows,
             theme: 'plain',
             styles: { fontSize: 6.2, cellPadding: 1.8 },
@@ -853,11 +858,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '                                 = ' + numFmt(exWt, 10),
                 '           WF source: JRC EUR 29540 EN Table 7 — EF 3.1 weighting factors',
                 '',
-                '  Step 4:  convert to mPt         = weighted x 1,000,000',
+                '  Step 4:  convert to uPt (micropoints) = weighted x 1,000,000',
                 '                                 = ' + numFmt(exWt, 10) + ' x 1,000,000',
-                '                                 = ' + numFmt(exMPt, 3) + ' mPt / kg product',
+                '                                 = ' + numFmt(exMPt, 3) + ' uPt / kg product',
                 '',
-                '  Total PEF Single Score = SUM of all 16 category mPt values = ' + numFmt(mPt, 2) + ' mPt / kg product',
+                '  Total PEF Single Score = SUM of all 16 category uPt values = ' + numFmt(mPt, 2) + ' uPt / kg product',
                 '  Source: JRC Technical Report EUR 29540 EN (EF 3.1 normalisation and weighting factors)'
             ], { sectionLabel: 'Normalisation & Weighting (continued)' });
         }
@@ -1614,7 +1619,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 'Ecotoxicity, freshwater': 'CTUe/kWh',
                 'Land Use': 'Pt/kWh',
                 'Water Use/Scarcity (AWARE)': 'm3 world eq./kWh',
-                'Resource Use, minerals/metals': 'kg Sbe/kWh'
+                'Resource Use, minerals/metals': 'kg Sbe/kWh',
+                // FIX: [pdf-generator audit] 'Resource Use, fossils' was excluded from this
+                // table and the note below wrongly described it as computed separately via
+                // kWh x 3.6 (the OLD, now-removed calculation path). core_physics.js's
+                // "Bug 1 FIX / C12-F1 fix" added this key to ELECTRICITY_GRID_MULTI directly
+                // (5.80 MJ/kWh, ecoinvent 3.9.1 EU27 grid mix) — this PDF's documentation
+                // was never updated to match. Now shown like every other EGM category.
+                'Resource Use, fossils': 'MJ/kWh'
             };
             Object.entries(EGM_UNITS).forEach(([cat, unit]) => {
                 const v = EGM[cat];
@@ -1623,7 +1635,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             mfgLayerALines.push('');
             mfgLayerALines.push('  Ionizing Radiation note: 0.062 kBq U235e/kWh reflects ~25% nuclear share in EU27 2023 mix');
             mfgLayerALines.push('  Source: UNSCEAR 2008 nuclear fuel cycle CFs. ENTSO-E Statistical Factsheet 2023 generation mix.');
-            mfgLayerALines.push('  Resource Use, fossils: NOT in EGM — calculated as kWh x 3.6 MJ/kWh (CONSTANTS.UNIT.KWH_TO_MJ)');
+            mfgLayerALines.push('  Resource Use, fossils: 5.80 MJ/kWh — ecoinvent 3.9.1 EU27 grid mix, "market for');
+            mfgLayerALines.push('  electricity, medium voltage" RER, cut-off system model. Same EGM formula as all');
+            mfgLayerALines.push('  other categories above (kWh x factor) — not a separate calculation.');
         } else {
             mfgLayerALines.push('  WARNING: window.corePhysics.CONSTANTS.ELECTRICITY_GRID_MULTI not loaded at PDF time.');
             mfgLayerALines.push('  Ensure core_physics.js is loaded before generating PDF.');
@@ -1755,13 +1769,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             if (cat === 'Climate Change') {
                 mfgCatLines.push('  ' + cat.padEnd(36) + ': ' + numFmt(catTotal, 6) + ' ' + unit + '  (from CC trace above)');
 
-            } else if (cat === 'Resource Use, fossils') {
-                // Formula: kWh x 3.6 MJ/kWh
-                mfgCatLines.push('  ' + cat.padEnd(36) + ': ' + numFmt(mfgKwh, 4) + ' kWh x 3.6 MJ/kWh = ' + numFmt(catTotal, 6) + ' ' + unit);
-                mfgCatLines.push('    ' + 'Source: CONSTANTS.UNIT.KWH_TO_MJ = 3.6 (core_physics.js)');
-
             } else if (EGM && EGM[cat] !== undefined) {
                 // FIX: Show actual factor value from window.corePhysics.CONSTANTS.ELECTRICITY_GRID_MULTI
+                // FIX: [pdf-generator audit] 'Resource Use, fossils' previously had its own
+                // hardcoded branch here showing "kWh x 3.6" — a formula that did NOT match
+                // catTotal (which the engine actually computes via EGM['Resource Use, fossils']
+                // = 5.80, per core_physics.js's Bug 1 FIX / C12-F1 fix). That mismatch was
+                // directly checkable and wrong. Now handled identically to every other
+                // EGM category, since the correct factor is present in EGM.
                 const factor = EGM[cat];
                 const derived = mfgKwh * factor;
                 mfgCatLines.push('  ' + cat.padEnd(36) + ': ' + numFmt(mfgKwh, 4) + ' kWh x ' + numFmt(factor, 6) + ' ' + unit + '/kWh');
@@ -2153,7 +2168,20 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '',
             'Note: AGRIBALYSE 3.2 upstream background processes for packaging are derived from ecoinvent',
             '  background data embedded in AGRIBALYSE. AIOXY does not hold an ecoinvent licence.',
-            '  CFF formula application is correct per PEF Annex C v2.1.'
+            '  CFF formula application is correct per PEF Annex C v2.1.',
+            '',
+            // FIX: [ingredients.js/pdf-generator audit] This exact caveat is formally mandated
+            // by ingredients.js's "GAP 11 FIX" limitation statement (packaging database header):
+            // "Until EF 3.1 compliant data is licensed, all AIOXY packaging outputs must carry
+            // the caveat... This caveat is surfaced in the PDF report methodology section." It
+            // was never actually added here. PEF Annex C v2.1 sheet "Formula" rows 26-29 require
+            // Ev/Erec from EF-compliant PEFCR/OEFSR-listed datasets; the sources used here
+            // (PlasticsEurope, World Steel, EAA, FEVE, Cepi) are industry-association LCI data,
+            // not EF 3.1 compliant datasets — a materially stronger caveat than a confidence tag.
+            'IMPORTANT: Packaging Ev/Erec values are sourced from public industry association',
+            '  data (PlasticsEurope, World Steel, EAA, FEVE, Cepi), not EF 3.1 compliant datasets.',
+            '  Suitable for screening-level assessment only — NOT for EPD (ISO 14025), Type III',
+            '  Environmental Declarations, or certified comparative assertions.'
         ], { sectionLabel: 'Packaging (continued)' });
 
         Y += 2;
@@ -2347,7 +2375,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         ensureSpace(40, 'Total Impact (continued)');
         subHeader('PEF Single Score — Category Breakdown');
         T.small(); doc.setTextColor(...C.bodyMid);
-        doc.text('Formula: mPt_i = [ (impact_i/kg) / NF_i ] x WF_i x 1,000,000   Source: JRC EUR 29540 EN (EF 3.1)', M, Y); Y += 5;
+        doc.text('Formula: uPt_i = [ (impact_i/kg) / NF_i ] x WF_i x 1,000,000   Source: JRC EUR 29540 EN (EF 3.1)', M, Y); Y += 5;
 
         const ssRows = Object.entries(ssBkd).map(([cat, data]) => [
             safe(cat),
@@ -2360,7 +2388,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         if (ssRows.length > 0) {
             doc.autoTable({
                 startY: Y,
-                head: [['Category','Impact/kg','After ÷NF','After xWF','mPt/kg']],
+                head: [['Category','Impact/kg','After ÷NF','After xWF','uPt/kg']],
                 body: ssRows,
                 theme: 'plain',
                 styles: { fontSize: 7, cellPadding: 1.8 },
@@ -2383,7 +2411,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.white);
         doc.text('PEF SINGLE SCORE TOTAL', M + 3, Y + 6);
         doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...C.teal);
-        doc.text(numFmt(mPt,2) + ' mPt / kg product', PW - M - 3, Y + 6, {align:'right'});
+        doc.text(numFmt(mPt,2) + ' uPt / kg product', PW - M - 3, Y + 6, {align:'right'});
         Y += 13;
 
         footer('Total Impact — Page ' + pageNum + ' of {total_pages_count}');
@@ -2764,7 +2792,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'ALT METHOD    : ' + safe(allocAlt),
             '  CC result   : ' + (allocAltCC > 0 ? numFmt(allocAltCC, 4) + ' kg CO2e / kg product' : 'Not computed (no multi-output processes in this product system)'),
             '',
-            'SENSITIVITY   : ' + (allocSensitive ? 'SENSITIVE — delta > 10%, results differ materially' : (allocAltCC > 0 ? 'NOT SENSITIVE — delta <= 10%, allocation method does not materially affect result' : 'NOT APPLICABLE — all ingredients are single-output systems (no co-products)')),
+            'SENSITIVITY   : ' + (allocSensitive ? 'SENSITIVE — delta > 25%, results differ materially' : (allocAltCC > 0 ? 'NOT SENSITIVE — delta <= 25%, allocation method does not materially affect result' : 'NOT APPLICABLE — all ingredients are single-output systems (no co-products)')),
             '  Delta       : ' + (allocDelta > 0 ? fix(allocDelta,1) + '%' : 'N/A'),
             '',
             'PEF 3.1 requirement: If results are sensitive to allocation method, this must be disclosed.',
@@ -2796,7 +2824,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     const ingCC2 = ingComps.find(c => c.id===ing.id || c.name===ing.name);
                     const pctV = ingCC2 ? ((ingCC2.subtotal||0)/ccTotal*100) : 0;
                     const dqrV = ing.dqr || ing.overall || 2.00;
-                    const passes = dqrV <= (ing.primary_data_used ? 3.0 : 4.0);
+                    // FIX: [pdf-generator audit] Was using stale 3.0/4.0 thresholds — the
+                    // same bug already identified and fixed elsewhere in this file (see
+                    // PDF-F2 FIX below, DNM Compliance Check page) but missed here. Corrected
+                    // to match compliance_engine.js PRIMARY_DQR_MAX=2.0 / SECONDARY_DQR_MAX=3.0.
+                    const passes = dqrV <= (ing.primary_data_used ? 2.0 : 3.0);
                     return '  ' + (passes?'OK ':'WARN') + '  ' + trunc(ing.name||ing.id,40) + '  contrib=' + fix(pctV,1) + '%  DQR=' + fix(dqrV,2);
                 })
             )
@@ -2816,17 +2848,31 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const jrcPass  = jrcVal.overall_pass   || false;
         const jrcChecks = jrcVal.checks        || [];
         const jrcScore  = jrcVal.score         || 0;
+        // FIX: [compliance audit] Distinguish "not applicable" (no JRC BAT reference
+        // data exists for this packaging material) from "PARTIAL" (checks ran and some
+        // failed). Previously both rendered as an amber "PARTIAL" banner, which reads as
+        // a failed check to an auditor when in fact no check was performed at all.
+        const jrcNotApplicable = jrcVal.not_applicable === true;
 
         // Overall verdict banner
-        doc.setFillColor(...(jrcPass ? C.green : C.amber));
+        const jrcBannerColor = jrcNotApplicable ? C.bodyMid : (jrcPass ? C.green : C.amber);
+        const jrcBannerText  = jrcNotApplicable
+            ? 'JRC / PEF 3.1 VALIDATION: NOT APPLICABLE'
+            : (jrcPass ? 'JRC / PEF 3.1 VALIDATION: PASS' : 'JRC / PEF 3.1 VALIDATION: PARTIAL');
+        doc.setFillColor(...jrcBannerColor);
         doc.rect(M, Y, CW, 14, 'F');
         doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...C.white);
-        doc.text(jrcPass ? 'JRC / PEF 3.1 VALIDATION: PASS' : 'JRC / PEF 3.1 VALIDATION: PARTIAL', M + 4, Y + 9);
-        if (jrcScore > 0) {
+        doc.text(jrcBannerText, M + 4, Y + 9);
+        if (jrcScore > 0 && !jrcNotApplicable) {
             doc.setFont('helvetica','normal'); doc.setFontSize(8);
             doc.text('Score: ' + fix(jrcScore,0) + '/100', PW - M - 4, Y + 9, {align:'right'});
         }
         Y += 18;
+        if (jrcNotApplicable && jrcVal.note) {
+            T.small(); doc.setTextColor(...C.bodyMid);
+            doc.text(safe(jrcVal.note), M, Y, { maxWidth: CW });
+            Y += 10;
+        }
 
         if (jrcChecks.length > 0) {
             const jrcRows = jrcChecks.map(chk => [
@@ -2954,7 +3000,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // ================================================================
         newPage('Front-of-Pack Eco-Score — Derivation and Methodology');
         T.small(); doc.setTextColor(...C.bodyMid);
-        doc.text('Internal consumer-facing environmental grade. Based on PEF Single Score (mPt/kg). NOT for external environmental claims.', M, Y); Y += 6;
+        doc.text('Internal consumer-facing environmental grade. Based on PEF Single Score (uPt/kg). NOT for external environmental claims.', M, Y); Y += 6;
 
         const ecoMpt   = mPt;  // already computed above
         // DB-1 FIX (2026-06-07): Thresholds corrected from [150/250/400/600] to [15000/25000/40000/60000] µPt.
@@ -2976,7 +3022,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...C.white);
         doc.text('Front-of-Pack Eco-Score', M + 30, Y + 9);
         doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...C.white);
-        doc.text(numFmt(ecoMpt, 2) + ' mPt/kg  |  Threshold: ' + ecoThreshNote, M + 30, Y + 16);
+        doc.text(numFmt(ecoMpt, 2) + ' uPt/kg  |  Threshold: ' + ecoThreshNote, M + 30, Y + 16);
         Y += 26;
 
         traceBlock([
@@ -3272,7 +3318,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             ['Assessment ID',       safe(dppId)],
             ['Product',             safe(pName)],
             ['Climate Change',      numFmt(ccPerKg, 4) + ' kg CO2e / kg product'],
-            ['PEF Single Score',    numFmt(mPt, 2) + ' mPt / kg product'],
+            ['PEF Single Score',    numFmt(mPt, 2) + ' uPt / kg product'],
             ['Data Quality (DQR)',  fix(dqrVal, 2) + ' / 5.0'],
             ['Functional unit',     '1 kg of product as sold'],
             ['LCI database',        'AGRIBALYSE 3.2 (ADEME/INRAE 2022)'],
@@ -3313,7 +3359,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'ID: ' + safe(dppId),
             'Product: ' + safe(pName).slice(0,40),
             'CC: ' + numFmt(ccPerKg,4) + ' kg CO2e/kg',
-            'Score: ' + numFmt(mPt,2) + ' mPt/kg',
+            'Score: ' + numFmt(mPt,2) + ' uPt/kg',
             'DQR: ' + fix(dqrVal,2) + '/5.0',
             'DB: AGRIBALYSE 3.2',
             'Method: EF 3.1 / PEF 3.1',
@@ -3349,7 +3395,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'This QR contains:',
             '  - Product identity and assessment ID',
             '  - Climate Change result (kg CO2e/kg)',
-            '  - PEF Single Score (mPt/kg)',
+            '  - PEF Single Score (uPt/kg)',
             '  - Data quality rating (DQR)',
             '  - Database and method references',
             '  - Audit hash for integrity check',

@@ -297,7 +297,13 @@ function displayAuditTrail() {
             <div style="margin-top: 10px; font-size: 0.8rem; color: #333;">
                 <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
                 ${(() => {
-                    const eudrHighRisk = ['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD'];
+                    // FIX: [audit-trail audit] Was missing 4 countries (BO, HN, GT, VE) that
+                    // retailer_csv_engine.js already added via its "CSV-F1 FIX". Without this,
+                    // the DPP card could show a green "EUDR: Compliant" checkmark here for a
+                    // Bolivia/Honduras/Guatemala/Venezuela-sourced product while the retailer
+                    // CSV export correctly flags the same product HIGH RISK — a direct,
+                    // customer-visible contradiction between two documents about one product.
+                    const eudrHighRisk = ['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD','BO','HN','GT','VE'];
                     const ingComponents = _auditCCTree.Ingredients?.components || [];
                     const highRiskIngs = ingComponents.filter(ing => {
                         const country = ing.universal_adjustments?.adjusted_for_country || '';
@@ -671,6 +677,41 @@ function displayAuditTrail() {
                 </table>
                 <div style="margin-top: 10px; color: #27AE60; font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Functional Equivalence Verified per ISO 14044 §4.2.3.2</div>
                 <div style="margin-top: 6px; color: #888; font-size: 0.75rem; font-style: italic;"><i class="fas fa-info-circle"></i> Twin uses AGRIBALYSE 3.2 baseline for all ingredients. Supplier primary data adjustments (yield, nitrogen) are applied in the main assessment only and are not carried into the parametric twin. This is intentional: the twin compares standard industry baselines, not supplier-specific actuals.</div>
+                ${(() => {
+                    // FIX: [audit-trail audit] The placeholder text below this section
+                    // (shown when no twin has been run) states "covers all 16 EF 3.1
+                    // impact categories" — but until this fix, the actual table above only
+                    // ever showed the Climate Change breakdown, regardless of whether a
+                    // twin had been run. core_physics.js's calculateParametricTwin() was
+                    // separately fixed to genuinely compute and return the other 12
+                    // categories (b.categories), but nothing here displayed them — making
+                    // the placeholder's claim false even in the case it describes.
+                    // This block makes the claim true: when b.categories is present
+                    // (current calculation_engine.js/core_physics.js always populate it),
+                    // show all 12 remaining categories alongside the CC breakdown above.
+                    if (!b.categories) return '';
+                    // Local unit map (CAT_UNITS is not defined anywhere in this file —
+                    // this was caught in testing before shipping, not left as a latent bug).
+                    const CATEGORY_UNITS = {
+                        'Ozone Depletion': 'kg CFC11e/kg', 'Human Toxicity, non-cancer': 'CTUh/kg',
+                        'Human Toxicity, cancer': 'CTUh/kg', 'Particulate Matter': 'disease inc./kg',
+                        'Ionizing Radiation': 'kBq U235e/kg', 'Photochemical Ozone Formation': 'kg NMVOCe/kg',
+                        'Acidification': 'mol H+e/kg', 'Eutrophication, terrestrial': 'mol Ne/kg',
+                        'Eutrophication, freshwater': 'kg Pe/kg', 'Eutrophication, marine': 'kg Ne/kg',
+                        'Ecotoxicity, freshwater': 'CTUe/kg', 'Resource Use, minerals/metals': 'kg Sbe/kg'
+                    };
+                    const catRows = Object.entries(b.categories).map(([name, val]) => {
+                        const unit = CATEGORY_UNITS[name] || '';
+                        return `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 4px 0; font-size: 0.8rem;">${name}</td><td style="text-align: right; font-family: monospace; font-size: 0.8rem;">${(val || 0).toFixed(6)} ${unit}</td></tr>`;
+                    }).join('');
+                    return `
+                    <div style="margin-top: 14px;">
+                        <div style="font-size: 0.78rem; font-weight: bold; color: #475569; margin-bottom: 6px;">
+                            Remaining 12 EF 3.1 categories (twin baseline, per kg):
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse;">${catRows}</table>
+                    </div>`;
+                })()}
             </div>
         </div>`;
     } else {
@@ -1048,7 +1089,15 @@ function exportCSRDMatrix() {
     const audit     = window.auditTrailData;
     const pef       = window.finalPefResults;
     const mb        = audit.mass_balance || {};
-    const pWeightKg = mb.final_content_weight_kg || 1.0;
+    // FIX: [audit-trail audit] Was `|| 1.0` — the exact magic-fallback bug already
+    // identified and fixed everywhere else in this codebase (see retailer_csv_engine.js:
+    // "Never use magic fallback 1.0 ... made every per-kg value in the CSV 5x wrong for
+    // a 200g product"). This is the CSRD/ESRS regulatory export specifically — the file's
+    // own GAP-1 note frames it as authoritative filing data, not a modeled scenario, which
+    // makes a silent 5x understatement here more consequential than in any other export.
+    // Corrected to match the fallback used correctly at lines 252, 713, and 869 of this
+    // same file.
+    const pWeightKg = mb.final_content_weight_kg || 0.2;
     const pName     = audit.productName || 'Product';
     const dppId     = audit.dppId || 'N/A';
     const auditHash = audit.auditHash || '';
@@ -1126,11 +1175,16 @@ function exportCSRDMatrix() {
         hasPrimaryMfgData    ? 'Factory energy data'  : ''
     ].filter(Boolean).join('; ') || 'None — 100% AGRIBALYSE 3.2 secondary data';
 
-    // GAP-3: EUDR high-risk country list (matches displayAuditTrail)
-    const EUDR_HIGH_RISK = new Set(['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD']);
+    // FIX: [audit-trail audit] Was missing 4 countries (BO, HN, GT, VE) already present
+    // in retailer_csv_engine.js's EUDR_HR list (CSV-F1 FIX). This function specifically
+    // produces the CSRD/ESRS regulatory export — per this file's own GAP-1 design note,
+    // that's meant to be authoritative filing data, which makes an incomplete high-risk
+    // list here more consequential than a dashboard display gap.
+    const EUDR_HIGH_RISK = new Set(['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD','BO','HN','GT','VE']);
     const EUDR_COMMODITIES = { BR:'Soy/Cattle', ID:'Palm Oil', MY:'Palm Oil', AR:'Soy/Cattle',
                                 CO:'Cattle/Coffee', PE:'Cattle/Coffee', NG:'Timber', CM:'Timber',
-                                CG:'Timber', CD:'Timber' };
+                                CG:'Timber', CD:'Timber', BO:'Soy/Cattle', HN:'Palm Oil/Coffee',
+                                GT:'Palm Oil/Coffee', VE:'Cattle' };
 
     const getTotal  = (cat) => (pef[cat]?.total ?? 0);
     const getPerKg  = (cat) => pWeightKg > 0 ? getTotal(cat) / pWeightKg : 0;
@@ -1454,12 +1508,18 @@ function exportCSRDMatrix() {
                'ISO 14044 §4.2.3.3 / PEF 3.1 §5.4',
                'See primary_data_applied field in Block 1 for scope of primary data coverage'].map(q).join(','));
     rows.push(['scope_limitation_5', 'Results are screening-level — not for comparative advertising',
-               'ISO 14044 §6 / EU Green Claims Directive COM/2023/166',
+               'ISO 14044 §6 / EmpCo Directive (EU 2024/825, applies 27 Sep 2026)',
                'Any consumer-facing environmental claim must undergo ISO 14044 critical review'].map(q).join(','));
     rows.push(['']);
     // Legacy comment-style legal footer
+    // FIX: [audit-trail audit] Was citing "EU Green Claims Directive COM/2023/166" —
+    // that proposal was withdrawn by the European Commission in June 2025 and is not
+    // in force. The currently-binding law is the EmpCo Directive (EU 2024/825),
+    // applicable from 27 September 2026. Citing a withdrawn directive as legal basis
+    // in a regulatory filing is exactly the kind of factual error a skeptical auditor
+    // or competitor would catch, on a document whose entire value is precision.
     rows.push([c('Screening-level LCA. Not third-party verified. Not for comparative advertising per ISO 14044 §6.')]);
-    rows.push([c('EU Green Claims Directive COM/2023/166 applies to any consumer-facing use of these results.')]);
+    rows.push([c('EmpCo Directive (EU 2024/825, applies 27 Sep 2026) applies to any consumer-facing use of these results.')]);
     rows.push(['report_generated', new Date().toISOString(), '', ''].map(q).join(','));
     rows.push(['assessment_id',    dppId,                    '', ''].map(q).join(','));
     rows.push(['audit_hash',       auditHash,                '', ''].map(q).join(','));

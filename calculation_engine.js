@@ -639,7 +639,9 @@
             'AT':1100,'BE':310,'BG':2000,'HR':1500,'CZ':880,'DK':1000,'EE':2200,
             'FI':2500,'DE':550,'GR':2500,'HU':1300,'IE':1800,'IT':1200,'LV':2100,
             'LT':2000,'LU':360,'NL':500,'NO':2000,'PL':1300,'PT':1700,'RO':2200,
-            'SK':1100,'SI':1200,'ES':1300,'SE':2000,'CH':600,'GB':850, // B4-F1: UK midlands to N.France via Channel. Eurostat 2022 screening.'TR':2800,
+            'SK':1100,'SI':1200,'ES':1300,'SE':2000,'CH':600,
+            // B4-F1: UK midlands to N.France via Channel. Eurostat 2022 screening.
+            'GB':850,'TR':2800,
             'AL':2100,'BA':1800,'ME':2000,'MK':2100,'RS':1900,'UA':2500,'MD':2300,
             'RU':2800,'MA':2500,'DZ':2200,'TN':2100
         };
@@ -828,7 +830,7 @@
 
                     // B2-F1 FIX: Guard against negative LANCA SQI (e.g. Greenland = -8.75).
                     if (lancaRatio < 0) {
-                        console.warn('[AIOXY B2-F1] Negative LANCA ratio ' + lancaRatio.toFixed(4) + ' for ' + originISO + '. Land Use adjustment skipped.');
+                        console.warn('[AIOXY B2-F1] Negative LANCA ratio ' + lancaRatio.toFixed(4) + ' for ' + originCountry + '. Land Use adjustment skipped.');
                         lancaRatio = 1.0;
                     }
                     flatPef['Land Use'] *= lancaRatio;
@@ -2377,7 +2379,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         // E3-F1 FIX: Validate recycledPct range 0-100.
         if (pkgIn.recycledPct !== null && pkgIn.recycledPct !== undefined) {
             if (pkgIn.recycledPct < 0 || pkgIn.recycledPct > 100) {
-                throw new ValidationError('recycledPct out of range 0-100: ' + pkgIn.recycledPct);
+                throw new CalculationError('recycledPct out of range 0-100: ' + pkgIn.recycledPct);
             }
             if (pkgIn.recycledPct > 0 && pkgIn.recycledPct <= 1.0) {
                 console.warn('[AIOXY E3-F1] recycledPct=' + pkgIn.recycledPct + ' looks like a fraction. Use percentage (0-100).');
@@ -2551,7 +2553,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             // Ingredients using only secondary AGRIBALYSE data are background — DQR ≤ 3.0.
             // This is a first approximation; a full foreground/background UI flag is flagged
             // as Finding J6-F1 for a future UI session.
-            isUnderOperationalControl: !!(ing.primaryDataApplied)
+            isUnderOperationalControl: !!(ing.primary_data_used)
         }));
         // J1-F2/J2-F1/J4-F1 FIX: DNM, cutoff, hotspot use CC as proxy denominator.
         // PEF 3.1 requires single score denominator. CC is practical proxy for food LCA.
@@ -3217,6 +3219,8 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
             jrc_validation: jrcValidationResult || {
                 passed: null,
+                overall_pass: null,
+                not_applicable: true,
                 note: 'JRC validation not applicable — packaging material "' + input.packaging.material + '" has no reference values in JRC BAT dataset. Reference materials: PET_granulates, cardboard, glass_bottle.'
             },
 

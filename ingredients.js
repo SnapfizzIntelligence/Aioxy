@@ -998,6 +998,17 @@ window.aioxyData.grid_intensity = {
     "HR": 158.5,  // ember-2025 | Croatia
     "HU": 163.0,  // ember-2025 | Hungary
     "SI": 183.3,  // ember-2025 | Slovenia
+    // FIX: [ingredients.js audit] Sweden was present in countries.electricityCO2 (35.3)
+    // but entirely missing from this object. The main manufacturing calculation path
+    // (calculation_engine.js) has a per-country fallback to countries.electricityCO2
+    // that masked this gap — but the twin/comparison path (core_physics.js, via the
+    // `gridIntensity: db.grid_intensity || db.countries` object-level-only fallback at
+    // calculation_engine.js ~line 2745) has no such per-key fallback: since grid_intensity
+    // exists as an object at all, countries is never consulted, so any twin ingredient
+    // specifying Sweden as its manufacturing country would throw
+    // MissingDataError('gridIntensity.SE'). Adding it here fixes the root cause for
+    // both paths without relying on any fallback.
+    "SE":  35.3,  // ember-2025 | Sweden
     "GB": 217.1,  // ember-2025 | United Kingdom
     "RO": 250.8,  // ember-2025 | Romania
     "NL": 253.6,  // ember-2025 | Netherlands
@@ -1157,6 +1168,14 @@ window.aioxyData.countries = {
     "BA": { "name": "Bosnia and Herzegovina","electricityCO2": 570.6,"awareFactor": null },
     "ME": { "name": "Montenegro",         "electricityCO2": 263.2, "awareFactor": null  },
     "MK": { "name": "North Macedonia",    "electricityCO2": 441.4, "awareFactor": null  },
+    // FIX: [ingredients.js audit] Kosovo was present in grid_intensity (884.9) but missing
+    // here. Both calculation paths already resolve Kosovo's electricity intensity correctly
+    // (grid_intensity is checked first/only), so this isn't a crash risk like the Sweden
+    // gap — but any code needing a country display name or AWARE factor for Kosovo would
+    // still fail silently. awareFactor unknown (Kosovo has no ISO 3166-1 alpha-3 code and
+    // is not covered in the AWARE 2.0 country dataset) — set to null, consistent with the
+    // pattern used for other Balkan countries lacking AWARE data above.
+    "XK": { "name": "Kosovo",             "electricityCO2": 884.9, "awareFactor": null  },
     "IS": { "name": "Iceland",            "electricityCO2": 27.8,  "awareFactor": 0.4   },
     "MT": { "name": "Malta",              "electricityCO2": 484.0, "awareFactor": null  },
     // ── Latin America ─────────────────────────────────────────────────────────
@@ -1281,7 +1300,15 @@ window.aioxyData.processing = {
     // Physics: Q_evap = 0.479 kg × 2333 kJ/kg = 1117.5 kJ + preheat 156.4 kJ = 1273.9 kJ.
     // ÷ 0.50 dryer efficiency = 2547.8 kJ → gas 3.0 MJ/kg feed; electrical (fans/atomizer) 0.07 kWh/kg.
     // Per kg powder output: ~5.8 MJ/kg. Source: Masters (1991); Birchal et al. (2006) Drying Tech. 24(2).
-    "drying":         { co2_impact: 1.8,  water_impact: 0.18, yield: 0.97,  loss: 0.030, temp: 60,  kwh_per_kg: 0.070, gas_mj_per_kg: 3.00  },
+    // FIX: [ingredients.js audit] yield was 0.97 (implying 3% mass loss) — directly contradicts
+    // this entry's own physics derivation, which evaporates 47.9% of feed mass (0.479 kg/kg feed,
+    // the number used in the Q_evap calculation two lines above). For a 50%-moisture feed drying
+    // to 4%-moisture powder: solids = 0.50 kg, output mass = 0.50 / (1 - 0.04) = 0.521 kg,
+    // so yield = 0.521 and loss = 0.479 — not 0.97/0.03. This field only affects the
+    // informational "Processing Waste" traceability line (calculation_engine.js line ~307
+    // confirms it does not affect real CO2/impact totals), but that line was understating
+    // true spray-drying waste by ~45 percentage points for any spray-dried product.
+    "drying":         { co2_impact: 1.8,  water_impact: 0.18, yield: 0.521,  loss: 0.479, temp: 60,  kwh_per_kg: 0.070, gas_mj_per_kg: 3.00  },
 
     // Method 9 — Canning (batch steam retort, 121°C; same thermodynamics as sterilization).
     // Physics: Q_product + can metal heating + batch overhead = 625.5 kJ/kg.
@@ -1398,6 +1425,17 @@ window.aioxyData.processing_archetypes = {
     }
 };
 
+// FIX: [ingredients.js audit] ORPHANED / NOT CONSUMED ANYWHERE IN THE CODEBASE.
+// Verified by grep across every file in this project: nothing references
+// window.aioxyData.transportation or db.transportation. The actual, active transport
+// calculation uses core_physics.js's own internal CONSTANTS (ROAD/SEA/AIR/RAIL tables,
+// GLEC v3.2 sourced, verified during the core_physics.js audit) via calculateTransport().
+// This object also lacks the source citations every other section in this file has —
+// which doesn't matter functionally (it's never read), but would be misleading if
+// someone assumed this was the live data source and tried to "fix" it here instead.
+// Retained rather than deleted since this audit didn't verify it's safe to remove
+// entirely (e.g. any external/future code that might reference it) — flagging for a
+// deliberate decision on removal rather than silently deleting database content.
 window.aioxyData.transportation = {
     "road": { 
         co2: 0.060,
@@ -2266,18 +2304,27 @@ window.aioxyData.packaging = {
 // SUMMARY VERIFICATION TABLE
 // ================================================================================
 //
+// FIX: [ingredients.js audit] This entire table's Ed_avg column was stale — it showed the
+// pre-"Eurostat 2024 split update" disposal values (e.g. cardboard 0.021), while every
+// actual co2_disposal_average entry above was correctly updated to the new 45%/55%
+// landfill/incineration split (e.g. cardboard's real value is 0.035). The whole point of
+// this table is to let an auditor cross-check without reading 700 lines of individual
+// entries — a stale reference table is exactly the kind of discrepancy that erodes trust
+// in an otherwise well-sourced file, even though the real calculation values were correct.
+// Verified each updated figure against the actual co2_disposal_average field above.
+//
 // Material    | A-factor | R2     | Qs/Qp | Ev (kg CO2e/kg) | Erec           | Ed_avg   | Confidence
 // ------------|----------|--------|-------|-----------------|----------------|----------|-----------
-// cardboard   | 0.2 HIGH | 0.746H | 0.85H | 1.03 MEDIUM    | 0.49 MEDIUM    | 0.021 L  | MEDIUM
-// paper       | 0.2 HIGH | 0.746H | 0.85H | 1.29 MEDIUM    | 0.63 MEDIUM    | 0.021 L  | MEDIUM
-// PET         | 0.5 HIGH | 0.418H | 0.90H | 3.40 MEDIUM    | 1.90 MEDIUM    | 0.179 M  | MEDIUM
-// rPET        | 0.5 HIGH | 0.418H | 0.90H | 3.40 MEDIUM    | 0.45 MEDIUM    | 0.169 M  | MEDIUM
-// HDPE        | 0.5 HIGH | 0.288M | 0.90H | 1.96 MEDIUM    | 0.91 MEDIUM    | 0.166 M  | MEDIUM
-// LDPE        | 0.5 HIGH | 0.288M | 0.75H | 2.10 MEDIUM    | 0.84 LOW       | 0.166 M  | LOW-MED
-// PP          | 0.5 HIGH | 0.288M | 0.90H | 2.00 MEDIUM    | 0.95 LOW       | 0.164 M  | LOW-MED
-// glass       | 0.2 HIGH | 0.657H | 1.00H | 0.86 MED-HIGH  | 0.54 MEDIUM    | 0.008 L  | MEDIUM
-// aluminum    | 0.2 HIGH | 0.600H | 1.00H | 11.89 MED-HIGH | 0.60 MED-HIGH  | 0.023 L  | MED-HIGH
-// steel       | 0.2 HIGH | 0.805H | 1.00H | 2.89 MEDIUM    | 0.51 MEDIUM    | 0.025 L  | MEDIUM
+// cardboard   | 0.2 HIGH | 0.746H | 0.85H | 1.03 MEDIUM    | 0.49 MEDIUM    | 0.035 M  | MEDIUM
+// paper       | 0.2 HIGH | 0.746H | 0.85H | 1.29 MEDIUM    | 0.63 MEDIUM    | 0.035 M  | MEDIUM
+// PET         | 0.5 HIGH | 0.418H | 0.90H | 3.40 MEDIUM    | 1.90 MEDIUM    | 0.200 M  | MEDIUM
+// rPET        | 0.5 HIGH | 0.418H | 0.90H | 3.40 MEDIUM    | 0.45 MEDIUM    | 0.200 M  | MEDIUM
+// HDPE        | 0.5 HIGH | 0.288M | 0.90H | 1.96 MEDIUM    | 0.91 MEDIUM    | 0.203 M  | MEDIUM
+// LDPE        | 0.5 HIGH | 0.288M | 0.75H | 2.10 MEDIUM    | 0.84 LOW       | 0.203 M  | LOW-MED
+// PP          | 0.5 HIGH | 0.288M | 0.90H | 2.00 MEDIUM    | 0.95 LOW       | 0.200 M  | LOW-MED
+// glass       | 0.2 HIGH | 0.657H | 1.00H | 0.86 MED-HIGH  | 0.54 MEDIUM    | 0.009 L  | MEDIUM
+// aluminum    | 0.2 HIGH | 0.600H | 1.00H | 11.89 MED-HIGH | 0.60 MED-HIGH  | 0.026 L  | MED-HIGH
+// steel       | 0.2 HIGH | 0.805H | 1.00H | 2.89 MEDIUM    | 0.51 MEDIUM    | 0.028 L  | MEDIUM
 // PLA         | 0.5 LOW  | 0.000L | 0.90L | 2.73 LOW       | 0.90 LOW       | 0.070 L  | LOW
 //
 // KEY:  H = HIGH confidence  M = MEDIUM  L = LOW
@@ -2315,6 +2362,14 @@ window.aioxyData.packaging = {
 // ================================================================================
 
 
+// FIX: [ingredients.js audit] ORPHANED / NOT CONSUMED ANYWHERE IN THE CODEBASE.
+// Verified by grep across every audited file: nothing references
+// window.aioxyData.climate_zones. Also note if this is ever wired up in future: the
+// "temperate" array uses "UK" but every other place in this file (grid_intensity,
+// countries) uses ISO code "GB" for the United Kingdom — a country-code lookup against
+// this list would silently fail to match GB-coded products. Flagging both issues
+// together since fixing the code inconsistency without also flagging non-use could
+// give false confidence that this list is live and correct.
 window.aioxyData.climate_zones = {
     "tropical": ["BR", "ID", "VN", "IN", "TH", "CI", "GH", "CO", "EC", "MX", "PH", "MY", "NG", "WI"],
     "arid":     ["ES", "AU", "ZA", "EG", "TR", "IR", "SA", "AE", "MA"],

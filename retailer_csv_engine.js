@@ -286,6 +286,13 @@ function generateTescoCSV(d) {
     rows.push(['ghg_transport_per_kg',          fix(d.cc_trans, 6),            'kg CO2e/kg', 'GHG Protocol Scope 3 Cat.4 — outbound transport (GLEC v3.2)'].map(q).join(','));
     rows.push(['ghg_upstream_transport_per_kg', fix(d.cc_upstream, 6),         'kg CO2e/kg', 'GHG Protocol Scope 3 Cat.4 — inbound ingredient transport (GLEC v3.2)'].map(q).join(','));
     rows.push(['ghg_packaging_per_kg',                 fix(d.cc_pkg, 6),            'kg CO2e/kg',  'GHG Protocol Scope 3 Cat.1 — packaging'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Same reconciliation-gap fix already applied to
+    // the CDP format (CSV-F5) — without this, the stage breakdown sums to less than
+    // carbon_footprint_per_kg_co2e whenever a product has a nonzero processing-waste
+    // stage, with no explanation for the gap.
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['ghg_waste_processing_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'Waste processing stage — included in total above'].map(q).join(','));
+    }
     rows.push(['']);
 
     // Section C: Water
@@ -368,6 +375,10 @@ function generateSainsburysCSV(d) {
     rows.push(['fossil_ghg_fraction_kg_co2e_per_kg',      fix(d.cc_fossil, 6),'kg CO2e/kg', 'S2.6', 'Fossil origin only'].map(q).join(','));
     rows.push(['biogenic_carbon_kg_co2e_per_kg',          fix(d.cc_biogenic, 6),'kg CO2e/kg','S2.7', 'Biogenic — reported separately per GHG Protocol'].map(q).join(','));
     rows.push(['land_use_change_kg_co2e_per_kg',          fix(d.cc_land_use, 6),'kg CO2e/kg','S2.8', 'dLUC per IPCC 2006'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['waste_processing_kg_co2e_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'S2.9', 'Waste processing stage — included in total above'].map(q).join(','));
+    }
     rows.push(['']);
 
     rows.push([c("SSQ SECTION 3 — WATER (Sainsbury's Halving Food Waste & Water target)")]);
@@ -428,6 +439,10 @@ function generateLidlCSV(d) {
     rows.push(['co2_packaging_stage',             fix(d.cc_pkg, 6),         'kg CO2e/kg', 'E1.5', 'Primary packaging (CFF)'].map(q).join(','));
     rows.push(['co2_fossil_fraction',             fix(d.cc_fossil, 6),      'kg CO2e/kg', 'E1.6', ''].map(q).join(','));
     rows.push(['co2_biogenic_fraction',           fix(d.cc_biogenic, 6),    'kg CO2e/kg', 'E1.7', 'Biogenic — stored C in bio-based materials'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['co2_waste_processing_stage', fix(d.cc_waste, 6), 'kg CO2e/kg', 'E1.11', 'Waste processing stage — included in total above'].map(q).join(','));
+    }
     rows.push(['production_country',              d.mfgCountry,             '',        'E1.8', ''].map(q).join(','));
     rows.push(['grid_intensity_g_co2_per_kwh',    fix(d.gridIntensity, 2),  'g CO2/kWh','E1.9', 'Ember 2025'].map(q).join(','));
     rows.push(['energy_source',                   d.mfgEnergySource,        '',        'E1.10','grid/renewable/gas/coal'].map(q).join(','));
@@ -488,6 +503,10 @@ function generateAldiCSV(d) {
     rows.push(['scope3_cat4_transport_kg_co2e_per_kg',           fix(d.cc_trans, 6),'kg CO2e/kg', '2.4', 'Inbound + outbound transport'].map(q).join(','));
     rows.push(['fossil_co2_kg_per_kg',                           fix(d.cc_fossil, 6),'kg CO2e/kg', '2.5', ''].map(q).join(','));
     rows.push(['land_use_change_co2_kg_per_kg',                  fix(d.cc_land_use, 6),'kg CO2e/kg','2.6', 'dLUC'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['waste_processing_kg_co2e_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', '2.7', 'Waste processing stage — included in total above'].map(q).join(','));
+    }
     rows.push(['']);
 
     rows.push([c('BLOCK 3 — WATER AND NATURE')]);
@@ -578,6 +597,10 @@ function generateReweCSV(d) {
     rows.push(['thg_verpackung',                     fix(d.cc_pkg, 6),       'kg CO2e/kg', 'U1.5', 'CFF-Methode PEF 3.1'].map(q).join(','));
     rows.push(['thg_fossil_anteil',                  fix(d.cc_fossil, 6),    'kg CO2e/kg', 'U1.6', ''].map(q).join(','));
     rows.push(['landnutzungsaenderung_co2',          fix(d.cc_land_use, 6),  'kg CO2e/kg', 'U1.7', 'dLUC nach IPCC 2006'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['thg_abfallverarbeitung',          fix(d.cc_waste, 6), 'kg CO2e/kg', 'U1.11', 'Abfallverarbeitungsstufe — in Gesamtsumme enthalten'].map(q).join(','));
+    }
     rows.push(['strommix_intensitaet',               fix(d.gridIntensity, 2),'g CO2e/kWh', 'U1.8', 'Ember 2025'].map(q).join(','));
     rows.push(['energiequelle',                      d.mfgEnergySource,      '',           'U1.9', ''].map(q).join(','));
     rows.push(['']);
@@ -645,6 +668,10 @@ function generateAlbertHeijnCSV(d) {
     rows.push(['ah_co2e_fossil_per_kg',            fix(d.cc_fossil, 6),     'kg CO2e/kg', 'CAT2.6', ''].map(q).join(','));
     rows.push(['ah_co2e_biogenic_per_kg',          fix(d.cc_biogenic, 6),   'kg CO2e/kg', 'CAT2.7', 'Biogenic carbon'].map(q).join(','));
     rows.push(['ah_land_use_change_co2_per_kg',    fix(d.cc_land_use, 6),   'kg CO2e/kg', 'CAT2.8', 'dLUC'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['ah_co2e_waste_processing_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'CAT2.10', 'Waste processing stage — included in total above'].map(q).join(','));
+    }
     rows.push(['ah_renewable_energy_at_factory',   d.mfgEnergySource === 'renewable' ? 'YES' : 'NO', '', 'CAT2.9', ''].map(q).join(','));
     rows.push(['']);
 
@@ -708,6 +735,10 @@ function generateCarrefourCSV(d) {
     rows.push(['carbone_fossile_par_kg',                   fix(d.cc_fossil, 6), 'kg CO2e/kg', 'R2.6', ''].map(q).join(','));
     rows.push(['carbone_biogenique_par_kg',                fix(d.cc_biogenic,6),'kg CO2e/kg', 'R2.7', 'Carbone biogenique'].map(q).join(','));
     rows.push(['changement_utilisation_sol_co2_par_kg',    fix(d.cc_land_use,6),'kg CO2e/kg', 'R2.8', 'dLUC'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['carbone_traitement_dechets_par_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'R2.9', 'Etape traitement des dechets — incluse dans le total'].map(q).join(','));
+    }
     rows.push(['']);
 
     rows.push([c('RUBRIQUE 3 — EAU')]);
@@ -768,6 +799,10 @@ function generateLeclercCSV(d) {
     rows.push(['empreinte_emballage',               fix(d.cc_pkg, 6),      'kg CO2e/kg', 'C5', 'CFF PEF 3.1'].map(q).join(','));
     rows.push(['fraction_carbone_fossile',          fix(d.cc_fossil, 6),   'kg CO2e/kg', 'C6', ''].map(q).join(','));
     rows.push(['fraction_biogenique',              fix(d.cc_biogenic, 6), 'kg CO2e/kg', 'C7', ''].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['empreinte_traitement_dechets', fix(d.cc_waste, 6), 'kg CO2e/kg', 'C8', 'Etape traitement des dechets — incluse dans le total'].map(q).join(','));
+    }
     rows.push(['']);
 
     rows.push([c('SECTION EAU ET BIODIVERSITE')]);
@@ -816,6 +851,10 @@ function generateIntermarcheCSV(d) {
     rows.push(['empreinte_fabrication',           fix(d.cc_mfg, 6),         'kg CO2e/kg','A7',''].map(q).join(','));
     rows.push(['empreinte_transport',             fix(d.cc_trans, 6),       'kg CO2e/kg','A8',''].map(q).join(','));
     rows.push(['empreinte_emballage',            fix(d.cc_pkg, 6),         'kg CO2e/kg','A9',''].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['empreinte_traitement_dechets', fix(d.cc_waste, 6), 'kg CO2e/kg', 'A9b', 'Incluse dans le total ci-dessus'].map(q).join(','));
+    }
     rows.push(['eau_m3_par_kg',                  fix(d.water, 7),          'm3 world eq./kg', /* Session 5 FIX: was 'm3/kg' — AWARE 2.0 unit */ 'A10','AWARE 2.0'].map(q).join(','));
     rows.push(['utilisation_sol',                fix(d.land, 4),           'Pt/kg',     'A11',''].map(q).join(','));
     rows.push(['materiau_emballage',             d.pkgMaterial,            '',          'A12',''].map(q).join(','));
@@ -859,6 +898,10 @@ function generateCoopCHCSV(d) {
     rows.push(['fossil_co2_per_kg',                    fix(d.cc_fossil, 6), 'kg CO2e/kg', 'C2.6', ''].map(q).join(','));
     rows.push(['biogenic_co2_per_kg',                  fix(d.cc_biogenic,6),'kg CO2e/kg', 'C2.7', 'Per GHG Protocol land sector guidance'].map(q).join(','));
     rows.push(['renewable_energy_production',          d.mfgEnergySource === 'renewable' ? 'YES' : 'NO', '', 'C2.8', ''].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['waste_processing_co2_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'C2.9', 'Waste processing stage — included in total above'].map(q).join(','));
+    }
     rows.push(['']);
 
     rows.push([c('CRITERION 3 — WATER (Coop Oecoplan water stewardship)')]);
@@ -920,6 +963,10 @@ function generateCSRD_ESRS_CSV(d) {
     rows.push(['esrs_e1_ghg_fossil',             fix(d.cc_fossil, 6),      'kg CO2e/kg','ESRS E1', 'E1-6 §44','Fossil',   'Fossil GHG (non-biogenic)'].map(q).join(','));
     rows.push(['esrs_e1_ghg_biogenic',           fix(d.cc_biogenic, 6),    'kg CO2e/kg','ESRS E1', 'E1-6 §44','Biogenic', 'Biogenic CO2 removals and emissions'].map(q).join(','));
     rows.push(['esrs_e1_ghg_land_use_change',    fix(d.cc_land_use, 6),    'kg CO2e/kg','ESRS E1', 'E1-6 §44','Land Use', 'dLUC GHG per IPCC 2006'].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['esrs_e1_waste_processing',   fix(d.cc_waste, 6),       'kg CO2e/kg','ESRS E1', 'E1-6 §44','Waste',    'Waste processing stage — included in ghg_intensity total above'].map(q).join(','));
+    }
     rows.push(['esrs_e1_methodology',            d.methodology,            '',          'ESRS E1', 'E1-6 §35','Method',   'LCA standard used'].map(q).join(','));
     rows.push(['esrs_e1_gwp_basis',              d.gwpBasis,               '',          'ESRS E1', 'E1-6 §44','Method',   ''].map(q).join(','));
     rows.push(['']);
@@ -1056,6 +1103,15 @@ function generateGenericEUCSV(d) {
     rows.push(['scope3Cat1IngredientsPackaging',  fix(d.cc_ing + d.cc_pkg, 6),'kg CO2e/kg','ESSG:scope3cat1','GHGp',''].map(q).join(','));
     rows.push(['scope12Manufacturing',            fix(d.cc_mfg, 6),         'kg CO2e/kg','ESSG:scope12','GHGp',''].map(q).join(','));
     rows.push(['scope3Cat4Transport',             fix(d.cc_trans, 6),       'kg CO2e/kg','ESSG:scope3cat4','GHGp',''].map(q).join(','));
+    // FIX: [retailer_csv_engine audit] This format's stage breakdown previously
+    // summed to less than carbonFootprint whenever a product had nonzero inbound
+    // ingredient transport (cc_upstream) or processing-waste (cc_waste) — both were
+    // missing entirely, unlike other formats which at least included one or the other.
+    // Added both for full reconciliation, matching the CDP CSV-F5 pattern.
+    rows.push(['scope3Cat4InboundTransport',      fix(d.cc_upstream, 6),    'kg CO2e/kg','ESSG:scope3cat4in','GHGp','Inbound ingredient transport (GLEC v3.2)'].map(q).join(','));
+    if (d.cc_waste && d.cc_waste > 0) {
+        rows.push(['scope3WasteProcessing',       fix(d.cc_waste, 6),       'kg CO2e/kg','ESSG:waste','GHGp','Waste processing stage — included in total above'].map(q).join(','));
+    }
     rows.push(['']);
 
     rows.push([c('ADDITIONAL PEF 3.1 INDICATORS')]);
@@ -1100,21 +1156,36 @@ function generateGenericEUCSV(d) {
 // MAIN DISPATCHER — generateRetailerCSV(retailerKey)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// FIX: [retailer_csv_engine audit — cofounder addition] Each format's field names were
+// verified against the retailer's published questionnaire as of the date below. Retailers
+// update these annually (per the file's own header note), so this date lets the export
+// itself warn when a format is overdue for re-verification, instead of relying on someone
+// remembering to check a source-code comment before every submission.
 var RETAILER_CONFIG = {
-    TESCO:        { fn: generateTescoCSV,        label: 'Tesco',                    filename: 'AIOXY_Tesco_TSN' },
-    SAINSBURYS:   { fn: generateSainsburysCSV,   label: "Sainsbury's",              filename: "AIOXY_Sainsburys_SSQ" },
-    LIDL:         { fn: generateLidlCSV,         label: 'Lidl International',       filename: 'AIOXY_Lidl_CSR' },
-    ALDI:         { fn: generateAldiCSV,         label: 'Aldi',                     filename: 'AIOXY_Aldi_Sustainability' },
-    REWE:         { fn: generateReweCSV,         label: 'Rewe Group',               filename: 'AIOXY_Rewe_Lieferant' },
-    ALBERT_HEIJN: { fn: generateAlbertHeijnCSV,  label: 'Albert Heijn / Ahold',     filename: 'AIOXY_AlbertHeijn_AH' },
-    CARREFOUR:    { fn: generateCarrefourCSV,    label: 'Carrefour ACT',            filename: 'AIOXY_Carrefour_ACT' },
-    LECLERC:      { fn: generateLeclercCSV,      label: 'E.Leclerc',                filename: 'AIOXY_Leclerc_DD' },
-    INTERMARCHE:  { fn: generateIntermarcheCSV,  label: 'Intermarché',              filename: 'AIOXY_Intermarche_RSE' },
-    COOP_CH:      { fn: generateCoopCHCSV,       label: 'Coop Switzerland',         filename: 'AIOXY_CoopCH_Oecoplan' },
-    GENERIC_EU:   { fn: generateGenericEUCSV,    label: 'Generic EU (GS1/ESSG)',    filename: 'AIOXY_GenericEU_GS1' },
-    CSRD_ESRS:    { fn: generateCSRD_ESRS_CSV,   label: 'CSRD / ESRS E1-E5',        filename: 'AIOXY_CSRD_ESRS' },
-    CDP_SC:       { fn: generateCDP_SC_CSV,      label: 'CDP Supply Chain C6.5',    filename: 'AIOXY_CDP_SupplyChain' }
+    TESCO:        { fn: generateTescoCSV,        label: 'Tesco',                    filename: 'AIOXY_Tesco_TSN',           lastVerified: '2024-01-01' },
+    SAINSBURYS:   { fn: generateSainsburysCSV,   label: "Sainsbury's",              filename: "AIOXY_Sainsburys_SSQ",      lastVerified: '2024-01-01' },
+    LIDL:         { fn: generateLidlCSV,         label: 'Lidl International',       filename: 'AIOXY_Lidl_CSR',            lastVerified: '2024-01-01' },
+    ALDI:         { fn: generateAldiCSV,         label: 'Aldi',                     filename: 'AIOXY_Aldi_Sustainability', lastVerified: '2024-01-01' },
+    REWE:         { fn: generateReweCSV,         label: 'Rewe Group',               filename: 'AIOXY_Rewe_Lieferant',      lastVerified: '2024-01-01' },
+    ALBERT_HEIJN: { fn: generateAlbertHeijnCSV,  label: 'Albert Heijn / Ahold',     filename: 'AIOXY_AlbertHeijn_AH',      lastVerified: '2024-01-01' },
+    CARREFOUR:    { fn: generateCarrefourCSV,    label: 'Carrefour ACT',            filename: 'AIOXY_Carrefour_ACT',       lastVerified: '2024-01-01' },
+    LECLERC:      { fn: generateLeclercCSV,      label: 'E.Leclerc',                filename: 'AIOXY_Leclerc_DD',          lastVerified: '2024-01-01' },
+    INTERMARCHE:  { fn: generateIntermarcheCSV,  label: 'Intermarché',              filename: 'AIOXY_Intermarche_RSE',     lastVerified: '2024-01-01' },
+    COOP_CH:      { fn: generateCoopCHCSV,       label: 'Coop Switzerland',         filename: 'AIOXY_CoopCH_Oecoplan',     lastVerified: '2024-01-01' },
+    GENERIC_EU:   { fn: generateGenericEUCSV,    label: 'Generic EU (GS1/ESSG)',    filename: 'AIOXY_GenericEU_GS1',       lastVerified: '2024-01-01' },
+    CSRD_ESRS:    { fn: generateCSRD_ESRS_CSV,   label: 'CSRD / ESRS E1-E5',        filename: 'AIOXY_CSRD_ESRS',           lastVerified: '2024-01-01' },
+    CDP_SC:       { fn: generateCDP_SC_CSV,      label: 'CDP Supply Chain C6.5',    filename: 'AIOXY_CDP_SupplyChain',     lastVerified: '2024-01-01' }
 };
+
+// Number of days after which a format's field-name mapping is considered due for
+// re-verification against the retailer's current published questionnaire.
+const SCHEMA_STALENESS_DAYS = 365;
+
+function schemaAgeDays(lastVerified) {
+    const then = new Date(lastVerified);
+    if (isNaN(then.getTime())) return null;
+    return Math.floor((Date.now() - then.getTime()) / (1000 * 60 * 60 * 24));
+}
 
 function generateRetailerCSV(retailerKey) {
     if (!window.auditTrailData || !window.finalPefResults) {
@@ -1132,6 +1203,18 @@ function generateRetailerCSV(retailerKey) {
         const masterData = buildMasterData();
         const csvContent = config.fn(masterData);
 
+        // FIX: [retailer_csv_engine audit — cofounder addition] Surface schema staleness
+        // directly in the exported file, so "verify against the latest version" isn't a
+        // comment someone has to remember — it's a fact stated in the document at the
+        // moment it matters.
+        const ageDays = schemaAgeDays(config.lastVerified);
+        const staleWarning = (ageDays !== null && ageDays > SCHEMA_STALENESS_DAYS)
+            ? [c('*** SCHEMA VERIFICATION DUE *** — This format was last checked against ' +
+                 config.label + '\'s published questionnaire on ' + config.lastVerified +
+                 ' (' + ageDays + ' days ago). Retailers update their formats annually — ' +
+                 're-verify field names against the current questionnaire before relying on this export.')]
+            : [c('Schema last verified: ' + config.lastVerified + ' (' + (ageDays ?? 'N/A') + ' days ago)')];
+
         // Finding 15 FIX (2026-06-07): Schema disclaimer prepended to every CSV output.
         // Previously this disclaimer only existed in the JS source file comment (lines 38-45)
         // and was invisible to any recipient of the exported CSV. Every CSV now begins
@@ -1143,7 +1226,7 @@ function generateRetailerCSV(retailerKey) {
             c('SCHEMA NOTE: No European retailer publishes a machine-readable CSV schema.'),
             c('Field names match each retailer\'s published questionnaire templates as of 2024.'),
             c('Field names are normalised to snake_case; display labels match retailer\'s published forms.'),
-            c('Retailers update their formats annually — verify against the latest version before submission.'),
+            ...staleWarning,
             c('DPP ID: ' + (masterData.dppId || 'N/A') + '  |  Assessment date: ' + (masterData.assessDate || 'N/A')),
             c('Generated by AIOXY. SHA-256 audit hash available in the full audit trail export.'),
             ''

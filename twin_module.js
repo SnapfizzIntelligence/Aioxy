@@ -480,7 +480,7 @@ function renderTwinResults(mainResult, twinCalcResult) {
             : 'Twin is ' + Math.abs(co2DeltaPct).toFixed(1) + '% higher CO\u2082e/kg (+' + co2Delta.toFixed(4) + ' kg CO\u2082e/kg)');
 
     var disclaimer = isBetter
-        ? 'Modeled reduction only. Requires third-party verification for any public or B2B claims (EU Green Claims Directive 2024).'
+        ? 'Modeled reduction only. Requires third-party verification for any public or B2B claims (EmpCo Directive, EU 2024/825, applies 27 Sep 2026).'
         : 'Parametric twin shows higher or equal impact. For internal analysis only.';
 
     // NEW-3 FIX: Pre-compute all 16 EF 3.1 category per-kg values BEFORE card.innerHTML
@@ -616,7 +616,7 @@ function renderTwinResults(mainResult, twinCalcResult) {
 
         // EU Green Claims disclaimer
         '<div style="background:#FFF9E6;border:1px solid #F6C358;border-radius:6px;padding:0.6rem 0.9rem;font-size:0.72rem;color:#7C4A00;">' +
-            '<i class="fas fa-gavel"></i> <strong>EU Green Claims Directive (2024):</strong> ' +
+            '<i class="fas fa-gavel"></i> <strong>EmpCo Directive (EU 2024/825):</strong> ' +
             'Parametric comparison is a modeled screening-level estimate. ' +
             'Not a verified environmental claim. Third-party critical review required before any public communication.' +
         '</div>' +
@@ -1245,11 +1245,11 @@ function buildTwinPDFSection(doc, h) {
     doc.roundedRect(M, h.Y, CW, 14, 2, 2, 'FD');
     doc.setFont('helvetica','bold'); doc.setFontSize(7);
     doc.setTextColor(124,74,0);
-    doc.text('EU Green Claims Directive (2024) Notice:', M + 3, h.Y + 5);
+    doc.text('EmpCo Directive (EU 2024/825) Notice:', M + 3, h.Y + 5);
     doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
     doc.setTextColor(100,60,0);
     doc.text('Modeled screening-level estimate using AGRIBALYSE 3.2 + PEF 3.1. Not a verified comparative claim.', M + 3, h.Y + 9.5);
-    doc.text('Third-party critical review required before any public communication (EU Green Claims Directive 2024).', M + 3, h.Y + 13.5);
+    doc.text('Third-party critical review required before any public communication (EmpCo Directive, EU 2024/825).', M + 3, h.Y + 13.5);
     h.Y += 18;
 
     h.footer('Parametric Twin \u2014 Page ' + h.pageNum);
