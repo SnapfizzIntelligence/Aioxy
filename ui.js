@@ -458,8 +458,17 @@ function updateResultsUI(results, twinCalcResult) {
 
     // =====================================================================
     // 🚀 FRONT-OF-PACK (FOP) ECO-SCORE ENGINE
-    // BUG-16 FIX: Thresholds (150/250/400/600 µPt) are AIOXY internal benchmarks.
+    // BUG-16 FIX: Thresholds are AIOXY internal benchmarks.
     // They are NOT sourced from ADEME or PEF 3.1. Do not attribute externally.
+    // FIX: [ui.js audit] Thresholds were still [150/250/400/600] — the OLD, pre-DB-1-FIX
+    // scale. pdf-generator.js was already corrected (DB-1 FIX, 2026-06-07) to
+    // [15000/25000/40000/60000] after the underlying PEF weighting factors were found to
+    // be 100x too small and fixed to the real EF 3.1 Table 7 values (WF sum=1.0). This file
+    // was never updated to match, meaning the live on-screen badge was almost certainly
+    // grading every real product as worst-possible "E" (since corrected uPt scores are
+    // ~100x larger than these old thresholds expect), while the PDF — using the corrected
+    // scale — would show the same product as a reasonable A/B/C/D. Same product, two
+    // contradictory grades, at the same time. Corrected to match pdf-generator.js exactly.
     // =====================================================================
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     const singleScoreData = window.auditTrailData?.pef_single_score || { singleScore: 0 };
@@ -470,10 +479,10 @@ function updateResultsUI(results, twinCalcResult) {
     // Indicative µPt grade bands — AIOXY internal benchmarks only, not ADEME or PEF 3.1 thresholds
     let ecoGrade = 'E';
     let ecoColor = '#E63946'; // Red
-    if (mPtScore < 150) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
-    else if (mPtScore < 250) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
-    else if (mPtScore < 400) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
-    else if (mPtScore < 600) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
+    if (mPtScore < 15000) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
+    else if (mPtScore < 25000) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
+    else if (mPtScore < 40000) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
+    else if (mPtScore < 60000) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
     
     let ecoScoreDiv = document.getElementById('fopEcoScoreCard');
     if (!ecoScoreDiv && resultsContent) {
@@ -743,13 +752,39 @@ function updateResultsUI(results, twinCalcResult) {
         try {
             const nutritionDB = window.aioxyData?.nutrition;
             if (nutritionDB) {
-                // Try to get from same baseline ingredient as protein
-                const baseIngKey = Object.keys(ANCHOR_DATASETS || {}).find(k =>
-                    resolvedBaseline?.name && resolvedBaseline.name.includes((ANCHOR_DATASETS[k]||{}).name));
-                const baseNut = baseIngKey ? nutritionDB[baseIngKey] : null;
-                if (baseNut) {
-                    baselineKcalPer100g = baseNut.kcal_per_100g || 0;
-                    baselineFatPer100g  = baseNut.fat_g_per_100g || 0;
+                // FIX: [ui.js audit] Was using ONLY the ANCHOR_DATASETS name-matching path —
+                // the exact thing FIX 7 above (lines ~690-718) was built to move away from for
+                // protein, because a twin's name (e.g. "Recipe Twin: Beef, Pork") never matches
+                // an ANCHOR_DATASETS key. That left kcal/fat silently falling to 0 — and
+                // therefore the whole per-1000kcal/per-100g-fat metrics silently disabled —
+                // for any twin comparison, while protein worked correctly. Reusing the same
+                // ingredient-level weighted-average pattern FIX 7 already established.
+                if (resolvedBaseline?.ingredientPairs && resolvedBaseline.ingredientPairs.length > 0) {
+                    let kcalWeighted = 0, fatWeighted = 0, qtyTotal = 0;
+                    for (const pair of resolvedBaseline.ingredientPairs) {
+                        const conv = pair.conventional;
+                        if (conv) {
+                            const convId = conv.id || conv.name;
+                            const nutritionEntry = convId && nutritionDB[convId];
+                            const qty = conv.quantityKg || 1;
+                            kcalWeighted += (nutritionEntry?.kcal_per_100g || 0) * qty;
+                            fatWeighted  += (nutritionEntry?.fat_g_per_100g || 0) * qty;
+                            qtyTotal += qty;
+                        }
+                    }
+                    if (qtyTotal > 0) {
+                        baselineKcalPer100g = kcalWeighted / qtyTotal;
+                        baselineFatPer100g  = fatWeighted / qtyTotal;
+                    }
+                } else {
+                    // Non-twin path — same ANCHOR_DATASETS name-matching as before
+                    const baseIngKey = Object.keys(ANCHOR_DATASETS || {}).find(k =>
+                        resolvedBaseline?.name && resolvedBaseline.name.includes((ANCHOR_DATASETS[k]||{}).name));
+                    const baseNut = baseIngKey ? nutritionDB[baseIngKey] : null;
+                    if (baseNut) {
+                        baselineKcalPer100g = baseNut.kcal_per_100g || 0;
+                        baselineFatPer100g  = baseNut.fat_g_per_100g || 0;
+                    }
                 }
             }
         } catch(e) { /* non-fatal */ }
@@ -3447,21 +3482,26 @@ function displayCompleteAuditTrail() {
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (Internal)</div>
                         
                         ${(() => {
+                            // FIX: [ui.js audit] Third occurrence of the same stale-threshold bug found
+                            // at lines 460-509 — this rating/grade band was also still using the OLD
+                            // [150/250/400/600] scale, pre-dating the DB-1 FIX WF correction (see that
+                            // fix's comment for full explanation). Corrected to match pdf-generator.js
+                            // and the main FOP card above.
                             const score = audit.pef_single_score?.singleScore || 0;
                             let rating = 'Excellent';
                             let ratingColor = '#48BB78';
                             
-                            if (score > 150) { rating = 'Good'; ratingColor = '#ECC94B'; }
-                            if (score > 250) { rating = 'Fair'; ratingColor = '#ED8936'; }
-                            if (score > 400) { rating = 'Poor'; ratingColor = '#FC8181'; }
+                            if (score > 15000) { rating = 'Good'; ratingColor = '#ECC94B'; }
+                            if (score > 25000) { rating = 'Fair'; ratingColor = '#ED8936'; }
+                            if (score > 40000) { rating = 'Poor'; ratingColor = '#FC8181'; }
                             
                             return `
                                 <div style="margin-top: 0.25rem;">
                                     <div class="dqr-badge" style="background: ${ratingColor}; color: white; display: inline-block; margin-bottom: 0.25rem; font-size: 0.7rem; padding: 0.15rem 0.5rem;">
                                         ${rating} • Person Equivalent Impact
                                     </div>
-                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${score < 150 ? '#2A9D8F' : score < 250 ? '#8AB17D' : score < 400 ? '#E9C46A' : score < 600 ? '#F4A261' : '#E63946'};">
-                                        Grade ${score < 150 ? 'A' : score < 250 ? 'B' : score < 400 ? 'C' : score < 600 ? 'D' : 'E'} 
+                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${score < 15000 ? '#2A9D8F' : score < 25000 ? '#8AB17D' : score < 40000 ? '#E9C46A' : score < 60000 ? '#F4A261' : '#E63946'};">
+                                        Grade ${score < 15000 ? 'A' : score < 25000 ? 'B' : score < 40000 ? 'C' : score < 60000 ? 'D' : 'E'} 
                                         <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${score.toFixed(1)} µPt)</span>
                                     </div>
                                 </div>
