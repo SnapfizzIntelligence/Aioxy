@@ -2538,9 +2538,18 @@ function saveSupplierData() {
     const geolocation = document.getElementById('supplierGeolocation').value.trim();
     const ddsRef      = document.getElementById('supplierDDS').value.trim();
 
+    // FIX: [ui.js audit] farmRegion was a hard-blocking requirement here — if left blank,
+    // the ENTIRE primaryData save silently failed and returned before ever reaching the
+    // Nitrogen/Yield logic below, even if those calculation-relevant fields were filled
+    // in correctly. Verified via grep: farmRegion/geolocation/ddsReference are used ZERO
+    // times anywhere in calculation_engine.js — they are pure documentation/traceability
+    // metadata with no effect on any calculated number. Gating meaningful calculation
+    // data (Nitrogen, Yield) behind an unused metadata field was almost certainly the
+    // root cause of primary data appearing to "not calculate" after being filled in —
+    // the save was failing at this very first check, before nitrogen/yield were ever read.
+    // No longer blocking; farmRegion/geolocation/ddsReference are still saved if provided.
     if (!farmRegion) {
-        alert('Please fill in the required field: Farm Region/Country');
-        return;
+        console.warn('[AIOXY] Farm Region/Country not provided — saving anyway since this field is documentation-only and does not affect any calculation. Recommended for EUDR due diligence traceability, but not required.');
     }
 
     if (animalIngredient) {

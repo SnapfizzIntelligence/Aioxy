@@ -2875,11 +2875,28 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         }
 
         if (jrcChecks.length > 0) {
-            const jrcRows = jrcChecks.map(chk => [
-                safe(chk.rule || chk.check),
-                safe(chk.status || (chk.pass ? 'PASS' : 'FAIL')),
-                safe(chk.note || chk.message || '')
-            ]);
+            // FIX: [pdf-generator audit] Was reading chk.rule/chk.check and chk.note/chk.message —
+            // fields that don't exist on the actual objects compliance_engine.js's runJRCValidation()
+            // pushes. The real fields are category, pass, deviation, reference, calculated (confirmed
+            // by reading the actual checks.push() calls). Only the rare "missing data" case sets a
+            // `note` field at all. This meant every real deviation check rendered with a blank check
+            // name and blank notes column — only the PASS/FAIL status happened to work, since chk.pass
+            // was the one field that did exist, giving the "PARTIAL / FAIL / FAIL" with no detail seen
+            // in real output.
+            const jrcRows = jrcChecks.map(chk => {
+                const checkName = safe(chk.category || 'Unknown category');
+                const status    = chk.pass ? 'PASS' : 'FAIL';
+                let noteText;
+                if (chk.note) {
+                    noteText = safe(chk.note);
+                } else if (chk.deviation !== null && chk.deviation !== undefined) {
+                    noteText = 'Deviation ' + fix(chk.deviation, 1) + '% — reference: ' +
+                               fix(chk.reference, 4) + ', calculated: ' + fix(chk.calculated, 4);
+                } else {
+                    noteText = '';
+                }
+                return [checkName, status, noteText];
+            });
             doc.autoTable({
                 startY: Y,
                 head: [['Validation Check','Status','Notes']],
