@@ -1513,11 +1513,21 @@ if (!traceability.usetox) {
                 // Nitrogen adjustment factor
                 // A4-F1 FIX: Use sourced BASELINE_NITROGEN_KG_PER_TON from core_physics constants.
                 // A4-F2 FIX: Cap nAdj at N_ADJ_MAX (3.0) to prevent data entry errors.
+                // FIX: [calculation_engine audit — cross-session finding, verified] These four
+                // references used bare `CONSTANTS` instead of `window.corePhysics.CONSTANTS`
+                // (every other usage in this file correctly includes the window.corePhysics
+                // prefix — confirmed via grep, no local CONSTANTS declaration exists anywhere
+                // in this file). This threw ReferenceError: CONSTANTS is not defined the instant
+                // any synthetic nitrogen value was entered, aborting the entire calculation before
+                // it could complete — which is why primary data never appeared in the PDF/CSV/audit
+                // trail even when correctly saved by the UI. Found and proven via actual execution
+                // of this file in a Node harness with real input values by another session; cross-
+                // verified here by direct inspection of this exact file before applying the fix.
                 let nAdj = 1.0;
                 if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
-                    const baselineN = CONSTANTS.AGRI_PRIMARY_DATA.BASELINE_NITROGEN_KG_PER_TON;
+                    const baselineN = window.corePhysics.CONSTANTS.AGRI_PRIMARY_DATA.BASELINE_NITROGEN_KG_PER_TON;
                     const rawNAdj   = pd.nitrogenKgPerTon / baselineN;
-                    nAdj = Math.min(rawNAdj, CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX);
+                    nAdj = Math.min(rawNAdj, window.corePhysics.CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX);
                     adjustments.baseline_nitrogen = baselineN;
                     // GAP 10 FIX: structured nitrogen_adjustment for PDF dumb-printer trace.
                     adjustments.nitrogen_adjustment = {
@@ -1525,8 +1535,8 @@ if (!traceability.usetox) {
                         baseline_source:     'Eurostat 2022 EU27 average (tag_an_fm_fen)',
                         actual_kg_per_ton:   pd.nitrogenKgPerTon,
                         raw_factor:          rawNAdj,
-                        capped_at:           CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX,
-                        was_capped:          rawNAdj > CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX,
+                        capped_at:           window.corePhysics.CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX,
+                        was_capped:          rawNAdj > window.corePhysics.CONSTANTS.AGRI_PRIMARY_DATA.N_ADJ_MAX,
                         formula:             'min(actual / baseline, N_ADJ_MAX)',
                         factor:              nAdj
                     };
