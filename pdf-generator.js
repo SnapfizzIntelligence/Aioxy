@@ -419,6 +419,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const pkgCC    = ccTree.Packaging?.total      || 0;
         const wasteCC  = ccTree.Waste?.total          || 0;
         const ingCC    = ccTree.Ingredients?.total    || 0;
+        // FIX UPSTREAM-1: Upstream (inbound ingredient transport) was computed by the
+        // engine and folded into pef['Climate Change'].total, but never read here —
+        // causing Executive Summary stage bars to sum to less than the stated TOTAL.
+        const upstreamCC = ccTree.Upstream?.total     || 0;
 
         let mfgKwhCorrect;
         if (_isPfKwh && _pfd4kwh && _pfd4kwh.totalOutputKg > 0) {
@@ -603,7 +607,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             { name: 'Ingredients',   val: ingCC  },
             { name: 'Manufacturing', val: mfgCC  },
             { name: 'Transport',     val: transCC },
-            { name: 'Packaging',     val: pkgCC  }
+            { name: 'Packaging',     val: pkgCC  },
+            // FIX UPSTREAM-1: disclosed as its own stage rather than hidden inside TOTAL.
+            // Only rendered when non-zero so FR-only-origin products keep a clean 4-row table.
+            ...(upstreamCC !== 0 ? [{ name: 'Upstream (inbound)', val: upstreamCC }] : [])
         ];
         const maxVal   = Math.max(...stages.map(s => Math.abs(s.val)), 0.001);
         const barMaxW  = CW - 70;
@@ -1261,6 +1268,36 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     layerBLines.push('  Note: FAOSTAT used for audit traceability only, not to modify impact values.');
                     layerBLines.push('');
                 }
+            }
+
+            // FIX UPSTREAM-1: Inbound ingredient transport (non-FR origins).
+            // This is a REAL, engine-computed impact (calculateTransport() via GLEC v3.2,
+            // resolveInboundTransport() proxy distance table) that is summed into the
+            // Upstream stage total and included in the product TOTAL / PEF Single Score /
+            // eco-score / QR. It was previously computed but never disclosed anywhere in
+            // the PDF or CSV, while the System Boundary Declaration simultaneously stated
+            // it was excluded. Both defects are fixed together: this block discloses it
+            // per ingredient, the Executive Summary / Total Impact tables show it as an
+            // explicit 5th stage, and the System Boundary Declaration text now states
+            // it is included (see System Boundary Declaration page).
+            const upstreamLegs = ing.upstreamComponents || [];
+            if (upstreamLegs.length > 0) {
+                upstreamLegs.forEach(leg => {
+                    layerBLines.push('B14 — Inbound Ingredient Transport (Upstream — GLEC v3.2, proxy distance):');
+                    layerBLines.push('  Route            : ' + safe(leg.origin) + ' \u2192 ' + safe(leg.destination) + '  |  Mode: ' + safe((leg.mode||'').toUpperCase()));
+                    layerBLines.push('  Distance         : ' + fix(leg.distanceKm||0,0) + ' km pre-DAF  [' + safe(leg.source) + ']');
+                    layerBLines.push('  DAF applied      : x' + fix(leg.daf_applied||1,2));
+                    layerBLines.push('  Mass             : ' + fix(leg.massKg||0,4) + ' kg  |  Refrigeration: ' + safe(leg.refrigeration||'ambient'));
+                    layerBLines.push('  Climate Change   : ' + numFmt(leg.subtotal||0,6) + ' kg CO2e  (fossil: ' + numFmt(leg.fossilCO2||0,6) + ' kg CO2e)');
+                    layerBLines.push('  IMPORTANT: this impact is NOT included in this ingredient\'s Layer C total below.');
+                    layerBLines.push('  It is booked to the separate "Upstream" stage — see Executive Summary and');
+                    layerBLines.push('  Total Environmental Impact pages for the product-level Upstream total.');
+                    layerBLines.push('  Confidence: MEDIUM — proxy distance table (' + safe(leg.source) + '), not primary supplier data.');
+                    layerBLines.push('');
+                });
+            } else if (origin && origin !== 'FR' && origin !== 'N/A') {
+                layerBLines.push('B14 — Inbound Ingredient Transport (Upstream): not applied — origin equals manufacturing country, or route could not be resolved.');
+                layerBLines.push('');
             }
 
             // L-3 FIX: USEtox 2.14 for LIVESTOCK ingredients
@@ -2266,7 +2303,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('All values read from engine. No recalculation at PDF layer. Formula: stage_total / product_weight_kg = per kg result.', M, Y); Y += 6;
 
-        const stageNames   = ['Ingredients','Manufacturing','Transport','Packaging'];
+        // FIX UPSTREAM-1: Upstream (inbound ingredient transport) added as an explicit
+        // stage column. It was previously omitted here even though it is summed into
+        // the TOTAL column, which meant Ingr.+Mfg.+Trans.+Pkg. never reconciled to
+        // TOTAL for any product with a non-FR-origin ingredient — exactly the failure
+        // mode an auditor would catch by manually re-adding the row.
+        const stageNames   = ['Ingredients','Manufacturing','Transport','Packaging','Upstream'];
         const stageTotHeader = ['Category','Unit',...stageNames,'TOTAL / kg product'];
 
         const stageTotRows = ALL_CATS_ORDERED.filter(c => !c.startsWith('Climate Change -')).map(cat => {
@@ -2287,13 +2329,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             headStyles: { fillColor: C.navyDark, textColor: C.white, fontStyle: 'bold', fontSize: 6 },
             alternateRowStyles: { fillColor: C.rowAlt },
             columnStyles: {
-                0: { cellWidth: 55, fontStyle: 'bold' },
-                1: { cellWidth: 16, textColor: C.bodyMid },
-                2: { cellWidth: 23, halign: 'right' },
-                3: { cellWidth: 22, halign: 'right' },
-                4: { cellWidth: 20, halign: 'right' },
-                5: { cellWidth: 20, halign: 'right' },
-                6: { cellWidth: 24, halign: 'right', fontStyle: 'bold' }
+                0: { cellWidth: 48, fontStyle: 'bold' },
+                1: { cellWidth: 14, textColor: C.bodyMid },
+                2: { cellWidth: 19, halign: 'right' },
+                3: { cellWidth: 18, halign: 'right' },
+                4: { cellWidth: 17, halign: 'right' },
+                5: { cellWidth: 17, halign: 'right' },
+                6: { cellWidth: 17, halign: 'right' },
+                7: { cellWidth: 22, halign: 'right', fontStyle: 'bold' }
             },
             margin: { left: M },
             didParseCell: (data) => {
@@ -2606,14 +2649,24 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  - Factory manufacturing energy (Ember 2025 grid / declared energy source)',
             '  - Outbound transport to retailer (GLEC v3.2)',
             '  - Primary packaging (PEF 3.1 CFF)',
+            // FIX UPSTREAM-1: this line previously read "EXCLUDED" while the engine
+            // actively computed and totalled this impact — a direct contradiction
+            // between the declared boundary and the actual calculation. Corrected to
+            // state what the engine really does: FR-origin ingredients rely on
+            // AGRIBALYSE 3.2's embedded French market transport (no separate leg);
+            // non-FR-origin ingredients get an explicit inbound transport leg via
+            // GLEC v3.2, using a proxy origin-to-factory distance table pending
+          '  - Inbound ingredient transport for non-FR-origin ingredients (GLEC v3.2, proxy',
+            '    distance — see "Upstream" stage in Executive Summary / Total Impact tables',
+            '    and Layer B "B14" per ingredient for full derivation)',
             '',
             'EXCLUDED (declared per ISO 14044 §4.2.3.3):',
             '  - Retail energy and operations',
             '  - Consumer use phase and cooking',
             '  - End-of-life consumer waste (post-retail)',
             '  - Capital equipment manufacturing (cut-off rule)',
-            '  - Inbound ingredient transport beyond AGRIBALYSE 3.2 farm-gate boundary',
-            '    (AGRIBALYSE 3.2 includes representative French market transport in system boundary)',
+            '  - Inbound transport for FR-origin ingredients: AGRIBALYSE 3.2 already includes',
+            '    representative French market transport within its farm-gate boundary',
             '',
             'Functional unit: 1 kg of product as sold (finished weight).',
             'Allocation: Economic allocation, inherited from AGRIBALYSE 3.2 (ADEME methodology report).'

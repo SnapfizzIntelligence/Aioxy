@@ -1266,6 +1266,7 @@ function exportCSRDMatrix() {
     rows.push(['manufacturing_kg_product',  '1',  'Purchased goods and services (processing)','GHG Protocol Scope 3 §5.3'].map(q).join(','));
     rows.push(['transport_kg_product',      '4',  'Upstream transportation and distribution','GHG Protocol Scope 3 §5.6'].map(q).join(','));
     rows.push(['packaging_kg_product',      '1',  'Purchased goods and services (packaging)','GHG Protocol Scope 3 §5.3'].map(q).join(','));
+    rows.push(['upstream_kg_product',       '4',  'Upstream transportation and distribution (inbound ingredient leg)','GHG Protocol Scope 3 §5.6'].map(q).join(','));
     rows.push(['waste_kg_product',          '12', 'End-of-life treatment of sold products', 'GHG Protocol Scope 3 §5.14'].map(q).join(','));
     rows.push([c('scope3_reporting_perspective: downstream_purchaser — all stages are Scope 3 from the perspective of')]);
     rows.push([c('the retailer or brand receiving this product. The manufacturing stage is Scope 1/2 from the')]);
@@ -1278,12 +1279,19 @@ function exportCSRDMatrix() {
     rows.push([c('All per-kg values are per functional unit (1 kg product as sold).')]);
     rows.push([c('Stage columns: per kg product. uncertainty_cv: category-level Monte Carlo CV% where available, else overall CV%.')]);
     rows.push([c('true_total_kg_product = total_excl_eol_kg_product + waste_kg_product. Waste/EoL is informational per engine design; excluded from pef[cat].total.')]);
-    rows.push([c('Auditor arithmetic check: true_total = ing + mfg + transport + packaging + waste (all columns sum to true_total).')]);
+    // FIX UPSTREAM-1: upstream_kg_product (inbound ingredient transport for non-FR-origin
+    // ingredients, GLEC v3.2 proxy distance — see PDF "Upstream" stage / Layer B "B14") is
+    // computed by the engine and included inside total_excl_eol_kg_product / true_total,
+    // but was previously the ONE stage column missing from this export. That meant the
+    // auditor check below failed by exactly the upstream amount for any product with a
+    // non-FR-origin ingredient. Column added; check corrected to include it.
+    rows.push([c('upstream_kg_product = inbound ingredient transport for non-FR-origin ingredients (GLEC v3.2, proxy distance). Included in total_excl_eol_kg_product and true_total.')]);
+    rows.push([c('Auditor arithmetic check: true_total = ing + mfg + transport + packaging + upstream + waste (all columns sum to true_total).')]);
     rows.push([
         'impact_category', 'unit',
         'true_total_kg_product', 'total_excl_eol_kg_product',
         'ingredients_kg_product', 'manufacturing_kg_product',
-        'transport_kg_product', 'packaging_kg_product', 'waste_eol_kg_product',
+        'transport_kg_product', 'packaging_kg_product', 'upstream_kg_product', 'waste_eol_kg_product',
         'pef_single_score_mpt', 'dqr', 'uncertainty_ci_width_pct', 'primary_source', 'esrs_relevance'
     ].map(q).join(','));
 
@@ -1294,6 +1302,7 @@ function exportCSRDMatrix() {
         const mfg    = pWeightKg > 0 ? (tree.Manufacturing?.total || 0) / pWeightKg : 0;
         const trp    = pWeightKg > 0 ? (tree.Transport?.total     || 0) / pWeightKg : 0;
         const pkg    = pWeightKg > 0 ? (tree.Packaging?.total     || 0) / pWeightKg : 0;
+        const ups    = pWeightKg > 0 ? (tree.Upstream?.total      || 0) / pWeightKg : 0;
         const wst    = pWeightKg > 0 ? (tree.Waste?.total         || 0) / pWeightKg : 0;
         const ssE    = ssBkd[cat];
         const mPtCat = ssE ? (ssE.microPoints || ((ssE.weighted || 0) * 1e6)).toFixed(4) : '0.0000';
@@ -1307,7 +1316,7 @@ function exportCSRDMatrix() {
         rows.push([
             cat, unit,
             trueTotal.toFixed(8), total.toFixed(8), ing.toFixed(8), mfg.toFixed(8),
-            trp.toFixed(8),       pkg.toFixed(8),   wst.toFixed(8),
+            trp.toFixed(8),       pkg.toFixed(8),   ups.toFixed(8),  wst.toFixed(8),
             mPtCat, dqrOverall, catCV, source, esrs
         ].map(q).join(','));
     });

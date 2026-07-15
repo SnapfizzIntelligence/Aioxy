@@ -428,8 +428,22 @@ function renderTwinResults(mainResult, twinCalcResult) {
         '</tr>';
     }).join('');
 
+    // FIX UPSTREAM-1: Ingredients/Manufacturing/Transport/Packaging summed to less than
+    // the stated Main/Twin Climate Change totals whenever a non-FR-origin ingredient was
+    // present, for the exact same reason as the main-product PDF bug — Upstream (inbound
+    // ingredient transport, GLEC v3.2) is computed and included in pef['Climate Change'].total
+    // but was never read as its own stage row here. Added conditionally so FR-only
+    // comparisons keep the clean 4-row table.
+    var _upstreamNonZero = (function () {
+        var mt = ((mainPef['Climate Change'] && mainPef['Climate Change'].contribution_tree) || {}).Upstream;
+        var tt = ((twinPef['Climate Change'] && twinPef['Climate Change'].contribution_tree) || {}).Upstream;
+        return ((mt && mt.total) || 0) !== 0 || ((tt && tt.total) || 0) !== 0;
+    })();
+    var _stageList = _upstreamNonZero
+        ? ['Ingredients','Manufacturing','Transport','Packaging','Upstream']
+        : ['Ingredients','Manufacturing','Transport','Packaging'];
     // ── Life cycle stage rows (CC) ────────────────────────────────────
-    var stgRows = ['Ingredients','Manufacturing','Transport','Packaging'].map(function (s) {
+    var stgRows = _stageList.map(function (s) {
         function stCC(pef, mass) {
             var tree = (pef['Climate Change'] && pef['Climate Change'].contribution_tree) || {};
             return ((tree[s] && tree[s].total) || 0) / mass;
@@ -870,7 +884,18 @@ function buildTwinPDFSection(doc, h) {
     // Stage breakdown
     h.ensureSpace(38, 'Parametric Twin (continued)');
     h.subHeader('Climate Change by Life Cycle Stage'); h.Y -= 2;
-    var stages = ['Ingredients','Manufacturing','Transport','Packaging'];
+    // FIX UPSTREAM-1: same fix as the on-screen twin widget above — Upstream is a real,
+    // engine-computed stage (inbound ingredient transport, GLEC v3.2) that was included in
+    // the Main/Twin Climate Change totals but never rendered as its own row here, so the
+    // four displayed stages never summed to the totals shown elsewhere on this page.
+    var _pdfUpstreamNonZero = (function () {
+        var mt = ((d.mainPef['Climate Change'] && d.mainPef['Climate Change'].contribution_tree) || {}).Upstream;
+        var tt = ((d.twinPef['Climate Change'] && d.twinPef['Climate Change'].contribution_tree) || {}).Upstream;
+        return ((mt && mt.total) || 0) !== 0 || ((tt && tt.total) || 0) !== 0;
+    })();
+    var stages = _pdfUpstreamNonZero
+        ? ['Ingredients','Manufacturing','Transport','Packaging','Upstream']
+        : ['Ingredients','Manufacturing','Transport','Packaging'];
     function sCC(pef, s, mass) {
         var t = (pef['Climate Change'] && pef['Climate Change'].contribution_tree) || {};
         return ((t[s] && t[s].total) || 0) / mass;
