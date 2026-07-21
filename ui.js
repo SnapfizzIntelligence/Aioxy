@@ -1281,7 +1281,7 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         '  ' + flightKmStory + ' km economy flight',
         '  ' + ledHours + ' hours of LED lighting',
         '',
-        'Reference for context — ' + baselineName + ': ' + baselineCO2.toFixed(3) + ' kg CO2e per kg',
+        'Reference for context - ' + baselineName + ': ' + baselineCO2.toFixed(3) + ' kg CO2e per kg',
         'Difference: ' + actualSaving.toFixed(3) + ' kg CO2e/kg (' + pctReduction.toFixed(1) + '%)',
         'At +/-' + uncertainty + '% uncertainty band: ' + conservativeSaving.toFixed(3) + ' kg CO2e/kg',
         '',
@@ -1579,16 +1579,34 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         qrBox.innerHTML = '';
 
         if (typeof QRCode !== 'undefined') {
-            try {
-                new QRCode(qrBox, {
-                    text:         qrText,
-                    width:        220,
-                    height:       220,
-                    colorDark:    '#0A2540',
-                    colorLight:   '#FFFFFF',
-                    correctLevel: QRCode.CorrectLevel.L
-                });
-            } catch (err) {
+            // FIX (QR render failure): qrcodejs v1.0.0's internal type-number
+            // auto-detection can throw ("code length overflow") on longer payloads
+            // even though the chosen correctLevel has room in theory. Rather than
+            // failing outright, explicitly try typeNumber 0 (auto) first, then
+            // step through progressively larger fixed type-numbers so the full
+            // qrText content — both the story and technical-record sections —
+            // always has a fitting QR version to land in instead of being cut.
+            const attempts = [0, 20, 30, 40]; // 0 = library auto-detect, then explicit versions
+            let rendered = false;
+            for (const t of attempts) {
+                try {
+                    qrBox.innerHTML = '';
+                    new QRCode(qrBox, {
+                        text:         qrText,
+                        width:        220,
+                        height:       220,
+                        colorDark:    '#0A2540',
+                        colorLight:   '#FFFFFF',
+                        correctLevel: QRCode.CorrectLevel.L,
+                        typeNumber:   t
+                    });
+                    rendered = true;
+                    break;
+                } catch (err) {
+                    // try next, larger type-number
+                }
+            }
+            if (!rendered) {
                 qrBox.innerHTML = '<span style="font-size:0.65rem;color:#94A3B8;padding:0.5rem;display:block;text-align:center;">QR render failed</span>';
             }
         } else {
