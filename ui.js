@@ -1579,22 +1579,29 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         qrBox.innerHTML = '';
 
         if (typeof QRCode !== 'undefined') {
-            // FIX (QR render failure): qrcodejs v1.0.0's internal type-number
-            // auto-detection can throw ("code length overflow") on longer payloads
-            // even though the chosen correctLevel has room in theory. Rather than
-            // failing outright, explicitly try typeNumber 0 (auto) first, then
-            // step through progressively larger fixed type-numbers so the full
-            // qrText content — both the story and technical-record sections —
-            // always has a fitting QR version to land in instead of being cut.
-            const attempts = [0, 20, 30, 40]; // 0 = library auto-detect, then explicit versions
+            // FIX (QR unscannable): the previous fallback rendered every typeNumber
+            // attempt at a fixed 220x220px. A ~1000+ character payload needs QR
+            // version ~23+ (a 117x117+ module grid) at correctLevel L; version 20
+            // is too small to hold it (wasted attempt), and rendering version 30/40
+            // into 220px squeezes modules down to ~1.2-1.5px each — below what a
+            // phone camera can resolve, so the scanner can't lock on at all even
+            // though the QR itself is valid. Fix: size the render to the version,
+            // and start the fallback ladder at a version sized for the real payload.
+            const attempts = [0, 23, 30, 40];       // 0 = library auto-detect
+            const sizeForVersion = t => {
+                if (t === 0) return 320;              // auto-detected version, generous size
+                const modules = 17 + t * 4;            // QR module-count formula per version
+                return Math.max(320, modules * 6);     // ~6px/module minimum for reliable scanning
+            };
             let rendered = false;
             for (const t of attempts) {
                 try {
                     qrBox.innerHTML = '';
+                    const px = sizeForVersion(t);
                     new QRCode(qrBox, {
                         text:         qrText,
-                        width:        220,
-                        height:       220,
+                        width:        px,
+                        height:       px,
                         colorDark:    '#0A2540',
                         colorLight:   '#FFFFFF',
                         correctLevel: QRCode.CorrectLevel.L,
