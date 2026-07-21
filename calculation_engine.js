@@ -700,7 +700,7 @@
                 version:          window.aioxyData.usetox && window.aioxyData.usetox.version
                                       ? window.aioxyData.usetox.version
                                       : 'EF 3.1',
-                reason:           'USEtox 2.14 database loaded but requires substance-specific emission inventory data (kg pesticide applied per hectare by CAS number). Current primary data form does not collect this information. Agribalyse 3.2 composite toxicity factors used instead.',
+                reason:           'USEtox 2.14 database loaded but requires substance-specific emission inventory data (kg pesticide applied per hectare by CAS number). Current primary data form does not collect this information. Only the Agribalyse 3.2 baseline toxicity factor is included for this ingredient (no USEtox supplement to add).',
                 action_required:  'To enable USEtox, add pesticide application rate fields (CAS number + kg/ha) to the supplier primary data form.'
             };
             return;
@@ -773,9 +773,22 @@
 
         // === STEP C: LANCA v2.5 — Land Use Quality Adjustment ===
         // Adjusts flatPef['Land Use'] only.
-        // Uses occupation SQI as the primary factor; transformation added if available.
-        // Ratio = (originOccupation + originTransformation) / (refOccupation + refTransformation)
-        // If transformation data is absent, uses occupation ratio alone.
+        // Uses occupation SQI as the primary factor; transformation_to added if available.
+        // Ratio = (originOccupation + originTransformationTo) / (refOccupation + refTransformationTo)
+        // If transformation_to data is absent, uses occupation ratio alone.
+        //
+        // 2026-07-18 FIX: database key 'transformation' was renamed to 'transformation_to'
+        // (audit confirmed it only ever held the land-converted-INTO-this-use leg; the
+        // land-converted-AWAY-FROM-this-use leg, 'transformation_from', did not exist in
+        // the database until this same update). This block is updated to read the renamed
+        // key so the lookup does not silently fail. The calculation formula itself is
+        // UNCHANGED — still occupation + transformation_to, exactly as before this fix —
+        // because using transformation_from to compute a net land-use-change delta
+        // (transformation_to − transformation_from) would be a methodology change, and
+        // the correct LANCA/JRC arithmetic for combining both legs has not yet been
+        // verified against the official method report. transformation_from is now
+        // surfaced in countryFactorsLog for traceability/audit visibility only — it is
+        // NOT part of the ratio calculation pending that verification.
         try {
             const lancaData = window.aioxyData.lanca_sqi;
             if (!lancaData || !lancaData.occupation) {
@@ -803,27 +816,28 @@
                         reason:  'LANCA occupation factor for FR is zero — cannot compute ratio'
                     };
                 } else {
-                    // Try to include transformation if available for both countries
+                    // Try to include transformation_to if available for both countries
                     let lancaRatio;
                     let transformationUsed = false;
-                    let refTransformation    = null;
-                    let originTransformation = null;
+                    let refTransformationTo    = null;
+                    let originTransformationTo = null;
 
-                    if (lancaData.transformation) {
-                        refTransformation    = lancaData.transformation[refName];
-                        originTransformation = lancaData.transformation[originName];
+                    // Read from transformation_to (see 2026-07-18 FIX note above).
+                    if (lancaData.transformation_to) {
+                        refTransformationTo    = lancaData.transformation_to[refName];
+                        originTransformationTo = lancaData.transformation_to[originName];
                     }
 
                     if (
-                        refTransformation    !== undefined && refTransformation    !== null &&
-                        originTransformation !== undefined && originTransformation !== null &&
-                        (refOccupation + refTransformation) !== 0
+                        refTransformationTo    !== undefined && refTransformationTo    !== null &&
+                        originTransformationTo !== undefined && originTransformationTo !== null &&
+                        (refOccupation + refTransformationTo) !== 0
                     ) {
-                        lancaRatio = (originOccupation + originTransformation) /
-                                     (refOccupation    + refTransformation);
+                        lancaRatio = (originOccupation + originTransformationTo) /
+                                     (refOccupation    + refTransformationTo);
                         transformationUsed = true;
                     } else {
-                        // Transformation data absent or incomplete — use occupation ratio only
+                        // Transformation_to data absent or incomplete — use occupation ratio only
                         lancaRatio = originOccupation / refOccupation;
                         transformationUsed = false;
                     }
@@ -835,20 +849,32 @@
                     }
                     flatPef['Land Use'] *= lancaRatio;
 
+                    // transformation_from: surfaced for audit traceability only.
+                    // Not yet used in lancaRatio — see 2026-07-18 FIX note above.
+                    let refTransformationFrom    = null;
+                    let originTransformationFrom = null;
+                    if (lancaData.transformation_from) {
+                        refTransformationFrom    = lancaData.transformation_from[refName];
+                        originTransformationFrom = lancaData.transformation_from[originName];
+                    }
+
                     countryFactorsLog.lanca = {
-                        applied:                  true,
-                        ref_country:              REFERENCE_COUNTRY,
-                        ref_occupation:           refOccupation,
-                        ref_transformation:       refTransformation,
-                        origin_country:           originCountry,
-                        origin_occupation:        originOccupation,
-                        origin_transformation:    originTransformation,
-                        transformation_included:  transformationUsed,
-                        ratio_applied:            lancaRatio,
-                        source:                   lancaData.source    || 'LANCA v2.5 — Fraunhofer IBP / European Commission JRC',
-                        indicator:                lancaData.indicator || 'Soil Quality Index — Total, unspecified land use',
-                        version:                  lancaData.version   || 'EF 3.1',
-                        category_adjusted:        'Land Use'
+                        applied:                     true,
+                        ref_country:                 REFERENCE_COUNTRY,
+                        ref_occupation:              refOccupation,
+                        ref_transformation_to:       refTransformationTo,
+                        ref_transformation_from:     refTransformationFrom,
+                        origin_country:              originCountry,
+                        origin_occupation:           originOccupation,
+                        origin_transformation_to:    originTransformationTo,
+                        origin_transformation_from:  originTransformationFrom,
+                        transformation_included:     transformationUsed,
+                        transformation_from_note:    'transformation_from is available in the database as of 2026-07-18 but is not yet incorporated into ratio_applied — combining it with transformation_to requires verification against the official LANCA/JRC method report before use in a calculation.',
+                        ratio_applied:                lancaRatio,
+                        source:                       lancaData.source    || 'LANCA v2.5 — Fraunhofer IBP / European Commission JRC',
+                        indicator:                    lancaData.indicator || 'Soil Quality Index — Total, unspecified land use',
+                        version:                      lancaData.version   || 'EF 3.1',
+                        category_adjusted:            'Land Use'
                     };
                     countryFactorsLog.applied = true;
                 }
@@ -890,28 +916,54 @@
                     let faostatYield = null;
                     let matchedCrop  = null;
 
-                    // First pass: exact key match (lower-cased crop name vs lower-cased ingredient name)
+                    // FIX FAOSTAT-1: previously used raw substring .includes() with no word
+                    // boundaries, which produced real, confirmed false-positive matches —
+                    // e.g. "red-lentil-dried" matched "unmanufactured tobacco" (because
+                    // "manufactuRED" contains "red"), and an oat-based animal-feed
+                    // ingredient matched "meat of goat" (because "gOAT" contains "oat").
+                    // This is an audit-disclosure-only feature (confirmed: never writes to
+                    // flatPef), so it never affected the actual footprint number — but a
+                    // real auditor seeing "red lentil benchmarked against tobacco yield"
+                    // would reasonably doubt the platform's rigor. Fixed by requiring whole-
+                    // word matches (regex word boundaries) instead of raw substring
+                    // containment, verified against all 240 ingredients — no false positives
+                    // remain, and legitimate matches (durum wheat -> wheat, banana -> bananas)
+                    // still work correctly.
+                    function wholeWordMatch(haystack, needle) {
+                        if (!needle) return false;
+                        const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        return new RegExp('\\b' + escaped + '\\b', 'i').test(haystack);
+                    }
+
+                    // First pass: whole-word match (lower-cased crop name vs lower-cased ingredient name)
                     for (const [cropName, cropYield] of Object.entries(countryYields)) {
-                        if (ingName.includes(cropName.toLowerCase()) ||
-                            cropName.toLowerCase().includes(ingName)) {
+                        const cropLower = cropName.toLowerCase();
+                        if (wholeWordMatch(ingName, cropLower) || wholeWordMatch(cropLower, ingName)) {
                             faostatYield = cropYield;
                             matchedCrop  = cropName;
                             break;
                         }
                     }
 
-                    // Second pass: try matching on ingredient id keywords if first pass failed
-                    if (faostatYield === null) {
-                        const ingId = ingredient.id ? ingredient.id.toLowerCase() : '';
-                        for (const [cropName, cropYield] of Object.entries(countryYields)) {
-                            if (ingId.includes(cropName.toLowerCase()) ||
-                                cropName.toLowerCase().includes(ingId.split('-')[0])) {
-                                faostatYield = cropYield;
-                                matchedCrop  = cropName;
-                                break;
-                            }
-                        }
-                    }
+                    // FIX FAOSTAT-3: the second-pass ID-based fallback is removed entirely.
+                    // Every false-positive match found in this audit — red-lentil matched to
+                    // "unmanufactured tobacco" (via manufactuRED), an oat-based feed
+                    // ingredient matched to "meat of goat" (via gOAT), fresh-shrimps matched
+                    // to "hen eggs" (via the shared word "fresh"), pineapple and banana
+                    // matched to "mixed grain" (via the shared word "mixed" from "mixed
+                    // production"), and sea bass matched to "flax" — came from this ID-based
+                    // fallback. Ingredient IDs are programmatic slugs full of generic
+                    // descriptor words (fresh, dried, mixed, national, average, production,
+                    // conventional...) that have nothing to do with the actual food, and any
+                    // of them can collide with an unrelated FAOSTAT crop name. Patching one
+                    // stopword at a time only reveals the next collision (whack-a-mole).
+                    // The name-based first pass above is far more reliable, since ingredient
+                    // names (e.g. "Oat grain, national average, animal feed, at farm gate")
+                    // are properly descriptive food names, not slugified fragments. This
+                    // feature is disclosure-only (confirmed: never writes to flatPef) — an
+                    // honest "no FAOSTAT match found" for the ingredients this fallback used
+                    // to (mis)match is strictly better than a confident, wrong benchmark
+                    // shown to a real auditor.
 
                     if (faostatYield === null) {
                         countryFactorsLog.faostat = {
@@ -1129,19 +1181,37 @@ if (!traceability.usetox) {
                             const feedParams = (aquaFeeds && (aquaFeeds[fishSpecies] || aquaFeeds['farmed_fish'])) || null; // BUGFIX FARMED_FISH
 
                             if (feedParams) { // BUGFIX FARMED_FISH
-                                const fcr            = feedParams.FCR            || 1.5; // BUGFIX FARMED_FISH: feed conversion ratio
+                                // FIX AQUA-2: was feedParams.FCR (uppercase) — the aquaculture_feeds
+                                // database stores this field as lowercase 'fcr'. JavaScript property
+                                // access is case-sensitive, so feedParams.FCR was always undefined,
+                                // silently falling back to the hardcoded 1.5 default for every single
+                                // species, every time — discarding real, sourced FCR values (Tacon &
+                                // Metian 2008) ranging from 1.25 (salmon, trout) to 2.1 (sea_bass).
+                                // This over- or under-stated feed CO2 by up to ~29% depending on species.
+                                const fcr            = feedParams.fcr            || 1.5; // BUGFIX FARMED_FISH: feed conversion ratio
                                 const fishmealPct    = feedParams.fishmeal_pct   || 20;  // BUGFIX FARMED_FISH
                                 const fishOilPct     = feedParams.fish_oil_pct   || 5;   // BUGFIX FARMED_FISH
 
                                 // BUGFIX FARMED_FISH: Resolve fishmeal CO2 proxy — look up anchovy or sardine in ingredients DB.
                                 let fishmealCO2PerKg = 0; // BUGFIX FARMED_FISH
+                                // FIX AQUA-1: proxyPef was declared with `const` INSIDE the for-loop
+                                // below (block-scoped), then referenced again later at the CC
+                                // sub-split section — which is OUTSIDE this loop, where that
+                                // `const proxyPef` no longer exists. This threw
+                                // "ReferenceError: proxyPef is not defined" on every single
+                                // farmed-fish primary-data calculation, every time, silently
+                                // caught by the surrounding try/catch. Net effect: the entire
+                                // feed-driven CO2 model — which is typically 80-90% of a farmed
+                                // fish's real footprint — never actually applied. Fixed by
+                                // hoisting proxyPef to this outer scope so it survives the loop.
+                                let proxyPef = null; // FIX AQUA-1
                                 const ingDB = window.aioxyData && window.aioxyData.ingredients; // BUGFIX FARMED_FISH
                                 if (ingDB) { // BUGFIX FARMED_FISH
                                     // BUGFIX FARMED_FISH: Search ingredients by name for anchovy or sardine as proxy.
                                     for (const [key, entry] of Object.entries(ingDB)) { // BUGFIX FARMED_FISH
                                         const entryName = (entry.name || key).toLowerCase(); // BUGFIX FARMED_FISH
                                         if (entryName.includes('anchovy') || entryName.includes('sardine')) { // BUGFIX FARMED_FISH
-                                            const proxyPef = entry.data && entry.data.pef; // BUGFIX FARMED_FISH
+                                            proxyPef = entry.data && entry.data.pef; // FIX AQUA-1: assign outer-scoped variable, no re-declaration
                                             if (proxyPef && proxyPef['Climate Change'] !== undefined) { // BUGFIX FARMED_FISH
                                                 fishmealCO2PerKg = proxyPef['Climate Change']; // BUGFIX FARMED_FISH
                                             } // BUGFIX FARMED_FISH
@@ -1197,9 +1267,12 @@ if (!traceability.usetox) {
                                 // be allocated to CC-Biogenic.
                                 let feedFossilFraction  = 0;
                                 let feedBiogenicFraction = 1;
-                                const proxyTotalCC  = proxyPef['Climate Change']           || 0;
-                                const proxyFossilCC = proxyPef['Climate Change - Fossil']  || null;
-                                const proxyCCBiogen = proxyPef['Climate Change - Biogenic'] || null;
+                                // FIX AQUA-1: proxyPef can legitimately be null if no anchovy/sardine
+                                // match was found in the ingredient database — guard against that
+                                // here rather than assuming a match was always found.
+                                const proxyTotalCC  = (proxyPef && proxyPef['Climate Change'])            || 0;
+                                const proxyFossilCC = (proxyPef && proxyPef['Climate Change - Fossil'])   || null;
+                                const proxyCCBiogen = (proxyPef && proxyPef['Climate Change - Biogenic']) || null;
                                 if (
                                     proxyTotalCC > 0 &&
                                     proxyFossilCC !== null &&
@@ -1832,7 +1905,24 @@ if (!traceability.usetox) {
                             total_cancer_CTUh: totalCancerCTUh,
                             total_noncancer_CTUh: totalNonCancerCTUh,
                             total_ecotoxicity_CTUe: totalEcotoxicityCTUe,
-                            pesticides: pesticideDetails
+                            pesticides: pesticideDetails,
+                            // UPDATE (post-34-item-audit follow-up): externally verified against
+                            // AGRIBALYSE's own official methodology documentation
+                            // (doc.agribalyse.fr FAQ): "The modelling of pesticide emissions is
+                            // different (OLCA-Pest model in Agribalyse...)". AGRIBALYSE's own
+                            // baseline toxicity value already includes a dedicated, real
+                            // pesticide emissions model (OLCA-Pest) -- it is not a generic
+                            // placeholder waiting to be supplemented. This substantially
+                            // strengthens the case that this additive USEtox supplement double-
+                            // counts pesticide-driven toxicity: once via AGRIBALYSE's own
+                            // OLCA-Pest-modeled background, again via this substance-specific
+                            // addition. NOT fixed by flipping to full replacement, because doing
+                            // so correctly would require knowing what fraction of AGRIBALYSE's
+                            // baseline is specifically pesticide-attributable (vs. other sources
+                            // e.g. background heavy metals) -- data not available here, and
+                            // guessing that fraction would fabricate precision this audit exists
+                            // to eliminate. Disclosed prominently instead of silently resolved.
+                            double_counting_risk: 'ELEVATED — see note in this object'
                         };
                         // USEtox 2.14 coverage: 3,077 substances loaded in aioxyData.usetox.human_toxicity
                         // and ecotoxicity compartments. Full USEtox 2.14 substance list contains ~4,200
@@ -1883,32 +1973,49 @@ if (!traceability.usetox) {
                 adjustments.processing_yield_factor_applied = processingMultiplier;
             }
 
-            // 1g. Geographic proxy adjustment
-            // Apply 1.15× penalty to CC categories only for non-FR, non-primary-data ingredients.
-            // Water Use/Scarcity (AWARE) and Land Use are excluded — those receive country-specific
-            // adjustment via AWARE 2.0 and LANCA v2.5 in Phase 2 (applyCountrySpecificFactors).
-            // The remaining 12 PEF categories are excluded because geographic origin does not
-            // meaningfully affect their characterization factors.
+            // 1g. Geographic proxy adjustment — REMOVED (FIX GEO-PROXY-1)
+            //
+            // This block previously applied a flat, unsourced 1.15x "conservative penalty
+            // for non-FR transport and production" to the 4 Climate Change categories.
+            // Removed for two reasons, both grounded in AIOXY's core principle that every
+            // number must trace to an official source — no unsourced multipliers:
+            //
+            // 1. TRANSPORT double-counting: Upstream (resolveInboundTransport +
+            //    calculateTransport, GLEC v3.2) now separately, precisely, and honestly
+            //    calculates the real inbound transport leg for every non-FR ingredient,
+            //    with real distances and real emission factors. Any portion of this 1.15x
+            //    that represented "transport" duplicated that real, sourced number with a
+            //    fake one — verified on a real ingredient: 15% flat penalty added 0.024
+            //    kg CO2e/kg, Upstream separately added 0.047 kg CO2e/kg, a 44% combined
+            //    surcharge over base for one non-FR ingredient with no primary data.
+            //
+            // 2. PRODUCTION: unlike Water Use (AWARE 2.0) and Land Use (LANCA v2.5), which
+            //    apply real, citable, country-specific ratios from real international
+            //    databases, no equivalent sourced database exists yet for country-specific
+            //    agricultural climate-production intensity. A flat 15% guess is not a
+            //    substitute for that — it is exactly the kind of unsourced number this
+            //    platform exists to replace. Reporting the AGRIBALYSE FR-reference value
+            //    as-is, with an honest disclosed limitation, is more defensible to a real
+            //    auditor than an uncited multiplier presented as a considered adjustment.
+            //
+            // Non-FR, non-primary-data ingredients now report their AGRIBALYSE FR-reference
+            // Climate Change value unmodified by this step (Upstream transport still applies
+            // separately and precisely; AWARE/LANCA still apply separately for their own
+            // categories). This is disclosed explicitly in the PDF/audit trail rather than
+            // silently changed — see pdf-generator.js ingredient detail Layer B.
+            //
+            // ROADMAP (not a code fix): the principled long-term replacement is a real,
+            // FAOSTAT-sourced (or equivalent peer-reviewed) country agricultural-climate-
+            // intensity ratio table, built the same way AWARE/LANCA already were — a genuine
+            // sourced factor, not a placeholder dressed up to look like one.
             if (ingredient.originCountry && ingredient.originCountry !== 'FR' && !ingredient.primaryData) {
-                const geoProxy = 1.15;
-                // BUG-04 FIX: Water Use and Land Use removed from geo-proxy.
-                // AWARE 2.0 and LANCA v2.5 in applyCountrySpecificFactors() (Phase 2)
-                // already apply country-specific ratios to those two categories.
-                // Adding 1.15x here AND the AWARE/LANCA ratio below double-adjusts them.
-                // Geo-proxy retained only for CC categories which have no country-specific lookup.
-                const GEO_PROXY_CATEGORIES = [
-                    'Climate Change',
-                    'Climate Change - Fossil',
-                    'Climate Change - Biogenic',
-                    'Climate Change - Land Use'
-                ];
-                for (const cat of GEO_PROXY_CATEGORIES) {
-                    if (flatPef[cat] !== undefined) {
-                        flatPef[cat] *= geoProxy;
-                    }
-                }
-                adjustments.geo_proxy_applied    = true;
-                adjustments.geo_proxy_factor     = geoProxy;
+                adjustments.geo_proxy_applied = false;
+                adjustments.geo_proxy_removed_reason =
+                    'No sourced country-specific production-intensity factor exists yet for Climate ' +
+                    'Change (unlike AWARE 2.0 for Water Use and LANCA v2.5 for Land Use, which are ' +
+                    'real, citable, country-specific ratios). Reporting the AGRIBALYSE FR-reference ' +
+                    'value as-is rather than applying an unsourced multiplier. Inbound transport for ' +
+                    'this ingredient is still calculated precisely and separately — see Upstream stage.';
                 adjustments.adjusted_for_country = ingredient.originCountry;
             }
 
@@ -2383,7 +2490,9 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
         const ev         = pkgData.co2_virgin;
         const erecycled  = pkgData.co2_recycled;
-        const ed         = pkgData.co2_disposal_average || pkgData.co2_disposal || 0.05;
+        const ed         = (pkgData.co2_disposal_average !== undefined && pkgData.co2_disposal_average !== null)
+                                ? pkgData.co2_disposal_average
+                                : (pkgData.co2_disposal !== undefined && pkgData.co2_disposal !== null ? pkgData.co2_disposal : 0.05);
         // FIX 1: CFF R2 — pkgData.r2 IS the Annex C end-of-life recycling rate; do not multiply by r1_max.
         // r1_max separately caps the user-supplied recycled content fraction per PEF 3.1 Annex C.
         // E3-F1 FIX: Validate recycledPct range 0-100.
@@ -2397,8 +2506,18 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         }
         const r1Uncapped = pkgIn.recycledPct / 100;
         const r1         = pkgData.r1_max !== undefined ? Math.min(r1Uncapped, pkgData.r1_max) : r1Uncapped;
-        const r2         = pkgData.r2 || 0.7;
-        const qs         = pkgData.q || 0.9;
+        // FIX PKG-R2-1: was `pkgData.r2 || 0.7` — JavaScript's || treats 0 as falsy, so any
+        // material with a genuinely-intended r2 of exactly 0 (e.g. PLA, which has near-zero
+        // real-world composting/recycling infrastructure per its own database entry) had
+        // that correct 0 silently overridden with a wrong fallback default of 0.7. Confirmed:
+        // this made PLA's packaging CO2 come out ~21% low (0.1103 vs the correct 0.1400 for
+        // a 0.05kg/20%-recycled-content test case) because the CFF formula's "credit" term
+        // scales with r2, so a phantom 70% end-of-life recycling rate applied a large credit
+        // that should never have existed. Same falsy-zero risk existed for qs below (no
+        // current material has q=0, but the pattern was still wrong) — both fixed with
+        // explicit undefined/null checks instead of ||.
+        const r2         = (pkgData.r2 !== undefined && pkgData.r2 !== null) ? pkgData.r2 : 0.7;
+        const qs         = (pkgData.q !== undefined && pkgData.q !== null) ? pkgData.q : 0.9;
         const qp         = 1.0;
 
         // CRITICAL: aFactor and fossilFraction — NO fallbacks
@@ -2824,7 +2943,16 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 bat_applied:           compIn.useJRCBAT || false,
                 bat_processing_note:   compIn.useJRCBAT ? 'JRC BAT (EU) 2019/2031 applied to processing energy' : null,
                 bat_source:            compIn.useJRCBAT ? 'EU 2019/2031 BAT Conclusions' : null,
-                allocation_note:       'Mass allocation (ISO 14044)',
+                // FIX COMP-ALLOC-1: this and the other 2 occurrences of allocation_note
+                // elsewhere in this function were hardcoded to 'Mass allocation (ISO 14044)'
+                // across all 3 comparison paths (recipe twin, legacy single-ingredient twin,
+                // auto self-comparison), while the main product's own report consistently
+                // discloses Economic allocation (inherited from AGRIBALYSE 3.2) everywhere
+                // else. Same report, two different allocation methods claimed for the same
+                // underlying AGRIBALYSE-sourced data, with no explanation — an unexplained
+                // inconsistency, not a deliberate design choice. Corrected to match the
+                // actual, consistent method used throughout the rest of the platform.
+                allocation_note:       'Economic allocation, inherited from AGRIBALYSE 3.2 (ADEME methodology)',
                 concentration_ratio:   input.product.concentrationRatio || 1.0,
                 cloned_parameters:     sharedParams,
                 twin_parameters:       compIn.twinParams || null,  // null = identical to assessed side
@@ -2878,7 +3006,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                     bat_applied:           compIn.useJRCBAT || false,
                     bat_processing_note:   compIn.useJRCBAT ? 'JRC BAT (EU) 2019/2031 applied to processing energy' : null,
                     bat_source:            compIn.useJRCBAT ? 'EU 2019/2031 BAT Conclusions' : null,
-                    allocation_note:       'Mass allocation (ISO 14044)',
+                    allocation_note:       'Economic allocation, inherited from AGRIBALYSE 3.2 (ADEME methodology)',
                     concentration_ratio:   input.product.concentrationRatio || 1.0,
                     cloned_parameters:     twinResult.cloned_parameters || {},
                     sensitivity_analysis: {
@@ -2912,7 +3040,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 bat_applied:           false,
                 bat_processing_note:   null,
                 bat_source:            null,
-                allocation_note:       'Mass allocation (ISO 14044)',
+                allocation_note:       'Economic allocation, inherited from AGRIBALYSE 3.2 (ADEME methodology)',
                 concentration_ratio:   input.product.concentrationRatio || 1.0,
                 cloned_parameters:     {},
                 sensitivity_analysis: {
@@ -2996,19 +3124,39 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         // Validates per-kg impacts for Climate Change, Resource Use fossils, and
         // Water Use/Scarcity (AWARE) against JRC BAT reference values for applicable
         // packaging materials. Non-blocking: failures stored rather than thrown.
+        //
+        // FIX JRC-1: this previously compared the WHOLE PRODUCT's per-kg-of-product
+        // Climate Change (e.g. 2.84 kg CO2e/kg finished food) against
+        // compliance_engine.js's REFERENCE_VALUES table — which are JRC BAT benchmarks
+        // for producing 1kg of the PACKAGING MATERIAL itself (e.g. 1.40 for glass_bottle),
+        // not 1kg of finished product. Different scope entirely — this guaranteed a "FAIL"
+        // on almost any real recipe regardless of whether anything was actually wrong.
+        // Corrected to compare the packaging stage's own per-kg-of-material impact
+        // (packagingResult.impactPerKg — the CFF Layer A/B result before scaling by
+        // packaging weight) against the same-scope JRC reference.
+        // Resource Use/fossils and Water Use are only checked when the packaging
+        // database actually has a factor for this material/category (multiCategoryResults
+        // > 0) — otherwise a declared data gap would also show as a false FAIL against a
+        // nonzero reference, which is a second, unrelated reason to be zero.
         const JRC_MATERIAL_MAP = { 'PET': 'PET_granulates', 'cardboard': 'cardboard', 'glass': 'glass_bottle' };
         const jrcMaterialKey = JRC_MATERIAL_MAP[input.packaging.material] || null;
         let jrcValidationResult = null;
 
         if (jrcMaterialKey) {
             try {
+                const pkgWeightKg = input.packaging.weightKg;
+                const jrcCalculatedImpact = {
+                    'Climate Change': packagingResult.impactPerKg
+                };
+                if (pkgWeightKg > 0) {
+                    const fossilPerKgMat = (packagingResult.multiCategoryResults?.['Resource Use, fossils'] || 0) / pkgWeightKg;
+                    const waterPerKgMat  = (packagingResult.multiCategoryResults?.['Water Use/Scarcity (AWARE)'] || 0) / pkgWeightKg;
+                    if (fossilPerKgMat > 0) jrcCalculatedImpact['Resource Use, fossils'] = fossilPerKgMat;
+                    if (waterPerKgMat  > 0) jrcCalculatedImpact['Water Use/Scarcity (AWARE)'] = waterPerKgMat;
+                }
                 const jrcRaw = window.complianceEngine.runJRCValidation({
                     materialType: jrcMaterialKey,
-                    calculatedImpact: {
-                        'Climate Change':             pefResults['Climate Change'].total             / input.product.weightKg,
-                        'Resource Use, fossils':      pefResults['Resource Use, fossils'].total      / input.product.weightKg,
-                        'Water Use/Scarcity (AWARE)': pefResults['Water Use/Scarcity (AWARE)'].total / input.product.weightKg
-                    }
+                    calculatedImpact: jrcCalculatedImpact
                 });
                 // runJRCValidation returns true on pass; normalise to object for consistency
                 jrcValidationResult = (jrcRaw === true)

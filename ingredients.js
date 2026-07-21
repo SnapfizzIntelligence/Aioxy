@@ -2094,10 +2094,20 @@ window.aioxyData.packaging = {
         aFactor: 0.2,
         // Source: PEF Annex C v2.1, May 2020, sheet "A - R1 - R2", Glass category. Confidence: HIGH.
 
-        fossilFraction: 0.0
-        // Glass contains no organic/fossil carbon (inorganic silicate matrix).
-        // CO2 released during carbonate decomposition (CaCO3 → CaO + CO2) is a process emission
-        // already captured in Ev. No fossil carbon fraction applicable. Confidence: HIGH.
+        // FIX PKG-FOSSIL-1: was 0.0. The original rationale ("CO2 from carbonate
+        // decomposition is a process emission, not fossil-fuel combustion") correctly
+        // identifies a real technical distinction, but the conclusion doesn't follow:
+        // "not combustion CO2" does not mean "biogenic." fossilFraction only has two
+        // buckets (fossil vs biogenic) — there is no third "geogenic/process" bucket —
+        // and glass has zero biological carbon-cycle content either way. More
+        // importantly, the Ev value itself (0.86 kg CO2e/kg, cited from FEVE/ICE
+        // Database above) overwhelmingly reflects furnace energy use (melting silica
+        // sand at ~1550°C, typically natural-gas-fired) — genuinely fossil combustion —
+        // not carbonate decomposition alone, which is a comparatively minor contributor.
+        // Previously, 100% of glass's packaging CO2 was silently classified as
+        // "biogenic" in every report — factually wrong for a mineral, non-biological
+        // material, and would mislead any auditor checking the Fossil/Biogenic split.
+        fossilFraction: 1.0
     },
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -2158,10 +2168,15 @@ window.aioxyData.packaging = {
         // Source: PEF Annex C v2.1, May 2020, sheet "A - R1 - R2", Metals — Aluminium category.
         // Confidence: HIGH.
 
-        fossilFraction: 0.0
-        // Aluminium metal contains no carbon. CO2 from anode oxidation (Söderberg/prebaked)
-        // is a process emission captured in Ev. No fossil carbon fraction applicable.
-        // Confidence: HIGH.
+        // FIX PKG-FOSSIL-2: was 0.0, same reasoning error as glass. Anode oxidation is a
+        // real process emission, but aluminum smelting's actual dominant emission source
+        // is the electricity powering electrolysis — and this material's own Ev citation
+        // (11.89 kg CO2e/kg, explicitly noted as reflecting "European grid mix" rather
+        // than Scandinavian hydro) confirms this specific value is grid-electricity-
+        // driven, which for an EU-average grid mix is substantially fossil. Aluminum has
+        // no biological carbon content at all; classifying its entire footprint as
+        // "biogenic" was factually wrong.
+        fossilFraction: 1.0
     },
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -2217,9 +2232,13 @@ window.aioxyData.packaging = {
         // Source: PEF Annex C v2.1, May 2020, sheet "A - R1 - R2", Metals — Steel category.
         // Confidence: HIGH.
 
-        fossilFraction: 0.0
-        // Steel is metallic; contains no organic fossil carbon. Process CO2 from coke oxidation
-        // is captured in Ev. No fossil carbon fraction applicable. Confidence: HIGH.
+        // FIX PKG-FOSSIL-3: was 0.0 — this is the clearest case of the three. Coke is
+        // processed coal, a fossil fuel; CO2 from coke oxidation in the BF-BOF route
+        // (explicitly named in this material's own Ev citation) is unambiguously fossil
+        // carbon by any definition, not a neutral "process emission" separate from
+        // fossil sourcing. Steel has no biological carbon content; classifying its
+        // entire footprint as "biogenic" was factually wrong.
+        fossilFraction: 1.0
     },
 
     // ──────────────────────────────────────────────────────────────────────────

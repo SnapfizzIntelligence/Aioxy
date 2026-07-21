@@ -194,7 +194,14 @@
 
             EF1_DIRECT_N2O:   0.01,    // IPCC 2006 Vol. 4, Ch. 11, Table 11.1 — kg N2O-N / kg N input (synthetic fertilizer default)
             EF4_VOLATILIZATION: 0.01,  // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — kg N2O-N per kg NH3-N + NOx-N volatilized
-            EF5_INDIRECT_N2O: 0.011,   // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — kg N2O-N per kg N leached or runoff
+            // FIX EF5-1: was 0.011 — externally verified against IPCC 2006 Vol.4 Ch.11
+            // Table 11.3 and the 2019 Refinement (both retain this default): the correct
+            // Tier 1 default is 0.0075 kg N2O-N per kg N leached/runoff. 0.011 does not
+            // match any documented IPCC value at any point in time (1997: 0.025,
+            // 2006/2019: 0.0075). This overstated the leaching component of every
+            // primary-data N2O calculation by ~47%, roughly an 8% overstatement of total
+            // N2O contribution for any ingredient using primary data.
+            EF5_INDIRECT_N2O: 0.0075,   // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — kg N2O-N per kg N leached or runoff
             FRAC_GASF: 0.10,           // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — fraction of synthetic N volatilized as NH3 and NOx
             FRAC_GASM: 0.20,           // IPCC 2006 Vol. 4, Ch. 11, Table 11.3 — fraction of organic N volatilized as NH3 and NOx
                                        // (higher than FRAC_GASF because organic N has elevated NH3 volatilization)
@@ -1864,7 +1871,15 @@
                 // IPCC 2006 Vol. 4 Table 10.11 (W. Europe enteric EF) +
                 // Table 10.19 (N excretion).
                 // Confirmed unchanged in 2019 Refinement where indicated above.
-                'dairy_cow':   Object.freeze({ ef_ch4: 128,  n_excretion: 105  }),
+                // FIX ENTERIC-1: was 128 — externally verified against the actual IPCC 2006
+                // Guidelines Vol.4 Ch.10 Table 10.11 (fetched directly from
+                // ipcc-nggip.iges.or.jp). 128 is the NORTH AMERICA regional value for dairy
+                // cattle. The correct WESTERN EUROPE value (the region this platform's French
+                // AGRIBALYSE-based methodology targets) is 117 kg CH4/head/year. This
+                // overstated dairy cow enteric CH4 by ~9.4% for every dairy ingredient using
+                // livestock primary data. beef_cattle (57) was independently verified correct
+                // for Western Europe in the same table row.
+                'dairy_cow':   Object.freeze({ ef_ch4: 117,  n_excretion: 105  }),
                 'beef_cattle': Object.freeze({ ef_ch4: 57,   n_excretion: 70   }),
                 // DB-8 FIX: pig n_excretion updated from 11 → 15 kg N/head/year.
                 // Previous value (11) was from IPCC 2006 Vol. 4 Table 10.19 — Swine,
@@ -2346,6 +2361,11 @@ return {
 };
     }
 
+    // ITEM #34 DEAD-CODE AUDIT (confirmed): zero call sites anywhere in the codebase.
+    // The real AWARE country-ratio adjustment (verified correct in Item #6 of this audit)
+    // is implemented inline inside applyCountrySpecificFactors() in calculation_engine.js,
+    // NOT via this exported utility. This function's own formula is correct (verified by
+    // direct test) -- it's simply not the code path actually used in production.
     function calculateAWARE(input) {
         const waterConsumptionM3 = input.waterConsumptionM3;
         const awareCF = input.awareCF;
@@ -2423,6 +2443,9 @@ return {
         };
     }
 
+    // ITEM #34 DEAD-CODE AUDIT (confirmed): zero call sites anywhere in the codebase.
+    // The real aggregation logic actually used in production is aggregateAllCategories()
+    // in calculation_engine.js (verified correct, all 16 categories, in Item #16).
     function aggregateResults(input) {
         const ingredients = input.ingredientResults;
         const mfg = input.manufacturingResult;

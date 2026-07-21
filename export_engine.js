@@ -399,6 +399,10 @@
     //
     // A guard throw is added below. Remove it ONLY if deliberately using this
     // function for internal debug purposes in a dev/test environment.
+    // ITEM #34 DEAD-CODE AUDIT (confirmed): zero call sites anywhere in the codebase.
+    // CSV generation is actually handled independently by audit-trail.js (glass-box audit
+    // CSV, Item #30) and retailer_csv_engine.js (13-retailer formats, Item #29), each with
+    // their own separate, actively-used logic. This function is not part of either path.
     function generateCSVExport(auditTrail) {
         throw new Error(
             '[AIOXY] generateCSVExport() is an INTERNAL DEBUG function (EE-2 FIX). ' +

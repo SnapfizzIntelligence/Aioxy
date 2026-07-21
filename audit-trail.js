@@ -1194,13 +1194,23 @@ function exportCSRDMatrix() {
         ['Climate Change - Fossil',       'kg CO2e',      'AGRIBALYSE 3.2',               'ESRS E1'],
         ['Climate Change - Biogenic',     'kg CO2e',      'AGRIBALYSE 3.2',               'ESRS E1'],
         ['Climate Change - Land Use',     'kg CO2e',      'AGRIBALYSE 3.2 / FAOSTAT',     'ESRS E1'],
-        ['Ozone Depletion',               'kg CFC11e',    'AGRIBALYSE 3.2 / JRC EF 3.1',  ''],
+        // FIX CSRD-ESRS-1: verified against the actual ESRS E1-E5 topical structure
+        // (EFRAG / European Commission Delegated Act, 31 Jul 2023) across multiple
+        // independent sources. ESRS E2 "Pollution" explicitly covers air/water/soil
+        // pollution and ozone-depleting substances -- not E1 "Climate Change". Three
+        // categories here were previously miscategorized: Particulate Matter and
+        // Acidification were tagged E1 (they are air-pollution phenomena, unambiguously
+        // E2), and Ozone Depletion was left unmapped despite E2 explicitly naming
+        // "ozone-depleting substances" as an in-scope topic. A company using this
+        // export to organise a real CSRD/ESRS filing would have miscategorized these
+        // metrics under the wrong topical standard.
+        ['Ozone Depletion',               'kg CFC11e',    'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E2'],
         ['Human Toxicity, non-cancer',    'CTUh',         'AGRIBALYSE 3.2 / USEtox 2.14', ''],
         ['Human Toxicity, cancer',        'CTUh',         'AGRIBALYSE 3.2 / USEtox 2.14', ''],
-        ['Particulate Matter',            'disease inc.', 'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E1'],
+        ['Particulate Matter',            'disease inc.', 'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E2'],
         ['Ionizing Radiation',            'kBq U235e',    'AGRIBALYSE 3.2 / JRC EF 3.1',  ''],
         ['Photochemical Ozone Formation', 'kg NMVOCe',    'AGRIBALYSE 3.2 / JRC EF 3.1',  ''],
-        ['Acidification',                 'mol H+e',      'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E1'],
+        ['Acidification',                 'mol H+e',      'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E2'],
         ['Eutrophication, terrestrial',   'mol Ne',       'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E4'],
         ['Eutrophication, freshwater',    'kg Pe',        'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E4'],
         ['Eutrophication, marine',        'kg Ne',        'AGRIBALYSE 3.2 / JRC EF 3.1',  'ESRS E4'],
@@ -1267,7 +1277,19 @@ function exportCSRDMatrix() {
     rows.push(['transport_kg_product',      '4',  'Upstream transportation and distribution','GHG Protocol Scope 3 §5.6'].map(q).join(','));
     rows.push(['packaging_kg_product',      '1',  'Purchased goods and services (packaging)','GHG Protocol Scope 3 §5.3'].map(q).join(','));
     rows.push(['upstream_kg_product',       '4',  'Upstream transportation and distribution (inbound ingredient leg)','GHG Protocol Scope 3 §5.6'].map(q).join(','));
-    rows.push(['waste_kg_product',          '12', 'End-of-life treatment of sold products', 'GHG Protocol Scope 3 §5.14'].map(q).join(','));
+    // FIX CSRD-ESRS-2 / GHG-SCOPE3-1: verified against the GHG Protocol's own technical
+    // guidance for Category 12. Category 12 ("End-of-life treatment of sold products") is
+    // exclusively about what happens AFTER a customer discards the purchased product --
+    // the GHG Protocol's own guidance explicitly directs Category 12 to follow Category 5's
+    // methodology, scoped to sold products' post-consumer disposal. AIOXY's "waste"
+    // (confirmed in the processing/waste archetype audit) is manufacturing-stage yield
+    // loss -- raw material lost during processing (e.g. milling losing 22% to bran) --
+    // which happens BEFORE the product is ever sold, and is informational/excluded from
+    // the total per ISO 14044 §4.2.3.3. This is a normal input-to-output yield ratio
+    // within purchased/processed goods, not post-consumer end-of-life disposal. A company
+    // using this export to build a real CDP/CSRD filing would have booked manufacturing
+    // yield loss into the wrong Scope 3 category entirely.
+    rows.push(['waste_kg_product',          '1',  'Purchased goods and services (processing yield loss, informational)', 'GHG Protocol Scope 3 §5.3'].map(q).join(','));
     rows.push([c('scope3_reporting_perspective: downstream_purchaser — all stages are Scope 3 from the perspective of')]);
     rows.push([c('the retailer or brand receiving this product. The manufacturing stage is Scope 1/2 from the')]);
     rows.push([c("producer's own CSRD filing and must be reclassified accordingly in the buyer's value chain report.")]);

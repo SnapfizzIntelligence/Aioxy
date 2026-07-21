@@ -123,6 +123,11 @@
         }
     }
 
+    // ITEM #34 DEAD-CODE AUDIT (confirmed): zero call sites anywhere in the codebase.
+    // Duplicate of the actively-used calculateWeightedDQR (called from
+    // calculation_engine.js computeDQR). Not called from calculation_engine.js,
+    // pdf-generator.js, audit-trail.js, twin_module.js, retailer_csv_engine.js, main.js,
+    // or ui.js -- verified exhaustively, not just grep-in-one-file.
     function calculateDQR(input) {
         const TeR = input.TeR;
         const TiR = input.TiR;
@@ -233,6 +238,18 @@
         return { hotspots, cumulativeCoverage: cumulative };
     }
 
+    // ITEM #34 DEAD-CODE AUDIT (confirmed unused, but NOT low-value): zero call sites
+    // anywhere in the codebase, verified exhaustively. Unlike calculateDQR above, this is
+    // a complete, correct implementation of the real ISO 14044 allocation hierarchy
+    // (subdivision > system expansion > physical > economic allocation). This directly
+    // connects to two real findings from this audit: Item #12 (processing methods like
+    // "crushing" at 60% loss likely represent valuable co-products, e.g. oilseed meal,
+    // treated as pure waste with no allocation) and Item #19 (checkAllocationSensitivity
+    // tests the wrong thing entirely -- comparing a recipe's own ingredients to each
+    // other, not testing genuine co-product allocation ambiguity). Wiring this function in
+    // for processing methods with high loss fractions would be the real fix for both gaps,
+    // not a quick patch -- worth prioritizing before any oilseed/co-product-heavy brand
+    // goes live on this platform.
     function resolveAllocationHierarchy(input) {
         const canSubdivide = input.canSubdivide;
         const displacement = input.displacement;
@@ -248,6 +265,8 @@
         return { method: 'ECONOMIC', level: CONSTANTS.HIERARCHY.ECONOMIC_LEVEL };
     }
 
+    // ITEM #34 DEAD-CODE AUDIT (confirmed unused, same co-product allocation gap as
+    // resolveAllocationHierarchy above -- see that function's comment for full context).
     function calculateEconomicAllocation(coProducts) {
         if (!coProducts || coProducts.length === SHARED_CONSTANTS.MATH.ZERO) throw new MissingDataError('coProducts');
         
@@ -262,6 +281,11 @@
         return coProducts.map(p => (p.mass * p.price) / totalValue);
     }
 
+    // ITEM #34 DEAD-CODE AUDIT (confirmed unused, same co-product allocation gap -- see
+    // resolveAllocationHierarchy above). This is specifically the function that would
+    // determine WHETHER a processing output (e.g. oilseed meal from "crushing") should be
+    // classified as a co-product needing allocation, versus genuine waste -- exactly the
+    // missing piece for Item #12's finding.
     function classifyWasteOrCoproduct(outputName, economicValue) {
         if (!outputName) throw new MissingDataError('outputName');
         if (economicValue !== undefined && economicValue < CONSTANTS.ALLOCATION.WASTE_VALUE_THRESHOLD) {
@@ -388,6 +412,9 @@
         };
     }
 
+    // ITEM #34 DEAD-CODE AUDIT (confirmed): zero call sites anywhere in the codebase.
+    // The System Boundary Declaration shown in every PDF is pure static text
+    // (pdf-generator.js) -- there is no programmatic validation behind it at all.
     function validateSystemBoundary(boundary) {
         // FIX 1: Reference shared SYSTEM_BOUNDARY constant — no local duplicate
         if (boundary !== SHARED_CONSTANTS.SYSTEM_BOUNDARY.VALUE) {
@@ -397,6 +424,7 @@
     }
 
     // FIX 4: Add input validation for calculateSavings
+    // ITEM #34 DEAD-CODE AUDIT (confirmed): zero call sites anywhere in the codebase.
     function calculateSavings(baseline, product) {
         if (typeof baseline !== 'number') throw new MissingDataError('baseline');
         if (typeof product !== 'number') throw new MissingDataError('product');

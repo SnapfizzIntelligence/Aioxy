@@ -455,9 +455,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         const baseline = audit.comparison_baseline || window.currentComparisonBaseline || null;
         const hasTwin  = !!(baseline && (baseline.co2PerKg || baseline.assessed_co2PerKg));
+        // FIX TWIN-BASELINE-1: calculation_engine.js's "PATH 4: Auto self-comparison
+        // fallback" sets comparisonBaseline = the product compared to ITSELF
+        // (co2PerKg === this product's own co2PerKg) whenever no real comparison
+        // product/twin is configured, so that downstream UI/PDF code doesn't crash on a
+        // null baseline. hasTwin was always true in that case too, and reduction always
+        // computed to exactly 0 — rendering "Potential reduction: 0.0%" as if a real
+        // comparison had been run, while a separately-run Parametric Twin elsewhere in
+        // the same report could show a completely different (correct) delta. The engine
+        // already flags this case via is_custom:false / anchor_used:null — just never
+        // checked here. Now distinguished explicitly.
+        const isAutoSelfComparison = !!baseline && baseline.is_custom === false && !baseline.anchor_used;
+        const hasRealTwin = hasTwin && !isAutoSelfComparison;
         const twinCO2  = baseline?.co2PerKg || 0;
         const twinName = safe(baseline?.name || 'Parametric Twin');
-        const reduction= hasTwin && twinCO2 > 0 ? ((twinCO2 - ccPerKg) / twinCO2 * 100) : 0;
+        const reduction= hasRealTwin && twinCO2 > 0 ? ((twinCO2 - ccPerKg) / twinCO2 * 100) : 0;
 
         const ingList  = audit.traceability?.ingredients || [];
 
@@ -567,7 +579,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
         Y = doc.lastAutoTable.finalY + 4;
 
-        if (hasTwin) {
+        if (hasRealTwin) {
             doc.setFillColor(...C.green);
             doc.rect(M, Y, CW, 8, 'F');
             doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.white);
@@ -575,6 +587,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 ? 'Parametric twin scenario: ' + twinName + '  |  Potential reduction: ' + pct(reduction)
                 : 'Parametric twin scenario: ' + twinName + '  |  Reference CO2: ' + fix(twinCO2,3) + ' kg CO2e/kg';
             doc.text(safe(redText), M + 3, Y + 5.2);
+            Y += 10;
+        } else if (isAutoSelfComparison) {
+            doc.setFillColor(...C.rowAlt);
+            doc.rect(M, Y, CW, 8, 'F');
+            doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...C.bodyMid);
+            doc.text('No comparison product or Parametric Twin configured for this assessment.', M + 3, Y + 5.2);
             Y += 10;
         }
 
@@ -643,6 +661,35 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             doc.text('Processing waste (informational — excluded from TOTAL per ISO 14044 §4.2.3.3): ' +
                      numFmt(wasteCC/pWeightKg,4) + ' kg CO2e/kg', M, Y + 4);
             Y += 8;
+            // FIX ALLOC-GAP-1 (post-audit follow-up): honest disclosure for processing
+            // methods with high mass loss (crushing 60%, wet_milling 35%, drying 47.9%
+            // per the processing database). This "waste" may actually be a valuable,
+            // separately-sold co-product (e.g. crushing oilseed yields meal/cake sold as
+            // animal feed) rather than true discarded waste. This platform does not
+            // currently have an active co-product allocation mechanism (the ISO 14044
+            // hierarchy functions exist in compliance_engine.js but are not wired in --
+            // see Item #34 dead-code audit) -- so if this IS a valuable co-product, its
+            // fair share of upstream impact is not being allocated to it, which could
+            // understate the true footprint of whatever process treats it as pure waste.
+            // Not silently implying this is resolved: flagged explicitly instead.
+            // FIX ALLOC-GAP-1 (refined): drying's mass loss is water evaporation
+            // (concentration) -- there is no co-product, no allocation question, nothing
+            // to flag. Crushing and wet_milling are different: they genuinely separate a
+            // raw input into two physically distinct outputs (e.g. oilseed -> oil + meal),
+            // where the "waste" fraction is very likely a real, separately-sold co-product.
+            // Narrowed the warning to only these two, so the disclosure doesn't over-warn
+            // on a process that doesn't actually raise the concern.
+            const HIGH_LOSS_METHODS = { crushing: 0.60, wet_milling: 0.35 };
+            const procMethod = window.lastInput?.manufacturing?.processingMethod;
+            if (procMethod && HIGH_LOSS_METHODS[procMethod]) {
+                doc.setTextColor(...C.red);
+                doc.text('⚠ "' + procMethod + '" has a high mass-loss fraction (' +
+                         (HIGH_LOSS_METHODS[procMethod]*100).toFixed(0) + '%). This may represent a ' +
+                         'valuable co-product (e.g. meal, cake) rather than true waste. Co-product ' +
+                         'allocation is not yet implemented on this platform -- verify manually if this ' +
+                         'process yields a separately-sold output.', M, Y + 4, { maxWidth: CW });
+                Y += 12;
+            }
         }
 
         hRule(Y); Y += 5;
@@ -665,7 +712,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         Y += 3;
 
-        if (hasTwin) {
+        if (hasRealTwin) {
             subHeader('Parametric Twin Comparison'); Y -= 2;
             doc.setFillColor(...C.pageBg);
             doc.setDrawColor(...C.teal); doc.setLineWidth(0.4);
@@ -684,6 +731,18 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             T.small(); doc.setTextColor(...C.bodyMid);
             doc.text('Screening-level parametric estimate. Not a verified comparative claim.', M + 4, Y + 28);
             Y += 33;
+        } else if (isAutoSelfComparison) {
+            // FIX TWIN-BASELINE-1: previously rendered this exact box with
+            // "Twin scenario (Benchmark (Auto))" showing the SAME number as "Current
+            // product" and "Potential reduction: 0.0%" — indistinguishable from a real
+            // twin comparison to a reader, and directly contradictory if a real
+            // Parametric Twin was also run elsewhere in the same report.
+            subHeader('Parametric Twin Comparison'); Y -= 2;
+            T.small(); doc.setTextColor(...C.bodyMid);
+            doc.text('No comparison product or Parametric Twin was configured for this assessment.', M, Y + 4);
+            doc.text('This section reports this product\'s own footprint only — see Parametric Twin', M, Y + 9);
+            doc.text('pages later in this report if a twin scenario was run separately.', M, Y + 14);
+            Y += 20;
         }
 
         footer('Page 2 of {total_pages_count}');
@@ -1071,18 +1130,20 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('');
             }
 
-            // Geographic proxy
-            if (adj.geo_proxy_applied) {
-                layerBLines.push('B2 — Geographic Proxy (non-FR origin, no primary data):');
+            // Geographic proxy — REMOVED (FIX GEO-PROXY-1), replaced with honest disclosure
+            if (adj.geo_proxy_removed_reason) {
+                layerBLines.push('B2 — Geographic Production Factor: not applied (no sourced factor exists)');
                 layerBLines.push('  Origin: ' + origin + ' (non-FR)');
-                layerBLines.push('  Factor: ' + fix(adj.geo_proxy_factor || 1.15, 4));
-                layerBLines.push('  Formula: CC categories x ' + fix(adj.geo_proxy_factor || 1.15, 4));
-                layerBLines.push('  Applied to: Climate Change, CC-Fossil, CC-Biogenic, CC-Land Use');
-                layerBLines.push('  Rationale: Conservative 15% penalty for non-FR transport and production');
-                layerBLines.push('  Excluded: Water Use and Land Use (handled by AWARE/LANCA below)');
+                layerBLines.push('  ' + adj.geo_proxy_removed_reason);
+                layerBLines.push('  This ingredient\'s inbound transport is still calculated precisely and');
+                layerBLines.push('  separately — see "B14 — Inbound Ingredient Transport (Upstream)" below.');
+                layerBLines.push('');
+            } else if (hasPD) {
+                layerBLines.push('B2 — Geographic Production Factor: not applied (primary data present —');
+                layerBLines.push('  actual farm yield/nitrogen data used instead of an origin-based proxy)');
                 layerBLines.push('');
             } else {
-                layerBLines.push('B2 — Geographic Proxy: not applied (FR origin or primary data present)');
+                layerBLines.push('B2 — Geographic Production Factor: not applicable (FR origin)');
                 layerBLines.push('');
             }
 
@@ -1137,9 +1198,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 const n2oTotal = (n.direct_kgCO2e||0)+(n.indirect_leach_kgCO2e||0)+(n.volatilization_kgCO2e||0);
                 layerBLines.push('  N2O total = ' + fix(n2oTotal,4) + ' kg CO2e  [batch total for ' + fix(qty,4) + ' kg ingredient]');
                 layerBLines.push('  Per-kg additive step: N2O_total / qty = ' + fix(n2oTotal,4) + ' / ' + fix(qty,4) + ' = ' + numFmt(qty>0?n2oTotal/qty:0,6) + ' kg CO2e/kg ingredient');
-                layerBLines.push('  → added to flatPef[CC] and flatPef[CC-Land Use] per kg ingredient');
+                // FIX PD-N2O-1: this previously claimed N2O is added to BOTH
+                // flatPef['Climate Change'] AND flatPef['Climate Change - Land Use'].
+                // Verified against calculation_engine.js: N2O is only ever added to
+                // 'Climate Change' (lines computing N2O_total / ingredient.quantityKg).
+                // 'Climate Change - Land Use' only receives the separate SOC sequestration
+                // adjustment (a different mechanism — soil carbon stock change, not the
+                // nitrogen cycle). The prior text was correct in spirit (both CAN affect
+                // land-use-adjacent totals) but wrong on this specific term, and an auditor
+                // hand-verifying this exact claim would compute a different, wrong expected
+                // value for Climate Change - Land Use, as happened in this audit.
+                layerBLines.push('  → added to flatPef[CC] only (kg CO2e/kg ingredient)');
                 layerBLines.push('  Layer C reconciliation: effective_EF(CC) = (base x multiplier) + N2O_per_kg_ing');
-                layerBLines.push('  [added to CC and CC-Land Use]');
+                layerBLines.push('  Note: Climate Change - Land Use is NOT affected by this term — it only reflects');
+                layerBLines.push('  the separate SOC (soil organic carbon) sequestration adjustment, if applicable,');
+                layerBLines.push('  which is a distinct soil-carbon-stock mechanism, not part of the nitrogen cycle.');
                 layerBLines.push('  Source: IPCC 2006 Vol. 4 Ch. 11  |  GWP N2O = 265 (IPCC AR5)');
                 layerBLines.push('');
             }
@@ -1159,7 +1232,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('           = ' + fix(no.volatilization_kgCO2e || 0, 4) + ' kg CO2e  [2x synthetic due to higher FRAC_GASM]');
                 const n2oOnTotal = (no.total_kgCO2e||0);
                 layerBLines.push('  N2O total = ' + fix(n2oOnTotal, 4) + ' kg CO2e (batch)  per-kg = ' + numFmt(qty>0?n2oOnTotal/qty:0,6) + ' kg CO2e/kg');
-                layerBLines.push('  → added to flatPef[CC] and flatPef[CC-Land Use]');
+                // FIX PD-N2O-1: same correction as B4 above — organic N2O is only added
+                // to flatPef['Climate Change'], never to 'Climate Change - Land Use'.
+                layerBLines.push('  → added to flatPef[CC] only (kg CO2e/kg ingredient)');
                 layerBLines.push('');
             }
 
@@ -1358,6 +1433,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     }
                 }
                 layerBLines.push('  Source: USEtox 2.14 — continental agricultural soil compartment, EF 3.1 compliant');
+                layerBLines.push('  ⚠ KNOWN LIMITATION: AGRIBALYSE\'s own methodology documentation confirms its');
+                layerBLines.push('  baseline toxicity value already includes a dedicated pesticide emissions model');
+                layerBLines.push('  (OLCA-Pest) -- not a generic placeholder. This substance-specific addition may');
+                layerBLines.push('  therefore double-count pesticide-driven toxicity already reflected in the');
+                layerBLines.push('  AGRIBALYSE background value above. Not corrected here: doing so accurately');
+                layerBLines.push('  would require knowing what fraction of the AGRIBALYSE baseline is specifically');
+                layerBLines.push('  pesticide-attributable, which is not available. Treat these Human Toxicity /');
+                layerBLines.push('  Ecotoxicity figures as an upper-bound estimate, not a precise measurement.');
                 layerBLines.push('');
             }
 
@@ -2510,6 +2593,19 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('*CoR not scored per AGRIBALYSE DQI Matrix v3.0.1 (ADEME/INRAE). Always 0 in this dataset.', M, Y); Y += 5;
+        // FIX DQR-DISCLOSURE-1: verified against all 240 ingredients in the database —
+        // for 9 of them (3.75%), (TeR+TiR+GR+P)/4 does not exactly equal the DQR/5 value
+        // shown (differences of 0.005-0.15 on the 1-5 scale), almost certainly from
+        // rounding in AGRIBALYSE's own published dqr_overall figure versus its unrounded
+        // sub-indicator components. DQR/5 is AGRIBALYSE's own pre-computed value, used
+        // directly in all calculations — it is not re-derived from the breakdown shown
+        // here. Disclosed so an auditor recomputing the formula themselves for one of
+        // those 9 ingredients understands the small discrepancy is a source-data rounding
+        // artifact, not a calculation error.
+        doc.text('DQR/5 is AGRIBALYSE\'s own published overall score, used directly in all', M, Y); Y += 4;
+        doc.text('calculations. The 4-indicator formula is shown for transparency; in a small', M, Y); Y += 4;
+        doc.text('number of cases it may not recompute to exactly the same figure due to', M, Y); Y += 4;
+        doc.text('rounding already present in AGRIBALYSE\'s own source publication.', M, Y); Y += 5;
 
         doc.setFillColor(...C.navyDark);
         doc.rect(M, Y, CW, 8, 'F');
@@ -3165,16 +3261,29 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '                   = ' + numFmt(ccImpactPerKg,6) + ' x ' + fix(kgNeededFor100gProtein,6),
                 '                   = ' + fix(co2Per100gProtein,4) + ' kg CO2e per 100g delivered protein',
                 '',
-                'REFERENCE BENCHMARKS (AGRIBALYSE 3.2 — approximate, for context):',
-                '  Beef (roasted)    : ~4.0–8.0  kg CO2e per 100g protein',
-                '  Chicken (grilled) : ~1.0–2.0  kg CO2e per 100g protein',
-                '  Pork (cooked)     : ~1.5–3.0  kg CO2e per 100g protein',
-                '  Tofu              : ~0.3–0.6  kg CO2e per 100g protein',
-                '  Lentils (cooked)  : ~0.05–0.1 kg CO2e per 100g protein',
-                '  Eggs              : ~0.8–1.5  kg CO2e per 100g protein',
+                'REFERENCE BENCHMARKS (Poore & Nemecek 2018, Science — global meta-analysis,',
+                '38,700 farms, 119 countries; figures for context, approximate):',
+                // FIX NUTRI-LCA-1: previous ranges here were understated by roughly 2-10x
+                // across nearly every food category versus the actual Poore & Nemecek
+                // (2018) meta-analysis -- the single most widely-cited, peer-reviewed
+                // source for exactly this comparison, published in Science. Previous
+                // figures were also mislabeled "AGRIBALYSE 3.2" -- these numbers do not
+                // match anything AGRIBALYSE's own published data would produce, and the
+                // true source could not be verified. Corrected to the actual published
+                // ranges from Poore & Nemecek 2018 / Our World in Data's direct citation
+                // of that dataset. Because these are displayed to users specifically as
+                // context for judging their own product's footprint, understated
+                // benchmarks risked making a product look more favorable by comparison
+                // than it actually was.
+                '  Beef              : ~20–35   kg CO2e per 100g protein',
+                '  Chicken (poultry) : ~2.4–5.7 kg CO2e per 100g protein',
+                '  Pork              : ~6.5–10  kg CO2e per 100g protein',
+                '  Tofu              : ~1.0–3.5 kg CO2e per 100g protein',
+                '  Lentils / peas    : ~0.3–1.0 kg CO2e per 100g protein',
+                '  Eggs              : ~2.0–4.0 kg CO2e per 100g protein',
                 '',
                 'This product: ' + fix(co2Per100gProtein,4) + ' kg CO2e / 100g protein',
-                'Note: Benchmarks are ranges from published AGRIBALYSE 3.2 data. Not directly comparable',
+                'Note: Benchmarks are global average ranges from Poore & Nemecek (2018). Not directly',
                 '      without identical system boundary and functional unit.'
             ], { sectionLabel: 'Nutritional LCA (continued)' });
         } else {
@@ -3413,7 +3522,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         });
         Y = doc.lastAutoTable.finalY + 6;
 
-        if (hasTwin) {
+        if (hasRealTwin) {
             doc.setFillColor(...C.green);
             doc.rect(M, Y, CW, 7, 'F');
             doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.white);
@@ -3438,7 +3547,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'Type: Screening-level LCA',
             'NOT third-party verified'
         ];
-        if (hasTwin) {
+        if (hasRealTwin) {
             qrPayloadLines.push('Twin: ' + numFmt(twinCO2,4) + ' kg CO2e/kg');
             qrPayloadLines.push('Reduction: ' + pct(reduction));
         }
@@ -3469,7 +3578,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  - Data quality rating (DQR)',
             '  - Database and method references',
             '  - Audit hash for integrity check',
-            hasTwin ? '  - Parametric twin comparison' : ''
+            hasRealTwin ? '  - Parametric twin comparison' : ''
         ].filter(l => l !== undefined);
 
         instrLines.forEach((line, i) => {

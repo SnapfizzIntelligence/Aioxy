@@ -428,8 +428,28 @@ function buildTwinInput() {
             country:              document.getElementById('twinManufacturingCountry')?.value || 'FR',
             processingMethod:     document.getElementById('twinProcessingMethod')?.value     || 'none',
             energySource:         document.getElementById('twinEnergySource')?.value         || 'grid',
-            usePrimaryFactoryData: false,
-            primaryFactoryData:   null
+            // FIX TWIN-FACTORY-1: was hardcoded to `false` / `null`, always, regardless of
+            // whether the Main product used real primary factory data. No twin-specific UI
+            // toggle for this exists anywhere (confirmed: zero matches across food.txt,
+            // twin_module.txt, main.txt) -- this wasn't a deliberate, disclosed scope
+            // limitation, it was silently discarding Main's actual factory data every time,
+            // with the difference invisible in the Twin Operational Parameters panel (which
+            // only displays country/processing method/energy source, not whether primary
+            // factory data is active). This is exactly the class of hidden, undisclosed
+            // Main-vs-Twin difference that produced the unexplained manufacturing-stage
+            // divergence investigated in an earlier session. Fixed: Twin now inherits Main's
+            // actual primary factory data configuration directly, the same way ingredients
+            // are already inherited via copyMainToTwin() -- not a new UI feature, just
+            // removing a silent, undisclosed override.
+            usePrimaryFactoryData: document.getElementById('usePrimaryFactoryData')?.checked || false,
+            primaryFactoryData:   document.getElementById('usePrimaryFactoryData')?.checked ? {
+                totalKWh:             parseFloat(document.getElementById('factoryTotalKWh')?.value)          || 0,
+                totalGasM3:           parseFloat(document.getElementById('factoryTotalGas')?.value)          || 0,
+                totalOutputKg:        parseFloat(document.getElementById('factoryTotalOutput')?.value)       || 1,
+                fuelType:             document.getElementById('factoryFuelType')?.value                      || 'natural_gas',
+                refrigerantType:      document.getElementById('factoryRefrigerantType')?.value               || '',
+                refrigerantKgLeaked:  parseFloat(document.getElementById('factoryRefrigerantKgLeaked')?.value) || 0
+            } : null
         },
         transport: {
             mode:          document.getElementById('twinTransportMode')?.value                   || 'road',

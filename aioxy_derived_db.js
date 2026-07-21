@@ -73604,45 +73604,66 @@ window.aioxyData.aquaculture_feeds = {
 };
 
 // ─── NAMESPACE 3: commodity_prices ───────────────────────────
+// UPDATED (post-34-item-audit follow-up): refreshed from World Bank Commodities Price
+// Data ("The Pink Sheet"), April 2026 edition, reporting March 2026 monthly prices --
+// fetched directly from thedocs.worldbank.org, the primary source, not a secondary
+// aggregator. EUR figures use the same implied EUR/USD rate (0.9259) already present in
+// the prior version of this file, for consistency rather than introducing a new,
+// separately-sourced exchange rate under time pressure.
+//
+// HONEST LIMITATION: this free monthly source tracks soybean meal directly, but does NOT
+// track rapeseed meal, sunflower meal, or wheat bran specifically -- these co-products
+// relevant to Item #12/#34's crushing/wet_milling allocation gap would need a separate,
+// more specialized source (e.g. USDA National Feedstuffs Market Review, which is also
+// free but reports irregularly and isn't structured as a clean monthly time series).
+// Not fabricated here rather than guessed.
 window.aioxyData.commodity_prices = {
   "beef": {
-    "price_eur_per_kg": 5.491944,
-    "price_usd_per_kg": 5.931299,
-    "year": 2024
+    "price_eur_per_kg": 7.6036,
+    "price_usd_per_kg": 8.21,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, New Zealand 90% chemical lean, cif US imported)"
   },
   "chicken": {
-    "price_eur_per_kg": 1.354446,
-    "price_usd_per_kg": 1.462802,
-    "year": 2024
+    "price_eur_per_kg": 1.5370,
+    "price_usd_per_kg": 1.66,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, Brazil Sao Paulo wholesale frozen)"
   },
   "fish_meal": {
-    "price_eur_per_kg": 1.573226,
-    "price_usd_per_kg": 1.699084,
-    "year": 2024
+    "price_eur_per_kg": 1.7009,
+    "price_usd_per_kg": 1.837,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, German fishmeal, Danish 64% pro, FOB Bremen)"
   },
   "maize": {
-    "price_eur_per_kg": 0.176486,
-    "price_usd_per_kg": 0.190605,
-    "year": 2024
+    "price_eur_per_kg": 0.1970,
+    "price_usd_per_kg": 0.2127,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. no. 2 yellow, fob US Gulf)"
   },
   "palm_oil": {
-    "price_eur_per_kg": 0.892005,
-    "price_usd_per_kg": 0.963365,
-    "year": 2024
+    "price_eur_per_kg": 1.0215,
+    "price_usd_per_kg": 1.103,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, Malaysia crude, DAP)"
   },
   "soybean_meal": {
-    "price_eur_per_kg": 0.40953,
-    "price_usd_per_kg": 0.442292,
-    "year": 2024
+    "price_eur_per_kg": 0.3741,
+    "price_usd_per_kg": 0.404,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. Soybean Meal 48% protein, FOB Rotterdam)"
   },
   "soybeans": {
-    "price_eur_per_kg": 0.428236,
-    "price_usd_per_kg": 0.462495,
-    "year": 2024
+    "price_eur_per_kg": 0.4380,
+    "price_usd_per_kg": 0.473,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. Soybeans, FOB US Gulf)"
   },
   "wheat": {
-    "price_eur_per_kg": 0.213777,
-    "price_usd_per_kg": 0.230879,
-    "year": 2024
+    "price_eur_per_kg": 0.2291,
+    "price_usd_per_kg": 0.2474,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. no. 2 soft red winter, delivered US Gulf)"
   }
 };
