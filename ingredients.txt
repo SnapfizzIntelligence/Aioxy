@@ -67,6 +67,54 @@ Object.assign(window.aioxyData.ingredients, {
         }
     },
 
+"mustard-with-grains-ciqual-11021": {
+        "name": "Mustard, with grains",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 1.59,
+                "Climate Change - Fossil": 0.00413,
+                "Climate Change - Biogenic": 0.0102,
+                "Climate Change - Land Use": 1.58,
+                "Ozone Depletion": 8.14e-08,
+                "Human Toxicity, non-cancer": 3.82e-08,
+                "Human Toxicity, cancer": 7.49e-10,
+                "Particulate Matter": 1.90e-07,
+                "Ionizing Radiation": 0.627,
+                "Photochemical Ozone Formation": 0.0073,
+                "Acidification": 0.0242,
+                "Eutrophication, terrestrial": 0.0953,
+                "Eutrophication, freshwater": 0.00023,
+                "Eutrophication, marine": 0.0104,
+                "Ecotoxicity, freshwater": 13.7,
+                "Land Use": 105.0,
+                "Water Use/Scarcity (AWARE)": 0.436,
+                "Resource Use, minerals/metals": 5.54e-06,
+                "Resource Use, fossils": 30.0
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Moutarde à l'ancienne",
+                "source_uuid": "ciqual-11021",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 2.0, "TiR": 1.0, "TeR": 2.0, "GR": 1.44 },
+                "dqr_overall": 1.61,
+                "single_score_mpt": 0.225,
+                "biogenic_net": 0.0102,
+                "co2_luc_net": 1.58,
+                "co2_fossil": 0.00413,
+                "ciqual_category": "aides culinaires et ingrédients divers",
+                "ciqual_sub_category": "condiments",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK PROXY",
+                "preparation": "Pas de préparation"
+            }
+        }
+    }, 
+
   
     "coconut-milk-ciqual-18041": {
         "name": "Coconut milk or coconut cream",
