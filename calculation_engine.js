@@ -408,6 +408,9 @@
 
                 transportComponents.push({
                     name: 'Outbound: ' + transMode + ' transport',
+                    mode: transMode, // FIX TRANSPORT-MCF-1 (this session): structured field added
+                                     // so pdf-generator.js can correctly gate non-CC arithmetic to
+                                     // road-only, instead of applying road factors to every mode.
                     notes: transDist + ' km, ' + transMode + ', ' + transRefrig,
                     subtotal: transTotal,
                     calculation_trace: transTrace
@@ -432,7 +435,27 @@
                                 : {};
                 const ev      = pkgDB.co2_virgin              || 0;
                 const erec    = pkgDB.co2_recycled             || 0;
-                const ed      = pkgDB.co2_disposal_average     || 0;
+                // AUDIT-4 FIX (this session): found a real bug that survived the earlier
+                // EOL-DESTINATION-1 fix. That fix correctly wired eolDestination into the
+                // ACTUAL calculation (which produces pkgTotal, below) -- but this SEPARATE
+                // trace-construction block, which builds the audit-trail-visible explanation
+                // of how the number was derived, still used the flat co2_disposal_average
+                // unconditionally. Result: for landfill/incinerated selections, the four terms
+                // (Term1/Term2/Burden/Credit) shown in the printed trace did not actually sum
+                // to the "Total" line, which was pulling the real, correctly-fixed pkgTotal
+                // from elsewhere -- a self-contradictory glass-box trace, not just a missing
+                // feature. Now resolves 'ed' identically to the real calculation path.
+                const eolDest = (input && input.packaging && input.packaging.eolDestination) || 'eu_average';
+                let ed;
+                if (eolDest === 'landfill' && pkgDB.co2_disposal_landfill !== undefined && pkgDB.co2_disposal_landfill !== null) {
+                    ed = pkgDB.co2_disposal_landfill;
+                } else if (eolDest === 'incinerated' && pkgDB.co2_disposal_incineration !== undefined && pkgDB.co2_disposal_incineration !== null) {
+                    ed = pkgDB.co2_disposal_incineration;
+                } else {
+                    ed = (pkgDB.co2_disposal_average !== undefined && pkgDB.co2_disposal_average !== null)
+                            ? pkgDB.co2_disposal_average
+                            : (pkgDB.co2_disposal !== undefined && pkgDB.co2_disposal !== null ? pkgDB.co2_disposal : 0.05);
+                }
                 const r1max   = pkgDB.r1_max                   !== undefined ? pkgDB.r1_max : 1.0;
                 const r1      = Math.min(pkgRec, r1max);
                 const r2      = pkgDB.r2                       || 0;
@@ -1082,6 +1105,26 @@ if (!traceability.usetox) {
                 );
             }
 
+            // FIX QUANTITY-EDIT-1 (this session, defense-in-depth engine-level guard):
+            // confirmed during pre-launch adversarial review that ui.js's
+            // updateIngredientQuantity() had zero validation, meaning an edited (not just
+            // newly-added) ingredient's quantity could reach this engine as NaN or <=0.
+            // NaN + anyRealNumber = NaN in JS, so a single malformed quantity would have
+            // silently corrupted this ENTIRE product's category totals -- confirmed the
+            // engine previously had only one NaN guard in its whole body (single-score
+            // aggregate only), meaning this would have reached the PDF/CSV/audit-trail as
+            // the literal printed string "NaN" in a client-facing report. Fixed the UI-level
+            // gap directly, but also adding this engine-level guard as defense-in-depth --
+            // relying solely on one UI function's validation has now been proven fragile,
+            // and this protects against any future UI change, API integration, or other
+            // entry point that might bypass that specific function.
+            if (typeof ingredient.quantityKg !== 'number' || isNaN(ingredient.quantityKg) || ingredient.quantityKg <= 0) {
+                throw new CalculationError(
+                    'Invalid quantity for ingredient "' + ingredient.id + '": ' + ingredient.quantityKg +
+                    '. Quantity must be a positive number.'
+                );
+            }
+
             // 1b. Validate all PEF values — throw for core 16, warn+derive for CC sub-splits
             // FIX: The three CC sub-splits (Fossil/Biogenic/Land Use) are absent from some
             // DB entries. Previously, one missing sub-split threw and killed the entire
@@ -1148,11 +1191,13 @@ if (!traceability.usetox) {
 
             if (ingredient.primaryData) {
                 const pd = ingredient.primaryData;
-                // F3 FIX: Declare SALCA, IPCC, AR5 at pd scope so both nitrogen and
+                // F3 FIX: Declare SALCA, IPCC, AR6 at pd scope so both nitrogen and
                 // phosphorus blocks can access them regardless of which data is provided.
+                // AUDIT-4 FIX (this session): renamed from AR5 -- see IPCC_AR6_PEF31 definition
+                // in core_physics.js for why (EF 3.1's Climate Change indicator uses AR6, not AR5).
                 const SALCA = window.corePhysics.CONSTANTS.SALCA_P;
                 const IPCC  = window.corePhysics.CONSTANTS.IPCC_TIER1;
-                const AR5   = window.corePhysics.CONSTANTS.IPCC_AR5_PEF31;
+                const AR6   = window.corePhysics.CONSTANTS.IPCC_AR6_PEF31;
 
                 // =====================================================================
                 // === ANIMAL PRIMARY DATA PATH =========================================
@@ -1336,7 +1381,109 @@ if (!traceability.usetox) {
                     } else {
                         // ── Lookup IPCC Tier 1 values from core_physics CONSTANTS ─────────
                         const TIER1     = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
-                        const animalRow = TIER1.entericEF[pd.animalType] || { ef_ch4: 0, n_excretion: 0 };
+                        const animalDef = TIER1.entericEF[pd.animalType] || null;
+
+                        // FIX ENTERIC-2 (this session): previous lookup was
+                        // `TIER1.entericEF[pd.animalType]` only — a single flat ef_ch4 value
+                        // regardless of ingredient.originCountry or pd.productionSystem.
+                        // Confirmed via codebase search last session that neither variable
+                        // was ever referenced in this block. IMPORTANT CORRECTION: on closer
+                        // check this session, the supplier UI labels productionSystem as
+                        // "Audit metadata — auto-suggests manure system" — meaning it was
+                        // deliberately built as documentation/UX metadata only, not left
+                        // unwired by omission. Using it here to also drive enteric productivity
+                        // is a genuine, positive enhancement (IPCC's own methodology supports
+                        // it — see Table 10.10/10.11 high/low productivity split), not a "bug
+                        // fix" in the sense of restoring intended-but-broken behavior. The
+                        // region-awareness (originCountry → IPCC region) IS a straightforward
+                        // bug fix — that dimension was always supposed to matter for a
+                        // methodology this precise and was previously ignored entirely.
+                        // Every fallback step is logged in adjustments.enteric_ef_resolution
+                        // rather than silently defaulting, per this audit's standing rule.
+                        let ef_ch4 = 0;
+                        let n_excretion = animalDef ? animalDef.n_excretion : 0;
+                        const efResolution = {
+                            animalType: pd.animalType,
+                            originCountry: ingredient.originCountry || null,
+                            productionSystemRequested: pd.productionSystem || null
+                        };
+
+                        if (animalDef && animalDef.byRegion) {
+                            // Region-aware animal type (currently: dairy_cow, beef_cattle, buffalo)
+                            const region = TIER1.COUNTRY_TO_IPCC_REGION[ingredient.originCountry] || null;
+                            efResolution.resolvedRegion = region;
+                            const regionRow = region ? animalDef.byRegion[region] : null;
+
+                            // CORRECTED this session (caught before shipping): the real
+                            // supplierProductionSystem dropdown values are 'intensive',
+                            // 'free_range', 'organic', 'pasture_fed', 'mixed' — NOT 'low'/'high'
+                            // as first drafted. That draft would have silently never matched
+                            // anything and always fallen through to 'blended', making the whole
+                            // enhancement dead on arrival. Mapping is a genuine, disclosed
+                            // judgment call, not an IPCC-sourced equivalence: IPCC's own raw
+                            // data (verified this session, Table10_A_1/A_2-3 source workbooks)
+                            // shows 'low productivity' systems are consistently Pasture/Range
+                            // fed with lower weight/milk yield, and 'high productivity' systems
+                            // are consistently Stall Fed with higher weight/milk yield/more
+                            // concentrate. 'pasture_fed' maps to low; 'intensive' (indoor,
+                            // typically higher-concentrate feeding) maps to high.
+                            // 'organic'/'free_range'/'mixed' do not map cleanly to either — IPCC
+                            // does not define these as productivity categories — so they
+                            // deliberately fall through to 'blended' rather than force a guess.
+                            const sysMap = { 'pasture_fed': 'low', 'intensive': 'high' };
+                            const sys = sysMap[pd.productionSystem] || null;
+
+                            if (regionRow) {
+                                if (sys && regionRow[sys] !== undefined) {
+                                    ef_ch4 = regionRow[sys];
+                                    efResolution.tierUsed = 'Tier 1a (' + sys + ' productivity, from productionSystem="' + pd.productionSystem + '")';
+                                    efResolution.applied = true;
+                                } else {
+                                    ef_ch4 = regionRow.blended;
+                                    efResolution.tierUsed = 'Tier 1 (blended national average)';
+                                    efResolution.applied = true;
+                                    if (pd.productionSystem && !sys) {
+                                        efResolution.note = 'productionSystem="' + pd.productionSystem + '" does not map to an IPCC low/high productivity category (only pasture_fed→low and intensive→high are mapped) — used blended value';
+                                    } else if (sys && regionRow[sys] === undefined) {
+                                        efResolution.note = 'productionSystem="' + pd.productionSystem + '" maps to "' + sys + '" productivity but IPCC provides no low/high split for ' + region + ' — used blended value instead';
+                                    } else if (!pd.productionSystem) {
+                                        efResolution.note = 'productionSystem not provided — used blended national average';
+                                    }
+                                }
+                            } else if (region) {
+                                // Region resolved but this animal type has no data for it
+                                // (e.g. buffalo in North America/Oceania — confirmed absent
+                                // from the IPCC source workbook itself, not an extraction gap).
+                                // Fall back to the average of all regions this animalType DOES
+                                // have, rather than silently using 0 or another region's value.
+                                const allBlended = Object.values(animalDef.byRegion).map(r => r.blended);
+                                ef_ch4 = allBlended.reduce((a,b) => a+b, 0) / allBlended.length;
+                                efResolution.tierUsed = 'FALLBACK — cross-region average';
+                                efResolution.applied = false;
+                                efResolution.warning = 'No IPCC data for ' + pd.animalType + ' in region "' + region + '" (origin: ' + ingredient.originCountry + '). Used average of all regions with data (' + ef_ch4.toFixed(2) + ' kg CH4/head/yr) as a documented fallback, not a verified regional value.';
+                            } else {
+                                // originCountry not in COUNTRY_TO_IPCC_REGION at all (should not
+                                // happen for the 81 countries verified this session, but a
+                                // future country addition could hit this if the map isn't
+                                // updated at the same time — fail loudly, not silently).
+                                const allBlended = Object.values(animalDef.byRegion).map(r => r.blended);
+                                ef_ch4 = allBlended.reduce((a,b) => a+b, 0) / allBlended.length;
+                                efResolution.tierUsed = 'FALLBACK — unmapped country, cross-region average';
+                                efResolution.applied = false;
+                                efResolution.warning = 'originCountry "' + (ingredient.originCountry || 'unset') + '" has no entry in COUNTRY_TO_IPCC_REGION. Used average of all regions with data (' + ef_ch4.toFixed(2) + ' kg CH4/head/yr) as a documented fallback — this map needs updating for this country.';
+                            }
+                        } else if (animalDef) {
+                            // Non-regionalized animal type (pig, sheep, goat, poultry, farmed_fish)
+                            ef_ch4 = animalDef.ef_ch4;
+                            efResolution.tierUsed = 'Tier 1 (flat, not regionalized this session)';
+                            efResolution.applied = true;
+                        } else {
+                            efResolution.tierUsed = 'NONE — animalType not found';
+                            efResolution.applied = false;
+                            efResolution.warning = 'pd.animalType "' + pd.animalType + '" not found in IPCC_TIER1_LIVESTOCK.entericEF. ef_ch4 defaulted to 0 — results for this ingredient will understate enteric methane.';
+                        }
+                        adjustments.enteric_ef_resolution = efResolution;
+                        const animalRow = { ef_ch4: ef_ch4, n_excretion: n_excretion };
 
                         // ── Productivity fallback for livestock if user didn't provide it ───
                         // A13-F1 FIX (Audit Session 4): Replace hardcoded 1000 kg/head fallback
@@ -1376,7 +1523,7 @@ if (!traceability.usetox) {
                         // ── Enteric methane (CH4) ─────────────────────────────────────────
                         // Formula: heads = quantityKg / productPerHeadPerYear
                         //          CH4_kg = heads × efCh4PerHead
-                        //          CO2e = CH4_kg × GWP_CH4_BIOGENIC (28, per IPCC AR5 / PEF 3.1)
+                        //          CO2e = CH4_kg × GWP_CH4_BIOGENIC (27.0, per IPCC AR6 / PEF 3.1)
                         const entericCO2e = window.corePhysics.calculateEntericMethane({
                             animalType:          pd.animalType,
                             quantityKg:          ingredient.quantityKg,
@@ -1409,17 +1556,22 @@ if (!traceability.usetox) {
                             //          Institut de l'Élevage France 2022 (beef, sheep, goat)
                             //          ITAVI France 2022 (poultry)
                             //          IPCC 2006 Vol.4 Table 10.11 (ef_ch4)
-                            //          GWP_CH4_biogenic = 28 (IPCC AR5, PEF 3.1)
+                            //          GWP_CH4_biogenic = 27.0 (IPCC AR6, PEF 3.1)
 
                             const TIER1 = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
                             const agriDefaultProd = TIER1.AGRIBALYSE_DEFAULT_PRODUCTIVITY[pd.animalType];
 
                             if (agriDefaultProd && agriDefaultProd > 0 && productPerHeadPerYear > 0) {
-                                const GWP_CH4_BIO = 28;
+                                // AUDIT-4 FIX (this session): was a local hardcoded 'const GWP_CH4_BIO = 28'
+                                // -- a second, independent copy of the AR5 value, disconnected from the
+                                // shared IPCC_AR6_PEF31 constant fixed elsewhere this session. A fix to
+                                // the shared constant alone would NOT have corrected this calculation,
+                                // since it never referenced the shared constant in the first place. Now
+                                // uses the single real source of truth instead of a duplicated literal.
                                 const headsUser    = ingredient.quantityKg / productPerHeadPerYear;
                                 const headsDefault = ingredient.quantityKg / agriDefaultProd;
                                 const deltaEntericCH4_kg  = (headsUser - headsDefault) * animalRow.ef_ch4;
-                                const deltaEntericCO2e    = deltaEntericCH4_kg * GWP_CH4_BIO;
+                                const deltaEntericCO2e    = deltaEntericCH4_kg * AR6.GWP_CH4_BIOGENIC;
                                 const deltaEntericPerKg   = deltaEntericCO2e / ingredient.quantityKg;
 
                                 if (Math.abs(deltaEntericPerKg) > 1e-6) {
@@ -1449,7 +1601,7 @@ if (!traceability.usetox) {
                                         'ADEME Agribalyse 3.0 Technical Documentation (Collet et al. 2018) §4.3',
                                         'CNIEL/IDELE/ITAVI France national average productivities 2022',
                                         'IPCC 2006 Vol.4 Table 10.11',
-                                        'GWP_CH4_biogenic=28 IPCC AR5 PEF 3.1'
+                                        'GWP_CH4_biogenic=27.0 IPCC AR6 PEF 3.1'
                                     ]
                                 };
                             } else {
@@ -1474,7 +1626,7 @@ if (!traceability.usetox) {
                                 product_per_head_yr:   productPerHeadPerYear,
                                 enteric_co2e_total:    entericCO2e,
                                 enteric_co2e_per_kg:   entericPerKg,
-                                gwp_used:              'GWP_CH4_BIOGENIC = 28 (IPCC AR5, PEF 3.1)',
+                                gwp_used:              'GWP_CH4_BIOGENIC = 27.0 (IPCC AR6, PEF 3.1)',
                                 ipcc_source:           'IPCC 2006 Vol. 4 Table 10.11, confirmed 2019 Refinement'
                             };
                         }
@@ -1539,11 +1691,54 @@ if (!traceability.usetox) {
                             eutrophication_cf_source: 'JRC EF 3.1 — NH3 → terrestrial eutrophication: 0.0316 mol N eq/g NH3',
                             acidification_add:      acidificationAdd,
                             acidification_cf_source: 'JRC EF 3.1 — NH3 → acidification: 0.0591 mol H+eq/g NH3',
-                            gwp_used:               'GWP_N2O = 265 (IPCC AR5, PEF 3.1)',
+                            gwp_used:               'GWP_N2O = 273 (IPCC AR6, PEF 3.1)',
                             ipcc_source:            'IPCC 2006 Vol. 4 Tables 10.19 & 10.21, confirmed 2019 Refinement'
                         };
 
                         adjustments.method = 'animal_primary_data_ipcc_tier1';
+
+                        // === FIX ANIMAL-PESTICIDE-1 (this session): animal-path pesticide
+                        // disclosure — was a real, live bug, not just an open question. ===
+                        // The animal-path supplier form (ui.js saveSupplierData, "ANIMAL
+                        // PESTICIDE FIX" comment) collects pesticide name/CAS/rate for feed
+                        // crops and saves it into primaryData.pesticides -- but the ONLY
+                        // pesticide-processing code in this entire file (a few hundred lines
+                        // below, in the crop-path branch) is gated behind
+                        // `pd.yieldKgPerHa > 0`, a crop-only field the animal branch of
+                        // saveSupplierData explicitly sets to null. Confirmed via full-file
+                        // search: zero other references to pd.pesticides existed anywhere.
+                        // Net effect before this fix: animal-path pesticide data was silently,
+                        // completely unused for every livestock product.
+                        //
+                        // WHY THIS IS DISCLOSURE-ONLY, NOT A FULL CALCULATION: the crop path's
+                        // USEtox block computes areaHarvested = quantityKg / yieldKgPerHa to
+                        // convert a per-hectare application rate into a total substance mass.
+                        // The animal path has NO equivalent — computing a real feed-crop area
+                        // harvested per kg of animal product requires a feed-conversion ratio
+                        // (kg feed crop consumed per kg animal product), which does not exist
+                        // anywhere in this codebase (confirmed via search — no
+                        // feedConversion/kgFeedPerKg constant exists). Fabricating one would be
+                        // inventing a number this audit exists to prevent (same lesson as the
+                        // mycelium packaging and rapeseed-meal-price findings this session).
+                        // This block therefore surfaces what the user entered (name, CAS, rate)
+                        // for transparency and future use, WITHOUT computing or adding any
+                        // toxicity total -- correctly avoiding a fabricated-precision number,
+                        // consistent with the crop-path USEtox exclusion above (which excludes
+                        // a REAL computed value; this excludes because a real value cannot yet
+                        // be computed at all).
+                        if (pd.pesticides && pd.pesticides.length > 0) {
+                            adjustments.usetox_livestock = {
+                                applied: false,
+                                reason: 'Feed-crop pesticide data entered, but no feed-conversion ratio (kg feed crop per kg animal product) exists in AIOXY to compute a real substance-mass total. Disclosed for transparency only -- not added to any category total.',
+                                pesticides_entered: pd.pesticides.map(p => ({
+                                    name: p.name || 'Unknown',
+                                    cas: p.cas || null,
+                                    rate_kg_per_ha: p.rateKgPerHa || null
+                                })),
+                                action_required: 'To compute a real feed-crop pesticide toxicity contribution, AIOXY would need a sourced feed-conversion ratio per animal type (e.g. kg dry matter feed / kg liveweight or kg milk) — not fabricated here.',
+                                note: 'This replaces a prior silent gap: this data was previously collected by the UI and saved but never referenced anywhere in the calculation engine, with no disclosure that it was unused.'
+                            };
+                        }
                     }
 
                 } else {
@@ -1631,11 +1826,22 @@ if (!traceability.usetox) {
                 // but conservative (multiplier rarely exceeds 1.5× in either direction).
                 // A5-F2 FIX: 60/40 weights are AIOXY screening assumption — not ISO/PEF sourced.
                 const co2Mult = (0.6 * yieldAdj) + (0.4 * nAdj);
+                // FIX N2O-DOUBLECOUNT-1: adjustments.multipliers.co2 previously reported
+                // co2Mult, which would now be FALSE for what actually drives Climate Change
+                // (yieldAdj alone, see below) -- this object feeds the PDF's transparency
+                // trace directly, so an inaccurate value here would be exactly the kind of
+                // "report describes a mechanism the calculation doesn't use" bug found
+                // elsewhere this audit (the EoL-destination false-claim finding). Corrected to
+                // report yieldAdj for co2/fossil/biogenic, keeping co2Mult only for the
+                // categories that still genuinely use it.
                 adjustments.multipliers = {
-                    co2:    co2Mult,
-                    land:   yieldAdj,
-                    water:  co2Mult,
-                    fossil: co2Mult
+                    co2:            yieldAdj,
+                    co2_fossil:     yieldAdj,
+                    co2_biogenic:   yieldAdj,
+                    other_categories_co2Mult: co2Mult,
+                    land:           yieldAdj,
+                    water:          co2Mult,
+                    fossil_resource: co2Mult
                 };
                 // GAP 10 FIX: store composite multiplier formula for PDF dumb-printer trace.
                 // PDF reads this object directly — must NOT recompute co2Mult.
@@ -1645,15 +1851,65 @@ if (!traceability.usetox) {
                     n_weight:     0.4,
                     yield_factor: yieldAdj,
                     n_factor:     nAdj,
-                    result:       co2Mult
+                    result:       co2Mult,
+                    // FIX N2O-DOUBLECOUNT-1: disclose the scope change explicitly in the
+                    // trace object itself, not just a code comment, so the PDF can show it.
+                    note: 'This composite multiplier (yield+nitrogen combined) is NOT applied ' +
+                          'to Climate Change / Fossil / Biogenic — those three categories now ' +
+                          'scale by yield_factor alone, since nitrogen\'s effect on them is ' +
+                          'already captured via a separate, real, additive IPCC Tier 1 N2O ' +
+                          'calculation elsewhere in this trace. Applying both would double-count ' +
+                          'the same physical emission. This multiplier still applies to all other ' +
+                          'scaled categories (Acidification, Eutrophication, Human Toxicity, ' +
+                          'Particulate Matter, Photochemical Ozone Formation, Ecotoxicity, Water ' +
+                          'Use, Resource Use), which have no separate additive nitrogen term.'
                 };
                 adjustments.method = 'primary_data_adjusted';
                 yieldFactor = yieldAdj;
 
                 // Apply multipliers to flatPef
-                flatPef['Climate Change']                *= co2Mult;
-                flatPef['Climate Change - Fossil']       *= co2Mult;
-                flatPef['Climate Change - Biogenic']     *= co2Mult;
+                // FIX N2O-DOUBLECOUNT-1 (found via independent second-Claude review,
+                // confirmed by re-derivation with real constants): Climate Change / Fossil /
+                // Biogenic were previously scaled by co2Mult = 0.6*yieldAdj + 0.4*nAdj (i.e.
+                // nitrogen affects these categories multiplicatively) AND separately received
+                // a full, real IPCC Tier 1 N2O addition from the SAME pd.nitrogenKgPerTon
+                // input a few hundred lines below (GAP 2 block), gated only on
+                // "nitrogen data was entered at all" -- not on how the entered value compares
+                // to baseline. At EXACTLY baseline nitrogen (15 kg N/tonne, nAdj=1.0, meant to
+                // be a neutral no-op), the additive term still adds a real, non-zero N2O
+                // contribution regardless (independently recomputed: 0.0828 kg CO2e/kg using
+                // the real EF1/EF4/EF5/FRAC_LEACH/FRAC_GASF/GWP_N2O constants in this file --
+                // an ~11.3% inflation versus not entering primary data at all, for a real
+                // ingredient like durum wheat, CC baseline 0.733). AGRIBALYSE's own farm-gate
+                // Climate Change figures already include real-world average N2O from typical
+                // fertilizer use -- this was very likely double-counting the same physical
+                // emission for every ingredient where a user enters nitrogen primary data.
+                // FIX: Climate Change / Fossil / Biogenic now scale by yieldAdj alone, matching
+                // the EXACT precedent already set for CC-Land Use below (A5-F1 FIX) and Land
+                // Use itself -- nitrogen's real effect on these three categories is now
+                // correctly captured ONLY via the additive IPCC Tier 1 term, not double-applied
+                // via the multiplicative proxy too. co2Mult (yield+nitrogen combined) is KEPT
+                // for every other category below (Acidification, Eutrophication x3, Human
+                // Toxicity x2, Particulate Matter, Photochemical Ozone Formation, Ecotoxicity,
+                // Water Use, Resource Use x2) because nitrogen's real effect on THOSE
+                // categories has no separate additive mechanism anywhere else in this file --
+                // the proxy is still the only way those categories reflect nitrogen input at
+                // all, and removing it there would silently make primary-data nitrogen entry
+                // do nothing for those categories. Phosphorus and SOC additive terms
+                // (independently confirmed not part of co2Mult at all) are unaffected by this
+                // fix and remain correct as-is.
+                flatPef['Climate Change']                *= yieldAdj;
+                flatPef['Climate Change - Fossil']       *= yieldAdj;
+                // NOTE (comment accuracy correction, this session): Biogenic is included here
+                // too, but NOT for the double-counting reason above — the additive Tier 1 N2O
+                // term (GAP 2 block, below) only ever writes to 'Climate Change' and
+                // 'Climate Change - Fossil', never to 'Climate Change - Biogenic', so there
+                // was nothing to double-count for Biogenic specifically. Its exclusion from
+                // co2Mult rests on the SAME separate rationale as CC-Land Use directly below:
+                // biogenic carbon cycling has no physical relationship to nitrogen fertilizer
+                // application rate either, so the nitrogen-efficiency proxy doesn't belong
+                // here regardless of the double-counting question.
+                flatPef['Climate Change - Biogenic']     *= yieldAdj;
                 // A5-F1 FIX (Audit Session 1): CC-Land Use scaled by yieldAdj only, not co2Mult.
                 // dLUC (direct land use change) is a land-area effect — it scales with yield
                 // (land area per kg of product) but has no physical relationship to nitrogen
@@ -1685,12 +1941,12 @@ if (!traceability.usetox) {
                 // === GAP 2: IPCC Tier 1 N₂O emissions (ISO 14044 primary data path) ===
                 // Applied per-kg-of-ingredient basis after multipliers, added to Climate Change totals.
                 if (pd.nitrogenKgPerTon && pd.nitrogenKgPerTon > 0) {
-                    // IPCC, AR5, SALCA are declared at pd scope (F3 fix) — accessible here
+                    // IPCC, AR6, SALCA are declared at pd scope (F3 fix) — accessible here
 
                     const F_SN = (pd.nitrogenKgPerTon / 1000) * ingredient.quantityKg;                                                        // kg synthetic N applied — nitrogenKgPerTon is kg N per tonne of crop, /1000 converts to kg N per kg, then × quantityKg gives total kg N
-                    const N2O_direct         = F_SN * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;                      // kg CO2e (EF1, direct)
-                    const N2O_indirect_leach = F_SN * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF5, leaching)
-                    const N2O_volatilization = F_SN * IPCC.FRAC_GASF * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O; // kg CO2e (EF4, volatilization/atmospheric deposition)
+                    const N2O_direct         = F_SN * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR6.GWP_N2O;                      // kg CO2e (EF1, direct)
+                    const N2O_indirect_leach = F_SN * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR6.GWP_N2O; // kg CO2e (EF5, leaching)
+                    const N2O_volatilization = F_SN * IPCC.FRAC_GASF * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR6.GWP_N2O; // kg CO2e (EF4, volatilization/atmospheric deposition)
                     const N2O_total = N2O_direct + N2O_indirect_leach + N2O_volatilization;
 
                     // Finding 10 FIX (2026-06-07): Synthetic N N2O reallocated from CC-Land Use to CC-Fossil.
@@ -1706,7 +1962,7 @@ if (!traceability.usetox) {
                         direct_kgCO2e:           N2O_direct,
                         indirect_leach_kgCO2e:   N2O_indirect_leach,
                         volatilization_kgCO2e:   N2O_volatilization,
-                        formula:                 'IPCC Tier 1 (2006), EF1=IPCC.EF1_DIRECT_N2O, EF5=IPCC.EF5_INDIRECT_N2O, FRAC_LEACH=IPCC.FRAC_LEACH, EF4=IPCC.EF4_VOLATILIZATION, FRAC_GASF=IPCC.FRAC_GASF (volatilization/atmospheric deposition), GWP_N2O=AR5.GWP_N2O'
+                        formula:                 'IPCC Tier 1 (2006), EF1=IPCC.EF1_DIRECT_N2O, EF5=IPCC.EF5_INDIRECT_N2O, FRAC_LEACH=IPCC.FRAC_LEACH, EF4=IPCC.EF4_VOLATILIZATION, FRAC_GASF=IPCC.FRAC_GASF (volatilization/atmospheric deposition), GWP_N2O=AR6.GWP_N2O'
                     };
                 }
 
@@ -1719,9 +1975,9 @@ if (!traceability.usetox) {
                     // A9-F1 FIX (Audit Session 2): FRAC_GASM now read from CONSTANTS.IPCC_TIER1.
                     // Previously hardcoded here — all IPCC Tier 1 constants must live in core_physics.
                     const F_ON = (pd.organicNitrogenKgPerTon / 1000) * ingredient.quantityKg;  // kg organic N applied
-                    const N2O_on_direct         = F_ON * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
-                    const N2O_on_leach          = F_ON * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
-                    const N2O_on_volatilization = F_ON * IPCC.FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR5.GWP_N2O;
+                    const N2O_on_direct         = F_ON * IPCC.EF1_DIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR6.GWP_N2O;
+                    const N2O_on_leach          = F_ON * IPCC.FRAC_LEACH * IPCC.EF5_INDIRECT_N2O * IPCC.N2O_MASS_CONVERSION * AR6.GWP_N2O;
+                    const N2O_on_volatilization = F_ON * IPCC.FRAC_GASM * IPCC.EF4_VOLATILIZATION * IPCC.N2O_MASS_CONVERSION * AR6.GWP_N2O;
                     const N2O_on_total = N2O_on_direct + N2O_on_leach + N2O_on_volatilization;
 
                     // Finding 10 FIX (2026-06-07): Organic N N2O reallocated from CC-Land Use to CC-Fossil.
@@ -1737,7 +1993,7 @@ if (!traceability.usetox) {
                         volatilization_kgCO2e:   N2O_on_volatilization,
                         total_kgCO2e:            N2O_on_total,
                         frac_gasm:               IPCC.FRAC_GASM,
-                        formula:                 'IPCC Tier 1 (2006) Vol.4 Table 11.3 organic N path: F_ON × EF1 (direct) + F_ON × FRAC_LEACH × EF5 (leach) + F_ON × FRAC_GASM(' + IPCC.FRAC_GASM + ') × EF4 (volatilization). GWP_N2O=' + AR5.GWP_N2O
+                        formula:                 'IPCC Tier 1 (2006) Vol.4 Table 11.3 organic N path: F_ON × EF1 (direct) + F_ON × FRAC_LEACH × EF5 (leach) + F_ON × FRAC_GASM(' + IPCC.FRAC_GASM + ') × EF4 (volatilization). GWP_N2O=' + AR6.GWP_N2O
                     };
                 } // S2-CRITICAL FIX (Audit Session 2): Close organic N if-block here.
                   // Previously missing — SALCA-P, SOC, and USEtox were nested inside the
@@ -1890,39 +2146,56 @@ if (!traceability.usetox) {
                         }
         
                         if (totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0) {
-                            // FIX 3: Use += to ADD USEtox substance-specific values to the AGRIBALYSE background toxicity,
-                            // not = which would overwrite and delete the background. co2Mult was already applied to
-                            // flatPef earlier in the primary data multiplier step — do NOT re-apply it here.
-                            flatPef['Human Toxicity, cancer']    += (totalCancerCTUh     / ingredient.quantityKg);
-                            flatPef['Human Toxicity, non-cancer'] += (totalNonCancerCTUh  / ingredient.quantityKg);
-                            flatPef['Ecotoxicity, freshwater']   += (totalEcotoxicityCTUe / ingredient.quantityKg);
+                            // FIX (this session, RESOLVED — was previously "FIX 3: Use += to ADD USEtox
+                            // substance-specific values to the AGRIBALYSE background toxicity"):
+                            // CONFIRMED double-counting, not just an elevated risk. Per AGRIBALYSE's own
+                            // official FAQ (doc.agribalyse.fr) and the OLCA-Pest Final Project Report
+                            // (ADEME 17-03-C0025, Jan 2020): AGRIBALYSE 3.2's background Human Toxicity
+                            // (cancer/non-cancer) and Ecotoxicity-freshwater totals for every ingredient
+                            // ALREADY incorporate pesticide-driven impact via the OLCA-Pest/PestLCI
+                            // Consensus model as one of AGRIBALYSE's own standard inputs — confirmed via
+                            // ingredients_db.txt: every entry already carries non-zero values for these
+                            // three categories with no separate "pesticide contribution" field to
+                            // de-duplicate against. Adding a second, independently-computed USEtox
+                            // pesticide-toxicity number on top, for the same substances, on the same
+                            // ingredient, double-counts pesticide-driven toxicity in these categories.
+                            // DECISION: do NOT add totalCancerCTUh / totalNonCancerCTUh /
+                            // totalEcotoxicityCTUe into flatPef. The per-substance breakdown below
+                            // (pesticideDetails) is retained and still surfaced to the user/report as
+                            // supplementary disclosure information — it is informative (which
+                            // substances were entered, at what rate) but must NOT feed the PEF category
+                            // totals used for the actual footprint result.
+                            // NOTE: this does not mean pesticide impact is invisible in AIOXY's results —
+                            // it is already present, via AGRIBALYSE's own background modelling, in
+                            // whatever Human Toxicity / Ecotoxicity-freshwater value the ingredient's
+                            // base PEF record already carries.
                         }
         
                         adjustments.usetox_applied = {
-                            applied: totalCancerCTUh > 0 || totalNonCancerCTUh > 0 || totalEcotoxicityCTUe > 0,
-                            source: 'USEtox 2.14',
+                            applied: false,
+                            reason: 'CONFIRMED double-counting against AGRIBALYSE 3.2 background — not applied to totals',
+                            source: 'USEtox 2.14 (calculated but excluded from flatPef, disclosure only)',
                             area_harvested_ha: areaHarvested,
-                            total_cancer_CTUh: totalCancerCTUh,
-                            total_noncancer_CTUh: totalNonCancerCTUh,
-                            total_ecotoxicity_CTUe: totalEcotoxicityCTUe,
+                            total_cancer_CTUh_excluded: totalCancerCTUh,
+                            total_noncancer_CTUh_excluded: totalNonCancerCTUh,
+                            total_ecotoxicity_CTUe_excluded: totalEcotoxicityCTUe,
                             pesticides: pesticideDetails,
-                            // UPDATE (post-34-item-audit follow-up): externally verified against
-                            // AGRIBALYSE's own official methodology documentation
-                            // (doc.agribalyse.fr FAQ): "The modelling of pesticide emissions is
-                            // different (OLCA-Pest model in Agribalyse...)". AGRIBALYSE's own
-                            // baseline toxicity value already includes a dedicated, real
-                            // pesticide emissions model (OLCA-Pest) -- it is not a generic
-                            // placeholder waiting to be supplemented. This substantially
-                            // strengthens the case that this additive USEtox supplement double-
-                            // counts pesticide-driven toxicity: once via AGRIBALYSE's own
-                            // OLCA-Pest-modeled background, again via this substance-specific
-                            // addition. NOT fixed by flipping to full replacement, because doing
-                            // so correctly would require knowing what fraction of AGRIBALYSE's
-                            // baseline is specifically pesticide-attributable (vs. other sources
-                            // e.g. background heavy metals) -- data not available here, and
-                            // guessing that fraction would fabricate precision this audit exists
-                            // to eliminate. Disclosed prominently instead of silently resolved.
-                            double_counting_risk: 'ELEVATED — see note in this object'
+                            // RESOLVED (this session): externally verified against AGRIBALYSE's own
+                            // official methodology documentation (doc.agribalyse.fr FAQ) and the
+                            // OLCA-Pest Final Project Report (ADEME 17-03-C0025): "The modelling of
+                            // pesticide emissions is different (OLCA-Pest model in Agribalyse...)".
+                            // AGRIBALYSE's background Human Toxicity / Ecotoxicity-freshwater values
+                            // already incorporate a dedicated, real pesticide emissions model
+                            // (OLCA-Pest) for every ingredient entry (verified: no ingredient in
+                            // ingredients_db.txt has a zero/placeholder value in these three
+                            // categories). This additive USEtox substance-specific layer was
+                            // confirmed to double-count pesticide-driven toxicity — once via
+                            // AGRIBALYSE's own OLCA-Pest-modeled background, again via this
+                            // substance-specific addition — and has been excluded from flatPef
+                            // accordingly. The values above are retained for transparency/disclosure
+                            // only (what the user entered, and what USEtox alone would attribute to
+                            // it), not as a component of the reported footprint.
+                            double_counting_risk: 'RESOLVED — excluded from totals, see reason above'
                         };
                         // USEtox 2.14 coverage: 3,077 substances loaded in aioxyData.usetox.human_toxicity
                         // and ecotoxicity compartments. Full USEtox 2.14 substance list contains ~4,200
@@ -2075,6 +2348,79 @@ if (!traceability.usetox) {
             ];
             for (const cat of extraCats) {
                 allCategoryResults[cat] = flatPef[cat] * ingredient.quantityKg;
+            }
+
+            // ── CO-PRODUCT ALLOCATION (this session, FIX ALLOC-1) ──────────────────
+            // CRITICAL FINDING this session: `wasteComponents`/`lossFraction` computed
+            // elsewhere in this file (search "Audit 8.4" / "informational only") was
+            // ALWAYS DISPLAY-ONLY — it never reduced the real ingredient total that flows
+            // into pefResults. This meant 100% of a processed ingredient's impact was
+            // always attributed to the product, even when the processing method's own
+            // "loss" fraction is a valuable co-product (oilseed meal from crushing, bran
+            // from milling, corn gluten/oil/steep liquor from wet_milling) rather than
+            // genuine waste — a real, live gap for grain/oilseed products, not a
+            // hypothetical one, per ISO 14044 §4.3.4 which REQUIRES allocation whenever a
+            // process yields more than one valuable output.
+            //
+            // Fix applies HERE, once, to the complete allCategoryResults object — a single
+            // auditable multiplication point, not scattered per-category math that would be
+            // harder to verify. Only affects ingredients whose db.processing[method] entry
+            // has a coProducts array AND a matching ingredient-type key (currently:
+            // rapeseed, soybean, under "crushing"). Every other processing method and every
+            // other ingredient is completely unaffected — this is intentionally narrow to
+            // the specific case with real, sourced allocation data, not a blanket change to
+            // how processing loss is handled everywhere.
+            //
+            // Per ISO 14044 §4.3.4(c): economic allocation (not mass allocation) is the
+            // methodologically appropriate basis here specifically because oil and meal
+            // have very different economic value relative to their mass share (oil is a
+            // minority of mass but the dominant economic driver) — this is an explicit,
+            // official reason to prefer economic over physical/mass allocation in this
+            // case, not a convenience shortcut.
+            adjustments.coproduct_allocation = { applied: false };
+            if (input && input.manufacturing && input.manufacturing.processingMethod === 'crushing') {
+                const db = window.aioxyData;
+                const procEntry = db && db.processing ? db.processing['crushing'] : null;
+                const cpKey = (ingredient.id || '').toLowerCase().includes('rapeseed') ? 'rapeseed'
+                            : (ingredient.id || '').toLowerCase().includes('soybean') ? 'soybean'
+                            : null;
+                const coProducts = procEntry && procEntry.coProducts && cpKey ? procEntry.coProducts[cpKey] : null;
+
+                if (coProducts && coProducts.length > 0) {
+                    try {
+                        const allocInputs = coProducts.map(p => ({ mass: p.massFraction, price: p.price }));
+                        const allocationFactors = window.complianceEngine.calculateEconomicAllocation(allocInputs);
+                        // First co-product in each list (see ingredients.js) is always the
+                        // OIL — the product this ingredient record represents in AIOXY.
+                        // The meal's allocated share belongs to whatever product consumes
+                        // the meal (e.g. animal feed) — out of scope for THIS calculation,
+                        // correctly excluded rather than double-counted into this product.
+                        const oilAllocationFactor = allocationFactors[0];
+
+                        for (const cat of Object.keys(allCategoryResults)) {
+                            if (typeof allCategoryResults[cat] === 'number') {
+                                allCategoryResults[cat] = allCategoryResults[cat] * oilAllocationFactor;
+                            }
+                        }
+                        adjustments.coproduct_allocation = {
+                            applied: true,
+                            method: 'ECONOMIC (ISO 14044 §4.3.4c — appropriate here as oil/meal have very different economic value relative to mass share)',
+                            ingredientCoProductSet: cpKey,
+                            allocationFactorApplied: oilAllocationFactor,
+                            coProducts: coProducts.map((p, i) => ({ name: p.name, massFraction: p.massFraction, price: p.price, priceUnit: p.priceUnit, priceDate: p.priceDate, priceConfidence: p.priceConfidence, allocationFactor: allocationFactors[i] })),
+                            note: 'Full ingredient impact multiplied by the oil co-product\'s economic allocation factor. The excluded share belongs to the meal co-product\'s own product system, not this one — correctly excluded, not lost.'
+                        };
+                    } catch (allocError) {
+                        // Fail loudly into adjustments, never silently skip allocation and
+                        // never silently apply a guessed factor — consistent with this
+                        // audit's standing rule against silent defaults.
+                        adjustments.coproduct_allocation = {
+                            applied: false,
+                            error: 'Allocation calculation failed: ' + (allocError && allocError.message ? allocError.message : String(allocError)),
+                            warning: 'Full, unallocated ingredient impact used — this OVERSTATES this product\'s footprint by including the meal co-product\'s share.'
+                        };
+                    }
+                }
             }
 
             // 1h-b. Inbound transport leg (non-FR origins only)
@@ -2270,7 +2616,12 @@ if (!traceability.usetox) {
 const gasCO2 = gasM3PerKg * fuelFactor;
 
             // REFRIGERANT LEAKAGE — F-gas direct emissions
-            // Formula: kg CO2e = (kgLeaked / totalOutputKg) × GWP_refrigerant (IPCC AR5 / EC Reg 517/2014)
+            // Formula: kg CO2e = (kgLeaked / totalOutputKg) × GWP_refrigerant (IPCC AR4, per EU F-Gas
+            // Regulation (EU) 2024/573 Annex I, which mandates AR4 values for HFCs -- NOT the latest
+            // IPCC AR, unlike EF 3.1's own Climate Change indicator which uses AR6. AUDIT-4
+            // correction (this session): was mislabeled "AR5" -- values were always numerically
+            // correct (verified against EU F-Gas Regulation Annex I / refrigerant supplier data
+            // sheets), only the citation was wrong.)
             // Added to Climate Change (Fossil) — F-gases are synthetic, non-biogenic, non-land-use.
             //
             // BUG-02 FIX: Normalise refrigerantType string before lookup.
@@ -2287,7 +2638,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             //   3. If refrigerantType is blank/null/undefined, GWP=0 is correct (no refrigerant).
             //   4. R-717 (ammonia) and R-744 (CO2) have GWP=0 and GWP=1 by definition — valid.
             //
-            // Source: IPCC AR5 GWP100 / EC F-Gas Regulation 517/2014 Annex I
+            // Source: IPCC AR4 GWP100, per EU F-Gas Regulation (EU) 2024/573 Annex I
             // C10-F2 FIX (Audit Session 7): All REFRIGERANT_GWP keys now uppercase suffixes
             // to match the .toUpperCase() normalisation applied to user input.
             // Previous bug: 'r-134a' → normalised to 'R-134A' but key was 'R-134a' → miss.
@@ -2347,12 +2698,24 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 // C8-F1 FIX (Audit Session 7): Derive fossil fraction from grid intensity.
                 // Matches the fix applied in core_physics.js calculateManufacturing().
                 // CC total unchanged — only CC-Fossil/CC-Biogenic sub-split improves.
+                // AUDIT-3 FIX (found via re-verification of A9, this session): 'energySource'
+                // here was a bare, never-declared identifier -- every other reference in this
+                // function correctly reads mfgIn.energySource, but these two lines didn't,
+                // which is a genuine ReferenceError ("energySource is not defined") that would
+                // crash the ENTIRE calculation for any product using the primary-factory-data
+                // override (mfgIn.usePrimaryFactoryData), a real, live, reachable feature path,
+                // not dead code. Also note: the dropdown/database only ever produces
+                // 'natural_gas' (never bare 'gas') and never produces 'oil' at all (confirmed:
+                // no 'oil' option exists in the energySource dropdown) -- 'oil' is left in this
+                // condition only because FUEL_CO2_FACTORS above supports a separate fuelType
+                // of 'fuel_oil' for a different field; it's harmless here (never matches) but
+                // kept rather than removed, since removing it isn't part of what this fix proves.
                 fossilFraction: (function() {
                     const ref = window.corePhysics.CONSTANTS.FOSSIL_FRACTION.FOSSIL_GRID_REFERENCE_G_PER_KWH;
                     // For gas/coal/oil energy sources, override to 1.0 (fully fossil combustion)
-                    if (energySource === 'gas' || energySource === 'coal' || energySource === 'oil') return 1.0;
+                    if (mfgIn.energySource === 'natural_gas' || mfgIn.energySource === 'coal' || mfgIn.energySource === 'oil') return 1.0;
                     // For renewable, use minimum floor
-                    if (energySource === 'renewable') return 0.05;
+                    if (mfgIn.energySource === 'renewable') return 0.05;
                     // For grid: derive from intensity
                     return Math.min(1.0, Math.max(0.05, gridIntensity / ref));
                 })(),
@@ -2490,9 +2853,44 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
         const ev         = pkgData.co2_virgin;
         const erecycled  = pkgData.co2_recycled;
-        const ed         = (pkgData.co2_disposal_average !== undefined && pkgData.co2_disposal_average !== null)
-                                ? pkgData.co2_disposal_average
-                                : (pkgData.co2_disposal !== undefined && pkgData.co2_disposal !== null ? pkgData.co2_disposal : 0.05);
+
+        // FIX EOL-DESTINATION-1 (this session, corrects a real pre-launch-review finding):
+        // A prior session's pdf-generator.js comment ("NEW-2 FIX") explicitly claimed this
+        // was already wired: "Ed resolved from packaging DB co2_disposal_[eolDest]... eolDestination
+        // now wired into CFF calculation." That claim was FALSE — this line never referenced
+        // eolDestination at all; it always used the flat co2_disposal_average regardless of
+        // the user's actual EU Average / Recycled / Incinerated / Landfill selection. The
+        // report's own transparency text was describing a mechanism that did not exist in
+        // the calculation — found via direct trace during pre-launch adversarial review.
+        // Real per-scenario data DOES exist in ingredients.js (co2_disposal_landfill,
+        // co2_disposal_incineration, confirmed present for every packaging material) — it
+        // was simply never read here. Now genuinely wired:
+        //   'landfill'     -> co2_disposal_landfill (real, material-specific)
+        //   'incinerated'  -> co2_disposal_incineration (real, material-specific)
+        //   'recycled'     -> uses co2_disposal_average as an honest proxy; a "100% Recycled
+        //                     (Closed Loop)" scenario's disposal-stage emissions are not
+        //                     separately modelled in ingredients.js (only landfill/incineration
+        //                     splits exist) -- using the material average here is disclosed,
+        //                     not fabricated as a distinct number the database doesn't have.
+        //   'eu_average' / anything else -> co2_disposal_average (the correct EU-blended default)
+        // NOTE: r2 (end-of-life recycling RATE) correctly does NOT vary by eolDestination --
+        // r2 represents the material's real-world waste-stream recycling statistic (a
+        // property of the material, per PEF Annex C), not a claim this specific product's
+        // packaging makes about its own disposal. Only ed (disposal-stage EMISSIONS, which
+        // genuinely differ between landfill and incineration physically) should vary by
+        // scenario -- this was correctly identified in scoping before writing this fix.
+        const eolDest = pkgIn.eolDestination || 'eu_average';
+        let ed;
+        if (eolDest === 'landfill' && pkgData.co2_disposal_landfill !== undefined && pkgData.co2_disposal_landfill !== null) {
+            ed = pkgData.co2_disposal_landfill;
+        } else if (eolDest === 'incinerated' && pkgData.co2_disposal_incineration !== undefined && pkgData.co2_disposal_incineration !== null) {
+            ed = pkgData.co2_disposal_incineration;
+        } else {
+            // 'recycled', 'eu_average', or any unrecognized value -- honest average fallback
+            ed = (pkgData.co2_disposal_average !== undefined && pkgData.co2_disposal_average !== null)
+                    ? pkgData.co2_disposal_average
+                    : (pkgData.co2_disposal !== undefined && pkgData.co2_disposal !== null ? pkgData.co2_disposal : 0.05);
+        }
         // FIX 1: CFF R2 — pkgData.r2 IS the Annex C end-of-life recycling rate; do not multiply by r1_max.
         // r1_max separately caps the user-supplied recycled content fraction per PEF 3.1 Annex C.
         // E3-F1 FIX: Validate recycledPct range 0-100.
@@ -3080,7 +3478,35 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             var nameLower = (ingredientName || '').toLowerCase(); // BUGFIX B12
             var commodityKey = null; // BUGFIX B12
 
-            if      (nameLower.includes('beef')    || nameLower.includes('cattle') || nameLower.includes('cow'))    commodityKey = 'beef';      // BUGFIX B12
+            // FIX COMMODITY-PRICE-1 (this session, corrects a real bug found during
+            // pre-launch review): 'cow' was matched into the 'beef' commodity key, meaning
+            // every "Cow milk" ingredient (a genuinely different, dairy product with its own
+            // distinct real-world market price) was priced as if it were beef cattle meat
+            // (EUR 7.60/kg) for the allocation-sensitivity check. Confirmed via full-database
+            // search: multiple real "Cow milk" ingredient variants exist and would all have
+            // hit this false match. Milk/dairy is now checked FIRST and separately, using a
+            // real, dated World Bank Pink Sheet-consistent-format price entry (added below in
+            // aioxy_derived_db.txt), before the beef check -- 'cow' is removed from the beef
+            // match entirely, since "cattle"/"beef" alone still correctly catch genuine beef
+            // cattle ingredients without the milk false-positive.
+            // FIX COMMODITY-PRICE-2 (found while testing FIX COMMODITY-PRICE-1): confirmed
+            // via full-database search that 2 real ingredients ("Suckler cull cow" variants)
+            // contain neither "beef" nor "cattle" nor "milk"/"dairy" -- a cull cow is a
+            // retired dairy/beef animal sold for meat at end of productive life, economically
+            // a beef product, not milk, so it should classify as beef, not fall through to
+            // the 1.0 generic fallback. Adding "cull cow" as an explicit beef match term.
+            // AUDIT-4 FIX (this session, found via exhaustive testing of the fix above against
+            // the full real ingredient database): 4 real "Cull cow" entries also contain the
+            // phrase "milk system" (e.g. "Cull cow, ... highland milk system, grass fed...") --
+            // describing the dairy farming system the cow came from, NOT the product being sold.
+            // Since milk/dairy was checked first, these fell into 'milk' before the cull-cow
+            // check ever ran -- pricing a meat product (cull cow, sold at end of productive
+            // life) as milk, an even larger mismatch (~23x) than the original beef-for-milk bug.
+            // Reordered: cull-cow/beef/cattle checked FIRST, since "cull cow" is a more specific
+            // product-type signal than "milk" appearing only as part of a system descriptor.
+            // Verified safe: no real "Cow milk" (non-cull) entry contains beef/cattle/cull cow.
+            if      (nameLower.includes('cull cow') || nameLower.includes('beef') || nameLower.includes('cattle')) commodityKey = 'beef'; // BUGFIX B12 + FIX COMMODITY-PRICE-2 + AUDIT-4 reorder
+            else if (nameLower.includes('milk')    || nameLower.includes('dairy'))              commodityKey = 'milk';      // FIX COMMODITY-PRICE-1
             else if (nameLower.includes('chicken') || nameLower.includes('broiler') || nameLower.includes('poultry')) commodityKey = 'chicken';   // BUGFIX B12
             else if (nameLower.includes('wheat'))                                                                     commodityKey = 'wheat';     // BUGFIX B12
             else if (nameLower.includes('maize')   || nameLower.includes('corn'))                                    commodityKey = 'maize';     // BUGFIX B12
@@ -3350,7 +3776,25 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             ISO_compliance: {
                 compliance_statement: 'Screening-level assessment per ISO 14040:2006 and ISO 14044:2006.',
                 principles: {
-                    system_boundary: 'Cradle-to-Retail',
+                    // FIX SYSTEM-BOUNDARY-1 (this session, found during pre-launch D7 review):
+                    // was the hardcoded string 'Cradle-to-Retail' -- a SECOND, independently
+                    // maintained copy of the real boundary value already defined once in
+                    // core_physics.js's SYSTEM_BOUNDARY.VALUE ("cradle-to-retail", all
+                    // lowercase). The two strings had drifted apart in capitalization. This
+                    // was harmless today only because compliance_engine.js's
+                    // validateSystemBoundary() (an exact-match `!==` check against this exact
+                    // value) has zero callers anywhere in the codebase -- confirmed via
+                    // full-file search. If that function is ever wired into the live
+                    // calculation flow in the future WITHOUT this fix, it would have thrown a
+                    // false "boundary mismatch" error on every single calculation, since
+                    // 'Cradle-to-Retail' !== 'cradle-to-retail' in JavaScript. Fixed by
+                    // referencing the real constant directly instead of maintaining a second
+                    // copy -- eliminates the drift risk entirely rather than just correcting
+                    // the casing once. NOTE: actually wiring validateSystemBoundary() into the
+                    // live flow was deliberately NOT done in this same pass -- flagged as a
+                    // defined follow-up requiring its own dedicated verification, not rushed
+                    // in as the last item of a long session.
+                    system_boundary: window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE,
                     functional_unit: '1 kg of product as sold',   // BUG-19 FIX: functional unit is always 1 kg; input.product.weightKg (e.g. 0.2 kg) is the formulation batch weight used for per-kg normalisation
                     allocation:      'Economic allocation per ISO 14044'
                 }

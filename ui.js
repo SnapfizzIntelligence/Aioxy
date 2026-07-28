@@ -2138,7 +2138,31 @@ function removeIngredient(index) {
 }
 
 function updateIngredientQuantity(index, newQuantity) {
-    selectedIngredients[index].quantity = parseFloat(newQuantity);
+    // FIX QUANTITY-EDIT-1 (this session, corrects a real bug found during pre-launch
+    // adversarial review): this function previously had ZERO validation, unlike
+    // addIngredient() which correctly guards against invalid quantity at add-time
+    // (`if (!ingredientId || isNaN(quantity) || quantity <= 0)`). Editing an
+    // already-added ingredient's quantity to blank/invalid/zero via this path bypassed
+    // that guard entirely. Confirmed the real, serious consequence: parseFloat('') = NaN,
+    // and `anyRealNumber + NaN = NaN` in JS -- meaning a single malformed edit would
+    // silently corrupt the ENTIRE product's category totals (not just this one
+    // ingredient's contribution), and confirmed the calculation engine has only ONE
+    // NaN guard in its entire 3700+ line body (for the single-score aggregate only, not
+    // per-category totals) -- meaning this would have reached the final PDF/CSV/audit-trail
+    // as the literal printed string "NaN", in a client-facing regulatory compliance report.
+    const parsed = parseFloat(newQuantity);
+    if (!selectedIngredients[index]) {
+        console.warn('[AIOXY] updateIngredientQuantity: no ingredient at index ' + index);
+        return;
+    }
+    if (isNaN(parsed) || parsed <= 0) {
+        alert('Please enter a valid quantity greater than 0.');
+        // Revert the input field to the ingredient's last known-good quantity rather than
+        // silently leaving an invalid value in the DOM or proceeding with a bad calculation.
+        updateIngredientList();
+        return;
+    }
+    selectedIngredients[index].quantity = parsed;
     calculateImpact();
 }
 
@@ -2321,6 +2345,13 @@ const ANIMAL_KEYWORDS = [
     'chicken','broiler','hen','poultry',
     'turkey','duck','rabbit',
     'salmon','trout','sea bass','sea bream','tuna',
+    // AUDIT-4 FIX (this session, found during C4 re-verification): anchovy/herring/mackerel
+    // are real, present-in-database fish ingredients not caught by this list, and NOT caught
+    // by either fallback check below -- entericIncluded metadata is correctly absent for fish
+    // (no enteric fermentation), and livestock_yields (the other fallback) is dead code, never
+    // defined anywhere in the database for any ingredient. Without this, these 3 real
+    // ingredients would silently show crop-only primary-data fields instead of animal fields.
+    'anchovy','herring','mackerel',
     'shrimp','prawn','mussel','oyster','scallop','crab','lobster',
     'milk','dairy','cream','butter','cheese','yogurt','whey',
     'egg','eggs'

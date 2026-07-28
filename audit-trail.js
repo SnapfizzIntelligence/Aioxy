@@ -1175,16 +1175,31 @@ function exportCSRDMatrix() {
         hasPrimaryMfgData    ? 'Factory energy data'  : ''
     ].filter(Boolean).join('; ') || 'None — 100% AGRIBALYSE 3.2 secondary data';
 
-    // FIX: [audit-trail audit] Was missing 4 countries (BO, HN, GT, VE) already present
-    // in retailer_csv_engine.js's EUDR_HR list (CSV-F1 FIX). This function specifically
-    // produces the CSRD/ESRS regulatory export — per this file's own GAP-1 design note,
-    // that's meant to be authoritative filing data, which makes an incomplete high-risk
-    // list here more consequential than a dashboard display gap.
-    const EUDR_HIGH_RISK = new Set(['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD','BO','HN','GT','VE']);
-    const EUDR_COMMODITIES = { BR:'Soy/Cattle', ID:'Palm Oil', MY:'Palm Oil', AR:'Soy/Cattle',
-                                CO:'Cattle/Coffee', PE:'Cattle/Coffee', NG:'Timber', CM:'Timber',
-                                CG:'Timber', CD:'Timber', BO:'Soy/Cattle', HN:'Palm Oil/Coffee',
-                                GT:'Palm Oil/Coffee', VE:'Cattle' };
+    // FIX (this session): Previous list (BR, ID, MY, AR, CO, PE, NG, CM, CG, CD, BO, HN, GT, VE)
+    // matched no official EU classification -- it reflected general public reputation for
+    // deforestation risk rather than the actual regulation, and additionally drifted out of
+    // sync with retailer_csv_engine.js after that file was independently corrected. The real,
+    // official European Commission country risk benchmarking under EUDR Article 29 (Commission
+    // Implementing Regulation (EU) 2025/1093, published 22 May 2025) classifies only FOUR
+    // countries as "high risk": Belarus, North Korea, Myanmar, and Russia. Brazil, Indonesia,
+    // Malaysia, and the other countries previously listed here are officially "standard risk",
+    // not high risk -- this function's old list directly contradicted the binding EU
+    // classification it claimed to represent, in the single most authoritative export this
+    // system produces (the 9-block CSRD/CDP regulatory filing CSV).
+    // This classification is under active political dispute -- the European Parliament voted
+    // 373-289 to reject it on 9 July 2025, citing data quality and transparency concerns, and a
+    // first formal review is scheduled for 2026. Disclosed in Block 9 / EUDR_CLASSIFICATION_SOURCE
+    // rather than presented as permanently settled.
+    // Additionally: 'LOW = verified compliant' below the old header comment was itself false --
+    // no verification was ever performed for the non-high-risk case. The EC's own system has
+    // three tiers (low/standard/high) but AIOXY does not have a complete verified list of the
+    // ~50 "standard" countries, so the non-high case is now honestly labeled NOT_HIGH rather
+    // than a false LOW/verified claim -- consistent with the same fix already applied across
+    // retailer_csv_engine.js's 13 export formats.
+    const EUDR_HIGH_RISK = new Set(['BY', 'KP', 'MM', 'RU']);
+    const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025/1093 (22 May 2025). ' +
+        'Rejected by European Parliament 9 Jul 2025 (data quality/transparency concerns); ' +
+        'first formal review scheduled 2026. Verify against the current official EC list before relying on this field.';
 
     const getTotal  = (cat) => (pef[cat]?.total ?? 0);
     const getPerKg  = (cat) => pWeightKg > 0 ? getTotal(cat) / pWeightKg : 0;
@@ -1254,9 +1269,9 @@ function exportCSRDMatrix() {
     rows.push(['lcia_method',          'EF 3.1',                                   '',     'JRC Technical Report EUR 29540 EN',   '16 categories + 3 CC sub-splits'].map(q).join(','));
     rows.push(['transport_method',     'GLEC v3.2',                                '',     'Smart Freight Centre 2025',           ''].map(q).join(','));
     rows.push(['packaging_method',     'PEF 3.1 CFF Annex C v2.1',                '',     'European Commission May 2020',        ''].map(q).join(','));
-    rows.push(['gwp_basis',            'IPCC AR5 GWP100',                          '',     'IPCC 2013',                           ''].map(q).join(','));
-    rows.push(['gwp_ch4_factor',       '28',                                       'kg CO2e/kg CH4', 'IPCC AR5 Table 8.7',          'GWP100 100-year horizon'].map(q).join(','));
-    rows.push(['gwp_n2o_factor',       '265',                                      'kg CO2e/kg N2O', 'IPCC AR5 Table 8.7',          'GWP100 100-year horizon'].map(q).join(','));
+    rows.push(['gwp_basis',            'IPCC AR6 GWP100',                          '',     'IPCC 2021',                           ''].map(q).join(','));
+    rows.push(['gwp_ch4_factor',       '27.0 (biogenic) / 29.8 (fossil)',          'kg CO2e/kg CH4', 'IPCC AR6 Table 7.15',          'GWP100 100-year horizon'].map(q).join(','));
+    rows.push(['gwp_n2o_factor',       '273',                                      'kg CO2e/kg N2O', 'IPCC AR6 Table 7.15',          'GWP100 100-year horizon'].map(q).join(','));
     rows.push(['water_scarcity',       'AWARE 2.0',                                '',     'Boulay et al. 2018',                  ''].map(q).join(','));
     rows.push(['overall_dqr',          dqrOverall,                                 '/5.0', 'PEF 3.1 §5.7',                        dqrLevel].map(q).join(','));
     rows.push(['uncertainty_ci_width_pct', uncPct, '%', 'Monte Carlo 1000 iterations — (P95-P5)/mean×100 per category, averaged', 'Lognormal propagation | Not a CV — see Block 4'].map(q).join(','));
@@ -1442,13 +1457,13 @@ function exportCSRDMatrix() {
     rows.push([c('BLOCK 6 — INGREDIENT TRACEABILITY')]);
     rows.push([c('Source: AGRIBALYSE 3.2 (ADEME/INRAE 2022). Values at farm gate.')]);
     rows.push([c('Allocation: economic, inherited from AGRIBALYSE 3.2 system boundary.')]);
-    rows.push([c('eudr_risk_flag: HIGH = origin in EUDR Annex 1 high-risk countries; LOW = verified compliant; N/A = not applicable.')]);
+    rows.push([c('eudr_risk_flag: HIGH = origin on the official EU high-risk list (' + EUDR_CLASSIFICATION_SOURCE + '); NOT_HIGH = confirmed not on that list. AIOXY does not assert a LOW/standard-risk classification — no verified complete list of EU "standard risk" countries exists. See scope_limitation notes in Block 9.')]);
     rows.push([
         'ingredient_name', 'internal_id', 'agribalyse_lci_name',
         'quantity_kg', 'origin_country', 'processing_state',
         'cc_total_kg_co2e', 'cc_per_kg_kg_co2e', 'pct_of_cc_total',
         'dqr', 'primary_data_applied', 'allocation_method',
-        'eudr_risk_flag', 'eudr_commodity_type'   // GAP-3
+        'eudr_risk_flag', 'eudr_regulated_commodity_scope'   // GAP-3
     ].map(q).join(','));
 
     const ccTotal = getTotal('Climate Change');
@@ -1463,9 +1478,14 @@ function exportCSRDMatrix() {
         const ingCC   = ing.allCategoryResults?.['Climate Change'] || ing.subtotal || 0;
         const perKgCC = qty > 0 ? ingCC / qty : 0;
         const pctCC   = ccTotal > 0 ? (ingCC / ccTotal * 100).toFixed(2) : '0.00';
-        // GAP-3: EUDR fields
-        const eudrRisk      = EUDR_HIGH_RISK.has(origin) ? 'HIGH' : 'LOW';
-        const eudrCommodity = EUDR_HIGH_RISK.has(origin) ? (EUDR_COMMODITIES[origin] || 'Check EUDR Annex') : 'N/A';
+        // GAP-3 FIX (this session): country-risk flag now matches the corrected
+        // EUDR_HIGH_RISK set above. Commodity-type is no longer a per-country guess --
+        // EUDR Annex 1 defines the regulated commodity scope itself (cattle, cocoa,
+        // coffee, oil palm, rubber, soya, wood and derived products), independent of
+        // origin country. A fabricated per-country commodity mapping for the corrected
+        // 4-country list (Belarus/North Korea/Myanmar/Russia) would not be sourced data.
+        const eudrRisk = EUDR_HIGH_RISK.has(origin) ? 'HIGH' : 'NOT_HIGH';
+        const eudrCommodityScope = 'Regulation (EU) 2023/1115 Annex 1: cattle, cocoa, coffee, oil palm, rubber, soya, wood/derived products';
 
         rows.push([
             ing.name || ingId, ingId, lciName,
@@ -1474,7 +1494,7 @@ function exportCSRDMatrix() {
             (ing.dqr || 0).toFixed(2),
             (!!ing.primary_data_used || !!ing.primary_data) ? 'YES' : 'NO',
             ing.allocationMethod || 'Economic (AGRIBALYSE 3.2)',
-            eudrRisk, eudrCommodity
+            eudrRisk, eudrCommodityScope
         ].map(q).join(','));
     });
     rows.push(['']);
@@ -1500,7 +1520,15 @@ function exportCSRDMatrix() {
             d.source || 'AGRIBALYSE 3.2 DQI Matrix'
         ].map(q).join(','));
     });
-    rows.push(['weighted_overall_dqr', '', '', '', '', 'N/A', dqrOverall, 'Contribution-weighted — formula: (TeR+TiR+GR+P)/4'].map(q).join(','));
+    // FIX DQR-DISCLOSURE-1 (this session): "Contribution-weighted" was ambiguous -- a
+    // reader would reasonably assume this means the AGRIBALYSE DQI §6.2 standard
+    // (mass-weighted), when it actually means Climate-Change-impact-weighted, an explicit
+    // AIOXY methodological choice documented in compliance_engine.js's calculateWeightedDQR
+    // ("H2-F1 FIX: CC-weighted DQR — AIOXY methodological choice. AGRIBALYSE DQI §6.2
+    // specifies mass-weighted."). That comment's own instruction was to document this in
+    // the audit trail for regulatory submissions -- this line existed but wasn't precise
+    // enough to actually convey the deviation. Now explicit.
+    rows.push(['weighted_overall_dqr', '', '', '', '', 'N/A', dqrOverall, 'Weighted by each ingredient\'s Climate Change impact share (NOT mass-weighted — AGRIBALYSE DQI §6.2 specifies mass-weighted; this is an explicit AIOXY methodological choice to prioritise high-impact ingredients) — per-ingredient formula: (TeR+TiR+GR+P)/4'].map(q).join(','));
     rows.push(['']);
 
     // ── BLOCK 8: DATABASE VERSIONS ────────────────────────────────────────────
@@ -1512,7 +1540,7 @@ function exportCSRDMatrix() {
         ['Transport',        'GLEC v3.2',             'Smart Freight Centre October 2025'],
         ['Grid_intensity',   'Ember 2025',            'Ember Climate 2025'],
         ['Air_pollutants',   'EMEP/EEA 2023',         'EEA Guidebook 2023'],
-        ['GWP_values',       'IPCC AR5 GWP100',       'CH4=28 N2O=265'],
+        ['GWP_values',       'IPCC AR6 GWP100',       'CH4-bio=27.0 CH4-foss=29.8 N2O=273'],
         ['Water_scarcity',   'AWARE 2.0',             'Boulay et al. 2018'],
         ['Land_use',         'LANCA v2.5',            'Fraunhofer IBP / JRC'],
         ['Toxicity',         'USEtox 2.14',           'UNEP/SETAC'],
@@ -1541,6 +1569,9 @@ function exportCSRDMatrix() {
     rows.push(['scope_limitation_5', 'Results are screening-level — not for comparative advertising',
                'ISO 14044 §6 / EmpCo Directive (EU 2024/825, applies 27 Sep 2026)',
                'Any consumer-facing environmental claim must undergo ISO 14044 critical review'].map(q).join(','));
+    rows.push(['scope_limitation_6', 'EUDR high-risk country classification is under active political dispute',
+               'Commission Implementing Regulation (EU) 2025/1093 — rejected by European Parliament 9 Jul 2025, first formal review scheduled 2026',
+               'eudr_risk_flag in Block 6 reflects the current official 4-country list (Belarus, North Korea, Myanmar, Russia) only; verify against the current EC list before relying on this field'].map(q).join(','));
     rows.push(['']);
     // Legacy comment-style legal footer
     // FIX: [audit-trail audit] Was citing "EU Green Claims Directive COM/2023/166" —

@@ -158,7 +158,7 @@ const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025
         methodology:     'PEF 3.1 / EF 3.1 / ISO 14044',
         lciDatabase:     'AGRIBALYSE 3.2 (ADEME/INRAE 2022)',
         lciaMethod:      'EF 3.1 (JRC EUR 29540 EN)',
-        gwpBasis:        'IPCC AR5 GWP100 — CH4=28, N2O=265',
+        gwpBasis:        'IPCC AR6 GWP100 — CH4-biogenic=27.0, CH4-fossil=29.8, N2O=273',
         primaryDataApplied,
 
         // Manufacturing
@@ -481,7 +481,7 @@ function generateLidlCSV(d) {
     rows.push([c('E3 — BIODIVERSITY / LAND USE')]);
     rows.push(['land_use_pt_per_kg',              fix(d.land, 4),            'Pt/kg',       'E3.1', 'LANCA v2.5'].map(q).join(','));
     rows.push(['freshwater_eutrophication_per_kg',  fix(d.eutr_fw, 8),         'kg Pe/kg',     'E3.3', 'EF 3.1 freshwater eutrophication'].map(q).join(','));
-    rows.push(['deforestation_risk',              d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'LOW', '', 'E3.2', 'EUDR Annex 1 screening'].map(q).join(','));
+    rows.push(['deforestation_risk',              d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'NOT_HIGH', '', 'E3.2', 'EUDR Annex 1 screening — NOT_HIGH = confirmed not on official high-risk list; AIOXY cannot assert LOW/standard tier, see disclaimer header'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('E4 — PACKAGING')]);
@@ -539,6 +539,13 @@ function generateAldiCSV(d) {
     rows.push(['water_withdrawal_m3_per_kg',      fix(d.water, 7),          'm3 world eq.', '3.1', 'AWARE 2.0 water scarcity'].map(q).join(','));
     rows.push(['land_use_pt_per_kg',              fix(d.land, 4),            'Pt/kg',       '3.2', 'LANCA v2.5'].map(q).join(','));
     rows.push(['freshwater_eutrophication',       fix(d.eutr_fw, 8),         'kg Pe/kg',    '3.3', ''].map(q).join(','));
+    // ADDED (this session, FIX EUDR-GAP-1): Aldi's questionnaire had no deforestation-risk
+    // field at all — a genuine completeness gap found during pre-launch review, since 10 of
+    // 13 other retailer/regulatory formats already have one. Uses the same honest NOT_HIGH
+    // labeling and official EU 4-country list established across all other formats this
+    // session (Belarus/North Korea/Myanmar/Russia) — deliberately not asserting a false LOW/
+    // standard-risk claim, consistent with every other formatter's disclaimer.
+    rows.push(['deforestation_risk',              d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'NOT_HIGH', '', '3.4', 'EUDR Annex 1 screening — NOT_HIGH = confirmed not on official high-risk list; AIOXY cannot assert LOW/standard tier'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('BLOCK 4 — PACKAGING')]);
@@ -640,7 +647,7 @@ function generateReweCSV(d) {
     rows.push(['eutrophierung_suessw_kg_p_pro_kg',   fix(d.eutr_fw, 8),      'kg Pe/kg',   'U3.2', ''].map(q).join(','));
     rows.push(['eutrophierung_marin_kg_n_pro_kg',    fix(d.eutr_m, 8),       'kg Ne/kg',   'U3.3', ''].map(q).join(','));
     rows.push(['eutrophierung_terrest_mol_n_pro_kg', fix(d.eutr_t, 8),       'mol Ne/kg',  'U3.4', ''].map(q).join(','));
-    rows.push(['eudr_risiko',                        d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HOCH' : 'NIEDRIG', '', 'U3.5', 'EUDR-Verordnung Anhang 1'].map(q).join(','));
+    rows.push(['eudr_risiko',                        d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HOCH' : 'NICHT_HOCH', '', 'U3.5', 'EUDR-Verordnung Anhang 1 — NICHT_HOCH = bestätigt nicht auf der offiziellen Hochrisikoliste; keine Einstufung als niedrig/standard möglich, siehe Hinweis im Kopfbereich'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('U4 — VERPACKUNG (PACKAGING)')]);
@@ -709,7 +716,7 @@ function generateAlbertHeijnCSV(d) {
     rows.push(['ah_land_use_pt_per_kg',             fix(d.land, 4),          'Pt/kg',    'CAT4.1', ''].map(q).join(','));
     rows.push(['ah_freshwater_eutroph_per_kg',      fix(d.eutr_fw, 8),       'kg Pe/kg', 'CAT4.2', ''].map(q).join(','));
     rows.push(['ah_marine_eutroph_per_kg',          fix(d.eutr_m, 8),        'kg Ne/kg', 'CAT4.3', ''].map(q).join(','));
-    rows.push(['ah_deforestation_risk_flag',        d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'LOW', '', 'CAT4.4', 'EUDR Annex 1'].map(q).join(','));
+    rows.push(['ah_deforestation_risk_flag',        d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'NOT_HIGH', '', 'CAT4.4', 'EUDR Annex 1 — NOT_HIGH = confirmed not on official high-risk list; cannot assert LOW/standard tier, see disclaimer header'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('CATEGORY 5 — PACKAGING')]);
@@ -776,7 +783,7 @@ function generateCarrefourCSV(d) {
     rows.push(['eutrophisation_eau_douce_par_kg',  fix(d.eutr_fw, 8),        'kg Pe/kg',  'R4.2', ''].map(q).join(','));
     rows.push(['eutrophisation_marine_par_kg',     fix(d.eutr_m, 8),         'kg Ne/kg',  'R4.3', ''].map(q).join(','));
     rows.push(['eutrophisation_terrestre_par_kg',  fix(d.eutr_t, 8),         'mol Ne/kg', 'R4.4', ''].map(q).join(','));
-    rows.push(['risque_deforestation',             d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'ELEVE' : 'FAIBLE', '', 'R4.5', 'EUDR Annexe 1'].map(q).join(','));
+    rows.push(['risque_deforestation',             d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'ELEVE' : 'NON_ELEVE', '', 'R4.5', 'EUDR Annexe 1 — NON_ELEVE = confirme hors liste officielle a risque eleve ; AIOXY ne peut pas affirmer un niveau faible/standard, voir avertissement en en-tete'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('RUBRIQUE 5 — EMBALLAGE')]);
@@ -886,6 +893,14 @@ function generateIntermarcheCSV(d) {
     rows.push(['materiau_emballage',             d.pkgMaterial,            '',          'A12',''].map(q).join(','));
     rows.push(['taux_recycle_emballage_pct',     fix(d.pkgRecycledPct,1),  '%',         'A13',''].map(q).join(','));
     rows.push(['eutrophisation_fw_par_kg',        fix(d.eutr_fw, 8),        'kg Pe/kg',   'A13b','Eau douce EF 3.1'].map(q).join(','));
+    // AJOUTE (cette session, FIX EUDR-GAP-1) : le questionnaire Intermarche n'avait aucun
+    // champ de risque de deforestation -- un veritable manque de completude identifie lors
+    // de la revue pre-lancement, puisque 10 des 13 autres formats retailer/reglementaires en
+    // possedent deja un. Utilise le meme etiquetage honnete NON_ELEVE et la liste officielle
+    // UE a 4 pays etablie dans tous les autres formats cette session (Bielorussie/Coree du
+    // Nord/Birmanie/Russie) -- n'affirme volontairement pas un faux niveau FAIBLE/standard,
+    // conformement a l'avertissement de tous les autres formats.
+    rows.push(['risque_deforestation',            d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'ELEVE' : 'NON_ELEVE', '', 'A13c', 'EUDR Annexe 1 — NON_ELEVE = confirme hors liste officielle a risque eleve ; AIOXY ne peut pas affirmer un niveau faible/standard'].map(q).join(','));
     rows.push(['methodologie',                   d.methodology,            '',          'A14',''].map(q).join(','));
     rows.push(['qualite_donnees_dqr',            fix(d.dqrOverall,2),      '/5',        'A15',''].map(q).join(','));
     rows.push(['donnees_primaires',              d.primaryDataApplied,     '',          'A16',''].map(q).join(','));
@@ -938,7 +953,7 @@ function generateCoopCHCSV(d) {
     rows.push(['land_use_pt_per_kg',              fix(d.land, 4),           'Pt/kg',  'C4.1', ''].map(q).join(','));
     rows.push(['eutrophication_fw_per_kg',        fix(d.eutr_fw, 8),        'kg Pe/kg','C4.2',''].map(q).join(','));
     rows.push(['eutrophication_marine_per_kg',    fix(d.eutr_m, 8),         'kg Ne/kg','C4.3',''].map(q).join(','));
-    rows.push(['deforestation_risk',              d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'LOW', '', 'C4.4', 'EUDR screening'].map(q).join(','));
+    rows.push(['deforestation_risk',              d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'NOT_HIGH', '', 'C4.4', 'EUDR screening — NOT_HIGH = confirmed not on official high-risk list; cannot assert LOW/standard tier, see disclaimer header'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('CRITERION 5 — PACKAGING')]);
@@ -1016,7 +1031,7 @@ function generateCSRD_ESRS_CSV(d) {
     rows.push(['esrs_e4_land_use',               fix(d.land, 4),            'Pt/kg',      'ESRS E4','E4-4 §28','Land use','LANCA v2.5'].map(q).join(','));
     rows.push(['esrs_e4_eutrophication_fw',       fix(d.eutr_fw, 8),        'kg Pe/kg',   'ESRS E4','E4-4','Freshwater eutroph.','EF 3.1'].map(q).join(','));
     rows.push(['esrs_e4_eutrophication_terr',     fix(d.eutr_t, 8),         'mol Ne/kg',  'ESRS E4','E4-4','Terrestrial eutroph.','EF 3.1'].map(q).join(','));
-    rows.push(['esrs_e4_deforestation_risk',      d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'LOW', '', 'ESRS E4','E4-4','EUDR risk','Regulation 2023/1115'].map(q).join(','));
+    rows.push(['esrs_e4_deforestation_risk',      d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'NOT_HIGH', '', 'ESRS E4','E4-4','EUDR risk','Regulation 2023/1115 — NOT_HIGH = confirmed not on official high-risk list; AIOXY does not assert LOW/standard classification, see disclaimer header'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('ESRS E5 — RESOURCE USE AND CIRCULAR ECONOMY')]);
@@ -1090,7 +1105,7 @@ function generateCDP_SC_CSV(d) {
     rows.push(['water_scarcity_m3_world_eq_per_kg', fix(d.water, 7),       'm3 world eq./kg','C-W3','Water scarcity AWARE 2.0'].map(q).join(','));
     rows.push(['land_use_pt_per_kg',               fix(d.land, 4),         'Pt/kg',          'C-B3','Land use LANCA v2.5'].map(q).join(','));
     rows.push(['eutrophication_fw_per_kg',         fix(d.eutr_fw, 8),      'kg Pe/kg',       'C-B3','Freshwater eutrophication EF 3.1'].map(q).join(','));
-    rows.push(['deforestation_risk_flag',          d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'LOW', '', 'C-F14.2', 'EUDR Annex 1 screening'].map(q).join(','));
+    rows.push(['deforestation_risk_flag',          d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'NOT_HIGH', '', 'C-F14.2', 'EUDR Annex 1 screening — NOT_HIGH = confirmed not on official high-risk list; cannot assert LOW/standard tier, see disclaimer header'].map(q).join(','));
     rows.push(['packaging_material',               d.pkgMaterial,            '',          'C-W3', 'Primary packaging material'].map(q).join(','));
     rows.push(['packaging_recycled_content_pct',   fix(d.pkgRecycledPct, 1), '%',         'C-W3', 'Circular economy indicator'].map(q).join(','));
     rows.push(['packaging_eol_pathway',            d.pkgEoLScenario,         '',          'C-W3', 'End-of-life route'].map(q).join(','));
@@ -1156,6 +1171,13 @@ function generateGenericEUCSV(d) {
     rows.push(['resourceUseFossils',              fix(d.res_fossil, 4),     'MJ/kg',      'ESSG:res_f',      'E5-4','EF 3.1'].map(q).join(','));
     rows.push(['resourceUseMineralsMetals',       fix(d.res_mm, 10),        'kg Sbe/kg',  'ESSG:res_mm',     'E5-4','EF 3.1'].map(q).join(','));
     rows.push(['pefSingleScore',                  fix(d.pefScore, 4),       'microPt/kg', 'ESSG:pef_score',  'PEF3.1','EF 3.1 NF/WF'].map(q).join(','));
+    // ADDED (this session, FIX EUDR-GAP-1): this generic/GS1-ESSG format had no
+    // deforestation-risk field at all — a genuine completeness gap found during
+    // pre-launch review, since 10 of 13 other retailer/regulatory formats already have
+    // one. Uses the same honest NOT_HIGH labeling and official EU 4-country list
+    // established across all other formats this session (Belarus/North Korea/Myanmar/
+    // Russia) — deliberately not asserting a false LOW/standard-risk claim.
+    rows.push(['deforestationRisk',               d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'HIGH' : 'NOT_HIGH', '', 'ESSG:eudr_risk', 'E3-4', 'EUDR Annex 1 screening — NOT_HIGH = confirmed not on official high-risk list; AIOXY cannot assert LOW/standard tier'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('PACKAGING')]);

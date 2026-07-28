@@ -230,7 +230,7 @@
                 glec_version:        'GLEC v3.2 — Smart Freight Centre, published 21 October 2025',
                 grid_intensity_source: 'Ember 2025',
                 emep_eea_version:    'EMEP/EEA Air Pollutant Emission Inventory Guidebook 2023',
-                ipcc_gwp_basis:      'IPCC AR5 GWP100 — no climate-carbon feedback (CH4=28, N2O=265)',
+                ipcc_gwp_basis:      'IPCC AR6 GWP100 (2021) — no climate-carbon feedback (CH4-biogenic=27.0, CH4-fossil=29.8, N2O=273). AUDIT-4 correction (this session): was previously stale at AR5 (CH4=28, N2O=265) after the GWP fix in calculation_engine.js/core_physics.js -- this citation in the hash payload was missed at the time and is now corrected to match.',
                 aware_version:       'AWARE 2.0 — WULCA consensus model (Boulay et al. 2018)',
                 lanca_version:       'LANCA v2.5 — Fraunhofer IBP / European Commission JRC',
                 usetox_version:      'USEtox 2.14',

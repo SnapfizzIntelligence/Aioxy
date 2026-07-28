@@ -560,7 +560,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             ['Transport method',   'GLEC v3.2 — Smart Freight Centre 2025'],
             ['Agricultural GHGs',  'IPCC 2006 Tier 1 (N2O direct, leaching, volatilization)'],
             ['Packaging method',   'PEF 3.1 Circular Footprint Formula (Annex C v2.1)'],
-            ['GWP basis',          'IPCC AR5 GWP100 — CH4=28, N2O=265'],
+            ['GWP basis',          'IPCC AR6 GWP100 — CH4-bio=27.0, CH4-foss=29.8, N2O=273'],
             ['PDF transparency',   'Every formula shown with full substitution of actual numbers'],
             ['Assessment type',    'Screening-level LCA  |  Not third-party verified'],
             ['Audit hash (SHA-256)',safe(auditHash).slice(0,32) + (auditHash.length>32 ? '..' : '')]
@@ -679,15 +679,44 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             // where the "waste" fraction is very likely a real, separately-sold co-product.
             // Narrowed the warning to only these two, so the disclosure doesn't over-warn
             // on a process that doesn't actually raise the concern.
-            const HIGH_LOSS_METHODS = { crushing: 0.60, wet_milling: 0.35 };
+            // FIX ALLOC-GAP-2 (this session, corrects a real staleness bug found during
+            // pre-launch review): this block previously said crushing has 60% mass loss and
+            // that "co-product allocation is not yet implemented on this platform" -- BOTH
+            // now factually wrong for crushing specifically. This session corrected
+            // crushing's yield/loss to 0.30/0.70 (three independently-converging sources:
+            // own mass-balance calc, Penn State Extension, general expeller-press
+            // literature) and implemented REAL ISO 14044 §4.3.4 economic co-product
+            // allocation for soybean+crushing specifically (current, same-currency IMF/FRED
+            // prices). Rapeseed allocation data was also sourced but disabled after a
+            // currency-mismatch was caught in pre-ship testing (oil priced USD, meal priced
+            // GBP from a 2013 quote) -- genuinely still unallocated. wet_milling was never
+            // addressed and remains genuinely unallocated. The warning now correctly
+            // distinguishes these three cases instead of one blanket claim.
+            const HIGH_LOSS_METHODS = { crushing: 0.70, wet_milling: 0.35 };
             const procMethod = window.lastInput?.manufacturing?.processingMethod;
             if (procMethod && HIGH_LOSS_METHODS[procMethod]) {
+                const isSoybeanCrushing = procMethod === 'crushing' &&
+                    ingComps.some(ing => (ing.id || '').toLowerCase().includes('soybean'));
                 doc.setTextColor(...C.red);
-                doc.text('⚠ "' + procMethod + '" has a high mass-loss fraction (' +
-                         (HIGH_LOSS_METHODS[procMethod]*100).toFixed(0) + '%). This may represent a ' +
-                         'valuable co-product (e.g. meal, cake) rather than true waste. Co-product ' +
-                         'allocation is not yet implemented on this platform -- verify manually if this ' +
-                         'process yields a separately-sold output.', M, Y + 4, { maxWidth: CW });
+                if (isSoybeanCrushing) {
+                    doc.text('\u2713 "crushing" (soybean) has a high mass-loss fraction (70%), correctly ' +
+                             'allocated: real ISO 14044 \u00A74.3.4 economic co-product allocation is applied ' +
+                             '(soybean oil vs. meal, current IMF/FRED prices) — see allocation disclosure ' +
+                             'above. This is NOT unallocated waste.', M, Y + 4, { maxWidth: CW });
+                } else if (procMethod === 'crushing') {
+                    doc.text('\u26A0 "crushing" has a high mass-loss fraction (' +
+                             (HIGH_LOSS_METHODS[procMethod]*100).toFixed(0) + '%). This may represent a ' +
+                             'valuable co-product (e.g. meal, cake) rather than true waste. Co-product ' +
+                             'allocation is implemented for SOYBEAN specifically on this platform, but not ' +
+                             'yet for this ingredient — verify manually if this process yields a ' +
+                             'separately-sold output.', M, Y + 4, { maxWidth: CW });
+                } else {
+                    doc.text('\u26A0 "' + procMethod + '" has a high mass-loss fraction (' +
+                             (HIGH_LOSS_METHODS[procMethod]*100).toFixed(0) + '%). This may represent a ' +
+                             'valuable co-product rather than true waste. Co-product allocation is not yet ' +
+                             'implemented for this processing method — verify manually if it yields a ' +
+                             'separately-sold output.', M, Y + 4, { maxWidth: CW });
+                }
                 Y += 12;
             }
         }
@@ -1176,7 +1205,17 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('    Formula: (0.6 x yield_factor) + (0.4 x nitrogen_factor)');
                 layerBLines.push('           = (0.6 x ' + fix(cm.yield_factor,4) + ') + (0.4 x ' + fix(cm.n_factor,4) + ')');
                 layerBLines.push('           = ' + fix(cm.result, 6));
-                layerBLines.push('  Applied to: 14 of 16 EF 3.1 categories (conservative proxy)');
+                // FIX N2O-DOUBLECOUNT-1 (this session): "Applied to: 14 of 16" was correct
+                // before this fix, now stale — Climate Change/Fossil/Biogenic were REMOVED
+                // from this multiplier's scope (see note below) to fix a real double-counting
+                // bug against the separate, additive IPCC Tier 1 N2O calculation. Corrected
+                // count and reasoning shown explicitly rather than left stale.
+                layerBLines.push('  Applied to: 11 of 16 EF 3.1 categories (conservative proxy)');
+                layerBLines.push('  NOT applied to Climate Change / Climate Change - Fossil / Climate Change - Biogenic:');
+                if (cm.note) {
+                    const noteLines = cm.note.match(/.{1,95}(\s|$)/g) || [cm.note];
+                    noteLines.forEach(l => layerBLines.push('    ' + l.trim()));
+                }
                 layerBLines.push('  EXCLUDED from multiplier: Ozone Depletion (driven by CFC/HCFC refrigerant releases,');
                 layerBLines.push('    unrelated to agricultural yield or N rate) and Ionizing Radiation (driven by');
                 layerBLines.push('    nuclear share in background electricity mix, not by farm practice).');
@@ -1189,11 +1228,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 const n = adj.n2o_applied;
                 layerBLines.push('B4 — IPCC Tier 1 N2O (crop nitrogen, added to Climate Change):');
                 layerBLines.push('  F_SN = ' + fix(n.F_SN_kg, 4) + ' kg N applied');
-                layerBLines.push('  Direct   = F_SN x 0.01 x (44/28) x GWP_N2O(265)');
-                layerBLines.push('           = ' + fix(n.F_SN_kg,4) + ' x 0.01 x 1.5714 x 265 = ' + fix(n.direct_kgCO2e, 4) + ' kg CO2e');
-                layerBLines.push('  Leaching = F_SN x 0.30 x 0.011 x (44/28) x 265');
+                layerBLines.push('  Direct   = F_SN x 0.01 x (44/28) x GWP_N2O(273)');
+                layerBLines.push('           = ' + fix(n.F_SN_kg,4) + ' x 0.01 x 1.5714 x 273 = ' + fix(n.direct_kgCO2e, 4) + ' kg CO2e');
+                layerBLines.push('  Leaching = F_SN x 0.30 x 0.011 x (44/28) x 273');
                 layerBLines.push('           = ' + fix(n.indirect_leach_kgCO2e || 0, 4) + ' kg CO2e');
-                layerBLines.push('  Volatil. = F_SN x 0.10 x 0.01 x (44/28) x 265');
+                layerBLines.push('  Volatil. = F_SN x 0.10 x 0.01 x (44/28) x 273');
                 layerBLines.push('           = ' + fix(n.volatilization_kgCO2e || 0, 4) + ' kg CO2e');
                 const n2oTotal = (n.direct_kgCO2e||0)+(n.indirect_leach_kgCO2e||0)+(n.volatilization_kgCO2e||0);
                 layerBLines.push('  N2O total = ' + fix(n2oTotal,4) + ' kg CO2e  [batch total for ' + fix(qty,4) + ' kg ingredient]');
@@ -1213,7 +1252,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  Note: Climate Change - Land Use is NOT affected by this term — it only reflects');
                 layerBLines.push('  the separate SOC (soil organic carbon) sequestration adjustment, if applicable,');
                 layerBLines.push('  which is a distinct soil-carbon-stock mechanism, not part of the nitrogen cycle.');
-                layerBLines.push('  Source: IPCC 2006 Vol. 4 Ch. 11  |  GWP N2O = 265 (IPCC AR5)');
+                layerBLines.push('  Source: IPCC 2006 Vol. 4 Ch. 11  |  GWP N2O = 273 (IPCC AR6)');
                 layerBLines.push('');
             }
 
@@ -1224,11 +1263,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  F_ON = ' + fix(no.F_ON_kg, 4) + ' kg organic N applied');
                 layerBLines.push('  Key difference vs synthetic N: FRAC_GASM = 0.20 (organic N volatilization) vs FRAC_GASF = 0.10 (synthetic)');
                 layerBLines.push('  Source: IPCC 2006 Vol.4 Ch.11 Table 11.3');
-                layerBLines.push('  Direct   = F_ON x EF1(0.01) x (44/28) x GWP_N2O(265)');
+                layerBLines.push('  Direct   = F_ON x EF1(0.01) x (44/28) x GWP_N2O(273)');
                 layerBLines.push('           = ' + fix(no.direct_kgCO2e, 4) + ' kg CO2e');
-                layerBLines.push('  Leaching = F_ON x FRAC_LEACH(0.30) x EF5(0.011) x (44/28) x 265');
+                layerBLines.push('  Leaching = F_ON x FRAC_LEACH(0.30) x EF5(0.011) x (44/28) x 273');
                 layerBLines.push('           = ' + fix(no.indirect_leach_kgCO2e || 0, 4) + ' kg CO2e');
-                layerBLines.push('  Volatil. = F_ON x FRAC_GASM(0.20) x EF4(0.01) x (44/28) x 265');
+                layerBLines.push('  Volatil. = F_ON x FRAC_GASM(0.20) x EF4(0.01) x (44/28) x 273');
                 layerBLines.push('           = ' + fix(no.volatilization_kgCO2e || 0, 4) + ' kg CO2e  [2x synthetic due to higher FRAC_GASM]');
                 const n2oOnTotal = (no.total_kgCO2e||0);
                 layerBLines.push('  N2O total = ' + fix(n2oOnTotal, 4) + ' kg CO2e (batch)  per-kg = ' + numFmt(qty>0?n2oOnTotal/qty:0,6) + ' kg CO2e/kg');
@@ -1243,9 +1282,45 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 const e = adj.enteric_applied;
                 layerBLines.push('B5 — Enteric Methane (IPCC 2006 Vol.4 Ch.10):');
                 layerBLines.push('  Animal type  : ' + safe(e.animal_type));
+                // FIX ENTERIC-DISCLOSURE-1 (this session, corrects a real gap found during
+                // pre-launch end-to-end review of this session's own earlier enteric fix):
+                // ef_ch4 is now region- and productivity-system-aware (a real, dated fix
+                // this session, verified to produce a genuinely different, correct number
+                // for non-Western-Europe origins) -- but WHICH region/productivity path
+                // produced that number was never disclosed here, only the final ef_ch4
+                // value itself. This contradicts this report's own "glass box, full
+                // traceability" principle -- a reader could not tell whether ef_ch4=74.46
+                // came from a real regional match, a productivity-system split, or an
+                // honest cross-region fallback average. adjustments.enteric_ef_resolution
+                // (built alongside the fix itself, but never wired into this display until
+                // now) carries exactly this information.
+                if (adj.enteric_ef_resolution) {
+                    const er = adj.enteric_ef_resolution;
+                    layerBLines.push('  Region resolved from origin country: ' + safe(er.resolvedRegion || 'n/a'));
+                    layerBLines.push('  IPCC data tier used: ' + safe(er.tierUsed || 'n/a'));
+                    if (er.note) layerBLines.push('  Note: ' + safe(er.note));
+                    if (er.warning) layerBLines.push('  \u26A0 ' + safe(er.warning));
+                }
+                // FIX PRODUCTIVITY-FALLBACK-DISCLOSURE-1 (found during a direct
+                // engine-vs-PDF coverage check, this session): productivity_fallback has an
+                // "emergency_default" branch that explicitly warns "results unreliable for
+                // this ingredient" when an animal type isn't found in AIOXY's productivity
+                // defaults — this was computed but had ZERO references anywhere in the PDF,
+                // meaning the report's own self-assessed reliability warning never reached
+                // the reader. The "AGRIBALYSE_DEFAULT_PRODUCTIVITY" branch (a normal, expected
+                // case — user simply didn't enter their own productivity figure) is lower-
+                // stakes and shown only briefly; the emergency branch gets a full warning.
+                if (adj.productivity_fallback && adj.productivity_fallback.applied) {
+                    const pf = adj.productivity_fallback;
+                    if (pf.source === 'emergency_default') {
+                        layerBLines.push('  \u26A0\u26A0 PRODUCTIVITY DATA UNRELIABLE: ' + safe(pf.warning || ''));
+                    } else {
+                        layerBLines.push('  Productivity: not user-supplied, using ' + safe(pf.source) + ' = ' + fix(pf.value||0,1) + ' kg/head/yr');
+                    }
+                }
                 if (e.method === 'delta_vs_agribalyse_default') {
                     layerBLines.push('  Method: DELTA adjustment (AGRIBALYSE already embeds national average enteric)');
-                    layerBLines.push('  Formula: delta = (heads_user - heads_default) x ef_ch4 x GWP_CH4_biogenic(28)');
+                    layerBLines.push('  Formula: delta = (heads_user - heads_default) x ef_ch4 x GWP_CH4_biogenic(27.0)');
                     layerBLines.push('  heads_user    = qty / user_productivity = ' + fix(e.heads_user||0,4));
                     layerBLines.push('  heads_default = qty / AGRIBALYSE_default = ' + fix(e.heads_agribalyse_default||0,4));
                     layerBLines.push('  ef_ch4        = ' + fix(e.ef_ch4_per_head_yr||0,2) + ' kg CH4/head/yr');
@@ -1253,11 +1328,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     layerBLines.push('  delta CO2e    = ' + fix(e.delta_co2e_total||0,4) + ' kg CO2e  [applied to CC-Biogenic]');
                     layerBLines.push('  Note: ' + safe(e.note || ''));
                 } else {
-                    layerBLines.push('  Formula: heads x ef_ch4 x GWP_CH4_biogenic(28)');
+                    layerBLines.push('  Formula: heads x ef_ch4 x GWP_CH4_biogenic(27.0)');
                     layerBLines.push('  ef_ch4_per_head : ' + fix(e.ef_ch4_per_head||0,2) + ' kg CH4/head/yr');
                     layerBLines.push('  enteric CO2e    : ' + fix(e.enteric_co2e_total||0,4) + ' kg CO2e');
                 }
-                layerBLines.push('  Source: IPCC 2006 Vol. 4 Table 10.11  |  GWP CH4 biogenic = 28 (IPCC AR5)');
+                layerBLines.push('  Source: IPCC 2006 Vol. 4 Table 10.11  |  GWP CH4 biogenic = 27.0 (IPCC AR6)');
                 layerBLines.push('');
             }
 
@@ -1267,7 +1342,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('B6 — Manure N2O (IPCC 2006 Vol.4 Ch.10):');
                 layerBLines.push('  Animal type     : ' + safe(m.animal_type));
                 layerBLines.push('  Manure system   : ' + safe(m.manure_system));
-                layerBLines.push('  Formula: heads x N_excreted x EF_manure[system] x (44/28) x GWP_N2O(265)');
+                layerBLines.push('  Formula: heads x N_excreted x EF_manure[system] x (44/28) x GWP_N2O(273)');
                 layerBLines.push('  EF_manure       : ' + fix(m.ef_manure||0,4) + ' kg N2O-N / kg N');
                 layerBLines.push('  Manure N2O CO2e : ' + fix(m.manure_n2o_co2e_total||0,4) + ' kg CO2e  [added to CC + CC-Fossil]');
                 // PDF-1 FIX (2026-06-07): Updated from CC-Land Use to CC-Fossil.
@@ -1280,7 +1355,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  Acidification: +' + fix(m.acidification_add||0,6) + ' mol H+e');
                 layerBLines.push('    Formula: 0.5 x N_excreted/kg x (17/14) x 1000g/kg x 0.0591 mol H+e/g NH3');
                 layerBLines.push('    CF source: ' + safe(m.acidification_cf_source));
-                layerBLines.push('  Source: IPCC 2006 Vol. 4 Tables 10.19 & 10.21  |  GWP N2O = 265 (IPCC AR5)');
+                layerBLines.push('  Source: IPCC 2006 Vol. 4 Tables 10.19 & 10.21  |  GWP N2O = 273 (IPCC AR6)');
                 layerBLines.push('');
             }
 
@@ -1375,43 +1450,87 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('');
             }
 
-            // L-3 FIX: USEtox 2.14 for LIVESTOCK ingredients
-            if (adj.usetox_livestock) {
+            // RE-ADDED (this session, FIX ANIMAL-PESTICIDE-1): a previous session removed the
+            // old "L-3 FIX — Livestock USEtox 2.14" block here because adj.usetox_livestock was
+            // never set anywhere in calculation_engine.js (dead code, condition always false).
+            // This session found and fixed the real underlying bug: the animal-path supplier
+            // form collects feed-crop pesticide data with an explicit comment claiming it feeds
+            // USEtox, but no code anywhere ever consumed it. calculation_engine.js now sets
+            // adj.usetox_livestock as a DISCLOSURE-ONLY object (not a computed toxicity total —
+            // no feed-conversion ratio exists in AIOXY to compute a real substance-mass value,
+            // and fabricating one would be inventing data). This block displays that disclosure
+            // plainly, listing what the user entered and explaining why no total is computed —
+            // consistent with the crop-path USEtox exclusion display just above, which shows a
+            // real excluded value; this shows an honestly-uncomputable one instead.
+            if (adj.usetox_livestock && adj.usetox_livestock.pesticides_entered && adj.usetox_livestock.pesticides_entered.length > 0) {
                 const ul = adj.usetox_livestock;
-                if (ul.status === 'applied') {
-                    layerBLines.push('L-3 FIX — Livestock USEtox 2.14 Substance-Specific Toxicity:');
-                    layerBLines.push('  Feed crop area (ha) : ' + fix(ul.feed_area_ha||0, 4) + ' ha');
-                    layerBLines.push('  Human cancer        : +' + sci(ul.total_htox_cancer_CTUh||0, 3) + ' CTUh (added to AGRIBALYSE background)');
-                    layerBLines.push('  Human non-cancer    : +' + sci(ul.total_htox_noncancer_CTUh||0, 3) + ' CTUh');
-                    layerBLines.push('  Ecotoxicity fw      : +' + sci(ul.total_ecotox_CTUe||0, 3) + ' CTUe');
-                    if (ul.pesticides && ul.pesticides.length > 0) {
-                        layerBLines.push('  Pesticides:');
-                        ul.pesticides.slice(0, 5).forEach(p => {
-                            layerBLines.push('    ' + safe(p.name) + ' (CAS: ' + safe(p.cas) + ')  ' +
-                                             fix(p.rate_kg_per_ha||0,4) + ' kg/ha  Cancer: ' + sci(p.htox_cancer_CTUh||0,2) +
-                                             '  Eco: ' + sci(p.ecotox_CTUe||0,2));
-                        });
-                    }
-                    layerBLines.push('  Source: USEtox 2.14 — L-3 FIX, livestock feed-crop pesticide pathway');
-                    layerBLines.push('');
-                } else {
-                    layerBLines.push('L-3 Livestock USEtox: ' + safe(ul.reason || 'not applied'));
-                    if (ul.action_required) {
-                        layerBLines.push('  Action: ' + safe(ul.action_required));
-                    }
-                    layerBLines.push('');
-                }
+                layerBLines.push('B11 — Feed-Crop Pesticide Data (Livestock): ENTERED, NOT CALCULATED');
+                layerBLines.push('  Reason: no feed-conversion ratio (kg feed crop per kg animal product) exists');
+                layerBLines.push('  in AIOXY to convert a per-hectare application rate into a substance-mass total.');
+                layerBLines.push('  Shown below for transparency only — NOT part of the reported footprint.');
+                ul.pesticides_entered.slice(0, 5).forEach(p => {
+                    layerBLines.push('    ' + safe(p.name) + ' (CAS: ' + safe(p.cas || 'not provided') + ')  ' +
+                                     (p.rate_kg_per_ha ? fix(p.rate_kg_per_ha, 4) + ' kg/ha' : 'rate not provided'));
+                });
+                layerBLines.push('  Action needed to enable: sourced feed-conversion ratio per animal type.');
+                layerBLines.push('');
             }
 
-            // USEtox (CROP path — unchanged)
-            if (adj.usetox_applied && adj.usetox_applied.applied) {
+            // B12 — Co-product allocation (this session, FIX ALLOC-DISCLOSURE-1). REAL GAP
+            // FOUND during pre-launch review: `adjustments.coproduct_allocation` (soybean
+            // economic allocation per ISO 14044 §4.3.4, wired into the calculation months
+            // ago) was never actually displayed anywhere in the PDF -- the real, working fix
+            // was silently invisible in the report. Fixed: display it here, matching the
+            // same "show real work, cite sources, disclose exclusions honestly" pattern as
+            // every other Layer B section.
+            if (adj.coproduct_allocation && adj.coproduct_allocation.applied) {
+                const ca = adj.coproduct_allocation;
+                layerBLines.push('B12 — Co-Product Allocation: APPLIED');
+                layerBLines.push('  Method: ' + safe(ca.method));
+                layerBLines.push('  Ingredient co-product set: ' + safe(ca.ingredientCoProductSet));
+                layerBLines.push('  This ingredient\'s FULL impact was multiplied by the allocation factor below');
+                layerBLines.push('  before being added to the product total — the excluded share belongs to the');
+                layerBLines.push('  other co-product\'s own product system (e.g. animal feed), not this product.');
+                if (ca.coProducts && ca.coProducts.length > 0) {
+                    layerBLines.push('  Co-products and their economic allocation factors:');
+                    ca.coProducts.forEach(p => {
+                        layerBLines.push('    ' + safe(p.name) + ': mass fraction ' + fix((p.massFraction||0)*100, 1) + '%, ' +
+                                         'price ' + fix(p.price,2) + ' ' + safe(p.priceUnit) + ' (' + safe(p.priceDate) + ', ' + safe(p.priceConfidence) + ')' +
+                                         ' -> allocation factor ' + fix(p.allocationFactor*100, 1) + '%');
+                    });
+                }
+                layerBLines.push('  Allocation factor applied to THIS ingredient: ' + fix(ca.allocationFactorApplied*100, 2) + '%');
+                layerBLines.push('  Source: ISO 14044 §4.3.4 (economic allocation, appropriate here since co-products');
+                layerBLines.push('  have very different economic value relative to their mass share).');
+                layerBLines.push('');
+            } else if (adj.coproduct_allocation && adj.coproduct_allocation.error) {
+                layerBLines.push('B12 — Co-Product Allocation: FAILED, NOT APPLIED');
+                layerBLines.push('  ' + safe(adj.coproduct_allocation.error));
+                layerBLines.push('  ' + safe(adj.coproduct_allocation.warning || ''));
+                layerBLines.push('');
+            }
+
+
+            // USEtox (CROP path) — RESOLVED this session: confirmed double-counting against
+            // AGRIBALYSE's own OLCA-Pest-modeled background toxicity (see calculation_engine.js
+            // usetox_applied comment for full explanation and sources). No longer added to totals.
+            // Changed from "if applied" to "if entered" so the disclosure still renders instead of
+            // silently disappearing — the reader should see that pesticide data was provided and
+            // why it wasn't added, not see nothing.
+            if (adj.usetox_applied && adj.usetox_applied.pesticides && adj.usetox_applied.pesticides.length > 0) {
                 const u = adj.usetox_applied;
-                layerBLines.push('B10 — USEtox 2.14 Pesticide Substance-Specific Toxicity:');
+                layerBLines.push('B10 — USEtox 2.14 Pesticide Substance-Specific Toxicity: NOT ADDED TO TOTALS');
+                layerBLines.push('  Reason: AGRIBALYSE 3.2\'s background Human Toxicity / Ecotoxicity-freshwater');
+                layerBLines.push('  values for this ingredient already incorporate pesticide-driven impact via');
+                layerBLines.push('  AGRIBALYSE\'s own OLCA-Pest pesticide emissions model (source: AGRIBALYSE');
+                layerBLines.push('  official FAQ, doc.agribalyse.fr). Adding a separate USEtox-based estimate for');
+                layerBLines.push('  the same pesticides would double-count this impact. The figures below are');
+                layerBLines.push('  shown for transparency only and are NOT part of the reported footprint.');
                 layerBLines.push('  Area harvested formula: qty_kg / yield_kg_ha = ' + fix(qty,6) + ' / ' + fix(u.yield_kg_per_ha||0,1) + ' = ' + sci(u.area_harvested_ha||0, 4) + ' ha');
                 layerBLines.push('  Area harvested (full precision): ' + (u.area_harvested_ha||0).toExponential(6) + ' ha');
-                layerBLines.push('  Human cancer      : +' + sci(u.total_cancer_CTUh||0, 3) + ' CTUh (added to AGRIBALYSE background)');
-                layerBLines.push('  Human non-cancer  : +' + sci(u.total_noncancer_CTUh||0, 3) + ' CTUh');
-                layerBLines.push('  Ecotoxicity fw    : +' + sci(u.total_ecotoxicity_CTUe||0, 3) + ' CTUe');
+                layerBLines.push('  Human cancer      : ' + sci(u.total_cancer_CTUh_excluded||0, 3) + ' CTUh (excluded, not added to background)');
+                layerBLines.push('  Human non-cancer  : ' + sci(u.total_noncancer_CTUh_excluded||0, 3) + ' CTUh (excluded)');
+                layerBLines.push('  Ecotoxicity fw    : ' + sci(u.total_ecotoxicity_CTUe_excluded||0, 3) + ' CTUe (excluded)');
                 if (u.pesticides && u.pesticides.length > 0) {
                     // M-3 FIX: separate matched vs unmatched CAS numbers
                     const pMatched   = u.pesticides.filter(p => p.matched !== false);
@@ -1547,7 +1666,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                         layerBLines.push('  Manure system          : ' + safe(manureSystem));
                         layerBLines.push('  EF_manure              : ' + fix(mEF,4) + ' kg N2O-N/kg N excreted  [IPCC 2006 Vol.4 Table 10.21]');
                     }
-                    layerBLines.push('  GWP_CH4_biogenic = 28 (IPCC AR5, PEF 3.1)  |  GWP_N2O = 265 (IPCC AR5, PEF 3.1)');
+                    layerBLines.push('  GWP_CH4_biogenic = 27.0 (IPCC AR6, PEF 3.1)  |  GWP_N2O = 273 (IPCC AR6, PEF 3.1)');
                     layerBLines.push('');
                 }
             }
@@ -1670,13 +1789,13 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 ...( (pfd.refrigerantType && pfd.refrigerantKgLeaked > 0) ? [
                     'REFRIGERANT LEAKAGE (F-GAS DIRECT EMISSIONS):',
                     '  Refrigerant type     : ' + safe(pfd.refrigerantType),
-                    '  GWP (IPCC AR5)       : ' + (pfd.refrigerantGWP || 0),
+                    '  GWP (IPCC AR4)       : ' + (pfd.refrigerantGWP || 0),
                     '  Annual leakage       : ' + fix(pfd.refrigerantKgLeaked||0,2) + ' kg refrigerant/year',
                     '  Total output         : ' + fix(pfd.totalOutputKg||1,2) + ' kg product/year',
                     '  Leakage per kg prod  : = ' + fix(pfd.refrigerantKgLeaked||0,2) + ' / ' + fix(pfd.totalOutputKg||1,2) + ' = ' + fix((pfd.refrigerantKgLeaked||0)/(pfd.totalOutputKg||1),6) + ' kg refrig/kg product',
                     '  CO2e per kg product  : = ' + fix((pfd.refrigerantKgLeaked||0)/(pfd.totalOutputKg||1),6) + ' x GWP(' + (pfd.refrigerantGWP||0) + ') = ' + fix(pfd.refrigerantCO2PerKg||0,4) + ' kg CO2e/kg product',
                     '  Added to             : Climate Change (Fossil)  [F-gases: synthetic, non-biogenic]',
-                    '  Source: IPCC AR5 GWP100 / EC F-Gas Regulation 517/2014 Annex I',
+                    '  Source: IPCC AR4 GWP100 / EU F-Gas Regulation (EU) 2024/573 Annex I',
                     '',
                 ] : ['REFRIGERANT LEAKAGE: None entered (or not applicable).', '']),
                 'TOTAL MANUFACTURING CO2/kg: ' + fix(kwhPerKgActual*gridG*1.07/1000 + gasM3PerKg*(pfd.fuelFactor||2.13) + (pfd.refrigerantCO2PerKg||0), 6) + ' kg CO2e/kg',
@@ -2069,9 +2188,20 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     ], { sectionLabel: 'Transport (continued)' });
                 }
 
-                // FIX-9: Per-leg non-CC arithmetic — mass x adjusted_km x factor = result
-                // Read mass and adjusted distance from the leg trace or from input
-                if (roadMCF) {
+                // FIX-9 (original): Per-leg non-CC arithmetic — mass x adjusted_km x factor = result
+                // FIX TRANSPORT-MCF-1 (this session, corrects a real bug found in pre-launch review):
+                // This block previously ran unconditionally whenever `roadMCF` existed (always true,
+                // since it's a constant, not conditional on the leg's actual mode) — meaning for a
+                // sea/air/rail transport leg, ROAD's per-tkm factors were applied to that leg's mass
+                // and distance, producing a fabricated non-CC number displayed as a primary result
+                // line, with the real (correctly zero, since GLEC's MULTI_CATEGORY_FACTORS only
+                // covers road) engine total shown only as a bracketed aside — a direct, visible
+                // contradiction between a fabricated number and the real one in the same report.
+                // Root cause: transport components previously had no structured `mode` field to
+                // check (only embedded in a display string) — now added in calculation_engine.js.
+                // Fix: gate this entire block on tc.mode === 'road'; for other modes, disclose
+                // honestly that no multi-category data exists rather than showing any number.
+                if (roadMCF && tc.mode === 'road') {
                     const legMassKg  = tc.mass_kg  || tc.massKg  || 0;
                     const legDistKm  = tc.adjusted_distance_km || tc.distanceKm || tc.distance_km || 0;
                     const legMassT   = legMassKg / 1000;
@@ -2094,6 +2224,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                         });
                         traceBlock(nonCCLines, { sectionLabel: 'Transport (continued)' });
                     }
+                } else if (tc.mode && tc.mode !== 'road') {
+                    traceBlock([
+                        'LAYER C — Non-CC Arithmetic: NOT AVAILABLE for mode "' + safe(tc.mode) + '"',
+                        'GLEC v3.2 multi-category factors (Acidification, Eutrophication, Particulate',
+                        'Matter, Human Toxicity, Ecotoxicity) are currently only sourced for ROAD',
+                        'transport. This leg\'s Climate Change contribution above is fully calculated;',
+                        'its contribution to the other 15 PEF categories is honestly 0 for this reason,',
+                        'not because this leg has no such impacts in reality.'
+                    ], { sectionLabel: 'Transport (continued)' });
                 }
             });
         } else {
@@ -2199,19 +2338,26 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             const eolDest = (window.lastInput?.packaging?.eolDestination || 'eu_average');
             const eolScenarioLabel = {
                 'eu_average':   'EU Average (default mix)',
-                'recycling':    'Recycling pathway',
-                'incineration': 'Incineration (with/without energy recovery)',
-                'landfill':     'Landfill disposal',
-                'composting':   'Industrial composting (bio-based materials)'
+                'recycled':     '100% Recycled (Closed Loop)',
+                'incinerated':  'Incineration (with/without energy recovery)',
+                'landfill':     'Landfill disposal'
             }[eolDest] || eolDest;
             pkgLayerALines.push('');
             pkgLayerALines.push('  EOL DESTINATION (user selection):');
             pkgLayerALines.push('  Selected scenario  : ' + eolScenarioLabel);
-            pkgLayerALines.push('  Ed used in CFF     : see CFF trace below — Ed resolved from packaging DB co2_disposal_' + eolDest);
-            pkgLayerALines.push('  R2 used in CFF     : see CFF trace below — r2 resolved from packaging DB r2_' + eolDest + ' (or default r2 if not defined)');
-            pkgLayerALines.push('  Source: PEF 3.1 Annex C §C.4 — EOL recycling rate per scenario; PlasticsEurope EOL statistics (2022)');
-            pkgLayerALines.push('  NEW-2 FIX: eolDestination now wired into CFF calculation. Before this fix, Ed and R2');
-            pkgLayerALines.push('    always used eu_average regardless of user selection (calculation_engine.js v2+).');
+            // FIX EOL-DESTINATION-1 (this session): a prior session's comment here claimed
+            // "Ed resolved from packaging DB co2_disposal_[eolDest]... eolDestination now
+            // wired into CFF calculation" -- that claim was FALSE, found via direct trace
+            // during pre-launch adversarial review. calculation_engine.js never actually
+            // referenced eolDestination; Ed always used the flat co2_disposal_average
+            // regardless of user selection. NOW genuinely fixed and accurately described:
+            pkgLayerALines.push('  Ed used in CFF     : landfill -> co2_disposal_landfill; incinerated -> co2_disposal_incineration;');
+            pkgLayerALines.push('                       recycled/eu_average -> co2_disposal_average (honest proxy — no separate');
+            pkgLayerALines.push('                       "recycled disposal-stage" figure exists in the packaging database)');
+            pkgLayerALines.push('  R2 (EoL rate)      : does NOT vary by this selection — R2 represents the material\'s real-world');
+            pkgLayerALines.push('                       waste-stream recycling statistic (PEF Annex C), not a per-product claim');
+            pkgLayerALines.push('  Source: PEF 3.1 Annex C §C.4; material-specific landfill/incineration Ed values — see');
+            pkgLayerALines.push('    Layer A material sourcing notes above for citations per material.');
         } else {
             // Fallback: hardcoded known values per material for full transparency
             const PKG_LAYER_A_FALLBACK = {
@@ -2475,7 +2621,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // Source: EF 3.1 (JRC EUR 29540 EN §4.4.2); AGRIBALYSE 3.2 methodology.
         const subRows = [
             ['Climate Change - Fossil',   'kg CO2e', numFmt(fossilCC/pWeightKg, 4), 'Combustion + fossil process emissions + agricultural N2O (IPCC Tier 1)'],
-            ['Climate Change - Biogenic', 'kg CO2e', numFmt(bioCC/pWeightKg, 4),    'Biogenic CO2 + enteric CH4 (GWP=28)'],
+            ['Climate Change - Biogenic', 'kg CO2e', numFmt(bioCC/pWeightKg, 4),    'Biogenic CO2 + enteric CH4 (GWP=27.0)'],
             ['Climate Change - Land Use', 'kg CO2e', numFmt(dlucCC/pWeightKg, 4),   'Soil organic carbon stock changes (dLUC/SOC) only — no N2O'],
             ['TOTAL Climate Change',      'kg CO2e', numFmt(ccPerKg, 4),             'Sum of above (engine value)']
         ];
@@ -2550,7 +2696,45 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         subHeader('Data Quality Rating — Per Ingredient (PEF 3.1 §5.7 / AGRIBALYSE DQI Matrix v3.0.1)');
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('Formula: DQR = (TeR + TiR + GR + P) / 4   |   4-indicator scheme per ADEME/INRAE DQI Matrix v3.0.1   |   CoR not scored (AGRIBALYSE methodology)', M, Y); Y += 3;
+        // FIX DQR-DISCLOSURE-1 (this session): the OVERALL/aggregate DQR figure shown as
+        // this report's headline "Data Quality (DQR)" metric is weighted by each
+        // ingredient's Climate Change impact share, not by mass — an explicit AIOXY
+        // methodological choice, not the AGRIBALYSE DQI §6.2 standard (mass-weighted).
+        // Previously disclosed only in the raw audit-trail CSV export with an ambiguous
+        // "Contribution-weighted" label that didn't specify what kind of contribution or
+        // that it deviates from the standard — now stated plainly in the main report too.
+        doc.text('Overall DQR aggregation: weighted by each ingredient\'s Climate Change impact share (prioritises', M, Y); Y += 3;
+        doc.text('high-impact ingredients) — NOT mass-weighted as AGRIBALYSE DQI §6.2 specifies. This is an explicit', M, Y); Y += 3;
+        doc.text('AIOXY methodological choice, disclosed here for regulatory/audit transparency.', M, Y); Y += 5;
         doc.text('Scale: 1 = best quality, 5 = worst.  FR ingredients: TeR=2 TiR=3 GR=1 P=2 → DQR=2.00.  Non-FR EU: DQR=3.25.  Non-FR non-EU: DQR=3.50.', M, Y); Y += 5;
+
+        // FIX ALLOC-SENSITIVITY-DISCLOSURE-1 (this session): real gap found during
+        // pre-launch review — checkAllocationSensitivity() (ISO 14044 §4.3.4 mass-vs-
+        // economic allocation sensitivity check) was computed and attached to
+        // auditTrailData.allocation_sensitivity, but never displayed in the PDF, retailer
+        // CSV, or the formatted audit-trail export — reachable only via the raw JSON
+        // download, invisible to any brand/retailer actually reading the report. Fixed:
+        // shown here, in the compliance/DQR section where a methodology sensitivity
+        // disclosure belongs.
+        const allocSens = audit.allocation_sensitivity;
+        if (allocSens) {
+            doc.setFont(undefined, 'bold');
+            doc.text('Allocation Method Sensitivity (ISO 14044 §4.3.4):', M, Y); Y += 4;
+            doc.setFont(undefined, 'normal');
+            if (allocSens.significantDifference) {
+                doc.text('This product\'s result IS sensitive to allocation method choice (mass vs. economic).', M, Y); Y += 4;
+                doc.text('Ingredients where mass and economic allocation shares differ meaningfully:', M, Y); Y += 4;
+                (allocSens.differsAt || []).slice(0, 5).forEach(d => {
+                    doc.text('  ' + safe(d.product) + ': difference = ' + fix((d.difference||0)*100, 1) + '%', M, Y); Y += 4;
+                });
+                if (allocSens.reason) { doc.text('  Note: ' + safe(allocSens.reason), M, Y); Y += 4; }
+            } else {
+                doc.text('This product\'s result is NOT significantly sensitive to allocation method choice —', M, Y); Y += 4;
+                doc.text('mass-based and economic-based allocation would produce materially similar results', M, Y); Y += 4;
+                doc.text('for the co-products present (or no multi-co-product processing is used in this product).', M, Y); Y += 4;
+            }
+            Y += 3;
+        }
 
         const dqrComponents = dqr.component_dqrs || [];
         const dqrRows = dqrComponents.map(d => [
@@ -2620,6 +2804,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // Display lines below divide by pWeightKg to get per-kg values.
         // ccTotal*pWeightKg would be (kg/kg)*kg = dimensionally wrong.
         const mcMed = (ccMC.mean  > 0 ? ccMC.mean  : null) || ccTotal;
+        // AUDIT-4 FIX (this session): the p5/p95 fallback below (an estimated +/-15% band,
+        // used only when the real simulation returned {mean:0,p5:0,p95:0} -- i.e. every
+        // ingredient's Climate Change contribution was genuinely zero, or unc['Climate Change']
+        // was entirely missing) was previously indistinguishable from a real simulation result
+        // in the report text below: it unconditionally stated "1000-run stochastic simulation"
+        // even when this fallback fired -- a false methodology claim, same class as the
+        // EOL-DESTINATION-1 finding (report describing a mechanism that didn't actually run).
+        // mcIsEstimated flags this so the trace text can honestly say which one happened.
+        const mcIsEstimated = !(ccMC.p5 > 0) || !(ccMC.p95 > 0);
         const mcP5  = (ccMC.p5   > 0 ? ccMC.p5   : null) || (mcMed * 0.85);
         const mcP95 = (ccMC.p95  > 0 ? ccMC.p95  : null) || (mcMed * 1.15);
         const mcIter = ccMC.iterations || unc.iterations || 1000;
@@ -2634,6 +2827,31 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  sigma     = sqrt(sigma_sq)',
             '  multiplier = exp(Z x sigma - sigma_sq/2)   where Z ~ N(0,1)',
             '',
+            // FIX MC-DISCLOSURE-1 (this session): this simulation uses an unseeded random
+            // number generator (Math.random(), no fixed seed anywhere in the call chain) --
+            // a deliberate, standard Monte Carlo approach, but one that means re-running the
+            // identical product calculation will produce a SLIGHTLY different P5/P95 each
+            // time, even though every other figure in this report (category totals, single
+            // score, DQR) is fully deterministic and will match exactly on every re-run. This
+            // was previously undisclosed anywhere in this report -- a careful reader
+            // re-running the same product and noticing the P5/P95 bounds shifted slightly
+            // could reasonably have mistaken this for a bug or inconsistency in the tool.
+            ...(mcIsEstimated ? [
+            'NOTE: the real 1000-run simulation returned no usable P5/P95 for this category',
+            '(Climate Change contribution was zero across all ingredients, or uncertainty data',
+            'was unavailable) -- the bounds below are NOT a simulation output. They are an',
+            'estimated +/-15% band around the mean, shown only as an honest placeholder so this',
+            'section is not left blank. Do not cite these bounds as simulation-derived.',
+            ''
+            ] : [
+            'NOTE ON REPRODUCIBILITY: the P5/P95 bounds below are the output of a 1000-run',
+            'stochastic simulation using an unseeded random number generator. Re-running this',
+            'exact calculation will produce SLIGHTLY different P5/P95 values each time (typically',
+            'within 1-2% of each other) -- this is expected statistical simulation noise, not an',
+            'error. The mean shown below, and every other figure in this report (category totals,',
+            'single score, DQR), IS fully deterministic and will match exactly on every re-run.',
+            ''
+            ]),
             'Results — Climate Change (kg CO2e / kg product):',
             '  P5  (5th percentile / lower bound)  = ' + numFmt(mcP5/pWeightKg, 4) + ' kg CO2e/kg',
             '  Median                              = ' + numFmt(mcMed/pWeightKg, 4) + ' kg CO2e/kg',
@@ -2708,7 +2926,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             ['Transport',           'GLEC v3.2',            'Smart Freight Centre, October 2025'],
             ['Grid intensity',      'Ember 2025',           'Ember Climate, 2025 — Global Electricity Review'],
             ['Air pollutants',      'EMEP/EEA 2023',        'EEA Air Pollutant Emission Inventory Guidebook 2023'],
-            ['GWP values',          'IPCC AR5 GWP100',      'CH4=28, N2O=265 (no climate-carbon feedback)'],
+            ['GWP values',          'IPCC AR6 GWP100',      'CH4-bio=27.0, CH4-foss=29.8, N2O=273 (no climate-carbon feedback)'],
             ['Water scarcity',      'AWARE 2.0',            'Boulay et al. 2018 — WULCA consensus model'],
             ['Land use',            'LANCA v2.5',           'Fraunhofer IBP / JRC — SQI occupation factors'],
             ['Toxicity',            'USEtox 2.14',          'UNEP/SETAC — continental agricultural soil compartment'],
@@ -2922,17 +3140,23 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('Allocation sensitivity: tests whether result changes significantly under alternative allocation methods.', M, Y); Y += 4;
         doc.text('Cutoff validation: confirms all processes contributing >=1% of total CC impact are included.', M, Y); Y += 6;
 
-        const allocSens = audit.allocation_sensitivity || {};
+        // FIX DUPLICATE-DECL-1: renamed from 'allocSens' — that identifier was already
+        // declared with const earlier in this same function scope (compliance/DQR section
+        // above), which was a fatal SyntaxError ("Identifier 'allocSens' has already been
+        // declared") that broke this entire file's ability to load, independent of any
+        // calculation logic. Pre-existing (confirmed present before this session's A5 fix
+        // too), found via node --check, unrelated to A5.
+        const allocSensDetail = audit.allocation_sensitivity || {};
         const cutoffVal = audit.cutoff_validation     || {};
 
         // Allocation sensitivity
         subHeader('Allocation Sensitivity Analysis (ISO 14044 §4.3.4)');
-        const allocBase  = allocSens.base_method   || 'Economic (AGRIBALYSE 3.2 default)';
-        const allocAlt   = allocSens.alt_method    || 'Mass allocation (alternative)';
-        const allocBaseCC = allocSens.base_cc_per_kg   || ccPerKg;
-        const allocAltCC  = allocSens.alt_cc_per_kg    || 0;
-        const allocDelta  = allocSens.delta_pct        || 0;
-        const allocSensitive = allocSens.sensitive      || false;
+        const allocBase  = allocSensDetail.base_method   || 'Economic (AGRIBALYSE 3.2 default)';
+        const allocAlt   = allocSensDetail.alt_method    || 'Mass allocation (alternative)';
+        const allocBaseCC = allocSensDetail.base_cc_per_kg   || ccPerKg;
+        const allocAltCC  = allocSensDetail.alt_cc_per_kg    || 0;
+        const allocDelta  = allocSensDetail.delta_pct        || 0;
+        const allocSensitive = allocSensDetail.sensitive      || false;
 
         traceBlock([
             'BASE METHOD   : ' + safe(allocBase),

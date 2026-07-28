@@ -457,7 +457,17 @@ function buildTwinInput() {
             refrigeration: document.getElementById('twinRefrigeratedTransport')?.value === 'yes' ? 'chilled'
                          : document.getElementById('twinProcessingMethod')?.value === 'freezing'  ? 'frozen'
                          : 'ambient',
-            crisisRouting: false
+            // FIX TWIN-CRISIS-1 (this session, same class of bug as the FIX TWIN-FACTORY-1
+            // comment above): was hardcoded to `false`, always, regardless of whether Main's
+            // crisisRoutingToggle was checked. No twin-specific UI toggle for this exists
+            // anywhere (confirmed: zero matches for a twin crisis-routing checkbox across
+            // food.js/ui.txt), and the difference was never disclosed anywhere in the twin
+            // comparison display (confirmed: zero mentions of "crisis" in twin_module.js).
+            // This is the identical undisclosed-silent-override pattern the FIX TWIN-FACTORY-1
+            // comment above specifically describes and was fixed for factory data — this one
+            // was missed at the time. Fixed the same way: Twin now inherits Main's actual
+            // crisis-routing toggle state directly, not a hardcoded false.
+            crisisRouting: document.getElementById('crisisRoutingToggle')?.checked || false
         },
         packaging: {
             material:       document.getElementById('twinPackagingMaterial')?.value             || 'cardboard',
@@ -598,7 +608,7 @@ async function calculateImpact() {
                 // natural_gas: 2.13 kg CO2/m³ | lpg: 1.61 kg CO2/L | fuel_oil: 2.66 kg CO2/L | coal: 2.53 kg CO2/kg
                 // Source: EC Covenant of Mayors Emission Factors 2024 Edition (JRC)
                 fuelType:             document.getElementById('factoryFuelType')?.value                      || 'natural_gas',
-                // Refrigerant leakage: F-gas GWP × kg_leaked → kg CO2e (IPCC AR5 / EC F-Gas Reg 517/2014)
+                // Refrigerant leakage: F-gas GWP × kg_leaked → kg CO2e (IPCC AR4, per EU F-Gas Reg 2024/573 Annex I)
                 refrigerantType:      document.getElementById('factoryRefrigerantType')?.value               || '',
                 refrigerantKgLeaked:  parseFloat(document.getElementById('factoryRefrigerantKgLeaked')?.value) || 0
             } : null

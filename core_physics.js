@@ -181,10 +181,18 @@
             ONE: 1.0,
             TWO: 2
         }),
-        IPCC_AR5_PEF31: Object.freeze({
-            GWP_CH4_BIOGENIC: 28.0, // IPCC AR5 (2013), Table 8.7 — GWP100 for CH4, no climate-carbon feedback. Used for enteric fermentation per PEF 3.1.
-            GWP_CH4_FOSSIL: 28.0,
-            GWP_N2O: 265.0
+        IPCC_AR6_PEF31: Object.freeze({
+            // AUDIT-4 FIX (this session): corrected from AR5 (2013) to AR6 (2021) values.
+            // JRC's own EF 3.1 update documentation confirms Climate Change was specifically
+            // updated to align with IPCC AR6 (Forster et al. 2021), using Table 7.15 values —
+            // not AR5. Verified against IPCC AR6 WGI Ch.7 Table 7.15/7.SM.7, cross-checked
+            // against GHG Protocol's official AR6 GWP table (Aug 2024).
+            // Also fixes a second, separate error: CH4_FOSSIL previously used the same value
+            // as CH4_BIOGENIC (28.0) — AR5 itself already distinguished them (28 vs 30); this
+            // had never actually been implemented as a real fossil/biogenic split.
+            GWP_CH4_BIOGENIC: 27.0, // IPCC AR6 (2021) Table 7.15 — non-fossil/biogenic CH4, GWP100, no climate-carbon feedback.
+            GWP_CH4_FOSSIL: 29.8,   // IPCC AR6 (2021) Table 7.15 — fossil CH4, includes CO2 from oxidation.
+            GWP_N2O: 273.0          // IPCC AR6 (2021) Table 7.15/7.SM.7.
         }),
         IPCC_TIER1: Object.freeze({
             // A9-F1 FIX (Audit Session 2): FRAC_GASM moved here from calculation_engine.js.
@@ -365,14 +373,14 @@
             //   URL: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2023
             //
             // chilled: 0.006 kg CO2e/t-km — DEFRA 2023 HGV chilled additional factor.
-            //   Refrigerant: HFC-134a (GWP_AR5 = 1430 kg CO2e/kg).
+            //   Refrigerant: HFC-134a (GWP_AR4 = 1430 kg CO2e/kg, per EU F-Gas Reg 2024/573 Annex I).
             //   Consistent with ~15% annual leakage rate (F-Gas Regulation EC 842/2006)
             //   on a typical 4 kg trailer charge at EU average utilisation.
             //
             // frozen: 0.012 kg CO2e/t-km — approximately 2x chilled per DEFRA 2023.
             //   Higher factor reflects greater refrigerant charge and lower set-point
             //   (-18°C frozen vs 0-4°C chilled), leading to higher compressor cycling
-            //   and seal stress. GWP basis: IPCC AR5 (consistent with rest of AIOXY).
+            //   and seal stress. GWP basis: IPCC AR4, per EU F-Gas Regulation Annex I (see core_physics.js).
             REFRIGERANT_LEAKAGE: Object.freeze({
                 frozen: 0.012,
                 chilled: 0.006
@@ -1865,22 +1873,99 @@
         //   Source: "IPCC 2006, Vol. 4, Table 10.21, confirmed unchanged in 2019 Refinement."
         // =========================================================================
         IPCC_TIER1_LIVESTOCK: Object.freeze({
-            // entericEF: keyed by animalType string (must match UI dropdown values)
-            // Each entry: { ef_ch4: kg CH4/head/year, n_excretion: kg N/head/year }
+            // entericEF: keyed by animalType, then by IPCC 2019 Refinement region, then
+            // (where IPCC provides one) by productivity system: 'blended' (single national
+            // average), 'low', 'high'. Not every region has a low/high split — IPCC itself
+            // only provides one for Latin America, Asia, Africa, Middle East, and Indian
+            // Subcontinent (see below); North America, Western/Eastern Europe, and Oceania
+            // use a single blended value.
+            //
+            // FIX ENTERIC-2 (this session): previous structure was a single flat
+            // { ef_ch4, n_excretion } per animalType with NO region dimension at all —
+            // confirmed via full-codebase search that calculation_engine.js's lookup
+            // (`TIER1.entericEF[pd.animalType]`) never referenced ingredient.originCountry
+            // or country in any form. This meant every dairy cow everywhere in the world
+            // was assigned the same 117 kg CH4/head/yr (the old Western Europe-only value),
+            // regardless of actual origin country. It also meant pd.productionSystem
+            // (feedlot vs. pasture/range, collected in the supplier UI) was silently
+            // ignored, even though IPCC's own methodology materially differentiates by
+            // productivity system for several regions (e.g. feedlot cattle EF ~37 vs.
+            // pasture cattle EF ~97-98 kg CH4/head/yr within the same North America
+            // "Other Cattle" blend — nearly a 2.7x difference).
+            //
+            // Source: IPCC (2019) Refinement to the 2006 IPCC Guidelines, Vol. 4, Ch. 10,
+            // official supporting data workbooks (Table10_A_1_Dairy_Cattle.xlsx,
+            // Tables10_A_2-3_non-Dairy_Cattle.xlsx, Table10_A_4_Buffalo.xlsx), values
+            // independently verified cell-by-cell against the raw IPCC Excel source files
+            // this session — not sourced from a summary or secondary reproduction.
+            // 'Dairy Cattle' below maps to AIOXY's 'dairy_cow'; 'Other Cattle' maps to
+            // 'beef_cattle'. Buffalo is a new animalType option this fix makes available
+            // (not previously in the dropdown/database — see wiring note in
+            // calculation_engine.js for what still needs to happen before it's selectable).
+            //
+            // n_excretion values are UNCHANGED from the previous version in this fix —
+            // this session verified and corrected only ef_ch4 (enteric methane) regional/
+            // productivity-system granularity. n_excretion (manure N) would need its own
+            // separate verification against IPCC Table 10.19 regional data before being
+            // changed with the same rigor — not done this session, flagged as a further
+            // open item rather than silently left as an assumption of correctness.
             entericEF: Object.freeze({
-                // IPCC 2006 Vol. 4 Table 10.11 (W. Europe enteric EF) +
-                // Table 10.19 (N excretion).
-                // Confirmed unchanged in 2019 Refinement where indicated above.
-                // FIX ENTERIC-1: was 128 — externally verified against the actual IPCC 2006
-                // Guidelines Vol.4 Ch.10 Table 10.11 (fetched directly from
-                // ipcc-nggip.iges.or.jp). 128 is the NORTH AMERICA regional value for dairy
-                // cattle. The correct WESTERN EUROPE value (the region this platform's French
-                // AGRIBALYSE-based methodology targets) is 117 kg CH4/head/year. This
-                // overstated dairy cow enteric CH4 by ~9.4% for every dairy ingredient using
-                // livestock primary data. beef_cattle (57) was independently verified correct
-                // for Western Europe in the same table row.
-                'dairy_cow':   Object.freeze({ ef_ch4: 117,  n_excretion: 105  }),
-                'beef_cattle': Object.freeze({ ef_ch4: 57,   n_excretion: 70   }),
+                'dairy_cow': Object.freeze({
+                    n_excretion: 105, // unchanged, not reverified this session
+                    byRegion: Object.freeze({
+                        'North America':        Object.freeze({ blended: 137.87 }),
+                        'Western Europe':       Object.freeze({ blended: 125.87 }),
+                        'Eastern Europe':       Object.freeze({ blended: 92.81  }),
+                        'Oceania':              Object.freeze({ blended: 93.09  }),
+                        'Latin America':        Object.freeze({ blended: 87.42, low: 77.82, high: 103.08 }),
+                        'Asia':                 Object.freeze({ blended: 78.36, low: 71.23, high: 95.99  }),
+                        'Africa':               Object.freeze({ blended: 75.51, low: 66.13, high: 85.85  }),
+                        'Middle East':          Object.freeze({ blended: 75.68, low: 61.96, high: 94.62  }),
+                        'Indian Subcontinent':  Object.freeze({ blended: 73.41, low: 74.46, high: 69.69  })
+                    })
+                }),
+                'beef_cattle': Object.freeze({
+                    n_excretion: 70, // unchanged, not reverified this session
+                    byRegion: Object.freeze({
+                        'North America':        Object.freeze({ blended: 64.21 }),
+                        'Western Europe':       Object.freeze({ blended: 51.84 }),
+                        'Eastern Europe':       Object.freeze({ blended: 58.15 }),
+                        'Oceania':              Object.freeze({ blended: 63.02 }),
+                        'Latin America':        Object.freeze({ blended: 55.99, low: 57.72, high: 54.90 }),
+                        'Asia':                 Object.freeze({ blended: 54.05, low: 53.83, high: 42.81 }),
+                        'Africa':               Object.freeze({ blended: 52.31, low: 47.06, high: 60.12 }),
+                        'Middle East':          Object.freeze({ blended: 59.74, low: 55.69, high: 60.42 }),
+                        'Indian Subcontinent':  Object.freeze({ blended: 46.36 })
+                        // Note: IPCC does not provide a low/high split for Indian
+                        // Subcontinent "Other Cattle" in the source workbook — blended only.
+                    })
+                }),
+                'buffalo': Object.freeze({
+                    // NEW this session — was not previously an animalType option anywhere in
+                    // AIOXY. Not wired into the UI dropdown or ingredients database yet — see
+                    // open item in calculation_engine.js comment near the lookup site.
+                    // n_excretion set to 0 (not null) deliberately: calculation_engine.js does
+                    // real arithmetic on animalRow.n_excretion (nExcretionPerKg = n_excretion /
+                    // productPerHeadPerYear) — a null here would produce NaN silently if buffalo
+                    // is ever added to the dropdown before this is properly sourced. 0 is also
+                    // not correct (buffalo do excrete N), but it is a safe, visible placeholder:
+                    // any manure N2O/NH3 result for buffalo would show as exactly zero, which is
+                    // an obvious, checkable red flag rather than a silent wrong number. DO NOT
+                    // treat 0 as a verified value — source real Table 10.19-equivalent buffalo
+                    // N excretion data before enabling buffalo as a selectable animal type.
+                    n_excretion: 0,
+                    byRegion: Object.freeze({
+                        'Western Europe':       Object.freeze({ blended: 70.00 }),
+                        'Eastern Europe':       Object.freeze({ blended: 67.62 }),
+                        'Latin America':        Object.freeze({ blended: 67.56 }),
+                        'Asia':                 Object.freeze({ blended: 76.49 }),
+                        'Africa':               Object.freeze({ blended: 80.97 }),
+                        'Middle East':          Object.freeze({ blended: 67.38 }),
+                        'Indian Subcontinent':  Object.freeze({ blended: 83.63 })
+                        // No North America or Oceania entry — IPCC's own source workbook has
+                        // no buffalo row for these regions (confirmed, not an extraction gap).
+                    })
+                }),
                 // DB-8 FIX: pig n_excretion updated from 11 → 15 kg N/head/year.
                 // Previous value (11) was from IPCC 2006 Vol. 4 Table 10.19 — Swine,
                 // Developed countries. This was a US-weighted average that has since
@@ -1896,7 +1981,16 @@
                 // Impact of fix: 36% increase in manure N2O and NH3 emissions per
                 // pig head. Affects eutrophication, acidification, and CC-Land Use
                 // for all pork ingredients with livestock primary data.
+                // NOTE (this session): ef_ch4 below (1.5) not regionalized — IPCC 2019
+                // Refinement Table 10.10 gives High/Low productivity split (1.5/1.0) but
+                // no regional split for swine the way cattle has. Flagged as a smaller,
+                // separate open item, not fixed in this pass (scope was cattle/buffalo
+                // region+productivity wiring specifically).
                 'pig':         Object.freeze({ ef_ch4: 1.5,  n_excretion: 15   }),
+                // NOTE (this session): sheep ef_ch4 (8) does not exactly match either the
+                // High (9) or Low (5) IPCC 2019 Refinement Table 10.10 value found last
+                // session — flagged for follow-up verification, not changed here since it
+                // was outside this pass's confirmed scope (cattle/buffalo region wiring).
                 'sheep':       Object.freeze({ ef_ch4: 8,    n_excretion: 12   }),
                 'goat':        Object.freeze({ ef_ch4: 5,    n_excretion: 12   }),
                 'broiler':     Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
@@ -1904,6 +1998,37 @@
                 'turkey':      Object.freeze({ ef_ch4: 0,    n_excretion: 0.6  }),
                 // FARMED FISH: zero enteric + zero manure N (aquatic pathway differs)
                 'farmed_fish': Object.freeze({ ef_ch4: 0,    n_excretion: 0    })
+            }),
+
+            // COUNTRY_TO_IPCC_REGION: maps every country code in window.aioxyData.countries
+            // (81 total, verified against ingredients.js this session) to its IPCC 2019
+            // Refinement Table 10.11 region. Built this session specifically to make the
+            // regionalized entericEF above actually reachable from ingredient.originCountry —
+            // without this map, region-aware data has no path from user input to lookup.
+            // Regional groupings follow IPCC's own standard regional definitions
+            // (Annex 10A.2). Any country AIOXY adds in future MUST be added here too, or it
+            // will silently fall through to the 'blended' national-average fallback for a
+            // best-guess region — see fallback handling in calculation_engine.js.
+            COUNTRY_TO_IPCC_REGION: Object.freeze({
+                'US':'North America','CA':'North America',
+                'AT':'Western Europe','BE':'Western Europe','CH':'Western Europe','CY':'Western Europe','DE':'Western Europe',
+                'DK':'Western Europe','ES':'Western Europe','FI':'Western Europe','FR':'Western Europe','GB':'Western Europe',
+                'GR':'Western Europe','IE':'Western Europe','IS':'Western Europe','IT':'Western Europe','LU':'Western Europe',
+                'MT':'Western Europe','NL':'Western Europe','NO':'Western Europe','PT':'Western Europe','SE':'Western Europe',
+                'AL':'Eastern Europe','BA':'Eastern Europe','BG':'Eastern Europe','CZ':'Eastern Europe','EE':'Eastern Europe',
+                'HR':'Eastern Europe','HU':'Eastern Europe','LT':'Eastern Europe','LV':'Eastern Europe','MD':'Eastern Europe',
+                'ME':'Eastern Europe','MK':'Eastern Europe','PL':'Eastern Europe','RO':'Eastern Europe','RS':'Eastern Europe',
+                'RU':'Eastern Europe','SI':'Eastern Europe','SK':'Eastern Europe','UA':'Eastern Europe','XK':'Eastern Europe',
+                'AU':'Oceania','NZ':'Oceania',
+                'AR':'Latin America','BR':'Latin America','CL':'Latin America','CO':'Latin America','MX':'Latin America',
+                'PE':'Latin America','UY':'Latin America',
+                'CN':'Asia','ID':'Asia','JP':'Asia','KR':'Asia','MY':'Asia','PH':'Asia','TH':'Asia','TW':'Asia','VN':'Asia',
+                'CI':'Africa','CM':'Africa','ET':'Africa','GH':'Africa','KE':'Africa','MA':'Africa','NG':'Africa','TN':'Africa',
+                'ZA':'Africa','DZ':'Africa','EG':'Africa',
+                'AE':'Middle East','IQ':'Middle East','IR':'Middle East','SA':'Middle East','TR':'Middle East',
+                'BD':'Indian Subcontinent','IN':'Indian Subcontinent','LK':'Indian Subcontinent','NP':'Indian Subcontinent','PK':'Indian Subcontinent'
+                // Verified this session: all 81 country codes in window.aioxyData.countries
+                // (ingredients.js) are covered — zero unmapped.
             }),
 
             // AGRIBALYSE_DEFAULT_PRODUCTIVITY: French national average productivity per animal type.
@@ -2082,7 +2207,7 @@
         
         const headsNeeded = params.quantityKg / params.productPerHeadPerYear;
         const ch4Kg = headsNeeded * params.efCh4PerHead;
-        return ch4Kg * CONSTANTS.IPCC_AR5_PEF31.GWP_CH4_BIOGENIC;
+        return ch4Kg * CONSTANTS.IPCC_AR6_PEF31.GWP_CH4_BIOGENIC;
     }
 
     // ================== calculateManureN2O ==================
@@ -2097,7 +2222,7 @@
     //   N2O_N_kg       = N_excreted_kg × EF_manure          (kg N2O-N / year)
     //   N2O_kg         = N2O_N_kg × (44/28)                 (kg N2O / year)
     //                  = N2O_N_kg × CONSTANTS.IPCC_TIER1.N2O_MASS_CONVERSION
-    //   CO2e           = N2O_kg × CONSTANTS.IPCC_AR5_PEF31.GWP_N2O
+    //   CO2e           = N2O_kg × CONSTANTS.IPCC_AR6_PEF31.GWP_N2O
     //
     // Where EF_manure = CONSTANTS.IPCC_TIER1_LIVESTOCK.manureEF[manureSystem]
     //   (kg N2O-N per kg N excreted, IPCC 2006 Table 10.21)
@@ -2145,7 +2270,7 @@
         // kg N2O-N → kg N2O → kg CO2e
         const n2oN_kg  = nExcretedKg  * efManure;                                           // kg N2O-N
         const n2o_kg   = n2oN_kg      * CONSTANTS.IPCC_TIER1.N2O_MASS_CONVERSION;           // kg N2O (×44/28)
-        const co2e     = n2o_kg       * CONSTANTS.IPCC_AR5_PEF31.GWP_N2O;                   // kg CO2e (×265)
+        const co2e     = n2o_kg       * CONSTANTS.IPCC_AR6_PEF31.GWP_N2O;                   // kg CO2e (×273, AR6)
 
         return co2e;
     }

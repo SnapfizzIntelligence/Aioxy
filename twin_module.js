@@ -339,6 +339,22 @@ function renderTwinResults(mainResult, twinCalcResult) {
     var mainEnergySource = (mainAudit.manufacturing && mainAudit.manufacturing.energySource) || '';
     var twinTransMode   = (typeof gv === 'function') ? gv('twinTransportMode') : '';
     var mainTransMode   = (mainAudit.transport && mainAudit.transport.mode) || '';
+    // FIX PARITY-DISTANCE-1 (this session, corrects a real pre-launch-review finding):
+    // the comment above explicitly listed "distance" as one of the parameters checked for
+    // Apple-to-Apple parity, but the actual operationalParityMet comparison below never
+    // included it -- confirmed via direct trace that twinTransportDistance is read and
+    // DISPLAYED elsewhere in this file (line ~471, ~662) but was never compared here. This
+    // meant two products with identical country/energy/transport-mode/packaging/weight but
+    // wildly different transport distances (e.g. 50km vs 5,000km, both "road") were
+    // incorrectly labelled "Apple-to-Apple" -- a real methodological gap against this
+    // function's own stated intent and PEF 3.1 §6's system-boundary-parity requirement.
+    // mainAudit.transport.distanceKm confirmed as the correct, real, flat field (verified
+    // against export_engine.js's generateAuditTrail output shape, NOT a nested .parameters
+    // path that a different, unrelated metadata field elsewhere uses).
+    var twinTransDist   = parseFloat((typeof gv === 'function') ? gv('twinTransportDistance') : 0) || 0;
+    var mainTransDist   = (mainAudit.transport && mainAudit.transport.distanceKm) || 0;
+    // Small tolerance (1 km) for floating-point/rounding noise, not a meaningful parity gap.
+    var transDistanceMatch = Math.abs(twinTransDist - mainTransDist) < 1;
     var twinPkgMat      = (typeof gv === 'function') ? gv('twinPackagingMaterial') : '';
     var mainPkgMat      = (mainAudit.packaging && mainAudit.packaging.material) || '';
 
@@ -346,6 +362,7 @@ function renderTwinResults(mainResult, twinCalcResult) {
         twinMfgCountry   === mainMfgCountry   &&
         twinEnergySource === mainEnergySource  &&
         twinTransMode    === mainTransMode     &&
+        transDistanceMatch                     &&
         twinPkgMat       === mainPkgMat        &&
         Math.abs(twinMass - mainMass) < 0.001
     );
@@ -362,6 +379,15 @@ function renderTwinResults(mainResult, twinCalcResult) {
           '\u26A0\uFE0F <strong>Different declared weights:</strong> Main = ' + (mainMass*1000).toFixed(0) + 'g, Twin = ' + (twinMass*1000).toFixed(0) + 'g. ' +
           'Per-kg comparison uses each product\'s own weight as functional unit denominator. ' +
           'Results are not directly comparable on an equal-portion basis.</div>'
+        : '';
+
+    // FIX PARITY-DISTANCE-1 (this session): user-facing counterpart to the distance term
+    // added to operationalParityMet above — explains WHY a comparison was labelled
+    // What-If when only distance differs, matching the existing mass-mismatch pattern.
+    var distanceMismatchWarning = (!transDistanceMatch && operationalParityMet === false)
+        ? '<div style="background:#FFF3CD;border:1px solid #F0AD4E;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:0.78rem;color:#856404;">' +
+          '\u26A0\uFE0F <strong>Different transport distances:</strong> Main = ' + mainTransDist.toFixed(0) + ' km, Twin = ' + twinTransDist.toFixed(0) + ' km. ' +
+          'PEF 3.1 §6 requires matching system-boundary parameters for an Apple-to-Apple comparison.</div>'
         : '';
 
     var co2Delta    = twinCO2 - mainCO2;
@@ -543,6 +569,9 @@ function renderTwinResults(mainResult, twinCalcResult) {
 
         // K2-F1 FIX: Mass mismatch warning (empty string when masses match)
         massMismatchWarning +
+
+        // FIX PARITY-DISTANCE-1 (this session): distance mismatch warning, same pattern
+        distanceMismatchWarning +
 
         // 4 metric cards
         '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.25rem;">' +
@@ -1144,7 +1173,7 @@ function buildTwinPDFSection(doc, h) {
                 layerBLines.push('  N2O total = ' + fix(n2oAdj.total_co2e||0,4) + ' kg CO2e  [batch total for ' + fix(qty,4) + ' kg ingredient]');
                 layerBLines.push('  Per-kg additive: N2O_total / qty = ' + fix(n2oAdj.total_co2e||0,6) + ' / ' + fix(qty,4) + ' = ' + numFmt(qty>0?(n2oAdj.total_co2e||0)/qty:0,6) + ' kg CO2e/kg ingredient');
                 layerBLines.push('  -> added to flatPef[CC] and flatPef[CC-Land Use] per kg ingredient');
-                layerBLines.push('  Source: IPCC 2006 Vol. 4 Ch. 11  |  GWP N2O = 265 (IPCC AR5)');
+                layerBLines.push('  Source: IPCC 2006 Vol. 4 Ch. 11  |  GWP N2O = 273 (IPCC AR6)');
             }
             layerBLines.push('');
 
@@ -1155,7 +1184,7 @@ function buildTwinPDFSection(doc, h) {
                 layerBLines.push('  Animal type: ' + safe(entAdj.animal_type || 'beef_cattle'));
                 layerBLines.push('  Method: DELTA adjustment');
                 layerBLines.push('  delta CO2e = ' + fix(entAdj.delta_co2e||0,4) + ' kg CO2e  [applied to CC-Biogenic]');
-                layerBLines.push('  Source: IPCC 2006 Vol. 4 Table 10.11  |  GWP CH4 biogenic = 28');
+                layerBLines.push('  Source: IPCC 2006 Vol. 4 Table 10.11  |  GWP CH4 biogenic = 27.0');
             }
 
             // B6 Manure N2O

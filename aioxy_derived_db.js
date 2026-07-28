@@ -73648,6 +73648,12 @@ window.aioxyData.commodity_prices = {
     "year": 2026,
     "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, Malaysia crude, DAP)"
   },
+  "milk": {
+    "price_eur_per_kg": 0.3274,
+    "price_usd_per_kg": 0.3558,
+    "year": 2026,
+    "source": "USDA (via Trading Economics benchmark tracker), farm milk price, USD 16.14/CWT, March 20, 2026 -- converted CWT (100 lb) to kg using 1 lb = 0.453592 kg, then USD to EUR at an approximate ~0.92 rate (not a precise same-day FX quote -- flagged for refinement if exact-date FX matters for a specific use). ADDED (this session, FIX COMMODITY-PRICE-1) to correct a real bug: previously, 'cow' matched into the 'beef' commodityKey, meaning every dairy/Cow-milk ingredient was priced as beef cattle meat for the allocation-sensitivity check, a genuine economic mismatch. Note: World Bank Pink Sheet (the source for all other entries in this file) does not track a farm-gate raw milk series, so this entry uses a different, real, dated, disclosed source rather than force-fitting an inapplicable one."
+  },
   "soybean_meal": {
     "price_eur_per_kg": 0.3741,
     "price_usd_per_kg": 0.404,
