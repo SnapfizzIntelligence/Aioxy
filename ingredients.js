@@ -122,9 +122,9 @@ Object.assign(window.aioxyData.ingredients, {
         "data": {
             "pef": {
                 "Climate Change": 1.59,
-                "Climate Change - Fossil": 0.00413,
+                "Climate Change - Fossil": 1.58,
                 "Climate Change - Biogenic": 0.0102,
-                "Climate Change - Land Use": 1.58,
+                "Climate Change - Land Use": 0.00413,
                 "Ozone Depletion": 8.14e-08,
                 "Human Toxicity, non-cancer": 3.82e-08,
                 "Human Toxicity, cancer": 7.49e-10,
