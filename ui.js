@@ -458,17 +458,20 @@ function updateResultsUI(results, twinCalcResult) {
 
     // =====================================================================
     // 🚀 FRONT-OF-PACK (FOP) ECO-SCORE ENGINE
-    // BUG-16 FIX: Thresholds are AIOXY internal benchmarks.
-    // They are NOT sourced from ADEME or PEF 3.1. Do not attribute externally.
-    // FIX: [ui.js audit] Thresholds were still [150/250/400/600] — the OLD, pre-DB-1-FIX
-    // scale. pdf-generator.js was already corrected (DB-1 FIX, 2026-06-07) to
-    // [15000/25000/40000/60000] after the underlying PEF weighting factors were found to
-    // be 100x too small and fixed to the real EF 3.1 Table 7 values (WF sum=1.0). This file
-    // was never updated to match, meaning the live on-screen badge was almost certainly
-    // grading every real product as worst-possible "E" (since corrected uPt scores are
-    // ~100x larger than these old thresholds expect), while the PDF — using the corrected
-    // scale — would show the same product as a reasonable A/B/C/D. Same product, two
-    // contradictory grades, at the same time. Corrected to match pdf-generator.js exactly.
+    // FIX-22: Replaced fabricated internal grade bands with the peer-reviewed
+    // Enviroscore/EFSI methodology. The PEF Single Score (mPt) itself is NOT
+    // fabricated — it is the official EU PEF methodology (JRC EUR 29540 EN,
+    // Table 7 WF, sum=1.0000) and is still shown below, labeled on its own
+    // terms as a reference figure, not as the source of the letter grade.
+    //
+    // EFSI / Enviroscore source (full citation):
+    //   Ramos, S., Segovia, L., Melado-Herreros, A., Cidad, M., Zufía, J.,
+    //   Vranken, L. & Matthys, C. (2022). "Enviroscore: normalization,
+    //   weighting, and categorization algorithm to evaluate the relative
+    //   environmental impact of food and drink products." npj Science of
+    //   Food, 6:54. DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
+    //   Table 1 = EFSI-NF/WF values below. Table 2 = A-E cutoffs below.
+    //   NF basis: global population, 2013 = 509,718,000 (Table 1 footnote).
     // =====================================================================
     const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
     const singleScoreData = window.auditTrailData?.pef_single_score || { singleScore: 0 };
@@ -476,14 +479,41 @@ function updateResultsUI(results, twinCalcResult) {
         ? singleScoreData.singleScore
         : 0;
 
-    // Indicative µPt grade bands — AIOXY internal benchmarks only, not ADEME or PEF 3.1 thresholds
+    const EFSI_TABLE = {
+        'Climate Change':                { nf: 2.42E+03, wf: 22.19 },
+        'Ozone Depletion':                { nf: 1.29E-04, wf: 6.75  },
+        'Ionizing Radiation':             { nf: 1.31E+02, wf: 5.37  },
+        'Photochemical Ozone Formation':  { nf: 1.08E+01, wf: 5.10  },
+        'Particulate Matter':             { nf: 2.44E-04, wf: 9.54  },
+        'Acidification':                  { nf: 3.93E+01, wf: 6.64  },
+        'Eutrophication, freshwater':     { nf: 3.81E-01, wf: 2.95  },
+        'Eutrophication, terrestrial':    { nf: 1.42E+01, wf: 3.12  },
+        'Eutrophication, marine':         { nf: 1.58E+02, wf: 3.91  },
+        'Land Use':                       { nf: 2.43E+05, wf: 8.42  },
+        'Water Use/Scarcity (AWARE)':     { nf: 7.83E+02, wf: 9.03  },
+        'Resource Use, fossils':          { nf: 1.96E+04, wf: 8.92  },
+        'Resource Use, minerals/metals':  { nf: 4.33E-03, wf: 8.08  }
+        // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater are
+        // correctly excluded — Ramos et al.'s weighting source (Sala, Cerutti
+        // & Pant 2018, EC JRC) dismissed those categories for lack of
+        // methodological robustness. Not a gap in this mapping.
+    };
+    const pefCats = window.auditTrailData?.pefCategories || {};
+    let efsiScore = 0;
+    Object.keys(EFSI_TABLE).forEach(cat => {
+        const row = EFSI_TABLE[cat];
+        const perKg = (pefCats[cat]?.total || 0) / productWeightKg;
+        efsiScore += (perKg / row.nf) * row.wf;
+    });
+
+    // Table 2 thresholds (Ramos et al. 2022) — replaces old fabricated bands
     let ecoGrade = 'E';
     let ecoColor = '#E63946'; // Red
-    if (mPtScore < 15000) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
-    else if (mPtScore < 25000) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
-    else if (mPtScore < 40000) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
-    else if (mPtScore < 60000) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
-    
+    if (efsiScore < 4.00E-04) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
+    else if (efsiScore < 1.45E-03) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
+    else if (efsiScore < 2.00E-03) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
+    else if (efsiScore < 1.00E-02) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
+
     let ecoScoreDiv = document.getElementById('fopEcoScoreCard');
     if (!ecoScoreDiv && resultsContent) {
         ecoScoreDiv = document.createElement('div');
@@ -500,10 +530,11 @@ function updateResultsUI(results, twinCalcResult) {
                         <div style="background: ${ecoColor}; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
                             <i class="fas fa-leaf"></i>
                         </div>
-                        <h3 style="margin: 0; color: var(--primary); font-size: 1.25rem;">Front-of-Pack (FOP) Eco-Score</h3>
+                        <h3 style="margin: 0; color: var(--primary); font-size: 1.25rem;">Enviroscore</h3>
                     </div>
-                    <div style="font-size: 0.9rem; color: var(--gray); max-width: 450px;">
-                        Consumer-facing environmental grade based on internal µPt benchmarks (${mPtScore.toFixed(1)} µPt). <strong>For internal use — not for external environmental claims.</strong>
+                    <div style="font-size: 0.9rem; color: var(--gray); max-width: 480px;">
+                        EFSI = ${efsiScore.toFixed(6)} · Ramos et al. 2022, <em>npj Science of Food</em>, DOI: 10.1038/s41538-022-00165-z.
+                        Reference only — PEF Single Score: ${mPtScore.toFixed(1)} µPt (official EU PEF methodology, separate metric, not used to derive this grade).
                     </div>
                 </div>
                 <div style="display: flex; gap: 4px; align-items: flex-end;">
@@ -3547,27 +3578,53 @@ function displayCompleteAuditTrail() {
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (Internal)</div>
                         
                         ${(() => {
-                            // FIX: [ui.js audit] Third occurrence of the same stale-threshold bug found
-                            // at lines 460-509 — this rating/grade band was also still using the OLD
-                            // [150/250/400/600] scale, pre-dating the DB-1 FIX WF correction (see that
-                            // fix's comment for full explanation). Corrected to match pdf-generator.js
-                            // and the main FOP card above.
-                            const score = audit.pef_single_score?.singleScore || 0;
-                            let rating = 'Excellent';
-                            let ratingColor = '#48BB78';
-                            
-                            if (score > 15000) { rating = 'Good'; ratingColor = '#ECC94B'; }
-                            if (score > 25000) { rating = 'Fair'; ratingColor = '#ED8936'; }
-                            if (score > 40000) { rating = 'Poor'; ratingColor = '#FC8181'; }
-                            
+                            // FIX-22: [ui.js audit] Third occurrence of the fabricated-threshold
+                            // eco-score, replaced with peer-reviewed Enviroscore/EFSI, consistent
+                            // with the main FOP card and pdf-generator.js. Source citation:
+                            // Ramos et al. 2022, npj Science of Food, 6:54, DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
+                            const localPWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
+                            const pefCatsLocal = audit.pefCategories || {};
+                            const EFSI_TABLE_LOCAL = {
+                                'Climate Change':                { nf: 2.42E+03, wf: 22.19 },
+                                'Ozone Depletion':                { nf: 1.29E-04, wf: 6.75  },
+                                'Ionizing Radiation':             { nf: 1.31E+02, wf: 5.37  },
+                                'Photochemical Ozone Formation':  { nf: 1.08E+01, wf: 5.10  },
+                                'Particulate Matter':             { nf: 2.44E-04, wf: 9.54  },
+                                'Acidification':                  { nf: 3.93E+01, wf: 6.64  },
+                                'Eutrophication, freshwater':     { nf: 3.81E-01, wf: 2.95  },
+                                'Eutrophication, terrestrial':    { nf: 1.42E+01, wf: 3.12  },
+                                'Eutrophication, marine':         { nf: 1.58E+02, wf: 3.91  },
+                                'Land Use':                       { nf: 2.43E+05, wf: 8.42  },
+                                'Water Use/Scarcity (AWARE)':     { nf: 7.83E+02, wf: 9.03  },
+                                'Resource Use, fossils':          { nf: 1.96E+04, wf: 8.92  },
+                                'Resource Use, minerals/metals':  { nf: 4.33E-03, wf: 8.08  }
+                                // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater
+                                // excluded by the source paper itself — see main FOP card comment.
+                            };
+                            let localEfsi = 0;
+                            Object.keys(EFSI_TABLE_LOCAL).forEach(cat => {
+                                const row = EFSI_TABLE_LOCAL[cat];
+                                const perKg = (pefCatsLocal[cat]?.total || 0) / localPWeightKg;
+                                localEfsi += (perKg / row.nf) * row.wf;
+                            });
+                            const mPtRef = audit.pef_single_score?.singleScore || 0;
+
+                            let rating = 'Very low';
+                            let ratingColor = '#2A9D8F';
+                            let grade = 'A';
+                            if (localEfsi >= 4.00E-04) { rating = 'Low'; ratingColor = '#8AB17D'; grade = 'B'; }
+                            if (localEfsi >= 1.45E-03) { rating = 'Medium'; ratingColor = '#E9C46A'; grade = 'C'; }
+                            if (localEfsi >= 2.00E-03) { rating = 'High'; ratingColor = '#F4A261'; grade = 'D'; }
+                            if (localEfsi >= 1.00E-02) { rating = 'Very high'; ratingColor = '#E63946'; grade = 'E'; }
+
                             return `
                                 <div style="margin-top: 0.25rem;">
                                     <div class="dqr-badge" style="background: ${ratingColor}; color: white; display: inline-block; margin-bottom: 0.25rem; font-size: 0.7rem; padding: 0.15rem 0.5rem;">
-                                        ${rating} • Person Equivalent Impact
+                                        ${rating} • Enviroscore (Ramos et al. 2022)
                                     </div>
-                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${score < 15000 ? '#2A9D8F' : score < 25000 ? '#8AB17D' : score < 40000 ? '#E9C46A' : score < 60000 ? '#F4A261' : '#E63946'};">
-                                        Grade ${score < 15000 ? 'A' : score < 25000 ? 'B' : score < 40000 ? 'C' : score < 60000 ? 'D' : 'E'} 
-                                        <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(${score.toFixed(1)} µPt)</span>
+                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${ratingColor};">
+                                        Grade ${grade}
+                                        <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(EFSI ${localEfsi.toFixed(6)} · ref. PEF Single Score ${mPtRef.toFixed(1)} µPt)</span>
                                     </div>
                                 </div>
                             `;

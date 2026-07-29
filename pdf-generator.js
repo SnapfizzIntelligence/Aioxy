@@ -3396,21 +3396,65 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         footer('Methodology & Legal — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
-        // FIX-21: ECO-SCORE PAGE — grade derivation fully transparent
+        // FIX-22: ECO-SCORE PAGE — replaced fabricated internal grade bands
+        // with the peer-reviewed Enviroscore/EFSI methodology. The PEF Single
+        // Score (mPt) itself was NOT fabricated -- it is the official EU PEF
+        // methodology (JRC EUR 29540 EN, Table 7 WF, sum=1.0000) and is kept
+        // below, unchanged, labeled on its own terms. What WAS fabricated,
+        // and is now replaced, was the A-E grade *cutoffs* previously derived
+        // from no source at all (self-admitted in the prior code comments).
+        //
+        // EFSI / Enviroscore source (full citation):
+        //   Ramos, S., Segovia, L., Melado-Herreros, A., Cidad, M., Zufía, J.,
+        //   Vranken, L. & Matthys, C. (2022). "Enviroscore: normalization,
+        //   weighting, and categorization algorithm to evaluate the relative
+        //   environmental impact of food and drink products." npj Science of
+        //   Food, 6:54. DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
+        //   Table 1 = EFSI-NF/WF values below. Table 2 = A-E cutoffs below.
+        //   NF basis: global population, 2013 = 509,718,000 (per Table 1 footnote).
         // ================================================================
         newPage('Front-of-Pack Eco-Score — Derivation and Methodology');
         T.small(); doc.setTextColor(...C.bodyMid);
-        doc.text('Internal consumer-facing environmental grade. Based on PEF Single Score (uPt/kg). NOT for external environmental claims.', M, Y); Y += 6;
+        doc.text('Two independent, separately-sourced metrics are shown below: the official EU PEF Single Score, and the peer-reviewed Enviroscore.', M, Y); Y += 6;
 
-        const ecoMpt   = mPt;  // already computed above
-        // DB-1 FIX (2026-06-07): Thresholds corrected from [150/250/400/600] to [15000/25000/40000/60000] µPt.
-        // WF values corrected to EF 3.1 Table 7 (JRC EUR 29540 EN, WF sum=1.0).
-        // Previous WF values were 100x too small; thresholds now match corrected µPt output scale.
-        let ecoGrade   = 'E', ecoThreshNote = '>= 60000 uPt (>= 60 mPt)';
-        if (ecoMpt < 15000)       { ecoGrade = 'A'; ecoThreshNote = '< 15000 uPt (< 15 mPt)'; }
-        else if (ecoMpt < 25000)  { ecoGrade = 'B'; ecoThreshNote = '15000-24999 uPt (15-25 mPt)'; }
-        else if (ecoMpt < 40000)  { ecoGrade = 'C'; ecoThreshNote = '25000-39999 uPt (25-40 mPt)'; }
-        else if (ecoMpt < 60000)  { ecoGrade = 'D'; ecoThreshNote = '40000-59999 uPt (40-60 mPt)'; }
+        const ecoMpt = mPt;  // already computed above -- untouched, official PEF Single Score
+
+        // ---- EFSI / Enviroscore calculation (Ramos et al. 2022, Table 1) ----
+        const EFSI_TABLE = {
+            'Climate Change':                { nf: 2.42E+03, wf: 22.19 },
+            'Ozone Depletion':                { nf: 1.29E-04, wf: 6.75  },
+            'Ionizing Radiation':             { nf: 1.31E+02, wf: 5.37  },
+            'Photochemical Ozone Formation':  { nf: 1.08E+01, wf: 5.10  },
+            'Particulate Matter':             { nf: 2.44E-04, wf: 9.54  },
+            'Acidification':                  { nf: 3.93E+01, wf: 6.64  },
+            'Eutrophication, freshwater':     { nf: 3.81E-01, wf: 2.95  },
+            'Eutrophication, terrestrial':    { nf: 1.42E+01, wf: 3.12  },
+            'Eutrophication, marine':         { nf: 1.58E+02, wf: 3.91  },
+            'Land Use':                       { nf: 2.43E+05, wf: 8.42  },
+            'Water Use/Scarcity (AWARE)':     { nf: 7.83E+02, wf: 9.03  },
+            'Resource Use, fossils':          { nf: 1.96E+04, wf: 8.92  },
+            'Resource Use, minerals/metals':  { nf: 4.33E-03, wf: 8.08  }
+            // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater are
+            // correctly excluded -- Ramos et al.'s weighting source (Sala,
+            // Cerutti & Pant 2018, EC JRC) dismissed those categories for lack
+            // of methodological robustness. Not a gap in this mapping.
+        };
+        let efsi = 0;
+        const efsiContributions = [];
+        Object.keys(EFSI_TABLE).forEach(cat => {
+            const row = EFSI_TABLE[cat];
+            const perKg = (pef[cat]?.total || 0) / pWeightKg;
+            const contribution = (perKg / row.nf) * row.wf;
+            efsi += contribution;
+            efsiContributions.push({ cat, perKg, contribution });
+        });
+
+        // Table 2 thresholds (Ramos et al. 2022)
+        let ecoGrade = 'E', ecoThreshNote = '>= 1.00e-2';
+        if (efsi < 4.00E-04)       { ecoGrade = 'A'; ecoThreshNote = '< 4.00e-4'; }
+        else if (efsi < 1.45E-03)  { ecoGrade = 'B'; ecoThreshNote = '4.00e-4 to 1.45e-3'; }
+        else if (efsi < 2.00E-03)  { ecoGrade = 'C'; ecoThreshNote = '1.45e-3 to 2.00e-3'; }
+        else if (efsi < 1.00E-02)  { ecoGrade = 'D'; ecoThreshNote = '2.00e-3 to 1.00e-2'; }
 
         const ecoCol = ecoGrade === 'A' ? C.teal : ecoGrade === 'B' ? C.green :
                        ecoGrade === 'C' ? C.amber : ecoGrade === 'D' ? [244,162,97] : C.red;
@@ -3420,41 +3464,51 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...C.white);
         doc.text(ecoGrade, M + 12, Y + 17);
         doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...C.white);
-        doc.text('Front-of-Pack Eco-Score', M + 30, Y + 9);
+        doc.text('Enviroscore (Ramos et al. 2022)', M + 30, Y + 9);
         doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...C.white);
-        doc.text(numFmt(ecoMpt, 2) + ' uPt/kg  |  Threshold: ' + ecoThreshNote, M + 30, Y + 16);
+        doc.text('EFSI = ' + numFmt(efsi, 6) + '  |  Threshold: ' + ecoThreshNote, M + 30, Y + 16);
         Y += 26;
 
         traceBlock([
-            'ECO-SCORE DERIVATION (glass-box — full arithmetic):',
+            'ECO-SCORE DERIVATION (glass-box -- full arithmetic, two independent metrics):',
             '',
-            'Step 1 — PEF Single Score (from Normalisation & Weighting page):',
+            'METRIC 1 -- PEF Single Score (official EU methodology, unchanged by this fix):',
             '  uPt/kg product = ' + numFmt(ecoMpt, 2) + ' uPt',
-            '  Source: SUM_i [ (impact_i/kg) / NF_i x WF_i ] x 1,000,000  (JRC EUR 29540 EN)',
-            '  WF values: EF 3.1 Table 7 canonical values (sum=1.0000) -- DB-1 FIX 2026-06-07',
+            '  Source: SUM_i [ (impact_i/kg) / NF_i x WF_i ] x 1,000,000',
+            '  WF values: EF 3.1 Table 7, JRC EUR 29540 EN (WF sum=1.0000)',
+            '  This is a real, regulatory-grade EU metric -- not a grade, shown as reference only.',
             '',
-            'Step 2 — Threshold lookup (internal AIOXY benchmarks, calibrated to corrected WF scale):',
-            '  A: uPt < 15000   B: 15000 <= uPt < 25000   C: 25000 <= uPt < 40000',
-            '  D: 40000 <= uPt < 60000   E: uPt >= 60000',
-            '  Equivalent in mPt: A<15  B<25  C<40  D<60  E>=60',
-            '  This product: ' + numFmt(ecoMpt,2) + ' uPt  ->  Grade ' + ecoGrade + '  (' + ecoThreshNote + ')',
+            'METRIC 2 -- EFSI / Enviroscore (Ramos et al. 2022, npj Science of Food, 6:54):',
+            '  DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0, open access)',
+            '  EFSI = SUM_i [ (impact_i/kg) / EFSI-NF_i ] x WF_i   across 13 categories (Table 1)',
+            '  EFSI-NF basis: global per-capita European Food Basket impact, 2013 population = 509,718,000',
+            '  This product: EFSI = ' + numFmt(efsi, 6),
             '',
-            'Step 3 — Grade assigned: ' + ecoGrade,
+            'Table 1 categories included (Ramos et al. 2022) -- category: per-kg value -> contribution:',
+            ...efsiContributions.map(c => '  ' + c.cat + ': ' + numFmt(c.perKg, 4) + ' -> ' + numFmt(c.contribution, 6)),
+            '',
+            'Categories NOT scored by EFSI (excluded by the source paper itself, not by AIOXY):',
+            '  Human Toxicity, cancer / non-cancer; Ecotoxicity, freshwater',
+            '  Reason: weighting source (Sala, Cerutti & Pant 2018, EC JRC) found these impact',
+            '  categories\' underlying methodologies not robust enough to weight reliably.',
+            '',
+            'Table 2 thresholds (Ramos et al. 2022) -- Enviroscore grade bands:',
+            '  A: EFSI < 4.00e-4        (very low impact)',
+            '  B: 4.00e-4 <= EFSI < 1.45e-3   (low impact)',
+            '  C: 1.45e-3 <= EFSI < 2.00e-3   (medium impact)',
+            '  D: 2.00e-3 <= EFSI < 1.00e-2   (high impact)',
+            '  E: EFSI >= 1.00e-2       (very high impact)',
+            '  This product: EFSI = ' + numFmt(efsi,6) + '  ->  Grade ' + ecoGrade + '  (' + ecoThreshNote + ')',
             '',
             'IMPORTANT CAVEATS:',
-            '  - These thresholds are INTERNAL AIOXY benchmarks, not a regulated scheme.',
-            '  - NOT equivalent to the official French Eco-Score or Planet-Score methodologies.',
-            '  - NOT for use in external environmental claims or marketing.',
-            '  - Suitable for: internal hotspot benchmarking, supplier engagement, CSRD screening.',
-            '  - For external claims: requires third-party verification per applicable national regulation.',
-            '',
-            'Reference -- industry uPt benchmarks (approximate, for context only):',
-            '  Beef burger (250g)    : ~2,500,000-4,000,000 uPt/kg  (very high -- livestock emissions)',
-            '  Chicken breast        : ~400,000-800,000 uPt/kg',
-            '  Typical ready meal    : ~200,000-600,000 uPt/kg  (depends on meat content)',
-            '  Plant-based burger    : ~100,000-300,000 uPt/kg',
-            '  Oat milk              : ~50,000-150,000 uPt/kg',
-            '  Source: AGRIBALYSE 3.2 / ADEME product benchmarks (indicative ranges, converted to uPt)'
+            '  - Enviroscore grade validated against expert Delphi panel: weighted Kappa 0.642 (p=0.0025).',
+            '  - PEF Single Score and Enviroscore/EFSI are DIFFERENT, independently-sourced methodologies',
+            '    (different category scope: 16 vs 13; different NF/WF basis). They are not meant to',
+            '    numerically match one another -- both are shown for transparency, not as confirmation',
+            '    of each other.',
+            '  - NOT the official French Eco-Score or Planet-Score (different, unrelated methodologies).',
+            '  - For external consumer-facing claims: confirm current regulatory status of Enviroscore',
+            '    in the target market before use; requirements may vary by country and may change.'
         ], { sectionLabel: 'Eco-Score (continued)' });
 
         footer('Eco-Score — Page ' + pageNum + ' of {total_pages_count}');
@@ -3677,9 +3731,89 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 ? window._aioxy_twinPDFBuilder
                 : null;
 
-        if (window._twinResultsForPDF && twinBuilder) {
-            // Twin was run — render full glass-box twin section
+        // FIX TWIN-STALE-1: window.twinSelectedIngredients and the twin form
+        // fields (origin, processing, manufacturing country, transport, etc.)
+        // are live and directly mutable with no dirty flag. Previously nothing
+        // stopped a user from editing twin config AFTER running the twin
+        // calculation and BEFORE exporting the PDF — the Twin Bill of
+        // Materials table (built from live window.twinSelectedIngredients at
+        // export time, see buildTwinPDFSection) would then silently disagree
+        // with the Twin Glass-Box Layer A/B/C derivation (built from the
+        // frozen contribution_tree of whatever was last actually calculated),
+        // with zero indication anywhere in the exported document that the two
+        // halves of the same section describe two different scenarios. Every
+        // individual number in both halves is real — the failure is that the
+        // document doesn't disclose they're out of sync, which is exactly what
+        // the glass-box/100%-traceability principle exists to prevent.
+        // Fix: recompute a hash of current twin form state (same function,
+        // same shape of input buildTwinInput() produces) and compare against
+        // the hash captured at the moment the twin calculation actually ran
+        // (window._twinResultsForPDF.configHashAtCalcTime). Block the mixed-
+        // state render and tell the user exactly what to do, the same way the
+        // existing "twin not run" placeholder already does.
+        let twinIsStale = false;
+        if (window._twinResultsForPDF && typeof window.buildTwinInput === 'function' && typeof window.aioxyHashTwinInput === 'function') {
+            try {
+                const currentTwinInput = window.buildTwinInput();
+                const currentHash = window.aioxyHashTwinInput(currentTwinInput);
+                const calcHash = window._twinResultsForPDF.configHashAtCalcTime;
+                // Only treat as stale if we have BOTH hashes to compare — if either
+                // is null (e.g. hashing utility unavailable), fail open to the
+                // pre-existing behavior rather than blocking export on a check we
+                // can't actually perform. This matches this codebase's standing
+                // rule of failing loudly into a disclosed state, never silently
+                // guessing — here "disclosed state" means falling back to the
+                // prior behavior, not fabricating a pass/fail verdict.
+                if (calcHash && currentHash && calcHash !== currentHash) {
+                    twinIsStale = true;
+                }
+            } catch (e) {
+                console.warn('[AIOXY PDF] Twin staleness check failed to run — proceeding without it:', e);
+            }
+        }
+
+        if (window._twinResultsForPDF && twinBuilder && !twinIsStale) {
+            // Twin was run and current form state matches what was calculated —
+            // render full glass-box twin section
             twinBuilder(doc, twinHelpers);
+        } else if (window._twinResultsForPDF && twinIsStale) {
+            // Twin WAS run, but twin form config has changed since — block the
+            // mixed-state render and tell the user how to fix it.
+            newPage('Parametric Twin — Configuration Changed');
+
+            doc.setFillColor(...C.amber);
+            doc.rect(M, Y, CW, 10, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+            doc.setTextColor(...C.white);
+            doc.text('PARAMETRIC TWIN — RE-RUN REQUIRED', M + 3, Y + 6.5);
+            Y += 14;
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+            doc.setTextColor(...C.bodyMid);
+            const staleLines = [
+                'The Parametric Twin configuration has changed since the twin comparison',
+                'was last run — the twin section has been withheld from this report rather',
+                'than exporting a comparison based on mismatched inputs.',
+                '',
+                'This is a data-integrity safeguard, not an error: AIOXY will never export a',
+                'Twin section where the ingredient/parameter list shown to you and the full',
+                'Layer A/B/C derivation behind it could describe two different scenarios.',
+                '',
+                'To include the twin section in this report:',
+                '  1. Return to the Parametric Twin tab',
+                '  2. Review the current twin configuration',
+                '  3. Click "Run Twin Comparison" again to recalculate with the current inputs',
+                '  4. Re-download the PDF Report',
+                '',
+                'The cradle-to-retail footprint shown elsewhere in this report (the Main',
+                'product result) is entirely unaffected by this and remains valid as-is.',
+            ];
+            staleLines.forEach(line => {
+                doc.text(safe(line), M, Y);
+                Y += 5;
+            });
+
+            footer('Parametric Twin — Page ' + pageNum + ' of {total_pages_count}');
         } else {
             // Twin not run — render informational placeholder page
             // so the PDF recipient knows the section exists and how to activate it
