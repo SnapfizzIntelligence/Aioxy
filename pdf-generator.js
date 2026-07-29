@@ -1230,7 +1230,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  F_SN = ' + fix(n.F_SN_kg, 4) + ' kg N applied');
                 layerBLines.push('  Direct   = F_SN x 0.01 x (44/28) x GWP_N2O(273)');
                 layerBLines.push('           = ' + fix(n.F_SN_kg,4) + ' x 0.01 x 1.5714 x 273 = ' + fix(n.direct_kgCO2e, 4) + ' kg CO2e');
-                layerBLines.push('  Leaching = F_SN x 0.30 x 0.011 x (44/28) x 273');
+                layerBLines.push('  Leaching = F_SN x 0.30 x 0.0075 x (44/28) x 273');
                 layerBLines.push('           = ' + fix(n.indirect_leach_kgCO2e || 0, 4) + ' kg CO2e');
                 layerBLines.push('  Volatil. = F_SN x 0.10 x 0.01 x (44/28) x 273');
                 layerBLines.push('           = ' + fix(n.volatilization_kgCO2e || 0, 4) + ' kg CO2e');
@@ -1265,7 +1265,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  Source: IPCC 2006 Vol.4 Ch.11 Table 11.3');
                 layerBLines.push('  Direct   = F_ON x EF1(0.01) x (44/28) x GWP_N2O(273)');
                 layerBLines.push('           = ' + fix(no.direct_kgCO2e, 4) + ' kg CO2e');
-                layerBLines.push('  Leaching = F_ON x FRAC_LEACH(0.30) x EF5(0.011) x (44/28) x 273');
+                layerBLines.push('  Leaching = F_ON x FRAC_LEACH(0.30) x EF5(0.0075) x (44/28) x 273');
                 layerBLines.push('           = ' + fix(no.indirect_leach_kgCO2e || 0, 4) + ' kg CO2e');
                 layerBLines.push('  Volatil. = F_ON x FRAC_GASM(0.20) x EF4(0.01) x (44/28) x 273');
                 layerBLines.push('           = ' + fix(no.volatilization_kgCO2e || 0, 4) + ' kg CO2e  [2x synthetic due to higher FRAC_GASM]');
