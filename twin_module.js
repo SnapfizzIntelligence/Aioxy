@@ -1132,17 +1132,25 @@ function buildTwinPDFSection(doc, h) {
             layerBLines.push('');
 
             // B2 Geographic proxy
-            var geoAdj = adj.geo_proxy || adj.geographic_proxy || {};
-            if (geoAdj && geoAdj.applied) {
-                layerBLines.push('B2 — Geographic Proxy (non-FR origin, no primary data):');
+            // FIX TWIN-GEOPROXY-1 (this session): previous code read adj.geo_proxy /
+            // adj.geographic_proxy, an object shape the engine has not produced since the
+            // flat 1.15x CC penalty was removed (see calculation_engine.js FIX GEO-PROXY-1
+            // / adjustments.geo_proxy_removed_reason). Those fields are always undefined,
+            // so this block always fell to the generic "not applied" line below regardless
+            // of which real reason actually applied — silently discarding the engine's own
+            // honest, sourced disclosure. Now reads the real field and mirrors the main
+            // (non-twin) pdf-generator.js pattern (confirmed correct there) exactly.
+            if (adj.geo_proxy_removed_reason) {
+                layerBLines.push('B2 — Geographic Production Factor: not applied (no sourced factor exists)');
                 layerBLines.push('  Origin: ' + safe(origin) + ' (non-FR)');
-                layerBLines.push('  Factor: ' + fix(geoAdj.factor||1.15,4));
-                layerBLines.push('  Formula: CC categories x ' + fix(geoAdj.factor||1.15,4));
-                layerBLines.push('  Applied to: Climate Change, CC-Fossil, CC-Biogenic, CC-Land Use');
-                layerBLines.push('  Rationale: Conservative penalty for non-FR transport and production');
-                layerBLines.push('  Excluded: Water Use and Land Use (handled by AWARE/LANCA below)');
+                layerBLines.push('  ' + adj.geo_proxy_removed_reason);
+                layerBLines.push('  This ingredient\'s inbound transport is still calculated precisely and');
+                layerBLines.push('  separately — see Upstream stage.');
+            } else if (isPD) {
+                layerBLines.push('B2 — Geographic Production Factor: not applied (primary data present —');
+                layerBLines.push('  actual farm yield/nitrogen data used instead of an origin-based proxy)');
             } else {
-                layerBLines.push('B2 — Geographic Proxy: not applied (' + safe(origin) + ' origin or primary data present)');
+                layerBLines.push('B2 — Geographic Production Factor: not applicable (' + safe(origin) + ' origin)');
             }
             layerBLines.push('');
 
@@ -1196,31 +1204,46 @@ function buildTwinPDFSection(doc, h) {
                 layerBLines.push('  Manure N2O CO2e: ' + fix(manureAdj.co2e||0,4) + ' kg CO2e  [added to CC + CC-Land Use]');
             }
 
+            // FIX TWIN-COUNTRYFACTORS-1 (this session): B7/B8 previously read adj.aware /
+            // adj.lanca directly. The engine writes these under adj.country_factors.aware /
+            // adj.country_factors.lanca (see calculation_engine.js line ~1075:
+            // "adjustments.country_factors = countryFactorsLog"), so both fields were always
+            // undefined here — B7/B8 silently never printed, even when the engine had
+            // genuinely applied a real, sourced country ratio (confirmed: this exact
+            // scenario happens on this product's own Land Use twin figure, 105 -> 66.998
+            // Pt/kg). Field names below also corrected to match the real object shape
+            // (ref_factor/origin_factor/ratio_applied, not ref_cf/origin_cf/ratio).
+            // Mirrors the already-correct main pdf-generator.js B7/B8 pattern.
+            var cf = adj.country_factors || ing.country_factors || null;
+
             // B7 AWARE
-            var awareAdj = adj.aware || {};
-            if (awareAdj && awareAdj.applied) {
+            if (cf && cf.aware && cf.aware.applied) {
                 layerBLines.push('B7 — AWARE 2.0 Water Scarcity Adjustment:');
                 layerBLines.push('  Formula: Water Use x= (origin_CF / reference_CF_FR)');
-                layerBLines.push('  Reference CF (FR) : ' + fix(awareAdj.ref_cf||15.8,4) + ' m3 world eq/m3');
-                layerBLines.push('  Origin CF (' + safe(origin) + ')  : ' + fix(awareAdj.origin_cf||0,4) + ' m3 world eq/m3');
-                layerBLines.push('  Ratio applied     : ' + fix(awareAdj.ratio||1,4));
+                layerBLines.push('  Reference CF (FR) : ' + fix(cf.aware.ref_factor||15.8,4) + ' m3 world eq/m3');
+                layerBLines.push('  Origin CF (' + safe(origin) + ')  : ' + fix(cf.aware.origin_factor||0,4) + ' m3 world eq/m3');
+                layerBLines.push('  Ratio applied     : ' + fix(cf.aware.ratio_applied||1,4));
                 layerBLines.push('  Source: AWARE 2.0 (Boulay et al. 2018)');
+            } else if (cf && cf.aware) {
+                layerBLines.push('B7 — AWARE 2.0: not applied — ' + safe(cf.aware.reason || 'no adjustment needed'));
             }
 
             // B8 LANCA
-            var lancaAdj = adj.lanca || {};
-            if (lancaAdj && lancaAdj.applied) {
+            if (cf && cf.lanca && cf.lanca.applied) {
                 layerBLines.push('B8 — LANCA v2.5 Land Use Adjustment:');
                 layerBLines.push('  Formula: Land Use x= (origin_SQI / reference_SQI_FR)');
-                if (lancaAdj.ref_occupation !== undefined) {
-                    layerBLines.push('  Reference SQI (FR) — Occupation   : ' + fix(lancaAdj.ref_occupation||0,4));
-                    if (lancaAdj.ref_transformation) layerBLines.push('  Reference SQI (FR) — Transformation: ' + fix(lancaAdj.ref_transformation||0,4));
-                    layerBLines.push('  Origin SQI (' + safe(origin) + ') — Occupation   : ' + fix(lancaAdj.origin_occupation||0,4));
-                    if (lancaAdj.origin_transformation) layerBLines.push('  Origin SQI (' + safe(origin) + ') — Transformation: ' + fix(lancaAdj.origin_transformation||0,4));
-                    layerBLines.push('  Transformation included: ' + (lancaAdj.transformation_included ? 'YES' : 'NO (occupation ratio only)'));
+                var lanca = cf.lanca;
+                if (lanca.ref_occupation !== undefined) {
+                    layerBLines.push('  Reference SQI (FR) — Occupation   : ' + fix(lanca.ref_occupation||0,4));
+                    if (lanca.ref_transformation) layerBLines.push('  Reference SQI (FR) — Transformation: ' + fix(lanca.ref_transformation||0,4));
+                    layerBLines.push('  Origin SQI (' + safe(origin) + ') — Occupation   : ' + fix(lanca.origin_occupation||0,4));
+                    if (lanca.origin_transformation) layerBLines.push('  Origin SQI (' + safe(origin) + ') — Transformation: ' + fix(lanca.origin_transformation||0,4));
+                    layerBLines.push('  Transformation included: ' + (lanca.transformation_included ? 'YES' : 'NO (occupation ratio only)'));
                 }
-                layerBLines.push('  Ratio applied: ' + fix(lancaAdj.ratio_applied||1,4));
+                layerBLines.push('  Ratio applied: ' + fix(lanca.ratio_applied||1,4));
                 layerBLines.push('  Source: LANCA v2.5 — Fraunhofer IBP / JRC');
+            } else if (cf && cf.lanca) {
+                layerBLines.push('B8 — LANCA v2.5: not applied — ' + safe(cf.lanca.reason || 'no adjustment needed'));
             }
 
             if (layerBLines.length <= 3) {
