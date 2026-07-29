@@ -1747,7 +1747,19 @@
                             <option value="fermentation">Fermentation</option>
                             <option value="extrusion">Extrusion</option>
                             <option value="oat-processing">Oat Enzyming/Heat Treatment</option>
+                            <option value="crushing">Crushing (oilseed press — soybean allocation only)</option>
                         </select>
+                        <small style="color:#888; font-size:0.75rem; display:block; margin-top:0.2rem;">
+                            Added this session (FIX ALLOC-1): "Crushing" applies real ISO 14044
+                            §4.3.4 economic co-product allocation for SOYBEAN specifically (the
+                            ingredient's own oil is allocated its economic share; the meal
+                            co-product's share is correctly excluded, not double-counted).
+                            Rapeseed allocation data was sourced but disabled after a currency
+                            mismatch was caught in testing (oil price in USD, meal price in GBP,
+                            2013) — needs a current, same-currency meal price before re-enabling.
+                            For any other ingredient, selecting this option uses mass yield/loss
+                            physics only, with NO allocation applied.
+                        </small>
                     </div>
                     
                     <div class="form-group" style="background: #F8FAFC; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--secondary);">
@@ -1801,7 +1813,7 @@
                                 <small style="color:#555; font-size:0.75rem;">Selects the correct CO₂ emission factor for the fuel amount entered above. Unit shown in label updates automatically.</small>
                             </div>
                             <!-- REFRIGERANT LEAKAGE: F-gases are often the largest single-site climate impact in food cold-chain. -->
-                            <!-- Formula: kg CO2e = kg_leaked × GWP_refrigerant (IPCC AR5 / EC F-Gas Reg 517/2014) -->
+                            <!-- Formula: kg CO2e = kg_leaked × GWP_refrigerant (IPCC AR4 / EU F-Gas Reg 2024/573 Annex I) -->
                             <!-- Added to CC-Fossil in manufacturing total. -->
                             <div style="background:#FFF0F0; border:1px solid #FCA5A5; border-radius:8px; padding:0.75rem; margin-bottom:0.5rem;">
                                 <div style="font-weight:700; color:#991B1B; font-size:0.8rem; margin-bottom:0.4rem;">
@@ -1829,7 +1841,7 @@
                                     </div>
                                 </div>
                                 <small style="color:#991B1B; font-size:0.72rem; display:block; margin-top:0.4rem;">
-                                    Source: GWP values from IPCC AR5 / EC F-Gas Regulation 517/2014 Annex I. Formula: kg CO₂e = kg_leaked × GWP. Added to Climate Change (Fossil) in manufacturing total.
+                                    Source: GWP values from IPCC AR4, per EU F-Gas Regulation (EU) 2024/573 Annex I (which mandates AR4 for HFCs, not the latest IPCC AR). Formula: kg CO₂e = kg_leaked × GWP. Added to Climate Change (Fossil) in manufacturing total.
                                 </small>
                             </div>
                             <div style="font-size: 0.75rem; color: #084B82; margin-top: 0.5rem;">
@@ -2814,7 +2826,8 @@
                             <option value="pasture_fed">Pasture-Fed / Grass-Fed</option>
                             <option value="mixed">Mixed</option>
                         </select>
-                        <small style="color:#888; font-size:0.75rem;">IPCC 2006 Table 10.11 W. Europe enteric EF does not vary by production system — value is the same. Production system determines typical manure management. Recorded in audit trail.</small>
+                        <small style="color:#888; font-size:0.75rem;">Determines typical manure management (recorded in audit trail). For Dairy Cow / Beef Cattle, also affects enteric methane: IPCC 2019 Refinement provides a low/high productivity split for several world regions — "Pasture-Fed / Grass-Fed" maps to IPCC's low-productivity system, "Intensive Indoor" maps to high-productivity; other options use the regional blended average since IPCC does not define them as productivity categories.</small>
+                        <small style="color:#888; font-size:0.75rem; display:block; margin-top:0.2rem;">(Correction, this session: previous text stated the enteric EF "does not vary by production system" for IPCC 2006 W. Europe data only — true for that single region/table, but AIOXY now sources ingredients from 81 countries across 9 IPCC regions, several of which DO have a documented low/high productivity split.)</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label" id="supplierProductivityLabel">Productivity (per animal per year)</label>
