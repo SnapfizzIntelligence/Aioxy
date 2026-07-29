@@ -170,6 +170,20 @@
                 transTotal = transportResult.total * transportResult.fossilFraction;
                 pkgTotal   = packagingResult.fossilImpact;
             } else if (cat === 'Climate Change - Biogenic') {
+                // BUGFIX CC-BIOGENIC-MFG-TRANS (this session): mfgTotal and transTotal were
+                // never assigned in this branch, so (1 - fossilFraction) of Manufacturing's
+                // and Transport's real, already-counted CO2e (mfgResult.co2 / transportResult.total)
+                // vanished from the Fossil+Biogenic sub-split instead of landing in Biogenic.
+                // Headline 'Climate Change' and the PEF Single Score are unaffected — both read
+                // mfgResult.co2 / transportResult.total directly, never a sum of these sub-splits
+                // (see SCORABLE_CATEGORIES, which excludes all 3 CC sub-splits from scoring).
+                // Only the Fossil/Biogenic breakdown itself (used for CSRD/GHG Protocol
+                // Scope 3 biogenic reporting) was incomplete. Mirrors the existing, correct
+                // pkgTotal pattern immediately above (packagingResult.biogenicImpact).
+                // Formula: biogenic share = stage_total x (1 - fossilFraction), consistent with
+                // core_physics.js calculatePackaging(): biogenicImpact = totalImpact x (1 - fossilFraction).
+                mfgTotal   = mfgResult.co2 * (1 - mfgResult.fossilFraction);
+                transTotal = transportResult.total * (1 - transportResult.fossilFraction);
                 pkgTotal   = packagingResult.biogenicImpact;
             // C12-F1 FIX (Audit Session 7): Removed explicit 'Resource Use, fossils' branch
             // that used mfgResult.kwh * 3.6 (= final energy MJ, not primary fossil energy).
@@ -2974,11 +2988,21 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 mfgTotal = mfgResult.co2;
             } else if (cat === 'Climate Change - Fossil') {
                 mfgTotal = mfgResult.co2 * mfgResult.fossilFraction;
+            } else if (cat === 'Climate Change - Biogenic') {
+                // BUGFIX CC-BIOGENIC-MFG-TRANS (this session): this branch was missing entirely,
+                // so (1 - fossilFraction) of mfgResult.co2 (real, already-counted in headline
+                // Climate Change) was never assigned to either sub-split — it just disappeared
+                // from the Fossil+Biogenic accounting. Formula mirrors packagingResult's existing
+                // fossilImpact/biogenicImpact split and core_physics.js calculatePackaging():
+                // biogenicImpact = totalImpact x (1 - fossilFraction).
+                // Headline Climate Change and PEF Single Score are unaffected (see
+                // SCORABLE_CATEGORIES, which excludes all 3 CC sub-splits from scoring) —
+                // only the Fossil/Biogenic sub-split breakdown itself was incomplete.
+                mfgTotal = mfgResult.co2 * (1 - mfgResult.fossilFraction);
             // C12-F1 FIX (Audit Session 7): Removed 'Resource Use, fossils' special case (kwh * 3.6).
             // Now falls through to multiCategoryResults[cat] which holds the grid-mix-appropriate
             // ELECTRICITY_GRID_MULTI value. See buildContributionTree fix above for full rationale.
             } else if (
-                cat !== 'Climate Change - Biogenic' &&
                 cat !== 'Climate Change - Land Use' &&
                 mfgResult.multiCategoryResults && mfgResult.multiCategoryResults[cat] !== undefined
             ) {
@@ -2991,8 +3015,13 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 transTotal = transportResult.total;
             } else if (cat === 'Climate Change - Fossil') {
                 transTotal = transportResult.total * transportResult.fossilFraction;
+            } else if (cat === 'Climate Change - Biogenic') {
+                // BUGFIX CC-BIOGENIC-MFG-TRANS (this session): same missing-branch gap as
+                // Manufacturing above. Invisible in reports where transport fossilFraction = 1.0
+                // (100% diesel, CONSTANTS.FOSSIL_FRACTION.TRANSPORT_DIESEL) since (1-1.0)=0, but
+                // would silently drop real CO2e for any non-diesel transport mode in the future.
+                transTotal = transportResult.total * (1 - transportResult.fossilFraction);
             } else if (
-                cat !== 'Climate Change - Biogenic' &&
                 cat !== 'Climate Change - Land Use' &&
                 transportResult.multiCategoryResults && transportResult.multiCategoryResults[cat] !== undefined
             ) {
