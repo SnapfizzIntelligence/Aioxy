@@ -3606,17 +3606,39 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 if (pkgWeightKg > 0) {
                     const fossilPerKgMat = (packagingResult.multiCategoryResults?.['Resource Use, fossils'] || 0) / pkgWeightKg;
                     const waterPerKgMat  = (packagingResult.multiCategoryResults?.['Water Use/Scarcity (AWARE)'] || 0) / pkgWeightKg;
-                    if (fossilPerKgMat > 0) jrcCalculatedImpact['Resource Use, fossils'] = fossilPerKgMat;
-                    if (waterPerKgMat  > 0) jrcCalculatedImpact['Water Use/Scarcity (AWARE)'] = waterPerKgMat;
+                    // BUGFIX JRC-ZERO (this session): previously only assigned these keys
+                    // when > 0, so a genuine, declared-zero packaging factor (e.g. cardboard
+                    // has no Resource Use, fossils factor at all — core_physics.js
+                    // PACKAGING_MULTI_CATEGORY['cardboard']['Resource Use, fossils'] = 0,
+                    // an honest data gap) was indistinguishable from the field never being
+                    // set. compliance_engine.js could only see "missing", not "genuinely
+                    // zero", and reported both as MISSING_DATA. Always assign the key so
+                    // the real, computed value (including a real zero) reaches the
+                    // validator, which now (BUGFIX JRC-ZERO there too) labels a zero
+                    // input as a declared gap rather than either missing data or an
+                    // unexplained deviation.
+                    jrcCalculatedImpact['Resource Use, fossils'] = fossilPerKgMat;
+                    jrcCalculatedImpact['Water Use/Scarcity (AWARE)'] = waterPerKgMat;
                 }
                 const jrcRaw = window.complianceEngine.runJRCValidation({
                     materialType: jrcMaterialKey,
                     calculatedImpact: jrcCalculatedImpact
                 });
                 // runJRCValidation returns true on pass; normalise to object for consistency
+                // BUGFIX JRC-LABEL (this session): the non-shortcut branch (jrcRaw is the
+                // real { pass, warnings, score, checks, overall_pass } object — the normal
+                // case whenever any check actually ran) previously returned jrcRaw as-is,
+                // which has no materialType field at all (runJRCValidation's return object,
+                // compliance_engine.js, never sets one). pdf-generator.js reads
+                // jrcVal.materialType to qualify each check's displayed name (e.g.
+                // "Packaging (cardboard) — Climate Change" instead of a bare "Climate
+                // Change" that reads as a whole-product check). Without this, that
+                // qualification silently had nothing to read and fell back to the
+                // unqualified category name for every real PARTIAL/FAIL result — only the
+                // rare all-pass shortcut above ever carried materialType through.
                 jrcValidationResult = (jrcRaw === true)
                     ? { passed: true, materialType: jrcMaterialKey }
-                    : jrcRaw;
+                    : { ...jrcRaw, materialType: jrcMaterialKey };
             } catch (e) {
                 jrcValidationResult = { passed: false, error: e.message, materialType: jrcMaterialKey };
             }

@@ -371,6 +371,27 @@
                 continue;
             }
 
+            // BUGFIX JRC-ZERO (this session): a calculated value of exactly 0 is not the
+            // same condition as "missing data" above (calculated field absent/non-numeric).
+            // Some materials (e.g. cardboard) have a genuine, declared-zero factor for a
+            // given category in the packaging database (core_physics.js
+            // PACKAGING_MULTI_CATEGORY[material]['Resource Use, fossils'] = 0 — an honest
+            // data gap, same pattern as the many other declared zeros in this report), not
+            // an unpopulated field. Silently treating that 0 as if the field were absent
+            // would hide it; running it through the normal deviation formula below would
+            // report a bare "100% deviation" that reads like a calculation error rather
+            // than a known, declared gap. This branch labels it correctly as a declared
+            // zero with a real, honest deviation figure attached rather than either
+            // "missing data" (untrue — a value was computed) or a bare unexplained FAIL.
+            if (calculated === 0) {
+                const deviationPct = SHARED_CONSTANTS.UNIT.PERCENT_MAX.toFixed(CONSTANTS.FORMAT.PERCENT_DECIMALS);
+                checks.push({
+                    category, pass: false, deviation: parseFloat(deviationPct), reference, calculated,
+                    note: `declared zero (no factor in packaging database for this material/category) vs JRC BAT reference ${reference} — not missing data, not a calculation error`
+                });
+                continue;
+            }
+
             const deviation = Math.abs(calculated - reference) / reference;
             const deviationPct = (deviation * SHARED_CONSTANTS.UNIT.PERCENT_MAX)
                 .toFixed(CONSTANTS.FORMAT.PERCENT_DECIMALS);

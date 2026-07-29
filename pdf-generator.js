@@ -3257,7 +3257,17 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             // was the one field that did exist, giving the "PARTIAL / FAIL / FAIL" with no detail seen
             // in real output.
             const jrcRows = jrcChecks.map(chk => {
-                const checkName = safe(chk.category || 'Unknown category');
+                // BUGFIX JRC-LABEL (this session): these checks validate the packaging
+                // MATERIAL's own per-kg-of-material CFF output against a material-specific
+                // JRC BAT reference (see calculation_engine.js GAP A / FIX JRC-1) — never
+                // the whole product's per-kg-of-product impact. A bare category name like
+                // "Climate Change" here reads as if it's re-validating the product's 2.6218
+                // headline figure; it is not. Prefixing with the material scope (now carried
+                // through via jrcVal.materialType — see BUGFIX JRC-LABEL in
+                // calculation_engine.js) makes the actual scope explicit rather than
+                // implicit/absent, without changing any number.
+                const scopedPrefix = jrcVal.materialType ? `Packaging (${jrcVal.materialType}) — ` : '';
+                const checkName = scopedPrefix + safe(chk.category || 'Unknown category');
                 const status    = chk.pass ? 'PASS' : 'FAIL';
                 let noteText;
                 if (chk.note) {
