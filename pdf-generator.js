@@ -3458,7 +3458,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('Formula: CO2_per_100g_protein = CC_impact_per_kg x (100 / (protein_g_per_100g x 10))', M, Y); Y += 6;
 
         // Compute from available data
-        const userProteinPer100g = window.lastInput?.product?.proteinPer100g || null;
+        // AUDIT-4 FIX (found via real-world PDF/UI cross-check, this session): was checking
+        // window.lastInput.product.proteinPer100g -- a property that is NEVER populated
+        // anywhere in the codebase. The real field, confirmed in main.js's input-building
+        // code, is input.product.proteinContent. This meant the PDF always said "not
+        // provided" even when a user genuinely entered a protein value and the live UI
+        // dashboard (ui.js) correctly computed and displayed a real result from that same
+        // value -- the same conceptual number silently disagreeing across two outputs.
+        const userProteinPer100g = window.lastInput?.product?.proteinContent || null;
         const ccImpactPerKg = ccPerKg;
 
         if (userProteinPer100g && userProteinPer100g > 0) {
@@ -3470,7 +3477,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '',
                 'Input data:',
                 '  Product protein content   : ' + fix(userProteinPer100g,2) + ' g protein per 100g product',
-                '  Source: window.lastInput.product.proteinPer100g  (user-supplied)',
+                '  Source: window.lastInput.product.proteinContent  (user-supplied)',
                 '  CC impact per kg product  : ' + numFmt(ccImpactPerKg,6) + ' kg CO2e/kg',
                 '  Source: engine contribution tree — all stages combined',
                 '',
@@ -3514,7 +3521,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             traceBlock([
                 'NUTRITIONAL LCA: Not calculated.',
                 '',
-                'Reason: window.lastInput.product.proteinPer100g not provided.',
+                'Reason: window.lastInput.product.proteinContent not provided.',
                 'To activate: enter product protein content (g per 100g) in the product form.',
                 '',
                 'The formula is:',
