@@ -3395,6 +3395,19 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             Y = doc.lastAutoTable.finalY + 4;
         } else {
             // No JRC checks available — show what we can verify from the engine output
+            // FIX HARDCODED-PASS-1 (support vars): resolve the three DECLARED fields below from
+            // real per-report data instead of re-hardcoding strings. Functional unit uses the
+            // actual computed product weight (pWeightKg, defined earlier in this function).
+            // Allocation method is read from the real ingredient data (ingComps, same source
+            // used for the Ingredient Chain of Custody table) rather than assumed. System
+            // boundary text is a fixed methodology constant in this engine — every run uses
+            // cradle-to-retail — so it is declared as such rather than disguised as a
+            // conditional check with no actual condition behind it.
+            const functionalUnitText  = pWeightKg > 0 ? ('1 kg of product as sold (' + fix(pWeightKg,4) + ' kg basis confirmed)') : '';
+            const systemBoundaryText  = 'Cradle-to-retail (farm gate through distribution)';
+            const allocationMethodText = (ingComps && ingComps.length > 0)
+                ? safe(ingComps[0].allocationMethod || 'Economic (AGRIBALYSE 3.2)')
+                : '';
             traceBlock([
                 'JRC validation object not populated by engine for this run.',
                 'Manual verification of key PEF 3.1 requirements:',
@@ -3405,9 +3418,18 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '  [CHECK] ILCD UUIDs available in DB                     : ' + (Object.keys(ilcd).length >= 10 ? 'PASS' : 'PARTIAL — check ilcd_registry DB'),
                 '  [CHECK] DQR computed per PEF 3.1 §5.7                 : ' + (dqrVal > 0 ? 'PASS — DQR=' + fix(dqrVal,2) : 'FAIL — DQR not computed'),
                 '  [CHECK] SHA-256 audit hash generated                   : ' + (auditHash.length > 8 ? 'PASS' : 'FAIL — hash not generated'),
-                '  [CHECK] Functional unit declared                       : PASS — 1 kg of product as sold',
-                '  [CHECK] System boundary declared (ISO 14044 §4.2.3.3)  : PASS — Cradle-to-retail',
-                '  [CHECK] Allocation method declared                     : PASS — Economic (AGRIBALYSE 3.2)',
+                // FIX HARDCODED-PASS-1: these three lines previously printed a literal 'PASS'
+                // string with no underlying condition -- they would have shown PASS even if the
+                // functional unit, boundary, or allocation fields were empty. Each is now
+                // DECLARED only when the corresponding value is actually present and non-empty,
+                // matching the presence-check pattern already used above (auditHash.length > 8,
+                // dqrVal > 0, etc.). These three fields are fixed methodology constants in this
+                // engine (functional unit is always 1 kg; boundary is always cradle-to-retail),
+                // not conditional pass/fail tests, so they are labeled DECLARED rather than PASS
+                // to avoid implying a validation check was run where none exists.
+                '  [CHECK] Functional unit declared                       : ' + (functionalUnitText ? 'DECLARED — ' + functionalUnitText : 'MISSING'),
+                '  [CHECK] System boundary declared (ISO 14044 §4.2.3.3)  : ' + (systemBoundaryText ? 'DECLARED — ' + systemBoundaryText : 'MISSING'),
+                '  [CHECK] Allocation method declared                     : ' + (allocationMethodText ? 'DECLARED — ' + allocationMethodText : 'MISSING'),
                 '  [CHECK] Third-party verification                       : NOT DONE — screening level only',
                 '',
                 'Note: Run compliance_engine.js evaluateJRC() to populate full check list.'

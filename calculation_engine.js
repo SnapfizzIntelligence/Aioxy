@@ -2634,6 +2634,18 @@ if (!traceability.usetox) {
             };
             const fuelType   = pfd.fuelType || 'natural_gas';
             const fuelFactor = FUEL_CO2_FACTORS[fuelType] !== undefined ? FUEL_CO2_FACTORS[fuelType] : 2.13;
+            // FIX FUEL-FACTOR-WIREBACK: pdf-generator.js reads pfd.fuelFactor directly from
+            // window.lastInput.manufacturing.primaryFactoryData (the raw input object) to decide
+            // whether to print the real computed fuel factor or fall back to a hardcoded 2.13.
+            // That field was never written anywhere, so pfd.fuelFactor was always undefined and
+            // the PDF's own "!== undefined" guard could never be true — every report printed a
+            // hardcoded 2.13 gas term in "TOTAL MANUFACTURING CO2/kg", even for fuelType='none'
+            // (100% electric), where the correct, already-computed value here is 0. The engine's
+            // own downstream total (gasCO2, totalMfgCO2 below) was always correct; only this
+            // mirrored input field was missing. Writing the real, already-computed fuelFactor
+            // back onto pfd — the same object the PDF reads — makes the printed figure match
+            // what the engine actually used, instead of a stale, unreachable fallback.
+            pfd.fuelFactor = fuelFactor;
             // CoM 2024 Table 1: Natural gas = 0.20196 t CO2/MWh (activity-based)
 // 1 m³ gas ≈ 0.01056 MWh (38 MJ/m³ ÷ 3,600 MJ/MWh)
 // ∴ 0.20196 × 0.01056 × 1,000 = 2.13 kg CO2/m³
