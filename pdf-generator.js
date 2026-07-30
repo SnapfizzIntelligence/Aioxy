@@ -1754,13 +1754,18 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // ================================================================
         newPage('Manufacturing — Glass-Box Calculation Detail');
         T.small(); doc.setTextColor(...C.bodyMid);
-        doc.text('Grid intensity source: Ember 2025 / energy source specification. Energy intensity: Processing benchmark DB.', M, Y); Y += 3;
+        // FIX ENERGY-SOURCE-LABEL (pdf-generator mirror of calculation_engine.js fix): this header
+        // previously always printed "Processing benchmark DB" even when primary factory data
+        // (real metered kWh/gas readings) was supplied — a false source attribution. Now computed
+        // from the same isPrimaryFactory check used by the primary-data block just below.
+        const isPrimaryFactory = mfgTrace.source === 'Primary Factory Data'
+                              || window.lastInput?.manufacturing?.usePrimaryFactoryData === true;
+        const energyIntensityHeaderLabel = isPrimaryFactory ? 'Primary Factory Data (metered)' : 'Processing benchmark DB';
+        doc.text('Grid intensity source: Ember 2025 / energy source specification. Energy intensity: ' + energyIntensityHeaderLabel + '.', M, Y); Y += 3;
         doc.text('Trace string produced by calculation_engine.js buildContributionTree() and rendered verbatim below.', M, Y); Y += 3;
         doc.text('Country: ' + mfgCountry + '  |  Energy source: ' + mfgEnergySrc + '  |  Grid intensity: ' + numFmt(gridG, 2) + ' g CO2e/kWh  [Ember 2025]', M, Y); Y += 6;
 
         // FIX-14: Factory primary data — show raw inputs + CoM 2024 gas formula when used
-        const isPrimaryFactory = mfgTrace.source === 'Primary Factory Data'
-                              || window.lastInput?.manufacturing?.usePrimaryFactoryData === true;
         const pfd = window.lastInput?.manufacturing?.primaryFactoryData || null;
 
         if (isPrimaryFactory && pfd) {
@@ -3432,7 +3437,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '  [CHECK] Allocation method declared                     : ' + (allocationMethodText ? 'DECLARED — ' + allocationMethodText : 'MISSING'),
                 '  [CHECK] Third-party verification                       : NOT DONE — screening level only',
                 '',
-                'Note: Run compliance_engine.js evaluateJRC() to populate full check list.'
+                'Note: Run compliance_engine.js runJRCValidation() to populate full check list.'
             ], { sectionLabel: 'JRC Validation (continued)' });
         }
         footer('JRC Validation — Page ' + pageNum + ' of {total_pages_count}');

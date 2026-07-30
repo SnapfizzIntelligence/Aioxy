@@ -242,14 +242,25 @@
                     const tdLoss         = 0.07;
                     const adjustedG      = gIntensity * (1 + tdLoss);
                     const isCatCC        = (cat === 'Climate Change');
+                    // FIX ENERGY-SOURCE-LABEL: this string was hardcoded as "[Processing benchmark DB]"
+                    // regardless of where kwhPerKg actually came from. When primary factory data is
+                    // supplied (input.manufacturing.usePrimaryFactoryData), kwhTotal is derived from
+                    // real metered inputs (totalKWh/totalOutputKg x product weight) in processManufacturing(),
+                    // NOT from the static db.processing[method].kwh_per_kg benchmark constant. Printing
+                    // "[Processing benchmark DB]" on a metered figure is a false source attribution —
+                    // a zero-magic-numbers violation, since it points an auditor at the wrong source.
+                    const usedPrimaryData = !!(input && input.manufacturing && input.manufacturing.usePrimaryFactoryData && input.manufacturing.primaryFactoryData);
+                    const energySourceLabel = usedPrimaryData
+                        ? 'Primary Factory Data (metered)'
+                        : 'Processing benchmark DB';
                     if (isCatCC) {
                         return [
-                            'Sources: Ember 2025 (grid intensity) / Processing benchmark DB (energy intensity)',
+                            'Sources: Ember 2025 (grid intensity) / ' + energySourceLabel + ' (energy intensity)',
                             'Formula: CO2e = kWh_per_kg x mass(kg) x grid_intensity(g/kWh) x (1 + T&D_loss) / 1000',
                             '',
                             '  Processing method  : ' + mfgMethod,
                             '  Energy source      : ' + mfgEnergySource,
-                            '  Energy intensity   : ' + kwhPerKg.toFixed(4) + ' kWh/kg  [Processing benchmark DB]',
+                            '  Energy intensity   : ' + kwhPerKg.toFixed(4) + ' kWh/kg  [' + energySourceLabel + ']',
                             '  Product mass       : ' + productMassKg.toFixed(4) + ' kg',
                             '  kWh (total)        : ' + kwhPerKg.toFixed(4) + ' kWh/kg x ' + productMassKg.toFixed(4) + ' kg = ' + kwhTotal.toFixed(4) + ' kWh',
                             '',
