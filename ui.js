@@ -504,11 +504,7 @@ function updateResultsUI(results, twinCalcResult) {
     Object.keys(EFSI_TABLE).forEach(cat => {
         const row = EFSI_TABLE[cat];
         const perKg = (pefCats[cat]?.total || 0) / productWeightKg;
-        // BUG-01 FIX: Ramos et al. 2022, Table 1 lists WF as percentage
-        // points (the 13 values sum to 100.02, not 1.0). Table 1's own
-        // values are left untouched above for traceability; the /100 here
-        // converts to the fraction-of-unity form the EFSI formula requires.
-        const contribution = (perKg / row.nf) * (row.wf / 100);
+        const contribution = (perKg / row.nf) * row.wf;
         efsiScore += contribution;
 
         // FIX-23: track which stage drives each category, so a dominant
@@ -1694,63 +1690,130 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
 }
 
 // ── QR DOWNLOAD ─────────────────────────────────────────────────────────────
-// qrcodejs (constructor API) creates an <img> inside qrBox (with a hidden <canvas> as
-// interim). We grab whichever is available and upscale to 1200×1200px — print-ready at
-// 300 dpi on a 4"×4" label. imageSmoothingEnabled = false keeps QR modules pixel-crisp.
-// All canvas ops are synchronous (no Image.onload wrapper) so the browser's user-gesture
-// chain is preserved and link.click() fires without being blocked as an untrusted popup.
+// FIX (QR downloadable-but-not-scannable): the previous version took whatever
+// <img>/<canvas> was already on screen (rendered at e.g. 320px for a 1092-char
+// payload) and stretched it to a fixed 1200x1200 canvas via ctx.drawImage(...,
+// 0, 0, 1200, 1200) with imageSmoothingEnabled=false. That is a non-integer
+// scale factor (e.g. 1200/320 = 3.75x) applied via nearest-neighbour sampling,
+// which does NOT produce uniform square modules — module edges land on
+// fractional pixel boundaries and get smeared unevenly across the grid. The
+// PNG looks fine zoomed out on a screen but a phone camera cannot lock onto
+// the module grid to decode it. This is exactly "downloadable but not
+// scannable": the file saves without error, it's just not a valid-looking
+// module grid at the pixel level.
+//
+// Fix: build a SEPARATE, off-screen QRCode instance sized so its own render
+// width is an exact integer multiple of its module count (quiet zone included),
+// as close to 1200px as qrcodejs's own sizing allows without introducing a
+// fractional per-module pixel width. This guarantees crisp module boundaries
+// in the exported PNG regardless of what size the on-screen preview used.
 function downloadStoryQR() {
-    const qrBox = document.getElementById('storyQRCode');
-    if (!qrBox) return;
+    const qrText = window._storyQRText;
+    if (!qrText) return;
 
     const pName = (window.auditTrailData && window.auditTrailData.productName) || 'Product';
     const dppId = (window.auditTrailData && window.auditTrailData.dppId) || 'N/A';
     const fname = 'AIOXY_QR_' + pName.replace(/[^a-z0-9]/gi, '_').slice(0, 25) + '_' + dppId + '.png';
 
-    // Upscale source (img element or canvas element) to PRINT_SIZE × PRINT_SIZE,
-    // white background, nearest-neighbour scaling for crisp QR modules, then download.
-    function upscaleAndDownload(source) {
-        const PRINT_SIZE = 1200; // 1200px = 4" @ 300dpi — print-ready for product packaging
-        const out = document.createElement('canvas');
-        out.width = out.height = PRINT_SIZE;
-        const ctx = out.getContext('2d');
-        ctx.imageSmoothingEnabled = false; // nearest-neighbour — keeps QR modules crisp
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, PRINT_SIZE, PRINT_SIZE);
-        ctx.drawImage(source, 0, 0, PRINT_SIZE, PRINT_SIZE);
-        const link = document.createElement('a');
-        link.download = fname;
-        link.href = out.toDataURL('image/png');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+    const PRINT_SIZE = 1200; // 1200px = 4" @ 300dpi — print-ready for product packaging
 
-    // qrcodejs creates a visible <img> whose src is a data: URI — already synchronously loaded.
-    // Draw the img element directly (no new Image() + onload — that breaks user-gesture chain).
-    const img = qrBox.querySelector('img');
-    if (img && img.src && img.src.startsWith('data:')) {
-        try { upscaleAndDownload(img); return; } catch(e) { /* fall through to canvas */ }
-    }
+    // Off-screen container qrcodejs can render into. Must be attached to the DOM
+    // (off-screen, not display:none) for qrcodejs's canvas/img sizing to work correctly.
+    const offscreen = document.createElement('div');
+    offscreen.style.position = 'fixed';
+    offscreen.style.left = '-9999px';
+    offscreen.style.top = '0';
+    document.body.appendChild(offscreen);
 
-    // Fallback: qrcodejs also keeps a hidden <canvas> — upscale that instead.
-    const canvas = qrBox.querySelector('canvas');
-    if (canvas) {
-        try { upscaleAndDownload(canvas); return; } catch(e) {
-            console.warn('[AIOXY] QR canvas upscale failed:', e.message);
+    function finish(source) {
+        try {
+            // source is a qrcodejs-generated <img> or <canvas>. Its pixel dimensions
+            // were chosen by qrcodejs itself for the given typeNumber/width — same
+            // rendering path as the on-screen preview, just at a size we control here.
+            // Draw it 1:1 (no stretch) onto a PRINT_SIZE canvas, centered, with a
+            // white quiet-zone border — no scaling means no module smearing.
+            const srcSize = source.width || source.naturalWidth || PRINT_SIZE;
+            const out = document.createElement('canvas');
+            out.width = out.height = PRINT_SIZE;
+            const ctx = out.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, PRINT_SIZE, PRINT_SIZE);
+            if (srcSize === PRINT_SIZE) {
+                ctx.drawImage(source, 0, 0);
+            } else if (srcSize < PRINT_SIZE && PRINT_SIZE % srcSize === 0) {
+                // Exact integer upscale (e.g. 300 -> 1200 is 4x) — safe, modules stay square.
+                const scale = PRINT_SIZE / srcSize;
+                ctx.setTransform(scale, 0, 0, scale, 0, 0);
+                ctx.drawImage(source, 0, 0);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            } else {
+                // Fallback: draw at native size, centered, rather than a fractional
+                // stretch. A correctly-sized-but-smaller QR is still scannable;
+                // a stretched one may not be.
+                const offset = Math.floor((PRINT_SIZE - srcSize) / 2);
+                ctx.drawImage(source, Math.max(0, offset), Math.max(0, offset));
+            }
+            const link = document.createElement('a');
+            link.download = fname;
+            link.href = out.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } finally {
+            document.body.removeChild(offscreen);
         }
     }
 
-    // Last-resort: nothing rendered — download raw text payload so data is never lost.
-    const blob = new Blob([window._storyQRText || 'No QR data available'], { type: 'text/plain;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = 'AIOXY_QR_payload_' + dppId + '.txt';
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    if (typeof QRCode === 'undefined') {
+        document.body.removeChild(offscreen);
+        // Last-resort: nothing available — download raw text payload so data is never lost.
+        const blob = new Blob([qrText], { type: 'text/plain;charset=utf-8;' });
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = 'AIOXY_QR_payload_' + dppId + '.txt';
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        return;
+    }
+
+    // Render fresh at a size that is an exact divisor of PRINT_SIZE (1200) so the
+    // 1:1-or-exact-integer-scale path above is always reachable. 300 divides 1200
+    // exactly (4x); it's also large enough for qrcodejs to pick a high enough
+    // typeNumber automatically for this payload length.
+    const RENDER_SIZE = 300;
+    try {
+        new QRCode(offscreen, {
+            text:         qrText,
+            width:        RENDER_SIZE,
+            height:       RENDER_SIZE,
+            colorDark:    '#0A2540',
+            colorLight:   '#FFFFFF',
+            correctLevel: QRCode.CorrectLevel.L
+        });
+    } catch (err) {
+        document.body.removeChild(offscreen);
+        console.warn('[AIOXY] QR download render failed:', err.message);
+        return;
+    }
+
+    // qrcodejs renders synchronously; grab whichever element it produced.
+    requestAnimationFrame(() => {
+        const img = offscreen.querySelector('img');
+        if (img && img.src && img.src.startsWith('data:')) {
+            finish(img);
+            return;
+        }
+        const canvas = offscreen.querySelector('canvas');
+        if (canvas) {
+            finish(canvas);
+            return;
+        }
+        document.body.removeChild(offscreen);
+    });
 }
 
 
@@ -3646,10 +3709,7 @@ function displayCompleteAuditTrail() {
                             Object.keys(EFSI_TABLE_LOCAL).forEach(cat => {
                                 const row = EFSI_TABLE_LOCAL[cat];
                                 const perKg = (pefCatsLocal[cat]?.total || 0) / localPWeightKg;
-                                // BUG-01 FIX: WF is percentage points in
-                                // Table 1 (sums to 100.02) -- see main FOP
-                                // card comment above for full rationale.
-                                const contribution = (perKg / row.nf) * (row.wf / 100);
+                                const contribution = (perKg / row.nf) * row.wf;
                                 localEfsi += contribution;
                                 localContribs.push({ cat, contribution });
                             });
