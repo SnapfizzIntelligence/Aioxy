@@ -1772,7 +1772,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '',
                 'GAS CO2 DERIVATION (CoM 2024):',
                 '  Fuel type selected        : ' + safe(pfd.fuelType || 'natural_gas'),
-                '  Emission factor applied   : ' + fix(pfd.fuelFactor || 2.13, 4) + ' kg CO2 per unit fuel',
+                // BUG-FUEL-FACTOR-0 FIX: pfd.fuelFactor||2.13 silently replaced a legitimate
+                // zero (fuelType='none', 100% electric) with the natural-gas factor 2.13,
+                // because JS treats 0 as falsy. A zero fuel factor is a valid, deliberately
+                // computed value (FUEL_CO2_FACTORS.none = 0.0 in calculation_engine.js) and
+                // must be displayed as 0, not silently overwritten. Same class of bug as the
+                // BUG-02 refrigerant-lookup fix elsewhere in this codebase: never let `||`
+                // stand in for an explicit "is this value actually absent?" check.
+                '  Emission factor applied   : ' + fix(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13, 4) + ' kg CO2 per unit fuel',
                 ...( (pfd.fuelType === 'natural_gas' || !pfd.fuelType) ? [
                     '  1 m³ natural gas  = 38 MJ = 38 / 3600 MWh = 0.010556 MWh',
                     '  CoM 2024 NG EF    = 0.20196 t CO2/MWh  [EC Covenant of Mayors 2024, JRC]',
@@ -1784,7 +1791,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 ] : pfd.fuelType === 'coal' ? [
                     '  Coal EF: 94.6 t CO2/TJ x 26.7 MJ/kg ÷ 1e6 x 1000 = 2.53 kg CO2/kg  [CoM 2024 JRC]',
                 ] : ['  No process heat fuel (100% electric).']),
-                '  Fuel CO2/kg product: = ' + fix(gasM3PerKg,6) + ' fuel-units/kg x ' + fix(pfd.fuelFactor||2.13,4) + ' kg CO2/unit = ' + fix(gasM3PerKg*(pfd.fuelFactor||2.13),6) + ' kg CO2e/kg',
+                // BUG-FUEL-FACTOR-0 FIX: same 0-is-falsy issue as above, applied twice in this
+                // line (the displayed factor and the displayed product). Both now preserve a
+                // genuine zero instead of overwriting it with 2.13.
+                '  Fuel CO2/kg product: = ' + fix(gasM3PerKg,6) + ' fuel-units/kg x ' + fix(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13,4) + ' kg CO2/unit = ' + fix(gasM3PerKg*(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13),6) + ' kg CO2e/kg',
                 '',
                 ...( (pfd.refrigerantType && pfd.refrigerantKgLeaked > 0) ? [
                     'REFRIGERANT LEAKAGE (F-GAS DIRECT EMISSIONS):',
@@ -1798,7 +1808,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     '  Source: IPCC AR4 GWP100 / EU F-Gas Regulation (EU) 2024/573 Annex I',
                     '',
                 ] : ['REFRIGERANT LEAKAGE: None entered (or not applicable).', '']),
-                'TOTAL MANUFACTURING CO2/kg: ' + fix(kwhPerKgActual*gridG*1.07/1000 + gasM3PerKg*(pfd.fuelFactor||2.13) + (pfd.refrigerantCO2PerKg||0), 6) + ' kg CO2e/kg',
+                // BUG-FUEL-FACTOR-0 FIX: this line recomputes the manufacturing total
+                // independently of the engine's own mfgResult.co2 and had the same 0-is-falsy
+                // fallback, so a "100% Electric" selection (fuelFactor=0) silently added a
+                // phantom natural-gas term here even though calculation_engine.js correctly
+                // excluded it from every downstream total (Executive Summary, Total Impact
+                // table, PEF score). Those totals were always correct — only this printed
+                // line was wrong. Fixed so the printed total now matches what the engine
+                // actually used.
+                'TOTAL MANUFACTURING CO2/kg: ' + fix(kwhPerKgActual*gridG*1.07/1000 + gasM3PerKg*(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13) + (pfd.refrigerantCO2PerKg||0), 6) + ' kg CO2e/kg',
                 '  = electricity CO2 + fuel CO2' + (pfd.refrigerantCO2PerKg > 0 ? ' + refrigerant CO2' : ''),
                 '  x product weight (' + fix(pfd.totalOutputKg||1,2) + ' kg) — see CC trace below for batch total',
                 '',
