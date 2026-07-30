@@ -3444,7 +3444,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         Object.keys(EFSI_TABLE).forEach(cat => {
             const row = EFSI_TABLE[cat];
             const perKg = (pef[cat]?.total || 0) / pWeightKg;
-            const contribution = (perKg / row.nf) * row.wf;
+            // BUG-01 FIX: Ramos et al. 2022, Table 1 lists WF as percentage
+            // points (the 13 values sum to 100.02, not 1.0 -- verified against
+            // the published table). Table 1's own values are left untouched
+            // above for traceability; the /100 here converts them to the
+            // fraction-of-unity form the EFSI summation formula requires,
+            // exactly as EF 3.1's WF table (which sums to 1.0000) is already
+            // used as a fraction elsewhere in this file.
+            const contribution = (perKg / row.nf) * (row.wf / 100);
             efsi += contribution;
 
             // Stage breakdown for this category, so we can name which life-cycle

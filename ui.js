@@ -504,7 +504,11 @@ function updateResultsUI(results, twinCalcResult) {
     Object.keys(EFSI_TABLE).forEach(cat => {
         const row = EFSI_TABLE[cat];
         const perKg = (pefCats[cat]?.total || 0) / productWeightKg;
-        const contribution = (perKg / row.nf) * row.wf;
+        // BUG-01 FIX: Ramos et al. 2022, Table 1 lists WF as percentage
+        // points (the 13 values sum to 100.02, not 1.0). Table 1's own
+        // values are left untouched above for traceability; the /100 here
+        // converts to the fraction-of-unity form the EFSI formula requires.
+        const contribution = (perKg / row.nf) * (row.wf / 100);
         efsiScore += contribution;
 
         // FIX-23: track which stage drives each category, so a dominant
@@ -3642,7 +3646,10 @@ function displayCompleteAuditTrail() {
                             Object.keys(EFSI_TABLE_LOCAL).forEach(cat => {
                                 const row = EFSI_TABLE_LOCAL[cat];
                                 const perKg = (pefCatsLocal[cat]?.total || 0) / localPWeightKg;
-                                const contribution = (perKg / row.nf) * row.wf;
+                                // BUG-01 FIX: WF is percentage points in
+                                // Table 1 (sums to 100.02) -- see main FOP
+                                // card comment above for full rationale.
+                                const contribution = (perKg / row.nf) * (row.wf / 100);
                                 localEfsi += contribution;
                                 localContribs.push({ cat, contribution });
                             });
