@@ -1520,9 +1520,13 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                         <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${smartCharges.toLocaleString()}</div>
                         <div style="font-size: 0.68rem; font-weight: 600; color: #92400E;">smartphone charges</div>
                         <!-- FIX: [ui.js audit] Card previously said "8.25 Wh/charge" — the
-                             actual constant (SMARTPHONE_CHARGES_PER_KG_CO2 = 397) is derived
+                             actual constant (SMARTPHONE_CHARGES_PER_KG_CO2, main.js) is derived
                              from 12 Wh/charge (EC Ecodesign Impact Accounting 2024 + IEA 2022),
-                             not 8.25. Corrected to the real figure behind this number. -->
+                             not 8.25. Corrected to the real figure behind this number.
+                             UPDATE (2026-07-30 source-verification pass): the constant's value
+                             itself was corrected from 397 to 391 — see main.js for the fix; the
+                             grid-intensity figure it depended on (previously cited as 209.9
+                             gCO2/kWh) did not match Ember's own published 213 gCO2/kWh figure. -->
                         <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">EC Ecodesign 2024 + IEA 2022 — 12 Wh/charge</div>
                     </div>
 
