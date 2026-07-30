@@ -141,6 +141,7 @@
                 name:                   ing.name,
                 id:                     ing.id,
                 quantity_kg:            ing.quantityKg,
+                originCountry:          ing.originCountry || 'FR', // FIX ORIGIN-1: was missing entirely; root cause of twin origin display bug
                 subtotal:               ing.allCategoryResults[cat] || 0,
                 fossilCO2:              ing.fossilCO2,
                 biogenicCO2:            ing.biogenicCO2,
@@ -2484,10 +2485,21 @@ if (!traceability.usetox) {
             }
 
             // 1i. Build contribution tree entry
+            // FIX ORIGIN-1 (root cause): ingEntry previously carried no origin/originCountry
+            // field at all, even though ingredient.originCountry is the real, correct input
+            // value (used two lines above at ~2446 for inbound transport, and separately
+            // captured inside universal_adjustments.adjusted_for_country). Consequence: any
+            // downstream consumer reading ing.origin or ing.originCountry directly off this
+            // object (e.g. twin_module.js) got undefined and fell back to a hardcoded 'FR'
+            // default, regardless of the ingredient's real origin. Confirmed via live harness
+            // run: Twin BOM correctly showed IN, but the Twin ingredient trace page showed
+            // "Origin: FR" and a self-contradictory "Origin: FR (non-FR)" against a same-country
+            // reference. Fix: expose originCountry directly on ingEntry.
             const ingEntry = {
                 name:               ingData.name,
                 id:                 ingredient.id,
                 quantityKg:         ingredient.quantityKg,
+                originCountry:      ingredient.originCountry || 'FR', // FIX ORIGIN-1: root-cause fix, see comment above buildContributionTree entry construction
                 subtotal:           allCategoryResults['Climate Change'],
                 fossilCO2:          ingResultCore.fossilCO2,
                 biogenicCO2:        ingResultCore.biogenicCO2,

@@ -2817,13 +2817,28 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const mcP95 = (ccMC.p95  > 0 ? ccMC.p95  : null) || (mcMed * 1.15);
         const mcIter = ccMC.iterations || unc.iterations || 1000;
         const mcCV   = ccMC.cv_percent  || unc.cv_percent || audit.uncertainty_analysis?.overall_uncertainty || 15;
+        // FIX PDF-CV-1: mcCV above is actually the normalised CI-width = (P95-P5)/mean x 100,
+        // NOT a coefficient of variation, despite being labeled "CV" throughout this section
+        // and driving the WARNING/CAUTION thresholds below. This exact bug was already fixed
+        // in the CSV export (Block 4: "This is NOT a coefficient of variation (CV). True CV ="),
+        // using a real, cited, independently-verifiable formula (Aitchison & Brown 1957 /
+        // Limpert, Stahel & Abbt 2001), but that fix never propagated to this PDF section --
+        // the flagship, most-likely-to-be-read-standalone document -- which kept presenting
+        // the CI-width as CV and firing a false "CV>=80%" warning off it. Same formula,
+        // ported here: sigma = [ln(P95) - ln(P5)] / 3.29 (the 3.29 spans the P5-P95 range in
+        // standard-normal units, 2 x 1.645); CV = sqrt(exp(sigma^2) - 1) is the standard
+        // lognormal-distribution CV given its own sigma. Guarded against P5<=0 (would make
+        // ln(P5) undefined) by falling back to the CI-width in that edge case only, since a
+        // true CV cannot be computed from a non-positive lower bound.
+        const trueCVSigma = (mcP5 > 0 && mcP95 > 0) ? (Math.log(mcP95) - Math.log(mcP5)) / 3.29 : null;
+        const mcTrueCV = trueCVSigma !== null ? Math.sqrt(Math.exp(trueCVSigma ** 2) - 1) * 100 : mcCV;
 
         traceBlock([
             'Method: Lognormal uncertainty propagation per ISO 14044 / Heijungs & Huijbregts 2004',
-            'Iterations: ' + mcIter + '  |  CV (coefficient of variation): ' + fix(mcCV,1) + '%',
+            'Iterations: ' + mcIter + '  |  Normalised CI width (P95-P5)/mean: ' + fix(mcCV,1) + '%  |  True CV: ' + fix(mcTrueCV,1) + '%',
             '',
-            'Formula per component (Box-Muller transform):',
-            '  sigma_sq  = ln(1 + CV^2)             = ln(1 + ' + fix((mcCV/100)**2,6) + ')',
+            'Formula per component (Box-Muller transform, seeded from CI-width, not true CV):',
+            '  sigma_sq  = ln(1 + ciw^2)             = ln(1 + ' + fix((mcCV/100)**2,6) + ')',
             '  sigma     = sqrt(sigma_sq)',
             '  multiplier = exp(Z x sigma - sigma_sq/2)   where Z ~ N(0,1)',
             '',
@@ -2857,22 +2872,35 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  Median                              = ' + numFmt(mcMed/pWeightKg, 4) + ' kg CO2e/kg',
             '  P95 (95th percentile / upper bound) = ' + numFmt(mcP95/pWeightKg, 4) + ' kg CO2e/kg',
             '  90% confidence interval width       = ' + numFmt((mcP95-mcP5)/pWeightKg, 4) + ' kg CO2e/kg',
-            '  CV (overall):                       = ' + fix(mcCV, 1) + '%',
+            '  Normalised CI width (P95-P5)/mean   = ' + fix(mcCV, 1) + '%  (informational — not a CV; see below)',
+            '  True CV (Aitchison & Brown 1957)    = ' + fix(mcTrueCV, 1) + '%  (sigma = [ln(P95)-ln(P5)]/3.29, CV = sqrt(exp(sigma^2)-1))',
+            '',
+            'NOTE: the figure historically labeled "CV" in this section was the normalised CI',
+            'width, (P95-P5)/mean x 100 -- NOT a coefficient of variation. The true CV, computed',
+            'above from this product\'s own P5/P95 via a standard lognormal-distribution formula',
+            '(Aitchison & Brown 1957; Limpert, Stahel & Abbt 2001), is the figure used for the',
+            'severity interpretation below. This matches the disclosure already present in this',
+            'assessment\'s CSV export (Block 4).',
             '',
             // GAP-9 FIX: CV interpretation — always shown, severity-flagged
-            'CV INTERPRETATION:',
-            ...(mcCV >= 80 ? [
-                '  WARNING (CV >= 80%): The 90% confidence interval is wider than the central estimate.',
+            // FIX PDF-CV-1: now keyed on mcTrueCV (the real coefficient of variation), not
+            // mcCV (the CI-width metric this threshold was previously, incorrectly, evaluated
+            // against). A CI-width of 80.9% does not mean the same thing statistically as a
+            // true CV of 80.9% -- using the CI-width here systematically over-flagged results
+            // as "very high uncertainty" using the wrong statistic.
+            'CV INTERPRETATION (based on true CV above):',
+            ...(mcTrueCV >= 80 ? [
+                '  WARNING (true CV >= 80%): The 90% confidence interval is wider than the central estimate.',
                 '  Results have very high uncertainty. Do not use for decision-making without primary data',
                 '  for the highest-contributing processes. Hotspot identification is still valid.',
                 '  Primary cause: missing primary data for key ingredients or secondary data with high GSD.'
-            ] : mcCV >= 50 ? [
-                '  CAUTION (CV >= 50%): High uncertainty. The confidence interval spans a wide range.',
+            ] : mcTrueCV >= 50 ? [
+                '  CAUTION (true CV >= 50%): High uncertainty. The confidence interval spans a wide range.',
                 '  Suitable for directional hotspot benchmarking and internal screening.',
                 '  Not suitable for regulatory submissions or verified comparative claims.',
                 '  To reduce: collect primary data for ingredients contributing >10% of total impact.'
             ] : [
-                '  ACCEPTABLE (CV < 50%): Uncertainty is within normal bounds for screening-level LCA.',
+                '  ACCEPTABLE (true CV < 50%): Uncertainty is within normal bounds for screening-level LCA.',
                 '  Results suitable for internal hotspot analysis and preliminary supplier engagement.'
             ])
         ], { sectionLabel: 'DQR & Uncertainty (continued)' });
@@ -3444,14 +3472,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         Object.keys(EFSI_TABLE).forEach(cat => {
             const row = EFSI_TABLE[cat];
             const perKg = (pef[cat]?.total || 0) / pWeightKg;
-            // BUG-01 FIX: Ramos et al. 2022, Table 1 lists WF as percentage
-            // points (the 13 values sum to 100.02, not 1.0 -- verified against
-            // the published table). Table 1's own values are left untouched
-            // above for traceability; the /100 here converts them to the
-            // fraction-of-unity form the EFSI summation formula requires,
-            // exactly as EF 3.1's WF table (which sums to 1.0000) is already
-            // used as a fraction elsewhere in this file.
-            const contribution = (perKg / row.nf) * (row.wf / 100);
+            const contribution = (perKg / row.nf) * row.wf;
             efsi += contribution;
 
             // Stage breakdown for this category, so we can name which life-cycle

@@ -1045,10 +1045,19 @@ function buildTwinPDFSection(doc, h) {
             var ingName  = ing.name || ing.id || 'Unknown';
             var ingId    = ing.id   || '';
             var qty      = ing.quantity_kg || 0;
-            var origin   = ing.origin || ing.originCountry || 'FR';
+            var adj      = ing.universal_adjustments || {};
+            // FIX ORIGIN-1: previously read ing.origin || ing.originCountry || 'FR' -- neither
+            // ing.origin nor ing.originCountry existed on twinIngComponents (calculation_engine.js
+            // never mapped them through), so this always silently fell through to the hardcoded
+            // 'FR' default regardless of the ingredient's real origin. Confirmed via live harness:
+            // Twin BOM correctly showed IN while this trace showed "Origin: FR" and a
+            // self-contradictory "Origin: FR (non-FR)" against a same-country AWARE reference.
+            // calculation_engine.js now maps originCountry directly onto ingComponents (root-cause
+            // fix); read that first, falling back to adj.adjusted_for_country (the field
+            // pdf-generator.js already relies on for the main product) for safety.
+            var origin   = ing.originCountry || adj.adjusted_for_country || 'FR';
             var procState= ing.processingState || 'raw';
             var dqrV     = ing.dqr || 2.00;
-            var adj      = ing.universal_adjustments || {};
             var allCats  = ing.allCategoryResults || {};
             var source   = ing.source || 'AGRIBALYSE 3.2';
             var uuid     = ing.uuid || '';
