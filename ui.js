@@ -500,11 +500,38 @@ function updateResultsUI(results, twinCalcResult) {
     };
     const pefCats = window.auditTrailData?.pefCategories || {};
     let efsiScore = 0;
+    const efsiContribs = [];
     Object.keys(EFSI_TABLE).forEach(cat => {
         const row = EFSI_TABLE[cat];
         const perKg = (pefCats[cat]?.total || 0) / productWeightKg;
-        efsiScore += (perKg / row.nf) * row.wf;
+        const contribution = (perKg / row.nf) * row.wf;
+        efsiScore += contribution;
+
+        // FIX-23: track which stage drives each category, so a dominant
+        // category's grade can be explained rather than left as a bare letter.
+        const tree = pefCats[cat]?.contribution_tree || {};
+        const stages = {
+            Ingredients:   (tree.Ingredients?.total || 0) / productWeightKg,
+            Manufacturing: (tree.Manufacturing?.total || 0) / productWeightKg,
+            Transport:     (tree.Transport?.total || 0) / productWeightKg,
+            Packaging:     (tree.Packaging?.total || 0) / productWeightKg
+        };
+        const stageTotal = Object.values(stages).reduce((a, b) => a + b, 0) || 1;
+        let topStage = 'Ingredients', topStageShare = 0;
+        Object.keys(stages).forEach(s => {
+            const share = stages[s] / stageTotal;
+            if (share > topStageShare) { topStageShare = share; topStage = s; }
+        });
+        efsiContribs.push({ cat, contribution, topStage, topStageShare });
     });
+
+    // FIX-23: PRIMARY DRIVER DETECTION — see pdf-generator.js FIX-23 comment
+    // for full rationale (Ramos et al. 2022's own "sustainable beef vs
+    // unsustainable banana" caveat about single-category dominance).
+    const efsiSorted = [...efsiContribs].sort((a, b) => b.contribution - a.contribution);
+    const topDriver = efsiSorted[0] || { cat: 'n/a', contribution: 0, topStage: 'n/a', topStageShare: 0 };
+    const topDriverShare = efsiScore > 0 ? (topDriver.contribution / efsiScore) : 0;
+    const hasSingleDriver = topDriverShare >= 0.40;
 
     // Table 2 thresholds (Ramos et al. 2022) — replaces old fabricated bands
     let ecoGrade = 'E';
@@ -523,8 +550,15 @@ function updateResultsUI(results, twinCalcResult) {
     }
 
     if (ecoScoreDiv) {
+        const driverBannerHTML = hasSingleDriver ? `
+            <div style="margin-top: 0.75rem; padding: 0.6rem 0.75rem; background: #FFF4E6; border: 1px solid ${ecoColor}; border-radius: 6px; font-size: 0.8rem; color: #5c4a1f;">
+                <strong>Primary driver:</strong> ${topDriver.cat} (${(topDriverShare * 100).toFixed(0)}% of EFSI),
+                mainly from ${topDriver.topStage} (${(topDriver.topStageShare * 100).toFixed(0)}% of that category).
+                This grade is not a general verdict on the product — see the audit trail for full driver detail.
+            </div>` : '';
         ecoScoreDiv.innerHTML = `
-            <div style="background: linear-gradient(to right, #ffffff, #f8f9fa); border: 2px solid ${ecoColor}; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div style="background: linear-gradient(to right, #ffffff, #f8f9fa); border: 2px solid ${ecoColor}; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <div style="background: ${ecoColor}; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
@@ -544,6 +578,8 @@ function updateResultsUI(results, twinCalcResult) {
                     <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'D' ? '50px' : '35px'}; background: ${ecoGrade === 'D' ? '#F4A261' : '#e0e0e0'}; color: ${ecoGrade === 'D' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">D</div>
                     <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'E' ? '50px' : '35px'}; background: ${ecoGrade === 'E' ? '#E63946' : '#e0e0e0'}; color: ${ecoGrade === 'E' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">E</div>
                 </div>
+                </div>
+                ${driverBannerHTML}
             </div>
         `;
     }
@@ -3602,12 +3638,22 @@ function displayCompleteAuditTrail() {
                                 // excluded by the source paper itself — see main FOP card comment.
                             };
                             let localEfsi = 0;
+                            const localContribs = [];
                             Object.keys(EFSI_TABLE_LOCAL).forEach(cat => {
                                 const row = EFSI_TABLE_LOCAL[cat];
                                 const perKg = (pefCatsLocal[cat]?.total || 0) / localPWeightKg;
-                                localEfsi += (perKg / row.nf) * row.wf;
+                                const contribution = (perKg / row.nf) * row.wf;
+                                localEfsi += contribution;
+                                localContribs.push({ cat, contribution });
                             });
                             const mPtRef = audit.pef_single_score?.singleScore || 0;
+
+                            // FIX-23: compact driver check — same >=40%-of-total rule as
+                            // pdf-generator.js and the main FOP card above.
+                            const localSorted = [...localContribs].sort((a, b) => b.contribution - a.contribution);
+                            const localTop = localSorted[0] || { cat: 'n/a', contribution: 0 };
+                            const localTopShare = localEfsi > 0 ? (localTop.contribution / localEfsi) : 0;
+                            const localHasDriver = localTopShare >= 0.40;
 
                             let rating = 'Very low';
                             let ratingColor = '#2A9D8F';
@@ -3626,6 +3672,10 @@ function displayCompleteAuditTrail() {
                                         Grade ${grade}
                                         <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(EFSI ${localEfsi.toFixed(6)} · ref. PEF Single Score ${mPtRef.toFixed(1)} µPt)</span>
                                     </div>
+                                    ${localHasDriver ? `
+                                    <div style="font-size: 0.7rem; color: #8a6d1f; margin-top: 0.2rem;">
+                                        Driven mainly by ${localTop.cat} (${(localTopShare * 100).toFixed(0)}% of EFSI) — see Eco-Score page for full breakdown.
+                                    </div>` : ''}
                                 </div>
                             `;
                         })()}

@@ -3446,8 +3446,40 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             const perKg = (pef[cat]?.total || 0) / pWeightKg;
             const contribution = (perKg / row.nf) * row.wf;
             efsi += contribution;
-            efsiContributions.push({ cat, perKg, contribution });
+
+            // Stage breakdown for this category, so we can name which life-cycle
+            // stage is responsible if this category turns out to dominate the score.
+            const tree = pef[cat]?.contribution_tree || {};
+            const stages = {
+                Ingredients:   (tree.Ingredients?.total || 0) / pWeightKg,
+                Manufacturing: (tree.Manufacturing?.total || 0) / pWeightKg,
+                Transport:     (tree.Transport?.total || 0) / pWeightKg,
+                Packaging:     (tree.Packaging?.total || 0) / pWeightKg
+            };
+            const stageTotal = Object.values(stages).reduce((a, b) => a + b, 0) || 1;
+            let topStage = 'Ingredients', topStageShare = 0;
+            Object.keys(stages).forEach(s => {
+                const share = stages[s] / stageTotal;
+                if (share > topStageShare) { topStageShare = share; topStage = s; }
+            });
+
+            efsiContributions.push({ cat, perKg, contribution, topStage, topStageShare });
         });
+
+        // FIX-23: PRIMARY DRIVER DETECTION
+        // Identifies whether a single impact category is disproportionately
+        // responsible for the EFSI/Enviroscore grade, and which life-cycle stage
+        // drives that category. This exists because a category can dominate the
+        // index even when the product is not, in an everyday sense, "worse" —
+        // Ramos et al. 2022 themselves flag this exact failure mode (their own
+        // "sustainable beef vs unsustainable banana" example, Introduction section).
+        // A grade with no driver disclosed is not glass-box; this makes the
+        // reason for the grade explicit rather than letting the letter speak alone.
+        const efsiSorted = [...efsiContributions].sort((a, b) => b.contribution - a.contribution);
+        const topCategory = efsiSorted[0];
+        const topCategoryShare = efsi > 0 ? (topCategory.contribution / efsi) : 0;
+        const DRIVER_THRESHOLD = 0.40; // one category >40% of total EFSI = worth flagging explicitly
+        const hasSingleDriver = topCategoryShare >= DRIVER_THRESHOLD;
 
         // Table 2 thresholds (Ramos et al. 2022)
         let ecoGrade = 'E', ecoThreshNote = '>= 1.00e-2';
@@ -3469,6 +3501,23 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('EFSI = ' + numFmt(efsi, 6) + '  |  Threshold: ' + ecoThreshNote, M + 30, Y + 16);
         Y += 26;
 
+        // FIX-23: Visible primary-driver banner — shown whenever one category
+        // dominates the grade, so the letter is never presented without its cause.
+        if (hasSingleDriver) {
+            doc.setFillColor(255, 244, 230);
+            doc.rect(M, Y, CW, 14, 'F');
+            doc.setDrawColor(...ecoCol);
+            doc.setLineWidth(0.6);
+            doc.rect(M, Y, CW, 14, 'S');
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.bodyMid);
+            doc.text('PRIMARY DRIVER: ' + topCategory.cat + ' (' + numFmt(topCategoryShare * 100, 0) +
+                '% of EFSI), driven mainly by ' + topCategory.topStage +
+                ' (' + numFmt(topCategory.topStageShare * 100, 0) + '% of that category).', M + 4, Y + 6);
+            doc.setFont('helvetica','normal'); doc.setFontSize(8);
+            doc.text('This grade is not a general verdict on the product -- see driver detail below before drawing conclusions.', M + 4, Y + 11);
+            Y += 18;
+        }
+
         traceBlock([
             'ECO-SCORE DERIVATION (glass-box -- full arithmetic, two independent metrics):',
             '',
@@ -3484,8 +3533,22 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  EFSI-NF basis: global per-capita European Food Basket impact, 2013 population = 509,718,000',
             '  This product: EFSI = ' + numFmt(efsi, 6),
             '',
+            ...(hasSingleDriver ? [
+                'PRIMARY DRIVER ANALYSIS (FIX-23):',
+                '  ' + topCategory.cat + ' contributes ' + numFmt(topCategory.contribution, 6) +
+                    ' of the ' + numFmt(efsi, 6) + ' EFSI total (' + numFmt(topCategoryShare * 100, 1) + '%).',
+                '  Within ' + topCategory.cat + ', the ' + topCategory.topStage + ' stage accounts for ' +
+                    numFmt(topCategory.topStageShare * 100, 1) + '% of that category\'s impact.',
+                '  Ramos et al. 2022 (Introduction) explicitly caution that a single-index score can be',
+                '  dominated by one impact category even when a product is not, in an everyday sense,',
+                '  "worse" overall -- their own example contrasts a high-impact-labeled sustainable beef',
+                '  against a low-impact-labeled unsustainable banana. This grade should be read alongside',
+                '  the driver identified above, not as a standalone verdict.',
+                ''
+            ] : []),
             'Table 1 categories included (Ramos et al. 2022) -- category: per-kg value -> contribution:',
-            ...efsiContributions.map(c => '  ' + c.cat + ': ' + numFmt(c.perKg, 4) + ' -> ' + numFmt(c.contribution, 6)),
+            ...efsiContributions.map(c => '  ' + c.cat + ': ' + numFmt(c.perKg, 4) + ' -> ' + numFmt(c.contribution, 6) +
+                '  [' + numFmt((efsi > 0 ? c.contribution / efsi * 100 : 0), 1) + '% of EFSI; top stage: ' + c.topStage + ' ' + numFmt(c.topStageShare * 100, 0) + '%]'),
             '',
             'Categories NOT scored by EFSI (excluded by the source paper itself, not by AIOXY):',
             '  Human Toxicity, cancer / non-cancer; Ecotoxicity, freshwater',
