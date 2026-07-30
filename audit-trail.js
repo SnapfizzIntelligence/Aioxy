@@ -1377,19 +1377,56 @@ function exportCSRDMatrix() {
     rows.push(['']);
 
     // ── BLOCK 4: UNCERTAINTY ──────────────────────────────────────────────────
+    // FIX-24: Previously this block contained a hardcoded, unverified claim
+    // ("True CV ≈ 18%") that did not derive from this product's actual P5/P95
+    // bounds -- it was a fixed string, identical on every report regardless of
+    // product. Per audit finding, the true CV is now computed live from this
+    // product's own mcP5/mcP95 using the standard percentile-matching method
+    // for lognormal distributions:
+    //   sigma = [ln(P95) - ln(P5)] / (Z95 - Z5), Z95=1.645, Z5=-1.645 (90% CI)
+    //   CV = sqrt(exp(sigma^2) - 1)
+    // Source: Aitchison & Brown (1957), "The Lognormal Distribution", Cambridge
+    // University Press -- standard reference for lognormal CV = sqrt(exp(sigma^2)-1)
+    // (also given in Limpert, Stahel & Abbt, 2001, BioScience 51(5):341-352,
+    // "Log-normal Distributions across the Sciences", eq. for coefficient of
+    // variation). Percentile-to-sigma conversion is the standard two-point
+    // method for fitting lognormal parameters from percentiles (e.g. used in
+    // quantitative risk analysis per Hubbard, "How to Measure Anything", and
+    // in pharmacometric variability reporting, PMC7239339).
+    const p5Num  = parseFloat(mcP5);
+    const p95Num = parseFloat(mcP95);
+    let derivedCVPct = null;
+    if (p5Num > 0 && p95Num > 0 && p95Num > p5Num) {
+        const Z_90 = 3.29; // Z95 - Z5 = 1.645 - (-1.645)
+        const sigmaFromPercentiles = (Math.log(p95Num) - Math.log(p5Num)) / Z_90;
+        derivedCVPct = Math.round(Math.sqrt(Math.exp(sigmaFromPercentiles ** 2) - 1) * 1000) / 10;
+    }
+    const derivedCVNote = derivedCVPct !== null
+        ? `True CV = ${derivedCVPct}% (computed live from this product's own P5/P95 via sigma = [ln(P95)-ln(P5)]/3.29, CV = sqrt(exp(sigma^2)-1); Aitchison & Brown 1957 / Limpert, Stahel & Abbt 2001)`
+        : 'True CV not computable for this product (insufficient P5/P95 data)';
+
     rows.push([c('BLOCK 4 — MONTE CARLO UNCERTAINTY — Climate Change')]);
     rows.push([c('Method: Lognormal propagation | Iterations: 1000 | Reference: ISO 14044 / Heijungs & Huijbregts 2004')]);
     rows.push([c('Finding 2 Note: The reported metric is the normalised CI width = (P95-P5)/mean × 100.')]);
-    rows.push([c('This is NOT a coefficient of variation (CV). True CV ≈ 18% (derived from P5/P95 via lognormal sigma).')]);
+    rows.push([c(`This is NOT a coefficient of variation (CV). ${derivedCVNote}.`)]);
     rows.push([c('Finding 3 Note: MC propagates ingredient uncertainty only. Manufacturing/transport/packaging')]);
     rows.push([c('uncertainties are not included. Reported bounds represent ingredient-stage uncertainty only.')]);
     rows.push([c('For other categories, see uncertainty_ci_width_pct column in Block 2.')]);
+    rows.push([c('Note: overall_ci_width_pct in Block 1 is the (P95-P5)/mean average across ALL 16 EF 3.1')]);
+    rows.push([c('categories; the P5/median/P95 rows below are for Climate Change specifically. The two are')]);
+    rows.push([c('not expected to numerically match -- different scope (16-category average vs. one category).')]);
     rows.push(['metric', 'kg_co2e_total', 'kg_co2e_per_kg'].map(q).join(','));
     rows.push(['cc_p5_lower_bound',  mcP5,  pWeightKg > 0 ? (parseFloat(mcP5)/pWeightKg).toFixed(8) : '0'].map(q).join(','));
-    rows.push(['cc_median',          getTotal('Climate Change').toFixed(8), ccPerKg.toFixed(8)].map(q).join(','));
+    // FIX-24: relabeled from 'cc_median' -- this row's value is the deterministic
+    // engine output (getTotal), NOT the statistical median of the 1000 MC draws.
+    // The simulation's own result object does not expose a true median; only
+    // mean/p5/p95 are returned by calculateUncertainty() in core_physics.js.
+    rows.push(['cc_deterministic_reference', getTotal('Climate Change').toFixed(8), ccPerKg.toFixed(8), '', 'Engine deterministic value, NOT the MC-simulated median (simulation does not output a median)'].map(q).join(','));
     rows.push(['cc_p95_upper_bound', mcP95, pWeightKg > 0 ? (parseFloat(mcP95)/pWeightKg).toFixed(8) : '0'].map(q).join(','));
     rows.push(['overall_ci_width_pct', uncPct, '% — (P95-P5)/mean×100 avg across MC categories | Ingredient stage only'].map(q).join(','));
+    rows.push(['cc_true_cv_pct', derivedCVPct !== null ? derivedCVPct : 'n/a', '% — sqrt(exp(sigma^2)-1), sigma from this product\'s own P5/P95', 'Aitchison & Brown 1957 / Limpert et al. 2001'].map(q).join(','));
     rows.push(['']);
+
 
     // ── BLOCK 5: PACKAGING DETAIL (GAP-2) ────────────────────────────────────
     rows.push([c('BLOCK 5 — PACKAGING DETAIL (CFF PARAMETERS)')]);
