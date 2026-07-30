@@ -1219,6 +1219,18 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  EXCLUDED from multiplier: Ozone Depletion (driven by CFC/HCFC refrigerant releases,');
                 layerBLines.push('    unrelated to agricultural yield or N rate) and Ionizing Radiation (driven by');
                 layerBLines.push('    nuclear share in background electricity mix, not by farm practice).');
+                // FIX LU-COMPOSITE-DISCLOSURE-1: Land Use was already correctly excluded
+                // from this composite multiplier in calculation_engine.js (it scales by
+                // yield_factor alone, grouped with the CC sub-splits above, for the same
+                // reason: land occupation per kg scales with yield, not with nitrogen rate).
+                // That exclusion was never disclosed here, so a reader had no way to know
+                // Land Use's final value used a different multiplier than the 11 categories
+                // described in this block. The calculation was already correct — only the
+                // disclosure was missing.
+                layerBLines.push('  ALSO NOT applied to Land Use: Land Use scales by yield_factor (' + fix(cm.yield_factor,4) + ') alone,');
+                layerBLines.push('    same grouping as the CC sub-splits above — land occupied per kg of ingredient');
+                layerBLines.push('    scales with yield, not with nitrogen application rate. See "B8 — LANCA v2.5"');
+                layerBLines.push('    below for the full Land Use derivation.');
                 layerBLines.push('  Source: calculation_engine.js FIX CALC-08 — explicit exclusion documented in engine.');
                 layerBLines.push('');
             }
@@ -1563,14 +1575,10 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('');
             }
 
-            if (layerBLines.length <= 2) {
-                layerBLines.push('  No adjustments applied — AGRIBALYSE FR base values used directly.');
-            }
-
             // FIX-16: SOC Sequestration (regenerative agriculture)
             if (adj.soc_sequestration && adj.soc_sequestration.applied) {
                 const soc = adj.soc_sequestration;
-                layerBLines.push('B11 — SOC Sequestration (Regenerative Agriculture):');
+                layerBLines.push('B15 — SOC Sequestration (Regenerative Agriculture):');
                 layerBLines.push('  Source: IPCC 2006 Vol.4 Ch.2 Eq.2.25  |  PEF 3.1 §4.4.8');
                 layerBLines.push('  SOC baseline         : ' + fix(soc.soc_baseline_tC_per_ha||0,4) + ' t C/ha');
                 layerBLines.push('  SOC current          : ' + fix(soc.soc_current_tC_per_ha||0,4) + ' t C/ha');
@@ -1584,7 +1592,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  Sign: negative = sequestration CREDIT (reduces CC), positive = SOC loss PENALTY');
                 layerBLines.push('');
             } else if (adj.soc_note) {
-                layerBLines.push('B11 — SOC Sequestration: not applied — ' + safe(adj.soc_note.reason || 'not activated'));
+                layerBLines.push('B15 — SOC Sequestration: not applied — ' + safe(adj.soc_note.reason || 'not activated'));
                 layerBLines.push('  To activate: enter Baseline SOC and Current SOC (t C/ha) in supplier form.');
                 layerBLines.push('');
             }
@@ -1592,7 +1600,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             // FIX-17: SALCA-P Phosphorus Leaching
             if (adj.salca_p_applied && adj.salca_p_applied.applied) {
                 const sp = adj.salca_p_applied;
-                layerBLines.push('B12 — SALCA-P Phosphorus Leaching (Eutrophication, freshwater):');
+                layerBLines.push('B16 — SALCA-P Phosphorus Leaching (Eutrophication, freshwater):');
                 layerBLines.push('  Source: SALCA-P model  |  EF 3.1 (P is reference substance, CF=1.0)');
                 layerBLines.push('  SALCA FRAC_RELE        : 0.0500  (5% of applied P reaches freshwater)');
                 layerBLines.push('  P applied (total)      : ' + fix(sp.P_applied_kg||0,6) + ' kg P');
@@ -1669,6 +1677,14 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     layerBLines.push('  GWP_CH4_biogenic = 27.0 (IPCC AR6, PEF 3.1)  |  GWP_N2O = 273 (IPCC AR6, PEF 3.1)');
                     layerBLines.push('');
                 }
+            }
+
+            // FIX B-NOADJ-ORDER-1: moved from earlier in this function (see history above)
+            // to the true end of layerBLines assembly, after every adjustment block that
+            // can be appended (including SOC, SALCA-P, farmed fish feed, and the B-REF
+            // livestock table) — not just the ones that existed above the old check point.
+            if (layerBLines.length <= 2) {
+                layerBLines.push('  No adjustments applied — AGRIBALYSE FR base values used directly.');
             }
 
             layerBlock('LAYER B — All Adjustments Applied by Engine (in sequence)', layerBLines, LAYER.B, SL);
@@ -2061,7 +2077,25 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             egmNote,
             'kWh electricity used: ' + numFmt(mfgKwh, 6) + ' kWh',
             '  Source: ' + (_isPfKwh && _pfd4kwh ? 'Primary factory data (totalKWh/totalOutputKg x productWeight)' : 'Back-calculated from CC contribution (mfgCC / (gridG x 1.07 / 1000))'),
-            '  Verification: ' + numFmt(mfgKwh,6) + ' kWh x ' + numFmt(gridG,2) + ' x 1.07 / 1000 = ' + numFmt(mfgKwh * gridG * 1.07 / 1000, 6) + ' kg CO2e  [should match CC trace above]',
+            // FIX MFG-VERIFY-1: this line previously claimed the electricity-only figure
+            // "should match CC trace above" — but the CC trace legitimately includes gas
+            // combustion too when primary factory data reports gas usage, so the two
+            // numbers are different scopes by design, not a discrepancy. Now the line
+            // states what it actually is (electricity-only), and when gas is present in
+            // this run, shows the gas term explicitly so electricity + gas reconciles to
+            // the CC trace figure instead of asserting a false match.
+            '  Electricity-only check: ' + numFmt(mfgKwh,6) + ' kWh x ' + numFmt(gridG,2) + ' x 1.07 / 1000 = ' + numFmt(mfgKwh * gridG * 1.07 / 1000, 6) + ' kg CO2e  [electricity component only — see gas term below if applicable]',
+            ...( (isPrimaryFactory && pfd && pfd.totalGasM3 > 0 && pfd.totalOutputKg > 0) ? (() => {
+                const _gasM3PerKg   = pfd.totalGasM3 / pfd.totalOutputKg;
+                const _fuelFactor   = pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13;
+                const _gasCO2PerKg  = _gasM3PerKg * _fuelFactor;
+                const _gasCO2Batch  = _gasCO2PerKg * pWeightKg; // scale to whole-product basis, same as mfgKwh below
+                const _elecCO2Batch = mfgKwh * gridG * 1.07 / 1000;
+                return [
+                    '  Gas component: ' + numFmt(_gasM3PerKg,6) + ' m³/kg x ' + numFmt(_fuelFactor,4) + ' kg CO2/unit x ' + numFmt(pWeightKg,4) + ' kg product = ' + numFmt(_gasCO2Batch,6) + ' kg CO2e',
+                    '  Electricity + gas = ' + numFmt(_elecCO2Batch + _gasCO2Batch,6) + ' kg CO2e  [this is what should match the CC trace above]'
+                ];
+            })() : [] ),
             'Grid intensity (CC): ' + numFmt(gridG, 2) + ' g CO2e/kWh  [Ember 2025 — ' + mfgCountry + '] x 1.07 T&D = ' + numFmt(gridG*1.07,2) + ' g CO2e/kWh',
             'Non-CC: EU27 average factors from Layer A applied directly (no country adjustment).',
             gasCombustionNote,
@@ -3027,6 +3061,16 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  - Capital equipment manufacturing (cut-off rule)',
             '  - Inbound transport for FR-origin ingredients: AGRIBALYSE 3.2 already includes',
             '    representative French market transport within its farm-gate boundary',
+            // FIX BOUNDARY-SAMECOUNTRY-1: the engine (resolveInboundTransport()) also
+            // skips this leg whenever an ingredient's origin equals the manufacturing
+            // country, regardless of whether that country is FR. That rule previously
+            // had no corresponding line here, so a reader following only this page would
+            // not know why a non-FR-origin ingredient (e.g. Belgian ingredient, Belgian
+            // factory) still shows no upstream transport. See per-ingredient Layer B
+            // "B14" line for the specific reason on each ingredient.',
+            '  - Inbound transport where ingredient origin equals the manufacturing country:',
+            '    no separate inbound leg is modelled for this case (same-country movement is',
+            '    not computed as a distinct GLEC leg). See Layer B "B14" per ingredient.',
             '',
             'Functional unit: 1 kg of product as sold (finished weight).',
             'Allocation: Economic allocation, inherited from AGRIBALYSE 3.2 (ADEME methodology report).'
@@ -3435,7 +3479,16 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         hRule(Y); Y += 5;
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('Prepared by: AIOXY Environmental Intelligence', M, Y);
-        doc.text('Calculation engine: AIOXY v5.0  |  PDF Report: ' + _PDF_VERSION, M, Y + 4.5);
+        // FIX VERSION-MISMATCH-1: this hardcoded "AIOXY v5.0" independently disagrees
+        // with audit-trail.js's hardcoded "AIOXY v6.0" (report_type row) for the SAME
+        // assessment ID and SHA-256 hash -- confirmed by direct comparison against this
+        // exact report/CSV pair. No canonical engine-version constant exists anywhere in
+        // this codebase to determine which literal is actually correct, so this fix does
+        // NOT guess a number. It flags the conflict explicitly so it cannot ship silently,
+        // and both this file and audit-trail.js should be updated to read a single shared
+        // version constant (e.g. window.corePhysics.CONSTANTS.ENGINE_VERSION) once a human
+        // with release/commit history confirms the true current version.
+        doc.text('Calculation engine: AIOXY v5.0 [UNVERIFIED — see FIX VERSION-MISMATCH-1: disagrees with CSV export\'s "v6.0"]  |  PDF Report: ' + _PDF_VERSION, M, Y + 4.5);
         doc.text('Assessment ID: ' + safe(dppId), M, Y + 9);
         doc.text('Report generated: ' + new Date().toISOString(), M, Y + 13.5);
 

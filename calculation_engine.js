@@ -3868,8 +3868,13 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 background_count:        backgroundIngredients.length,
                 cutoff_percentage:       0.05,
                 components: {
-                    foreground: foregroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 })),
-                    background: backgroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0 }))
+                    // FIX DQR-COMPONENTS-1: dqr was previously omitted here even though it
+                    // exists correctly on i.dqr (set from metadata.dqr_overall earlier in the
+                    // pipeline). Its absence caused pdf-generator.js's `ing.dqr || 2.00`
+                    // foreground/background table to always print the 2.00 fallback instead
+                    // of the ingredient's real, already-computed DQR value.
+                    foreground: foregroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0, dqr: i.dqr })),
+                    background: backgroundIngredients.map(i => ({ name: i.name, co2: i.allCategoryResults['Climate Change'] || 0, dqr: i.dqr }))
                 },
                 foreground_dqr:          foregroundIngredients.length > 0
                     ? foregroundIngredients.reduce((s, i) => s + i.dqr, 0) / foregroundIngredients.length

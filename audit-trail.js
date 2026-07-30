@@ -1253,7 +1253,12 @@ function exportCSRDMatrix() {
     // ── BLOCK 1: REPORT IDENTITY ──────────────────────────────────────────────
     rows.push(['field', 'value', 'unit', 'source', 'note'].map(q).join(','));
     rows.push([c('BLOCK 1 — REPORT IDENTITY')]);
-    rows.push(['report_type',          'Environmental Footprint Report',           '',     'AIOXY v6.0',                          ''].map(q).join(','));
+    // FIX VERSION-MISMATCH-1: this hardcoded "AIOXY v6.0" independently disagrees with
+    // pdf-generator.js's hardcoded "AIOXY v5.0" for the same assessment ID and SHA-256
+    // hash. No canonical engine-version constant exists in this codebase to resolve which
+    // literal is correct -- flagged here rather than silently guessing. Both this file and
+    // pdf-generator.js should read a single shared version constant once confirmed.
+    rows.push(['report_type',          'Environmental Footprint Report',           '',     'AIOXY v6.0 [UNVERIFIED — see FIX VERSION-MISMATCH-1: disagrees with PDF export\'s "v5.0"]', ''].map(q).join(','));
     rows.push(['assessment_id',        dppId,                                      '',     'AIOXY',                               ''].map(q).join(','));
     rows.push(['audit_hash_sha256',    auditHash,                                  '',     'SHA-256 covers all inputs+outputs',   ''].map(q).join(','));
     rows.push(['product_name',         pName,                                      '',     'User input',                          ''].map(q).join(','));
