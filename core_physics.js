@@ -2908,9 +2908,17 @@ return {
             const co2DeltaPerKg = Math.abs(input.co2DeltaPerKg);
             const carKgPerKm = resolveCarKgPerKm(input.carSize, input.carFuelType);
             const carKm = Math.round(co2DeltaPerKg / carKgPerKm);
+            // FIX (2026-08-03, cofounder-reported production issue): ui.js's delta
+            // equivalence card needs electricityDays the same way the story-mode
+            // card does. Added here for parity rather than leaving ui.js to
+            // duplicate the HOUSEHOLD_ELEC_KG_DAY constant locally.
+            const electricityDays = co2DeltaPerKg > 0
+                ? Number((co2DeltaPerKg / C.HOUSEHOLD_ELEC_KG_DAY).toFixed(1))
+                : 0;
             return {
                 mode: 'delta',
                 carKm,
+                electricityDays,
                 carCategory: { size: input.carSize || 'average', fuelType: input.carFuelType || 'petrol' },
                 waterScoreDiffM3: typeof input.waterScoreDiffM3 === 'number'
                     ? Math.abs(input.waterScoreDiffM3) : null

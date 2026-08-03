@@ -1025,9 +1025,24 @@ function updateResultsUI(results, twinCalcResult) {
     // the line. Direction (higher/lower) is already carried by the % badges above;
     // these equivalences now only communicate magnitude, not benefit.
     const co2DeltaPerKg = Math.abs(baselineCO2 - unifiedCO2);
-    const carKm = Math.round(co2DeltaPerKg / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM);
-    const treeYears = (co2DeltaPerKg / PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR).toFixed(1);
-    const householdDays = Math.round(co2DeltaPerKg / PHYSICS_CONSTANTS.HOUSEHOLD_ELEC_KG_DAY);
+    // FIX (2026-08-03, cofounder-reported production crash: "PHYSICS_CONSTANTS is
+    // not defined"): PHYSICS_CONSTANTS was removed from main.js on 2026-07-30 (moved
+    // to core_physics.js CONSTANTS.ENVIRO_EQUIVALENCE) but this file's local copy of
+    // the delta-equivalence math was never updated to match, so it referenced a
+    // variable that no longer exists — throwing on every calculation and leaving
+    // this whole card (and everything after it in updateResultsUI) unrendered.
+    // Now calls the real, current, verified engine function instead of maintaining
+    // a second, drift-prone copy of the same math. Also correctly drops treeYears:
+    // the engine's real calculateEquivalencies('delta') never computes or exposes
+    // it (per the greenwashing-risk decision already noted elsewhere in this
+    // file) — this local copy had drifted from that decision and kept computing
+    // it anyway.
+    const equivDeltaResult = window.corePhysics.calculateEquivalencies({
+        mode: 'delta',
+        co2DeltaPerKg: co2DeltaPerKg
+    });
+    const carKm = equivDeltaResult.carKm;
+    const householdDays = Math.round(equivDeltaResult.electricityDays);
     const currentWater = results.waterScarcityPerKg;
     const waterScoreDiff = Math.abs(baselineWater - currentWater);
 
@@ -1036,8 +1051,19 @@ function updateResultsUI(results, twinCalcResult) {
             carKm > 0 ? `${carKm} km <div style="font-size:0.7em; opacity:0.8">measured difference, equiv. driving</div>` : '—';
     }
     if(document.getElementById('treeYears')) {
-        document.getElementById('treeYears').innerHTML = 
-            treeYears > 0 ? `${treeYears} <div style="font-size:0.7em; opacity:0.8">measured difference, equiv. mature tree-years</div>` : '—';
+        // FIX (2026-08-03, cofounder-reported production crash + compliance check):
+        // this element previously referenced a `treeYears` variable computed via the
+        // now-removed PHYSICS_CONSTANTS.TREE_ABSORPTION_KG_YEAR — both the crash
+        // cause AND, independently, a real contradiction of this file's own
+        // documented decision elsewhere ("No tree equivalence — greenwashing risk
+        // acknowledged") and the engine's decision (core_physics.js
+        // TREE_ABSORPTION_KG_YEAR: "Reference only — do not wire into
+        // calculateEquivalencies() without a compliance review"). Rather than
+        // restore a tree-years number, this now shows an honest "not shown" state —
+        // displaying even a "0" here would look like a checked-and-zero measurement
+        // rather than a deliberately unmeasured one.
+        document.getElementById('treeYears').innerHTML =
+            `— <div style="font-size:0.7em; opacity:0.8">not shown — see PDF methodology notes</div>`;
     }
     if(document.getElementById('householdEnergy')) {
         document.getElementById('householdEnergy').innerHTML = 
@@ -1268,21 +1294,20 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
         </div>` : '';
 
     // ── OFFICIAL EQUIVALENCES — applied to THIS PRODUCT'S OWN FOOTPRINT ───────
-    // Sources: PHYSICS_CONSTANTS in main.js (EEA 2023, ICAO 2023, IEA 2022)
-    // No tree equivalence — greenwashing risk acknowledged
-    // FIX (EmpCo framing review): equivalences previously scaled to actualSaving
-    // (the delta vs baseline), which framed them as "what you gain by choosing
-    // this product" — a comparative assertion. Equivalences now scale to this
-    // product's own measured footprint (thisProductCO2), making them a plain
-    // illustration of a single measurement, not a claim about the comparison.
-    const carKmStory     = thisProductCO2 > 0
-        ? Math.round(thisProductCO2 / PHYSICS_CONSTANTS.CAR_EMISSIONS_KG_PER_KM)    : 0;
-    const smartCharges   = thisProductCO2 > 0
-        ? Math.round(thisProductCO2 * PHYSICS_CONSTANTS.SMARTPHONE_CHARGES_PER_KG_CO2) : 0;
-    const flightKmStory  = thisProductCO2 > 0
-        ? (thisProductCO2 * PHYSICS_CONSTANTS.FLIGHT_KM_PER_KG_CO2).toFixed(1)       : 0;
-    const ledHours       = thisProductCO2 > 0
-        ? Math.round(thisProductCO2 * PHYSICS_CONSTANTS.LED_HOURS_PER_KG_CO2)         : 0;
+    // FIX (2026-08-03, cofounder-reported production crash: "PHYSICS_CONSTANTS is
+    // not defined"): same root cause and fix as the delta-equivalence block above
+    // — PHYSICS_CONSTANTS was removed from main.js on 2026-07-30, this local copy
+    // was never updated. Now calls the real, current, DESNZ 2026 / Ember-verified
+    // engine function instead of a second, drift-prone copy of the same math.
+    // No tree equivalence — greenwashing risk acknowledged (engine never computes it).
+    const equivStoryResult = window.corePhysics.calculateEquivalencies({
+        mode: 'story',
+        co2PerKg: thisProductCO2
+    });
+    const carKmStory    = equivStoryResult.carKm;
+    const smartCharges  = equivStoryResult.smartCharges;
+    const flightKmStory = equivStoryResult.flightKm;
+    const ledHours      = equivStoryResult.ledHours;
 
     // FIX: [ui.js audit — cofounder wording pass] The punch headline previously
     // hardcoded car-km every time. For a very low-footprint product that gives a
