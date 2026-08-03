@@ -40,184 +40,22 @@ let activeScenarios = {
 let currentHydrationSuggestion = null;
 
 // ================== COMPATIBILITY BRIDGE ==================
-// PHYSICS_CONSTANTS — Environmental Equivalence Factors
-// Used exclusively in the Environmental Impact Story section to translate
-// kg CO2e savings into human-scale equivalences. These are illustration
-// factors only; the underlying PEF calculation is independent of these values.
-//
-// All constants are sourced from official published sources.
-// Last reviewed: June 2026. Review annually — grid intensity in particular
-// declines as EU renewable penetration increases.
+// PHYSICS_CONSTANTS — REMOVED (2026-07-30 architecture fix).
+// This entire block (CAR_EMISSIONS_KG_PER_KM, TREE_ABSORPTION_KG_YEAR,
+// HOUSEHOLD_ELEC_KG_DAY, SMARTPHONE_CHARGES_PER_KG_CO2, FLIGHT_KM_PER_KG_CO2,
+// LED_HOURS_PER_KG_CO2, WATER_BOTTLE_LITERS, SHADOW_PRICE_EUR_TON) has moved
+// to core_physics.js as CONSTANTS.ENVIRO_EQUIVALENCE, with every source
+// citation, derivation, and confidence note preserved intact. It is consumed
+// exclusively by core_physics.js calculateEquivalencies(), called once from
+// calculation_engine.js. main.js (the app controller / "waiter's front desk")
+// has no legitimate reason to hold a copy of calculation inputs — the prior
+// arrangement required ui.js to reach past its own boundary into main.js to
+// get constants it then used to compute results itself. There are zero
+// remaining call sites for a var named PHYSICS_CONSTANTS anywhere in the
+// codebase as of this fix; if you're reading this because something broke,
+// check core_physics.js CONSTANTS.ENVIRO_EQUIVALENCE and
+// calculation_engine.js's calculateEquivalencies() call sites first.
 // ─────────────────────────────────────────────────────────────────────────────
-var PHYSICS_CONSTANTS = {
-
-    // ── CAR_EMISSIONS_KG_PER_KM ─────────────────────────────────────────────
-    // 0.1700 kg CO2e per vehicle-km (lifecycle, Well-to-Wheel)
-    // Represents the EU average passenger car fleet, all fuel types combined,
-    // including Well-to-Tank (fuel production + transport) and Tank-to-Wheel
-    // (tailpipe combustion) emissions. All GHGs included (CO2, CH4, N2O).
-    // Source: UK Department for Energy Security and Net Zero (DESNZ),
-    //   "Greenhouse Gas Conversion Factors for Company Reporting 2025",
-    //   Table: "Passenger vehicles — average car", WTT+TTW combined,
-    //   published June 2025.
-    //   URL: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025
-    // Cross-check: EEA (2024) new EU car fleet average 107 g CO2/km (WLTP,
-    //   tailpipe only) + ~28% WTT uplift ≈ 0.137 kg CO2e/km for new cars only.
-    //   DESNZ 0.170 represents the full in-use fleet including older vehicles,
-    //   which is the correct basis for an EU food brand audience.
-    // VERIFICATION NOTE (2026-07-30 pass): confirmed the DESNZ 2025 GHG Conversion
-    //   Factors dataset and its June 2025 methodology paper are real and published
-    //   as cited. Could NOT independently pull the exact "average car, WTT+TTW"
-    //   spreadsheet cell for the 2025 edition in this pass — only an older 2022
-    //   DESNZ dataset value (0.1827 kg CO2e/km, average car, WTT+TTW combined)
-    //   was directly retrievable. 0.1700 is directionally consistent with a
-    //   declining trend (UK/EU grid intensity fell materially 2022-2025, and EV
-    //   share of the in-use fleet has grown), but is not confirmed to the exact
-    //   digit here. Re-verify against the actual 2025 DESNZ spreadsheet (not just
-    //   the methodology paper) before treating this as fully closed.
-    // Confidence: MEDIUM — source and methodology confirmed real; exact value
-    //   plausible but not independently re-derived from the primary spreadsheet
-    //   in this verification pass. Downgraded from HIGH pending that check.
-    CAR_EMISSIONS_KG_PER_KM: 0.1700,
-
-    // ── TREE_ABSORPTION_KG_YEAR ──────────────────────────────────────────────
-    // 21.77 kg CO2 absorbed per mature tree per year (temperate broadleaf)
-    // NOTE: AIOXY does not surface this constant in the environmental story
-    // (tree equivalences are flagged as greenwashing risk per EmpCo guidance —
-    // trees are not a permanent sequestration equal to avoided fossil emissions).
-    // Retained here for internal reference only. Do not use in consumer outputs.
-    // Source: US Forest Service, "Carbon Sequestration in Urban Trees" (2018);
-    //   Smith et al. (2006) USDA Forest Service Research Paper NE-343.
-    //   Range: 10–48 kg CO2/tree/year depending on species and age.
-    //   21.77 is the urban broadleaf temperate mean.
-    // Confidence: MEDIUM. Do not expose in UI.
-    TREE_ABSORPTION_KG_YEAR: 21.77,
-
-    // ── HOUSEHOLD_ELEC_KG_DAY ────────────────────────────────────────────────
-    // 2.3375 kg CO2e per household per day (EU average electricity use)
-    // Not currently surfaced in environmental story UI.
-    // Retained for potential future use.
-    // Source: Eurostat (2023) "Energy consumption in households", EU average
-    //   household electricity ~3,500 kWh/year = 9.59 kWh/day.
-    //   EU grid intensity 2022 (0.244 kg CO2/kWh, IEA Emission Factors 2024)
-    //   → 9.59 × 0.244 ≈ 2.34 kg CO2e/day.
-    // Confidence: MEDIUM. Grid intensity updated annually.
-    HOUSEHOLD_ELEC_KG_DAY: 2.3375,
-
-    // ── SMARTPHONE_CHARGES_PER_KG_CO2 ───────────────────────────────────────
-    // 391 full smartphone charges equivalent to 1 kg CO2e avoided
-    // Derivation:
-    //   Step 1 — Charge energy: 12 Wh (0.012 kWh) per full charge.
-    //     Basis: average smartphone battery 3,800 mAh at 3.7 V nominal
-    //     = 14.06 Wh stored; charger round-trip efficiency ~85% →
-    //     wall draw = 14.06 / 0.85 = 16.5 Wh. Conservative central estimate
-    //     12 Wh used (accounts for partial charges and modern fast-charger
-    //     efficiency). Range in literature: 10–17 Wh/charge.
-    //     Source: European Commission Ecodesign Impact Accounting Overview
-    //     Report 2024 (smartphones & tablets section); IEA (2022)
-    //     "The Role of Critical Minerals in Clean Energy Transitions".
-    //   Step 2 — EU grid intensity: 0.2130 kg CO2e/kWh (EU average, 2024)
-    //     Source: Ember, "European Electricity Review 2025" (published Jan 2025,
-    //     covering 2024 data): "The emissions intensity of EU electricity
-    //     generation fell 26% over the last five years, to 213 gCO2 per kWh."
-    //     URL: https://ember-energy.org/latest-insights/european-electricity-review-2025/five-years-of-progress/
-    //     FIX (2026-07-30 verification pass): previous value here was 209.9 g/kWh,
-    //     with a comment claiming this was independently confirmed by an
-    //     "AIOXY Ember 2025 dataset (europe_yearly CSV, EU row)". No such file or
-    //     row exists anywhere in the codebase — ingredients.txt's real
-    //     window.aioxyData.grid_intensity table (the only actual Ember data AIOXY
-    //     holds) contains per-country rows only (e.g. BE 149.8, FR 41.4, DE 329.6),
-    //     with no EU-aggregate row at all. The 209.9 figure could not be found in
-    //     Ember's own published report by direct source check; 213 is the number
-    //     Ember itself states, corroborated by an independent secondary citation
-    //     of the same report. Corrected to the verified, source-traceable value.
-    //   Step 3 — CO2 per charge: 0.012 kWh × 0.2130 kg CO2/kWh = 0.0025560 kg CO2
-    //   Step 4 — Charges per kg CO2: 1 / 0.0025560 = 391.24 → rounded to 391
-    // Note: prior value was 344, using EU 2023 grid 242 g CO2/kWh (Ember 2024).
-    //   Then updated (incorrectly cited as 209.9) to 397; corrected to 391 using
-    //   verified EU 2024 grid 213 g CO2/kWh (Ember, European Electricity Review
-    //   2025). Update annually against Ember's own published headline figure —
-    //   do not rely on an internal CSV row unless that file is confirmed to exist.
-    // Confidence: HIGH (derivation fully reproducible from cited source; the
-    //   213 g/kWh figure is directly quoted from Ember's published report text,
-    //   not read off an internal file that could not be located).
-    SMARTPHONE_CHARGES_PER_KG_CO2: 391,
-
-    // ── FLIGHT_KM_PER_KG_CO2 ────────────────────────────────────────────────
-    // 8.33 km of economy-class flight equivalent to 1 kg CO2 avoided
-    // = 0.120 kg CO2 per passenger-km (economy class, CO2 only)
-    // Source: ICAO Carbon Emissions Calculator, Methodology v13.1 (August 2024).
-    //   URL: https://icec.icao.int/Documents/Methodology%20ICAO%20Carbon%20Emissions%20Calculator_v13_Final.pdf
-    //   Basis: weighted average of scheduled aircraft types worldwide,
-    //   economy class seat factor (Yseat = 1.0), passenger load factor per
-    //   IATA 2023 statistics, fuel burn converted at 3.16 kg CO2/kg jet fuel
-    //   (ICAO CORSIA). Medium-haul (500–3500 km) economy: ~0.110–0.130 kg CO2/pax-km.
-    //   Central value 0.120 kg CO2/pax-km = 8.33 km/kg CO2.
-    // METHODOLOGICAL NOTE — Radiative Forcing (RF) excluded:
-    //   Aviation at altitude produces non-CO2 warming effects (contrails, NOx,
-    //   H2O). RF multiplier estimates range from 1.7× to 2.5× (IPCC AR6 WG1,
-    //   Ch.6; Lee et al. 2021, Atmospheric Environment). ICAO's own calculator
-    //   deliberately excludes RF because scientific consensus on magnitude is
-    //   still forming. AIOXY follows ICAO methodology: CO2-only basis.
-    //   If RF-inclusive basis is preferred: use 0.228 kg CO2e/pax-km (RF=1.9×)
-    //   → 4.4 km/kg CO2e. This is disclosed in the environmental story disclaimer.
-    // VERIFICATION NOTE (2026-07-30 pass): ICAO methodology document and CO2-only
-    //   framing independently confirmed as real and accurately characterized.
-    //   Exact 0.120 kg CO2/pax-km central value not independently re-derived from
-    //   the raw ICAO calculator output in this pass; treat as confirmed-real-source,
-    //   not confirmed-to-the-decimal.
-    // Confidence: HIGH for CO2-only. RF exclusion is explicit and citable.
-    FLIGHT_KM_PER_KG_CO2: 8.33,
-
-    // ── LED_HOURS_PER_KG_CO2 ─────────────────────────────────────────────────
-    // 469 hours of 10W LED lighting equivalent to 1 kg CO2e avoided
-    // Derivation:
-    //   Step 1 — LED power: 10 W (standard EU household LED, 806–1000 lm output)
-    //     Basis: EU Ecodesign Regulation (EU) 2019/2020 on light sources.
-    //     10W LED replaces 60W incandescent (same lumen output class).
-    //     Source: European Commission, "Light Sources — Ecodesign",
-    //     URL: https://energy-efficient-products.ec.europa.eu/product-list/light-sources_en
-    //   Step 2 — Energy per hour: 10 W × 1 h = 0.010 kWh
-    //   Step 3 — EU grid intensity: 0.2130 kg CO2e/kWh (EU average, 2024)
-    //     Source: Ember, "European Electricity Review 2025" (same source as
-    //     SMARTPHONE_CHARGES_PER_KG_CO2 above). 213 g CO2/kWh, per Ember's own
-    //     published report text.
-    //     URL: https://ember-energy.org/latest-insights/european-electricity-review-2025/five-years-of-progress/
-    //     FIX (2026-07-30 verification pass): see SMARTPHONE_CHARGES_PER_KG_CO2
-    //     note above — previous 209.9 g/kWh figure and its "confirmed in AIOXY's
-    //     own Ember dataset" citation could not be verified; no such internal
-    //     dataset row exists. Corrected to the verified 213 g/kWh figure.
-    //   Step 4 — CO2 per hour: 0.010 kWh × 0.2130 kg CO2/kWh = 0.0021300 kg CO2
-    //   Step 5 — Hours per kg CO2: 1 / 0.0021300 = 469.48 → rounded to 469
-    // Note: prior value was 413, using EU 2023 grid 242 g CO2/kWh (Ember 2024).
-    //   Then updated (incorrectly cited as 209.9) to 476; corrected to 469 using
-    //   verified EU 2024 grid 213 g CO2/kWh (Ember, European Electricity Review
-    //   2025). Update annually against Ember's own published headline figure.
-    // Confidence: HIGH (derivation fully reproducible from cited source).
-    LED_HOURS_PER_KG_CO2: 469,
-
-
-    // ── WATER_BOTTLE_LITERS ──────────────────────────────────────────────────
-    // 0.5 litres per standard single-serve water bottle (EU standard)
-    // Used for water scarcity equivalence display.
-    // Source: EU Regulation (EU) 2021/2035 on packaged waters — standard
-    //   single-serve PET bottle nominal volume 500 mL.
-    // Confidence: HIGH (statutory definition).
-    WATER_BOTTLE_LITERS: 0.5,
-
-    // ── SHADOW_PRICE_EUR_TON ─────────────────────────────────────────────────
-    // 85.0 EUR per tonne CO2e — EU ETS carbon shadow price for business case
-    // Source: EU Emissions Trading System (EU ETS) — European Energy Exchange
-    //   (EEX) spot price, annual average 2023: ~85 EUR/tonne CO2.
-    //   URL: https://www.eex.com/en/market-data/environmental-markets
-    //   Cross-check: European Commission Impact Assessment Guidelines (2021)
-    //   recommend EUR 50–100/tonne for policy appraisal at 2030 horizon.
-    // Note: EU ETS price is volatile (range 2023: 55–100 EUR/tonne).
-    //   85 EUR/tonne represents the 2023 annual average. Update annually.
-    // Confidence: MEDIUM (market price, subject to annual change).
-    SHADOW_PRICE_EUR_TON: 85.0
-
-};
 
 var pefCategories = {
     "Climate Change":                { unit: "kg CO₂e",      icon: "smog"         },
@@ -666,23 +504,50 @@ async function calculateImpact() {
         },
         comparison: (() => {
             const cbiList = conventionalBaselineIngredients;
-            const hasTwin = cbiList && cbiList.length > 0;
+            // FIX (2026-08-01, cofounder-directed): previously paired selectedIngredients[i]
+            // with cbiList[i] by raw array POSITION only. Confirmed by direct execution: this
+            // silently misaligns the moment a user removes or reorders a main ingredient
+            // WITHOUT the separate conventionalBaselineIngredients list changing in lockstep
+            // (e.g. remove the 2nd of 3 main ingredients -> the 3rd main ingredient silently
+            // gets compared against the 2nd baseline, not its own) -- exactly the "table 1's
+            // order goes to table 5" failure this whole audit has been checking for. AIOXY
+            // already has a SAFE mechanism for this: the Parametric Twin modal
+            // (saveCounterpartMapping() in ui.js) attaches conventionalCounterpart/
+            // conventionalQuantity DIRECTLY onto each selectedIngredients[i] object, so it
+            // moves/reorders/removes WITH its ingredient by construction (object identity,
+            // not array position) -- but main.js never read it; only the unsafe positional
+            // list was wired into the actual calculation. Now prefers the safe, attached
+            // mapping when present, falling back to the positional list only for ingredients
+            // with no explicit counterpart (preserves the standalone-list workflow).
+            const hasAnyMapping = selectedIngredients.some(ing => ing.conventionalCounterpart)
+                || (cbiList && cbiList.length > 0);
 
-            const ingredientMappings = hasTwin
+            const ingredientMappings = hasAnyMapping
                 ? selectedIngredients.map((ing, i) => {
-                    const cbi = cbiList[i] || null;
                     const assessedPef = window.aioxyData.ingredients[ing.id]?.data?.pef || null;
+                    const assessed = { id: ing.id, name: ing.name, quantityKg: ing.quantity, pef: assessedPef, entericParams: ing.entericParams || null };
+
+                    // Preferred, safe path: explicit per-ingredient mapping.
+                    if (ing.conventionalCounterpart) {
+                        const cc = ing.conventionalCounterpart;
+                        const conventionalPef = cc.pef || window.aioxyData.ingredients[cc.id]?.data?.pef || null;
+                        return {
+                            assessed,
+                            conventional: { id: cc.id, name: cc.name, quantityKg: ing.conventionalQuantity ?? ing.quantity, pef: conventionalPef, entericParams: null }
+                        };
+                    }
+                    // Fallback, legacy path: positional list (unsafe if either list was
+                    // edited independently after the pairing was made -- kept only for
+                    // ingredients that never got an explicit mapping).
+                    const cbi = (cbiList && cbiList[i]) || null;
                     if (cbi) {
                         const conventionalPef = window.aioxyData.ingredients[cbi.id]?.data?.pef || null;
                         return {
-                            assessed:     { id: ing.id, name: ing.name, quantityKg: ing.quantity, pef: assessedPef, entericParams: ing.entericParams || null },
+                            assessed,
                             conventional: { id: cbi.id, name: cbi.name, quantityKg: cbi.quantity || ing.quantity, pef: conventionalPef, entericParams: null }
                         };
                     }
-                    return {
-                        assessed:     { id: ing.id, name: ing.name, quantityKg: ing.quantity, pef: assessedPef, entericParams: ing.entericParams || null },
-                        conventional: null
-                    };
+                    return { assessed, conventional: null };
                 })
                 : [];
 
@@ -705,6 +570,15 @@ async function calculateImpact() {
     if (hasTwinIngredients) {
         twinInput = buildTwinInput();
         window.lastTwinInput = twinInput;
+        // FIX AIOXY-HASH-1 (2026-08-02, cofounder-directed): capture the config hash
+        // at the exact moment this twin input is built for calculation — this is the
+        // real "config at calculation time" the pdf-generator.js TWIN-STALE-1
+        // safeguard needs to compare against the form state at export time. Picked
+        // up by twin_module.js's renderTwinResults() when it builds
+        // window._twinResultsForPDF.
+        window._twinConfigHashAtCalcTime = (typeof window.aioxyHashTwinInput === 'function')
+            ? window.aioxyHashTwinInput(twinInput)
+            : null;
         console.log('[AIOXY Twin] Twin calculation active —', twinSelectedIngredients.length, 'ingredients');
     }
 
@@ -1007,5 +881,50 @@ function initApp() {
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
+
+// FIX AIOXY-HASH-1 (2026-08-02, cofounder-directed): pdf-generator.js's TWIN-STALE-1
+// safeguard (added a prior session) was fully designed and documented -- a real,
+// thoughtful data-integrity check comparing a hash of the Twin config at calculation
+// time against the current form state before allowing a PDF export -- but the actual
+// hashing function it depends on, window.aioxyHashTwinInput, was never implemented
+// anywhere (confirmed by exhaustive search: zero definitions in any file). Because
+// pdf-generator.js correctly fails open when this function is missing (by design, so
+// a broken check never falsely BLOCKS an export), the practical effect was that the
+// documented safeguard has never once actually run: twinIsStale was always false.
+// This implements it. Deterministic (not cryptographic — collision resistance isn't
+// the requirement here, detecting any real config change is), covering every field
+// buildTwinInput() actually passes into the calculation, so a hash mismatch means a
+// genuine input difference, not noise from an unrelated field.
+function aioxyHashTwinInput(twinInput) {
+    if (!twinInput) return null;
+    // Stable stringify: sort object keys so key-order differences (which don't
+    // change the calculation) never produce a false-positive staleness flag.
+    function stableStringify(obj) {
+        if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+        if (Array.isArray(obj)) return '[' + obj.map(stableStringify).join(',') + ']';
+        const keys = Object.keys(obj).sort();
+        return '{' + keys.map(k => JSON.stringify(k) + ':' + stableStringify(obj[k])).join(',') + '}';
+    }
+    const relevant = {
+        product: twinInput.product,
+        ingredients: twinInput.ingredients,
+        manufacturing: twinInput.manufacturing,
+        transport: twinInput.transport,
+        packaging: twinInput.packaging
+        // Deliberately excludes twinInput.comparison — that's the OUTPUT of running
+        // Main vs Twin, not a Twin config INPUT; including it would make the hash
+        // depend on results computed from itself.
+    };
+    const str = stableStringify(relevant);
+    // FNV-1a: simple, fast, deterministic, zero external dependency (no need to pull
+    // in a real crypto hash for a same-session staleness check, not a security control).
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+    }
+    return (hash >>> 0).toString(16);
+}
+window.aioxyHashTwinInput = aioxyHashTwinInput;
 
 console.log("✅ [AIOXY] main.js v3.2 loaded — BUG-01 FIX: stale twin globals reset on each calculateImpact() call");

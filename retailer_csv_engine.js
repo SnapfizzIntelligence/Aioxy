@@ -69,6 +69,20 @@ function fix(n, d) {
 
 function pct(n) { return fix(n * 100, 2) + '%'; }
 
+// FIX (2026-07-31 audit): fix()'s '0' fallback is correct for fields that are
+// guaranteed numeric by the time they reach this file (already-validated
+// engine output — e.g. category totals). It is NOT correct for fields that
+// can be genuinely null because the engine itself could not compute them
+// (e.g. overall_uncertainty when no category had a positive Monte Carlo
+// mean) — silently showing '0' there is indistinguishable from a real
+// measured zero and is exactly the kind of fabricated number this audit
+// pass has been removing everywhere else. fixOrNA() is for that second case
+// only; existing fix() call sites for already-validated fields are unchanged.
+function fixOrNA(n, d) {
+    if (n === null || n === undefined) return 'N/A';
+    return fix(n, d);
+}
+
 function safeDate(ts) {
     try { return new Date(ts || Date.now()).toISOString().split('T')[0]; }
     catch(e) { return new Date().toISOString().split('T')[0]; }
@@ -111,16 +125,39 @@ function buildMasterData() {
     // Packaging DB read
     const pkgMat  = pkgTr.parameters?.material
                  || document.getElementById?.('packagingMaterial')?.value || 'N/A';
+    // FIX (2026-07-31 audit): previously re-read window.aioxyData.packaging[pkgMat]
+    // directly and silently defaulted co2_virgin/co2_recycled/r2/aFactor to 0 if
+    // any were missing — an independent, unvalidated copy of the same lookup
+    // calculation_engine.js's processPackaging() already performs and validates
+    // (throws if any of these are missing — see core_physics.js calculatePackaging()
+    // and its caller). Now reads the already-validated cff object exposed on
+    // auditTrailData.traceability.packaging.cff (same source audit-trail.js's CSV
+    // export uses), so this file cannot show a silently-fabricated packaging input
+    // value that the actual calculation would have refused to run with.
+    const pkgCff  = pkgTr.cff || {};
     const pkgDB   = (window.aioxyData?.packaging && window.aioxyData.packaging[pkgMat]) || {};
     const pkgWtKg = mb.packaging_weight_kg || pkgTr.parameters?.weightKg || 0;
     const pkgRecPct = pkgTr.parameters?.recycledPct
                    || parseFloat(document.getElementById?.('recycledContent')?.value) || 0;
-    const pkgEoL  = document.getElementById?.('packagingEoL')?.value || 'eu_average';
+    const pkgEoL  = pkgTr.parameters?.eolDestination || document.getElementById?.('packagingEoL')?.value || 'eu_average';
+    // FIX (2026-08-01 audit): previously read ONLY the live DOM field, with no attempt to use
+    // the actual validated value the calculation used (same class of gap as transDist, fixed
+    // above). Now prefers pkgTr.parameters.eolDestination (calculation_engine.js traceability),
+    // falling back to the DOM only if that's genuinely absent (e.g. an older cached audit trail
+    // computed before this field was added).
 
     // Primary data detection
     const anyPrimaryIng = ingComps.some(ing => !!ing.primary_data_used || !!ing.primary_data);
-    const hasPrimaryMfg = document.getElementById?.('usePrimaryFactoryData')?.checked === true &&
-                          parseFloat(document.getElementById?.('factoryTotalKWh')?.value) > 0;
+    const hasPrimaryMfg = mfgTr.source === 'Primary Factory Data';
+    // FIX (2026-08-01 audit): previously re-derived this independently from
+    // document.getElementById('usePrimaryFactoryData').checked and factoryTotalKWh's
+    // current DOM value -- a duplicate, driftable re-implementation of a decision
+    // calculate() already made and disclosed (calculation_engine.js sets
+    // mfgResult.source to the literal string 'Primary Factory Data' only when it
+    // actually took that code branch, else 'Ember 2025 / IEA' -- see processManufacturing()).
+    // primaryDataApplied is a compliance-facing YES/NO claim on the retailer CSV; it must
+    // reflect what the calculation actually did, not whatever the form checkbox currently
+    // shows, which can differ if the user toggled it after running calculate().
     const primaryDataApplied = (anyPrimaryIng || hasPrimaryMfg) ? 'YES' : 'NO';
 
     // EUDR high-risk countries
@@ -168,25 +205,55 @@ const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025
         processingMethod: mfgTr.parameters?.processingMethod || 'N/A',
 
         // Transport
-        transMode:      transTr.parameters?.transportMode || document.getElementById?.('transportMode')?.value || 'N/A',
-        transDist:      parseFloat(document.getElementById?.('transportDistance')?.value) || 0,
+        transMode:      transTr.parameters?.mode || document.getElementById?.('transportMode')?.value || 'N/A',
+        // FIX (2026-08-01 audit): was transTr.parameters?.transportMode -- that key never
+        // existed on the real traceability object (calculation_engine.js's transport
+        // traceability uses parameters.mode, sourced from input.transport.mode). This line
+        // LOOKED correctly wired (computed-source-first, DOM-fallback pattern) but the key
+        // name mismatch meant it silently fell through to the DOM read on every single
+        // calculation, always, regardless of whether the form had drifted since calculate()
+        // ran. Only caught by actually executing this against real calculated output and
+        // checking the returned value, not by reading the code.
+        transDist:      transTr.parameters?.distanceKm ?? (parseFloat(document.getElementById?.('transportDistance')?.value) || 0),
+        // FIX (2026-08-01 audit): previously read ONLY document.getElementById('transportDistance').value,
+        // skipping the actual computed traceability record entirely -- unlike transMode one line
+        // above, which correctly prefers transTr.parameters first. If a user changed the distance
+        // field AFTER running calculate() but BEFORE exporting the retailer CSV, the CSV would
+        // silently report a distance that was never actually used in the PEF math -- a real
+        // "report doesn't match what the engine did" gap. transTr.parameters.distanceKm is sourced
+        // directly from input.transport.distanceKm at calculation time (calculation_engine.js,
+        // traceability.transport.parameters), the same real value GLEC v3.2 factors were applied to.
 
         // Packaging
         pkgMaterial:    pkgMat,
         pkgWeightKg:    pkgWtKg,
         pkgRecycledPct: pkgRecPct,
         pkgEoLScenario: pkgEoL,
-        pkgEv:          pkgDB.co2_virgin || 0,
-        pkgErec:        pkgDB.co2_recycled || 0,
-        pkgEd:          pkgDB.co2_disposal_average || pkgDB.co2_disposal || 0,
-        pkgR2:          pkgDB.r2 || 0,
-        pkgA:           pkgDB.aFactor || 0,
+        pkgEv:          pkgCff.ev ?? (pkgDB.co2_virgin ?? null),
+        pkgErec:        pkgCff.erecycled ?? (pkgDB.co2_recycled ?? null),
+        pkgEd:          pkgDB.co2_disposal_average ?? pkgDB.co2_disposal ?? null,
+        pkgR2:          pkgCff.r2 ?? (pkgDB.r2 ?? null),
+        pkgA:           pkgCff.aFactor ?? (pkgDB.aFactor ?? null),
 
         // All 16 PEF categories — per kg
         cc:             perKg('Climate Change'),
         cc_fossil:      perKg('Climate Change - Fossil'),
         cc_biogenic:    perKg('Climate Change - Biogenic'),
         cc_land_use:    perKg('Climate Change - Land Use'),
+        // FIX (2026-08-02, cofounder-directed verification): fossil+biogenic+land_use
+        // will usually NOT sum exactly to the Climate Change total above -- confirmed
+        // this is real, source-level AGRIBALYSE rounding (each sub-category
+        // independently rounded in the published dataset, not derived by AIOXY from
+        // the total), verified across all 241 ingredients in the current database
+        // (179/241, 74%, show a >0.0001 kg CO2e/kg gap; avg 0.0045, worst case 0.0855
+        // for lobster). This is NOT AIOXY's calculation-engine fallback: confirmed
+        // separately that every one of the 241 real ingredients already has explicit,
+        // real fossil/biogenic/land-use values (the engine's 70/30/0 proxy-split
+        // fallback for a hypothetical future ingredient missing this data has zero
+        // live uses in the current database, and is disclosed via console.warn if it
+        // ever does fire). Single, centrally-defined note so every retailer format
+        // that shows this split (11 of 13) reads the same real explanation.
+        cc_subsplit_note: 'Sub-categories may not sum exactly to the total due to independent rounding in the source AGRIBALYSE dataset',
         ozone:          perKg('Ozone Depletion'),
         htox_nc:        perKg('Human Toxicity, non-cancer'),
         htox_c:         perKg('Human Toxicity, cancer'),
@@ -222,8 +289,14 @@ const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025
         dqrOverall:     (dqr.overall_dqr || 0),
         dqrLevel:       dqr.dqr_level || 'N/A',
 
-        // Uncertainty
-        uncPct:         (unc.overall_uncertainty || 15),
+        // FIX (2026-07-31 audit): unc.overall_uncertainty || 15 previously
+        // silently substituted an un-cited 15% whenever the engine's own
+        // computation had no usable Monte Carlo mean for any category. The
+        // engine now discloses this via overall_uncertainty_is_fallback;
+        // uncPctIsFallback carries that through so any retailer CSV consumer
+        // can show "N/A" instead of a fabricated percentage.
+        uncPct:         (typeof unc.overall_uncertainty === 'number') ? unc.overall_uncertainty : null,
+        uncPctIsFallback: unc.overall_uncertainty_is_fallback === true || typeof unc.overall_uncertainty !== 'number',
         mcP5:           mc['Climate Change']?.p5 || 0,
         mcP95:          mc['Climate Change']?.p95 || 0,
 
@@ -305,6 +378,7 @@ function generateTescoCSV(d) {
     rows.push(['carbon_footprint_fossil_per_kg',          fix(d.cc_fossil, 6),      'kg CO2e/kg',  'Fossil carbon fraction'].map(q).join(','));
     rows.push(['carbon_footprint_biogenic_per_kg',        fix(d.cc_biogenic, 6),    'kg CO2e/kg',  'Biogenic carbon fraction'].map(q).join(','));
     rows.push(['carbon_footprint_land_use_per_kg',        fix(d.cc_land_use, 6),    'kg CO2e/kg',  'dLUC land-use change fraction'].map(q).join(','));
+    rows.push(['carbon_footprint_subcategory_note',       d.cc_subsplit_note,       '',            'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     rows.push(['']);
     rows.push([c('Stage breakdown (required for TSN Scope 3 Category 1 disclosure):')]);
     rows.push(['ghg_ingredients_per_kg',               fix(d.cc_ing, 6),            'kg CO2e/kg',  'GHG Protocol Scope 3 Cat.1 — purchased goods'].map(q).join(','));
@@ -349,7 +423,7 @@ function generateTescoCSV(d) {
     rows.push(['methodology_standard',               d.methodology,               '',  ''].map(q).join(','));
     rows.push(['lca_database',                       d.lciDatabase,               '',  ''].map(q).join(','));
     rows.push(['data_quality_rating_dqr',            fix(d.dqrOverall, 2),        '/5.0', 'PEF 3.1 §5.7 — 4-indicator AGRIBALYSE DQI scheme'].map(q).join(','));
-    rows.push(['uncertainty_ci_width_pct',           fix(d.uncPct, 1),            '%',    'Monte Carlo P95-P5/mean — ingredient stage'].map(q).join(','));
+    rows.push(['uncertainty_ci_width_pct',           fixOrNA(d.uncPct, 1),            '%',    'Monte Carlo P95-P5/mean — ingredient stage'].map(q).join(','));
     rows.push(['primary_data_applied',               d.primaryDataApplied,        '',     'YES = farm/factory primary data used'].map(q).join(','));
     rows.push(['third_party_verified',               'NO',                        '',     'Screening-level — ISO 14044 critical review required'].map(q).join(','));
     rows.push(['assessment_type',                    d.assessmentType,            '',     ''].map(q).join(','));
@@ -401,6 +475,7 @@ function generateSainsburysCSV(d) {
     rows.push(['fossil_ghg_fraction_kg_co2e_per_kg',      fix(d.cc_fossil, 6),'kg CO2e/kg', 'S2.6', 'Fossil origin only'].map(q).join(','));
     rows.push(['biogenic_carbon_kg_co2e_per_kg',          fix(d.cc_biogenic, 6),'kg CO2e/kg','S2.7', 'Biogenic — reported separately per GHG Protocol'].map(q).join(','));
     rows.push(['land_use_change_kg_co2e_per_kg',          fix(d.cc_land_use, 6),'kg CO2e/kg','S2.8', 'dLUC per IPCC 2006'].map(q).join(','));
+    rows.push(['carbon_subcategory_note', d.cc_subsplit_note, '', 'S2.9', 'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['waste_processing_kg_co2e_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'S2.9', 'Waste processing stage — included in total above'].map(q).join(','));
@@ -431,7 +506,7 @@ function generateSainsburysCSV(d) {
     rows.push(['lca_methodology',                  d.methodology,            '',           'S6.1', ''].map(q).join(','));
     rows.push(['primary_data_used',                d.primaryDataApplied,     '',           'S6.2', 'YES/NO'].map(q).join(','));
     rows.push(['data_quality_rating',              fix(d.dqrOverall, 2),     '/5.0',       'S6.3', 'DQR per PEF 3.1'].map(q).join(','));
-    rows.push(['uncertainty_pct',                  fix(d.uncPct, 1),         '%',          'S6.4', 'Monte Carlo 95% CI width'].map(q).join(','));
+    rows.push(['uncertainty_pct',                  fixOrNA(d.uncPct, 1),         '%',          'S6.4', 'Monte Carlo 95% CI width'].map(q).join(','));
     rows.push(['third_party_verified',             'NO — screening-level',   '',           'S6.5', 'ISO 14044 review required for verification'].map(q).join(','));
     rows.push(['audit_reference',                  d.auditHash,              '',           'S6.6', 'SHA-256 audit hash'].map(q).join(','));
     rows.push(['']);
@@ -465,6 +540,7 @@ function generateLidlCSV(d) {
     rows.push(['co2_packaging_stage',             fix(d.cc_pkg, 6),         'kg CO2e/kg', 'E1.5', 'Primary packaging (CFF)'].map(q).join(','));
     rows.push(['co2_fossil_fraction',             fix(d.cc_fossil, 6),      'kg CO2e/kg', 'E1.6', ''].map(q).join(','));
     rows.push(['co2_biogenic_fraction',           fix(d.cc_biogenic, 6),    'kg CO2e/kg', 'E1.7', 'Biogenic — stored C in bio-based materials'].map(q).join(','));
+    rows.push(['co2_subcategory_note',            d.cc_subsplit_note,       '', 'E1.8', 'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['co2_waste_processing_stage', fix(d.cc_waste, 6), 'kg CO2e/kg', 'E1.11', 'Waste processing stage — included in total above'].map(q).join(','));
@@ -529,6 +605,7 @@ function generateAldiCSV(d) {
     rows.push(['scope3_cat4_transport_kg_co2e_per_kg',           fix(d.cc_trans, 6),'kg CO2e/kg', '2.4', 'Inbound + outbound transport'].map(q).join(','));
     rows.push(['fossil_co2_kg_per_kg',                           fix(d.cc_fossil, 6),'kg CO2e/kg', '2.5', ''].map(q).join(','));
     rows.push(['land_use_change_co2_kg_per_kg',                  fix(d.cc_land_use, 6),'kg CO2e/kg','2.6', 'dLUC'].map(q).join(','));
+    rows.push(['carbon_subcategory_note',                        d.cc_subsplit_note, '', '2.7', 'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['waste_processing_kg_co2e_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', '2.7', 'Waste processing stage — included in total above'].map(q).join(','));
@@ -559,7 +636,7 @@ function generateAldiCSV(d) {
     rows.push(['lca_standard',                    d.methodology,            '',  '5.1', ''].map(q).join(','));
     rows.push(['dqr_score',                       fix(d.dqrOverall, 2),     '/5', '5.2', ''].map(q).join(','));
     rows.push(['primary_data_flag',               d.primaryDataApplied,     '',  '5.3', ''].map(q).join(','));
-    rows.push(['uncertainty_pct',                 fix(d.uncPct, 1),         '%',  '5.4', ''].map(q).join(','));
+    rows.push(['uncertainty_pct',                 fixOrNA(d.uncPct, 1),         '%',  '5.4', ''].map(q).join(','));
     rows.push(['verification_status',             'Self-declared — not third-party verified', '', '5.5', ''].map(q).join(','));
     rows.push(['aioxy_reference',                 d.dppId,                  '',  '5.6', ''].map(q).join(','));
     rows.push(['audit_hash_sha256',               d.auditHash,              '',  '5.7', 'SHA-256 tamper-evident hash of all inputs and outputs'].map(q).join(','));
@@ -630,6 +707,7 @@ function generateReweCSV(d) {
     rows.push(['thg_verpackung',                     fix(d.cc_pkg, 6),       'kg CO2e/kg', 'U1.5', 'CFF-Methode PEF 3.1'].map(q).join(','));
     rows.push(['thg_fossil_anteil',                  fix(d.cc_fossil, 6),    'kg CO2e/kg', 'U1.6', ''].map(q).join(','));
     rows.push(['landnutzungsaenderung_co2',          fix(d.cc_land_use, 6),  'kg CO2e/kg', 'U1.7', 'dLUC nach IPCC 2006'].map(q).join(','));
+    rows.push(['thg_unterkategorie_hinweis',         d.cc_subsplit_note,     '', 'U1.8', 'Datenintegritaets-Hinweis, keine Berechnungsabweichung'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['thg_abfallverarbeitung',          fix(d.cc_waste, 6), 'kg CO2e/kg', 'U1.11', 'Abfallverarbeitungsstufe — in Gesamtsumme enthalten'].map(q).join(','));
@@ -661,7 +739,7 @@ function generateReweCSV(d) {
     rows.push(['berechnungsstandard',               d.methodology,           '',  'U5.1', ''].map(q).join(','));
     rows.push(['datenqualitaetsbewertung_dqr',      fix(d.dqrOverall, 2),    '/5','U5.2', ''].map(q).join(','));
     rows.push(['primaerdaten_eingesetzt',            d.primaryDataApplied,   '',  'U5.3', ''].map(q).join(','));
-    rows.push(['unsicherheit_pct',                  fix(d.uncPct, 1),        '%', 'U5.4', ''].map(q).join(','));
+    rows.push(['unsicherheit_pct',                  fixOrNA(d.uncPct, 1),        '%', 'U5.4', ''].map(q).join(','));
     rows.push(['verifikation',                      'Selbstdeklaration — keine Drittprüfung', '', 'U5.5', ''].map(q).join(','));
     rows.push(['audit_hash',                        d.auditHash,             '',  'U5.6', ''].map(q).join(','));
     rows.push(['']);
@@ -701,6 +779,7 @@ function generateAlbertHeijnCSV(d) {
     rows.push(['ah_co2e_fossil_per_kg',            fix(d.cc_fossil, 6),     'kg CO2e/kg', 'CAT2.6', ''].map(q).join(','));
     rows.push(['ah_co2e_biogenic_per_kg',          fix(d.cc_biogenic, 6),   'kg CO2e/kg', 'CAT2.7', 'Biogenic carbon'].map(q).join(','));
     rows.push(['ah_land_use_change_co2_per_kg',    fix(d.cc_land_use, 6),   'kg CO2e/kg', 'CAT2.8', 'dLUC'].map(q).join(','));
+    rows.push(['ah_carbon_subcategory_note',       d.cc_subsplit_note,      '', 'CAT2.9', 'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['ah_co2e_waste_processing_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'CAT2.10', 'Waste processing stage — included in total above'].map(q).join(','));
@@ -731,7 +810,7 @@ function generateAlbertHeijnCSV(d) {
     rows.push(['ah_lca_standard',                  d.methodology,            '',  'CAT6.1', ''].map(q).join(','));
     rows.push(['ah_dqr',                           fix(d.dqrOverall, 2),     '/5','CAT6.2', '4-indicator DQI scheme'].map(q).join(','));
     rows.push(['ah_primary_data',                  d.primaryDataApplied,     '',  'CAT6.3', ''].map(q).join(','));
-    rows.push(['ah_uncertainty_pct',               fix(d.uncPct, 1),         '%', 'CAT6.4', 'MC 95% CI width'].map(q).join(','));
+    rows.push(['ah_uncertainty_pct',               fixOrNA(d.uncPct, 1),         '%', 'CAT6.4', 'MC 95% CI width'].map(q).join(','));
     rows.push(['ah_verification',                  'Self-declared screening-level LCA', '', 'CAT6.5', ''].map(q).join(','));
     rows.push(['ah_audit_hash',                    d.auditHash,              '',  'CAT6.6', ''].map(q).join(','));
     rows.push(['']);
@@ -768,6 +847,7 @@ function generateCarrefourCSV(d) {
     rows.push(['carbone_fossile_par_kg',                   fix(d.cc_fossil, 6), 'kg CO2e/kg', 'R2.6', ''].map(q).join(','));
     rows.push(['carbone_biogenique_par_kg',                fix(d.cc_biogenic,6),'kg CO2e/kg', 'R2.7', 'Carbone biogenique'].map(q).join(','));
     rows.push(['changement_utilisation_sol_co2_par_kg',    fix(d.cc_land_use,6),'kg CO2e/kg', 'R2.8', 'dLUC'].map(q).join(','));
+    rows.push(['note_sous_categorie_carbone',              d.cc_subsplit_note,  '', 'R2.9', 'Disclosure d\'integrite des donnees, pas un ecart de calcul'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['carbone_traitement_dechets_par_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'R2.9', 'Etape traitement des dechets — incluse dans le total'].map(q).join(','));
@@ -797,7 +877,7 @@ function generateCarrefourCSV(d) {
     rows.push(['methodologie_aev',                d.methodology,            '',  'R6.1', ''].map(q).join(','));
     rows.push(['note_qualite_donnees_dqr',         fix(d.dqrOverall, 2),    '/5','R6.2', ''].map(q).join(','));
     rows.push(['donnees_primaires',               d.primaryDataApplied,     '',  'R6.3', ''].map(q).join(','));
-    rows.push(['incertitude_pct',                 fix(d.uncPct, 1),         '%', 'R6.4', ''].map(q).join(','));
+    rows.push(['incertitude_pct',                 fixOrNA(d.uncPct, 1),         '%', 'R6.4', ''].map(q).join(','));
     rows.push(['verification_tierce_partie',      'NON — evaluation screening', '', 'R6.5', 'Revue critique ISO 14044 requise'].map(q).join(','));
     rows.push(['reference_audit',                 d.auditHash,              '',  'R6.6', ''].map(q).join(','));
     rows.push(['']);
@@ -832,6 +912,7 @@ function generateLeclercCSV(d) {
     rows.push(['empreinte_emballage',               fix(d.cc_pkg, 6),      'kg CO2e/kg', 'C5', 'CFF PEF 3.1'].map(q).join(','));
     rows.push(['fraction_carbone_fossile',          fix(d.cc_fossil, 6),   'kg CO2e/kg', 'C6', ''].map(q).join(','));
     rows.push(['fraction_biogenique',              fix(d.cc_biogenic, 6), 'kg CO2e/kg', 'C7', ''].map(q).join(','));
+    rows.push(['note_sous_categorie',              d.cc_subsplit_note,    '', 'C8', 'Disclosure d\'integrite des donnees, pas un ecart de calcul'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['empreinte_traitement_dechets', fix(d.cc_waste, 6), 'kg CO2e/kg', 'C8', 'Etape traitement des dechets — incluse dans le total'].map(q).join(','));
@@ -856,7 +937,7 @@ function generateLeclercCSV(d) {
     rows.push(['norme_calcul',                   d.methodology,             '',  'Q1', ''].map(q).join(','));
     rows.push(['note_qualite_dqr',               fix(d.dqrOverall, 2),      '/5','Q2', ''].map(q).join(','));
     rows.push(['donnees_primaires_utilisees',    d.primaryDataApplied,      '',  'Q3', ''].map(q).join(','));
-    rows.push(['incertitude_pct',                fix(d.uncPct, 1),          '%', 'Q4', ''].map(q).join(','));
+    rows.push(['incertitude_pct',                fixOrNA(d.uncPct, 1),          '%', 'Q4', ''].map(q).join(','));
     rows.push(['hash_audit',                     d.auditHash,               '',  'Q5', ''].map(q).join(','));
     rows.push(['']);
     rows.push([c('FIN EXPORT LECLERC — ' + d.dppId + ' — ' + d.assessDate)]);
@@ -938,6 +1019,7 @@ function generateCoopCHCSV(d) {
     rows.push(['climate_impact_packaging',             fix(d.cc_pkg, 6),    'kg CO2e/kg', 'C2.5', 'PEF CFF'].map(q).join(','));
     rows.push(['fossil_co2_per_kg',                    fix(d.cc_fossil, 6), 'kg CO2e/kg', 'C2.6', ''].map(q).join(','));
     rows.push(['biogenic_co2_per_kg',                  fix(d.cc_biogenic,6),'kg CO2e/kg', 'C2.7', 'Per GHG Protocol land sector guidance'].map(q).join(','));
+    rows.push(['carbon_subcategory_note',              d.cc_subsplit_note,  '', 'C2.7b', 'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     rows.push(['renewable_energy_production',          d.mfgEnergySource === 'renewable' ? 'YES' : 'NO', '', 'C2.8', ''].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
@@ -967,7 +1049,7 @@ function generateCoopCHCSV(d) {
     rows.push(['lca_standard',                    d.methodology,            '',   'C6.1', ''].map(q).join(','));
     rows.push(['data_quality_dqr',               fix(d.dqrOverall, 2),     '/5', 'C6.2', ''].map(q).join(','));
     rows.push(['primary_data_used',               d.primaryDataApplied,     '',   'C6.3', ''].map(q).join(','));
-    rows.push(['uncertainty_pct',                 fix(d.uncPct, 1),         '%',  'C6.4', ''].map(q).join(','));
+    rows.push(['uncertainty_pct',                 fixOrNA(d.uncPct, 1),         '%',  'C6.4', ''].map(q).join(','));
     rows.push(['third_party_verification',        'NO — screening-level',   '',   'C6.5', 'Suitable for Oecoplan tier 1 submission'].map(q).join(','));
     rows.push(['audit_hash_sha256',               d.auditHash,              '',   'C6.6', ''].map(q).join(','));
     rows.push(['']);
@@ -1004,6 +1086,7 @@ function generateCSRD_ESRS_CSV(d) {
     rows.push(['esrs_e1_ghg_fossil',             fix(d.cc_fossil, 6),      'kg CO2e/kg','ESRS E1', 'E1-6 §44','Fossil',   'Fossil GHG (non-biogenic)'].map(q).join(','));
     rows.push(['esrs_e1_ghg_biogenic',           fix(d.cc_biogenic, 6),    'kg CO2e/kg','ESRS E1', 'E1-6 §44','Biogenic', 'Biogenic CO2 removals and emissions'].map(q).join(','));
     rows.push(['esrs_e1_ghg_land_use_change',    fix(d.cc_land_use, 6),    'kg CO2e/kg','ESRS E1', 'E1-6 §44','Land Use', 'dLUC GHG per IPCC 2006'].map(q).join(','));
+    rows.push(['esrs_e1_ghg_subcategory_note',   d.cc_subsplit_note,       '', 'ESRS E1', 'E1-6 §44','Disclosure', 'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     // FIX: [retailer_csv_engine audit] Reconciliation-gap fix (see CDP CSV-F5).
     if (d.cc_waste && d.cc_waste > 0) {
         rows.push(['esrs_e1_waste_processing',   fix(d.cc_waste, 6),       'kg CO2e/kg','ESRS E1', 'E1-6 §44','Waste',    'Waste processing stage — included in ghg_intensity total above'].map(q).join(','));
@@ -1049,7 +1132,7 @@ function generateCSRD_ESRS_CSV(d) {
     rows.push(['esrs_dq_lca_database',            d.lciDatabase,            '',  'ESRS 2','BP-1', 'Policies', 'LCI background database'].map(q).join(','));
     rows.push(['esrs_dq_rating',                  fix(d.dqrOverall, 2),     '/5','ESRS 2','BP-1', 'Data quality','DQR per PEF 3.1 — 4-indicator scheme'].map(q).join(','));
     rows.push(['esrs_dq_primary_data',            d.primaryDataApplied,     '',  'ESRS 2','BP-1', 'Primary data','YES/NO'].map(q).join(','));
-    rows.push(['esrs_dq_uncertainty_pct',         fix(d.uncPct, 1),         '%', 'ESRS 2','BP-1', 'Uncertainty','MC 95% CI width'].map(q).join(','));
+    rows.push(['esrs_dq_uncertainty_pct',         fixOrNA(d.uncPct, 1),         '%', 'ESRS 2','BP-1', 'Uncertainty','MC 95% CI width'].map(q).join(','));
     rows.push(['esrs_dq_system_boundary',         d.systemBoundary,         '',  'ESRS 2','BP-1', 'System boundary',''].map(q).join(','));
     rows.push(['esrs_dq_verification',            'Self-declared — not third-party verified', '', 'ESRS 2','BP-1','Assurance','ISO 14044 critical review required for CSRD assured disclosure'].map(q).join(','));
     rows.push(['esrs_dq_audit_hash',              d.auditHash,              '',  'ESRS 2','BP-1', 'Audit trail','SHA-256'].map(q).join(','));
@@ -1095,7 +1178,7 @@ function generateCDP_SC_CSV(d) {
     rows.push(['c6_5_gwp_standard',              d.gwpBasis,               '',  'C6.5', ''].map(q).join(','));
     rows.push(['c6_5_data_quality',              fix(d.dqrOverall, 2) + '/5.0', '', 'C6.5', 'DQR per PEF 3.1 — 1=best 5=worst'].map(q).join(','));
     rows.push(['c6_5_primary_data_used',         d.primaryDataApplied,     '',  'C6.5', 'YES = farm/factory primary activity data included'].map(q).join(','));
-    rows.push(['c6_5_uncertainty_pct',           fix(d.uncPct, 1),         '%', 'C6.5', 'Monte Carlo 95% CI width — ingredient stage'].map(q).join(','));
+    rows.push(['c6_5_uncertainty_pct',           fixOrNA(d.uncPct, 1),         '%', 'C6.5', 'Monte Carlo 95% CI width — ingredient stage'].map(q).join(','));
     rows.push(['c6_5_third_party_verification',  'NO — self-declared screening-level LCA', '', 'C6.5', 'ISO 14044 critical review not conducted'].map(q).join(','));
     rows.push(['c6_5_verification_standard',     'N/A — screening-level',  '',  'C6.5', ''].map(q).join(','));
     rows.push(['c6_5_audit_reference',           d.auditHash,              '',  'C6.5', 'SHA-256 hash of all inputs and outputs'].map(q).join(','));
@@ -1141,6 +1224,7 @@ function generateGenericEUCSV(d) {
     rows.push(['carbonFootprintFossil',           fix(d.cc_fossil, 6),      'kg CO2e/kg','ESSG:PCF_fossil','E1-6',''].map(q).join(','));
     rows.push(['carbonFootprintBiogenic',         fix(d.cc_biogenic, 6),    'kg CO2e/kg','ESSG:PCF_biogenic','E1-6',''].map(q).join(','));
     rows.push(['carbonFootprintLandUseChange',    fix(d.cc_land_use, 6),    'kg CO2e/kg','ESSG:PCF_LUC','E1-6','dLUC'].map(q).join(','));
+    rows.push(['carbonFootprintSubcategoryNote',  d.cc_subsplit_note,       '','ESSG:PCF_note','E1-6','Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     rows.push(['scope3Cat1IngredientsPackaging',  fix(d.cc_ing + d.cc_pkg, 6),'kg CO2e/kg','ESSG:scope3cat1','GHGp',''].map(q).join(','));
     rows.push(['scope12Manufacturing',            fix(d.cc_mfg, 6),         'kg CO2e/kg','ESSG:scope12','GHGp',''].map(q).join(','));
     rows.push(['scope3Cat4Transport',             fix(d.cc_trans, 6),       'kg CO2e/kg','ESSG:scope3cat4','GHGp',''].map(q).join(','));
@@ -1192,7 +1276,7 @@ function generateGenericEUCSV(d) {
     rows.push(['lciDatabase',                     d.lciDatabase,            '',           'ESSG:lci_db',     '',''].map(q).join(','));
     rows.push(['dataQualityRating',               fix(d.dqrOverall, 2),     '/5',         'ESSG:dqr',        'PEF3.1 §5.7',''].map(q).join(','));
     rows.push(['primaryDataUsed',                 d.primaryDataApplied,     '',           'ESSG:prim_data',  '',''].map(q).join(','));
-    rows.push(['uncertaintyPct',                  fix(d.uncPct, 1),         '%',          'ESSG:uncertainty','','MC 95% CI width'].map(q).join(','));
+    rows.push(['uncertaintyPct',                  fixOrNA(d.uncPct, 1),         '%',          'ESSG:uncertainty','','MC 95% CI width'].map(q).join(','));
     rows.push(['thirdPartyVerified',              'NO',                     '',           'ESSG:verified',   '','Screening-level only'].map(q).join(','));
     rows.push(['auditHashSHA256',                 d.auditHash,              '',           'ESSG:audit_hash', '','Tamper-evident'].map(q).join(','));
     rows.push(['']);

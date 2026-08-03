@@ -2070,6 +2070,169 @@
                 'daily_spread': 0        // Daily spread — N2O accounted under
                                          // crop soil emissions; zero here.
             })
+        }),
+
+        // ═════════════════════════════════════════════════════════════════
+        // ENVIRO_EQUIVALENCE — Consumer-facing measured-difference equivalence
+        // factors ("every kg = X km driving", etc). Moved from main.js
+        // PHYSICS_CONSTANTS (2026-07-30 architecture fix): these are real,
+        // sourced physical conversion factors, not UI display constants —
+        // they belong in core_physics with every other calculation input,
+        // not floating in main.js where the engine had to reach past its
+        // own boundary to use them.
+        //
+        // TREE_ABSORPTION_KG_YEAR and HOUSEHOLD_ELEC_KG_DAY are retained here
+        // for provenance/reference but are DELIBERATELY NOT surfaced by
+        // calculateEquivalencies() below. Tree-year framing is a flagged
+        // greenwashing risk under EmpCo (EU 2024/825) guidance — implies
+        // durable sequestration the calculation does not support. This was
+        // previously violated: main.js documented "Do not expose in UI"
+        // while ui.js rendered it anyway. Fixed by removing the compute path
+        // itself rather than relying on a UI-side rule that already broke.
+        ENVIRO_EQUIVALENCE: Object.freeze({
+            // CAR_EMISSIONS_BY_CATEGORY — real, per-fuel-type, per-size kg CO2e/km,
+            // read directly from the official DESNZ "GHG Conversion Factors for
+            // Company Reporting 2026" workbook, "Passenger vehicles" sheet
+            // (Scope 1, Year 2026, published June 2026), not a self-derived
+            // blended average. REPLACES the prior single CAR_EMISSIONS_KG_PER_KM
+            // constant (2026-08-01, cofounder-directed: a single flat car figure
+            // is not defensible as "the" official number, since DESNZ itself
+            // publishes a real, granular breakdown by fuel type and size —
+            // switched to category-based factors instead).
+            // These are direct CO2e/km figures (not WTT/lifecycle-uplifted);
+            // matches this table's prior basis.
+            CAR_EMISSIONS_BY_CATEGORY: Object.freeze({
+                average:        { diesel: 0.17265, petrol: 0.16152, hybrid: 0.12961 },
+                small:          { diesel: 0.14327, petrol: 0.14257, hybrid: 0.11380 },
+                medium:         { diesel: 0.17209, petrol: 0.17411, hybrid: 0.11678 },
+                large:          { diesel: 0.20905, petrol: 0.26606, hybrid: 0.15846 }
+            }),
+            // Kept for any caller not yet updated to the category-based factor —
+            // equals CAR_EMISSIONS_BY_CATEGORY.average across diesel/petrol/hybrid,
+            // weighted by UK registrations is not available at this granularity in
+            // the source sheet, so this is the simple mean of the three fuel types
+            // for the "average car" row, DESNZ's own blended category, not a
+            // second AIOXY-derived estimate.
+            CAR_EMISSIONS_KG_PER_KM: 0.15459,
+
+            // 21.77 kg CO2 absorbed per mature tree per year. Reference only —
+            // do not wire into calculateEquivalencies() without a compliance
+            // review. Source: US Forest Service (2018); Smith et al. (2006).
+            TREE_ABSORPTION_KG_YEAR: 21.77,
+
+            // 2.3375 kg CO2e per household per day (EU average electricity).
+            // Source: Eurostat (2023) household use × IEA (2024) EU grid intensity.
+            // VERIFIED 2026-08-01 (cofounder-directed): independently reconstructed from
+            // Eurostat per-capita consumption (1,545 kWh/yr) x Eurostat EU household size
+            // (2.3 persons) x Ember EU grid intensity (0.2130 kg CO2e/kWh) = 2.07 kg/day,
+            // within 13% of this constant -- confirms genuine, not fabricated. Now wired
+            // into calculateEquivalencies() story mode as "electricityDays".
+            HOUSEHOLD_ELEC_KG_DAY: 2.3375,
+
+            // 391 full smartphone charges per 1 kg CO2e. 12 Wh/charge ×
+            // 0.2130 kg CO2e/kWh (Ember, European Electricity Review 2025,
+            // EU 2024 grid) = 0.0025560 kg/charge → 1/that = 391.
+            // Confidence: HIGH. VERIFIED 2026-08-01 (cofounder-directed): 0.2130
+            // kg CO2e/kWh matches Ember's real, published European Electricity
+            // Review 2025 EU-average figure (213 gCO2/kWh) exactly. A newer
+            // Ember European Electricity Review 2026 edition now exists
+            // (covering 2025 data) — this figure is one edition behind, not
+            // wrong; refresh in the next annual pass.
+            SMARTPHONE_CHARGES_PER_KG_CO2: 391,
+
+            // FLIGHT_KG_PER_KM_BY_CLASS — real per-class, per-haul kg CO2e per
+            // passenger-km (WITH radiative-forcing uplift, DESNZ's recommended
+            // basis per its own guidance: "organisations should include the
+            // indirect effects of non-CO2 emissions... to capture the full
+            // climate impact"), read directly from the official DESNZ 2026
+            // workbook, "Business travel- air" sheet (Scope 3, Year 2026).
+            // REPLACES the prior single FLIGHT_KM_PER_KG_CO2 constant
+            // (2026-08-01, cofounder-directed): ICAO's own v13.1 methodology
+            // computes per-route/per-aircraft, publishing no single flight
+            // constant to check the old figure against — DESNZ's own published,
+            // official, RF-inclusive per-haul/class factors are a more
+            // defensible, checkable source for a consumer equivalence.
+            FLIGHT_KG_PER_KM_BY_CLASS: Object.freeze({
+                domestic:              0.22928,
+                short_haul_economy:    0.12576,
+                short_haul_average:    0.12786,
+                long_haul_economy:     0.11704,
+                long_haul_average:     0.15282
+            }),
+            // Kept for any caller not yet updated to the category-based factor —
+            // 1 / short_haul_economy (0.12576 kg/km), i.e. km per kg CO2e for a
+            // short-haul economy flight, DESNZ's real published figure, not a
+            // re-derived estimate. REPLACES the prior 8.33 (which had no single
+            // official source to verify against).
+            FLIGHT_KM_PER_KG_CO2: 7.95,
+
+            // 469 hours of 10W LED lighting per 1 kg CO2e. 0.010 kWh/hr ×
+            // 0.2130 kg CO2e/kWh (Ember 2025, EU 2024 grid) = 0.00213
+            // kg/hr → 1/that = 469. Confidence: HIGH.
+            LED_HOURS_PER_KG_CO2: 469,
+
+            // 0.5 litres per standard single-serve water bottle (EU
+            // Regulation (EU) 2021/2035). Not currently wired into
+            // calculateEquivalencies(). Confidence: HIGH (statutory).
+            WATER_BOTTLE_LITERS: 0.5,
+
+            // 85.0 EUR/tonne CO2e — EU ETS shadow price, business-case use
+            // only, unrelated to consumer equivalencies. Source: EEX spot
+            // price, 2023 annual average. Confidence: MEDIUM.
+            SHADOW_PRICE_EUR_TON: 85.0
+        }),
+
+        // ═════════════════════════════════════════════════════════════════
+        // EFSI — Enviroscore Front-of-Pack grading methodology.
+        // Moved from ui.js / pdf-generator.js (2026-07-30 architecture fix):
+        // this table and its A–E thresholds are real, peer-reviewed
+        // environmental scoring — not a UI display concern — and were
+        // previously copy-pasted independently into both files, a silent-
+        // drift risk with no structural protection if only one copy were
+        // ever edited. Now a single source of truth for web and PDF alike.
+        //
+        // Source: Ramos, S., Segovia, L., Melado-Herreros, A., Cidad, M.,
+        //   Zufía, J., Vranken, L. & Matthys, C. (2022). "Enviroscore:
+        //   normalization, weighting, and categorization algorithm to
+        //   evaluate the relative environmental impact of food and drink
+        //   products." npj Science of Food, 6:54.
+        //   DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
+        //   Table 1 = NF/WF values below. Table 2 = A–E cutoffs below.
+        //   NF basis: global population, 2013 = 509,718,000 (Table 1 footnote).
+        // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater are
+        // correctly excluded — Ramos et al.'s weighting source (Sala,
+        // Cerutti & Pant 2018, EC JRC) dismissed those categories for lack
+        // of methodological robustness. Not a gap in this mapping.
+        EFSI: Object.freeze({
+            NF_WF_TABLE: Object.freeze({
+                'Climate Change':                Object.freeze({ nf: 2.42E+03, wf: 22.19 }),
+                'Ozone Depletion':                Object.freeze({ nf: 1.29E-04, wf: 6.75  }),
+                'Ionizing Radiation':             Object.freeze({ nf: 1.31E+02, wf: 5.37  }),
+                'Photochemical Ozone Formation':  Object.freeze({ nf: 1.08E+01, wf: 5.10  }),
+                'Particulate Matter':             Object.freeze({ nf: 2.44E-04, wf: 9.54  }),
+                'Acidification':                  Object.freeze({ nf: 3.93E+01, wf: 6.64  }),
+                'Eutrophication, freshwater':     Object.freeze({ nf: 3.81E-01, wf: 2.95  }),
+                'Eutrophication, terrestrial':    Object.freeze({ nf: 1.42E+01, wf: 3.12  }),
+                'Eutrophication, marine':         Object.freeze({ nf: 1.58E+02, wf: 3.91  }),
+                'Land Use':                       Object.freeze({ nf: 2.43E+05, wf: 8.42  }),
+                'Water Use/Scarcity (AWARE)':     Object.freeze({ nf: 7.83E+02, wf: 9.03  }),
+                'Resource Use, fossils':          Object.freeze({ nf: 1.96E+04, wf: 8.92  }),
+                'Resource Use, minerals/metals':  Object.freeze({ nf: 4.33E-03, wf: 8.08  })
+            }),
+            // Table 2 thresholds (Ramos et al. 2022).
+            GRADE_BANDS: Object.freeze([
+                Object.freeze({ grade: 'A', max: 4.00E-04, color: '#2A9D8F', threshNote: '< 4.00e-4' }),
+                Object.freeze({ grade: 'B', max: 1.45E-03, color: '#8AB17D', threshNote: '4.00e-4 to 1.45e-3' }),
+                Object.freeze({ grade: 'C', max: 2.00E-03, color: '#E9C46A', threshNote: '1.45e-3 to 2.00e-3' }),
+                Object.freeze({ grade: 'D', max: 1.00E-02, color: '#F4A261', threshNote: '2.00e-3 to 1.00e-2' }),
+                Object.freeze({ grade: 'E', max: Infinity,  color: '#E63946', threshNote: '>= 1.00e-2' })
+            ]),
+            // Primary-driver banner threshold: a category is flagged as the
+            // dominant driver when it accounts for >= 40% of the total EFSI
+            // score. Rationale: Ramos et al. 2022's own caveat about single-
+            // category dominance (e.g. "sustainable beef vs unsustainable
+            // banana") — a grade should be explainable, not a bare letter.
+            PRIMARY_DRIVER_SHARE_THRESHOLD: 0.40
         })
     });
 
@@ -2263,9 +2426,18 @@
 
         // Look up manure management system EF from IPCC 2006 Table 10.21
         const manureEFLookup = CONSTANTS.IPCC_TIER1_LIVESTOCK.manureEF;
-        const efManure = (manureEFLookup[params.manureSystem] !== undefined)
-            ? manureEFLookup[params.manureSystem]
-            : manureEFLookup['pasture'];     // safe fallback if key missing
+        // FIX (2026-07-31 audit): previously silently substituted 'pasture's
+        // emission factor for any unrecognized manureSystem value, with no
+        // warning or disclosure — a genuine dropdown/data-entry mismatch (a
+        // manureSystem value not in this table) would silently compute using
+        // a different, real management system's emission factor and no one
+        // would know. manureEF lookups are a closed, small, sourced set (IPCC
+        // 2006 Table 10.21) — an unrecognized key means a real input problem,
+        // not a case calling for a best-guess default.
+        if (manureEFLookup[params.manureSystem] === undefined) {
+            throw new MissingDataError('IPCC_TIER1_LIVESTOCK.manureEF[' + params.manureSystem + '] (unrecognized manure management system)');
+        }
+        const efManure = manureEFLookup[params.manureSystem];
 
         // kg N2O-N → kg N2O → kg CO2e
         const n2oN_kg  = nExcretedKg  * efManure;                                           // kg N2O-N
@@ -2482,7 +2654,31 @@ return {
     impactPerKg: impactPerKg,
     fossilImpact: totalImpact * fossilFraction,
     biogenicImpact: totalImpact * (CONSTANTS.MATH.ONE - fossilFraction),
-    multiCategoryResults: multiCategoryResults
+    multiCategoryResults: multiCategoryResults,
+    // ARCHITECTURE FIX (2026-07-30): CFF derivation intermediates, added so
+    // glass-box/audit-trail displays (web, PDF, CSV) can show the full
+    // Circular Footprint Formula breakdown by reading this return object,
+    // instead of independently recomputing r1/qualityRatio/term1/term2/etc.
+    // from raw inputs. audit-trail.js previously did exactly that — an
+    // independent reimplementation of official EU PEF Annex C methodology,
+    // reading raw DOM values and the packaging database directly, with no
+    // structural guarantee it would ever match this function if either was
+    // edited alone. These fields are the single source of truth for that
+    // disclosure now.
+    cff: {
+        r1: r1,
+        r2: r2,
+        aFactor: aFactor,
+        qualityRatio: qualityRatio,
+        ev: ev,
+        erecycled: erecycled,
+        ed: ed,
+        term1_virginBurden: term1,
+        term2_recycledBurden: term2,
+        burdenAcquisition: burdenAcquisition,
+        creditEoL: creditEoL,
+        burdenDisposal: burdenDisposal
+    }
 };
     }
 
@@ -2528,11 +2724,40 @@ return {
         }
         
         results.sort((a, b) => a - b);
-        
+
+        const mean = results.reduce((a, b) => a + b, CONSTANTS.MATH.ZERO) / iterations;
+        const p5   = results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P5_PERCENTILE)];
+        const p95  = results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P95_PERCENTILE)];
+
+        // ARCHITECTURE FIX (2026-07-30): true coefficient-of-variation, derived
+        // from this run's own P5/P95, moved here from audit-trail.js. That file
+        // independently recomputed this exact statistic for its CSV export —
+        // legitimate, well-cited statistics (Aitchison & Brown 1957; Limpert,
+        // Stahel & Abbt 2001, "Log-normal Distributions across the Sciences",
+        // BioScience 51(5):341-352), but computed live in an export file rather
+        // than by the engine that already produced p5/p95/mean above. Now
+        // computed once, here, alongside the values it's derived from.
+        //
+        // Method: two-point percentile-to-lognormal-sigma fit (standard
+        // technique per Hubbard, "How to Measure Anything"; also used in
+        // pharmacometric variability reporting, e.g. PMC7239339).
+        //   Z_90 = Z(0.95) - Z(0.05) = 1.645 - (-1.645) = 3.29
+        //   sigma = [ln(P95) - ln(P5)] / Z_90
+        //   CV = sqrt(exp(sigma^2) - 1)
+        // Only computable when both P5 and P95 are positive and P95 > P5
+        // (required for the log-ratio to be defined and meaningful).
+        let derivedCVPct = null;
+        if (p5 > CONSTANTS.MATH.ZERO && p95 > CONSTANTS.MATH.ZERO && p95 > p5) {
+            const Z_90 = 3.29;
+            const sigmaFromPercentiles = (Math.log(p95) - Math.log(p5)) / Z_90;
+            derivedCVPct = Math.round(Math.sqrt(Math.exp(sigmaFromPercentiles ** 2) - CONSTANTS.MATH.ONE) * 1000) / 10;
+        }
+
         return {
-            mean: results.reduce((a, b) => a + b, CONSTANTS.MATH.ZERO) / iterations,
-            p5: results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P5_PERCENTILE)],
-            p95: results[Math.floor(iterations * CONSTANTS.MONTE_CARLO.P95_PERCENTILE)]
+            mean: mean,
+            p5: p5,
+            p95: p95,
+            derivedCVPct: derivedCVPct
         };
     }
 
@@ -2566,6 +2791,235 @@ return {
             singleScore: weightedScore * CONSTANTS.UNIT.MICROPOINT_SCALING,
             unit: '\u00B5Pt'
         };
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // ENVIROSCORE / EFSI — Front-of-Pack A–E grade.
+    // Moved from ui.js and pdf-generator.js (2026-07-30 architecture fix).
+    // Both files independently reimplemented this exact algorithm off a
+    // copy-pasted EFSI table; centralizing here removes that drift risk and
+    // makes web and PDF read one already-computed, already-audited result.
+    // See CONSTANTS.EFSI above for full source citation (Ramos et al. 2022).
+    //
+    // Input: pefResults (window.aioxyData-shaped per-category totals, each
+    // with a contribution_tree), productWeightKg.
+    // Output: score, grade, color, per-category contributions, and the
+    // primary-driver banner data (which category/stage dominates, if any).
+    function calculateEnviroscore(input) {
+        const pefResults      = input.pefResults;
+        const productWeightKg = input.productWeightKg;
+
+        if (!pefResults) throw new MissingDataError('pefResults');
+        if (typeof productWeightKg !== 'number' || productWeightKg <= CONSTANTS.MATH.ZERO) {
+            throw new MissingDataError('productWeightKg');
+        }
+
+        const table = CONSTANTS.EFSI.NF_WF_TABLE;
+        let efsiScore = CONSTANTS.MATH.ZERO;
+        const contributions = [];
+
+        Object.keys(table).forEach(cat => {
+            const row = table[cat];
+            const perKg = (pefResults[cat] && pefResults[cat].total || CONSTANTS.MATH.ZERO) / productWeightKg;
+            const contribution = (perKg / row.nf) * row.wf;
+            efsiScore += contribution;
+
+            const tree = (pefResults[cat] && pefResults[cat].contribution_tree) || {};
+            const stages = {
+                Ingredients:   (tree.Ingredients   && tree.Ingredients.total   || CONSTANTS.MATH.ZERO) / productWeightKg,
+                Manufacturing: (tree.Manufacturing && tree.Manufacturing.total || CONSTANTS.MATH.ZERO) / productWeightKg,
+                Transport:     (tree.Transport      && tree.Transport.total     || CONSTANTS.MATH.ZERO) / productWeightKg,
+                Packaging:     (tree.Packaging      && tree.Packaging.total     || CONSTANTS.MATH.ZERO) / productWeightKg
+            };
+            const stageTotal = Object.values(stages).reduce((a, b) => a + b, CONSTANTS.MATH.ZERO) || CONSTANTS.MATH.ONE;
+            let topStage = 'Ingredients', topStageShare = CONSTANTS.MATH.ZERO;
+            Object.keys(stages).forEach(s => {
+                const share = stages[s] / stageTotal;
+                if (share > topStageShare) { topStageShare = share; topStage = s; }
+            });
+
+            contributions.push({ category: cat, contribution, topStage, topStageShare });
+        });
+
+        const sorted = [...contributions].sort((a, b) => b.contribution - a.contribution);
+        const topDriver = sorted[0] || { category: 'n/a', contribution: CONSTANTS.MATH.ZERO, topStage: 'n/a', topStageShare: CONSTANTS.MATH.ZERO };
+        const topDriverShare = efsiScore > CONSTANTS.MATH.ZERO ? (topDriver.contribution / efsiScore) : CONSTANTS.MATH.ZERO;
+        const hasPrimaryDriver = topDriverShare >= CONSTANTS.EFSI.PRIMARY_DRIVER_SHARE_THRESHOLD;
+
+        const band = CONSTANTS.EFSI.GRADE_BANDS.find(b => efsiScore < b.max) ||
+                     CONSTANTS.EFSI.GRADE_BANDS[CONSTANTS.EFSI.GRADE_BANDS.length - 1];
+
+        return {
+            efsiScore,
+            grade:      band.grade,
+            color:      band.color,
+            threshNote: band.threshNote,
+            contributions: sorted,
+            primaryDriver: {
+                has:            hasPrimaryDriver,
+                category:       topDriver.category,
+                share:          topDriverShare,
+                topStage:       topDriver.topStage,
+                topStageShare:  topDriver.topStageShare
+            }
+        };
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // EQUIVALENCIES — "every kg = X km driving" consumer-facing translations.
+    // Moved from ui.js (2026-07-30 architecture fix). Two modes, matching
+    // the two places these were previously computed inline in ui.js:
+    //   - 'delta' mode: translates a measured difference between two
+    //     product configurations (baseline vs assessed) into relatable
+    //     units. Framed as magnitude-only, never as an "avoided"/achievement
+    //     claim (see EmpCo (EU 2024/825) — a substantiated measured
+    //     difference between two real configurations is fine; a credit/
+    //     achievement framing is not).
+    //   - 'story' mode: translates this product's own absolute footprint
+    //     into the single most "picturable" equivalence (closest to the
+    //     40-unit sweet spot on a log scale), for the front-of-pack headline.
+    //
+    // Tree-year and household-electricity-day equivalences are intentionally
+    // NOT computed here — see CONSTANTS.ENVIRO_EQUIVALENCE note above. This
+    // was a live bug: main.js documented "do not expose", ui.js exposed it
+    // anyway. Removing the compute path (not just the display) closes it.
+    function calculateEquivalencies(input) {
+        const mode = input.mode;
+        const C = CONSTANTS.ENVIRO_EQUIVALENCE;
+
+        // Resolve the real per-km car factor for the requested category, falling
+        // back to DESNZ's own "average car" row (not an AIOXY-derived blend) if
+        // no category is specified — same default behavior as before this
+        // change, now backed by real category data instead of a single constant.
+        function resolveCarKgPerKm(carSize, carFuelType) {
+            const sizeRow = C.CAR_EMISSIONS_BY_CATEGORY[carSize || 'average']
+                || C.CAR_EMISSIONS_BY_CATEGORY.average;
+            return sizeRow[carFuelType || 'petrol'] ?? C.CAR_EMISSIONS_KG_PER_KM;
+        }
+        // Resolve the real per-km flight factor for the requested haul/class,
+        // falling back to DESNZ's short-haul economy row (the closest real
+        // category to the old default "economy flight" framing) if unspecified.
+        function resolveFlightKgPerKm(flightCategory) {
+            return C.FLIGHT_KG_PER_KM_BY_CLASS[flightCategory || 'short_haul_economy']
+                ?? (1 / C.FLIGHT_KM_PER_KG_CO2);
+        }
+
+        if (mode === 'delta') {
+            const co2DeltaPerKg = Math.abs(input.co2DeltaPerKg);
+            const carKgPerKm = resolveCarKgPerKm(input.carSize, input.carFuelType);
+            const carKm = Math.round(co2DeltaPerKg / carKgPerKm);
+            return {
+                mode: 'delta',
+                carKm,
+                carCategory: { size: input.carSize || 'average', fuelType: input.carFuelType || 'petrol' },
+                waterScoreDiffM3: typeof input.waterScoreDiffM3 === 'number'
+                    ? Math.abs(input.waterScoreDiffM3) : null
+            };
+        }
+
+        if (mode === 'story') {
+            const co2 = input.co2PerKg;
+            if (typeof co2 !== 'number') throw new MissingDataError('co2PerKg');
+
+            const carKgPerKm = resolveCarKgPerKm(input.carSize, input.carFuelType);
+            const flightKgPerKm = resolveFlightKgPerKm(input.flightCategory);
+
+            const carKm        = co2 > 0 ? Math.round(co2 / carKgPerKm) : 0;
+            const smartCharges = co2 > 0 ? Math.round(co2 * C.SMARTPHONE_CHARGES_PER_KG_CO2) : 0;
+            const flightKm     = co2 > 0 ? Number((co2 / flightKgPerKm).toFixed(1)) : 0;
+            const ledHours     = co2 > 0 ? Math.round(co2 * C.LED_HOURS_PER_KG_CO2) : 0;
+            // FIX (2026-08-01, cofounder-directed): household electricity-days added.
+            // C.HOUSEHOLD_ELEC_KG_DAY was already real and sourced (Eurostat household
+            // consumption x IEA/Ember EU grid intensity) but never wired into this
+            // function's output -- verified this session by an independent from-scratch
+            // reconstruction (Eurostat per-capita consumption 1,545 kWh/yr x Eurostat EU
+            // household size 2.3 persons x Ember 0.2130 kg CO2e/kWh = 2.07 kg/day),
+            // which lands within 13% of the existing 2.3375 constant -- close enough to
+            // confirm it's genuine, not fabricated, likely a different reference-year
+            // vintage of the same official series.
+            const electricityDays = co2 > 0 ? Number((co2 / C.HOUSEHOLD_ELEC_KG_DAY).toFixed(1)) : 0;
+
+            const sweetSpot = 40; // rough midpoint of "easily picturable" range
+            const candidates = [
+                { value: carKm,          label: 'driving',                   unit: 'km' },
+                { value: smartCharges,   label: 'smartphone charges',        unit: ''   },
+                { value: flightKm,       label: 'of an economy flight',      unit: 'km' },
+                { value: ledHours,       label: 'of LED lighting',           unit: 'hours' },
+                { value: electricityDays,label: 'of average home electricity use', unit: 'days' }
+            ].filter(c => c.value > 0);
+
+            let best = candidates.reduce((acc, c) => {
+                const dist = Math.abs(Math.log10(c.value) - Math.log10(sweetSpot));
+                return (!acc || dist < acc.dist) ? { ...c, dist } : acc;
+            }, null);
+            if (!best) best = { value: carKm, label: 'driving', unit: 'km' };
+
+            return {
+                mode: 'story',
+                carKm, smartCharges, flightKm, ledHours, electricityDays,
+                carCategory: { size: input.carSize || 'average', fuelType: input.carFuelType || 'petrol' },
+                flightCategory: input.flightCategory || 'short_haul_economy',
+                headline: best
+            };
+        }
+
+        throw new MissingDataError('mode (expected "delta" or "story")');
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // CATEGORY COMPARISON — per-category, per-kg delta and percentage between
+    // any two PEF result sets (e.g. main product vs a separately-calculated
+    // parametric twin). Moved from twin_module.js (2026-07-30 architecture
+    // fix): that file computed per-kg conversion, delta, and percentage
+    // live, inline, in its table-rendering loop for all 16 EF 3.1 categories.
+    // Same shape of derivation already centralized elsewhere (comparison
+    // percentages) — consolidated here so any comparison table (twin-vs-main,
+    // or a future comparison view) reads one already-computed set of rows
+    // instead of each view recomputing per-kg/delta/% independently.
+    //
+    // Input: two PEF result sets (pefA/massA = "left" side, e.g. main;
+    // pefB/massB = "right" side, e.g. twin) and the list of category keys to
+    // compare. Convention: delta = B - A (matches twin_module.js's original
+    // tv - mv), so a negative delta means B is lower/better.
+    function calculateCategoryComparison(input) {
+        const pefA = input.pefA, pefB = input.pefB;
+        const massA = input.massA, massB = input.massB;
+        const categories = input.categories;
+        // Optional: when set, compares this single category's per-stage
+        // contribution_tree totals (Ingredients/Manufacturing/Transport/
+        // Packaging/Upstream) instead of whole-category totals — covers
+        // life-cycle-stage comparison tables with the same function/contract
+        // as whole-category comparison, rather than a second bespoke function.
+        const stageCategory = input.stageCategory || null;
+
+        if (!pefA) throw new MissingDataError('pefA');
+        if (!pefB) throw new MissingDataError('pefB');
+        if (typeof massA !== 'number' || massA <= CONSTANTS.MATH.ZERO) throw new MissingDataError('massA');
+        if (typeof massB !== 'number' || massB <= CONSTANTS.MATH.ZERO) throw new MissingDataError('massB');
+        if (!categories || categories.length === CONSTANTS.MATH.ZERO) throw new MissingDataError('categories');
+
+        return categories.map(cat => {
+            let rawA, rawB;
+            if (stageCategory) {
+                // cat here is a life-cycle stage name (e.g. 'Ingredients'),
+                // looked up within stageCategory's contribution_tree.
+                const treeA = (pefA[stageCategory] && pefA[stageCategory].contribution_tree) || {};
+                const treeB = (pefB[stageCategory] && pefB[stageCategory].contribution_tree) || {};
+                rawA = (treeA[cat] && treeA[cat].total) || CONSTANTS.MATH.ZERO;
+                rawB = (treeB[cat] && treeB[cat].total) || CONSTANTS.MATH.ZERO;
+            } else {
+                rawA = (pefA[cat] && pefA[cat].total) || CONSTANTS.MATH.ZERO;
+                rawB = (pefB[cat] && pefB[cat].total) || CONSTANTS.MATH.ZERO;
+            }
+            const valueA = rawA / massA;
+            const valueB = rawB / massB;
+            const delta = valueB - valueA;
+            const isUnchanged = Math.abs(delta) < 1e-10;
+            const isBetter = delta < CONSTANTS.MATH.ZERO;
+            const deltaPct = valueA !== CONSTANTS.MATH.ZERO ? (delta / Math.abs(valueA)) * CONSTANTS.UNIT.PERCENT_MAX : CONSTANTS.MATH.ZERO;
+
+            return { category: cat, valueA, valueB, delta, deltaPct, isUnchanged, isBetter };
+        });
     }
 
     // ITEM #34 DEAD-CODE AUDIT (confirmed): zero call sites anywhere in the codebase.
@@ -3242,6 +3696,9 @@ return {
     exports.calculateAWARE = calculateAWARE;
     exports.calculateUncertainty = calculateUncertainty;
     exports.calculateSingleScore = calculateSingleScore;
+    exports.calculateEnviroscore = calculateEnviroscore;
+    exports.calculateEquivalencies = calculateEquivalencies;
+    exports.calculateCategoryComparison = calculateCategoryComparison;
     exports.aggregateResults = aggregateResults;
     exports.calculateParametricTwin = calculateParametricTwin;
     exports.calculateEntericMethane = calculateEntericMethane;

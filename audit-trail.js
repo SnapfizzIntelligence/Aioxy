@@ -80,7 +80,11 @@ function displayFullPefScorecard() {
             Results based on AGRIBALYSE 3.2 secondary data using PEF 3.1 methodology.
             For Environmental Product Declarations (EPD) or product labeling claims,
             conduct ISO 14044 critical review with primary data.<br>
-            <small>Overall uncertainty: ±${window.auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15'}%
+            <small>Overall uncertainty: ${
+                (typeof window.auditTrailData?.uncertainty_analysis?.overall_uncertainty === 'number')
+                    ? '±' + window.auditTrailData.uncertainty_analysis.overall_uncertainty + '%'
+                    : 'not computable for this product (no category had a positive Monte Carlo mean)'
+            }
             (DQR: ${window.auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5'})</small>
         </td>
     `;
@@ -118,7 +122,12 @@ function displayFullPefScorecard() {
         const displayValue = formatPEFValue(catData.total);
         const perKgDisplay = formatPEFValue(perKgValue);
 
-        const categoryUncertainty = window.auditTrailData?.uncertainty_analysis?.overall_uncertainty || 15;
+        // FIX (2026-07-31 audit): || 15 previously silently substituted an
+        // un-cited value whenever overall_uncertainty wasn't computable for
+        // this product. categoryUncertaintyDisplay now shows 'N/A' honestly
+        // in that case instead of a fabricated ±15%.
+        const categoryUncertaintyRaw = window.auditTrailData?.uncertainty_analysis?.overall_uncertainty;
+        const categoryUncertaintyDisplay = (typeof categoryUncertaintyRaw === 'number') ? '±' + categoryUncertaintyRaw + '%' : 'N/A';
         // FIX-B: use _dqrLevel() instead of bare foodCalculationEngine call
         const dqrQuality = _dqrLevel(window.auditTrailData?.dqr_summary?.overall_dqr || 1.5);
 
@@ -133,7 +142,7 @@ function displayFullPefScorecard() {
                     ${dqrQuality.level}
                 </span>
             </td>
-            <td class="pef-value">±${categoryUncertainty}%</td>
+            <td class="pef-value">${categoryUncertaintyDisplay}</td>
         `;
         tbody.appendChild(row);
     }
@@ -183,7 +192,13 @@ function displayAuditTrail() {
     // 1. CONTEXT VARIABLES
     const catCC = window.auditTrailData.pefCategories["Climate Change"];
     const mb = window.auditTrailData.mass_balance;
-    const mfgCountry = document.getElementById('manufacturingCountry')?.value || 'FR';
+    // FIX (2026-08-01 audit): mfgCountry previously read ONLY the live DOM field, with no
+    // fallback to the actual computed traceability record — the same class of gap already
+    // fixed elsewhere in this file (see mfgTrace pattern at ~line 1135) and in
+    // retailer_csv_engine.js earlier this session. Prefer the real calculated value; DOM is
+    // now only the last-resort fallback if traceability is genuinely absent.
+    const mfgTraceTop = window.auditTrailData.traceability?.manufacturing || {};
+    const mfgCountry = mfgTraceTop.parameters?.country || document.getElementById('manufacturingCountry')?.value || 'FR';
 
     // Guard: catCC.total must be a number
     if (typeof catCC?.total !== 'number') {
@@ -265,7 +280,15 @@ function displayAuditTrail() {
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
                 <tr>
                     <td style="padding: 4px 0; width: 35%; font-weight: bold; color: #555;">ASSESSMENT ID:</td>
-                    <td style="padding: 4px 0; font-family: monospace; font-size: 0.95rem;">${window.auditTrailData.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}</td>
+                    <td style="padding: 4px 0; font-family: monospace; font-size: 0.95rem;">${window.auditTrailData.dppId || 'PENDING (run calculation to generate)'}</td>
+                    <!-- FIX (2026-08-02, cofounder-directed): was Math.random()-generated
+                         'TRC-xxxxxxx' -- same audit-trail-integrity gap as Finding 17
+                         (calculation_engine.js, 2026-06-07), which explicitly removed this
+                         exact pattern from calculate() itself ("a random dppId cannot be
+                         reproduced and has no audit trail integrity") but never touched this
+                         second, separate occurrence. A real dppId is a deterministic SHA-256
+                         value from finalizeAuditTrail(); a random one here could be displayed,
+                         screenshotted, or printed as if it were a real, permanent identifier. -->
                 </tr>
                 <tr>
                     <td style="padding: 4px 0; font-weight: bold; color: #555;">PRODUCT:</td>
@@ -598,12 +621,34 @@ function displayAuditTrail() {
                 <div style="display:flex; justify-content:space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;">
                     <div>
                         <strong style="color:var(--primary);">PRIMARY PACKAGING (User Input)</strong><br>
-                        <strong>Material:</strong> ${document.getElementById('packagingMaterial')?.options[document.getElementById('packagingMaterial').selectedIndex]?.text || 'N/A'}<br>
+                        <strong>Material:</strong> ${(function(){
+                            // FIX (2026-08-01 audit): was document.getElementById('packagingMaterial')?.options[...] --
+                            // only the ELEMENT lookup was optional-chained; if the element is genuinely
+                            // absent (e.g. this tab renders in a page state without that dropdown), the
+                            // subsequent .options[selectedIndex] access on undefined throws a real,
+                            // uncaught TypeError that crashes the entire audit trail display (confirmed
+                            // by direct execution). Also now prefers the real computed traceability
+                            // value (audit.traceability.packaging.parameters.material) over a live DOM
+                            // re-read, matching the proven-correct pattern already used at line ~1473 of
+                            // this same file and the equivalent fix in retailer_csv_engine.js this session.
+                            const pkgTraceTop = window.auditTrailData.traceability?.packaging || {};
+                            if (pkgTraceTop.parameters?.material) return safeString(pkgTraceTop.parameters.material);
+                            const el = document.getElementById('packagingMaterial');
+                            const opt = el && el.options ? el.options[el.selectedIndex] : null;
+                            return opt?.text || 'N/A';
+                        })()}<br>
                         <strong>Weight:</strong> ${(mb.packaging_weight_kg || 0).toFixed(3)} kg
                     </div>
                     <div>
                         <strong>Recycled Content:</strong> ${document.getElementById('recycledContent')?.value || 0}%<br>
-                        <strong>End-of-Life:</strong> ${document.getElementById('packagingEoL')?.options[document.getElementById('packagingEoL').selectedIndex]?.text || 'EU Avg'}
+                        <strong>End-of-Life:</strong> ${(function(){
+                            // Same fix, same reasoning, for the EOL dropdown.
+                            const pkgTraceTop = window.auditTrailData.traceability?.packaging || {};
+                            if (pkgTraceTop.parameters?.eolDestination) return safeString(pkgTraceTop.parameters.eolDestination);
+                            const el = document.getElementById('packagingEoL');
+                            const opt = el && el.options ? el.options[el.selectedIndex] : null;
+                            return opt?.text || 'EU Avg';
+                        })()}
                     </div>
                 </div>
                 <div style="padding-top: 5px;">
@@ -748,12 +793,13 @@ function displayAuditTrail() {
         const pairs = window.currentComparisonBaseline.ingredientPairs;
         const assessedTotal     = window.currentComparisonBaseline.assessed_co2PerKg || 0;
         const conventionalTotal = window.currentComparisonBaseline.co2PerKg || window.currentComparisonBaseline.conventionalTotal?.co2PerKg || 0;   // BUG-12 FIX: co2PerKg is top-level on baseline object, conventionalTotal sub-object does not exist
-        // twinResult.delta is ABSOLUTE batch CO2e (conventionalCO2Total - assessedCO2Total in kg for the batch).
-        // conventionalTotal is per-kg. Must convert delta to per-kg first before computing percentage.
-        const deltaAbsolute = window.currentComparisonBaseline.delta || 0;
-        const productWtKg   = mb?.final_content_weight_kg || 0.2;
-        const delta         = deltaAbsolute / productWtKg;   // now per-kg, same unit as conventionalTotal
-        const deltaPct = conventionalTotal > 0 ? ((delta / conventionalTotal) * 100).toFixed(1) : '0.0';
+        // ARCHITECTURE FIX (2026-07-30): delta/deltaPct previously recomputed
+        // here independently (and independently again in ui.js — two copies
+        // of the same formula). calculation_engine.js's computeComparison()
+        // now computes deltaPerKg/deltaPct once and attaches them directly to
+        // comparisonBaseline; this block only reads them.
+        const delta    = window.currentComparisonBaseline.deltaPerKg ?? 0;
+        const deltaPct = (window.currentComparisonBaseline.deltaPct ?? 0).toFixed(1);
         const deltaSign = delta >= 0 ? '+' : '';
 
         let pairRows = '';
@@ -838,7 +884,11 @@ function displayAuditTrail() {
                     Fossil: ${totalFossil.toFixed(4)} kg | Biogenic: ${totalBiogenic.toFixed(4)} kg | dLUC: ${totalDLUC.toFixed(4)} kg
                 </div>
                 <div style="font-size: 1.5rem; font-weight:bold; margin-top: 5px;">TOTAL: ${catCC.total.toFixed(4)} kg CO₂e</div>
-                <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ±${window.auditTrailData.uncertainty_analysis?.overall_uncertainty || 15}% (Monte Carlo)</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;">Uncertainty: ${
+                    (typeof window.auditTrailData.uncertainty_analysis?.overall_uncertainty === 'number')
+                        ? '±' + window.auditTrailData.uncertainty_analysis.overall_uncertainty + '%'
+                        : 'N/A'
+                } (Monte Carlo)</div>
             </div>
         </div>`;
 
@@ -871,13 +921,24 @@ function displayAuditTrail() {
 // FIX-C: DOM ordering fixed — metrics are always visible inside the card body.
 function generateDPP() {
     const productName = document.getElementById('productName').value || 'Unnamed Product';
+    // FIX (2026-08-02, cofounder-directed): was `|| 'TRC-' + Math.random()...` — the same
+    // audit-trail-integrity gap Finding 17 (calculation_engine.js, 2026-06-07) removed from
+    // calculate() itself, never applied here. Worse than the line-283 occurrence: this one
+    // PERSISTED the fabricated ID into window.currentDPPId, where retailer_csv_engine.js and
+    // other exports could read it later as if it were a real, reproducible, SHA-256-derived
+    // identifier. A missing dppId here means no calculation has completed yet for this
+    // product (finalizeAuditTrail() throws loudly in calculate() itself if hash generation
+    // genuinely fails, per Finding 17) — so the honest state is "not yet generated," not a
+    // fake ID that looks identical to a real one.
     const dppId = (window.auditTrailData && window.auditTrailData.dppId)
         || window.currentDPPId
-        || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    window.currentDPPId = dppId;
+        || null;
+    if (dppId) {
+        window.currentDPPId = dppId;
+    }
 
     const dppIdEl = document.getElementById('dppId');
-    if (dppIdEl) dppIdEl.textContent = dppId;
+    if (dppIdEl) dppIdEl.textContent = dppId || 'Pending — run a calculation first';
 
     const transparencyData = {
         productId:             dppId,
@@ -908,7 +969,11 @@ function generateDPP() {
         const fossil= window.finalPefResults?.['Resource Use, fossils']?.total           || 0;
         const dqr   = window.auditTrailData?.dqr_summary?.overall_dqr                   || 0;
         const wKg   = window.massBalanceData?.final_content_weight_kg || 0.2;
-        const uncertainty = window.auditTrailData?.uncertainty_analysis?.overall_uncertainty || 15;
+        // FIX (2026-07-31 audit): || 15 previously silently substituted an
+        // un-cited value when overall_uncertainty wasn't computable. Now
+        // renders 'N/A' honestly in that case.
+        const uncertaintyRaw = window.auditTrailData?.uncertainty_analysis?.overall_uncertainty;
+        const uncertaintyDisplay = (typeof uncertaintyRaw === 'number') ? '±' + uncertaintyRaw + '%' : 'N/A';
 
         metricsContainer.innerHTML = `
             <h4 style="margin:0 0 1rem 0;color:#0A2540;font-size:1rem;">
@@ -943,7 +1008,7 @@ function generateDPP() {
                 </div>
                 <div style="background:white;padding:0.75rem;border-radius:8px;border:1px solid #E2E8F0;flex:1;min-width:150px;">
                     <div style="font-size:0.75rem;color:#718096;font-weight:600;text-transform:uppercase;">Uncertainty</div>
-                    <div style="font-size:1rem;font-weight:800;color:#0A2540;margin-top:0.25rem;">±${uncertainty}% (Monte Carlo)</div>
+                    <div style="font-size:1rem;font-weight:800;color:#0A2540;margin-top:0.25rem;">${uncertaintyDisplay} (Monte Carlo)</div>
                 </div>
             </div>
             <div style="margin-top:1rem;font-size:0.75rem;color:#718096;background:white;padding:0.75rem;border-radius:8px;border:1px solid #E2E8F0;">
@@ -1019,8 +1084,18 @@ function generateRegulatorDisclaimer() {
     const productName = document.getElementById('productName').value || 'Product';
     const countryCode = document.getElementById('manufacturingCountry').value || 'FR';
     const countryName = window.aioxyData?.countries?.[countryCode]?.name || countryCode;
-    const dqr         = window.auditTrailData?.dqr_summary?.overall_dqr?.toFixed(1) || '1.5';
-    const uncertainty = window.auditTrailData?.uncertainty_analysis?.overall_uncertainty || '15';
+    // FIX (2026-07-31 audit): both dqr and uncertainty here previously
+    // silently substituted un-cited placeholder values (1.5, 15) in a
+    // document explicitly framed as a formal, regulation-aligned disclaimer
+    // — the single worst place for a fabricated number to appear undisclosed.
+    // Both fields are, in practice, always computed by the engine (dqr_overall
+    // is a required field the engine throws on if missing); the remaining
+    // fallback only guards a truly unset auditTrailData (e.g. calculation not
+    // yet run), which is disclosed honestly rather than papered over.
+    const dqrRaw = window.auditTrailData?.dqr_summary?.overall_dqr;
+    const dqr = (typeof dqrRaw === 'number') ? dqrRaw.toFixed(1) : 'N/A (calculation not yet run)';
+    const uncertaintyRaw = window.auditTrailData?.uncertainty_analysis?.overall_uncertainty;
+    const uncertainty = (typeof uncertaintyRaw === 'number') ? uncertaintyRaw : 'N/A';
 
     return `AIOXY SCIENCE-BASED DISCLAIMER
 REGULATION-ALIGNED METHODOLOGY v2.1
@@ -1031,7 +1106,7 @@ ASSESSMENT ID: ${window.currentDPPId || 'TRC-UNKNOWN'}
 TIMESTAMP: ${new Date().toISOString()}
 
 METHODOLOGY: PEF 3.1 | DATA: AGRIBALYSE 3.2 | BOUNDARY: Cradle-to-Retail
-DATA QUALITY (DQR): ${dqr}/5.0 | UNCERTAINTY: ±${uncertainty}%
+DATA QUALITY (DQR): ${dqr}/5.0 | UNCERTAINTY: ${typeof uncertainty === 'number' ? '±' + uncertainty + '%' : uncertainty}
 
 SCREENING-LEVEL ASSESSMENT — for certified EPD conduct ISO 14044 critical review.`;
 }
@@ -1112,7 +1187,11 @@ function exportCSRDMatrix() {
     const ssBkd     = ss.breakdown || {};
     const mcResults = audit.uncertainty_analysis?.monte_carlo || {};
     const uncCC     = mcResults['Climate Change'] || {};
-    const uncPct    = (audit.uncertainty_analysis?.overall_uncertainty || 15).toFixed(1);
+    // FIX (2026-07-31 audit): || 15 previously silently substituted an
+    // un-cited value into this CSV export whenever overall_uncertainty
+    // wasn't computable for this product. Now exports 'N/A' honestly.
+    const _uncRaw   = audit.uncertainty_analysis?.overall_uncertainty;
+    const uncPct    = (typeof _uncRaw === 'number') ? _uncRaw.toFixed(1) : 'N/A';
     const mcP5      = (uncCC.p5  || 0).toFixed(6);
     const mcP95     = (uncCC.p95 || 0).toFixed(6);
     // ROOT CAUSE FIX (2025-06-05):
@@ -1382,33 +1461,19 @@ function exportCSRDMatrix() {
     rows.push(['']);
 
     // ── BLOCK 4: UNCERTAINTY ──────────────────────────────────────────────────
-    // FIX-24: Previously this block contained a hardcoded, unverified claim
-    // ("True CV ≈ 18%") that did not derive from this product's actual P5/P95
-    // bounds -- it was a fixed string, identical on every report regardless of
-    // product. Per audit finding, the true CV is now computed live from this
-    // product's own mcP5/mcP95 using the standard percentile-matching method
-    // for lognormal distributions:
-    //   sigma = [ln(P95) - ln(P5)] / (Z95 - Z5), Z95=1.645, Z5=-1.645 (90% CI)
-    //   CV = sqrt(exp(sigma^2) - 1)
-    // Source: Aitchison & Brown (1957), "The Lognormal Distribution", Cambridge
-    // University Press -- standard reference for lognormal CV = sqrt(exp(sigma^2)-1)
-    // (also given in Limpert, Stahel & Abbt, 2001, BioScience 51(5):341-352,
-    // "Log-normal Distributions across the Sciences", eq. for coefficient of
-    // variation). Percentile-to-sigma conversion is the standard two-point
-    // method for fitting lognormal parameters from percentiles (e.g. used in
-    // quantitative risk analysis per Hubbard, "How to Measure Anything", and
-    // in pharmacometric variability reporting, PMC7239339).
-    const p5Num  = parseFloat(mcP5);
-    const p95Num = parseFloat(mcP95);
-    let derivedCVPct = null;
-    if (p5Num > 0 && p95Num > 0 && p95Num > p5Num) {
-        const Z_90 = 3.29; // Z95 - Z5 = 1.645 - (-1.645)
-        const sigmaFromPercentiles = (Math.log(p95Num) - Math.log(p5Num)) / Z_90;
-        derivedCVPct = Math.round(Math.sqrt(Math.exp(sigmaFromPercentiles ** 2) - 1) * 1000) / 10;
-    }
+    // ARCHITECTURE FIX (2026-07-30): this statistic (true CV derived from
+    // P5/P95 via lognormal percentile-matching) previously recomputed here
+    // independently. It's real, correctly-cited statistics (Aitchison & Brown
+    // 1957; Limpert, Stahel & Abbt 2001, BioScience 51(5):341-352) — but the
+    // same formula the engine's calculateUncertainty() now computes once,
+    // alongside the p5/p95 it's derived from (core_physics.js). Moved there
+    // so every consumer (web, PDF, CSV) reads the identical number instead of
+    // each optionally reimplementing the same derivation.
+    const derivedCVPct = (typeof uncCC.derivedCVPct === 'number') ? uncCC.derivedCVPct : null;
     const derivedCVNote = derivedCVPct !== null
-        ? `True CV = ${derivedCVPct}% (computed live from this product's own P5/P95 via sigma = [ln(P95)-ln(P5)]/3.29, CV = sqrt(exp(sigma^2)-1); Aitchison & Brown 1957 / Limpert, Stahel & Abbt 2001)`
+        ? `True CV = ${derivedCVPct}% (computed by the engine from this product's own P5/P95 via sigma = [ln(P95)-ln(P5)]/3.29, CV = sqrt(exp(sigma^2)-1); Aitchison & Brown 1957 / Limpert, Stahel & Abbt 2001)`
         : 'True CV not computable for this product (insufficient P5/P95 data)';
+
 
     rows.push([c('BLOCK 4 — MONTE CARLO UNCERTAINTY — Climate Change')]);
     rows.push([c('Method: Lognormal propagation | Iterations: 1000 | Reference: ISO 14044 / Heijungs & Huijbregts 2004')]);
@@ -1442,30 +1507,37 @@ function exportCSRDMatrix() {
         'field', 'value', 'unit', 'description', 'reference'
     ].map(q).join(','));
 
-    // Read packaging inputs — same path as engine
-    const pkgMat    = audit.traceability?.packaging?.parameters?.material
-                   || document.getElementById('packagingMaterial')?.value || 'N/A';
+    // ARCHITECTURE FIX (2026-07-30): this block previously recomputed the
+    // full Circular Footprint Formula independently — reading raw DOM form
+    // values and the packaging database directly, duplicating official EU
+    // PEF Annex C methodology that calculation_engine.js's calculatePackaging()
+    // (core_physics.js) already performs for every actual calculation. The
+    // old comment here even said "same path as engine," acknowledging the
+    // duplication while accepting the drift risk. calculatePackaging() now
+    // returns its full derivation (r1, r2, aFactor, qualityRatio, term1,
+    // term2, burdenAcquisition, creditEoL, burdenDisposal), exposed on
+    // auditTrailData.traceability.packaging.cff. This block only reads it.
+    const pkgMat    = audit.traceability?.packaging?.parameters?.material || 'N/A';
     const pkgMatTxt = document.getElementById('packagingMaterial')?.options[
                           document.getElementById('packagingMaterial')?.selectedIndex]?.text || pkgMat;
-    const pkgWtKg   = mb.packaging_weight_kg || audit.traceability?.packaging?.parameters?.weightKg || 0;
-    const pkgRecPct = audit.traceability?.packaging?.parameters?.recycledPct
-                   || parseFloat(document.getElementById('recycledContent')?.value) || 0;
+    const pkgWtKg   = audit.traceability?.packaging?.parameters?.weightKg || mb.packaging_weight_kg || 0;
+    const pkgRecPct = audit.traceability?.packaging?.parameters?.recycledPct || 0;
     const pkgEoLTxt = document.getElementById('packagingEoL')?.options[
                           document.getElementById('packagingEoL')?.selectedIndex]?.text || 'EU Average';
     const pkgEoLVal = document.getElementById('packagingEoL')?.value || 'eu_average';
 
-    // CFF database parameters — defensive read
+    const cffData   = audit.traceability?.packaging?.cff || {};
     const pkgDB     = (window.aioxyData?.packaging && window.aioxyData.packaging[pkgMat]) || {};
-    const cff_Ev    = (pkgDB.co2_virgin              ?? 0);
-    const cff_Erec  = (pkgDB.co2_recycled            ?? 0);
-    const cff_Ed    = (pkgDB.co2_disposal_average || pkgDB.co2_disposal || 0);
-    const cff_r1max = (pkgDB.r1_max                  ?? 1.0);
-    const cff_r1    = Math.min((pkgRecPct / 100), cff_r1max);
-    const cff_r2    = (pkgDB.r2                      ?? 0);
-    const cff_A     = (pkgDB.aFactor                 ?? 0);
-    const cff_qs    = (pkgDB.q                       ?? 1.0);
+    const cff_Ev    = cffData.ev ?? 0;
+    const cff_Erec  = cffData.erecycled ?? 0;
+    const cff_Ed    = cffData.ed ?? 0;
+    const cff_r1max = (pkgDB.r1_max ?? 1.0);  // display-only reference ceiling; engine already applied it
+    const cff_r1    = cffData.r1 ?? 0;
+    const cff_r2    = cffData.r2 ?? 0;
+    const cff_A     = cffData.aFactor ?? 0;
+    const cff_qs    = (pkgDB.q ?? 1.0);       // display-only source value; qualityRatio below is the engine-computed ratio
     const cff_qp    = 1.0;
-    const cff_qr    = cff_qs / cff_qp;
+    const cff_qr    = cffData.qualityRatio ?? 0;
     const pkgSrc    = pkgDB.source || 'PEF Annex C v2.1 / packaging database';
 
     rows.push(['packaging_material',    pkgMatTxt,                 '',             'User input',                      ''].map(q).join(','));
@@ -1553,10 +1625,15 @@ function exportCSRDMatrix() {
     dqrComps.forEach(d => {
         rows.push([
             d.name || d.id,
-            (d.TeR || 0).toFixed(1),                    // Technological representativeness
-            (d.TiR || 0).toFixed(1),                    // Time representativeness
-            (d.GeR || 0).toFixed(1),                    // Geographical representativeness (stored as GR in AGRIBALYSE)
-            (d.RR  || 0).toFixed(1),                    // P (Precision) — stored as RR in engine per BUG-14 mapping
+            // FIX (2026-07-31 audit): d.TeR||0 (etc.) silently converted the engine's
+            // honest "null = not scored for this ingredient" back into a fabricated
+            // 0 (the BEST possible DQI score) at the exact point it's disclosed to
+            // the person reading this export. Now reports 'N/A', matching the
+            // existing, correct treatment of CoR on the line above.
+            (typeof d.TeR === 'number') ? d.TeR.toFixed(1) : 'N/A',   // Technological representativeness
+            (typeof d.TiR === 'number') ? d.TiR.toFixed(1) : 'N/A',   // Time representativeness
+            (typeof d.GeR === 'number') ? d.GeR.toFixed(1) : 'N/A',   // Geographical representativeness (stored as GR in AGRIBALYSE)
+            (typeof d.RR  === 'number') ? d.RR.toFixed(1)  : 'N/A',   // P (Precision) — stored as RR in engine per BUG-14 mapping
             'N/A',                                       // CoR — not scored in AGRIBALYSE DQI Matrix v3.0.1
             (d.dqr || d.overall || 0).toFixed(2),
             d.source || 'AGRIBALYSE 3.2 DQI Matrix'

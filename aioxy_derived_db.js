@@ -73660,6 +73660,12 @@ window.aioxyData.commodity_prices = {
     "year": 2026,
     "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. Soybean Meal 48% protein, FOB Rotterdam)"
   },
+  "soybean_oil": {
+    "price_eur_per_kg": 1.3725,
+    "price_usd_per_kg": 1.482,
+    "year": 2026,
+    "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. Soybean Oil Crude Degummed, FOB U.S. Gulf). ADDED (2026-08-01, cofounder-directed) specifically to unblock the crushing co-product economic allocation for soybean (calculation_engine.js, adjustments.coproduct_allocation) -- soybean_meal and soybeans already existed in this table but the OIL price (the actual co-product output, not the raw bean) was missing, so the allocation path had no real price to compute against for soybean and silently fell to applied:false. EUR conversion uses the same ~0.9261 USD->EUR rate implied by every other entry in this table (e.g. beef: 7.6036/8.21, palm_oil: 1.0215/1.103) for consistency, not a fresh same-day FX quote."
+  },
   "soybeans": {
     "price_eur_per_kg": 0.4380,
     "price_usd_per_kg": 0.473,
@@ -73671,5 +73677,6 @@ window.aioxyData.commodity_prices = {
     "price_usd_per_kg": 0.2474,
     "year": 2026,
     "source": "World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. no. 2 soft red winter, delivered US Gulf)"
-  }
+  },
+  "_rapeseed_note": "NOT ADDED (2026-08-01, cofounder-directed sourcing check): rapeseed/canola oil and meal are NOT tracked in the World Bank Pink Sheet at all -- confirmed against the live April 2026 edition's full commodity list (thedocs.worldbank.org), which covers Soybean meal/oil/beans but no rapeseed series of any kind. This is a real, disclosed gap, not an oversight: the crushing co-product allocation for rapeseed (calculation_engine.js, cpKey === 'rapeseed') will correctly continue to fall through to applied:false with the honest overstatement warning already in place, until an official-grade rapeseed oil/meal price source is identified and added the same way soybean_oil was above. Candidates worth evaluating: Euronext/MATIF rapeseed futures settlement (exchange-official, not a CFD tracker), or FAO/Eurostat agricultural price series -- do not substitute a CFD/trading-platform quote (e.g. Trading Economics) for this table, as those aren't primary official sources and don't match this table's sourcing standard."
 };

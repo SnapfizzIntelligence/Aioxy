@@ -1307,7 +1307,7 @@ window.aioxyData.processing = {
     // Method 2 — Sterilization (batch retort, 121°C).
     // Physics: Q = 1kg × 4.10 × 101°C + 50% batch overhead + 7% hold losses = 664.7 kJ/kg.
     // Electrical: 664.7 ÷ 3600 ÷ 0.98 = 0.188 kWh/kg; thermal gas: 664.7 ÷ 1000 ÷ 0.82 = 0.810 MJ/kg.
-    // Range: 0.15–0.35 kWh/kg electrical. Source: Holdsworth & Simpson (2016); Masanet et al. (2008) LBNL-559E.
+    // Range: 0.15–0.35 kWh/kg electrical. Source: Holdsworth & Simpson (2016); Masanet et al. (2008) LBNL-59289 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "LBNL-559E", not a real report number -- verified against OSTI.gov and LBNL's own PDF].
     "sterilization":  { co2_impact: 0.12, water_impact: 0.30, yield: 0.985, loss: 0.015, temp: 121, kwh_per_kg: 0.200, gas_mj_per_kg: 0.81  },
 
     // Method 3 — UHT Processing (140°C, 80% regeneration).
@@ -1333,7 +1333,7 @@ window.aioxyData.processing = {
     // Physics: Q_product = 1kg × 3.38 × 80°C = 270.4 kJ; Q_evap = 0.25 × 2257 = 564.3 kJ.
     // + 15% surface losses; total 959.9 kJ ÷ 0.60 fryer efficiency = 1599.8 kJ/kg → 0.44 kWh/kg.
     // Gas: 1599.8 ÷ 1000 ÷ 0.82 = 1.95 MJ/kg. Range: 0.3–0.6 kWh/kg.
-    // Source: Moreira et al. (1999); Masanet et al. (2008) LBNL-559E.
+    // Source: Moreira et al. (1999); Masanet et al. (2008) LBNL-59289 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "LBNL-559E", not a real report number -- verified against OSTI.gov and LBNL's own PDF].
     "frying":         { co2_impact: 0.75, water_impact: 0.22, yield: 0.75,  loss: 0.250, temp: 180, kwh_per_kg: 0.440, gas_mj_per_kg: 1.95  },
 
     // Method 7 — Freezing (blast tunnel, -18°C final, COP 2.0).
@@ -1360,7 +1360,7 @@ window.aioxyData.processing = {
     // Method 9 — Canning (batch steam retort, 121°C; same thermodynamics as sterilization).
     // Physics: Q_product + can metal heating + batch overhead = 625.5 kJ/kg.
     // Thermal gas: 625.5 ÷ 1000 ÷ 0.82 = 0.76 MJ/kg. Electrical ancillary (pumps, seaming): 0.05 kWh/kg.
-    // Source: Holdsworth & Simpson (2016); Masanet et al. (2008) LBNL-559E (0.6–1.0 MJ/kg).
+    // Source: Holdsworth & Simpson (2016); Masanet et al. (2008) LBNL-59289 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "LBNL-559E", not a real report number -- verified against OSTI.gov and LBNL's own PDF] (0.6–1.0 MJ/kg).
     "canning":        { co2_impact: 0.30, water_impact: 3.5,  yield: 0.95,  loss: 0.05,  temp: 110, kwh_per_kg: 0.050, gas_mj_per_kg: 0.76  },
 
     // Method 10 — Oat Processing (kilning ~100°C + steaming ~85°C + roller flaking).
@@ -1372,7 +1372,7 @@ window.aioxyData.processing = {
     // Method 11 — Milling (dry roller milling of grain, wheat flour basis).
     // Benchmark: Bond's Law Wi ~9 kWh/short ton gives theoretical floor ~0.005 kWh/kg;
     // real mills 2-5× higher. Literature range 0.04–0.10 kWh/kg; central 0.06 kWh/kg.
-    // Source: Ortiz-Arroyo et al. (2017) Biosystems Eng. 156; Masanet et al. (2008) LBNL-559E.
+    // Source: Ortiz-Arroyo et al. (2017) Biosystems Eng. 156; Masanet et al. (2008) LBNL-59289 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "LBNL-559E", not a real report number -- verified against OSTI.gov and LBNL's own PDF].
     "milling":        { co2_impact: 0.04, water_impact: 0.04, yield: 0.78,  loss: 0.220, temp: 30,  kwh_per_kg: 0.060, gas_mj_per_kg: 0.00  },
 
     // Method 12 — Mixing/Blending (ambient temperature paddle/ribbon blender).
@@ -1391,7 +1391,55 @@ window.aioxyData.processing = {
     // Benchmark: 0.02–0.08 kWh/kg; central 0.04 kWh/kg.
     // Note: if solvent extraction is in scope, add ~0.50 MJ/kg thermal gas separately.
     // Source: Fore et al. (2011) BioEnergy Res. 4(1); Singh & Heldman (2014) Ch.6.
-    "crushing":       { co2_impact: 0.12, water_impact: 1.0,  yield: 0.40,  loss: 0.60,  temp: 40,  kwh_per_kg: 0.040, gas_mj_per_kg: 0.00  },
+    // CITATION FLAG (2026-08-01, cofounder-directed verification): "Fore et al. (2011)
+    // BioEnergy Res. 4(1)" could NOT be located after multiple targeted searches, including
+    // BioEnergy Research's own published volume/issue archive. "Singh & Heldman, Ch.6" is a
+    // real, well-known food engineering textbook, but Ch.6 is "Refrigeration" in the current
+    // (6th) edition -- not oilseed pressing -- so this citation does not clearly hold up
+    // either, at least not as stated. This does NOT affect any reported CO2 total (confirmed
+    // by direct execution: this yield/loss field only feeds an informational "Processing
+    // Waste" trace line, calculation_engine.js line ~328, never pefResults). Left as-is
+    // rather than silently rewritten, since the co2_impact/kwh_per_kg figures on this line
+    // are a separate, unverified claim from the yield/loss figures below and neither should
+    // be touched without the same direct-source verification applied to coProducts below.
+    "crushing":       { co2_impact: 0.12, water_impact: 1.0,  yield: 0.40,  loss: 0.60,  temp: 40,  kwh_per_kg: 0.040, gas_mj_per_kg: 0.00,
+        // coProducts: real economic allocation data for ISO 14044 §4.3.4(c) co-product
+        // allocation (calculation_engine.js, adjustments.coproduct_allocation). ADDED
+        // 2026-08-01, cofounder-directed. OIL MUST BE LISTED FIRST in each array — the
+        // consuming code (calculation_engine.js ~line 2485) takes allocationFactors[0] as
+        // the oil's share unconditionally.
+        coProducts: {
+            // Soybean: mass fractions are CME Group's own published "standard board crush"
+            // figures for a 60 lb bushel -- 18.3% oil, 80% meal, 1.7% hulls/waste --
+            // sourced directly from CME Group's official CBOT-vs-DCE crush spread reference
+            // (cmegroup.com/trading/agricultural/files/pm374-cbot-soybeans-vs-dce-soybean-meal-and-soybean-oil.pdf),
+            // a primary exchange source, not a secondary aggregator. Prices from
+            // window.aioxyData.commodity_prices (World Bank Pink Sheet, April 2026 edition,
+            // March 2026 price month) -- soybean_oil added this session specifically to
+            // enable this; soybean_meal already existed. Waste/hulls (1.7%) intentionally
+            // excluded from this array: ISO 14044 allocation applies to VALUABLE co-products;
+            // hulls/waste here get classifyWasteOrCoproduct-style treatment (zero allocation
+            // factor), not a priced allocation share -- including it would need a real hull
+            // price and this database does not have one; omitting it slightly overstates the
+            // other two products' combined allocation factor rather than fabricate a hull
+            // price, consistent with this database's stated preference for disclosed
+            // conservatism over invented precision.
+            soybean: [
+                { name: 'Soybean oil (crude, degummed)', massFraction: 0.183, price: 1.3725, priceUnit: 'EUR/kg', priceDate: '2026-03', priceConfidence: 'World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. Soybean Oil Crude Degummed, FOB U.S. Gulf)' },
+                { name: 'Soybean meal (48% protein)',    massFraction: 0.800, price: 0.3741, priceUnit: 'EUR/kg', priceDate: '2026-03', priceConfidence: 'World Bank Pink Sheet, April 2026 edition (March 2026 price, U.S. Soybean Meal 48% protein, FOB Rotterdam)' }
+            ]
+            // rapeseed: INTENTIONALLY NOT ADDED. No official commodity price source exists
+            // for rapeseed oil/meal -- confirmed against the live World Bank Pink Sheet
+            // (April 2026 edition), which tracks Soybean oil/meal/beans but no rapeseed
+            // series of any kind. Per this codebase's standing rule against fabricated/
+            // estimated numbers, this stays absent rather than filled with a non-official
+            // source (e.g. a CFD trading-platform quote). Until a genuinely official source
+            // is identified (candidates: Euronext/MATIF rapeseed futures settlement price,
+            // FAO/Eurostat agricultural series), rapeseed crushing correctly continues to
+            // fall through to adjustments.coproduct_allocation = {applied:false} with the
+            // honest "OVERSTATES this product's footprint" warning already in place.
+        }
+    },
 
     // Method 15 — Emulsification/Homogenization (two-stage HPH at 55°C, 17.5 MPa).
     // Physics: Q_thermal = 1kg × 4.10 × 35°C ÷ 3600 ÷ 0.85 = 0.047 kWh/kg; pump work 0.008 kWh/kg.
@@ -1402,7 +1450,7 @@ window.aioxyData.processing = {
     // Method 16 — Cleaning (commercial vegetable/fruit washing; conveying-dominated).
     // Benchmark: pump work is trivial (~0.0003 kWh/kg); real energy from conveyors/blowers.
     // Literature range 0.005–0.030 kWh/kg; central 0.01 kWh/kg. Confidence: LOW-MEDIUM.
-    // Source: Masanet et al. (2008) LBNL-559E; Hospido et al. (2003) J. Cleaner Prod.
+    // Source: Masanet et al. (2008) LBNL-59289 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "LBNL-559E", not a real report number -- verified against OSTI.gov and LBNL's own PDF]; Hospido et al. (2003) Int. Dairy J. 13(10) [CORRECTED 2026-08-01: was "J. Cleaner Prod." -- wrong journal; verified against 2 independent citing sources, the real paper "Simplified life cycle assessment of Galician milk production" is in International Dairy Journal].
     "cleaning":       { co2_impact: 0.02, water_impact: 2.0,  yield: 0.98,  loss: 0.02,  temp: 25,  kwh_per_kg: 0.010, gas_mj_per_kg: 0.00  },
 
     // Method 17 — Wet Milling (corn wet milling incl. steeping + starch drying).
@@ -1415,7 +1463,7 @@ window.aioxyData.processing = {
     // Physics/Benchmark: agitation 1.28 kWh/kg + aeration 0.19 kWh/kg + temp maintenance 0.05 kWh/kg.
     // Central 1.5 kWh/kg. Range: 1.0–3.0 kWh/kg (titer-dependent; low-titer products cost more/kg).
     // Note: food fermentation (yogurt, bread) without forced aeration is much lower (~0.05-0.10 kWh/kg).
-    // Source: Doran (1995) Bioprocess Engineering Principles Ch.8; Humpenöder et al. (2022) Nature Food 3.
+    // Source: Doran (1995) Bioprocess Engineering Principles Ch.8; Humpenöder et al. (2022) Nature 605:90-96 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "Nature Food 3" -- wrong journal; verified against the author's own institutional (PIK) publication list and independent citing sources, the real paper "Projected environmental benefits of replacing beef with microbial protein" is in Nature, not Nature Food].
     "fermentation":   { co2_impact: 0.35, water_impact: 1.0,  yield: 0.95,  loss: 0.050, temp: 35,  kwh_per_kg: 1.500, gas_mj_per_kg: 0.06  }
 };
 
@@ -2047,7 +2095,11 @@ window.aioxyData.packaging = {
 
         co2_recycled: 0.95,
         // Erec: 0.95 kg CO2e/kg — mechanically recycled PP (post-consumer, EU average).
-        // Source: Rigamonti et al. (2014) Waste Management 34(9):1595–1606 —
+        // Source: Rigamonti et al. (2014) Resour. Conserv. Recycl. 85:42-53
+        // [CORRECTED 2026-08-01, cofounder-directed citation audit: was "Waste Management
+        // 34(9):1595-1606" -- wrong journal and volume; verified against 5 independent
+        // citing sources, the real paper "Environmental evaluation of plastic waste
+        // management scenarios" is in Resources, Conservation and Recycling, vol 85] —
         //   PP recycling energy ~20–25 MJ/kg; GHG ~0.85–1.10 kg CO2e/kg (EU grid adjusted).
         // Cross-check: PlasticsEurope (2020) "Plastics — the Facts 2020" does not provide recycled GHG
         //   directly; secondary estimate from energy consumption data.

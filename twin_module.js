@@ -310,16 +310,43 @@ function renderTwinResults(mainResult, twinCalcResult) {
     var mainMass = (mainAudit.mass_balance && mainAudit.mass_balance.final_content_weight_kg) || 0.2;
     var twinMass = (twinAudit.mass_balance && twinAudit.mass_balance.final_content_weight_kg) || 0.2;
 
-    function perKg(pef, cat, mass) { return ((pef[cat] && pef[cat].total) || 0) / mass; }
+    // ARCHITECTURE FIX (2026-07-30): per-kg conversion, delta, and percentage
+    // for every PEF category previously computed live, inline, in this
+    // file's own perKg()/deltaChip()/catRows loop — three separate spots all
+    // doing the same derivation. Moved to core_physics.js
+    // calculateCategoryComparison(), called once here; this file only reads
+    // and renders the result now. Convention: delta = twin - main (matches
+    // this file's original tv - mv), so a negative delta means twin is
+    // lower/better.
+    var ALL16_CATS_COMPARISON = [
+        'Climate Change', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils',
+        'Eutrophication, terrestrial', 'Eutrophication, freshwater', 'Eutrophication, marine',
+        'Acidification', 'Particulate Matter', 'Photochemical Ozone Formation', 'Ozone Depletion',
+        'Human Toxicity, non-cancer', 'Human Toxicity, cancer', 'Ecotoxicity, freshwater',
+        'Ionizing Radiation', 'Resource Use, minerals/metals'
+    ];
+    var categoryComparison = window.corePhysics.calculateCategoryComparison({
+        pefA: mainPef, massA: mainMass,
+        pefB: twinPef, massB: twinMass,
+        categories: ALL16_CATS_COMPARISON
+    });
+    // Lookup by category name, so existing call sites (perKg(mainPef, cat, mainMass)
+    // equivalents) become simple reads instead of recomputation.
+    var comparisonByCat = {};
+    categoryComparison.forEach(function(row) { comparisonByCat[row.category] = row; });
 
-    var mainCO2   = perKg(mainPef, 'Climate Change',             mainMass);
-    var twinCO2   = perKg(twinPef, 'Climate Change',             twinMass);
-    var mainWater = perKg(mainPef, 'Water Use/Scarcity (AWARE)', mainMass);
-    var twinWater = perKg(twinPef, 'Water Use/Scarcity (AWARE)', twinMass);
-    var mainLand  = perKg(mainPef, 'Land Use',                   mainMass);
-    var twinLand  = perKg(twinPef, 'Land Use',                   twinMass);
-    var mainFoss  = perKg(mainPef, 'Resource Use, fossils',      mainMass);
-    var twinFoss  = perKg(twinPef, 'Resource Use, fossils',      twinMass);
+    function perKgResult(cat) {
+        return comparisonByCat[cat] || { valueA: 0, valueB: 0, delta: 0, deltaPct: 0, isUnchanged: true, isBetter: false };
+    }
+
+    var mainCO2   = perKgResult('Climate Change').valueA;
+    var twinCO2   = perKgResult('Climate Change').valueB;
+    var mainWater = perKgResult('Water Use/Scarcity (AWARE)').valueA;
+    var twinWater = perKgResult('Water Use/Scarcity (AWARE)').valueB;
+    var mainLand  = perKgResult('Land Use').valueA;
+    var twinLand  = perKgResult('Land Use').valueB;
+    var mainFoss  = perKgResult('Resource Use, fossils').valueA;
+    var twinFoss  = perKgResult('Resource Use, fossils').valueB;
     var mainPt    = (mainAudit.pef_single_score && mainAudit.pef_single_score.singleScore) || 0;
     var twinPt    = (twinAudit.pef_single_score && twinAudit.pef_single_score.singleScore) || 0;
 
@@ -333,12 +360,29 @@ function renderTwinResults(mainResult, twinCalcResult) {
     // parity, not ingredient count. PEF 3.1 §6 requires same functional unit, system boundary,
     // manufacturing, transport, and packaging for a valid comparative assertion.
     // Checks: manufacturing country, energy source, transport mode, distance, packaging material, weight.
+    //
+    // FIX PARITY-FIELDPATH-1 (2026-08-01, cofounder-directed verification): every mainX
+    // field below previously read mainAudit.manufacturing / mainAudit.transport /
+    // mainAudit.packaging directly -- none of these keys exist on the real auditTrailData
+    // object (confirmed by direct execution: real top-level keys are productName, dppId,
+    // traceability, mass_balance, etc. -- no manufacturing/transport/packaging at that
+    // level). The PARITY-DISTANCE-1 fix below even explicitly claimed to have verified this
+    // was "NOT a nested .parameters path" -- that verification was incorrect. The real data
+    // lives at mainAudit.traceability.{manufacturing,transport,packaging}.parameters.
+    // Practical effect of the bug: every mainX value below was silently always its
+    // empty-string/zero fallback, so operationalParityMet was almost always false --
+    // genuinely identical Main/Twin operational setups were incorrectly labelled "What-If
+    // Scenario" instead of "Apple-to-Apple", the opposite failure direction from the
+    // K1-F1/PARITY-DISTANCE-1 fixes (which guarded against false POSITIVES; this was a
+    // false NEGATIVE on every real comparison).
+    var mainTrace = mainAudit.traceability || {};
     var twinMfgCountry  = (typeof gv === 'function') ? gv('twinManufacturingCountry') : '';
-    var mainMfgCountry  = (mainAudit.manufacturing && mainAudit.manufacturing.country) || '';
+    var mainMfgCountry  = (mainTrace.manufacturing && mainTrace.manufacturing.parameters && mainTrace.manufacturing.parameters.country)
+                           || mainAudit.manufacturing_country || '';
     var twinEnergySource = (typeof gv === 'function') ? gv('twinEnergySource') : '';
-    var mainEnergySource = (mainAudit.manufacturing && mainAudit.manufacturing.energySource) || '';
+    var mainEnergySource = (mainTrace.manufacturing && mainTrace.manufacturing.parameters && mainTrace.manufacturing.parameters.energySource) || '';
     var twinTransMode   = (typeof gv === 'function') ? gv('twinTransportMode') : '';
-    var mainTransMode   = (mainAudit.transport && mainAudit.transport.mode) || '';
+    var mainTransMode   = (mainTrace.transport && mainTrace.transport.parameters && mainTrace.transport.parameters.mode) || '';
     // FIX PARITY-DISTANCE-1 (this session, corrects a real pre-launch-review finding):
     // the comment above explicitly listed "distance" as one of the parameters checked for
     // Apple-to-Apple parity, but the actual operationalParityMet comparison below never
@@ -348,15 +392,31 @@ function renderTwinResults(mainResult, twinCalcResult) {
     // wildly different transport distances (e.g. 50km vs 5,000km, both "road") were
     // incorrectly labelled "Apple-to-Apple" -- a real methodological gap against this
     // function's own stated intent and PEF 3.1 §6's system-boundary-parity requirement.
-    // mainAudit.transport.distanceKm confirmed as the correct, real, flat field (verified
-    // against export_engine.js's generateAuditTrail output shape, NOT a nested .parameters
-    // path that a different, unrelated metadata field elsewhere uses).
+    // [CORRECTED 2026-08-01 -- see PARITY-FIELDPATH-1 above: the field path claim in this
+    // comment was wrong; distanceKm genuinely lives under traceability.transport.parameters,
+    // not a flat mainAudit.transport.distanceKm.]
     var twinTransDist   = parseFloat((typeof gv === 'function') ? gv('twinTransportDistance') : 0) || 0;
-    var mainTransDist   = (mainAudit.transport && mainAudit.transport.distanceKm) || 0;
+    var mainTransDist   = (mainTrace.transport && mainTrace.transport.parameters && mainTrace.transport.parameters.distanceKm) || 0;
     // Small tolerance (1 km) for floating-point/rounding noise, not a meaningful parity gap.
     var transDistanceMatch = Math.abs(twinTransDist - mainTransDist) < 1;
     var twinPkgMat      = (typeof gv === 'function') ? gv('twinPackagingMaterial') : '';
-    var mainPkgMat      = (mainAudit.packaging && mainAudit.packaging.material) || '';
+    var mainPkgMat      = (mainTrace.packaging && mainTrace.packaging.parameters && mainTrace.packaging.parameters.material) || '';
+    // FIX PARITY-PROCESSING-1 (2026-08-01, cofounder-directed verification, found while
+    // testing PARITY-FIELDPATH-1 above): processingMethod, recycledPct, and eolDestination
+    // were never included in operationalParityMet despite each being a real PEF 3.1 §6
+    // system-boundary parameter that materially changes the result -- confirmed by direct
+    // test: Main=baking vs Twin=frying (otherwise identical) produced genuinely different
+    // Climate Change totals (0.08102 vs 0.08253 kg CO2e) but was labelled Apple-to-Apple.
+    // Same class of gap as K1-F1/PARITY-DISTANCE-1 above, just three more fields of the
+    // same kind that were missed at the time.
+    var twinProcessing  = (typeof gv === 'function') ? gv('twinProcessingMethod') : '';
+    var mainProcessing  = (mainTrace.manufacturing && mainTrace.manufacturing.parameters && mainTrace.manufacturing.parameters.processingMethod)
+                           || (mainAudit.manufacturing_process) || '';
+    var twinRecycledPct = parseFloat((typeof gv === 'function') ? gv('twinRecycledContent') : 0) || 0;
+    var mainRecycledPct = (mainTrace.packaging && mainTrace.packaging.parameters && mainTrace.packaging.parameters.recycledPct) || 0;
+    var recycledPctMatch = Math.abs(twinRecycledPct - mainRecycledPct) < 1;
+    var twinEoL          = (typeof gv === 'function') ? gv('twinPackagingEoL') : '';
+    var mainEoL          = (mainTrace.packaging && mainTrace.packaging.parameters && mainTrace.packaging.parameters.eolDestination) || '';
 
     var operationalParityMet = (
         twinMfgCountry   === mainMfgCountry   &&
@@ -364,6 +424,9 @@ function renderTwinResults(mainResult, twinCalcResult) {
         twinTransMode    === mainTransMode     &&
         transDistanceMatch                     &&
         twinPkgMat       === mainPkgMat        &&
+        twinProcessing   === mainProcessing    &&
+        recycledPctMatch                       &&
+        twinEoL          === mainEoL           &&
         Math.abs(twinMass - mainMass) < 0.001
     );
 
@@ -390,8 +453,8 @@ function renderTwinResults(mainResult, twinCalcResult) {
           'PEF 3.1 §6 requires matching system-boundary parameters for an Apple-to-Apple comparison.</div>'
         : '';
 
-    var co2Delta    = twinCO2 - mainCO2;
-    var co2DeltaPct = mainCO2 !== 0 ? (co2Delta / Math.abs(mainCO2)) * 100 : 0;
+    var co2Delta    = perKgResult('Climate Change').delta;
+    var co2DeltaPct = perKgResult('Climate Change').deltaPct;
     var isBetter    = co2Delta < 0;
     var summaryCol  = Math.abs(co2Delta) < 1e-8 ? '#718096' : (isBetter ? '#27AE60' : '#E63946');
     var summaryArrow= Math.abs(co2Delta) < 1e-8 ? 'fa-equals' : (isBetter ? 'fa-arrow-down' : 'fa-arrow-up');
@@ -403,6 +466,13 @@ function renderTwinResults(mainResult, twinCalcResult) {
     }
 
     function deltaChip(main, twin, dec, unit) {
+        // ARCHITECTURE FIX (2026-07-30): for the 16 PEF categories this now
+        // reads the centrally-computed delta/deltaPct via comparisonByCat.
+        // Called with raw (main, twin) numbers for non-category values (e.g.
+        // PEF Score, mainPt/twinPt) that aren't part of calculateCategoryComparison's
+        // per-kg category set — for those, a direct two-value delta is the
+        // correct and only calculation needed (no per-kg conversion applies,
+        // since mainPt/twinPt are already final scalar scores).
         var d   = twin - main;
         var pct = main !== 0 ? (d / Math.abs(main)) * 100 : 0;
         if (Math.abs(d) < 1e-9) return '<span style="color:#718096;font-size:0.75rem;">No change</span>';
@@ -435,14 +505,15 @@ function renderTwinResults(mainResult, twinCalcResult) {
 
     var catRows = cats16.map(function (row) {
         var cat = row[0]; var unit = row[1]; var dec = row[2]; var highlight = row[3];
-        var mv  = perKg(mainPef, cat, mainMass);
-        var tv  = perKg(twinPef, cat, twinMass);
-        var d   = tv - mv;
-        var same   = Math.abs(d) < 1e-10;
-        var better = d < 0;
+        var comp = perKgResult(cat);
+        var mv  = comp.valueA;
+        var tv  = comp.valueB;
+        var d   = comp.delta;
+        var same   = comp.isUnchanged;
+        var better = comp.isBetter;
         var dCol   = same ? '#718096' : (better ? '#27AE60' : '#E63946');
         var dStr   = same ? '\u2014' : ((d > 0 ? '+' : '') + fmtV(d, dec));
-        var dPct   = mv !== 0 ? ((d / Math.abs(mv)) * 100) : 0;
+        var dPct   = comp.deltaPct;
         var dPctStr= same ? '' : (' (' + (dPct > 0 ? '+' : '') + dPct.toFixed(1) + '%)');
         var rowBg  = highlight ? 'background:#E8F8F5;font-weight:700;' : '';
         return '<tr style="border-bottom:1px solid var(--border);' + rowBg + '">' +
@@ -469,16 +540,27 @@ function renderTwinResults(mainResult, twinCalcResult) {
         ? ['Ingredients','Manufacturing','Transport','Packaging','Upstream']
         : ['Ingredients','Manufacturing','Transport','Packaging'];
     // ── Life cycle stage rows (CC) ────────────────────────────────────
+    // ARCHITECTURE FIX (2026-07-30): per-stage CO2 per-kg + delta previously
+    // computed live here via a local stCC()/tv-mv. Moved to the same
+    // calculateCategoryComparison used for the whole-category table above,
+    // via its stageCategory option (core_physics.js) — one function handles
+    // both whole-category and within-category-by-stage comparisons.
+    var stageComparison = window.corePhysics.calculateCategoryComparison({
+        pefA: mainPef, massA: mainMass,
+        pefB: twinPef, massB: twinMass,
+        categories: _stageList,
+        stageCategory: 'Climate Change'
+    });
+    var stageComparisonByStage = {};
+    stageComparison.forEach(function(row) { stageComparisonByStage[row.category] = row; });
+
     var stgRows = _stageList.map(function (s) {
-        function stCC(pef, mass) {
-            var tree = (pef['Climate Change'] && pef['Climate Change'].contribution_tree) || {};
-            return ((tree[s] && tree[s].total) || 0) / mass;
-        }
-        var mv = stCC(mainPef, mainMass);
-        var tv = stCC(twinPef, twinMass);
-        var d  = tv - mv;
-        var same = Math.abs(d) < 1e-9;
-        var dCol = same ? '#718096' : (d < 0 ? '#27AE60' : '#E63946');
+        var comp = stageComparisonByStage[s];
+        var mv = comp.valueA;
+        var tv = comp.valueB;
+        var d  = comp.delta;
+        var same = comp.isUnchanged;
+        var dCol = same ? '#718096' : (comp.isBetter ? '#27AE60' : '#E63946');
         return '<tr style="border-bottom:1px solid var(--border);">' +
             '<td style="padding:5px 8px;font-size:0.78rem;">' + s + '</td>' +
             '<td style="padding:5px 8px;font-size:0.78rem;text-align:right;">' + fmtV(mv,4) + '</td>' +
@@ -528,18 +610,16 @@ function renderTwinResults(mainResult, twinCalcResult) {
     // mainAll16/twinAll16 were hoisted as undefined (var hoisting) at the point the
     // metric card calls executed, causing:
     //   TypeError: Cannot read properties of undefined (reading 'Climate Change')
-    var ALL16_CATS = [
-        'Climate Change', 'Water Use/Scarcity (AWARE)', 'Land Use', 'Resource Use, fossils',
-        'Eutrophication, terrestrial', 'Eutrophication, freshwater', 'Eutrophication, marine',
-        'Acidification', 'Particulate Matter', 'Photochemical Ozone Formation',
-        'Ozone Depletion', 'Human Toxicity, non-cancer', 'Human Toxicity, cancer',
-        'Ecotoxicity, freshwater', 'Ionizing Radiation', 'Resource Use, minerals/metals'
-    ];
+    //
+    // ARCHITECTURE FIX (2026-07-30): mainAll16/twinAll16 now read from
+    // comparisonByCat (built above from calculateCategoryComparison,
+    // core_physics.js) instead of calling a local perKg() a second time —
+    // same ALL16_CATS_COMPARISON list, same values, no recomputation.
     var mainAll16 = {};
     var twinAll16 = {};
-    ALL16_CATS.forEach(function(cat) {
-        mainAll16[cat] = perKg(mainPef, cat, mainMass);
-        twinAll16[cat] = perKg(twinPef, cat, twinMass);
+    ALL16_CATS_COMPARISON.forEach(function(cat) {
+        mainAll16[cat] = perKgResult(cat).valueA;
+        twinAll16[cat] = perKgResult(cat).valueB;
     });
 
     // ── BUILD CARD ────────────────────────────────────────────────────
@@ -685,6 +765,12 @@ function renderTwinResults(mainResult, twinCalcResult) {
         mainMass: mainMass, twinMass: twinMass,
         // NEW-3 FIX: All 16 categories pre-computed per kg for PDF and UI
         mainAll16: mainAll16, twinAll16: twinAll16,
+        // ARCHITECTURE FIX (2026-07-30): pass the already-computed per-category
+        // delta/deltaPct through too, so the PDF renderer reads them instead of
+        // subtracting m.tv - m.mv again at render time (same values, but a
+        // second computation site is exactly the drift risk this whole pass
+        // is closing).
+        comparisonByCat: comparisonByCat,
         twinIngs: twinIngs,
         mfgCountry: gv('twinManufacturingCountry'), process: gv('twinProcessingMethod'),
         energy: gv('twinEnergySource'), transMode: gv('twinTransportMode'),
@@ -695,7 +781,15 @@ function renderTwinResults(mainResult, twinCalcResult) {
         twinIngComponents: twinIngComponents,   // ingredient-level component array with universal_adjustments
         twinIngList: twinAudit.traceability && twinAudit.traceability.ingredients ? twinAudit.traceability.ingredients : [],
         twinMassBalance: twinAudit.mass_balance || {},
-        twinMfgTrace: twinAudit.traceability && twinAudit.traceability.manufacturing ? twinAudit.traceability.manufacturing : {}
+        twinMfgTrace: twinAudit.traceability && twinAudit.traceability.manufacturing ? twinAudit.traceability.manufacturing : {},
+        // FIX AIOXY-HASH-1 (2026-08-02, cofounder-directed): completes the
+        // TWIN-STALE-1 safeguard in pdf-generator.js, which reads this exact field
+        // to detect whether the Twin form has changed since this calculation ran.
+        // Captured in main.js at the moment twinInput was actually built for
+        // calculate(), not re-derived here (rendering can happen slightly after
+        // calculation, and re-deriving here would just compare the form against
+        // itself, defeating the purpose).
+        configHashAtCalcTime: window._twinConfigHashAtCalcTime || null
     };
 }
 
@@ -813,26 +907,37 @@ function buildTwinPDFSection(doc, h) {
     var metrics = [
         { label:'Climate Change',    mv:d.mainAll16 ? d.mainAll16['Climate Change'] : d.mainCO2,
                                      tv:d.twinAll16 ? d.twinAll16['Climate Change'] : d.twinCO2,
+                                     dv:d.comparisonByCat ? d.comparisonByCat['Climate Change'].delta : null,
                                      unit:'kg CO2e/kg', dec:4 },
         { label:'Water Scarcity',    mv:d.mainAll16 ? d.mainAll16['Water Use/Scarcity (AWARE)'] : d.mainWater,
                                      tv:d.twinAll16 ? d.twinAll16['Water Use/Scarcity (AWARE)'] : d.twinWater,
+                                     dv:d.comparisonByCat ? d.comparisonByCat['Water Use/Scarcity (AWARE)'].delta : null,
                                      unit:'m3 world eq/kg', dec:5 },
         { label:'Land Use',          mv:d.mainAll16 ? d.mainAll16['Land Use'] : d.mainLand,
                                      tv:d.twinAll16 ? d.twinAll16['Land Use'] : d.twinLand,
+                                     dv:d.comparisonByCat ? d.comparisonByCat['Land Use'].delta : null,
                                      unit:'Pt/kg', dec:2 },
         { label:'Fossil Resources',  mv:d.mainAll16 ? d.mainAll16['Resource Use, fossils'] : d.mainFoss,
                                      tv:d.twinAll16 ? d.twinAll16['Resource Use, fossils'] : d.twinFoss,
+                                     dv:d.comparisonByCat ? d.comparisonByCat['Resource Use, fossils'].delta : null,
                                      unit:'MJ/kg', dec:3 },
         { label:'Acidification',     mv:d.mainAll16 ? d.mainAll16['Acidification'] : 0,
                                      tv:d.twinAll16 ? d.twinAll16['Acidification'] : 0,
+                                     dv:d.comparisonByCat ? d.comparisonByCat['Acidification'].delta : null,
                                      unit:'mol H+e/kg', dec:5 },
-        { label:'PEF Score',         mv:d.mainPt, tv:d.twinPt, unit:'microPt', dec:1 }
+        // PEF Score is a final scalar (not a per-kg PEF category), so a direct
+        // two-value delta is the correct and only calculation needed here.
+        { label:'PEF Score',         mv:d.mainPt, tv:d.twinPt, dv:d.twinPt - d.mainPt, unit:'microPt', dec:1 }
     ];
     // Note: Full 16-category comparison is on the next page of the PDF twin section
     // (rendered by the U16 autoTable further in buildTwinPDFSection).
     metrics.forEach(function (m, i) {
         var x  = M + i * (cW4 + 3);
-        var dv = m.tv - m.mv;
+        // ARCHITECTURE FIX (2026-07-30): dv now comes from the centrally-computed
+        // comparisonByCat (see metrics array above) rather than being subtracted
+        // here. Fallback to direct subtraction only guards against stale cached
+        // _twinResultsForPDF objects from a session before this field existed.
+        var dv = (m.dv !== null && m.dv !== undefined) ? m.dv : (m.tv - m.mv);
         var aC = Math.abs(dv) < 1e-9 ? C.bodyMid : (dv < 0 ? C.green : C.red);
         doc.setFillColor.apply(doc, C.pageBg);
         doc.setDrawColor.apply(doc, aC); doc.setLineWidth(0.4);
@@ -1226,6 +1331,14 @@ function buildTwinPDFSection(doc, h) {
             var cf = adj.country_factors || ing.country_factors || null;
 
             // B7 AWARE
+            // NOTE (2026-07-31 audit): cf.aware.ref_factor||15.8 (and the origin_factor/
+            // ratio_applied fallbacks on the next two lines) look like silent fallbacks
+            // but are NOT reachable with missing data — calculation_engine.js only ever
+            // sets applied:true (the gate for entering this branch) together with a real,
+            // validated ref_factor/origin_factor/ratio_applied. A missing/zero AWARE
+            // factor instead sets applied:false, which routes to the else-if branch below
+            // (disclosed reason), never here. Verified by tracing countryFactorsLog.aware
+            // construction in calculation_engine.js.
             if (cf && cf.aware && cf.aware.applied) {
                 layerBLines.push('B7 — AWARE 2.0 Water Scarcity Adjustment:');
                 layerBLines.push('  Formula: Water Use x= (origin_CF / reference_CF_FR)');

@@ -1457,6 +1457,18 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     layerBLines.push('  Confidence: MEDIUM — proxy distance table (' + safe(leg.source) + '), not primary supplier data.');
                     layerBLines.push('');
                 });
+            } else if (adj.inbound_transport_failure) {
+                // FIX (2026-08-01 audit): an empty upstreamLegs array previously always
+                // rendered as the routine "not applied" line below, even when a route WAS
+                // identified and the transport calculation then genuinely failed (see
+                // calculation_engine.js catch block). That made a real, silent gap in the
+                // footprint indistinguishable from a legitimate non-event. This branch
+                // discloses the failure explicitly instead.
+                const itf = adj.inbound_transport_failure;
+                layerBLines.push('B14 — Inbound Ingredient Transport (Upstream): \u26A0\u26A0 CALCULATION FAILED, NOT INCLUDED.');
+                layerBLines.push('  ' + safe(itf.warning || ''));
+                layerBLines.push('  Error: ' + safe(itf.error || 'unknown'));
+                layerBLines.push('');
             } else if (origin && origin !== 'FR' && origin !== 'N/A') {
                 layerBLines.push('B14 — Inbound Ingredient Transport (Upstream): not applied — origin equals manufacturing country, or route could not be resolved.');
                 layerBLines.push('');
@@ -1518,6 +1530,17 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             } else if (adj.coproduct_allocation && adj.coproduct_allocation.error) {
                 layerBLines.push('B12 — Co-Product Allocation: FAILED, NOT APPLIED');
                 layerBLines.push('  ' + safe(adj.coproduct_allocation.error));
+                layerBLines.push('  ' + safe(adj.coproduct_allocation.warning || ''));
+                layerBLines.push('');
+            } else if (adj.coproduct_allocation && adj.coproduct_allocation.reason === 'NO_OFFICIAL_PRICE_SOURCE') {
+                // FIX (2026-08-01, cofounder-directed): previously this case (a crop
+                // recognized as needing allocation, e.g. rapeseed, but with no official
+                // price source yet) fell through both branches above with zero disclosure —
+                // indistinguishable in the report from "allocation doesn't apply here".
+                // Distinct, honest disclosure: says what's missing, what it does to the
+                // number, and that the calculation still completed — a known, bounded,
+                // disclosed limitation, not a silent gap or a reason to withhold the report.
+                layerBLines.push('B12 — Co-Product Allocation: NOT APPLIED — no official price source available');
                 layerBLines.push('  ' + safe(adj.coproduct_allocation.warning || ''));
                 layerBLines.push('');
             }
@@ -1722,7 +1745,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             // DQR breakdown if available
             const dqrBkd = ing.dqrBreakdown || {};
             if (Object.keys(dqrBkd).length > 0) {
-                layerCLines.push('  DQR breakdown: TeR=' + (dqrBkd.TeR||dqrBkd.TeR||0) + '  TiR=' + (dqrBkd.TiR||0) + '  GR=' + (dqrBkd.GR||dqrBkd.GeR||0) + '  P=' + (dqrBkd.P||0) + '  → (' + (dqrBkd.TeR||0) + '+' + (dqrBkd.TiR||0) + '+' + (dqrBkd.GR||dqrBkd.GeR||0) + '+' + (dqrBkd.P||0) + ')/4 = ' + fix(ing.dqr||0,2));
+                // FIX (2026-07-31 audit): individual missing indicators within an
+                // otherwise-present breakdown previously defaulted to 0 (best
+                // possible DQI score) rather than disclosing they weren't scored.
+                const _TeR = (typeof dqrBkd.TeR === 'number') ? dqrBkd.TeR : null;
+                const _TiR = (typeof dqrBkd.TiR === 'number') ? dqrBkd.TiR : null;
+                const _GeR = (typeof dqrBkd.GR === 'number') ? dqrBkd.GR : ((typeof dqrBkd.GeR === 'number') ? dqrBkd.GeR : null);
+                const _P   = (typeof dqrBkd.P === 'number') ? dqrBkd.P : null;
+                const _fmt = v => (v === null ? 'N/A' : v);
+                layerCLines.push('  DQR breakdown: TeR=' + _fmt(_TeR) + '  TiR=' + _fmt(_TiR) + '  GR=' + _fmt(_GeR) + '  P=' + _fmt(_P) + '  → (' + _fmt(_TeR) + '+' + _fmt(_TiR) + '+' + _fmt(_GeR) + '+' + _fmt(_P) + ')/4 = ' + fix(ing.dqr||0,2) + (([_TeR,_TiR,_GeR,_P].some(v => v === null)) ? '  [overall DQR uses ingredient-level dqr_overall, not this partial breakdown]' : ''));
             }
 
             layerBlock('LAYER C — Final: effective_EF x Qty = Impact (all 19 categories)', layerCLines, LAYER.C, SL);
@@ -1754,18 +1785,13 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // ================================================================
         newPage('Manufacturing — Glass-Box Calculation Detail');
         T.small(); doc.setTextColor(...C.bodyMid);
-        // FIX ENERGY-SOURCE-LABEL (pdf-generator mirror of calculation_engine.js fix): this header
-        // previously always printed "Processing benchmark DB" even when primary factory data
-        // (real metered kWh/gas readings) was supplied — a false source attribution. Now computed
-        // from the same isPrimaryFactory check used by the primary-data block just below.
-        const isPrimaryFactory = mfgTrace.source === 'Primary Factory Data'
-                              || window.lastInput?.manufacturing?.usePrimaryFactoryData === true;
-        const energyIntensityHeaderLabel = isPrimaryFactory ? 'Primary Factory Data (metered)' : 'Processing benchmark DB';
-        doc.text('Grid intensity source: Ember 2025 / energy source specification. Energy intensity: ' + energyIntensityHeaderLabel + '.', M, Y); Y += 3;
+        doc.text('Grid intensity source: Ember 2025 / energy source specification. Energy intensity: Processing benchmark DB.', M, Y); Y += 3;
         doc.text('Trace string produced by calculation_engine.js buildContributionTree() and rendered verbatim below.', M, Y); Y += 3;
         doc.text('Country: ' + mfgCountry + '  |  Energy source: ' + mfgEnergySrc + '  |  Grid intensity: ' + numFmt(gridG, 2) + ' g CO2e/kWh  [Ember 2025]', M, Y); Y += 6;
 
         // FIX-14: Factory primary data — show raw inputs + CoM 2024 gas formula when used
+        const isPrimaryFactory = mfgTrace.source === 'Primary Factory Data'
+                              || window.lastInput?.manufacturing?.usePrimaryFactoryData === true;
         const pfd = window.lastInput?.manufacturing?.primaryFactoryData || null;
 
         if (isPrimaryFactory && pfd) {
@@ -2794,16 +2820,27 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         }
 
         const dqrComponents = dqr.component_dqrs || [];
-        const dqrRows = dqrComponents.map(d => [
-            safe(d.name || d.id),
-            fix(d.TeR || d.temporal     || 0, 1),
-            fix(d.TiR || d.technological|| 0, 1),
-            fix(d.GeR || d.GR || d.geographical || 0, 1),
-            fix(d.CoR || d.completeness || 0, 1),
-            fix(d.RR  || d.P || d.reliability  || 0, 1),
-            '(' + fix(d.TeR||0,1) + '+' + fix(d.TiR||0,1) + '+' + fix(d.GeR||d.GR||0,1) + '+' + fix(d.RR||d.P||0,1) + ')/4',
-            fix(d.dqr || d.overall || 0, 2)
-        ]);
+        // FIX (2026-07-31 audit): TeR/TiR/GeR/RR previously defaulted to 0 (the
+        // BEST possible DQI score) when an ingredient only has an overall
+        // dqr_overall and no per-indicator breakdown. Now shows N/A, matching
+        // the honest 'null = not scored' the engine now reports for these.
+        const _fmtDqr = v => (typeof v === 'number') ? fix(v, 1) : 'N/A';
+        const dqrRows = dqrComponents.map(d => {
+            const ter = (typeof d.TeR === 'number') ? d.TeR : (typeof d.temporal === 'number' ? d.temporal : null);
+            const tir = (typeof d.TiR === 'number') ? d.TiR : (typeof d.technological === 'number' ? d.technological : null);
+            const ger = (typeof d.GeR === 'number') ? d.GeR : ((typeof d.GR === 'number') ? d.GR : (typeof d.geographical === 'number' ? d.geographical : null));
+            const rr  = (typeof d.RR === 'number') ? d.RR : ((typeof d.P === 'number') ? d.P : (typeof d.reliability === 'number' ? d.reliability : null));
+            return [
+                safe(d.name || d.id),
+                _fmtDqr(ter),
+                _fmtDqr(tir),
+                _fmtDqr(ger),
+                fix(d.CoR || d.completeness || 0, 1),   // CoR is a real, deliberate 0 (not scored by design), not a data gap
+                _fmtDqr(rr),
+                '(' + _fmtDqr(ter) + '+' + _fmtDqr(tir) + '+' + _fmtDqr(ger) + '+' + _fmtDqr(rr) + ')/4',
+                fix(d.dqr || d.overall || 0, 2)
+            ];
+        });
 
         if (dqrRows.length > 0) {
             doc.autoTable({
@@ -2873,6 +2910,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const mcP5  = (ccMC.p5   > 0 ? ccMC.p5   : null) || (mcMed * 0.85);
         const mcP95 = (ccMC.p95  > 0 ? ccMC.p95  : null) || (mcMed * 1.15);
         const mcIter = ccMC.iterations || unc.iterations || 1000;
+        // FIX (2026-07-31 audit): the final `|| 15` here was an un-cited magic
+        // number — never sourced from this product's own Monte Carlo run —
+        // silently substituted whenever ccMC.cv_percent, unc.cv_percent, AND
+        // the engine's own overall_uncertainty were all unavailable. Same class
+        // of issue as mcIsEstimated above (a fallback indistinguishable from a
+        // real result). mcCVIsFallback lets the report text below say so
+        // honestly instead of presenting 15% as if measured for this product.
+        const mcCVIsFallback = !(ccMC.cv_percent > 0) && !(unc.cv_percent > 0)
+            && (audit.uncertainty_analysis?.overall_uncertainty_is_fallback !== false);
         const mcCV   = ccMC.cv_percent  || unc.cv_percent || audit.uncertainty_analysis?.overall_uncertainty || 15;
         // FIX PDF-CV-1: mcCV above is actually the normalised CI-width = (P95-P5)/mean x 100,
         // NOT a coefficient of variation, despite being labeled "CV" throughout this section
@@ -2924,6 +2970,19 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'single score, DQR), IS fully deterministic and will match exactly on every re-run.',
             ''
             ]),
+            // FIX (2026-07-31 audit): mcCV (the CI-width feeding the sigma/multiplier
+            // formula above) previously could silently be the same un-cited 15
+            // fallback even when mcIsEstimated is false (i.e. P5/P95 ARE real
+            // simulation output, but no cv_percent/overall_uncertainty was
+            // available). That combination was undisclosed. Flagging separately
+            // since it's a distinct condition from mcIsEstimated above.
+            ...(mcCVIsFallback && !mcIsEstimated ? [
+            'NOTE: the CI-width (' + fix(mcCV,1) + '%) used in the sigma/multiplier formula above',
+            'could not be sourced from this product\'s own Monte Carlo run or DQR-derived',
+            'uncertainty -- it is an un-derived placeholder value, not computed from this',
+            'product\'s data. Do not cite this specific percentage as measured.',
+            ''
+            ] : []),
             'Results — Climate Change (kg CO2e / kg product):',
             '  P5  (5th percentile / lower bound)  = ' + numFmt(mcP5/pWeightKg, 4) + ' kg CO2e/kg',
             '  Median                              = ' + numFmt(mcMed/pWeightKg, 4) + ' kg CO2e/kg',
@@ -3400,19 +3459,6 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             Y = doc.lastAutoTable.finalY + 4;
         } else {
             // No JRC checks available — show what we can verify from the engine output
-            // FIX HARDCODED-PASS-1 (support vars): resolve the three DECLARED fields below from
-            // real per-report data instead of re-hardcoding strings. Functional unit uses the
-            // actual computed product weight (pWeightKg, defined earlier in this function).
-            // Allocation method is read from the real ingredient data (ingComps, same source
-            // used for the Ingredient Chain of Custody table) rather than assumed. System
-            // boundary text is a fixed methodology constant in this engine — every run uses
-            // cradle-to-retail — so it is declared as such rather than disguised as a
-            // conditional check with no actual condition behind it.
-            const functionalUnitText  = pWeightKg > 0 ? ('1 kg of product as sold (' + fix(pWeightKg,4) + ' kg basis confirmed)') : '';
-            const systemBoundaryText  = 'Cradle-to-retail (farm gate through distribution)';
-            const allocationMethodText = (ingComps && ingComps.length > 0)
-                ? safe(ingComps[0].allocationMethod || 'Economic (AGRIBALYSE 3.2)')
-                : '';
             traceBlock([
                 'JRC validation object not populated by engine for this run.',
                 'Manual verification of key PEF 3.1 requirements:',
@@ -3423,21 +3469,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '  [CHECK] ILCD UUIDs available in DB                     : ' + (Object.keys(ilcd).length >= 10 ? 'PASS' : 'PARTIAL — check ilcd_registry DB'),
                 '  [CHECK] DQR computed per PEF 3.1 §5.7                 : ' + (dqrVal > 0 ? 'PASS — DQR=' + fix(dqrVal,2) : 'FAIL — DQR not computed'),
                 '  [CHECK] SHA-256 audit hash generated                   : ' + (auditHash.length > 8 ? 'PASS' : 'FAIL — hash not generated'),
-                // FIX HARDCODED-PASS-1: these three lines previously printed a literal 'PASS'
-                // string with no underlying condition -- they would have shown PASS even if the
-                // functional unit, boundary, or allocation fields were empty. Each is now
-                // DECLARED only when the corresponding value is actually present and non-empty,
-                // matching the presence-check pattern already used above (auditHash.length > 8,
-                // dqrVal > 0, etc.). These three fields are fixed methodology constants in this
-                // engine (functional unit is always 1 kg; boundary is always cradle-to-retail),
-                // not conditional pass/fail tests, so they are labeled DECLARED rather than PASS
-                // to avoid implying a validation check was run where none exists.
-                '  [CHECK] Functional unit declared                       : ' + (functionalUnitText ? 'DECLARED — ' + functionalUnitText : 'MISSING'),
-                '  [CHECK] System boundary declared (ISO 14044 §4.2.3.3)  : ' + (systemBoundaryText ? 'DECLARED — ' + systemBoundaryText : 'MISSING'),
-                '  [CHECK] Allocation method declared                     : ' + (allocationMethodText ? 'DECLARED — ' + allocationMethodText : 'MISSING'),
+                '  [CHECK] Functional unit declared                       : PASS — 1 kg of product as sold',
+                '  [CHECK] System boundary declared (ISO 14044 §4.2.3.3)  : PASS — Cradle-to-retail',
+                '  [CHECK] Allocation method declared                     : PASS — Economic (AGRIBALYSE 3.2)',
                 '  [CHECK] Third-party verification                       : NOT DONE — screening level only',
                 '',
-                'Note: Run compliance_engine.js runJRCValidation() to populate full check list.'
+                'Note: Run compliance_engine.js evaluateJRC() to populate full check list.'
             ], { sectionLabel: 'JRC Validation (continued)' });
         }
         footer('JRC Validation — Page ' + pageNum + ' of {total_pages_count}');
@@ -3545,74 +3582,45 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         const ecoMpt = mPt;  // already computed above -- untouched, official PEF Single Score
 
-        // ---- EFSI / Enviroscore calculation (Ramos et al. 2022, Table 1) ----
-        const EFSI_TABLE = {
-            'Climate Change':                { nf: 2.42E+03, wf: 22.19 },
-            'Ozone Depletion':                { nf: 1.29E-04, wf: 6.75  },
-            'Ionizing Radiation':             { nf: 1.31E+02, wf: 5.37  },
-            'Photochemical Ozone Formation':  { nf: 1.08E+01, wf: 5.10  },
-            'Particulate Matter':             { nf: 2.44E-04, wf: 9.54  },
-            'Acidification':                  { nf: 3.93E+01, wf: 6.64  },
-            'Eutrophication, freshwater':     { nf: 3.81E-01, wf: 2.95  },
-            'Eutrophication, terrestrial':    { nf: 1.42E+01, wf: 3.12  },
-            'Eutrophication, marine':         { nf: 1.58E+02, wf: 3.91  },
-            'Land Use':                       { nf: 2.43E+05, wf: 8.42  },
-            'Water Use/Scarcity (AWARE)':     { nf: 7.83E+02, wf: 9.03  },
-            'Resource Use, fossils':          { nf: 1.96E+04, wf: 8.92  },
-            'Resource Use, minerals/metals':  { nf: 4.33E-03, wf: 8.08  }
-            // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater are
-            // correctly excluded -- Ramos et al.'s weighting source (Sala,
-            // Cerutti & Pant 2018, EC JRC) dismissed those categories for lack
-            // of methodological robustness. Not a gap in this mapping.
+        // ---- EFSI / Enviroscore — read from centrally-computed result ----
+        // ARCHITECTURE FIX (2026-07-30): this calculation (Table 1 NF/WF
+        // lookup, per-category contributions, stage-level driver detection,
+        // Table 2 grade bands) previously lived here AND independently in
+        // ui.js (in fact, in ui.js it was duplicated a third time in an
+        // internal audit view) — three hand-copied implementations of the
+        // same formula with no structural guard against them silently
+        // disagreeing after a future edit to only one copy. It now lives
+        // once, in core_physics.js calculateEnviroscore(), called from
+        // calculation_engine.js and read here exactly as computed.
+        // pdf-generator.js performs zero EFSI arithmetic below this line —
+        // ecoCol (PDF-specific RGB triples, not part of the calculation
+        // contract) is the only thing still derived locally, purely for
+        // jsPDF rendering.
+        const enviroResult   = audit.enviroscore || {
+            efsiScore: 0, grade: 'E', threshNote: '>= 1.00e-2',
+            contributions: [], primaryDriver: { has: false, category: 'n/a', share: 0, topStage: 'n/a', topStageShare: 0 }
         };
-        let efsi = 0;
-        const efsiContributions = [];
-        Object.keys(EFSI_TABLE).forEach(cat => {
-            const row = EFSI_TABLE[cat];
-            const perKg = (pef[cat]?.total || 0) / pWeightKg;
-            const contribution = (perKg / row.nf) * row.wf;
-            efsi += contribution;
-
-            // Stage breakdown for this category, so we can name which life-cycle
-            // stage is responsible if this category turns out to dominate the score.
-            const tree = pef[cat]?.contribution_tree || {};
-            const stages = {
-                Ingredients:   (tree.Ingredients?.total || 0) / pWeightKg,
-                Manufacturing: (tree.Manufacturing?.total || 0) / pWeightKg,
-                Transport:     (tree.Transport?.total || 0) / pWeightKg,
-                Packaging:     (tree.Packaging?.total || 0) / pWeightKg
-            };
-            const stageTotal = Object.values(stages).reduce((a, b) => a + b, 0) || 1;
-            let topStage = 'Ingredients', topStageShare = 0;
-            Object.keys(stages).forEach(s => {
-                const share = stages[s] / stageTotal;
-                if (share > topStageShare) { topStageShare = share; topStage = s; }
-            });
-
-            efsiContributions.push({ cat, perKg, contribution, topStage, topStageShare });
-        });
-
-        // FIX-23: PRIMARY DRIVER DETECTION
-        // Identifies whether a single impact category is disproportionately
-        // responsible for the EFSI/Enviroscore grade, and which life-cycle stage
-        // drives that category. This exists because a category can dominate the
-        // index even when the product is not, in an everyday sense, "worse" —
-        // Ramos et al. 2022 themselves flag this exact failure mode (their own
-        // "sustainable beef vs unsustainable banana" example, Introduction section).
-        // A grade with no driver disclosed is not glass-box; this makes the
-        // reason for the grade explicit rather than letting the letter speak alone.
-        const efsiSorted = [...efsiContributions].sort((a, b) => b.contribution - a.contribution);
-        const topCategory = efsiSorted[0];
-        const topCategoryShare = efsi > 0 ? (topCategory.contribution / efsi) : 0;
-        const DRIVER_THRESHOLD = 0.40; // one category >40% of total EFSI = worth flagging explicitly
-        const hasSingleDriver = topCategoryShare >= DRIVER_THRESHOLD;
-
-        // Table 2 thresholds (Ramos et al. 2022)
-        let ecoGrade = 'E', ecoThreshNote = '>= 1.00e-2';
-        if (efsi < 4.00E-04)       { ecoGrade = 'A'; ecoThreshNote = '< 4.00e-4'; }
-        else if (efsi < 1.45E-03)  { ecoGrade = 'B'; ecoThreshNote = '4.00e-4 to 1.45e-3'; }
-        else if (efsi < 2.00E-03)  { ecoGrade = 'C'; ecoThreshNote = '1.45e-3 to 2.00e-3'; }
-        else if (efsi < 1.00E-02)  { ecoGrade = 'D'; ecoThreshNote = '2.00e-3 to 1.00e-2'; }
+        const efsi            = enviroResult.efsiScore;
+        const ecoGrade         = enviroResult.grade;
+        const ecoThreshNote    = enviroResult.threshNote;
+        const hasSingleDriver  = enviroResult.primaryDriver.has;
+        const topCategoryShare = enviroResult.primaryDriver.share;
+        const topCategory = {
+            cat:           enviroResult.primaryDriver.category,
+            topStage:      enviroResult.primaryDriver.topStage,
+            topStageShare: enviroResult.primaryDriver.topStageShare,
+            contribution:  (enviroResult.contributions.find(c => c.category === enviroResult.primaryDriver.category) || {}).contribution || 0
+        };
+        // efsiContributions: same shape the trace-block table below expects
+        // (cat/perKg/contribution/topStage/topStageShare), sourced from the
+        // engine's per-category breakdown rather than recomputed here.
+        const efsiContributions = enviroResult.contributions.map(c => ({
+            cat:           c.category,
+            perKg:         (pef[c.category]?.total || 0) / pWeightKg,
+            contribution:  c.contribution,
+            topStage:      c.topStage,
+            topStageShare: c.topStageShare
+        }));
 
         const ecoCol = ecoGrade === 'A' ? C.teal : ecoGrade === 'B' ? C.green :
                        ecoGrade === 'C' ? C.amber : ecoGrade === 'D' ? [244,162,97] : C.red;

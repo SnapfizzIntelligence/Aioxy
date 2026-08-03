@@ -134,6 +134,12 @@
     function buildContributionTree(ingredientResults, mfgResult, transportResult, packagingResult, input) {
         const tree = {};
         const manufacturingCountry = input && input.manufacturing ? input.manufacturing.country : 'FR';
+        // NOTE (2026-07-31 audit): the ": 480" fallback here looks like an
+        // un-cited magic number but is NOT reachable with genuinely missing
+        // data — core_physics.js's calculateManufacturing() (called upstream
+        // to produce mfgResult) throws MissingDataError if gridIntensityGPerKwh
+        // isn't a valid number, before this line ever runs. Left as-is rather
+        // than duplicating that throw here, since it can't fire on this path.
         const gridIntensity = mfgResult.gridIntensityGPerKwh !== undefined ? mfgResult.gridIntensityGPerKwh : 480;
 
         for (const cat of ALL_CATEGORIES) {
@@ -242,25 +248,14 @@
                     const tdLoss         = 0.07;
                     const adjustedG      = gIntensity * (1 + tdLoss);
                     const isCatCC        = (cat === 'Climate Change');
-                    // FIX ENERGY-SOURCE-LABEL: this string was hardcoded as "[Processing benchmark DB]"
-                    // regardless of where kwhPerKg actually came from. When primary factory data is
-                    // supplied (input.manufacturing.usePrimaryFactoryData), kwhTotal is derived from
-                    // real metered inputs (totalKWh/totalOutputKg x product weight) in processManufacturing(),
-                    // NOT from the static db.processing[method].kwh_per_kg benchmark constant. Printing
-                    // "[Processing benchmark DB]" on a metered figure is a false source attribution —
-                    // a zero-magic-numbers violation, since it points an auditor at the wrong source.
-                    const usedPrimaryData = !!(input && input.manufacturing && input.manufacturing.usePrimaryFactoryData && input.manufacturing.primaryFactoryData);
-                    const energySourceLabel = usedPrimaryData
-                        ? 'Primary Factory Data (metered)'
-                        : 'Processing benchmark DB';
                     if (isCatCC) {
                         return [
-                            'Sources: Ember 2025 (grid intensity) / ' + energySourceLabel + ' (energy intensity)',
+                            'Sources: Ember 2025 (grid intensity) / Processing benchmark DB (energy intensity)',
                             'Formula: CO2e = kWh_per_kg x mass(kg) x grid_intensity(g/kWh) x (1 + T&D_loss) / 1000',
                             '',
                             '  Processing method  : ' + mfgMethod,
                             '  Energy source      : ' + mfgEnergySource,
-                            '  Energy intensity   : ' + kwhPerKg.toFixed(4) + ' kWh/kg  [' + energySourceLabel + ']',
+                            '  Energy intensity   : ' + kwhPerKg.toFixed(4) + ' kWh/kg  [Processing benchmark DB]',
                             '  Product mass       : ' + productMassKg.toFixed(4) + ' kg',
                             '  kWh (total)        : ' + kwhPerKg.toFixed(4) + ' kWh/kg x ' + productMassKg.toFixed(4) + ' kg = ' + kwhTotal.toFixed(4) + ' kWh',
                             '',
@@ -459,8 +454,35 @@
                 const pkgDB   = (window.aioxyData && window.aioxyData.packaging)
                                 ? (window.aioxyData.packaging[pkgMat] || {})
                                 : {};
-                const ev      = pkgDB.co2_virgin              || 0;
-                const erec    = pkgDB.co2_recycled             || 0;
+                // FIX (2026-07-31 audit): this trace block runs BEFORE the real
+                // calculatePackaging() call later in this function (line ~2966),
+                // which DOES throw MissingDataError on missing aFactor/ev/erecycled/
+                // r2. This block, building the audit-trail-visible explanation of
+                // the calculation, was previously not held to the same standard —
+                // ev/erec/r2/A silently became 0 here if the packaging database
+                // record for this material was missing any of them, producing a
+                // plausible-looking glass-box trace for a material the real
+                // calculation would have refused to compute. A missing physical
+                // input for a regulated CFF calculation must fail loud, not be
+                // silently treated as zero. Whether pkgMat resolves to a real
+                // database entry at all is intentionally still tolerant (empty
+                // pkgDB) — this only rejects a resolved entry that is incomplete.
+                if (Object.keys(pkgDB).length > 0) {
+                    if (typeof pkgDB.co2_virgin !== 'number') {
+                        throw new CalculationError('Packaging material "' + pkgMat + '" is missing co2_virgin (Ev) in the packaging database.');
+                    }
+                    if (typeof pkgDB.co2_recycled !== 'number') {
+                        throw new CalculationError('Packaging material "' + pkgMat + '" is missing co2_recycled (Erec) in the packaging database.');
+                    }
+                    if (typeof pkgDB.r2 !== 'number') {
+                        throw new CalculationError('Packaging material "' + pkgMat + '" is missing r2 (end-of-life recycling rate) in the packaging database.');
+                    }
+                    if (typeof pkgDB.aFactor !== 'number') {
+                        throw new CalculationError('Packaging material "' + pkgMat + '" is missing aFactor (allocation factor) in the packaging database.');
+                    }
+                }
+                const ev      = pkgDB.co2_virgin;
+                const erec    = pkgDB.co2_recycled;
                 // AUDIT-4 FIX (this session): found a real bug that survived the earlier
                 // EOL-DESTINATION-1 fix. That fix correctly wired eolDestination into the
                 // ACTUAL calculation (which produces pkgTotal, below) -- but this SEPARATE
@@ -471,7 +493,18 @@
                 // to the "Total" line, which was pulling the real, correctly-fixed pkgTotal
                 // from elsewhere -- a self-contradictory glass-box trace, not just a missing
                 // feature. Now resolves 'ed' identically to the real calculation path.
-                const eolDest = (input && input.packaging && input.packaging.eolDestination) || 'eu_average';
+                // FIX (2026-07-31 audit): this trace block runs BEFORE the real
+                // processPackaging() call later in this function, which now
+                // validates eolDestination against its closed set and throws on
+                // a typo. Without the same check here, a bad value would still
+                // silently produce a wrong-but-plausible trace before the real
+                // calculation ever got a chance to catch it.
+                const VALID_EOL_DESTINATIONS_TRACE = ['landfill', 'incinerated', 'recycled', 'eu_average'];
+                const eolDestRaw = (input && input.packaging) ? input.packaging.eolDestination : undefined;
+                if (!VALID_EOL_DESTINATIONS_TRACE.includes(eolDestRaw === undefined || eolDestRaw === null ? 'eu_average' : eolDestRaw)) {
+                    throw new CalculationError('Invalid packaging.eolDestination: "' + eolDestRaw + '". Must be one of: ' + VALID_EOL_DESTINATIONS_TRACE.join(', '));
+                }
+                const eolDest = eolDestRaw || 'eu_average';
                 let ed;
                 if (eolDest === 'landfill' && pkgDB.co2_disposal_landfill !== undefined && pkgDB.co2_disposal_landfill !== null) {
                     ed = pkgDB.co2_disposal_landfill;
@@ -484,8 +517,8 @@
                 }
                 const r1max   = pkgDB.r1_max                   !== undefined ? pkgDB.r1_max : 1.0;
                 const r1      = Math.min(pkgRec, r1max);
-                const r2      = pkgDB.r2                       || 0;
-                const A       = pkgDB.aFactor                  || 0;
+                const r2      = pkgDB.r2;
+                const A       = pkgDB.aFactor;
                 const qs      = pkgDB.q                        !== undefined ? pkgDB.q : 1.0;
                 const qp      = 1.0;
                 const qr      = qs / qp;
@@ -1427,12 +1460,23 @@ if (!traceability.usetox) {
                         // Every fallback step is logged in adjustments.enteric_ef_resolution
                         // rather than silently defaulting, per this audit's standing rule.
                         let ef_ch4 = 0;
+                        // FIX (2026-07-31 audit): n_excretion silently defaulted to 0 with
+                        // no warning when pd.animalType wasn't found in entericEF — the only
+                        // variable in this whole block that skipped the disclosed-fallback
+                        // treatment everything else here correctly uses (see ef_ch4's own
+                        // "not found... defaulted to 0" warning a few lines below). A missing
+                        // n_excretion understates manure N2O the same way a missing ef_ch4
+                        // understates enteric CH4, and deserves the same disclosure.
                         let n_excretion = animalDef ? animalDef.n_excretion : 0;
                         const efResolution = {
                             animalType: pd.animalType,
                             originCountry: ingredient.originCountry || null,
                             productionSystemRequested: pd.productionSystem || null
                         };
+                        if (!animalDef) {
+                            efResolution.n_excretion_warning = 'pd.animalType "' + pd.animalType + '" not found in IPCC_TIER1_LIVESTOCK.entericEF. n_excretion defaulted to 0 — manure N2O for this ingredient will understate real emissions.';
+                            console.warn('[AIOXY] ' + efResolution.n_excretion_warning);
+                        }
 
                         if (animalDef && animalDef.byRegion) {
                             // Region-aware animal type (currently: dairy_cow, beef_cattle, buffalo)
@@ -1617,7 +1661,19 @@ if (!traceability.usetox) {
                                     delta_ch4_kg:                   deltaEntericCH4_kg,
                                     delta_co2e_total:               deltaEntericCO2e,
                                     delta_co2e_per_kg:              deltaEntericPerKg,
-                                    gwp_ch4_biogenic:               GWP_CH4_BIO,
+                                    // FIX (2026-08-01, found via real calculate() execution across
+                                    // all 10 real animalType values — 8 of 10 crashed with
+                                    // "GWP_CH4_BIO is not defined"): AUDIT-4 FIX above correctly
+                                    // updated the actual math (line 1644) to use the shared
+                                    // AR6.GWP_CH4_BIOGENIC constant, but this disclosure field
+                                    // still referenced the OLD removed local variable name
+                                    // (GWP_CH4_BIO), which no longer exists anywhere in scope —
+                                    // a ReferenceError on every real animal-product calculation
+                                    // that reaches this branch. Static tracing/comment-reading
+                                    // missed this because the comment's claim ("now uses the
+                                    // single real source of truth") was true for line 1644 but
+                                    // not verified against every reference to the old name.
+                                    gwp_ch4_biogenic:               AR6.GWP_CH4_BIOGENIC,
                                     note: deltaEntericPerKg < 0
                                         ? 'User productivity ABOVE AGRIBALYSE default — enteric credit applied to CC-Biogenic'
                                         : deltaEntericPerKg > 0
@@ -1668,7 +1724,12 @@ if (!traceability.usetox) {
                         });
 
                         const TIER1_CONST   = window.corePhysics.CONSTANTS.IPCC_TIER1_LIVESTOCK;
-                        const manureEF      = TIER1_CONST.manureEF[manureSystem] || 0;
+                        // NOTE (2026-07-31 audit): || 0 here is now dead-safe —
+                        // calculateManureN2O() above (core_physics.js) throws
+                        // MissingDataError for any manureSystem not in this same
+                        // table, so execution only reaches this line with a
+                        // manureSystem guaranteed to have a real, valid entry.
+                        const manureEF      = TIER1_CONST.manureEF[manureSystem];
                         const manureN2OPerKg = manureN2OCO2e / ingredient.quantityKg;
 
                         // Finding 10 FIX (2026-06-07): Manure N2O reallocated from CC-Land Use to CC-Fossil.
@@ -2446,6 +2507,34 @@ if (!traceability.usetox) {
                             warning: 'Full, unallocated ingredient impact used — this OVERSTATES this product\'s footprint by including the meal co-product\'s share.'
                         };
                     }
+                } else if (cpKey) {
+                    // FIX (2026-08-01, cofounder-directed): this crop (currently: rapeseed)
+                    // is recognized as needing co-product allocation -- crushing genuinely
+                    // produces oil + meal, both with real economic value -- but no official
+                    // price source for rapeseed oil/meal has been added to this database yet
+                    // (confirmed 2026-08-01: not tracked by World Bank Pink Sheet, unlike
+                    // soybean; candidates identified: Euronext/MATIF futures settlement, FAO/
+                    // Eurostat agricultural series). Previously this fell through to a bare
+                    // applied:false with no explanation at all -- indistinguishable in the
+                    // report from an ingredient where allocation simply doesn't apply.
+                    // Cofounder's own framing: don't let one ingredient's missing official
+                    // price block the whole system, and regulators want disclosed
+                    // traceability over unattainable perfection -- so this calculation still
+                    // completes normally (unallocated, same number as before), but now says
+                    // exactly why, by how much it's affected, and what would resolve it,
+                    // matching the disclosed-fallback pattern already used elsewhere in this
+                    // engine (animalType, productionSystem, inbound_transport_failure).
+                    adjustments.coproduct_allocation = {
+                        applied: false,
+                        reason: 'NO_OFFICIAL_PRICE_SOURCE',
+                        ingredientCoProductSet: cpKey,
+                        warning: 'This ingredient genuinely has a valuable co-product (meal) from crushing, but no ' +
+                            'official commodity price source for ' + cpKey + ' oil/meal currently exists in this ' +
+                            'database (soybean has one; ' + cpKey + ' does not). Full, unallocated ingredient ' +
+                            'impact used pending an official source -- this OVERSTATES this product\'s footprint ' +
+                            'by including the full meal co-product share, which correctly belongs to a different ' +
+                            'product system.'
+                    };
                 }
             }
 
@@ -2490,6 +2579,26 @@ if (!traceability.usetox) {
                     });
                 }
             } catch (inboundErr) {
+                // FIX (2026-08-01 audit): this catch previously only logged to
+                // console.warn — a channel the customer's PDF never reads. A route
+                // could resolve (real IN->FR leg identified) and then genuinely fail
+                // inside calculateTransport() (e.g. an invalid mode/refrigeration
+                // derived by resolveInboundTransport, or a missing GLEC factor for
+                // that mode), and the ingredient's report would silently show ZERO
+                // upstream transport impact -- indistinguishable from the legitimate
+                // "same country, no leg needed" case at pdf-generator.js's
+                // "not applied" fallback line. That is a real, undisclosed gap in a
+                // report whose own stated principle is full traceability. Recorded
+                // here on `adjustments` (same object/pipeline already proven to reach
+                // the PDF for enteric_ef_resolution) so pdf-generator.js can render
+                // this distinctly from the "nothing to disclose" case.
+                adjustments.inbound_transport_failure = {
+                    attempted: true,
+                    error: inboundErr ? inboundErr.message : String(inboundErr),
+                    warning: 'Inbound ingredient transport calculation failed for this ' +
+                        'ingredient and was excluded from the Upstream total below. ' +
+                        'This UNDERSTATES this product\'s footprint by an unknown amount.'
+                };
                 console.warn('[AIOXY] Inbound transport skipped for "' +
                     (ingData ? ingData.name : ingredient.id) + '": ' +
                     (inboundErr ? inboundErr.message : String(inboundErr)));
@@ -2578,6 +2687,20 @@ if (!traceability.usetox) {
         }
 
         // 2b. Determine grid intensity
+        // FIX (2026-07-31 audit): the final else branch below previously treated
+        // ANY value other than 'renewable'/'natural_gas'/'coal' as implicitly
+        // meaning grid electricity — including a genuine typo or an unrecognized
+        // value from a non-UI caller (buildTwinInput, restored session state, a
+        // future API integration). That would silently compute using the grid
+        // pathway for an energySource the user never actually selected, producing
+        // a real, plausible-looking, but wrong number. energySource is a small,
+        // closed, sourced set (matches the only four options the UI dropdown
+        // offers) — validating it explicitly here means every caller, not just
+        // the current dropdown, is held to the same standard.
+        const VALID_ENERGY_SOURCES = ['grid', 'renewable', 'natural_gas', 'coal'];
+        if (!VALID_ENERGY_SOURCES.includes(mfgIn.energySource)) {
+            throw new CalculationError('Invalid manufacturing.energySource: "' + mfgIn.energySource + '". Must be one of: ' + VALID_ENERGY_SOURCES.join(', '));
+        }
         let gridIntensity;
         if (mfgIn.energySource === 'renewable') {
     // CoM 2024 Table 3: Wind LCA = 0.036 t CO2-eq/MWh = 36 g CO2/kWh
@@ -2644,19 +2767,20 @@ if (!traceability.usetox) {
                 none:        0.0
             };
             const fuelType   = pfd.fuelType || 'natural_gas';
-            const fuelFactor = FUEL_CO2_FACTORS[fuelType] !== undefined ? FUEL_CO2_FACTORS[fuelType] : 2.13;
-            // FIX FUEL-FACTOR-WIREBACK: pdf-generator.js reads pfd.fuelFactor directly from
-            // window.lastInput.manufacturing.primaryFactoryData (the raw input object) to decide
-            // whether to print the real computed fuel factor or fall back to a hardcoded 2.13.
-            // That field was never written anywhere, so pfd.fuelFactor was always undefined and
-            // the PDF's own "!== undefined" guard could never be true — every report printed a
-            // hardcoded 2.13 gas term in "TOTAL MANUFACTURING CO2/kg", even for fuelType='none'
-            // (100% electric), where the correct, already-computed value here is 0. The engine's
-            // own downstream total (gasCO2, totalMfgCO2 below) was always correct; only this
-            // mirrored input field was missing. Writing the real, already-computed fuelFactor
-            // back onto pfd — the same object the PDF reads — makes the printed figure match
-            // what the engine actually used, instead of a stale, unreachable fallback.
-            pfd.fuelFactor = fuelFactor;
+            // FIX (2026-07-31 audit): the ": 2.13" fallback previously silently
+            // applied natural gas's CO2 factor to ANY unrecognized fuelType —
+            // a typo, or a value from a caller other than this exact dropdown.
+            // This feeds Primary Factory Data (a customer's real utility bills,
+            // the highest-trust input this system accepts): if a factory
+            // reports e.g. diesel/HFO and fuelType doesn't match exactly, this
+            // would silently compute using natural gas's factor against a
+            // different fuel's real quantity — a materially wrong number
+            // presented with full "primary data" confidence. fuelType is a
+            // small, closed, sourced set matching the dropdown's five options.
+            if (FUEL_CO2_FACTORS[fuelType] === undefined) {
+                throw new CalculationError('Invalid manufacturing.primaryFactoryData.fuelType: "' + fuelType + '". Must be one of: ' + Object.keys(FUEL_CO2_FACTORS).join(', '));
+            }
+            const fuelFactor = FUEL_CO2_FACTORS[fuelType];
             // CoM 2024 Table 1: Natural gas = 0.20196 t CO2/MWh (activity-based)
 // 1 m³ gas ≈ 0.01056 MWh (38 MJ/m³ ÷ 3,600 MJ/MWh)
 // ∴ 0.20196 × 0.01056 × 1,000 = 2.13 kg CO2/m³
@@ -2928,6 +3052,19 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         // packaging makes about its own disposal. Only ed (disposal-stage EMISSIONS, which
         // genuinely differ between landfill and incineration physically) should vary by
         // scenario -- this was correctly identified in scoping before writing this fix.
+        // FIX (2026-07-31 audit): eolDestination previously accepted any string
+        // at all — 'recycled', 'eu_average', AND any typo or unrecognized value
+        // all silently fell through to the same honest co2_disposal_average.
+        // The average itself is a legitimate, disclosed choice (see NOTE above
+        // this block) — but a genuine typo (e.g. "landfil") meant the user's
+        // actual selection silently never took effect, with no error and no
+        // disclosure that their choice was ignored. Now validates against the
+        // three real values so a typo fails loudly instead of being silently
+        // absorbed into the average.
+        const VALID_EOL_DESTINATIONS = ['landfill', 'incinerated', 'recycled', 'eu_average'];
+        if (!VALID_EOL_DESTINATIONS.includes(pkgIn.eolDestination === undefined || pkgIn.eolDestination === null ? 'eu_average' : pkgIn.eolDestination)) {
+            throw new CalculationError('Invalid packaging.eolDestination: "' + pkgIn.eolDestination + '". Must be one of: ' + VALID_EOL_DESTINATIONS.join(', '));
+        }
         const eolDest = pkgIn.eolDestination || 'eu_average';
         let ed;
         if (eolDest === 'landfill' && pkgData.co2_disposal_landfill !== undefined && pkgData.co2_disposal_landfill !== null) {
@@ -3174,11 +3311,22 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 // BUG-14 FIX: expose individual DQR indicators for CSV/PDF export
                 // AGRIBALYSE DQI Matrix v3.0.1 uses 4-indicator scheme (TeR + TiR + GR + P) / 4
                 // CoR (completeness) is not scored per ADEME/INRAE DQI methodology
-                TeR: dqrBkd.TeR || 0,
-                TiR: dqrBkd.TiR || 0,
-                GeR: dqrBkd.GR  || dqrBkd.GeR || 0,   // database key is 'GR' (geographical representativeness)
-                CoR: 0,                                 // not scored per AGRIBALYSE DQI Matrix v3.0.1
-                RR:  dqrBkd.P   || 0                   // 'P' (precision) maps to reliability/reproducibility column
+                // FIX (2026-07-31 audit): TeR/TiR/GeR/RR previously defaulted to 0
+                // (the BEST possible DQI score, per AGRIBALYSE DQI Matrix v3.0.1's
+                // 1=best/5=worst scale) when an ingredient's database record has
+                // metadata.dqr_overall (required, always present — see line ~1218)
+                // but no per-indicator metadata.dqr breakdown. That silently
+                // reported "highest quality on this indicator" for an indicator
+                // that was never actually scored — a false transparency claim in
+                // exactly the metric meant to disclose data quality. Reporting
+                // null (indicator not available for this ingredient) instead of a
+                // fabricated 0 lets CSV/PDF consumers correctly show "N/A" rather
+                // than a specific, wrong, falsely-reassuring number.
+                TeR: (typeof dqrBkd.TeR === 'number') ? dqrBkd.TeR : null,
+                TiR: (typeof dqrBkd.TiR === 'number') ? dqrBkd.TiR : null,
+                GeR: (typeof dqrBkd.GR === 'number') ? dqrBkd.GR : ((typeof dqrBkd.GeR === 'number') ? dqrBkd.GeR : null),   // database key is 'GR' (geographical representativeness)
+                CoR: 0,                                 // not scored per AGRIBALYSE DQI Matrix v3.0.1 — this is a real, deliberate "not applicable" 0, not a data gap
+                RR:  (typeof dqrBkd.P === 'number') ? dqrBkd.P : null                   // 'P' (precision) maps to reliability/reproducibility column
             });
         });
 
@@ -3255,6 +3403,13 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         for (const cat of Object.keys(scorablePefResults)) {
             const impact       = scorablePefResults[cat].total;
             const perKg        = impact / input.product.weightKg;
+            // NOTE (2026-07-31 audit): nf[cat]/wf[cat] || 0 looks like a silent
+            // fallback but is NOT reachable with missing data in practice —
+            // calculateSingleScore() above (core_physics.js) already validated
+            // every category in this exact scorablePefResults object and throws
+            // MissingDataError per-category if nf/wf is missing, before this loop
+            // runs. Verified: same object, same keys, called first. Left as ||0
+            // rather than duplicating the throw, since it can't fire here.
             const normFactor   = nf[cat]  || 0;
             const weightFactor = wf[cat]  || 0;
             const normalized   = perKg * normFactor;
@@ -3301,7 +3456,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
         const hasNonZero = mcComponents.some(c => c.value > 0);
         if (!hasNonZero) {
-            return { mean: 0, p5: 0, p95: 0 };
+            return { mean: 0, p5: 0, p95: 0, derivedCVPct: null };
         }
 
         // FIX C [Audit Finding C]: Climate Change now uses 1000 iterations per ISO 14044 Annex A
@@ -3433,7 +3588,28 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 // Expose assessed side for downstream UI/PDF delta rendering
                 assessed_co2PerKg:   twinResult.assessedTotal.co2PerKg,
                 assessed_waterPerKg: twinResult.assessedTotal.waterPerKg,
-                delta:               twinResult.delta
+                delta:               twinResult.delta,
+                // ARCHITECTURE FIX (2026-07-30): deltaPerKg/deltaPct were
+                // previously computed independently in both ui.js and
+                // audit-trail.js — and disagreed. audit-trail.js divided the
+                // raw batch-level twinResult.delta by a single shared
+                // weightKg; ui.js instead subtracted the two sides' own
+                // already-normalized per-kg totals directly (its own BUG-24
+                // fix comment: "resolvedBaseline.delta holds per-pair delta
+                // not product total"). The batch-delta approach is only
+                // correct when assessed and conventional recipes have equal
+                // total mass — not guaranteed for a "what-if" twin with
+                // different ingredient quantities on each side. Standardizing
+                // on ui.js's correct method here: each side's co2PerKg is
+                // already normalized by its own recipe's mass
+                // (twinResult.assessedTotal/conventionalTotal in
+                // calculateParametricTwin, core_physics.js), so subtracting
+                // them directly is always correct regardless of mass
+                // difference between sides.
+                deltaPerKg:          twinResult.assessedTotal.co2PerKg - twinResult.conventionalTotal.co2PerKg,
+                deltaPct:            twinResult.conventionalTotal.co2PerKg > 0
+                                         ? ((twinResult.assessedTotal.co2PerKg - twinResult.conventionalTotal.co2PerKg) / twinResult.conventionalTotal.co2PerKg) * 100
+                                         : 0
             };
 
         // ── PATH 3: Legacy single-ingredient twin ─────────────────────────────
@@ -3707,9 +3883,19 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 return (r && r.mean > 0) ? (r.p95 - r.p5) / r.mean : null;
             })
             .filter(v => v !== null);
-        const computedOverallUncertainty = ciWidths.length > 0
+        // FIX (2026-07-31 audit): when no category has a positive mean (a real,
+        // reachable edge case — e.g. an extremely low-footprint product), this
+        // previously silently substituted 15 with no citation and no disclosure
+        // — a specific, plausible-looking uncertainty percentage indistinguishable
+        // downstream from a genuinely-computed one. 15% was never sourced from
+        // this product's Monte Carlo run; it was an arbitrary placeholder. Now
+        // explicitly flagged via isFallback, so every consumer (audit-trail, PDF,
+        // retailer CSV) can disclose "uncertainty not computable for this product"
+        // rather than presenting a fabricated number as if it were measured.
+        const overallUncertaintyIsFallback = ciWidths.length === 0;
+        const computedOverallUncertainty = !overallUncertaintyIsFallback
             ? Math.round((ciWidths.reduce((s, v) => s + v, 0) / ciWidths.length) * 100 * 100) / 100
-            : 15;  // fallback when no category has mean > 0
+            : null;
 
         const comparisonBaseline = computeComparison(input, pefResults);
 
@@ -3797,7 +3983,15 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             parameters: {
                 country:                input.manufacturing.country,
                 energySource:           input.manufacturing.energySource,
-                gridIntensityGPerKwh:   mfgResult.gridIntensityGPerKwh ?? null   // BUG-11 FIX: gridIntensity is local to processManufacturing and not in scope here; use null when primary factory data path omits it (baked into elecCO2 already)
+                gridIntensityGPerKwh:   mfgResult.gridIntensityGPerKwh ?? null,   // BUG-11 FIX: gridIntensity is local to processManufacturing and not in scope here; use null when primary factory data path omits it (baked into elecCO2 already)
+                // FIX (2026-08-01 audit): processingMethod was already used in the real
+                // calculation (processManufacturing) and already appeared in the free-text
+                // audit narrative ("Processing method  : baking"), but was never a real
+                // structured field here -- forcing any downstream consumer (twin_module.js's
+                // operational-parity check) to either skip comparing it entirely or fragile-
+                // parse it out of prose. Same pattern as the packaging.eolDestination fix
+                // earlier this session.
+                processingMethod:      input.manufacturing.processingMethod
             },
             residual_mix: mfgResult.residual_mix_available ? {
                 source:     mfgResult.residual_mix_source,
@@ -3811,6 +4005,33 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             }
         };
         // === END PHASE 2: manufacturing traceability ===
+
+        // === ARCHITECTURE FIX (2026-07-30): Enviroscore + Equivalencies ===
+        // Both were previously computed in ui.js (and Enviroscore ALSO
+        // independently in pdf-generator.js — a duplicated, driftable copy).
+        // Centralized here so web and PDF both read one already-computed,
+        // already-audited number instead of each doing their own arithmetic.
+        // See core_physics.js calculateEnviroscore/calculateEquivalencies
+        // for the full rationale and citations.
+        const enviroscoreResult = window.corePhysics.calculateEnviroscore({
+            pefResults:      pefResults,
+            productWeightKg: input.product.weightKg
+        });
+
+        const unifiedCO2PerKg = pefResults['Climate Change'].total / input.product.weightKg;
+        const baselineCO2PerKg = comparisonBaseline ? comparisonBaseline.co2PerKg : 0;
+        const baselineWaterPerKg = comparisonBaseline ? (comparisonBaseline.waterPerKg || 0) : 0;
+        const unifiedWaterPerKg = pefResults['Water Use/Scarcity (AWARE)'].total / input.product.weightKg;
+
+        const equivalenciesDelta = window.corePhysics.calculateEquivalencies({
+            mode:            'delta',
+            co2DeltaPerKg:   baselineCO2PerKg - unifiedCO2PerKg,
+            waterScoreDiffM3: baselineWaterPerKg - unifiedWaterPerKg
+        });
+        const equivalenciesStory = window.corePhysics.calculateEquivalencies({
+            mode:      'story',
+            co2PerKg:  unifiedCO2PerKg
+        });
 
         const auditTrailData = {
             productName:          input.product.name,
@@ -3830,6 +4051,11 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
             uncertainty_analysis: {
                 overall_uncertainty: computedOverallUncertainty,
+                // ARCHITECTURE FIX (2026-07-31): true when no category had a
+                // positive Monte Carlo mean, so overall_uncertainty is null
+                // rather than a genuinely-computed figure. Consumers must check
+                // this before displaying overall_uncertainty as a real number.
+                overall_uncertainty_is_fallback: overallUncertaintyIsFallback,
                 monte_carlo:         monteCarloResults
             },
 
@@ -3838,6 +4064,22 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 normalizedScore:       singleScoreResult.normalizedScore,
                 weightedScore:         singleScoreResult.weightedScore,
                 breakdown:             singleScoreResult.breakdown
+            },
+
+            // ARCHITECTURE FIX (2026-07-30): centralized from ui.js/pdf-generator.js.
+            // Single source of truth consumed identically by web and PDF —
+            // see core_physics.js calculateEnviroscore() for full rationale.
+            enviroscore: enviroscoreResult,
+
+            // ARCHITECTURE FIX (2026-07-30): centralized from ui.js.
+            // 'delta' = measured difference vs comparison baseline (used by the
+            // Environmental Impact Story card). 'story' = this product's own
+            // absolute footprint translated to the single most picturable unit
+            // (used by the front-of-pack headline). Tree-year equivalence is
+            // deliberately absent from both — see core_physics.js note.
+            equivalencies: {
+                delta: equivalenciesDelta,
+                story: equivalenciesStory
             },
 
             compliance_status: dnmResult.compliant ? 'COMPLIANT' : 'WARNING',
@@ -3855,7 +4097,34 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 })),
                 manufacturing:           manufacturingTraceability,
                 transport:               { source: 'GLEC v3.2',               parameters: { mode: input.transport.mode, distanceKm: input.transport.distanceKm } },
-                packaging:               { source: 'PEF 3.1 CFF / Ecoinvent', parameters: { material: input.packaging.material, recycledPct: input.packaging.recycledPct } },
+                packaging:               {
+                    source: 'PEF 3.1 CFF / Ecoinvent',
+                    parameters: {
+                        material:       input.packaging.material,
+                        recycledPct:    input.packaging.recycledPct,
+                        weightKg:       input.packaging.weightKg,
+                        // FIX (2026-08-01 audit): eolDestination was validated and used by the
+                        // real calculation (processPackaging(), closed-set checked earlier this
+                        // session) but never captured on this traceability record. Downstream
+                        // consumers (retailer_csv_engine.js buildMasterData()) had no computed
+                        // source to read, so pkgEoL fell back to re-reading the live DOM form
+                        // field -- which can silently differ from what was actually calculated
+                        // if the user changed the dropdown after running calculate(). Adding it
+                        // here closes that gap the same way distanceKm already works for transport.
+                        eolDestination: input.packaging.eolDestination
+                    },
+                    // ARCHITECTURE FIX (2026-07-30): full Circular Footprint Formula
+                    // derivation, read straight from calculatePackaging()'s own return
+                    // object (core_physics.js) rather than left for a downstream
+                    // consumer to reconstruct. audit-trail.js previously recomputed
+                    // this entire formula independently from raw DOM/database values
+                    // for its CSV glass-box disclosure — a duplicate of official EU PEF
+                    // Annex C methodology with no structural guard against it silently
+                    // diverging from this, the actual calculation used for every number
+                    // elsewhere in the app. Now there is exactly one CFF computation;
+                    // every consumer (web, PDF, CSV, audit-trail) reads this object.
+                    cff: packagingResult.cff
+                },
                 normalization_weighting: { source: 'EF 3.1 JRC', version: 'EF 3.1' }
             },
 
