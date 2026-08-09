@@ -40,11 +40,18 @@
 // this file. Falls back gracefully if window.foodCalculationEngine is not yet
 // available (e.g. race condition on first page load).
 function _dqrLevel(dqr) {
-    if (window.foodCalculationEngine && typeof window.foodCalculationEngine.getDQRQualityLevel === 'function') {
+    if (window.foodCalculationEngine && typeof window.foodCalculationEngine.getDQRQualityLevel === 'function' && typeof dqr === 'number') {
         return window.foodCalculationEngine.getDQRQualityLevel(dqr);
     }
-    // Inline fallback — identical logic to main.js definition
-    var d = typeof dqr === 'number' ? dqr : 2.5;
+    // AUDIT FIX (this session): previously silently substituted 2.5 ("Good")
+    // for any non-numeric DQR, same shape as the overall_uncertainty fix
+    // directly above this function's call site -- and worse in effect, since
+    // this feeds a PASS-reading badge, not just a display number. A missing
+    // DQR must never render as a quality claim. Explicit unknown state added.
+    if (typeof dqr !== 'number' || !Number.isFinite(dqr)) {
+        return { level: 'Unknown', class: 'dqr-unknown' };
+    }
+    var d = dqr;
     if (d <= 1.6) return { level: 'Excellent',  class: 'dqr-excellent' };
     if (d <= 2.0) return { level: 'Very Good',  class: 'dqr-very-good' };
     if (d <= 3.0) return { level: 'Good',       class: 'dqr-good' };
@@ -128,8 +135,11 @@ function displayFullPefScorecard() {
         // in that case instead of a fabricated ±15%.
         const categoryUncertaintyRaw = window.auditTrailData?.uncertainty_analysis?.overall_uncertainty;
         const categoryUncertaintyDisplay = (typeof categoryUncertaintyRaw === 'number') ? '±' + categoryUncertaintyRaw + '%' : 'N/A';
-        // FIX-B: use _dqrLevel() instead of bare foodCalculationEngine call
-        const dqrQuality = _dqrLevel(window.auditTrailData?.dqr_summary?.overall_dqr || 1.5);
+        // AUDIT FIX (this session): removed silent || 1.5 fallback -- same
+        // pattern as the overall_uncertainty fix just above. A missing DQR
+        // now reaches _dqrLevel() as-is and renders as "Unknown", not as a
+        // fabricated "Very Good" quality badge.
+        const dqrQuality = _dqrLevel(window.auditTrailData?.dqr_summary?.overall_dqr);
 
         row.innerHTML = `
             <td class="pef-category">${category}</td>
@@ -137,7 +147,7 @@ function displayFullPefScorecard() {
             <td class="pef-unit">${unit}</td>
             <td class="pef-value">${perKgDisplay}</td>
             <td>
-                <span class="dqr-badge ${dqrQuality.class}" title="Overall DQR: ${(window.auditTrailData?.dqr_summary?.overall_dqr || 0).toFixed(2)}">
+                <span class="dqr-badge ${dqrQuality.class}" title="Overall DQR: ${typeof window.auditTrailData?.dqr_summary?.overall_dqr === 'number' ? window.auditTrailData.dqr_summary.overall_dqr.toFixed(2) : 'Not available'}">
                     <i class="fas fa-star"></i>
                     ${dqrQuality.level}
                 </span>
@@ -264,7 +274,7 @@ function displayAuditTrail() {
     const isCrisisActiveUI = document.getElementById('crisisRoutingToggle')?.checked;
 
     const totalImpact = catCC.total;
-    const pWeightKg = mb.final_content_weight_kg || 0.2;
+    const pWeightKg = mb.final_content_weight_kg || window.corePhysics.CONSTANTS.DEFAULT_PRODUCT_WEIGHT_KG.VALUE; // was hardcoded 0.2, now single-sourced
     const normalizedImpact = totalImpact / pWeightKg;
 
     // Build HTML
@@ -968,7 +978,7 @@ function generateDPP() {
         const land  = window.finalPefResults?.['Land Use']?.total                        || 0;
         const fossil= window.finalPefResults?.['Resource Use, fossils']?.total           || 0;
         const dqr   = window.auditTrailData?.dqr_summary?.overall_dqr                   || 0;
-        const wKg   = window.massBalanceData?.final_content_weight_kg || 0.2;
+        const wKg   = window.massBalanceData?.final_content_weight_kg || window.corePhysics.CONSTANTS.DEFAULT_PRODUCT_WEIGHT_KG.VALUE; // was hardcoded 0.2, now single-sourced
         // FIX (2026-07-31 audit): || 15 previously silently substituted an
         // un-cited value when overall_uncertainty wasn't computable. Now
         // renders 'N/A' honestly in that case.
@@ -1105,7 +1115,7 @@ MANUFACTURING REGION: ${countryName}
 ASSESSMENT ID: ${window.currentDPPId || 'TRC-UNKNOWN'}
 TIMESTAMP: ${new Date().toISOString()}
 
-METHODOLOGY: PEF 3.1 | DATA: AGRIBALYSE 3.2 | BOUNDARY: Cradle-to-Retail
+METHODOLOGY: PEF 3.1 | DATA: AGRIBALYSE 3.2 | BOUNDARY: ${window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1)}
 DATA QUALITY (DQR): ${dqr}/5.0 | UNCERTAINTY: ${typeof uncertainty === 'number' ? '±' + uncertainty + '%' : uncertainty}
 
 SCREENING-LEVEL ASSESSMENT — for certified EPD conduct ISO 14044 critical review.`;
@@ -1172,7 +1182,7 @@ function exportCSRDMatrix() {
     // makes a silent 5x understatement here more consequential than in any other export.
     // Corrected to match the fallback used correctly at lines 252, 713, and 869 of this
     // same file.
-    const pWeightKg = mb.final_content_weight_kg || 0.2;
+    const pWeightKg = mb.final_content_weight_kg || window.corePhysics.CONSTANTS.DEFAULT_PRODUCT_WEIGHT_KG.VALUE; // was hardcoded 0.2, now single-sourced
     const pName     = audit.productName || 'Product';
     const dppId     = audit.dppId || 'N/A';
     const auditHash = audit.auditHash || '';
@@ -1332,19 +1342,19 @@ function exportCSRDMatrix() {
     // ── BLOCK 1: REPORT IDENTITY ──────────────────────────────────────────────
     rows.push(['field', 'value', 'unit', 'source', 'note'].map(q).join(','));
     rows.push([c('BLOCK 1 — REPORT IDENTITY')]);
-    // FIX VERSION-MISMATCH-1: this hardcoded "AIOXY v6.0" independently disagrees with
-    // pdf-generator.js's hardcoded "AIOXY v5.0" for the same assessment ID and SHA-256
-    // hash. No canonical engine-version constant exists in this codebase to resolve which
-    // literal is correct -- flagged here rather than silently guessing. Both this file and
-    // pdf-generator.js should read a single shared version constant once confirmed.
-    rows.push(['report_type',          'Environmental Footprint Report',           '',     'AIOXY v6.0 [UNVERIFIED — see FIX VERSION-MISMATCH-1: disagrees with PDF export\'s "v5.0"]', ''].map(q).join(','));
+    // FIX VERSION-MISMATCH-1: resolved — both this file and pdf-generator.js now read
+    // the single canonical window.corePhysics.CONSTANTS.ENGINE_VERSION constant instead
+    // of independent hardcoded copies. That constant's value (v6.0) is a best-evidence
+    // inference, not yet human-confirmed (see CONFIRMED flag) — shown to the client as
+    // a clean version string, with the pending-confirmation state still asserted below.
+    rows.push(['report_type',          'Environmental Footprint Report',           '',     'AIOXY ' + window.corePhysics.CONSTANTS.ENGINE_VERSION.VALUE + (window.corePhysics.CONSTANTS.ENGINE_VERSION.CONFIRMED ? '' : ' (pending version confirmation)'), ''].map(q).join(','));
     rows.push(['assessment_id',        dppId,                                      '',     'AIOXY',                               ''].map(q).join(','));
     rows.push(['audit_hash_sha256',    auditHash,                                  '',     'SHA-256 covers all inputs+outputs',   ''].map(q).join(','));
     rows.push(['product_name',         pName,                                      '',     'User input',                          ''].map(q).join(','));
     rows.push(['assessment_date',      assessDate,                                 '',     '',                                    ''].map(q).join(','));
     rows.push(['functional_unit',      '1 kg of product as sold',                  'kg',   'PEF 3.1',                             ''].map(q).join(','));
     rows.push(['product_weight',       pWeightKg.toFixed(4),                       'kg',   'Mass balance',                        ''].map(q).join(','));
-    rows.push(['system_boundary',      'Cradle-to-Retail',                         '',     'ISO 14044',                           'Farm gate through distribution'].map(q).join(','));
+    rows.push(['system_boundary',      (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1)),                         '',     'ISO 14044',                           'Farm gate through distribution'].map(q).join(','));
     rows.push(['assessment_type',      'Screening-level LCA',                      '',     'ISO 14044',                           'Not third-party verified'].map(q).join(','));
     // GAP-4: Primary data flag
     rows.push(['primary_data_applied', primaryDataApplied, '', 'AIOXY engine flags', primaryDataScope].map(q).join(','));
@@ -1782,7 +1792,7 @@ function downloadAllData() {
 function exportAuditData() { downloadRawData(); }
 
 function downloadMethodology() {
-    const methodology = `AIOXY Methodology Document\nVersion: 2.1\nDate: ${new Date().toLocaleDateString()}\n\n1. METHODOLOGY: PEF 3.1 (EU Commission JRC)\n2. DATA SOURCES: AGRIBALYSE 3.2, JRC EF 3.1, AWARE 2.0, GLEC v3.2\n3. SYSTEM BOUNDARY: Cradle-to-Retail\n4. UNCERTAINTY: Monte Carlo (1000 iterations)\n5. STATUS: Screening-level LCA — ISO 14044 critical review required for EPD`;
+    const methodology = `AIOXY Methodology Document\nVersion: 2.1\nDate: ${new Date().toLocaleDateString()}\n\n1. METHODOLOGY: PEF 3.1 (EU Commission JRC)\n2. DATA SOURCES: AGRIBALYSE 3.2, JRC EF 3.1, AWARE 2.0, GLEC v3.2\n3. SYSTEM BOUNDARY: ${window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1)}\n4. UNCERTAINTY: Monte Carlo (1000 iterations)\n5. STATUS: Screening-level LCA — ISO 14044 critical review required for EPD`;
     const dataBlob = new Blob([methodology], { type: 'text/plain' });
     const url  = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');

@@ -106,11 +106,12 @@ function buildMasterData() {
 
     const pWeightKg = mb.final_content_weight_kg
                    || (window.lastInput && window.lastInput.product && window.lastInput.product.weightKg)
-                   || 0.2;
+                   || window.corePhysics.CONSTANTS.DEFAULT_PRODUCT_WEIGHT_KG.VALUE;
     // FIX: Never use magic fallback 1.0. Priority:
     //   1. mass_balance.final_content_weight_kg  (engine-computed from input.product.weightKg)
     //   2. window.lastInput.product.weightKg     (direct from user form)
-    //   3. 0.2 kg                                (form default — traceable, documented)
+    //   3. corePhysics.CONSTANTS.DEFAULT_PRODUCT_WEIGHT_KG (single source, was independently
+    //      hardcoded here -- now the same value main.js's form itself defaults to)
     // Using 1.0 as fallback made every per-kg value in the CSV 5× wrong for a 200g product.
     const ccTree    = pef['Climate Change']?.contribution_tree || {};
     const ingComps  = ccTree.Ingredients?.components || [];
@@ -190,7 +191,7 @@ const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025
         assessDate:      safeDate(audit.calculationTimestamp),
         pWeightKg,
         functionalUnit:  '1 kg of product as sold',
-        systemBoundary:  'Cradle-to-Retail (farm gate through distribution to retailer DC)',
+        systemBoundary:  (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1)) + ' (farm gate through distribution to retailer DC)',
         assessmentType:  'Screening-level LCA — ISO 14044 compliant — not third-party verified',
         methodology:     'PEF 3.1 / EF 3.1 / ISO 14044',
         lciDatabase:     'AGRIBALYSE 3.2 (ADEME/INRAE 2022)',
@@ -467,7 +468,7 @@ function generateSainsburysCSV(d) {
     rows.push(['']);
 
     rows.push([c("SSQ SECTION 2 — CLIMATE AND CARBON (Sainsbury's Plan for Better)")]);
-    rows.push(['product_carbon_footprint_kg_co2e_per_kg', fix(d.cc, 6),      'kg CO2e/kg', 'S2.1', 'Cradle-to-retail'].map(q).join(','));
+    rows.push(['product_carbon_footprint_kg_co2e_per_kg', fix(d.cc, 6),      'kg CO2e/kg', 'S2.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
     rows.push(['scope3_cat1_ingredients_kg_co2e_per_kg',  fix(d.cc_ing, 6),  'kg CO2e/kg', 'S2.2', 'GHG Protocol Scope 3 Cat.1'].map(q).join(','));
     rows.push(['scope1_scope2_manufacturing_kg_co2e_per_kg', fix(d.cc_mfg, 6),'kg CO2e/kg', 'S2.3', 'Manufacturer Scope 1+2'].map(q).join(','));
     rows.push(['scope3_cat4_transport_kg_co2e_per_kg',    fix(d.cc_trans, 6), 'kg CO2e/kg', 'S2.4', 'GHG Protocol Scope 3 Cat.4'].map(q).join(','));
@@ -533,7 +534,7 @@ function generateLidlCSV(d) {
     // Session 5 FIX: Unit corrected from 'kg CO2e' to 'kg CO2e/kg' for all stage rows.
     // Values are per-kg-of-product intensities, not absolute masses. Missing /kg was
     // a unit label error — the values themselves are correct.
-    rows.push(['co2_footprint_kg_per_kg_product', fix(d.cc, 6),             'kg CO2e/kg', 'E1.1', 'Cradle-to-retail gate'].map(q).join(','));
+    rows.push(['co2_footprint_kg_per_kg_product', fix(d.cc, 6),             'kg CO2e/kg', 'E1.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
     rows.push(['co2_ingredient_stage',            fix(d.cc_ing, 6),         'kg CO2e/kg', 'E1.2', 'Agricultural + processing inputs'].map(q).join(','));
     rows.push(['co2_production_stage',            fix(d.cc_mfg, 6),         'kg CO2e/kg', 'E1.3', 'Factory energy use'].map(q).join(','));
     rows.push(['co2_logistics_stage',             fix(d.cc_trans, 6),       'kg CO2e/kg', 'E1.4', 'Transport to Lidl DC'].map(q).join(','));
@@ -599,7 +600,7 @@ function generateAldiCSV(d) {
 
     rows.push([c('BLOCK 2 — CARBON EMISSIONS')]);
     rows.push([c('Aldi requires total Scope 3 Cat.1 intensity (per kg product) for supplier scorecards')]);
-    rows.push(['total_product_carbon_intensity_kg_co2e_per_kg', fix(d.cc, 6), 'kg CO2e/kg', '2.1', 'Cradle-to-retail'].map(q).join(','));
+    rows.push(['total_product_carbon_intensity_kg_co2e_per_kg', fix(d.cc, 6), 'kg CO2e/kg', '2.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
     rows.push(['scope3_cat1_purchased_goods_kg_co2e_per_kg',    fix(d.cc_ing + d.cc_pkg, 6), 'kg CO2e/kg', '2.2', 'Ingredients + packaging combined Scope 3 Cat.1'].map(q).join(','));
     rows.push(['scope1_2_manufacturing_kg_co2e_per_kg',          fix(d.cc_mfg, 6), 'kg CO2e/kg', '2.3', 'Factory direct + indirect'].map(q).join(','));
     rows.push(['scope3_cat4_transport_kg_co2e_per_kg',           fix(d.cc_trans, 6),'kg CO2e/kg', '2.4', 'Inbound + outbound transport'].map(q).join(','));
@@ -700,7 +701,7 @@ function generateReweCSV(d) {
     rows.push(['']);
 
     rows.push([c('U1 — TREIBHAUSGASEMISSIONEN (GHG EMISSIONS)')]);
-    rows.push(['thg_gesamt_kg_co2e_pro_kg',          fix(d.cc, 6),           'kg CO2e/kg', 'U1.1', 'Cradle-to-Retail'].map(q).join(','));
+    rows.push(['thg_gesamt_kg_co2e_pro_kg',          fix(d.cc, 6),           'kg CO2e/kg', 'U1.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
     rows.push(['thg_rohstoffe_zutaten',              fix(d.cc_ing, 6),       'kg CO2e/kg', 'U1.2', 'Scope 3 Kat.1 Einkauf'].map(q).join(','));
     rows.push(['thg_produktion_herstellung',         fix(d.cc_mfg, 6),       'kg CO2e/kg', 'U1.3', 'Scope 1+2 Produzent'].map(q).join(','));
     rows.push(['thg_transport_logistik',             fix(d.cc_trans, 6),     'kg CO2e/kg', 'U1.4', 'Scope 3 Kat.4'].map(q).join(','));
@@ -771,7 +772,7 @@ function generateAlbertHeijnCSV(d) {
     rows.push(['']);
 
     rows.push([c('CATEGORY 2 — CLIMATE (AH Better Together strategy)')]);
-    rows.push(['ah_total_product_co2e_per_kg',     fix(d.cc, 6),            'kg CO2e/kg', 'CAT2.1', 'Cradle-to-retail'].map(q).join(','));
+    rows.push(['ah_total_product_co2e_per_kg',     fix(d.cc, 6),            'kg CO2e/kg', 'CAT2.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
     rows.push(['ah_co2e_ingredients_per_kg',       fix(d.cc_ing, 6),        'kg CO2e/kg', 'CAT2.2', 'GHG Protocol Scope 3 Cat.1'].map(q).join(','));
     rows.push(['ah_co2e_manufacturing_per_kg',     fix(d.cc_mfg, 6),        'kg CO2e/kg', 'CAT2.3', 'Factory operations'].map(q).join(','));
     rows.push(['ah_co2e_transport_per_kg',         fix(d.cc_trans, 6),      'kg CO2e/kg', 'CAT2.4', 'GLEC v3.2'].map(q).join(','));
@@ -1012,7 +1013,7 @@ function generateCoopCHCSV(d) {
     rows.push(['']);
 
     rows.push([c('CRITERION 2 — CLIMATE IMPACT (Coop Net-Zero 2023 target)')]);
-    rows.push(['product_climate_impact_kg_co2e_per_kg', fix(d.cc, 6),       'kg CO2e/kg', 'C2.1', 'Cradle-to-retail'].map(q).join(','));
+    rows.push(['product_climate_impact_kg_co2e_per_kg', fix(d.cc, 6),       'kg CO2e/kg', 'C2.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
     rows.push(['climate_impact_ingredients',           fix(d.cc_ing, 6),    'kg CO2e/kg', 'C2.2', ''].map(q).join(','));
     rows.push(['climate_impact_production',            fix(d.cc_mfg, 6),    'kg CO2e/kg', 'C2.3', ''].map(q).join(','));
     rows.push(['climate_impact_transport',             fix(d.cc_trans, 6),  'kg CO2e/kg', 'C2.4', 'GLEC v3.2'].map(q).join(','));
@@ -1172,7 +1173,7 @@ function generateCDP_SC_CSV(d) {
         rows.push(['c6_5_scope3_waste_processing_kg_co2e_per_kg', fix(d.cc_waste, 6), 'kg CO2e/kg', 'C6.5', 'Waste processing stage — included in total'].map(q).join(','));
     }
     rows.push(['c6_5_total_product_intensity_kg_co2e_per_kg', fix(d.cc, 6),               'kg CO2e/kg', 'C6.5', 'Total product cradle-to-retail (all stages)'].map(q).join(','));
-    rows.push(['c6_5_emissions_boundary',        'Cradle-to-Retail (ISO 14044)',  '',  'C6.5', 'From farm gate to retailer distribution centre'].map(q).join(','));
+    rows.push(['c6_5_emissions_boundary',        (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1)) + ' (ISO 14044)',  '',  'C6.5', 'From farm gate to retailer distribution centre'].map(q).join(','));
     rows.push(['c6_5_calculation_method',        'Activity-based PCF per ISO 14044 / PEF 3.1', '', 'C6.5', 'LCI database: AGRIBALYSE 3.2'].map(q).join(','));
     rows.push(['c6_5_emission_factors_source',   d.lciDatabase,            '',  'C6.5', ''].map(q).join(','));
     rows.push(['c6_5_gwp_standard',              d.gwpBasis,               '',  'C6.5', ''].map(q).join(','));

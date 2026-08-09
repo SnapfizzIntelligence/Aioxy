@@ -1292,9 +1292,19 @@ if (!traceability.usetox) {
                                 // species, every time — discarding real, sourced FCR values (Tacon &
                                 // Metian 2008) ranging from 1.25 (salmon, trout) to 2.1 (sea_bass).
                                 // This over- or under-stated feed CO2 by up to ~29% depending on species.
-                                const fcr            = feedParams.fcr            || 1.5; // BUGFIX FARMED_FISH: feed conversion ratio
-                                const fishmealPct    = feedParams.fishmeal_pct   || 20;  // BUGFIX FARMED_FISH
-                                const fishOilPct     = feedParams.fish_oil_pct   || 5;   // BUGFIX FARMED_FISH
+                                // AUDIT FIX (this session): fallback literals (1.5 / 20 / 5) predate
+                                // FIX AQUA-2 and were never reconciled against the database's own
+                                // generic "farmed_fish" entry once real per-species lookups started
+                                // working. That entry is itself cited: fcr 1.7, fish_oil_pct 2.0,
+                                // fishmeal_pct 20.0 (Tacon & Metian 2008, Table 3, global avg). Two
+                                // of three fallback literals disagreed with the very source they were
+                                // supposed to represent -- harmless while feedParams reliably resolves,
+                                // but untraceable and wrong the moment this fallback path is ever
+                                // actually hit (a data-load failure, or a species not yet catalogued).
+                                // Source: Tacon & Metian (2008), Aquaculture 285:146-158, Table 3.
+                                const fcr            = feedParams.fcr            || 1.7;  // was 1.5, disagreed with the cited source
+                                const fishmealPct    = feedParams.fishmeal_pct   || 20;   // matched the source already
+                                const fishOilPct     = feedParams.fish_oil_pct   || 2.0;  // was 5, disagreed with the cited source
 
                                 // BUGFIX FARMED_FISH: Resolve fishmeal CO2 proxy — look up anchovy or sardine in ingredients DB.
                                 let fishmealCO2PerKg = 0; // BUGFIX FARMED_FISH
@@ -2497,6 +2507,28 @@ if (!traceability.usetox) {
                             coProducts: coProducts.map((p, i) => ({ name: p.name, massFraction: p.massFraction, price: p.price, priceUnit: p.priceUnit, priceDate: p.priceDate, priceConfidence: p.priceConfidence, allocationFactor: allocationFactors[i] })),
                             note: 'Full ingredient impact multiplied by the oil co-product\'s economic allocation factor. The excluded share belongs to the meal co-product\'s own product system, not this one — correctly excluded, not lost.'
                         };
+
+                        // WIRE-ALLOC-1 FIX (this session): checkAllocationSensitivity() was
+                        // exported by compliance_engine.js but had zero callers anywhere in the
+                        // codebase -- confirmed via full-file search. It tests a real ISO 14044
+                        // §4.3.4.3 requirement: whether mass-based and economic-based allocation
+                        // would produce a meaningfully different result for this co-product set --
+                        // i.e. whether the choice of allocation method actually matters here, which
+                        // ISO requires disclosing when it does. allocInputs above already has the
+                        // exact {mass, price} shape this function reads (confirmed against its
+                        // body). Own try/catch so a failure here cannot affect the allocation
+                        // already applied above -- purely additive disclosure, does not touch
+                        // allCategoryResults or any exported number.
+                        try {
+                            adjustments.coproduct_allocation.sensitivityCheck =
+                                window.complianceEngine.checkAllocationSensitivity(
+                                    coProducts.map(p => ({ name: p.name, mass: p.massFraction, price: p.price }))
+                                );
+                        } catch (sensError) {
+                            adjustments.coproduct_allocation.sensitivityCheck = {
+                                error: 'Sensitivity check failed: ' + (sensError && sensError.message ? sensError.message : String(sensError))
+                            };
+                        }
                     } catch (allocError) {
                         // Fail loudly into adjustments, never silently skip allocation and
                         // never silently apply a guessed factor — consistent with this
@@ -2948,7 +2980,12 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                         mfgResult.residual_mix_available = true;
                         mfgResult.residual_mix_co2       = residualFactor;
                         mfgResult.residual_mix_source    = residualMix.source || 'AIB 2024 European Residual Mixes';
-                        mfgResult.residual_mix_year      = residualMix.year   || 2024;
+                        // Found via citation_audit.js (Tier 1): a hardcoded year doesn't decay
+                        // gracefully the way a neutral ratio does -- every year this runs
+                        // unchanged, "2024" becomes a more confidently wrong answer, not a
+                        // stable safe default. If the real data's own year tag is missing,
+                        // say so rather than assert a specific year we don't actually know.
+                        mfgResult.residual_mix_year      = residualMix.year || null; // was: || 2024
                         mfgResult.residual_mix_unit      = residualMix.unit   || 'g CO2/kWh';
                     } else {
                         mfgResult.residual_mix_available = false;
@@ -3291,6 +3328,20 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             Math.max(totalCO2, 0.0001)
         );
 
+        // GATE (item #2, shadow mode): no documented DNM exception is on file yet,
+        // so any real violation here is correctly unclassified today. Logged, not
+        // blocking — same rule as JRC, applied consistently rather than only where
+        // an exception happened to already exist.
+        let dnmGateVerdict = null;
+        if (window.complianceGate) {
+            dnmGateVerdict = window.complianceGate.evaluateGate(
+                'evaluateDNM',
+                dnmResult,
+                { processes: dnmProcesses },
+                'shadow'
+            );
+        }
+
         const hotspotComponents = ingredientResults.map(ing => ({
             name:         ing.name,
             contribution: ing.allCategoryResults['Climate Change'] || 0
@@ -3330,7 +3381,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             });
         });
 
-        return { weightedDQR, dnmResult, hotspotResult, dqrComponents: dqrComponentsWithUncertainty };
+        return { weightedDQR, dnmResult, hotspotResult, dqrComponents: dqrComponentsWithUncertainty, dnmGateVerdict };
     }
 
     // ── STEP 7: SINGLE SCORE ─────────────────────────────────────────────────
@@ -3744,8 +3795,21 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             // life) as milk, an even larger mismatch (~23x) than the original beef-for-milk bug.
             // Reordered: cull-cow/beef/cattle checked FIRST, since "cull cow" is a more specific
             // product-type signal than "milk" appearing only as part of a system descriptor.
-            // Verified safe: no real "Cow milk" (non-cull) entry contains beef/cattle/cull cow.
-            if      (nameLower.includes('cull cow') || nameLower.includes('beef') || nameLower.includes('cattle')) commodityKey = 'beef'; // BUGFIX B12 + FIX COMMODITY-PRICE-2 + AUDIT-4 reorder
+            // FIX COMMODITY-PRICE-3, revised: the original version of this fix only excluded
+            // "coconut", found via property-based test against the real ingredient list. That
+            // was the same whack-a-mole shape FIX FAOSTAT-3 (below, in the same file) already
+            // documented and explicitly rejected for this exact reason: "patching one stopword
+            // at a time only reveals the next collision." Soy milk, oat milk, almond milk, rice
+            // milk, hemp milk, and cashew milk all share the identical failure shape and none
+            // were in the real 300-name sample this fix was originally tested against — their
+            // absence from that sample is not evidence they're safe, only that they weren't
+            // checked. Replaced with an explicit plant-qualifier category instead of a single
+            // excluded word, matching the standard this codebase already set for itself.
+            const PLANT_MILK_QUALIFIERS = ['coconut', 'soy', 'oat', 'almond', 'rice', 'hemp', 'cashew', 'pea', 'hazelnut', 'macadamia'];
+            const isPlantMilk = PLANT_MILK_QUALIFIERS.some(q => nameLower.includes(q)) && nameLower.includes('milk');
+
+            if      (isPlantMilk) { /* explicitly excluded — no plant-milk commodity price exists; falls through to generic fallback */ }
+            else if (nameLower.includes('cull cow') || nameLower.includes('beef') || nameLower.includes('cattle')) commodityKey = 'beef'; // BUGFIX B12 + FIX COMMODITY-PRICE-2 + AUDIT-4 reorder
             else if (nameLower.includes('milk')    || nameLower.includes('dairy'))              commodityKey = 'milk';      // FIX COMMODITY-PRICE-1
             else if (nameLower.includes('chicken') || nameLower.includes('broiler') || nameLower.includes('poultry')) commodityKey = 'chicken';   // BUGFIX B12
             else if (nameLower.includes('wheat'))                                                                     commodityKey = 'wheat';     // BUGFIX B12
@@ -3850,13 +3914,27 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 jrcValidationResult = (jrcRaw === true)
                     ? { passed: true, materialType: jrcMaterialKey }
                     : { ...jrcRaw, materialType: jrcMaterialKey };
+
+                // GATE (item #2, shadow mode): does this failure match a documented
+                // exception (e.g. PKG-F1's PET boundary case), or is it unclassified?
+                // Shadow mode only — logs what WOULD happen, changes no behavior yet.
+                // Do not flip to 'enforce' without first running this against real
+                // historical AIOXY output and confirming zero false positives.
+                if (window.complianceGate) {
+                    jrcValidationResult.gateVerdict = window.complianceGate.evaluateGate(
+                        'runJRCValidation',
+                        jrcRaw,
+                        { materialType: jrcMaterialKey, calculatedImpact: jrcCalculatedImpact },
+                        'shadow'
+                    );
+                }
             } catch (e) {
                 jrcValidationResult = { passed: false, error: e.message, materialType: jrcMaterialKey };
             }
         }
         // === END GAP A ===
 
-        const { weightedDQR, dnmResult, hotspotResult, dqrComponents } =
+        const { weightedDQR, dnmResult, hotspotResult, dqrComponents, dnmGateVerdict } =
             computeDQR(ingredientResults, pefResults);
 
         const singleScoreResult  = computeSingleScore(pefResults, input, ingredientResults);
@@ -3963,6 +4041,18 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             pefResults['Climate Change'].total,
             0.05  // 5% cutoff threshold per PEF 3.1
         );
+
+        // GATE (item #2, shadow mode): no documented cutoff exception on file yet either.
+        // Same rule, same reason, applied consistently — not just where it was convenient.
+        let cutoffGateVerdict = null;
+        if (window.complianceGate) {
+            cutoffGateVerdict = window.complianceGate.evaluateGate(
+                'validateCutoff',
+                cutoffValidation,
+                { ingredients: ingredientResults.map(ing => ing.name) },
+                'shadow'
+            );
+        }
 
         // Finding 17 FIX (2026-06-07): Math.random() fallback removed — throws instead.
         // A random dppId cannot be reproduced and has no audit trail integrity.
@@ -4082,6 +4172,37 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 story: equivalenciesStory
             },
 
+            // WIRE-GATE-1 FIX (this session): dnmGateVerdict and cutoffGateVerdict were
+            // computed (compliance_gate.js, shadow mode) but never attached to anything
+            // returned from calculate() -- true dead ends, confirmed via exhaustive
+            // search: zero references anywhere after assignment. jrcValidationResult
+            // .gateVerdict and selfConsistencyCheck.gateVerdict WERE attached (both
+            // objects are returned/embedded below), but nothing anywhere in the
+            // codebase reads the .gateVerdict property specifically -- also confirmed
+            // via exhaustive search across all files, not just this one. Net effect
+            // before this fix: all four gate verdicts were computed correctly and
+            // reached zero downstream consumers -- no PDF, no CSV, no UI, no audit
+            // trail render. This does not change compliance_status above (still
+            // dnmResult.compliant, unrelated to the gate) and does not flip shadow to
+            // enforce -- it only makes the shadow-mode verdicts visible to whatever
+            // renders next (pdf-generator.js / ui.js), which is a separate, not-yet-
+            // done step. mode is hardcoded 'shadow' here deliberately, matching the
+            // real mode string passed to every evaluateGate() call above -- update
+            // this if/when those calls are ever changed to 'enforce'.
+            compliance_gate_summary: {
+                mode: 'shadow',
+                dnm:              dnmGateVerdict,
+                jrc:              jrcValidationResult ? (jrcValidationResult.gateVerdict || null) : null,
+                cutoff:           cutoffGateVerdict
+                // self_consistency added below via assignment, once selfConsistencyCheck
+                // actually exists -- it isn't declared until after this object literal
+                // closes, so referencing it inline here throws a temporal-dead-zone
+                // ReferenceError at runtime (confirmed: caught by this session's first
+                // real end-to-end pipeline execution, not by any prior syntax or scope
+                // check, since referencing a let before its own declaration in the same
+                // function is syntactically legal -- it's a runtime-only failure).
+            },
+
             compliance_status: dnmResult.compliant ? 'COMPLIANT' : 'WARNING',
             dnm_alerts:        dnmResult.warnings || [],
             hotspot_analysis:  hotspotResult,
@@ -4145,10 +4266,8 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                     // 'Cradle-to-Retail' !== 'cradle-to-retail' in JavaScript. Fixed by
                     // referencing the real constant directly instead of maintaining a second
                     // copy -- eliminates the drift risk entirely rather than just correcting
-                    // the casing once. NOTE: actually wiring validateSystemBoundary() into the
-                    // live flow was deliberately NOT done in this same pass -- flagged as a
-                    // defined follow-up requiring its own dedicated verification, not rushed
-                    // in as the last item of a long session.
+                    // the casing once. Wired into the live flow below (see
+                    // systemBoundaryCheck, computed before this return statement begins).
                     system_boundary: window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE,
                     functional_unit: '1 kg of product as sold',   // BUG-19 FIX: functional unit is always 1 kg; input.product.weightKg (e.g. 0.2 kg) is the formulation batch weight used for per-kg normalisation
                     allocation:      'Economic allocation per ISO 14044'
@@ -4193,7 +4312,95 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             }
         };
 
+        // === ITEM #3: twin-as-oracle, wired to run automatically ===
+        // Runs on every calculation now, not only when a user manually opens the
+        // twin/comparison UI. Compares this product's own result against itself
+        // through the exact same calculateCategoryComparison() the twin feature
+        // uses. Two real, independent things fall out of one check:
+        //   1. Any category where dataMissing is true means this product's own
+        //      result is incomplete -- caught automatically, on this product,
+        //      right now, not discovered later by a human reading a report.
+        //   2. Any nonzero delta on a self-comparison would mean
+        //      calculateCategoryComparison itself is non-deterministic or has a
+        //      mutation bug -- a permanent regression guard, not a one-time test.
+        // Shadow mode via compliance_gate.js, consistent with JRC/DNM/cutoff:
+        // logs what it finds, does not block export. Not enforced yet for the
+        // same reason those aren't -- no real historical corpus available in
+        // this environment to confirm the false-positive rate first.
+        let selfConsistencyCheck = null;
+        try {
+            const selfCompare = window.corePhysics.calculateCategoryComparison({
+                pefA:       pefResults,
+                pefB:       pefResults,
+                massA:      input.product.weightKg,
+                massB:      input.product.weightKg,
+                categories: ALL_CATEGORIES
+            });
+            const incomplete = selfCompare.filter(r => r.dataMissing);
+            const inconsistent = selfCompare.filter(r => !r.dataMissing && r.delta !== 0);
+            selfConsistencyCheck = {
+                categoriesChecked:      selfCompare.length,
+                incompleteCategories:   incomplete.map(r => r.category),
+                inconsistentCategories: inconsistent.map(r => r.category),
+                pass:                   incomplete.length === 0 && inconsistent.length === 0
+            };
+            if (window.complianceGate) {
+                selfConsistencyCheck.gateVerdict = window.complianceGate.evaluateGate(
+                    'twinSelfConsistency',
+                    { compliant: selfConsistencyCheck.pass },
+                    { incomplete: incomplete.map(r => r.category), inconsistent: inconsistent.map(r => r.category) },
+                    'shadow'
+                );
+            }
+        } catch (e) {
+            selfConsistencyCheck = { pass: false, error: 'Self-consistency check itself failed: ' + (e && e.message ? e.message : String(e)) };
+        }
+
+        // WIRE-GATE-2 FIX (this session): validateSystemBoundary() previously had zero
+        // callers anywhere in the codebase, per compliance_engine.js's own ITEM #34
+        // dead-code audit comment. A prior session deliberately left it unwired,
+        // flagging it as needing dedicated verification first (see the
+        // FIX SYSTEM-BOUNDARY-1 comment on ISO_compliance above) -- that verification
+        // is now done: confirmed exactly one source of the boundary value in this file
+        // (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE, no second copy, no drift
+        // risk), and confirmed window.complianceEngine loads before this file per
+        // food.html's script order. validateSystemBoundary() throws rather than
+        // returning {pass}/{compliant}, so it can't go through evaluateGate directly
+        // the way DNM/JRC/cutoff do -- wrapped here exactly like selfConsistencyCheck
+        // above wraps calculateCategoryComparison's throwing potential. Shadow mode,
+        // same as every other check in this file: logs what it finds, does not block
+        // export.
+        let systemBoundaryCheck = null;
+        try {
+            window.complianceEngine.validateSystemBoundary(window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE);
+            systemBoundaryCheck = { compliant: true, boundary: window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE };
+        } catch (e) {
+            systemBoundaryCheck = { compliant: false, boundary: window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE, error: e && e.message ? e.message : String(e) };
+        }
+        if (window.complianceGate) {
+            systemBoundaryCheck.gateVerdict = window.complianceGate.evaluateGate(
+                'validateSystemBoundary',
+                { compliant: systemBoundaryCheck.compliant },
+                { boundary: systemBoundaryCheck.boundary },
+                'shadow'
+            );
+        }
+
+        // PLACEMENT FIX (this session): systemBoundaryCheck above was only reachable via
+        // calculate()'s top-level return object. window.auditTrailData is a NESTED
+        // property of that return object (confirmed: main.js line 602,
+        // window.auditTrailData = mainCalcResult.auditTrailData) -- pdf-generator.js and
+        // every other downstream consumer reads from window.auditTrailData, never the
+        // top-level return object directly. Without this line, systemBoundaryCheck was
+        // computed correctly but unreachable from the PDF, same failure class as the
+        // gate verdicts before WIRE-GATE-3.
+        auditTrailData.systemBoundaryCheck = systemBoundaryCheck;
+        auditTrailData.compliance_gate_summary.self_consistency =
+            selfConsistencyCheck ? (selfConsistencyCheck.gateVerdict || null) : null;
+
         return {
+            selfConsistencyCheck: selfConsistencyCheck,
+            systemBoundaryCheck: systemBoundaryCheck,
             finalPefResults: pefResults,
             massBalanceData: massBalanceData,
 

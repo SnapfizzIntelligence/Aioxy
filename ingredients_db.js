@@ -94,7 +94,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lamb-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
             "name": "Lamb, conventional, indoor production system, at farm gate {FR} U",
-            "name_fr": "Agneau systÃ¨me de production conventionnel en intÃ©rieur, Ã  la ferme, France",
+            "name_fr": "Agneau système de production conventionnel en intérieur, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -140,7 +140,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lamb-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
             "name": "Lamb, conventional, Roquefort system, at farm gate {FR} U",
-            "name_fr": "Agneau, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
+            "name_fr": "Agneau, conventionnel, système Roquefort, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -186,7 +186,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "seaweed-non-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw": {
             "name": "Seaweed non-optimized production, 1kg algae (Laminaria), fresh weight {FR} U",
-            "name_fr": "Algue production non optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
+            "name_fr": "Algue production non optimisée, 1 kg d'algues (Laminaria), poids frais, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -231,7 +231,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "seaweed-optimized-production-1kg-algae-laminaria-fresh-weight-fr-u-raw": {
             "name": "Seaweed optimized production, 1kg algae (Laminaria), fresh weight {FR} U",
-            "name_fr": "Algue production optimisÃ©e, 1 kg d'algues (Laminaria), poids frais, France",
+            "name_fr": "Algue production optimisée, 1 kg d'algues (Laminaria), poids frais, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -276,7 +276,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pineapple-mixed-production-reunion-island-average-at-production-site-re-u-raw": {
             "name": "Pineapple, mixed production, Reunion Island average, at production site {RE} U",
-            "name_fr": "Ananas, production mixte, Ã  la ferme, Ã®le de la RÃ©union",
+            "name_fr": "Ananas, production mixte, à la ferme, île de la Réunion",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -321,7 +321,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "european-anchovy-engraulis-encrasicolus-eca-seine-average-at-landing-ma-u-raw": {
             "name": "European Anchovy, Engraulis encrasicolus, ECA, Seine, average, at landing {MA} U",
-            "name_fr": "Anchois europÃ©enne, Engraulis encrasicolus, atlantique centre est, senne, au dÃ©barquement, Maroc",
+            "name_fr": "Anchois européenne, Engraulis encrasicolus, atlantique centre est, senne, au débarquement, Maroc",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -366,7 +366,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "oat-grain-national-average-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Oat grain, national average, animal feed, at farm gate {FR} U",
-            "name_fr": "Avoine, moyenne nationale, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Avoine, moyenne nationale, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -411,7 +411,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "banana-mixed-production-west-indies-at-farm-gate-wi-u-raw": {
             "name": "Banana, mixed production, West Indies, at farm gate {WI} U",
-            "name_fr": "Banane conventionnelle, Ã  la ferme, Antilles",
+            "name_fr": "Banane conventionnelle, à la ferme, Antilles",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -456,7 +456,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sea-bass-or-sea-bream-200-500g-conventional-in-cage-at-farm-gate-fr-u-raw": {
             "name": "Sea bass or sea bream, 200-500g, conventional, in cage, at farm gate {FR} U",
-            "name_fr": "Bar ou daurade, 200-500g, conventionnel, en cage, Ã  la ferme, France",
+            "name_fr": "Bar ou daurade, 200-500g, conventionnel, en cage, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -501,7 +501,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "beetroot-for-juice-conventional-at-farm-gate-fr-u-raw": {
             "name": "Beetroot for juice, conventional, at farm gate {FR} U",
-            "name_fr": "Betterave pour du jus, conventionnel, Ã  la ferme, France",
+            "name_fr": "Betterave pour du jus, conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -546,7 +546,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sugar-beet-roots-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
             "name": "Sugar beet roots, conventional, national average, animal feed, at farm gate, production {FR} U",
-            "name_fr": "Betteraves, moyen conventionnel, national, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Betteraves, moyen conventionnel, national, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -591,7 +591,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "durum-wheat-grain-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Durum wheat grain, conventional, national average, at farm gate {FR} U",
-            "name_fr": "BlÃ© dur, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Blé dur, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -636,7 +636,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soft-wheat-grain-conventional-protein-improved-quality-15-moisture-at-farm-gate-fr-u-raw": {
             "name": "Soft wheat grain, conventional, protein improved quality, 15% moisture, at farm gate {FR} U",
-            "name_fr": "BlÃ© tendre, conventionnel, amÃ©liorant protÃ©ine, 15% d'humiditÃ©, Ã  la ferme, France",
+            "name_fr": "Blé tendre, conventionnel, améliorant protéine, 15% d'humidité, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -681,7 +681,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soft-wheat-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
             "name": "Soft wheat grain, conventional, national average, animal feed, at farm gate, production {FR} U",
-            "name_fr": "BlÃ© tendre, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Blé tendre, conventionnel, moyenne nationale, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -726,7 +726,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soft-wheat-grain-conventional-breadmaking-quality-15-moisture-at-farm-gate-fr-u-raw": {
             "name": "Soft wheat grain, conventional, breadmaking quality, 15% moisture, at farm gate {FR} U",
-            "name_fr": "BlÃ© tendre, conventionnel, panifiable, 15% d'humiditÃ©, Ã  la ferme, France",
+            "name_fr": "Blé tendre, conventionnel, panifiable, 15% d'humidité, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -771,7 +771,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soft-wheat-grain-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw": {
             "name": "Soft wheat grain, systematic cover cropping scenario, at farm gate {FR} U",
-            "name_fr": "BlÃ© tendre, levier culture intermÃ©diaire systÃ©matique du scÃ©nario, Ã  la ferme, France",
+            "name_fr": "Blé tendre, levier culture intermédiaire systématique du scénario, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -816,7 +816,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soft-wheat-grain-protein-crop-scenario-at-farm-gate-fr-u-raw": {
             "name": "Soft wheat grain, protein crop scenario, at farm gate {FR} U",
-            "name_fr": "BlÃ© tendre, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+            "name_fr": "Blé tendre, levier légumineuse dans rotation, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -861,7 +861,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soft-wheat-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
             "name": "Soft wheat grain, basis scenario without lever, at farm gate {FR} U",
-            "name_fr": "BlÃ© tendre, scÃ©nario de base, Ã  la ferme, France",
+            "name_fr": "Blé tendre, scénario de base, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -906,7 +906,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "beef-cattle-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Beef cattle, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Boeuf, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Boeuf, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -952,7 +952,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-ewe-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
             "name": "Cull ewe, conventional, indoor production system, at farm gate {FR} U",
-            "name_fr": "Brebis de rÃ©forme, conventionnel, intÃ©rieur, Ã  la ferme, France",
+            "name_fr": "Brebis de réforme, conventionnel, intérieur, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -997,7 +997,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-ewe-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
             "name": "Cull ewe, conventional, Roquefort system, at farm gate {FR} U",
-            "name_fr": "Brebis de rÃ©forme, conventionnel, systÃ¨me Roquefort , Ã  la ferme, France",
+            "name_fr": "Brebis de réforme, conventionnel, système Roquefort , à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1042,7 +1042,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "duck-for-roasting-conventional-at-farm-gate-fr-u-raw": {
             "name": "Duck for roasting, conventional, at farm gate {FR} U",
-            "name_fr": "Canard Ã  rÃ´tir,  conventionnel, Ã  la ferme, France",
+            "name_fr": "Canard à rôtir,  conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1088,7 +1088,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "fattening-duck-conventional-at-farm-gate-fr-u-raw": {
             "name": "Fattening duck, conventional, at farm gate {FR} U",
-            "name_fr": "Canard Engraissement,  conventionnel, Ã  la ferme, France",
+            "name_fr": "Canard Engraissement,  conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1134,7 +1134,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Carotte conventionnelle, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Carotte conventionnelle, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1179,7 +1179,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-fall-creances-lower-normandie-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, fall, Creances, Lower Normandie, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, automne, Creances, Basse-Normandie, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, automne, Creances, Basse-Normandie, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1224,7 +1224,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-fall-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, fall, Mont St. Michel, Lower Normandie, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, automne, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, automne, Mont St. Michel, Basse-Normandie, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1269,7 +1269,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-fall-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, fall, Val de Saire, Lower Normandie, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, automne, Val de Saire, Basse-Normandie, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, automne, Val de Saire, Basse-Normandie, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1314,7 +1314,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-main-season-aquitaine-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, main season, Aquitaine, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, de saison, Aquitaine, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, de saison, Aquitaine, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1359,7 +1359,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-winter-aquitaine-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, winter, Aquitaine, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, hiver, Aquitaine, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, hiver, Aquitaine, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1404,7 +1404,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-winter-creances-lower-normandie-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, winter, Creances, Lower Normandie, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, hiver, Creances, Basse-Normandie, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, hiver, Creances, Basse-Normandie, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1449,7 +1449,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-winter-mont-st-michel-lower-normandie-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, winter, Mont St. Michel, Lower Normandie, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, hiver, Mont St. Michel, Basse-Normandie, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, hiver, Mont St. Michel, Basse-Normandie, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1494,7 +1494,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-winter-val-de-saire-lower-normandie-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, winter, Val de Saire, Lower Normandie, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, hiver, Val de Saire, Basse-Normandie, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, hiver, Val de Saire, Basse-Normandie, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1539,7 +1539,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "carrot-conventional-early-aquitaine-at-farm-gate-fr-u-raw": {
             "name": "Carrot, conventional, early, Aquitaine, at farm gate {FR} U",
-            "name_fr": "Carotte, conventionnel, prÃ©coce, Aquitaine, Ã  la ferme, France",
+            "name_fr": "Carotte, conventionnel, précoce, Aquitaine, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1629,7 +1629,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "hemp-straw-ret-champagne-at-farm-gate-fr-u-raw": {
             "name": "Hemp, straw, ret, Champagne, at farm gate {FR} U",
-            "name_fr": "Chanvre, paille, Champagne, Ã  la ferme, France",
+            "name_fr": "Chanvre, paille, Champagne, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1674,7 +1674,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "kid-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
             "name": "Kid goat, conventional, intensive forage area, at farm gate {FR} U",
-            "name_fr": "Chevreau, conventionnel, fourage intensif, Ã  la ferme, France",
+            "name_fr": "Chevreau, conventionnel, fourage intensif, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1720,7 +1720,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-goat-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
             "name": "Cull goat, conventional, intensive forage area, at farm gate {FR} U",
-            "name_fr": "Chevrette de rÃ©forme, conventionnel, fourrage intensif, Ã  la ferme, France",
+            "name_fr": "Chevrette de réforme, conventionnel, fourrage intensif, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1766,7 +1766,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-season-conventional-refrigerant-loss-300-storage-and-forcing-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, season, conventional, refrigerant loss 300%, storage and forcing, at farm gate {FR} U",
-            "name_fr": "ChicorÃ©e witlode, en saison, conventionnel, perte de rÃ©frigÃ©rant 300%, stockage et forÃ§age, Ã  la ferme, France",
+            "name_fr": "Chicorée witlode, en saison, conventionnel, perte de réfrigérant 300%, stockage et forçage, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1811,7 +1811,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cauliflower-summer-conventional-at-farm-gate-fr-u-raw": {
             "name": "Cauliflower, summer, conventional, at farm gate {FR} U",
-            "name_fr": "Chou-fleur conventionnel, culture d'Ã©tÃ©, Ã  la ferme, France",
+            "name_fr": "Chou-fleur conventionnel, culture d'été, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1856,7 +1856,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cauliflower-winter-conventional-at-farm-gate-fr-u-raw": {
             "name": "Cauliflower, winter, conventional, at farm gate {FR} U",
-            "name_fr": "Chou-fleur conventionnel, culture d'hiver, Ã  la ferme, France",
+            "name_fr": "Chou-fleur conventionnel, culture d'hiver, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1901,7 +1901,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cauliflower-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Cauliflower, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Chou-fleur conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Chou-fleur conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1946,7 +1946,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "clementine-export-quality-souss-at-orchard-ma-u-raw": {
             "name": "Clementine, export quality, Souss, at orchard {MA} U",
-            "name_fr": "ClÃ©mentine, pour exportation, au verger, Souss, Maroc",
+            "name_fr": "Clémentine, pour exportation, au verger, Souss, Maroc",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -1991,7 +1991,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "rapeseed-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
             "name": "Rapeseed, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U",
-            "name_fr": "Colza, conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, production, France",
+            "name_fr": "Colza, conventionnel, 9% d'humidité, moyenne nationale, aliment pour animaux, production, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2036,7 +2036,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "rapeseed-systematic-covercropping-scenario-at-farm-gate-fr-u-raw": {
             "name": "Rapeseed, systematic covercropping scenario, at farm gate {FR} U",
-            "name_fr": "Colza, levier culture intermÃ©diaire, Ã  la ferme, France",
+            "name_fr": "Colza, levier culture intermédiaire, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2081,7 +2081,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "rapeseed-protein-crop-scenario-at-farm-gate-fr-u-raw": {
             "name": "Rapeseed, protein crop scenario, at farm gate {FR} U",
-            "name_fr": "Colza, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+            "name_fr": "Colza, levier légumineuse dans rotation, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2126,7 +2126,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "rapeseed-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
             "name": "Rapeseed, basis scenario without lever, at farm gate {FR} U",
-            "name_fr": "Colza, scÃ©nario de base, Ã  la ferme, France",
+            "name_fr": "Colza, scénario de base, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2171,7 +2171,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "great-scallop-pecten-maximus-bsbrieuc-dredge-average-at-landing-fr-u-raw": {
             "name": "Great Scallop, Pecten maximus, BSBrieuc, Dredge, average, at landing {FR} U",
-            "name_fr": "Coquille Saint-Jacques,  Pecten maximus, bais de St Brieuc, drague, au dÃ©barquement, France",
+            "name_fr": "Coquille Saint-Jacques,  Pecten maximus, bais de St Brieuc, drague, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2216,7 +2216,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "zucchini-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
             "name": "Zucchini, autumn, under tunnel, conventional, at farm gate {FR} U",
-            "name_fr": "Courgette conventionnelle, automne sous tunnel, Ã  la ferme, France",
+            "name_fr": "Courgette conventionnelle, automne sous tunnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2261,7 +2261,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "zucchini-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Zucchini, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Courgette conventionnelle, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Courgette conventionnelle, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2306,7 +2306,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "zucchini-open-field-conventional-at-farm-gate-fr-u-raw": {
             "name": "Zucchini, open field, conventional, at farm gate {FR} U",
-            "name_fr": "Courgette conventionnelle, plein champ, Ã  la ferme, France",
+            "name_fr": "Courgette conventionnelle, plein champ, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2351,7 +2351,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "zucchini-springtime-under-tunnel-conventionel-at-farm-gate-fr-u-raw": {
             "name": "Zucchini, springtime, under tunnel, conventionel, at farm gate {FR} U",
-            "name_fr": "Courgette conventionnelle, printemps sous tunnel, Ã  la ferme, France",
+            "name_fr": "Courgette conventionnelle, printemps sous tunnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2396,7 +2396,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "fresh-shrimps-china-production-fr-u-raw": {
             "name": "Fresh shrimps, China production {FR} U",
-            "name_fr": "Crevette, Chine, conventionnelle, Ã  la ferme, France",
+            "name_fr": "Crevette, Chine, conventionnelle, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2441,7 +2441,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "turkey-conventional-at-farm-gate-fr-u-raw": {
             "name": "Turkey, conventional, at farm gate {FR} U",
-            "name_fr": "Dinde, conventionnel, Ã  la ferme, France",
+            "name_fr": "Dinde, conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2487,7 +2487,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "turkey-label-rouge-at-farm-gate-fr-u-raw": {
             "name": "Turkey, Label Rouge, at farm gate {FR} U",
-            "name_fr": "Dinde, Label Rouge, Ã  la ferme, France",
+            "name_fr": "Dinde, Label Rouge, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2533,7 +2533,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-early-conventional-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, early, conventional at farm gate {FR} U",
-            "name_fr": "Endive conventionnelle, prÃ©coce, Ã  la ferme, France",
+            "name_fr": "Endive conventionnelle, précoce, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2578,7 +2578,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-season-conventional-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, season, conventional at farm gate {FR} U",
-            "name_fr": "Endive conventionnelle, saison, Ã  la ferme, France",
+            "name_fr": "Endive conventionnelle, saison, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2623,7 +2623,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-late-conventional-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, late, conventional at farm gate {FR} U",
-            "name_fr": "Endive conventionnelle, tardive, Ã  la ferme, France",
+            "name_fr": "Endive conventionnelle, tardive, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2668,7 +2668,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, conventional, national average at farm gate {FR} U",
-            "name_fr": "Endive, conventionnelle, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Endive, conventionnelle, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2713,7 +2713,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "spring-faba-bean-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Spring faba bean, conventional, national average, at farm gate {FR} U",
-            "name_fr": "FÃ©verole, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Féverole, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2758,7 +2758,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "spring-faba-bean-conventional-reduced-protection-at-farm-gate-fr-u-raw": {
             "name": "Spring faba bean, conventional, reduced protection, at farm gate {FR} U",
-            "name_fr": "FÃ©verole, conventionnel, protection intÃ©grÃ©e, Ã  la ferme, France",
+            "name_fr": "Féverole, conventionnel, protection intégrée, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2848,7 +2848,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-soilless-protected-crops-frost-protection-conventional-at-farm-gate-fr-u-raw": {
             "name": "Strawberry, soilless protected crops, frost protection, conventional, at farm gate {FR} U",
-            "name_fr": "Fraise conventionnelle, hors sol sous abri anti gel, Ã  la ferme, France",
+            "name_fr": "Fraise conventionnelle, hors sol sous abri anti gel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2893,7 +2893,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-soilless-protected-crops-heated-conventional-at-farm-gate-fr-u-raw": {
             "name": "Strawberry, soilless protected crops, heated, conventional, at farm gate {FR} U",
-            "name_fr": "Fraise conventionnelle, hors sol sous abri chauffÃ©, Ã  la ferme, France",
+            "name_fr": "Fraise conventionnelle, hors sol sous abri chauffé, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2938,7 +2938,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-soilless-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw": {
             "name": "Strawberry, soilless protected crops, non-heated, conventional, at farm gate {FR} U",
-            "name_fr": "Fraise conventionnelle, hors sol sous abri non chauffÃ©, Ã  la ferme, France",
+            "name_fr": "Fraise conventionnelle, hors sol sous abri non chauffé, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -2983,7 +2983,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Strawberry, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Fraise conventionnelle, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Fraise conventionnelle, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3028,7 +3028,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-open-field-conventional-at-farm-gate-fr-u-raw": {
             "name": "Strawberry, open field, conventional, at farm gate {FR} U",
-            "name_fr": "Fraise conventionnelle, plein champ, Ã  la ferme, France",
+            "name_fr": "Fraise conventionnelle, plein champ, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3073,7 +3073,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-soil-protected-crops-non-heated-conventional-at-farm-gate-fr-u-raw": {
             "name": "Strawberry, soil protected crops, non-heated, conventional, at farm gate {FR} U",
-            "name_fr": "Fraise conventionnelle, sol sous abri non chauffÃ©, Ã  la ferme, France",
+            "name_fr": "Fraise conventionnelle, sol sous abri non chauffé, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3118,7 +3118,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-for-processing-open-field-conventional-at-farm-gate-es-u-raw": {
             "name": "Strawberry for processing, open field, conventional, at farm gate {ES} U",
-            "name_fr": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Espagne",
+            "name_fr": "Fraise industrie, plein champ, conventionnel, à la ferme, Espagne",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3163,7 +3163,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-for-processing-open-field-conventional-at-farm-gate-ma-u-raw": {
             "name": "Strawberry for processing, open field, conventional, at farm gate {MA} U",
-            "name_fr": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, maroc",
+            "name_fr": "Fraise industrie, plein champ, conventionnel, à la ferme, maroc",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3208,7 +3208,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "strawberry-for-processing-open-field-conventional-at-farm-gate-pl-u-raw": {
             "name": "Strawberry for processing, open field, conventional, at farm gate {PL} U",
-            "name_fr": "Fraise industrie, plein champ, conventionnel, Ã  la ferme, Pologne",
+            "name_fr": "Fraise industrie, plein champ, conventionnel, à la ferme, Pologne",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3253,7 +3253,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "gadidae-celticsea-bottom-trawl-average-at-landing-fr-u-raw": {
             "name": "Gadidae, CelticSea, Bottom Trawl, average, at landing {FR} U",
-            "name_fr": "Gadidae, mer celtique, chalut de fond, au dÃ©barquement, France",
+            "name_fr": "Gadidae, mer celtique, chalut de fond, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3298,7 +3298,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "suckler-heifer-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
             "name": "Suckler heifer, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U",
-            "name_fr": "GÃ©nisse allaitante  systÃ¨me d'engraissement conventionnel, plus de 1,2 UGB par ha, Ã  la ferme, France",
+            "name_fr": "Génisse allaitante  système d'engraissement conventionnel, plus de 1,2 UGB par ha, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3343,7 +3343,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "coffee-bean-robusta-depulped-brazil-at-farm-gate-br-u-raw": {
             "name": "Coffee bean (Robusta), depulped, Brazil, at farm gate {BR} U",
-            "name_fr": "Grain de cafÃ© (robusta), dÃ©pulpÃ©s, au BrÃ©sil, au dÃ©part de l'exploitation, BrÃ©sil",
+            "name_fr": "Grain de café (robusta), dépulpés, au Brésil, au départ de l'exploitation, Brésil",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3388,7 +3388,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "hemp-grain-champagne-at-farm-gate-fr-u-raw": {
             "name": "Hemp, grain, Champagne, at farm gate {FR} U",
-            "name_fr": "Graine de chanvre, Champagne, Ã  la ferme, France",
+            "name_fr": "Graine de chanvre, Champagne, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3433,7 +3433,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sunflower-grain-conventional-9-moisture-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
             "name": "Sunflower grain, conventional, 9% moisture, national average, animal feed, at farm gate, production {FR} U",
-            "name_fr": "Graine de tournesol,  conventionnel, 9% d'humiditÃ©, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
+            "name_fr": "Graine de tournesol,  conventionnel, 9% d'humidité, moyenne nationale, aliment pour animaux, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3478,7 +3478,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sunflower-grain-systematic-covercropping-scenario-at-farm-gate-fr-u-raw": {
             "name": "Sunflower grain, systematic covercropping scenario, at farm gate {FR} U",
-            "name_fr": "Graine de tournesol, levier culture intermÃ©diaire, Ã  la ferme, France",
+            "name_fr": "Graine de tournesol, levier culture intermédiaire, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3523,7 +3523,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sunflower-grain-protein-crop-scenario-at-farm-gate-fr-u-raw": {
             "name": "Sunflower grain, protein crop scenario, at farm gate {FR} U",
-            "name_fr": "Graine de tournesol, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+            "name_fr": "Graine de tournesol, levier légumineuse dans rotation, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3568,7 +3568,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sunflower-grain-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
             "name": "Sunflower grain, basis scenario without lever, at farm gate {FR} U",
-            "name_fr": "Graine de tournesol, scÃ©nario de base, Ã  la ferme, France",
+            "name_fr": "Graine de tournesol, scénario de base, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3613,7 +3613,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "flaxseed-extruded-bleu-blanc-coeur-feed-at-farm-gate-fr-u-raw": {
             "name": "Flaxseed extruded, Bleu Blanc Coeur feed, at farm gate {FR} U",
-            "name_fr": "Graines de lin extrudÃ©es, aliment Bleu Blanc Coeur, Ã  la ferme, France",
+            "name_fr": "Graines de lin extrudées, aliment Bleu Blanc Coeur, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3658,7 +3658,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "flaxseed-straw-ret-normandie-at-farm-gate-fr-u-raw": {
             "name": "Flaxseed, straw, ret, Normandie, at farm gate {FR} U",
-            "name_fr": "Graines de lin, paille, Normandie, Ã  la ferme, France",
+            "name_fr": "Graines de lin, paille, Normandie, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3703,7 +3703,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "large-trout-2-4kg-conventional-at-farm-gate-fr-u-raw": {
             "name": "Large trout, 2-4kg, conventional, at farm gate {FR} U",
-            "name_fr": "Grande truite, 2-4 kg, conventionnel, Ã  la ferme, France",
+            "name_fr": "Grande truite, 2-4 kg, conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3748,7 +3748,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "atlantic-herring-clupea-harengus-nea-pelagic-trawl-average-at-landing-nl-u-raw": {
             "name": "Atlantic Herring, Clupea harengus, NEA, Pelagic Trawl, average, at landing {NL} U",
-            "name_fr": "Hareng de l'Atlantique, Clupea harengus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
+            "name_fr": "Hareng de l'Atlantique, Clupea harengus, atlantique nord est, chalut pélagique, au débarquement, Pays-Bas",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3793,7 +3793,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "french-bean-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "French bean, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Haricot franÃ§ais, moyenne conventionnelle, nationale, Ã  la ferme, France",
+            "name_fr": "Haricot français, moyenne conventionnelle, nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3838,7 +3838,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lobster-1-kg-of-product-at-landing-fr-u-raw": {
             "name": "Lobster, 1 kg of product, at landing {FR} U",
-            "name_fr": "Homard, au dÃ©barquement, France",
+            "name_fr": "Homard, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3928,7 +3928,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "wool-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
             "name": "Wool, conventional, Roquefort system, at farm gate {FR} U",
-            "name_fr": "Laine, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
+            "name_fr": "Laine, conventionnel, système Roquefort, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -3973,7 +3973,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "wool-conventional-indoor-production-system-at-farm-gate-fr-u-raw": {
             "name": "Wool, conventional, indoor production system, at farm gate {FR} U",
-            "name_fr": "Laine, systÃ¨me de production conventionnel, intÃ©rieur, Ã  la ferme, France",
+            "name_fr": "Laine, système de production conventionnel, intérieur, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4018,7 +4018,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sheep-milk-conventional-roquefort-system-at-farm-gate-fr-u-raw": {
             "name": "Sheep milk, conventional, Roquefort system, at farm gate {FR} U",
-            "name_fr": "Lait de brebis, conventionnel, systÃ¨me Roquefort, Ã  la ferme, France",
+            "name_fr": "Lait de brebis, conventionnel, système Roquefort, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4064,7 +4064,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "goat-milk-conventional-intensive-forage-area-at-farm-gate-fr-u-raw": {
             "name": "Goat milk, conventional, intensive forage area, at farm gate {FR} U",
-            "name_fr": "Lait de chÃ¨vre, fourrage intensif, Ã  la ferme, France",
+            "name_fr": "Lait de chèvre, fourrage intensif, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4110,7 +4110,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cow-milk-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Cow milk, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Lait de vache, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Lait de vache, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4156,7 +4156,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cow-milk-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw": {
             "name": "Cow milk, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U",
-            "name_fr": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 10 Ã  30%, Ã  la ferme, France",
+            "name_fr": "Lait de vache, système conventionnel, lait de plaine, maïs ensilage 10 à 30%, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4202,7 +4202,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cow-milk-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw": {
             "name": "Cow milk, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U",
-            "name_fr": "Lait de vache, systÃ¨me conventionnel, lait de plaine, maÃ¯s ensilage 5 Ã  10%, Ã  la ferme, France",
+            "name_fr": "Lait de vache, système conventionnel, lait de plaine, maïs ensilage 5 à 10%, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4248,7 +4248,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cow-milk-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw": {
             "name": "Cow milk, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U",
-            "name_fr": "Lait de vache, systÃ¨me conventionnel, Lait de plaine, maÃ¯s ensilage plus de 30%, Ã  la ferme, France",
+            "name_fr": "Lait de vache, système conventionnel, Lait de plaine, maïs ensilage plus de 30%, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4294,7 +4294,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cow-milk-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw": {
             "name": "Cow milk, conventional, highland milk system, grass fed, at farm gate {FR} U",
-            "name_fr": "Lait de vache, systÃ¨me conventionnel, montagne, nourri Ã  l'herbe, Ã  la ferme, France",
+            "name_fr": "Lait de vache, système conventionnel, montagne, nourri à l'herbe, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4340,7 +4340,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lettuce-autumn-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
             "name": "Lettuce, autumn under tunnel, conventional, at farm gate {FR} U",
-            "name_fr": "Laitue conventionnelle, automne sous tunnel, Ã  la ferme, France",
+            "name_fr": "Laitue conventionnelle, automne sous tunnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4385,7 +4385,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lettuce-winter-under-tunnel-conventional-at-farm-gate-fr-u-raw": {
             "name": "Lettuce, winter under tunnel, conventional, at farm gate {FR} U",
-            "name_fr": "Laitue conventionnelle, hiver sous tunnel, Ã  la ferme, France",
+            "name_fr": "Laitue conventionnelle, hiver sous tunnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4430,7 +4430,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lettuce-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Lettuce, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Laitue conventionnelle, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Laitue conventionnelle, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4475,7 +4475,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lettuce-open-field-conventional-at-farm-gate-fr-u-raw": {
             "name": "Lettuce, open field, conventional, at farm gate {FR} U",
-            "name_fr": "Laitue conventionnelle, plein champ, Ã  la ferme, France",
+            "name_fr": "Laitue conventionnelle, plein champ, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4520,7 +4520,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-rabbit-conventional-in-cage-at-farm-gate-fr-u-raw": {
             "name": "Cull rabbit, conventional, in cage, at farm gate {FR} U",
-            "name_fr": "Lapin de rÃ©forme, conventionnel, en cage, Ã  la ferme, France",
+            "name_fr": "Lapin de réforme, conventionnel, en cage, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4566,7 +4566,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "rabbit-conventional-in-cage-at-farm-gate-fr-u-raw": {
             "name": "Rabbit, conventional, in cage, at farm gate {FR} U",
-            "name_fr": "Lapin, conventionnel, en cage, Ã  la ferme, France",
+            "name_fr": "Lapin, conventionnel, en cage, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4612,7 +4612,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "spring-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw": {
             "name": "Spring lupin, 2013, conventional, national average, at farm gate, production {FR} U",
-            "name_fr": "Lupin de printemps, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Lupin de printemps, 2013, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4657,7 +4657,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "spring-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw": {
             "name": "Spring lupin, 2015, conventional, national average, at farm gate, production {FR} U",
-            "name_fr": "Lupin de printemps, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Lupin de printemps, 2015, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4702,7 +4702,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "winter-lupin-2013-conventional-national-average-at-farm-gate-production-fr-u-raw": {
             "name": "Winter lupin, 2013, conventional, national average, at farm gate, production {FR} U",
-            "name_fr": "Lupin d'hiver, 2013, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Lupin d'hiver, 2013, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4747,7 +4747,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "winter-lupin-2015-conventional-national-average-at-farm-gate-production-fr-u-raw": {
             "name": "Winter lupin, 2015, conventional, national average, at farm gate, production {FR} U",
-            "name_fr": "Lupin d'hiver, 2015, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Lupin d'hiver, 2015, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4792,7 +4792,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "lupin-conventional-national-average-at-farm-gate-production-fr-u-raw": {
             "name": "Lupin, conventional, national average, at farm gate, production {FR} U",
-            "name_fr": "Lupin, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Lupin, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4837,7 +4837,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "alfalfa-dehydrated-100-biomass-energy-process-conventional-at-feed-plant-fr-u-raw": {
             "name": "Alfalfa, dehydrated, 100% biomass energy process, conventional, at feed plant {FR} U",
-            "name_fr": "Luzerne dÃ©shydratÃ©e, conventionnelle, processus avec Ã©nergie 100% biomasse, sortie usine, France",
+            "name_fr": "Luzerne déshydratée, conventionnelle, processus avec énergie 100% biomasse, sortie usine, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4882,7 +4882,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "alfalfa-dehydrated-with-new-energies-process-conventional-at-feed-plant-fr-u-raw": {
             "name": "Alfalfa, dehydrated, with new energies process, conventional, at feed plant {FR} U",
-            "name_fr": "Luzerne dÃ©shydratÃ©e, conventionnelle, sortie usine, France",
+            "name_fr": "Luzerne déshydratée, conventionnelle, sortie usine, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4927,7 +4927,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "alfalfa-conventional-for-dehydration-animal-feed-at-farm-gate-production-fr-u-raw": {
             "name": "Alfalfa, conventional, for dehydration, animal feed, at farm gate, production {FR} U",
-            "name_fr": "Luzerne, conventionnel, par dÃ©shydratation, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Luzerne, conventionnel, par déshydratation, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -4972,7 +4972,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "alfalfa-conventional-for-animal-feeding-at-farm-gate-fr-u-raw": {
             "name": "Alfalfa, conventional, for animal feeding, at farm gate {FR} U",
-            "name_fr": "Luzerne, conventionnel, pour l'alimentation des animaux, Ã  la ferme, France",
+            "name_fr": "Luzerne, conventionnel, pour l'alimentation des animaux, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5017,7 +5017,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "alfalfa-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Alfalfa, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Luzerne, moyenne conventionnelle, nationale, Ã  la ferme, France",
+            "name_fr": "Luzerne, moyenne conventionnelle, nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5062,7 +5062,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "maize-grain-conventional-28-moisture-national-average-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Maize grain, conventional, 28% moisture, national average, animal feed, at farm gate {FR} U",
-            "name_fr": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Maïs grain, conventionnel, 28% d'humidité, moyenne nationale, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5107,7 +5107,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "maize-grain-conventional-28-moisture-national-average-with-water-footprint-animal-feed-at-farm-gate--raw": {
             "name": "Maize grain, conventional, 28% moisture, national average, with water footprint, animal feed, at farm gate {FR} U",
-            "name_fr": "MaÃ¯s grain, conventionnel, 28% d'humiditÃ©, moyenne nationale, avec empreinte eau, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Maïs grain, conventionnel, 28% d'humidité, moyenne nationale, avec empreinte eau, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5152,7 +5152,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "grain-maize-systematic-cover-cropping-scenario-at-farm-gate-fr-u-raw": {
             "name": "Grain maize, systematic cover cropping scenario, at farm gate {FR} U",
-            "name_fr": "MaÃ¯s grain, levier culture intermÃ©diaire systÃ©matique, Ã  la ferme, France",
+            "name_fr": "Maïs grain, levier culture intermédiaire systématique, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5197,7 +5197,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "grain-maize-protein-crop-scenario-at-farm-gate-fr-u-raw": {
             "name": "Grain maize, protein crop scenario, at farm gate {FR} U",
-            "name_fr": "MaÃ¯s grain, levier lÃ©gumineuse dans rotation, Ã  la ferme, France",
+            "name_fr": "Maïs grain, levier légumineuse dans rotation, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5242,7 +5242,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "grain-maize-basis-scenario-without-lever-at-farm-gate-fr-u-raw": {
             "name": "Grain maize, basis scenario without lever, at farm gate {FR} U",
-            "name_fr": "MaÃ¯s grain, scÃ©nario de base, Ã  la ferme, France",
+            "name_fr": "Maïs grain, scénario de base, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5287,7 +5287,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "atlantic-mackerel-scomber-scombrus-nea-pelagic-trawl-average-at-landing-nl-u-raw": {
             "name": "Atlantic Mackerel, Scomber scombrus, NEA, Pelagic Trawl, average, at landing {NL} U",
-            "name_fr": "Maquereau Atlantique, Scomber scombrus, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, Pays-Bas",
+            "name_fr": "Maquereau Atlantique, Scomber scombrus, atlantique nord est, chalut pélagique, au débarquement, Pays-Bas",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5332,7 +5332,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "melon-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Melon, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Melon conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Melon conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5377,7 +5377,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "melon-open-field-conventional-at-farm-gate-fr-u-raw": {
             "name": "Melon, open field, conventional, at farm gate {FR} U",
-            "name_fr": "Melon conventionnel, plein champ, Ã  la ferme, France",
+            "name_fr": "Melon conventionnel, plein champ, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5422,7 +5422,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "melon-under-low-tunnel-conventional-at-farm-gate-fr-u-raw": {
             "name": "Melon, under low tunnel, conventional, at farm gate {FR} U",
-            "name_fr": "Melon conventionnel, sous chenille, Ã  la ferme, France",
+            "name_fr": "Melon conventionnel, sous chenille, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5467,7 +5467,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "melon-protected-crop-conventional-at-farm-gate-fr-u-raw": {
             "name": "Melon, protected crop, conventional, at farm gate {FR} U",
-            "name_fr": "Melon conventionnel, sous tunnel, Ã  la ferme, France",
+            "name_fr": "Melon conventionnel, sous tunnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5557,7 +5557,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "walnut-dried-inshell-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Walnut, dried inshell, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Noix conventionnelle, en coque sÃ©chÃ©e, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Noix conventionnelle, en coque séchée, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5602,7 +5602,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "walnut-dried-inshell-varieties-with-lateral-fructification-conventional-at-farm-gate-fr-u-raw": {
             "name": "Walnut, dried inshell, varieties with lateral fructification, conventional, at farm gate {FR} U",
-            "name_fr": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s Ã  fructification latÃ©rale, Ã  la ferme, France",
+            "name_fr": "Noix conventionnelle, en coque séchée, variétés à fructification latérale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5647,7 +5647,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "walnut-dried-inshell-traditional-varieties-conventional-at-farm-gate-fr-u-raw": {
             "name": "Walnut, dried inshell, traditional varieties, conventional, at farm gate {FR} U",
-            "name_fr": "Noix conventionnelle, en coque sÃ©chÃ©e, variÃ©tÃ©s traditionnelles, Ã  la ferme, France",
+            "name_fr": "Noix conventionnelle, en coque séchée, variétés traditionnelles, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5692,7 +5692,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "onion-short-day-sown-conventional-at-farm-gate-fr-u-raw": {
             "name": "Onion, short day sown, conventional, at farm gate {FR} U",
-            "name_fr": "Oignon conventionnel, jour court semÃ©, Ã  la ferme , France",
+            "name_fr": "Oignon conventionnel, jour court semé, à la ferme , France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5737,7 +5737,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "onion-long-day-planted-conventional-at-farm-gate-fr-u-raw": {
             "name": "Onion, long-day planted, conventional, at farm gate {FR} U",
-            "name_fr": "Oignon conventionnel, jour long plantÃ©, Ã  la ferme, France",
+            "name_fr": "Oignon conventionnel, jour long planté, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5782,7 +5782,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "onion-long-day-sown-conventional-at-farm-gate-fr-u-raw": {
             "name": "Onion, long-day sown, conventional, at farm gate {FR} U",
-            "name_fr": "Oignon conventionnel, jour long semÃ©, Ã  la ferme, France",
+            "name_fr": "Oignon conventionnel, jour long semé, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5827,7 +5827,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "onion-conventional-national-average-at-farm-fr-u-raw": {
             "name": "Onion, conventional, national average, at farm {FR} U",
-            "name_fr": "Oignon conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Oignon conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5872,7 +5872,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "spring-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Spring barley, conventional, malting quality, animal feed, at farm gate {FR} U",
-            "name_fr": "Orge de printemps, conventionnel, brassicole, Ã  la ferme, France",
+            "name_fr": "Orge de printemps, conventionnel, brassicole, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5917,7 +5917,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "spring-barley-conventional-downgraded-quality-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Spring barley, conventional, downgraded quality, animal feed, at farm gate {FR} U",
-            "name_fr": "Orge de printemps, conventionnel, dÃ©classÃ©,  Ã  la ferme, France",
+            "name_fr": "Orge de printemps, conventionnel, déclassé,  à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -5962,7 +5962,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "winter-barley-conventional-malting-quality-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Winter barley, conventional, malting quality, animal feed, at farm gate {FR} U",
-            "name_fr": "Orge d'hiver, conventionnel, brassicole, Ã  la ferme, France",
+            "name_fr": "Orge d'hiver, conventionnel, brassicole, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6052,7 +6052,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "peach-conventional-national-average-at-orchard-fr-u-raw": {
             "name": "Peach, conventional, national average, at orchard {FR} U",
-            "name_fr": "PÃªche conventionnelle, moyenne nationale, au verger, France",
+            "name_fr": "Pêche conventionnelle, moyenne nationale, au verger, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6097,7 +6097,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "annual-vining-pea-for-industry-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Annual vining pea for industry, Conventional, National average, at farm gate {FR} U",
-            "name_fr": "Petit pois annuel pour transformation industrielle, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Petit pois annuel pour transformation industrielle, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6142,7 +6142,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "small-trout-250-350g-conventional-at-farm-gate-fr-u-raw": {
             "name": "Small trout, 250-350g, conventional, at farm gate {FR} U",
-            "name_fr": "Petite truite, 250-350g,  conventionnel, Ã  la ferme, France",
+            "name_fr": "Petite truite, 250-350g,  conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6232,7 +6232,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pear-at-farm-nl-u-raw": {
             "name": "Pear, at farm {NL} U",
-            "name_fr": "Poire, Ã  la ferme, Pays-Bas",
+            "name_fr": "Poire, à la ferme, Pays-Bas",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6277,7 +6277,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "autumn-irrigated-leek-conventional-at-farm-gate-fr-u-raw": {
             "name": "Autumn irrigated leek, conventional, at farm gate {FR} U",
-            "name_fr": "Poireau conventionnel, automne irriguÃ©, Ã  la ferme, France",
+            "name_fr": "Poireau conventionnel, automne irrigué, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6322,7 +6322,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "leek-winter-non-irrigated-conventional-at-farm-gate-fr-u-raw": {
             "name": "Leek, winter non-irrigated, conventional, at farm gate {FR} U",
-            "name_fr": "Poireau conventionnel, hiver non irriguÃ©, Ã  la ferme, France",
+            "name_fr": "Poireau conventionnel, hiver non irrigué, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6367,7 +6367,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "leek-conventional-national-average-at-plant-fr-u-raw": {
             "name": "Leek, conventional, national average, at plant {FR} U",
-            "name_fr": "Poireau conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Poireau conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6412,7 +6412,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "leek-early-planted-conventional-at-farm-gate-fr-u-raw": {
             "name": "Leek, early planted, conventional, at farm gate {FR} U",
-            "name_fr": "Poireau conventionnel, prÃ©coce plantÃ©, Ã  la ferme, France",
+            "name_fr": "Poireau conventionnel, précoce planté, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6457,7 +6457,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "leek-early-sown-conventional-at-farm-gate-fr-u-raw": {
             "name": "Leek, early sown, conventional, at farm gate {FR} U",
-            "name_fr": "Poireau conventionnel, prÃ©coce semÃ©, Ã  la ferme, France",
+            "name_fr": "Poireau conventionnel, précoce semé, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6502,7 +6502,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "spring-pea-conventional-15-moisture-animal-feed-at-farm-gate-production-fr-u-raw": {
             "name": "Spring pea, conventional, 15% moisture, animal feed, at farm gate, production {FR} U",
-            "name_fr": "Pois de printemps, conventionnel, 15% d'humiditÃ©, aliment pour animaux, Ã  la ferme, France",
+            "name_fr": "Pois de printemps, conventionnel, 15% d'humidité, aliment pour animaux, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6547,7 +6547,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "winter-pea-conventional-15-moisture-at-farm-gate-fr-u-raw": {
             "name": "Winter pea, conventional, 15% moisture, at farm gate {FR} U",
-            "name_fr": "Pois d'hiver, conventionnel, 15% d'humiditÃ©, Ã  la ferme, France",
+            "name_fr": "Pois d'hiver, conventionnel, 15% d'humidité, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6592,7 +6592,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "black-pepper-conventional-at-farm-gate-vn-u-raw": {
             "name": "Black pepper, conventional, at farm gate {VN} U",
-            "name_fr": "Poivre noir, conventionnel, Ã  la ferme, Vietnam",
+            "name_fr": "Poivre noir, conventionnel, à la ferme, Vietnam",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6637,7 +6637,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cider-apple-conventional-national-average-at-orchard-fr-u-raw": {
             "name": "Cider apple, conventional, national average, at orchard {FR} U",
-            "name_fr": "Pomme Ã  cidre, moyen conventionnel, national, au verger, France",
+            "name_fr": "Pomme à cidre, moyen conventionnel, national, au verger, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6727,7 +6727,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "apple-conventional-non-scab-tolerant-at-orchard-fr-u-raw": {
             "name": "Apple, conventional, non scab-tolerant, at orchard {FR} U",
-            "name_fr": "Pomme conventionnelle, non tolÃ©rante Ã  la tavelure, au verger, France",
+            "name_fr": "Pomme conventionnelle, non tolérante à la tavelure, au verger, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6772,7 +6772,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "apple-conventional-scab-tolerant-at-orchard-fr-u-raw": {
             "name": "Apple, conventional, scab-tolerant, at orchard {FR} U",
-            "name_fr": "Pomme conventionnelle, tolÃ©rante tavelure, au verger, France",
+            "name_fr": "Pomme conventionnelle, tolérante tavelure, au verger, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6817,7 +6817,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "starch-potato-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Starch potato, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Pomme de terre fÃ©cule, moyenne conventionnel, national, Ã  la ferme, France",
+            "name_fr": "Pomme de terre fécule, moyenne conventionnel, national, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6862,7 +6862,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "ware-potato-conventional-for-industrial-use-at-farm-gate-fr-u-raw": {
             "name": "Ware potato, conventional, for industrial use, at farm gate {FR} U",
-            "name_fr": "Pommes de terre, conventionnel, Ã  usage industriel, Ã  la ferme, France",
+            "name_fr": "Pommes de terre, conventionnel, à usage industriel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6907,7 +6907,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "ware-potato-conventional-variety-mix-national-average-at-farm-gate-fr-u-raw": {
             "name": "Ware potato, conventional, variety mix, national average, at farm gate {FR} U",
-            "name_fr": "Pommes de terre, conventionnel, mÃ©lange de variÃ©tÃ©s, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Pommes de terre, conventionnel, mélange de variétés, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6952,7 +6952,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "ware-potato-conventional-for-fresh-market-other-varieties-at-farm-gate-fr-u-raw": {
             "name": "Ware potato, conventional, for fresh market, other varieties, at farm gate {FR} U",
-            "name_fr": "Pommes de terre, conventionnel, pour le marchÃ© frais, autres variÃ©tÃ©s, Ã  la ferme, France",
+            "name_fr": "Pommes de terre, conventionnel, pour le marché frais, autres variétés, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -6997,7 +6997,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "ware-potato-conventional-for-fresh-market-firm-flesh-varieties-at-farm-gate-fr-u-raw": {
             "name": "Ware potato, conventional, for fresh market, firm flesh varieties, at farm gate {FR} U",
-            "name_fr": "Pommes de terre, conventionnel, pour le marchÃ© frais, variÃ©tÃ©s Ã  chair ferme, Ã  la ferme, France",
+            "name_fr": "Pommes de terre, conventionnel, pour le marché frais, variétés à chair ferme, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7042,7 +7042,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pig-label-rouge-outdoor-system-at-farm-gate-fr-u-raw": {
             "name": "Pig, Label Rouge, outdoor system, at farm gate {FR} U",
-            "name_fr": "Porc, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
+            "name_fr": "Porc, Label Rouge, système plein air, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7088,7 +7088,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pig-conventional-porc-bien-etre-at-farm-gate-fr-u-raw": {
             "name": "Pig, conventional, Porc Bien Etre, at farm gate {FR} U",
-            "name_fr": "Porc, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
+            "name_fr": "Porc, conventionnel, Cahier des charges Porc bien-être, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7134,7 +7134,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pig-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw": {
             "name": "Pig, conventional, on-farm feed supply, at farm gate {FR} U",
-            "name_fr": "Porc, conventionnel, fourniture d'aliments Ã  la ferme, Ã  la ferme, France",
+            "name_fr": "Porc, conventionnel, fourniture d'aliments à la ferme, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7180,7 +7180,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pig-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Pig, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Porc, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Porc, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7226,7 +7226,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "mixt-pig-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Mixt pig, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Porc moyen (97% porc, 3% truie de rÃ©forme), conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Porc moyen (97% porc, 3% truie de réforme), conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7272,7 +7272,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pig-label-rouge-national-average-at-farm-gate-fr-u-raw": {
             "name": "Pig, Label Rouge, national average, at farm gate {FR} U",
-            "name_fr": "Porc, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
+            "name_fr": "Porc, Label Rouge, moyenne nationale (50% courette, 50% plein air), à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7318,7 +7318,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "mixt-pig-label-rouge-national-average-at-farm-gate-fr-u-raw": {
             "name": "Mixt pig, Label Rouge, national average, at farm gate {FR} U",
-            "name_fr": "Porc moyen (97% porc, 3% truie de rÃ©forme), Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
+            "name_fr": "Porc moyen (97% porc, 3% truie de réforme), Label Rouge, moyenne nationale (50% courette, 50% plein air), à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7364,7 +7364,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "pig-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw": {
             "name": "Pig, Label Rouge, pig with run system, at farm gate {FR} U",
-            "name_fr": "Porc, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
+            "name_fr": "Porc, Label Rouge, système courette, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7410,7 +7410,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-hen-conventional-indoor-system-non-cage-at-farm-gate-fr-u-raw": {
             "name": "Cull hen, conventional, indoor system, non-cage, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, intÃ©rieur, au sol, Ã  la ferme, France",
+            "name_fr": "Poule de réforme, conventionnel, intérieur, au sol, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7456,7 +7456,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-hen-conventional-indoor-production-cage-2012-rules-at-farm-gate-fr-u-raw": {
             "name": "Cull hen, conventional, indoor production, cage 2012 rules, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, intÃ©rieur, cage rÃ¨gles 2012, Ã  la ferme, France",
+            "name_fr": "Poule de réforme, conventionnel, intérieur, cage règles 2012, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7502,7 +7502,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-hen-conventional-indoor-system-cage-at-farm-gate-fr-u-raw": {
             "name": "Cull hen, conventional, indoor system, cage, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, intÃ©rieur, en cage, Ã  la ferme, France",
+            "name_fr": "Poule de réforme, conventionnel, intérieur, en cage, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7548,7 +7548,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-hen-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Cull hen, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Poule de réforme, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7594,7 +7594,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-hen-conventional-outdoor-system-at-farm-gate-fr-u-raw": {
             "name": "Cull hen, conventional, outdoor system, at farm gate {FR} U",
-            "name_fr": "Poule de rÃ©forme, conventionnel, systÃ¨me extÃ©rieur, Ã  la ferme, France",
+            "name_fr": "Poule de réforme, conventionnel, système extérieur, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7640,7 +7640,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "broiler-conventional-at-farm-gate-fr-u-raw": {
             "name": "Broiler, conventional, at farm gate {FR} U",
-            "name_fr": "Poulet, conventionnel, Ã  la ferme, France",
+            "name_fr": "Poulet, conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7686,7 +7686,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "broiler-label-rouge-at-farm-gate-fr-u-raw": {
             "name": "Broiler, Label Rouge, at farm gate {FR} U",
-            "name_fr": "Poulet, Label Rouge, Ã  la ferme, France",
+            "name_fr": "Poulet, Label Rouge, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7732,7 +7732,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "broiler-production-mix-national-average-at-farm-gate-fr-u-raw": {
             "name": "Broiler, production mix, national average, at farm gate {FR} U",
-            "name_fr": "Poulet, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Poulet, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7778,7 +7778,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-early-conventional-root-production-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, early, conventional, root production, at farm gate {FR} U",
-            "name_fr": "Production de racine d'endive conventionnelle, prÃ©coce, Ã  la ferme, France",
+            "name_fr": "Production de racine d'endive conventionnelle, précoce, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7823,7 +7823,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-season-conventional-root-production-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, season, conventional, root production, at farm gate {FR} U",
-            "name_fr": "Production de racine d'endive conventionnelle, saison, Ã  la ferme, France",
+            "name_fr": "Production de racine d'endive conventionnelle, saison, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7868,7 +7868,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-witloof-late-conventional-root-production-at-farm-gate-fr-u-raw": {
             "name": "Chicory witloof, late, conventional, root production, at farm gate {FR} U",
-            "name_fr": "Production de racine d'endive conventionnelle, tardive, Ã  la ferme, France",
+            "name_fr": "Production de racine d'endive conventionnelle, tardive, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7913,7 +7913,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "quinoa-fr-conventional-at-farm-gate-fr-u-raw": {
             "name": "Quinoa FR, conventional, at farm gate {FR} U",
-            "name_fr": "Quinoa, conventionnel, Ã  la ferme, France",
+            "name_fr": "Quinoa, conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -7958,7 +7958,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "chicory-roots-conventional-at-farm-gate-fr-u-raw": {
             "name": "Chicory roots, conventional, at farm gate {FR} U",
-            "name_fr": "Racines de chicorÃ©e, conventionnel, Ã  la ferme, France",
+            "name_fr": "Racines de chicorée, conventionnel, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8003,7 +8003,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "grapefruit-for-juice-conventional-at-farm-gate-us-u-raw": {
             "name": "Grapefruit for juice, conventional, at farm gate {US} U",
-            "name_fr": "Raisin pour du jus, conventionnel, Ã  la ferme, Etats-Unis",
+            "name_fr": "Raisin pour du jus, conventionnel, à la ferme, Etats-Unis",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8048,7 +8048,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "grape-integrated-french-mix-fr-u-raw": {
             "name": "Grape, integrated, french mix {FR} U",
-            "name_fr": "Raisin, intÃ©grÃ©, mÃ©lange franÃ§ais, France",
+            "name_fr": "Raisin, intégré, mélange français, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8093,7 +8093,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "grape-integrated-aoc-beaujolais-at-vineyard-fr-u-raw": {
             "name": "Grape, integrated, AOC, Beaujolais, at vineyard {FR} U",
-            "name_fr": "Raisin, production intÃ©grÃ©e, AOC Beaujolais, au vignoble, France",
+            "name_fr": "Raisin, production intégrée, AOC Beaujolais, au vignoble, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8138,7 +8138,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "grape-integrated-variety-mix-languedoc-roussillon-at-vineyard-fr-u-raw": {
             "name": "Grape, integrated, variety mix, Languedoc-Roussillon, at vineyard {FR} U",
-            "name_fr": "Raisin, production intÃ©grÃ©e, mÃ©lange de variÃ©tÃ©s, Languedoc-Roussillon, au vignoble, France",
+            "name_fr": "Raisin, production intégrée, mélange de variétés, Languedoc-Roussillon, au vignoble, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8183,7 +8183,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "saithe-pollachius-virens-northsea-bottom-trawl-average-frozen-at-landing-fr-u-raw": {
             "name": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, frozen, at landing {FR} U",
-            "name_fr": "Saithe, Pollachius virens, mer du Nord, chalut de fond, congelÃ©s, au dÃ©barquement, France",
+            "name_fr": "Saithe, Pollachius virens, mer du Nord, chalut de fond, congelés, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8228,7 +8228,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "saithe-pollachius-virens-northsea-bottom-trawl-average-fresh-at-landing-eu-u-raw": {
             "name": "Saithe, Pollachius virens, NorthSea, Bottom Trawl, average, fresh, at landing {EU} U",
-            "name_fr": "Saithe, Pollachius virens, mer du Nord, chalut de fond, frais, au dÃ©barquement, Europe",
+            "name_fr": "Saithe, Pollachius virens, mer du Nord, chalut de fond, frais, au débarquement, Europe",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8273,7 +8273,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "european-pilchard-sardina-pilchardus-eca-seine-average-at-landing-fr-u-raw": {
             "name": "European Pilchard, Sardina pilchardus, ECA, Seine, average, at landing {FR} U",
-            "name_fr": "Sardine europÃ©enne,  Sardina pilchardus, atlantique centre est, senne, au dÃ©barquement, France",
+            "name_fr": "Sardine européenne,  Sardina pilchardus, atlantique centre est, senne, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8318,7 +8318,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "european-pilchard-sardina-pilchardus-bbiscay-seine-average-at-landing-fr-u-raw": {
             "name": "European Pilchard, Sardina pilchardus, BBiscay, Seine, average, at landing {FR} U",
-            "name_fr": "Sardine europÃ©enne, Sardina pilchardus, baie de Biscay, senne, au dÃ©barquement, France",
+            "name_fr": "Sardine européenne, Sardina pilchardus, baie de Biscay, senne, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8363,7 +8363,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "salmon-farmed-conventional-at-farm-gate-no-u-raw": {
             "name": "Salmon, farmed, conventional, at farm gate {NO} U",
-            "name_fr": "Saumon issu d'aquaculture, conventionnel, Ã  la ferme, NorvÃ¨ge",
+            "name_fr": "Saumon issu d'aquaculture, conventionnel, à la ferme, Norvège",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8408,7 +8408,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soybean-cut-off-date-2008-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw": {
             "name": "Soybean, cut-off date 2008 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
-            "name_fr": "Soja, cut-off date 2008, Ã  la ferme, BrÃ©sil",
+            "name_fr": "Soja, cut-off date 2008, à la ferme, Brésil",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8454,7 +8454,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soybean-cut-off-date-2020-br-market-for-soybean-without-transport-cut-off-u-adapted-from-ecoinvent-raw": {
             "name": "Soybean, cut-off date 2020 {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
-            "name_fr": "Soja, cut-off date 2020, Ã  la ferme, BrÃ©sil",
+            "name_fr": "Soja, cut-off date 2020, à la ferme, Brésil",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8499,7 +8499,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soybean-not-associated-to-deforestation-br-market-for-soybean-without-transport-cut-off-u-adapted-fr-raw": {
             "name": "Soybean, not associated to deforestation {BR}| market for soybean, without transport | Cut-off, U - Adapted from Ecoinvent",
-            "name_fr": "Soja, issu de zones non dÃ©forestÃ©es, Ã  la ferme, BrÃ©sil",
+            "name_fr": "Soja, issu de zones non déforestées, à la ferme, Brésil",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8544,7 +8544,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "soybean-national-average-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Soybean, national average, animal feed, at farm gate {FR} U",
-            "name_fr": "Soja, moyenne nationale, aliment pour animaux, Ã  la ferme, France",
+            "name_fr": "Soja, moyenne nationale, aliment pour animaux, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8589,7 +8589,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "common-sole-solea-solea-bbiscay-trammel-net-average-at-landing-fr-u-raw": {
             "name": "Common Sole, Solea solea, BBiscay, Trammel Net, average, at landing {FR} U",
-            "name_fr": "Sole commune, Solea solea, baie de Biscay, trÃ©mail, au dÃ©barquement, France",
+            "name_fr": "Sole commune, Solea solea, baie de Biscay, trémail, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8634,7 +8634,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "silage-sorghum-national-average-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Silage sorghum, national average, animal feed, at farm gate {FR} U",
-            "name_fr": "Sorgho ensilage, moyenne nationale, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Sorgho ensilage, moyenne nationale, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8679,7 +8679,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "sorghum-grain-conventional-national-average-animal-feed-at-farm-gate-fr-u-raw": {
             "name": "Sorghum grain, conventional, national average, animal feed, at farm gate {FR} U",
-            "name_fr": "Sorgho, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, France",
+            "name_fr": "Sorgho, conventionnel, moyenne nationale, alimentation animale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8724,7 +8724,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "young-suckler-bull-conventional-fattening-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
             "name": "Young suckler bull, conventional, fattening system, less than 1.2 LU per ha, at farm gate {FR} U",
-            "name_fr": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, moins de 1.2 UGB par ha, Ã  la ferme, France",
+            "name_fr": "Taurillon allaitant, conventionnel, système d'engraissement, moins de 1.2 UGB par ha, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8769,7 +8769,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "young-suckler-bull-conventional-fattening-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
             "name": "Young suckler bull, conventional, fattening system, more than 1.2 LU per ha, at farm gate {FR} U",
-            "name_fr": "Taurillon allaitant, conventionnel, systÃ¨me d'engraissement, plus de 1.2 UGB par ha, Ã  la ferme, France",
+            "name_fr": "Taurillon allaitant, conventionnel, système d'engraissement, plus de 1.2 UGB par ha, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8814,7 +8814,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "young-dairy-bull-conventional-fattening-system-at-farm-gate-fr-u-raw": {
             "name": "Young dairy bull, conventional, fattening system, at farm gate {FR} U",
-            "name_fr": "Taurillon laitier, conventionnel, systÃ¨me d'engraissement, Ã  la ferme, France",
+            "name_fr": "Taurillon laitier, conventionnel, système d'engraissement, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8859,7 +8859,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "albacore-thunnus-alalunga-nea-pelagic-trawl-average-at-landing-fr-u-raw": {
             "name": "Albacore, Thunnus alalunga, NEA, Pelagic trawl, average, at landing {FR} U",
-            "name_fr": "Thon albacore, Thunnus alalunga, atlantique nord est, chalut pÃ©lagique, au dÃ©barquement, France",
+            "name_fr": "Thon albacore, Thunnus alalunga, atlantique nord est, chalut pélagique, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8904,7 +8904,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "yellowfin-tuna-thunnus-albacares-eca-seine-average-at-landing-ci-u-raw": {
             "name": "Yellowfin Tuna, Thunnus albacares, ECA, Seine, average, at landing {CI} U",
-            "name_fr": "Thon Albacore, Thunnus albacares, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
+            "name_fr": "Thon Albacore, Thunnus albacares, atlantique centre est, senne, au débarquement, côte d'Ivoire",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8949,7 +8949,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "skipjack-tuna-katsuwonus-pelamis-eca-seine-average-at-landing-ci-u-raw": {
             "name": "Skipjack Tuna, Katsuwonus pelamis, ECA, Seine, average, at landing {CI} U",
-            "name_fr": "Thon Listao, Katsuwonus pelamis, atlantique centre est, senne, au dÃ©barquement, cÃ´te d'Ivoire",
+            "name_fr": "Thon Listao, Katsuwonus pelamis, atlantique centre est, senne, au débarquement, côte d'Ivoire",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -8994,7 +8994,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "bluefin-tuna-thunnus-thynnus-medsea-longline-average-at-landing-fr-u-raw": {
             "name": "Bluefin Tuna, Thunnus thynnus, MedSea, Longline, average, at landing {FR} U",
-            "name_fr": "Thon rouge,  Thunnus thynnus, mÃ©diterrannÃ©e, palangre, au dÃ©barquement, France",
+            "name_fr": "Thon rouge,  Thunnus thynnus, méditerrannée, palangre, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9039,7 +9039,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "bluefin-tuna-thunnus-thynnus-medsea-seine-average-at-cage-gate-fr-u-raw": {
             "name": "Bluefin Tuna, Thunnus thynnus, MedSea, Seine, average, at cage gate {FR} U",
-            "name_fr": "Thon rouge, Thunnus thynnus, mÃ©diterrannÃ©e, senne, Ã  la ferme, France",
+            "name_fr": "Thon rouge, Thunnus thynnus, méditerrannée, senne, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9084,7 +9084,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "tomato-medium-size-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw": {
             "name": "Tomato, medium size, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U",
-            "name_fr": "Tomate conventionnelle, calibre inermÃ©diaire, sol sous abri non chauffÃ©, Ã  la ferme, France",
+            "name_fr": "Tomate conventionnelle, calibre inermédiaire, sol sous abri non chauffé, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9129,7 +9129,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "tomato-medium-size-conventional-heated-greenhouse-at-greenhouse-fr-u-raw": {
             "name": "Tomato, medium size, conventional, heated greenhouse, at greenhouse {FR} U",
-            "name_fr": "Tomate conventionnelle, calibre intermÃ©diaire, sous abri chauffÃ©, Ã  la ferme, France",
+            "name_fr": "Tomate conventionnelle, calibre intermédiaire, sous abri chauffé, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9174,7 +9174,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "tomato-average-basket-conventional-heated-greenhouse-national-average-at-greenhouse-fr-u-raw": {
             "name": "Tomato, average basket, conventional, heated greenhouse, national average, at greenhouse {FR} U",
-            "name_fr": "Tomate conventionnelle, panier moyen, serre chauffÃ©e, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Tomate conventionnelle, panier moyen, serre chauffée, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9219,7 +9219,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "tomato-average-basket-conventional-soil-based-non-heated-greenhouse-at-greenhouse-fr-u-raw": {
             "name": "Tomato, average basket, conventional, soil based, non-heated greenhouse, at greenhouse {FR} U",
-            "name_fr": "Tomate conventionnelle, panier moyen, sol sous abri non chauffÃ©, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Tomate conventionnelle, panier moyen, sol sous abri non chauffé, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9264,7 +9264,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "brown-crab-1-kg-of-product-at-landing-gb-u-raw": {
             "name": "Brown crab, 1 kg of product, at landing {GB} U",
-            "name_fr": "Tourteau, 1 kg de produit, au dÃ©barquement, Angleterre",
+            "name_fr": "Tourteau, 1 kg de produit, au débarquement, Angleterre",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9309,7 +9309,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "brown-crab-1-kg-of-product-at-landing-fr-u-raw": {
             "name": "Brown crab, 1 kg of product, at landing {FR} U",
-            "name_fr": "Tourteau, 1 kg de produit, au dÃ©barquement, France",
+            "name_fr": "Tourteau, 1 kg de produit, au débarquement, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9354,7 +9354,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "brown-crab-1-kg-of-product-at-landing-ie-u-raw": {
             "name": "Brown crab, 1 kg of product, at landing {IE} U",
-            "name_fr": "Tourteau, 1 kg de produit, au dÃ©barquement, Irlande",
+            "name_fr": "Tourteau, 1 kg de produit, au débarquement, Irlande",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9399,7 +9399,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "triticale-grain-conventional-national-average-animal-feed-at-farm-gate-production-fr-u-raw": {
             "name": "Triticale grain, conventional, national average, animal feed, at farm gate, production {FR} U",
-            "name_fr": "Triticale, conventionnel, moyenne nationale, alimentation animale, Ã  la ferme, production, France",
+            "name_fr": "Triticale, conventionnel, moyenne nationale, alimentation animale, à la ferme, production, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9444,7 +9444,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-sow-conventional-porc-bien-etre-at-farm-gate-fr-u-raw": {
             "name": "Cull sow, Conventional, Porc Bien Etre, at farm gate {FR} U",
-            "name_fr": "Truie de rÃ©forme, conventionnel, Cahier des charges Porc bien-Ãªtre, Ã  la ferme, France",
+            "name_fr": "Truie de réforme, conventionnel, Cahier des charges Porc bien-être, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9489,7 +9489,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-sow-conventional-on-farm-feed-supply-at-farm-gate-fr-u-raw": {
             "name": "Cull sow, conventional, on-farm feed supply, at farm gate {FR} U",
-            "name_fr": "Truie de rÃ©forme, conventionnel, fourniture d'aliments Ã  la ferme, France",
+            "name_fr": "Truie de réforme, conventionnel, fourniture d'aliments à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9534,7 +9534,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-sow-conventional-national-average-at-farm-gate-fr-u-raw": {
             "name": "Cull sow, conventional, national average, at farm gate {FR} U",
-            "name_fr": "Truie de rÃ©forme, conventionnel, moyenne nationale, Ã  la ferme, France",
+            "name_fr": "Truie de réforme, conventionnel, moyenne nationale, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9579,7 +9579,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-sow-label-rouge-national-average-at-farm-gate-fr-u-raw": {
             "name": "Cull sow, Label Rouge, national average, at farm gate {FR} U",
-            "name_fr": "Truie de rÃ©forme, Label Rouge, moyenne nationale (50% courette, 50% plein air), Ã  la ferme, France",
+            "name_fr": "Truie de réforme, Label Rouge, moyenne nationale (50% courette, 50% plein air), à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9624,7 +9624,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-sow-label-rouge-pig-with-run-system-at-farm-gate-fr-u-raw": {
             "name": "Cull sow, Label Rouge, pig with run system, at farm gate {FR} U",
-            "name_fr": "Truie de rÃ©forme, Label Rouge, systÃ¨me courette, Ã  la ferme, France",
+            "name_fr": "Truie de réforme, Label Rouge, système courette, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9670,7 +9670,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-sow-label-rouge-outdoor-system-at-farm-gate-fr-u-raw": {
             "name": "Cull sow, Label Rouge, outdoor system, at farm gate {FR} U",
-            "name_fr": "Truie de rÃ©forme, Label Rouge, systÃ¨me plein air, Ã  la ferme, France",
+            "name_fr": "Truie de réforme, Label Rouge, système plein air, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9715,7 +9715,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "suckler-cull-cow-conventional-suckler-cow-system-less-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
             "name": "Suckler cull cow, conventional, suckler cow system, less than 1.2 LU per ha, at farm gate {FR} U",
-            "name_fr": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, moins de 1.2 UGB par ha, Ã  la ferme, France",
+            "name_fr": "Vache allaitante de réforme, conventionnel, vache allaitante système, moins de 1.2 UGB par ha, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9761,7 +9761,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "suckler-cull-cow-conventional-suckler-cow-system-more-than-1-2-lu-per-ha-at-farm-gate-fr-u-raw": {
             "name": "Suckler cull cow, conventional, suckler cow system, more than 1.2 LU per ha, at farm gate {FR} U",
-            "name_fr": "Vache allaitante de rÃ©forme, conventionnel, vache allaitante systÃ¨me, plus de 1.2 UGB par ha, Ã  la ferme, France",
+            "name_fr": "Vache allaitante de réforme, conventionnel, vache allaitante système, plus de 1.2 UGB par ha, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9807,7 +9807,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-cow-conventional-highland-milk-system-grass-fed-at-farm-gate-fr-u-raw": {
             "name": "Cull cow, conventional, highland milk system, grass fed, at farm gate {FR} U",
-            "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de montagne, nourri Ã  l'herbe, Ã  la ferme, France",
+            "name_fr": "Vache de réforme, conventionnel, système laitier de montagne, nourri à l'herbe, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9853,7 +9853,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-cow-conventional-lowland-milk-system-silage-maize-10-to-30-at-farm-gate-fr-u-raw": {
             "name": "Cull cow, conventional, lowland milk system, silage maize 10 to 30%, at farm gate {FR} U",
-            "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 10 Ã  30%, Ã  la ferme, France",
+            "name_fr": "Vache de réforme, conventionnel, système laitier de plaine, ensillage de maïs 10 à 30%, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9899,7 +9899,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-cow-conventional-lowland-milk-system-silage-maize-5-to-10-at-farm-gate-fr-u-raw": {
             "name": "Cull cow, conventional, lowland milk system, silage maize 5 to 10%, at farm gate {FR} U",
-            "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s 5 Ã  10%, Ã  la ferme, France",
+            "name_fr": "Vache de réforme, conventionnel, système laitier de plaine, ensillage de maïs 5 à 10%, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9945,7 +9945,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "cull-cow-conventional-lowland-milk-system-silage-maize-more-than-30-at-farm-gate-fr-u-raw": {
             "name": "Cull cow, conventional, lowland milk system, silage maize more than 30%, at farm gate {FR} U",
-            "name_fr": "Vache de rÃ©forme, conventionnel, systÃ¨me laitier de plaine, ensillage de maÃ¯s plus de 30%, Ã  la ferme, France",
+            "name_fr": "Vache de réforme, conventionnel, système laitier de plaine, ensillage de maïs plus de 30%, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {
@@ -9991,7 +9991,7 @@ window.aioxyData.ingredients = Object.assign(window.aioxyData.ingredients || {},
 
     "veal-conventional-fattening-system-calves-from-lowland-milk-system-at-farm-gate-fr-u-raw": {
             "name": "Veal, conventional, fattening system, calves from lowland milk system, at farm gate {FR} U",
-            "name_fr": "Veau conventionnel, systÃ¨me d'engraissement, systÃ¨me laitier de plaine, Ã  la ferme, France",
+            "name_fr": "Veau conventionnel, système d'engraissement, système laitier de plaine, à la ferme, France",
             "loss": 0.03,
             "processing_yield": 1.0,
             "data": {

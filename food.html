@@ -40,6 +40,16 @@
 <script src="compliance_engine.js"></script>
 <script src="export_engine.js"></script>
 
+<!-- 4.4 COMPLIANCE GATE — MUST LOAD BEFORE CALCULATION_ENGINE.
+     calculation_engine.js calls window.complianceGate.evaluateGate() at 4 call
+     sites (DNM, JRC, cutoff, self-consistency), each guarded by
+     `if (window.complianceGate)`. Without this script, that guard is always
+     false and every gate verdict silently never runs — not a shadow-mode
+     result, no result at all. This is a different file from
+     compliance_engine.js above (DQR/DNM/JRC/allocation calculation functions)
+     — do not confuse the two by name. -->
+<script src="compliance_gate.js"></script>
+
 <!-- 4.5 CALCULATION ORCHESTRATOR — MUST LOAD AFTER ENGINES, BEFORE MAIN -->
 <script src="calculation_engine.js"></script>
     

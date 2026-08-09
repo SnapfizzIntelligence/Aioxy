@@ -562,6 +562,31 @@
         SYSTEM_BOUNDARY: Object.freeze({
             VALUE: "cradle-to-retail"
         }),
+        // Resolves FIX VERSION-MISMATCH-1: audit-trail.js hardcoded "AIOXY v6.0",
+        // pdf-generator.js hardcoded "AIOXY v5.0", same report, no shared source.
+        // No commit/release history is available in this environment to confirm
+        // the true version with certainty. Set to v6.0 on the standard convention
+        // that version numbers only increase — a stray unbumped copy is a far more
+        // common real-world cause than someone writing a higher number for no
+        // reason. This is the best available inference, not a confirmed fact.
+        // Both files now read this one value, so if that inference is wrong,
+        // correcting it here is a one-line fix instead of a repeat hunt.
+        ENGINE_VERSION: Object.freeze({
+            VALUE: "v6.0",
+            CONFIRMED: false
+        }),
+        // Found via citation_audit.js sweep across the remaining files: the same
+        // 0.2 kg last-resort weight fallback appears independently in main.js
+        // (where the product form itself defaults to it), retailer_csv_engine.js,
+        // and audit-trail.js (twice) -- six sites total, currently in agreement,
+        // but each one hardcoded separately. That's exactly the shape of the
+        // system-boundary and engine-version bugs already fixed this session:
+        // consistent today, one missed update away from silently disagreeing.
+        // Verified genuinely traceable before centralizing it -- this is the
+        // real form default (main.js:461), not an arbitrary guess.
+        DEFAULT_PRODUCT_WEIGHT_KG: Object.freeze({
+            VALUE: 0.2
+        }),
         FOSSIL_FRACTION: Object.freeze({
             // C8-F1 FIX (Audit Session 7): MANUFACTURING_ELECTRICITY retained for reference
             // but no longer used as a hardcoded value in calculateManufacturing().
@@ -3007,17 +3032,29 @@ return {
         if (!categories || categories.length === CONSTANTS.MATH.ZERO) throw new MissingDataError('categories');
 
         return categories.map(cat => {
-            let rawA, rawB;
+            let rawA, rawB, missingA, missingB;
             if (stageCategory) {
                 // cat here is a life-cycle stage name (e.g. 'Ingredients'),
                 // looked up within stageCategory's contribution_tree.
                 const treeA = (pefA[stageCategory] && pefA[stageCategory].contribution_tree) || {};
                 const treeB = (pefB[stageCategory] && pefB[stageCategory].contribution_tree) || {};
-                rawA = (treeA[cat] && treeA[cat].total) || CONSTANTS.MATH.ZERO;
-                rawB = (treeB[cat] && treeB[cat].total) || CONSTANTS.MATH.ZERO;
+                missingA = !treeA[cat] || treeA[cat].total === undefined || treeA[cat].total === null;
+                missingB = !treeB[cat] || treeB[cat].total === undefined || treeB[cat].total === null;
+                rawA = missingA ? CONSTANTS.MATH.ZERO : treeA[cat].total;
+                rawB = missingB ? CONSTANTS.MATH.ZERO : treeB[cat].total;
             } else {
-                rawA = (pefA[cat] && pefA[cat].total) || CONSTANTS.MATH.ZERO;
-                rawB = (pefB[cat] && pefB[cat].total) || CONSTANTS.MATH.ZERO;
+                // FIX: previously `(pefA[cat] && pefA[cat].total) || 0` treated a
+                // genuinely MISSING category identically to a real, legitimate zero —
+                // a comparison would silently show "0 vs 5.0" as an ordinary delta
+                // when the truth was "we have no data for this category at all."
+                // Found via a self-consistency test while wiring the twin comparison
+                // to run automatically (item #3) rather than only on manual click.
+                // Now distinguished explicitly via the dataMissing flag below; a real
+                // zero (e.g. Water Use legitimately at 0 for some product) is untouched.
+                missingA = !pefA[cat] || pefA[cat].total === undefined || pefA[cat].total === null;
+                missingB = !pefB[cat] || pefB[cat].total === undefined || pefB[cat].total === null;
+                rawA = missingA ? CONSTANTS.MATH.ZERO : pefA[cat].total;
+                rawB = missingB ? CONSTANTS.MATH.ZERO : pefB[cat].total;
             }
             const valueA = rawA / massA;
             const valueB = rawB / massB;
@@ -3026,7 +3063,7 @@ return {
             const isBetter = delta < CONSTANTS.MATH.ZERO;
             const deltaPct = valueA !== CONSTANTS.MATH.ZERO ? (delta / Math.abs(valueA)) * CONSTANTS.UNIT.PERCENT_MAX : CONSTANTS.MATH.ZERO;
 
-            return { category: cat, valueA, valueB, delta, deltaPct, isUnchanged, isBetter };
+            return { category: cat, valueA, valueB, delta, deltaPct, isUnchanged, isBetter, dataMissing: missingA || missingB };
         });
     }
 

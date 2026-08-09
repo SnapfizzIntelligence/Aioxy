@@ -102,7 +102,7 @@ function calculatePEFSingleScore(pefResults, productWeightKg) {
 }
 
 function getUnifiedMetrics(pefResults, massData) {
-    const weightKg = (massData && massData.final_content_weight_kg) || 0.2;
+    const weightKg = (massData && massData.final_content_weight_kg) || window.corePhysics.CONSTANTS.DEFAULT_PRODUCT_WEIGHT_KG.VALUE; // was hardcoded 0.2, now single-sourced
     if (!pefResults || !pefResults['Climate Change']) {
         return { weightUsed: weightKg, co2PerKg: 0, waterScarcityPerKg: 0, landUsePerKg: 0, fossilPerKg: 0 };
     }
@@ -458,7 +458,7 @@ async function calculateImpact() {
     const input = {
         product: {
             name:               document.getElementById('productName')?.value || 'Unnamed Product',
-            weightKg:           parseFloat(document.getElementById('productWeight')?.value) || 0.2,
+            weightKg:           parseFloat(document.getElementById('productWeight')?.value) || window.corePhysics.CONSTANTS.DEFAULT_PRODUCT_WEIGHT_KG.VALUE, // was hardcoded 0.2, now single-sourced — this line was the original source the other 5 sites were verified against
             proteinContent:     parseFloat(document.getElementById('proteinContent')?.value) || 0,
             concentrationRatio: parseFloat(document.getElementById('concentrationRatio')?.value) || 1.0
         },

@@ -554,7 +554,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         hRule(Y); Y += 5;
 
         const infoRows = [
-            ['System boundary',    'Cradle-to-retail (farm gate through distribution)'],
+            ['System boundary',    (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1)) + ' (farm gate through distribution)'],
             ['LCI database',       'AGRIBALYSE 3.2  (ADEME/INRAE 2022)'],
             ['LCIA method',        'EF 3.1 — 16 impact categories + 3 CC sub-splits (19 total)'],
             ['Transport method',   'GLEC v3.2 — Smart Freight Centre 2025'],
@@ -1397,14 +1397,20 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     const lanca = cf.lanca;
                     if (lanca.ref_occupation !== undefined && lanca.origin_occupation !== undefined) {
                         layerBLines.push('  Reference SQI (FR) — Occupation   : ' + fix(lanca.ref_occupation, 4));
-                        if (lanca.ref_transformation !== null && lanca.ref_transformation !== undefined) {
-                            layerBLines.push('  Reference SQI (FR) — Transformation: ' + fix(lanca.ref_transformation, 4));
-                            layerBLines.push('  Reference SQI total (FR)           : ' + fix((lanca.ref_occupation||0)+(lanca.ref_transformation||0), 4));
+                        if (lanca.ref_transformation_to !== null && lanca.ref_transformation_to !== undefined) {
+                            layerBLines.push('  Reference SQI (FR) — Transformation: ' + fix(lanca.ref_transformation_to, 4));
+                            layerBLines.push('  Reference SQI total (FR)           : ' + fix((lanca.ref_occupation||0)+(lanca.ref_transformation_to||0), 4));
                         }
                         layerBLines.push('  Origin SQI (' + origin + ') — Occupation   : ' + fix(lanca.origin_occupation, 4));
-                        if (lanca.origin_transformation !== null && lanca.origin_transformation !== undefined) {
-                            layerBLines.push('  Origin SQI (' + origin + ') — Transformation: ' + fix(lanca.origin_transformation, 4));
-                            layerBLines.push('  Origin SQI total (' + origin + ')           : ' + fix((lanca.origin_occupation||0)+(lanca.origin_transformation||0), 4));
+                        if (lanca.origin_transformation_to !== null && lanca.origin_transformation_to !== undefined) {
+                            layerBLines.push('  Origin SQI (' + origin + ') — Transformation: ' + fix(lanca.origin_transformation_to, 4));
+                            layerBLines.push('  Origin SQI total (' + origin + ')           : ' + fix((lanca.origin_occupation||0)+(lanca.origin_transformation_to||0), 4));
+                        }
+                        if ((lanca.ref_transformation_from !== null && lanca.ref_transformation_from !== undefined) ||
+                            (lanca.origin_transformation_from !== null && lanca.origin_transformation_from !== undefined)) {
+                            layerBLines.push('  Transformation (from), FR / ' + origin + '  : ' +
+                                fix(lanca.ref_transformation_from, 4) + ' / ' + fix(lanca.origin_transformation_from, 4) +
+                                '  (informational — not yet combined into ratio, pending verification against official LANCA/JRC method report)');
                         }
                         layerBLines.push('  Transformation included: ' + (lanca.transformation_included ? 'YES' : 'NO (occupation ratio only — transformation data absent)'));
                         layerBLines.push('  Ratio = origin_total / ref_total = ' + fix(lanca.ratio_applied||1, 4));
@@ -2791,34 +2797,6 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('AIOXY methodological choice, disclosed here for regulatory/audit transparency.', M, Y); Y += 5;
         doc.text('Scale: 1 = best quality, 5 = worst.  FR ingredients: TeR=2 TiR=3 GR=1 P=2 → DQR=2.00.  Non-FR EU: DQR=3.25.  Non-FR non-EU: DQR=3.50.', M, Y); Y += 5;
 
-        // FIX ALLOC-SENSITIVITY-DISCLOSURE-1 (this session): real gap found during
-        // pre-launch review — checkAllocationSensitivity() (ISO 14044 §4.3.4 mass-vs-
-        // economic allocation sensitivity check) was computed and attached to
-        // auditTrailData.allocation_sensitivity, but never displayed in the PDF, retailer
-        // CSV, or the formatted audit-trail export — reachable only via the raw JSON
-        // download, invisible to any brand/retailer actually reading the report. Fixed:
-        // shown here, in the compliance/DQR section where a methodology sensitivity
-        // disclosure belongs.
-        const allocSens = audit.allocation_sensitivity;
-        if (allocSens) {
-            doc.setFont(undefined, 'bold');
-            doc.text('Allocation Method Sensitivity (ISO 14044 §4.3.4):', M, Y); Y += 4;
-            doc.setFont(undefined, 'normal');
-            if (allocSens.significantDifference) {
-                doc.text('This product\'s result IS sensitive to allocation method choice (mass vs. economic).', M, Y); Y += 4;
-                doc.text('Ingredients where mass and economic allocation shares differ meaningfully:', M, Y); Y += 4;
-                (allocSens.differsAt || []).slice(0, 5).forEach(d => {
-                    doc.text('  ' + safe(d.product) + ': difference = ' + fix((d.difference||0)*100, 1) + '%', M, Y); Y += 4;
-                });
-                if (allocSens.reason) { doc.text('  Note: ' + safe(allocSens.reason), M, Y); Y += 4; }
-            } else {
-                doc.text('This product\'s result is NOT significantly sensitive to allocation method choice —', M, Y); Y += 4;
-                doc.text('mass-based and economic-based allocation would produce materially similar results', M, Y); Y += 4;
-                doc.text('for the co-products present (or no multi-co-product processing is used in this product).', M, Y); Y += 4;
-            }
-            Y += 3;
-        }
-
         const dqrComponents = dqr.component_dqrs || [];
         // FIX (2026-07-31 audit): TeR/TiR/GeR/RR previously defaulted to 0 (the
         // BEST possible DQI score) when an ingredient only has an overall
@@ -3240,16 +3218,20 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         }));
         const fbIngRows = _fbSource.map(ing => {
             const isFg  = ing._isFg !== undefined ? ing._isFg : !!(ing.primary_data_used || ing.primary_data);
-            const ingDQR = ing.dqr || 2.00;
+            // AUDIT FIX (this session): || 2.00 meant a genuinely missing DQR silently
+            // passed this check (2.00 <= 2 and 2.00 <= 3 are both true) -- an ingredient
+            // with NO known data quality rating was displayed as PASSING a data-quality
+            // compliance check. Missing data must never read as verified-good data.
+            const ingDQR = (typeof ing.dqr === 'number') ? ing.dqr : null;
             const ingCCkg = ing.co2 || ing.subtotal || 0;
             const ingCCpct = _fbTotalRef > 0 ? (ingCCkg / _fbTotalRef * 100).toFixed(1) : '0.0';
             return [
                 safe(trunc(ing.name || ing.id || '', 40)),
                 isFg ? 'FOREGROUND' : 'BACKGROUND',
-                fix(ingDQR, 2),
+                ingDQR === null ? 'N/A' : fix(ingDQR, 2),
                 isFg ? 'Primary data (user-supplied)' : 'AGRIBALYSE 3.2 secondary',
                 // Bug 3 FIX: thresholds corrected to match compliance_engine.js (2.0/3.0 not 3.0/4.0)
-                isFg ? (ingDQR <= 2 ? 'PASS' : 'FAIL') : (ingDQR <= 3 ? 'PASS' : 'FAIL')
+                ingDQR === null ? 'FAIL — DQR unavailable' : (isFg ? (ingDQR <= 2 ? 'PASS' : 'FAIL') : (ingDQR <= 3 ? 'PASS' : 'FAIL'))
             ];
         });
         if (fbIngRows.length > 0) {
@@ -3300,63 +3282,77 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // declared") that broke this entire file's ability to load, independent of any
         // calculation logic. Pre-existing (confirmed present before this session's A5 fix
         // too), found via node --check, unrelated to A5.
-        const allocSensDetail = audit.allocation_sensitivity || {};
-        const cutoffVal = audit.cutoff_validation     || {};
+        // FIX ALLOC-CUTOFF-DEAD-RENDER-1 (this session): allocSensDetail/cutoffVal below
+        // previously read fields (base_method, alt_method, delta_pct, sensitive,
+        // threshold_pct, total_cc, processes_checked, all_pass) that calculation_engine.js
+        // has never written -- confirmed via exhaustive search. Every PDF ever generated
+        // rendered the hardcoded fallback defaults only: "NOT SENSITIVE", "COMPLIANT",
+        // "PASS -- all significant processes are included" -- regardless of the real
+        // computed result. Now reads the REAL shapes: checkAllocationSensitivity() returns
+        // {significantDifference, differsAt, reason} (confirmed by this session's test
+        // suite); validateCutoff() returns {compliant, excludedSum, excludedCount}
+        // (same). No reassuring-default fallback on missing data -- an absent value now
+        // reads "NOT COMPUTED", not a false pass.
+        const allocSensDetail = audit.allocation_sensitivity || null;
+        const cutoffVal       = audit.cutoff_validation      || null;
 
         // Allocation sensitivity
         subHeader('Allocation Sensitivity Analysis (ISO 14044 §4.3.4)');
-        const allocBase  = allocSensDetail.base_method   || 'Economic (AGRIBALYSE 3.2 default)';
-        const allocAlt   = allocSensDetail.alt_method    || 'Mass allocation (alternative)';
-        const allocBaseCC = allocSensDetail.base_cc_per_kg   || ccPerKg;
-        const allocAltCC  = allocSensDetail.alt_cc_per_kg    || 0;
-        const allocDelta  = allocSensDetail.delta_pct        || 0;
-        const allocSensitive = allocSensDetail.sensitive      || false;
-
-        traceBlock([
-            'BASE METHOD   : ' + safe(allocBase),
-            '  CC result   : ' + numFmt(allocBaseCC, 4) + ' kg CO2e / kg product',
-            '',
-            'ALT METHOD    : ' + safe(allocAlt),
-            '  CC result   : ' + (allocAltCC > 0 ? numFmt(allocAltCC, 4) + ' kg CO2e / kg product' : 'Not computed (no multi-output processes in this product system)'),
-            '',
-            'SENSITIVITY   : ' + (allocSensitive ? 'SENSITIVE — delta > 25%, results differ materially' : (allocAltCC > 0 ? 'NOT SENSITIVE — delta <= 25%, allocation method does not materially affect result' : 'NOT APPLICABLE — all ingredients are single-output systems (no co-products)')),
-            '  Delta       : ' + (allocDelta > 0 ? fix(allocDelta,1) + '%' : 'N/A'),
-            '',
-            'PEF 3.1 requirement: If results are sensitive to allocation method, this must be disclosed.',
-            allocSensitive ? '  WARNING: Sensitivity declared. Consider mass or energy allocation as verification.' : '  COMPLIANT: Economic allocation (AGRIBALYSE 3.2) used. Result is allocation-stable.'
-        ], { sectionLabel: 'Allocation Sensitivity (continued)' });
+        if (allocSensDetail) {
+            const sensitive = !!allocSensDetail.significantDifference;
+            const differsAt = allocSensDetail.differsAt || [];
+            traceBlock([
+                'METHOD: Economic allocation (ISO 14044 §4.3.4c) vs. mass allocation, compared per co-product.',
+                '',
+                'SENSITIVITY   : ' + (sensitive ? 'SENSITIVE — mass-share and economic-share differ materially for at least one co-product' : 'NOT SENSITIVE — mass-based and economic-based allocation would produce materially similar results'),
+                ...(differsAt.length > 0 ? [
+                    '',
+                    'CO-PRODUCTS WHERE ALLOCATION METHOD MATTERS:',
+                    ...differsAt.slice(0, 8).map(d => '  ' + safe(d.product) + ': mass-share vs. economic-share differ by ' + fix((d.difference || 0) * 100, 1) + ' points')
+                ] : []),
+                ...(allocSensDetail.reason ? ['', 'Note: ' + safe(allocSensDetail.reason)] : []),
+                '',
+                'PEF 3.1 requirement: If results are sensitive to allocation method, this must be disclosed.',
+                sensitive ? '  DISCLOSED: Sensitivity confirmed above — economic allocation was used as the primary method (ISO 14044 §4.3.4c).' : '  COMPLIANT: Result is not materially allocation-method-dependent for the co-products present.'
+            ], { sectionLabel: 'Allocation Sensitivity (continued)' });
+        } else {
+            traceBlock([
+                'NOT COMPUTED for this product — either no multi-output (co-product) processes are present in',
+                'this product\'s ingredient set, or allocation sensitivity checking has not yet been run for it.',
+                'This is not the same as "not sensitive" — absence of data is disclosed as absence, not as a pass.'
+            ], { sectionLabel: 'Allocation Sensitivity (continued)' });
+        }
 
         Y += 3;
         // Cutoff validation
         subHeader('Cutoff Validation (ISO 14044 §4.2.2 / PEF 3.1 §5.6)');
-        const cutoffThresh  = cutoffVal.threshold_pct || 1.0;
-        const cutoffTotal   = cutoffVal.total_cc      || ccPerKg;
-        const cutoffChecked = cutoffVal.processes_checked || ingList.length;
-        const cutoffPassed  = cutoffVal.all_pass       || true;
-        const cutoffItems   = cutoffVal.items          || [];
+        const cutoffThresh  = 1.0; // matches CONSTANTS.DNM.CONTRIBUTION_THRESHOLD (1%), the per-flow threshold calculation_engine.js actually passes to validateCutoff()
+        const cutoffPassed  = cutoffVal ? !!cutoffVal.compliant : null;
+        const excludedPct   = cutoffVal ? (cutoffVal.excludedSum || 0) * 100 : null;
+        const excludedCount = cutoffVal ? cutoffVal.excludedCount : null;
 
         traceBlock([
-            'CUTOFF RULE: All processes contributing >= ' + fix(cutoffThresh,1) + '% of total CC must be explicitly included.',
-            'Total CC (reference): ' + numFmt(cutoffTotal, 4) + ' kg CO2e / kg product',
-            'Cutoff threshold    : ' + numFmt(cutoffTotal * cutoffThresh/100, 6) + ' kg CO2e / kg product',
-            'Processes checked   : ' + cutoffChecked,
-            'Overall status      : ' + (cutoffPassed ? 'PASS — all significant processes are included' : 'FAIL — see items below'),
+            'CUTOFF RULE: Individually-excluded flows (<' + fix(cutoffThresh,1) + '% each) must sum to <= 5% of total impact (ISO 14044 §4.2.2).',
+            cutoffVal
+                ? 'Excluded flows          : ' + excludedCount + ' flow(s), totalling ' + fix(excludedPct, 2) + '% of total impact'
+                : 'NOT COMPUTED for this product — cutoff validation has not yet been run for it.',
+            'Overall status          : ' + (cutoffVal ? (cutoffPassed ? 'PASS — excluded total is within the 5% limit' : 'FAIL — excluded total exceeds the 5% limit') : 'N/A'),
             '',
-            'PROCESS-LEVEL CUTOFF CHECKS:',
-            ...(cutoffItems.length > 0
-                ? cutoffItems.map(it => '  ' + (it.pass?'OK ':'FAIL') + '  ' + trunc(it.name||it.id,40) + '  contrib=' + fix(it.pct||0,1) + '%  DQR=' + fix(it.dqr||0,2))
-                : ingList.map(ing => {
-                    // FIX: use ingComps (sourced from audit.contribution_tree, fully populated)
-                    // instead of pef[cat].contribution_tree.components (initialised as [] empty array)
+            'PROCESS-LEVEL CUTOFF CHECKS (per-ingredient contribution and DQR, informational):',
+            ...(ingList.map(ing => {
                     const ingCC2 = ingComps.find(c => c.id===ing.id || c.name===ing.name);
                     const pctV = ingCC2 ? ((ingCC2.subtotal||0)/ccTotal*100) : 0;
-                    const dqrV = ing.dqr || ing.overall || 2.00;
+                    // AUDIT FIX (this session): || 2.00 silently passed a missing DQR here too,
+                    // same failure shape as the fbIngRows fix above -- same session, same file,
+                    // caught once, then found a second live instance instead of assuming it
+                    // was the only one.
+                    const dqrV = (typeof ing.dqr === 'number') ? ing.dqr : (typeof ing.overall === 'number' ? ing.overall : null);
                     // FIX: [pdf-generator audit] Was using stale 3.0/4.0 thresholds — the
                     // same bug already identified and fixed elsewhere in this file (see
                     // PDF-F2 FIX below, DNM Compliance Check page) but missed here. Corrected
                     // to match compliance_engine.js PRIMARY_DQR_MAX=2.0 / SECONDARY_DQR_MAX=3.0.
-                    const passes = dqrV <= (ing.primary_data_used ? 2.0 : 3.0);
-                    return '  ' + (passes?'OK ':'WARN') + '  ' + trunc(ing.name||ing.id,40) + '  contrib=' + fix(pctV,1) + '%  DQR=' + fix(dqrV,2);
+                    const passes = dqrV !== null && dqrV <= (ing.primary_data_used ? 2.0 : 3.0);
+                    return '  ' + (passes?'OK ':'WARN') + '  ' + trunc(ing.name||ing.id,40) + '  contrib=' + fix(pctV,1) + '%  DQR=' + (dqrV === null ? 'N/A' : fix(dqrV,2));
                 })
             )
         ], { sectionLabel: 'Cutoff Validation (continued)' });
@@ -3470,14 +3466,77 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 '  [CHECK] DQR computed per PEF 3.1 §5.7                 : ' + (dqrVal > 0 ? 'PASS — DQR=' + fix(dqrVal,2) : 'FAIL — DQR not computed'),
                 '  [CHECK] SHA-256 audit hash generated                   : ' + (auditHash.length > 8 ? 'PASS' : 'FAIL — hash not generated'),
                 '  [CHECK] Functional unit declared                       : PASS — 1 kg of product as sold',
-                '  [CHECK] System boundary declared (ISO 14044 §4.2.3.3)  : PASS — Cradle-to-retail',
-                '  [CHECK] Allocation method declared                     : PASS — Economic (AGRIBALYSE 3.2)',
+                '  [CHECK] System boundary declared (ISO 14044 §4.2.3.3)  : ' + ((window.corePhysics && window.corePhysics.CONSTANTS && window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY && window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE) ? ('PASS — ' + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1)) : 'FAIL — canonical system boundary constant not available'),
+                '  [CHECK] Allocation method declared                     : ' + (allocSensDetail.base_method ? ('PASS — ' + allocBase) : ('PASS (default) — ' + allocBase + ' — no per-product allocation data found, showing platform default')),
                 '  [CHECK] Third-party verification                       : NOT DONE — screening level only',
                 '',
                 'Note: Run compliance_engine.js evaluateJRC() to populate full check list.'
             ], { sectionLabel: 'JRC Validation (continued)' });
         }
         footer('JRC Validation — Page ' + pageNum + ' of {total_pages_count}');
+
+        // WIRE-GATE-3 FIX (this session): compliance_gate_summary was added to
+        // calculation_engine.js's return object this session (see
+        // adjustments.compliance_gate_summary there), but reached zero downstream
+        // consumers -- confirmed by exhaustive search across all files before this fix.
+        // Rendered here because this is the compliance gate itself, not a single check --
+        // it aggregates the verdicts of the 4 checks above (DNM, JRC, cutoff, self-
+        // consistency) through compliance_gate.js's exception-registry logic. Explicitly
+        // labeled shadow-mode: these verdicts were computed and logged but did not block
+        // this export, matching compliance_gate_summary.mode (hardcoded 'shadow' in
+        // calculation_engine.js, not yet flipped to 'enforce' -- see that file's own
+        // header comment on why: no historical corpus available yet to confirm zero
+        // false positives first).
+        const gateSummary = audit.compliance_gate_summary || null;
+        if (gateSummary) {
+            newPage('Compliance Gate Summary (Shadow Mode)');
+            T.small(); doc.setTextColor(...C.bodyMid);
+            doc.text('The compliance gate checks all validation results above against a documented exception registry.', M, Y);
+            Y += 5;
+            doc.text('Mode: ' + safe((gateSummary.mode || 'shadow').toUpperCase()) + ' — verdicts below are logged for audit, not enforced as export blockers in this mode.', M, Y, { maxWidth: CW });
+            Y += 10;
+
+            const gateChecks = [
+                ['DNM (Data Needs Matrix)',        gateSummary.dnm],
+                ['JRC Validation',                 gateSummary.jrc],
+                ['Cutoff Validation',               gateSummary.cutoff],
+                ['Twin Self-Consistency',           gateSummary.self_consistency]
+            ];
+            const gateRows = gateChecks.map(([label, verdict]) => {
+                if (!verdict) return [label, 'NOT RUN', 'Check did not execute for this product'];
+                const action = verdict.action || 'unknown';
+                const status = action === 'pass' ? 'PASS' : action === 'warn' ? 'WARN (documented exception)' : action === 'WOULD_HAVE_BLOCKED' ? 'WOULD HAVE BLOCKED' : safe(action);
+                const note = verdict.exceptionId ? ('Exception: ' + safe(verdict.exceptionId) + (verdict.reason ? ' — ' + safe(verdict.reason) : ''))
+                           : verdict.message ? safe(verdict.message)
+                           : '';
+                return [label, status, note];
+            });
+            doc.autoTable({
+                startY: Y,
+                head: [['Check','Verdict','Detail']],
+                body: gateRows,
+                theme: 'plain',
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: C.navyDark, textColor: C.white, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: C.rowAlt },
+                columnStyles: {
+                    0: { cellWidth: 48, fontStyle: 'bold' },
+                    1: { cellWidth: 44, halign: 'center' },
+                    2: { cellWidth: 90 }
+                },
+                didParseCell: (data) => {
+                    if (data.column.index === 1) {
+                        const v = data.row.raw[1];
+                        data.cell.styles.textColor = v === 'PASS' ? C.green : v === 'NOT RUN' ? C.bodyMid : (v && v.indexOf('WARN') === 0) ? C.amber : C.red;
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                },
+                margin: { left: M }
+            });
+            Y = doc.lastAutoTable.finalY + 4;
+            footer('Compliance Gate Summary — Page ' + pageNum + ' of {total_pages_count}');
+        }
+
         newPage('Methodology Declaration + Legal Notice');
         subHeader('Methodology Overview');
 
@@ -3543,16 +3602,11 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         hRule(Y); Y += 5;
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('Prepared by: AIOXY Environmental Intelligence', M, Y);
-        // FIX VERSION-MISMATCH-1: this hardcoded "AIOXY v5.0" independently disagrees
-        // with audit-trail.js's hardcoded "AIOXY v6.0" (report_type row) for the SAME
-        // assessment ID and SHA-256 hash -- confirmed by direct comparison against this
-        // exact report/CSV pair. No canonical engine-version constant exists anywhere in
-        // this codebase to determine which literal is actually correct, so this fix does
-        // NOT guess a number. It flags the conflict explicitly so it cannot ship silently,
-        // and both this file and audit-trail.js should be updated to read a single shared
-        // version constant (e.g. window.corePhysics.CONSTANTS.ENGINE_VERSION) once a human
-        // with release/commit history confirms the true current version.
-        doc.text('Calculation engine: AIOXY v5.0 [UNVERIFIED — see FIX VERSION-MISMATCH-1: disagrees with CSV export\'s "v6.0"]  |  PDF Report: ' + _PDF_VERSION, M, Y + 4.5);
+        // FIX VERSION-MISMATCH-1: resolved — see audit-trail.js for the full note. Both
+        // files now read window.corePhysics.CONSTANTS.ENGINE_VERSION instead of
+        // independent hardcoded copies. _PDF_VERSION is untouched — it is the PDF
+        // template's own version, a genuinely different thing, not part of this bug.
+        doc.text('Calculation engine: AIOXY ' + window.corePhysics.CONSTANTS.ENGINE_VERSION.VALUE + (window.corePhysics.CONSTANTS.ENGINE_VERSION.CONFIRMED ? '' : ' (pending version confirmation)') + '  |  PDF Report: ' + _PDF_VERSION, M, Y + 4.5);
         doc.text('Assessment ID: ' + safe(dppId), M, Y + 9);
         doc.text('Report generated: ' + new Date().toISOString(), M, Y + 13.5);
 
