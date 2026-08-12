@@ -3039,6 +3039,15 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         });
 
         transportResult.source = 'GLEC v3.2';
+        // AUDIT FIX (this session): effectiveDistance was local to this function and never
+        // reached the traceability structure at all -- pdf-generator.js independently
+        // recomputed the crisis-routing distance with its own hardcoded "x 1.40", duplicating
+        // this exact 1.40 constant rather than reading what the engine actually used. Currently
+        // matches (both are 1.40), so not a live wrong-number bug like fuelFactor was -- but a
+        // real single-source-of-truth gap: if this constant is ever revised here, the PDF would
+        // go stale silently. Attaching the real value at the true source, not reconstructed later.
+        transportResult.effectiveDistanceKm = effectiveDistance;
+        transportResult.crisisRoutingApplied = effectiveDistance !== transIn.distanceKm;
         return transportResult;
     }
 
@@ -3381,7 +3390,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             });
         });
 
-        return { weightedDQR, dnmResult, hotspotResult, dqrComponents: dqrComponentsWithUncertainty, dnmGateVerdict };
+        return { weightedDQR, dnmResult, hotspotResult, dqrComponents: dqrComponentsWithUncertainty };
     }
 
     // ── STEP 7: SINGLE SCORE ─────────────────────────────────────────────────
@@ -3934,7 +3943,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         }
         // === END GAP A ===
 
-        const { weightedDQR, dnmResult, hotspotResult, dqrComponents, dnmGateVerdict } =
+        const { weightedDQR, dnmResult, hotspotResult, dqrComponents } =
             computeDQR(ingredientResults, pefResults);
 
         const singleScoreResult  = computeSingleScore(pefResults, input, ingredientResults);
@@ -4081,7 +4090,32 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 // operational-parity check) to either skip comparing it entirely or fragile-
                 // parse it out of prose. Same pattern as the packaging.eolDestination fix
                 // earlier this session.
-                processingMethod:      input.manufacturing.processingMethod
+                processingMethod:      input.manufacturing.processingMethod,
+                // AUDIT FIX (this session): fuelType/fuelFactor were never carried into this
+                // traceability structure at all -- pdf-generator.js's BUG-FUEL-FACTOR-0 comment
+                // claimed this was already fixed by checking "pfd.fuelFactor !== undefined", but
+                // pfd there is window.lastInput.manufacturing.primaryFactoryData, the RAW USER
+                // INPUT -- which never has an engine-computed fuelFactor field at all. That check
+                // always fell through to a hardcoded 2.13, on every report using primary factory
+                // data, regardless of the real fuel type. Confirmed against this exact report: an
+                // all-electric facility (fuelType 'none', real fuelFactor 0) still displayed a
+                // fabricated "x 2.13 = 0.010650" gas calculation on three separate lines, even
+                // though the real headline total was correctly electricity-only throughout. Adding
+                // the real values here gives pdf-generator.js a correct source to read from.
+                fuelType:               mfgResult.fuelType ?? null,
+                fuelFactor:             mfgResult.fuelFactor ?? null,
+                // AUDIT FIX (this session, same pattern as fuelFactor): refrigerantGWP and
+                // refrigerantCO2PerKg are also engine-computed (looked up from REFRIGERANT_GWP,
+                // exactly parallel to fuelFactor's FUEL_CO2_FACTORS lookup) -- never present on
+                // the raw input pdf-generator.js was reading them from. This report had zero
+                // refrigerant leakage, so it never exercised this field; found by searching for
+                // the bug's shape across the whole file, not by re-checking this one report.
+                // The risk here is the opposite direction from fuelFactor: instead of fabricating
+                // a nonzero number, pfd.refrigerantGWP||0 would silently show zero even when the
+                // engine correctly computed a real, nonzero refrigerant contribution -- an
+                // understatement, not an overstatement.
+                refrigerantGWP:         mfgResult.refrigerantGWP ?? null,
+                refrigerantCO2PerKg:    mfgResult.refrigerantCO2PerKg ?? null
             },
             residual_mix: mfgResult.residual_mix_available ? {
                 source:     mfgResult.residual_mix_source,
@@ -4193,14 +4227,8 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 mode: 'shadow',
                 dnm:              dnmGateVerdict,
                 jrc:              jrcValidationResult ? (jrcValidationResult.gateVerdict || null) : null,
-                cutoff:           cutoffGateVerdict
-                // self_consistency added below via assignment, once selfConsistencyCheck
-                // actually exists -- it isn't declared until after this object literal
-                // closes, so referencing it inline here throws a temporal-dead-zone
-                // ReferenceError at runtime (confirmed: caught by this session's first
-                // real end-to-end pipeline execution, not by any prior syntax or scope
-                // check, since referencing a let before its own declaration in the same
-                // function is syntactically legal -- it's a runtime-only failure).
+                cutoff:           cutoffGateVerdict,
+                self_consistency: selfConsistencyCheck ? (selfConsistencyCheck.gateVerdict || null) : null
             },
 
             compliance_status: dnmResult.compliant ? 'COMPLIANT' : 'WARNING',
@@ -4217,7 +4245,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                     upstreamComponents: ing.upstreamComponents || []
                 })),
                 manufacturing:           manufacturingTraceability,
-                transport:               { source: 'GLEC v3.2',               parameters: { mode: input.transport.mode, distanceKm: input.transport.distanceKm } },
+                transport:               { source: 'GLEC v3.2',               parameters: { mode: input.transport.mode, distanceKm: input.transport.distanceKm, effectiveDistanceKm: transportResult.effectiveDistanceKm, crisisRoutingApplied: transportResult.crisisRoutingApplied } },
                 packaging:               {
                     source: 'PEF 3.1 CFF / Ecoinvent',
                     parameters: {
@@ -4395,8 +4423,6 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         // computed correctly but unreachable from the PDF, same failure class as the
         // gate verdicts before WIRE-GATE-3.
         auditTrailData.systemBoundaryCheck = systemBoundaryCheck;
-        auditTrailData.compliance_gate_summary.self_consistency =
-            selfConsistencyCheck ? (selfConsistencyCheck.gateVerdict || null) : null;
 
         return {
             selfConsistencyCheck: selfConsistencyCheck,

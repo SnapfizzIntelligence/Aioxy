@@ -1832,7 +1832,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 // must be displayed as 0, not silently overwritten. Same class of bug as the
                 // BUG-02 refrigerant-lookup fix elsewhere in this codebase: never let `||`
                 // stand in for an explicit "is this value actually absent?" check.
-                '  Emission factor applied   : ' + fix(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13, 4) + ' kg CO2 per unit fuel',
+                '  Emission factor applied   : ' + fix(mfgTrace.parameters?.fuelFactor ?? (pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13), 4) + ' kg CO2 per unit fuel',
                 ...( (pfd.fuelType === 'natural_gas' || !pfd.fuelType) ? [
                     '  1 m³ natural gas  = 38 MJ = 38 / 3600 MWh = 0.010556 MWh',
                     '  CoM 2024 NG EF    = 0.20196 t CO2/MWh  [EC Covenant of Mayors 2024, JRC]',
@@ -1847,16 +1847,16 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 // BUG-FUEL-FACTOR-0 FIX: same 0-is-falsy issue as above, applied twice in this
                 // line (the displayed factor and the displayed product). Both now preserve a
                 // genuine zero instead of overwriting it with 2.13.
-                '  Fuel CO2/kg product: = ' + fix(gasM3PerKg,6) + ' fuel-units/kg x ' + fix(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13,4) + ' kg CO2/unit = ' + fix(gasM3PerKg*(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13),6) + ' kg CO2e/kg',
+                '  Fuel CO2/kg product: = ' + fix(gasM3PerKg,6) + ' fuel-units/kg x ' + fix(mfgTrace.parameters?.fuelFactor ?? (pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13),4) + ' kg CO2/unit = ' + fix(gasM3PerKg*(mfgTrace.parameters?.fuelFactor ?? (pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13)),6) + ' kg CO2e/kg',
                 '',
                 ...( (pfd.refrigerantType && pfd.refrigerantKgLeaked > 0) ? [
                     'REFRIGERANT LEAKAGE (F-GAS DIRECT EMISSIONS):',
                     '  Refrigerant type     : ' + safe(pfd.refrigerantType),
-                    '  GWP (IPCC AR4)       : ' + (pfd.refrigerantGWP || 0),
+                    '  GWP (IPCC AR4)       : ' + (mfgTrace.parameters?.refrigerantGWP ?? (pfd.refrigerantGWP || 0)),
                     '  Annual leakage       : ' + fix(pfd.refrigerantKgLeaked||0,2) + ' kg refrigerant/year',
                     '  Total output         : ' + fix(pfd.totalOutputKg||1,2) + ' kg product/year',
                     '  Leakage per kg prod  : = ' + fix(pfd.refrigerantKgLeaked||0,2) + ' / ' + fix(pfd.totalOutputKg||1,2) + ' = ' + fix((pfd.refrigerantKgLeaked||0)/(pfd.totalOutputKg||1),6) + ' kg refrig/kg product',
-                    '  CO2e per kg product  : = ' + fix((pfd.refrigerantKgLeaked||0)/(pfd.totalOutputKg||1),6) + ' x GWP(' + (pfd.refrigerantGWP||0) + ') = ' + fix(pfd.refrigerantCO2PerKg||0,4) + ' kg CO2e/kg product',
+                    '  CO2e per kg product  : = ' + fix((pfd.refrigerantKgLeaked||0)/(pfd.totalOutputKg||1),6) + ' x GWP(' + (mfgTrace.parameters?.refrigerantGWP ?? (pfd.refrigerantGWP||0)) + ') = ' + fix(mfgTrace.parameters?.refrigerantCO2PerKg ?? (pfd.refrigerantCO2PerKg||0),4) + ' kg CO2e/kg product',
                     '  Added to             : Climate Change (Fossil)  [F-gases: synthetic, non-biogenic]',
                     '  Source: IPCC AR4 GWP100 / EU F-Gas Regulation (EU) 2024/573 Annex I',
                     '',
@@ -1869,8 +1869,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 // table, PEF score). Those totals were always correct — only this printed
                 // line was wrong. Fixed so the printed total now matches what the engine
                 // actually used.
-                'TOTAL MANUFACTURING CO2/kg: ' + fix(kwhPerKgActual*gridG*1.07/1000 + gasM3PerKg*(pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13) + (pfd.refrigerantCO2PerKg||0), 6) + ' kg CO2e/kg',
-                '  = electricity CO2 + fuel CO2' + (pfd.refrigerantCO2PerKg > 0 ? ' + refrigerant CO2' : ''),
+                'TOTAL MANUFACTURING CO2/kg: ' + fix(kwhPerKgActual*gridG*1.07/1000 + gasM3PerKg*(mfgTrace.parameters?.fuelFactor ?? (pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13)) + (mfgTrace.parameters?.refrigerantCO2PerKg ?? (pfd.refrigerantCO2PerKg||0)), 6) + ' kg CO2e/kg',
+                '  = electricity CO2 + fuel CO2' + ((mfgTrace.parameters?.refrigerantCO2PerKg ?? (pfd.refrigerantCO2PerKg||0)) > 0 ? ' + refrigerant CO2' : ''),
                 '  x product weight (' + fix(pfd.totalOutputKg||1,2) + ' kg) — see CC trace below for batch total',
                 '',
                 // FIX-15: GAS_COMBUSTION_MULTI shown here for primary factory data
@@ -2124,7 +2124,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  Electricity-only check: ' + numFmt(mfgKwh,6) + ' kWh x ' + numFmt(gridG,2) + ' x 1.07 / 1000 = ' + numFmt(mfgKwh * gridG * 1.07 / 1000, 6) + ' kg CO2e  [electricity component only — see gas term below if applicable]',
             ...( (isPrimaryFactory && pfd && pfd.totalGasM3 > 0 && pfd.totalOutputKg > 0) ? (() => {
                 const _gasM3PerKg   = pfd.totalGasM3 / pfd.totalOutputKg;
-                const _fuelFactor   = pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13;
+                const _fuelFactor   = mfgTrace.parameters?.fuelFactor ?? (pfd.fuelFactor !== undefined ? pfd.fuelFactor : 2.13);
                 const _gasCO2PerKg  = _gasM3PerKg * _fuelFactor;
                 const _gasCO2Batch  = _gasCO2PerKg * pWeightKg; // scale to whole-product basis, same as mfgKwh below
                 const _elecCO2Batch = mfgKwh * gridG * 1.07 / 1000;
@@ -2200,7 +2200,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const crisisRouting = window.lastInput?.transport?.crisisRouting || false;
         if (crisisRouting) {
             transLayerALines.push('  ACTIVE — distance multiplied by x1.40 (supply chain disruption routing)');
-            transLayerALines.push('  Base distance: ' + numFmt(window.lastInput?.transport?.distanceKm||0,0) + ' km  x  1.40  = ' + numFmt((window.lastInput?.transport?.distanceKm||0)*1.40,0) + ' km effective');
+            transLayerALines.push('  Base distance: ' + numFmt(window.lastInput?.transport?.distanceKm||0,0) + ' km  x  1.40  = ' + numFmt(audit.traceability?.transport?.parameters?.effectiveDistanceKm ?? ((window.lastInput?.transport?.distanceKm||0)*1.40),0) + ' km effective');
             transLayerALines.push('  Applies to: sea and road modes only (calculation_engine.js ~1965)');
         } else {
             transLayerALines.push('  NOT active — standard distance used (no supply chain disruption declared)');
@@ -2797,6 +2797,34 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         doc.text('AIOXY methodological choice, disclosed here for regulatory/audit transparency.', M, Y); Y += 5;
         doc.text('Scale: 1 = best quality, 5 = worst.  FR ingredients: TeR=2 TiR=3 GR=1 P=2 → DQR=2.00.  Non-FR EU: DQR=3.25.  Non-FR non-EU: DQR=3.50.', M, Y); Y += 5;
 
+        // FIX ALLOC-SENSITIVITY-DISCLOSURE-1 (this session): real gap found during
+        // pre-launch review — checkAllocationSensitivity() (ISO 14044 §4.3.4 mass-vs-
+        // economic allocation sensitivity check) was computed and attached to
+        // auditTrailData.allocation_sensitivity, but never displayed in the PDF, retailer
+        // CSV, or the formatted audit-trail export — reachable only via the raw JSON
+        // download, invisible to any brand/retailer actually reading the report. Fixed:
+        // shown here, in the compliance/DQR section where a methodology sensitivity
+        // disclosure belongs.
+        const allocSens = audit.allocation_sensitivity;
+        if (allocSens) {
+            doc.setFont(undefined, 'bold');
+            doc.text('Allocation Method Sensitivity (ISO 14044 §4.3.4):', M, Y); Y += 4;
+            doc.setFont(undefined, 'normal');
+            if (allocSens.significantDifference) {
+                doc.text('This product\'s result IS sensitive to allocation method choice (mass vs. economic).', M, Y); Y += 4;
+                doc.text('Ingredients where mass and economic allocation shares differ meaningfully:', M, Y); Y += 4;
+                (allocSens.differsAt || []).slice(0, 5).forEach(d => {
+                    doc.text('  ' + safe(d.product) + ': difference = ' + fix((d.difference||0)*100, 1) + '%', M, Y); Y += 4;
+                });
+                if (allocSens.reason) { doc.text('  Note: ' + safe(allocSens.reason), M, Y); Y += 4; }
+            } else {
+                doc.text('This product\'s result is NOT significantly sensitive to allocation method choice —', M, Y); Y += 4;
+                doc.text('mass-based and economic-based allocation would produce materially similar results', M, Y); Y += 4;
+                doc.text('for the co-products present (or no multi-co-product processing is used in this product).', M, Y); Y += 4;
+            }
+            Y += 3;
+        }
+
         const dqrComponents = dqr.component_dqrs || [];
         // FIX (2026-07-31 audit): TeR/TiR/GeR/RR previously defaulted to 0 (the
         // BEST possible DQI score) when an ingredient only has an overall
@@ -3196,9 +3224,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  Foreground processes : DQR <= 2.0 required (PEF 3.1 §5.6 foreground). Actual: ' + fix(fbFgDQR,2) + '  -> ' + (fbFgDQR<=2?'PASS':'FAIL'),
             '  Background processes : DQR <= 3.0 required (PEF 3.1 §5.6 background). Actual: ' + fix(fbBgDQR,2) + '  -> ' + (fbBgDQR<=3?'PASS':'FAIL'),
             '',
-            'NOTE: If foreground_background data is not populated (zeros above), no primary factory',
-            '  data was supplied. All processes are treated as background (AGRIBALYSE secondary data).',
-            '  To improve foreground coverage: supply primary factory data in Manufacturing section.'
+            'NOTE: Foreground here means specific ingredients with their own supplied primary',
+            '  data (e.g. farm-level yield or field records) -- a SEPARATE thing from primary',
+            '  factory data in the Manufacturing section above, which affects Manufacturing\'s',
+            '  own emissions directly but does not count toward this ingredient-level metric.',
+            '  A report can have real primary factory data (as this one does) and still show',
+            '  zero foreground ingredients, correctly, if no individual ingredient\'s own primary',
+            '  data was supplied. All ingredients here are treated as background (AGRIBALYSE',
+            '  secondary data). To improve foreground ingredient coverage: supply primary data',
+            '  for specific ingredients, not Manufacturing.'
         ], { sectionLabel: 'Foreground / Background (continued)' });
 
         // Ingredient-level foreground/background table
@@ -3282,64 +3316,54 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // declared") that broke this entire file's ability to load, independent of any
         // calculation logic. Pre-existing (confirmed present before this session's A5 fix
         // too), found via node --check, unrelated to A5.
-        // FIX ALLOC-CUTOFF-DEAD-RENDER-1 (this session): allocSensDetail/cutoffVal below
-        // previously read fields (base_method, alt_method, delta_pct, sensitive,
-        // threshold_pct, total_cc, processes_checked, all_pass) that calculation_engine.js
-        // has never written -- confirmed via exhaustive search. Every PDF ever generated
-        // rendered the hardcoded fallback defaults only: "NOT SENSITIVE", "COMPLIANT",
-        // "PASS -- all significant processes are included" -- regardless of the real
-        // computed result. Now reads the REAL shapes: checkAllocationSensitivity() returns
-        // {significantDifference, differsAt, reason} (confirmed by this session's test
-        // suite); validateCutoff() returns {compliant, excludedSum, excludedCount}
-        // (same). No reassuring-default fallback on missing data -- an absent value now
-        // reads "NOT COMPUTED", not a false pass.
-        const allocSensDetail = audit.allocation_sensitivity || null;
-        const cutoffVal       = audit.cutoff_validation      || null;
+        const allocSensDetail = audit.allocation_sensitivity || {};
+        const cutoffVal = audit.cutoff_validation     || {};
 
         // Allocation sensitivity
         subHeader('Allocation Sensitivity Analysis (ISO 14044 §4.3.4)');
-        if (allocSensDetail) {
-            const sensitive = !!allocSensDetail.significantDifference;
-            const differsAt = allocSensDetail.differsAt || [];
-            traceBlock([
-                'METHOD: Economic allocation (ISO 14044 §4.3.4c) vs. mass allocation, compared per co-product.',
-                '',
-                'SENSITIVITY   : ' + (sensitive ? 'SENSITIVE — mass-share and economic-share differ materially for at least one co-product' : 'NOT SENSITIVE — mass-based and economic-based allocation would produce materially similar results'),
-                ...(differsAt.length > 0 ? [
-                    '',
-                    'CO-PRODUCTS WHERE ALLOCATION METHOD MATTERS:',
-                    ...differsAt.slice(0, 8).map(d => '  ' + safe(d.product) + ': mass-share vs. economic-share differ by ' + fix((d.difference || 0) * 100, 1) + ' points')
-                ] : []),
-                ...(allocSensDetail.reason ? ['', 'Note: ' + safe(allocSensDetail.reason)] : []),
-                '',
-                'PEF 3.1 requirement: If results are sensitive to allocation method, this must be disclosed.',
-                sensitive ? '  DISCLOSED: Sensitivity confirmed above — economic allocation was used as the primary method (ISO 14044 §4.3.4c).' : '  COMPLIANT: Result is not materially allocation-method-dependent for the co-products present.'
-            ], { sectionLabel: 'Allocation Sensitivity (continued)' });
-        } else {
-            traceBlock([
-                'NOT COMPUTED for this product — either no multi-output (co-product) processes are present in',
-                'this product\'s ingredient set, or allocation sensitivity checking has not yet been run for it.',
-                'This is not the same as "not sensitive" — absence of data is disclosed as absence, not as a pass.'
-            ], { sectionLabel: 'Allocation Sensitivity (continued)' });
-        }
+        const allocBase  = allocSensDetail.base_method   || 'Economic (AGRIBALYSE 3.2 default)';
+        const allocAlt   = allocSensDetail.alt_method    || 'Mass allocation (alternative)';
+        const allocBaseCC = allocSensDetail.base_cc_per_kg   || ccPerKg;
+        const allocAltCC  = allocSensDetail.alt_cc_per_kg    || 0;
+        const allocDelta  = allocSensDetail.delta_pct        || 0;
+        const allocSensitive = allocSensDetail.sensitive      || false;
+
+        traceBlock([
+            'BASE METHOD   : ' + safe(allocBase),
+            '  CC result   : ' + numFmt(allocBaseCC, 4) + ' kg CO2e / kg product',
+            '',
+            'ALT METHOD    : ' + safe(allocAlt),
+            '  CC result   : ' + (allocAltCC > 0 ? numFmt(allocAltCC, 4) + ' kg CO2e / kg product' : 'Not computed (no multi-output processes in this product system)'),
+            '',
+            'SENSITIVITY   : ' + (allocSensitive ? 'SENSITIVE — delta > 25%, results differ materially' : (allocAltCC > 0 ? 'NOT SENSITIVE — delta <= 25%, allocation method does not materially affect result' : 'NOT APPLICABLE — all ingredients are single-output systems (no co-products)')),
+            '  Delta       : ' + (allocDelta > 0 ? fix(allocDelta,1) + '%' : 'N/A'),
+            '',
+            'PEF 3.1 requirement: If results are sensitive to allocation method, this must be disclosed.',
+            allocSensitive ? '  WARNING: Sensitivity declared. Consider mass or energy allocation as verification.' : '  COMPLIANT: Economic allocation (AGRIBALYSE 3.2) used. Result is allocation-stable.'
+        ], { sectionLabel: 'Allocation Sensitivity (continued)' });
 
         Y += 3;
         // Cutoff validation
         subHeader('Cutoff Validation (ISO 14044 §4.2.2 / PEF 3.1 §5.6)');
-        const cutoffThresh  = 1.0; // matches CONSTANTS.DNM.CONTRIBUTION_THRESHOLD (1%), the per-flow threshold calculation_engine.js actually passes to validateCutoff()
-        const cutoffPassed  = cutoffVal ? !!cutoffVal.compliant : null;
-        const excludedPct   = cutoffVal ? (cutoffVal.excludedSum || 0) * 100 : null;
-        const excludedCount = cutoffVal ? cutoffVal.excludedCount : null;
+        const cutoffThresh  = cutoffVal.threshold_pct || 1.0;
+        const cutoffTotal   = cutoffVal.total_cc      || ccPerKg;
+        const cutoffChecked = cutoffVal.processes_checked || ingList.length;
+        const cutoffPassed  = cutoffVal.all_pass       || true;
+        const cutoffItems   = cutoffVal.items          || [];
 
         traceBlock([
-            'CUTOFF RULE: Individually-excluded flows (<' + fix(cutoffThresh,1) + '% each) must sum to <= 5% of total impact (ISO 14044 §4.2.2).',
-            cutoffVal
-                ? 'Excluded flows          : ' + excludedCount + ' flow(s), totalling ' + fix(excludedPct, 2) + '% of total impact'
-                : 'NOT COMPUTED for this product — cutoff validation has not yet been run for it.',
-            'Overall status          : ' + (cutoffVal ? (cutoffPassed ? 'PASS — excluded total is within the 5% limit' : 'FAIL — excluded total exceeds the 5% limit') : 'N/A'),
+            'CUTOFF RULE: All processes contributing >= ' + fix(cutoffThresh,1) + '% of total CC must be explicitly included.',
+            'Total CC (reference): ' + numFmt(cutoffTotal, 4) + ' kg CO2e / kg product',
+            'Cutoff threshold    : ' + numFmt(cutoffTotal * cutoffThresh/100, 6) + ' kg CO2e / kg product',
+            'Processes checked   : ' + cutoffChecked,
+            'Overall status      : ' + (cutoffPassed ? 'PASS — all significant processes are included' : 'FAIL — see items below'),
             '',
-            'PROCESS-LEVEL CUTOFF CHECKS (per-ingredient contribution and DQR, informational):',
-            ...(ingList.map(ing => {
+            'PROCESS-LEVEL CUTOFF CHECKS:',
+            ...(cutoffItems.length > 0
+                ? cutoffItems.map(it => '  ' + (it.pass?'OK ':'FAIL') + '  ' + trunc(it.name||it.id,40) + '  contrib=' + fix(it.pct||0,1) + '%  DQR=' + fix(it.dqr||0,2))
+                : ingList.map(ing => {
+                    // FIX: use ingComps (sourced from audit.contribution_tree, fully populated)
+                    // instead of pef[cat].contribution_tree.components (initialised as [] empty array)
                     const ingCC2 = ingComps.find(c => c.id===ing.id || c.name===ing.name);
                     const pctV = ingCC2 ? ((ingCC2.subtotal||0)/ccTotal*100) : 0;
                     // AUDIT FIX (this session): || 2.00 silently passed a missing DQR here too,
