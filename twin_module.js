@@ -750,9 +750,24 @@ function renderTwinResults(mainResult, twinCalcResult) {
     // GAP-1 FIX: Store full twinAudit data so buildTwinPDFSection() can render
     // 3-layer glass-box derivation for every twin ingredient.
     // Previously only summary totals were stored — ingredient Layer A/B/C was discarded here.
-    var twinIngComponents = (twinAudit.contribution_tree && twinAudit.contribution_tree['Climate Change']
+    var twinIngComponentsRaw = (twinAudit.contribution_tree && twinAudit.contribution_tree['Climate Change']
         && twinAudit.contribution_tree['Climate Change'].Ingredients
         && twinAudit.contribution_tree['Climate Change'].Ingredients.components) || [];
+    // FIX UPSTREAM-DATASOURCE-1: merge real upstreamComponents (only ever present on
+    // traceability.ingredient_routes, never on contribution_tree) by stable id, so the
+    // B14 disclosure added in FIX TWIN-DISCLOSURE-2 actually has real data to read.
+    var twinRoutesById = {};
+    ((twinAudit.traceability && twinAudit.traceability.ingredient_routes) || []).forEach(function (r) {
+        twinRoutesById[r.id] = r;
+    });
+    var twinIngComponents = twinIngComponentsRaw.map(function (c) {
+        var route = twinRoutesById[c.id];
+        if (!route) return c;
+        var merged = {};
+        for (var k in c) merged[k] = c[k];
+        merged.upstreamComponents = route.upstreamComponents || [];
+        return merged;
+    });
 
     window._twinResultsForPDF = {
         mainName: mainName, twinName: twinName, modeLabel: modeLabel,
@@ -1283,7 +1298,17 @@ function buildTwinPDFSection(doc, h) {
                 layerBLines.push('  Composite multiplier:');
                 layerBLines.push('    Formula: (0.6 x yield_factor) + (0.4 x nitrogen_factor)');
                 layerBLines.push('    = (0.6 x ' + fix(pdAdj.yield_factor||1,4) + ') + (0.4 x ' + fix(pdAdj.n_factor||1,4) + ') = ' + fix(pdAdj.multiplier||1,6));
-                layerBLines.push('  Applied to: 14 of 16 EF 3.1 categories (OD and IR excluded — see engine CALC-08)');
+                layerBLines.push('  Applied to: 11 of 16 EF 3.1 categories (conservative proxy)');
+                layerBLines.push('  NOT applied to Climate Change / Climate Change - Fossil / Climate Change - Biogenic:');
+                layerBLines.push('    excluded to avoid double-counting against the separate, additive IPCC Tier 1');
+                layerBLines.push('    N2O calculation (see engine FIX N2O-DOUBLECOUNT-1).');
+                layerBLines.push('  EXCLUDED from multiplier: Ozone Depletion (driven by CFC/HCFC refrigerant releases,');
+                layerBLines.push('    unrelated to agricultural yield or N rate) and Ionizing Radiation (driven by');
+                layerBLines.push('    nuclear share in background electricity mix, not by farm practice).');
+                layerBLines.push('  ALSO NOT applied to Land Use: Land Use scales by yield_factor (' + fix(pdAdj.yield_factor||1,4) + ') alone,');
+                layerBLines.push('    same grouping as the CC sub-splits above — land occupied per kg of ingredient');
+                layerBLines.push('    scales with yield, not with nitrogen application rate.');
+                layerBLines.push('  Source: calculation_engine.js FIX CALC-08 — explicit exclusion documented in engine.');
             }
             layerBLines.push('');
 
@@ -1366,6 +1391,47 @@ function buildTwinPDFSection(doc, h) {
                 layerBLines.push('  Source: LANCA v2.5 — Fraunhofer IBP / JRC');
             } else if (cf && cf.lanca) {
                 layerBLines.push('B8 — LANCA v2.5: not applied — ' + safe(cf.lanca.reason || 'no adjustment needed'));
+            }
+
+            // FIX TWIN-DISCLOSURE-2: B14 Inbound Ingredient Transport -- ported from
+            // pdf-generator.js (same real engine-computed data, ing.upstreamComponents).
+            var upstreamLegsT = ing.upstreamComponents || [];
+            if (upstreamLegsT.length > 0) {
+                upstreamLegsT.forEach(function (leg) {
+                    layerBLines.push('B14 — Inbound Ingredient Transport (Upstream — GLEC v3.2, proxy distance):');
+                    layerBLines.push('  Route            : ' + safe(leg.origin) + ' \u2192 ' + safe(leg.destination) + '  |  Mode: ' + safe((leg.mode||'').toUpperCase()));
+                    layerBLines.push('  Distance         : ' + fix(leg.distanceKm||0,0) + ' km pre-DAF  [' + safe(leg.source) + ']');
+                    layerBLines.push('  DAF applied      : x' + fix(leg.daf_applied||1,2));
+                    layerBLines.push('  Mass             : ' + fix(leg.massKg||0,4) + ' kg  |  Refrigeration: ' + safe(leg.refrigeration||'ambient'));
+                    layerBLines.push('  Climate Change   : ' + numFmt(leg.subtotal||0,6) + ' kg CO2e  (fossil: ' + numFmt(leg.fossilCO2||0,6) + ' kg CO2e)');
+                    layerBLines.push('  IMPORTANT: this impact is NOT included in this ingredient\'s Layer C total below.');
+                    layerBLines.push('  It is booked to the separate "Upstream" stage of the Twin total.');
+                    layerBLines.push('  Confidence: MEDIUM — proxy distance table (' + safe(leg.source) + '), not primary supplier data.');
+                });
+            } else if (adj.inbound_transport_failure) {
+                var itfT = adj.inbound_transport_failure;
+                layerBLines.push('B14 — Inbound Ingredient Transport (Upstream): \u26A0\u26A0 CALCULATION FAILED, NOT INCLUDED.');
+                layerBLines.push('  ' + safe(itfT.warning || ''));
+                layerBLines.push('  Error: ' + safe(itfT.error || 'unknown'));
+            } else if (origin && origin !== 'FR' && origin !== 'N/A') {
+                layerBLines.push('B14 — Inbound Ingredient Transport (Upstream): not applied — origin equals manufacturing country, or route could not be resolved.');
+            }
+
+            // FIX TWIN-DISCLOSURE-2: B15 SOC Sequestration -- ported from pdf-generator.js.
+            if (adj.soc_sequestration && adj.soc_sequestration.applied) {
+                var socT = adj.soc_sequestration;
+                layerBLines.push('B15 — SOC Sequestration (Regenerative Agriculture):');
+                layerBLines.push('  Source: IPCC 2006 Vol.4 Ch.2 Eq.2.25  |  PEF 3.1 §4.4.8');
+                layerBLines.push('  SOC baseline         : ' + fix(socT.soc_baseline_tC_per_ha||0,4) + ' t C/ha');
+                layerBLines.push('  SOC current          : ' + fix(socT.soc_current_tC_per_ha||0,4) + ' t C/ha');
+                layerBLines.push('  Delta C              : ' + fix(socT.delta_tC_per_ha||0,4) + ' t C/ha');
+                layerBLines.push('  Amortization period  : ' + (socT.amortization_years||20) + ' years');
+                layerBLines.push('  Annual CO2e/ha       : = (' + fix(socT.delta_tC_per_ha||0,4) + ' / ' + (socT.amortization_years||20) + ') x ' + fix(socT.c_to_co2_factor||3.667,4) + ' = ' + fix(socT.annual_co2e_per_ha||0,6) + ' t CO2e/ha/yr');
+                layerBLines.push('  CO2e per kg product  : = -(' + fix(socT.annual_co2e_per_ha||0,6) + ' x 1000) / yield_kg_ha = ' + fix(socT.co2e_per_kg_product||0,6) + ' kg CO2e/kg');
+                layerBLines.push('  Direction            : ' + safe(socT.direction));
+                layerBLines.push('  Sign: negative = sequestration CREDIT (reduces CC), positive = SOC loss PENALTY');
+            } else if (adj.soc_note) {
+                layerBLines.push('B15 — SOC Sequestration: not applied — ' + safe(adj.soc_note.reason || 'not activated'));
             }
 
             if (layerBLines.length <= 3) {

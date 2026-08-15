@@ -407,12 +407,26 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // log a warning so the user knows to re-run the calculation.
         const ingComps = (()=>{
             const fromAudit = fullTree['Climate Change']?.Ingredients?.components;
-            if (Array.isArray(fromAudit) && fromAudit.length > 0) return fromAudit;
-            const fromPef   = pef['Climate Change']?.contribution_tree?.Ingredients?.components;
-            if (Array.isArray(fromPef) && fromPef.length > 0) return fromPef;
-            console.warn('[AIOXY PDF] ingComps: no ingredient components found in contribution_tree. ' +
-                'PDF ingredient sections will be empty. Re-run the calculation before exporting PDF.');
-            return [];
+            let base = (Array.isArray(fromAudit) && fromAudit.length > 0) ? fromAudit : null;
+            if (!base) {
+                const fromPef = pef['Climate Change']?.contribution_tree?.Ingredients?.components;
+                base = (Array.isArray(fromPef) && fromPef.length > 0) ? fromPef : null;
+            }
+            if (!base) {
+                console.warn('[AIOXY PDF] ingComps: no ingredient components found in contribution_tree. ' +
+                    'PDF ingredient sections will be empty. Re-run the calculation before exporting PDF.');
+                return [];
+            }
+            // FIX UPSTREAM-DATASOURCE-1: contribution_tree components never carry
+            // upstreamComponents -- the real data lives only on traceability.ingredient_routes.
+            // Merge by stable id so B14 below (and any other consumer of ingComps) can
+            // actually read it, instead of always reading undefined.
+            const routes = audit?.traceability?.ingredient_routes || [];
+            const routesById = new Map(routes.map(r => [r.id, r]));
+            return base.map(c => {
+                const route = routesById.get(c.id);
+                return route ? { ...c, upstreamComponents: route.upstreamComponents || [] } : c;
+            });
         })();
         const mfgCC    = ccTree.Manufacturing?.total || 0;
         const transCC  = ccTree.Transport?.total     || 0;
@@ -2877,15 +2891,25 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('*CoR not scored per AGRIBALYSE DQI Matrix v3.0.1 (ADEME/INRAE). Always 0 in this dataset.', M, Y); Y += 5;
-        // FIX DQR-DISCLOSURE-1: verified against all 240 ingredients in the database —
-        // for 9 of them (3.75%), (TeR+TiR+GR+P)/4 does not exactly equal the DQR/5 value
-        // shown (differences of 0.005-0.15 on the 1-5 scale), almost certainly from
-        // rounding in AGRIBALYSE's own published dqr_overall figure versus its unrounded
-        // sub-indicator components. DQR/5 is AGRIBALYSE's own pre-computed value, used
-        // directly in all calculations — it is not re-derived from the breakdown shown
-        // here. Disclosed so an auditor recomputing the formula themselves for one of
-        // those 9 ingredients understands the small discrepancy is a source-data rounding
-        // artifact, not a calculation error.
+        // FIX DQR-DISCLOSURE-3 (this session, corrects an ERROR in DQR-DISCLOSURE-2
+        // above, not just a stale value): DISCLOSURE-2 checked ingredients_db.js in
+        // isolation (222 entries) and concluded zero discrepancies, contradicting the
+        // original "9" claim. That check was itself incomplete — it missed that
+        // ingredients.js ALSO merges into window.aioxyData.ingredients at runtime
+        // (food.html load order: ingredients_db.js, then ingredients.js, via
+        // Object.assign). Loading both together, replicating the real runtime merge:
+        // TRUE total is 241 ingredients (222 + 19 — not 222, and not the originally-
+        // claimed 240 either, off by one, likely a later single addition/removal not
+        // reflected when DISCLOSURE-1 was first written). Recomputing
+        // (TeR+TiR+GR+P)/4 vs stored dqr_overall across all 241: 9 discrepancies —
+        // exactly matching DISCLOSURE-1's original count, though at 9/241 = 3.73%,
+        // not the stated 3.75% (which assumed 240). All 9 are in ingredients.js's
+        // AGRIBALYSE-3.2-tagged Synthese entries specifically (maize/corn starch,
+        // raspberry, cider vinegar, cranberry, iodized salt, agave syrup, broccoli,
+        // chicory powder, refined palm oil) — zero in its CIQUAL-sourced entries and
+        // zero in the core 222, which supports DISCLOSURE-1's original explanation:
+        // these 9 appear to carry AGRIBALYSE's own published dqr_overall verbatim
+        // (preserving its native rounding), while the rest do not show this pattern.
         doc.text('DQR/5 is AGRIBALYSE\'s own published overall score, used directly in all', M, Y); Y += 4;
         doc.text('calculations. The 4-indicator formula is shown for transparency; in a small', M, Y); Y += 4;
         doc.text('number of cases it may not recompute to exactly the same figure due to', M, Y); Y += 4;
@@ -3348,7 +3372,13 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const cutoffThresh  = cutoffVal.threshold_pct || 1.0;
         const cutoffTotal   = cutoffVal.total_cc      || ccPerKg;
         const cutoffChecked = cutoffVal.processes_checked || ingList.length;
-        const cutoffPassed  = cutoffVal.all_pass       || true;
+        // FIX CUTOFF-FIELDNAME-1: was cutoffVal.all_pass, a field name the engine
+        // never sets (the real field from validateCutoff() in compliance_engine.js
+        // is `compliant`). undefined || true always evaluated to true, meaning this
+        // section could never display a genuine failure even when compliant was
+        // actually false for this product. cutoffPassed is now a real tri-state:
+        // true, false, or null (genuinely not computed) -- never silently forced true.
+        const cutoffPassed  = typeof cutoffVal.compliant === 'boolean' ? cutoffVal.compliant : null;
         const cutoffItems   = cutoffVal.items          || [];
 
         traceBlock([
@@ -3356,7 +3386,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'Total CC (reference): ' + numFmt(cutoffTotal, 4) + ' kg CO2e / kg product',
             'Cutoff threshold    : ' + numFmt(cutoffTotal * cutoffThresh/100, 6) + ' kg CO2e / kg product',
             'Processes checked   : ' + cutoffChecked,
-            'Overall status      : ' + (cutoffPassed ? 'PASS — all significant processes are included' : 'FAIL — see items below'),
+            'Overall status      : ' + (cutoffPassed === true ? 'PASS — all significant processes are included' : cutoffPassed === false ? 'FAIL — see items below' : 'NOT COMPUTED — cutoff validation result unavailable for this run'),
             '',
             'PROCESS-LEVEL CUTOFF CHECKS:',
             ...(cutoffItems.length > 0
@@ -3504,8 +3534,12 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         // adjustments.compliance_gate_summary there), but reached zero downstream
         // consumers -- confirmed by exhaustive search across all files before this fix.
         // Rendered here because this is the compliance gate itself, not a single check --
-        // it aggregates the verdicts of the 4 checks above (DNM, JRC, cutoff, self-
-        // consistency) through compliance_gate.js's exception-registry logic. Explicitly
+        // it aggregates the verdicts of 5 checks (DNM, JRC, cutoff, self-consistency,
+        // system boundary) through compliance_gate.js's exception-registry logic.
+        // WIRE-GATE-4 FIX (this session): system_boundary added as a 5th field on
+        // compliance_gate_summary (calculation_engine.js) and as a 5th row below --
+        // previously computed, reaching auditTrailData.systemBoundaryCheck, but absent
+        // from this table, so no consumer ever displayed it. Explicitly
         // labeled shadow-mode: these verdicts were computed and logged but did not block
         // this export, matching compliance_gate_summary.mode (hardcoded 'shadow' in
         // calculation_engine.js, not yet flipped to 'enforce' -- see that file's own
@@ -3524,7 +3558,8 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 ['DNM (Data Needs Matrix)',        gateSummary.dnm],
                 ['JRC Validation',                 gateSummary.jrc],
                 ['Cutoff Validation',               gateSummary.cutoff],
-                ['Twin Self-Consistency',           gateSummary.self_consistency]
+                ['Twin Self-Consistency',           gateSummary.self_consistency],
+                ['System Boundary',                 gateSummary.system_boundary]
             ];
             const gateRows = gateChecks.map(([label, verdict]) => {
                 if (!verdict) return [label, 'NOT RUN', 'Check did not execute for this product'];
@@ -3911,7 +3946,15 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             }
         });
 
-        const dnmTotal = ccTotal || 1;
+        // FIX DNM-DIVISOR-1: ccTotal is expected to always be positive for any real
+        // product (verified: every tested product this session, including a minimal
+        // single-ingredient case, produced a positive total). Guarded anyway to match
+        // the safer pattern already used a few hundred lines earlier in this file
+        // (_fbTotalRef) rather than leave four unguarded divisions -- an honest
+        // disclosure here costs nothing and prevents a fabricated percentage in the
+        // one scenario this can't currently demonstrate but also can't rule out.
+        const dnmTotalValid = typeof ccTotal === 'number' && ccTotal > 0;
+        const dnmTotal = dnmTotalValid ? ccTotal : 0;
         // PDF-F2 FIX (Audit Session 14): Correct DNM thresholds to match compliance_engine.js.
         // Previous values (3.0/4.0) were wrong — too lenient by 1.0 DQR point each.
         // PEF 3.1 §5.6: foreground (operational control) DQR ≤ 2.0, background DQR ≤ 3.0.
@@ -3925,6 +3968,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         const dnmOk         = [];
 
         dnmProcesses.forEach(p => {
+            if (!dnmTotalValid) return; // FIX DNM-DIVISOR-1: skip rather than divide by 0
             const contrib = p.impact / dnmTotal;
             if (contrib < DNM_THRESHOLD) return;
             if (p.isUnderOperationalControl && p.dqr > DNM_PRIMARY_MAX) {
@@ -3950,7 +3994,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             '  Threshold : processes contributing >=1% of total CC impact must be checked',
             '  Primary   : under operational control — DQR must be <= ' + DNM_PRIMARY_MAX,
             '  Secondary : not under operational control — DQR must be <= ' + DNM_SECONDARY_MAX,
-            '  Total CC for check: ' + numFmt(dnmTotal,6) + ' kg CO2e  |  1% threshold = ' + numFmt(dnmTotal*0.01,6) + ' kg CO2e',
+            dnmTotalValid
+                ? '  Total CC for check: ' + numFmt(dnmTotal,6) + ' kg CO2e  |  1% threshold = ' + numFmt(dnmTotal*0.01,6) + ' kg CO2e'
+                : '  DNM check could not run: total Climate Change impact was not a valid positive number for this run.',
             ''
         ];
 

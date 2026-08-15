@@ -479,67 +479,17 @@ function updateResultsUI(results, twinCalcResult) {
         ? singleScoreData.singleScore
         : 0;
 
-    const EFSI_TABLE = {
-        'Climate Change':                { nf: 2.42E+03, wf: 22.19 },
-        'Ozone Depletion':                { nf: 1.29E-04, wf: 6.75  },
-        'Ionizing Radiation':             { nf: 1.31E+02, wf: 5.37  },
-        'Photochemical Ozone Formation':  { nf: 1.08E+01, wf: 5.10  },
-        'Particulate Matter':             { nf: 2.44E-04, wf: 9.54  },
-        'Acidification':                  { nf: 3.93E+01, wf: 6.64  },
-        'Eutrophication, freshwater':     { nf: 3.81E-01, wf: 2.95  },
-        'Eutrophication, terrestrial':    { nf: 1.42E+01, wf: 3.12  },
-        'Eutrophication, marine':         { nf: 1.58E+02, wf: 3.91  },
-        'Land Use':                       { nf: 2.43E+05, wf: 8.42  },
-        'Water Use/Scarcity (AWARE)':     { nf: 7.83E+02, wf: 9.03  },
-        'Resource Use, fossils':          { nf: 1.96E+04, wf: 8.92  },
-        'Resource Use, minerals/metals':  { nf: 4.33E-03, wf: 8.08  }
-        // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater are
-        // correctly excluded — Ramos et al.'s weighting source (Sala, Cerutti
-        // & Pant 2018, EC JRC) dismissed those categories for lack of
-        // methodological robustness. Not a gap in this mapping.
-    };
     const pefCats = window.auditTrailData?.pefCategories || {};
-    let efsiScore = 0;
-    const efsiContribs = [];
-    Object.keys(EFSI_TABLE).forEach(cat => {
-        const row = EFSI_TABLE[cat];
-        const perKg = (pefCats[cat]?.total || 0) / productWeightKg;
-        const contribution = (perKg / row.nf) * row.wf;
-        efsiScore += contribution;
-
-        // FIX-23: track which stage drives each category, so a dominant
-        // category's grade can be explained rather than left as a bare letter.
-        const tree = pefCats[cat]?.contribution_tree || {};
-        const stages = {
-            Ingredients:   (tree.Ingredients?.total || 0) / productWeightKg,
-            Manufacturing: (tree.Manufacturing?.total || 0) / productWeightKg,
-            Transport:     (tree.Transport?.total || 0) / productWeightKg,
-            Packaging:     (tree.Packaging?.total || 0) / productWeightKg
-        };
-        const stageTotal = Object.values(stages).reduce((a, b) => a + b, 0) || 1;
-        let topStage = 'Ingredients', topStageShare = 0;
-        Object.keys(stages).forEach(s => {
-            const share = stages[s] / stageTotal;
-            if (share > topStageShare) { topStageShare = share; topStage = s; }
-        });
-        efsiContribs.push({ cat, contribution, topStage, topStageShare });
+    const enviroscore = window.corePhysics.calculateEnviroscore({
+        pefResults:      pefCats,
+        productWeightKg: productWeightKg
     });
-
-    // FIX-23: PRIMARY DRIVER DETECTION — see pdf-generator.js FIX-23 comment
-    // for full rationale (Ramos et al. 2022's own "sustainable beef vs
-    // unsustainable banana" caveat about single-category dominance).
-    const efsiSorted = [...efsiContribs].sort((a, b) => b.contribution - a.contribution);
-    const topDriver = efsiSorted[0] || { cat: 'n/a', contribution: 0, topStage: 'n/a', topStageShare: 0 };
-    const topDriverShare = efsiScore > 0 ? (topDriver.contribution / efsiScore) : 0;
-    const hasSingleDriver = topDriverShare >= 0.40;
-
-    // Table 2 thresholds (Ramos et al. 2022) — replaces old fabricated bands
-    let ecoGrade = 'E';
-    let ecoColor = '#E63946'; // Red
-    if (efsiScore < 4.00E-04) { ecoGrade = 'A'; ecoColor = '#2A9D8F'; } // Dark Green
-    else if (efsiScore < 1.45E-03) { ecoGrade = 'B'; ecoColor = '#8AB17D'; } // Light Green
-    else if (efsiScore < 2.00E-03) { ecoGrade = 'C'; ecoColor = '#E9C46A'; } // Yellow
-    else if (efsiScore < 1.00E-02) { ecoGrade = 'D'; ecoColor = '#F4A261'; } // Orange
+    const efsiScore     = enviroscore.efsiScore;
+    const topDriver      = { cat: enviroscore.primaryDriver.category, topStage: enviroscore.primaryDriver.topStage, topStageShare: enviroscore.primaryDriver.topStageShare };
+    const topDriverShare = enviroscore.primaryDriver.share;
+    const hasSingleDriver = enviroscore.primaryDriver.has;
+    const ecoGrade = enviroscore.grade;
+    const ecoColor = enviroscore.color;
 
     let ecoScoreDiv = document.getElementById('fopEcoScoreCard');
     if (!ecoScoreDiv && resultsContent) {
@@ -772,7 +722,7 @@ function updateResultsUI(results, twinCalcResult) {
                     const proteinVal = nutritionEntry
                         ? nutritionEntry.protein_g_per_100g
                         : 10.0; // fallback per-ingredient if nutrition entry missing
-                    const qty = conv.quantityKg || 1;
+                    const qty = conv.quantityKg || 0; // FIX QTY-FALLBACK-1: was ||1
                     totalProteinWeighted += proteinVal * qty;
                     totalQuantityKg += qty;
                 }
@@ -833,7 +783,7 @@ function updateResultsUI(results, twinCalcResult) {
                         if (conv) {
                             const convId = conv.id || conv.name;
                             const nutritionEntry = convId && nutritionDB[convId];
-                            const qty = conv.quantityKg || 1;
+                            const qty = conv.quantityKg || 0; // FIX QTY-FALLBACK-1: was ||1
                             kcalWeighted += (nutritionEntry?.kcal_per_100g || 0) * qty;
                             fatWeighted  += (nutritionEntry?.fat_g_per_100g || 0) * qty;
                             qtyTotal += qty;
@@ -3001,6 +2951,28 @@ function decodeSupplierToken() {
         document.getElementById('supplierWaterSource').value = data.w || '';
         document.getElementById('supplierPractice').value    = data.p || '';
 
+        // FIX SUPPLIER-TOKEN-1: fields added to the manual form after this token
+        // schema was last updated. Populated only if present, same pattern as above.
+        const organicNEl = document.getElementById('primaryOrganicNitrogen');
+        const phosEl     = document.getElementById('primaryPhosphorus');
+        const socBaseEl  = document.getElementById('primarySOCBaseline');
+        const socCurrEl  = document.getElementById('primarySOCCurrent');
+        if (organicNEl && data.op !== undefined) organicNEl.value = data.op;
+        if (phosEl     && data.ph !== undefined) phosEl.value     = data.ph;
+        if (socBaseEl  && data.sb !== undefined) socBaseEl.value  = data.sb;
+        if (socCurrEl  && data.sc !== undefined) socCurrEl.value  = data.sc;
+        if (Array.isArray(data.pe)) {
+            data.pe.slice(0, 3).forEach((pest, i) => {
+                const n = i + 1;
+                const nameEl = document.getElementById('pesticide' + n + 'Name');
+                const casEl  = document.getElementById('pesticide' + n + 'CAS');
+                const rateEl = document.getElementById('pesticide' + n + 'Rate');
+                if (nameEl && pest.name !== undefined) nameEl.value = pest.name;
+                if (casEl  && pest.cas  !== undefined) casEl.value  = pest.cas;
+                if (rateEl && pest.rate !== undefined) rateEl.value = pest.rate;
+            });
+        }
+
         // Animal fields (only populate if present in token)
         const animalTypeEl   = document.getElementById('supplierAnimalType');
         const prodSystemEl   = document.getElementById('supplierProductionSystem');
@@ -3466,7 +3438,7 @@ function displayForegroundBackground() {
                 padding:0.6rem 0.9rem;font-size:0.8rem;color:#92400E;">
                 <strong>Country adjustments applied:</strong>
                 AWARE 2.0 water scarcity ratio, LANCA v2.5 land occupation, FAOSTAT yield delta,
-                and 1.15× CC penalty for non-FR origins without primary data.
+                for non-FR origins.
                 Grid intensity for manufacturing: ${
                     window.aioxyData && window.aioxyData.grid_intensity && window.aioxyData.grid_intensity[destCode]
                         ? window.aioxyData.grid_intensity[destCode] + ' g CO₂/kWh (Ember 2025)'
@@ -3675,7 +3647,7 @@ function displayCompleteAuditTrail() {
                 </div>
                 <div style="background: white; border-radius: 8px; padding: 1rem; font-family: monospace; 
                             word-break: break-all; font-size: 0.8rem; color: var(--primary);">
-                    ${audit.dppId || 'TRC-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
+                    ${audit.dppId || 'Not yet generated — run a calculation to produce a verifiable Assessment ID'}
                 </div>
                 <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--success);">
                     <i class="fas fa-check-circle"></i> Audit trail verified - calculation integrity maintained
@@ -3716,48 +3688,20 @@ function displayCompleteAuditTrail() {
                             // Ramos et al. 2022, npj Science of Food, 6:54, DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
                             const localPWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
                             const pefCatsLocal = audit.pefCategories || {};
-                            const EFSI_TABLE_LOCAL = {
-                                'Climate Change':                { nf: 2.42E+03, wf: 22.19 },
-                                'Ozone Depletion':                { nf: 1.29E-04, wf: 6.75  },
-                                'Ionizing Radiation':             { nf: 1.31E+02, wf: 5.37  },
-                                'Photochemical Ozone Formation':  { nf: 1.08E+01, wf: 5.10  },
-                                'Particulate Matter':             { nf: 2.44E-04, wf: 9.54  },
-                                'Acidification':                  { nf: 3.93E+01, wf: 6.64  },
-                                'Eutrophication, freshwater':     { nf: 3.81E-01, wf: 2.95  },
-                                'Eutrophication, terrestrial':    { nf: 1.42E+01, wf: 3.12  },
-                                'Eutrophication, marine':         { nf: 1.58E+02, wf: 3.91  },
-                                'Land Use':                       { nf: 2.43E+05, wf: 8.42  },
-                                'Water Use/Scarcity (AWARE)':     { nf: 7.83E+02, wf: 9.03  },
-                                'Resource Use, fossils':          { nf: 1.96E+04, wf: 8.92  },
-                                'Resource Use, minerals/metals':  { nf: 4.33E-03, wf: 8.08  }
-                                // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater
-                                // excluded by the source paper itself — see main FOP card comment.
-                            };
-                            let localEfsi = 0;
-                            const localContribs = [];
-                            Object.keys(EFSI_TABLE_LOCAL).forEach(cat => {
-                                const row = EFSI_TABLE_LOCAL[cat];
-                                const perKg = (pefCatsLocal[cat]?.total || 0) / localPWeightKg;
-                                const contribution = (perKg / row.nf) * row.wf;
-                                localEfsi += contribution;
-                                localContribs.push({ cat, contribution });
+                            const localEnviro = window.corePhysics.calculateEnviroscore({
+                                pefResults:      pefCatsLocal,
+                                productWeightKg: localPWeightKg
                             });
+                            const localEfsi      = localEnviro.efsiScore;
+                            const localTop        = { cat: localEnviro.primaryDriver.category };
+                            const localTopShare   = localEnviro.primaryDriver.share;
+                            const localHasDriver  = localEnviro.primaryDriver.has;
                             const mPtRef = audit.pef_single_score?.singleScore || 0;
 
-                            // FIX-23: compact driver check — same >=40%-of-total rule as
-                            // pdf-generator.js and the main FOP card above.
-                            const localSorted = [...localContribs].sort((a, b) => b.contribution - a.contribution);
-                            const localTop = localSorted[0] || { cat: 'n/a', contribution: 0 };
-                            const localTopShare = localEfsi > 0 ? (localTop.contribution / localEfsi) : 0;
-                            const localHasDriver = localTopShare >= 0.40;
-
-                            let rating = 'Very low';
-                            let ratingColor = '#2A9D8F';
-                            let grade = 'A';
-                            if (localEfsi >= 4.00E-04) { rating = 'Low'; ratingColor = '#8AB17D'; grade = 'B'; }
-                            if (localEfsi >= 1.45E-03) { rating = 'Medium'; ratingColor = '#E9C46A'; grade = 'C'; }
-                            if (localEfsi >= 2.00E-03) { rating = 'High'; ratingColor = '#F4A261'; grade = 'D'; }
-                            if (localEfsi >= 1.00E-02) { rating = 'Very high'; ratingColor = '#E63946'; grade = 'E'; }
+                            const gradeToRating = { A: 'Very low', B: 'Low', C: 'Medium', D: 'High', E: 'Very high' };
+                            const grade = localEnviro.grade;
+                            const rating = gradeToRating[grade] || 'Very high';
+                            const ratingColor = localEnviro.color;
 
                             return `
                                 <div style="margin-top: 0.25rem;">

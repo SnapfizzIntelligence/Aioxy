@@ -330,13 +330,17 @@ function displayAuditTrail() {
             <div style="margin-top: 10px; font-size: 0.8rem; color: #333;">
                 <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
                 ${(() => {
-                    // FIX: [audit-trail audit] Was missing 4 countries (BO, HN, GT, VE) that
-                    // retailer_csv_engine.js already added via its "CSV-F1 FIX". Without this,
-                    // the DPP card could show a green "EUDR: Compliant" checkmark here for a
-                    // Bolivia/Honduras/Guatemala/Venezuela-sourced product while the retailer
-                    // CSV export correctly flags the same product HIGH RISK — a direct,
-                    // customer-visible contradiction between two documents about one product.
-                    const eudrHighRisk = ['BR','ID','MY','AR','CO','PE','NG','CM','CG','CD','BO','HN','GT','VE'];
+                    // FIX EUDR-STALE-1: this list was still the old, superseded 14-country
+                    // classification after the real EUDR high-risk list (Commission Implementing
+                    // Regulation (EU) 2025/1093, 22 May 2025) was corrected elsewhere in this same
+                    // file (see EUDR_HIGH_RISK near the CSRD export function) and in
+                    // retailer_csv_engine.js. Left uncorrected, this created the exact contradiction
+                    // the previous fix comment here warned about: a green "Compliant" checkmark for
+                    // a Brazil/Indonesia/Malaysia-sourced product (genuinely standard-risk under the
+                    // real regulation) while the CSV export elsewhere in this file correctly showed
+                    // NOT_HIGH for the same origins. Corrected to match the real, verified 4-country
+                    // list used consistently everywhere else in this file.
+                    const eudrHighRisk = ['BY', 'KP', 'MM', 'RU'];
                     const ingComponents = _auditCCTree.Ingredients?.components || [];
                     const highRiskIngs = ingComponents.filter(ing => {
                         const country = ing.universal_adjustments?.adjusted_for_country || '';
@@ -501,7 +505,7 @@ function displayAuditTrail() {
     const usePrimaryMfg = document.getElementById('usePrimaryFactoryData')?.checked || false;
     const factoryKWh    = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
     const factoryGas    = parseFloat(document.getElementById('factoryTotalGas')?.value) || 0;
-    const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+    const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value); // FIX FACTORY-OUTPUT-1: ||1 removed -- was silently defeating the > 0 check below
     const hasPrimaryMfgData = usePrimaryMfg && (factoryKWh > 0 || factoryGas > 0) && factoryOutput > 0;
 
     let primaryMfgHTML = '';
@@ -591,11 +595,22 @@ function displayAuditTrail() {
     }
 
     const outbound = _auditCCTree.Transport?.total || 0;
+    // FIX RAW-INPUT-1: prefer the real engine-computed effective distance
+    // (already includes crisis-routing if it was applied) over recomputing
+    // from raw DOM state. Falls back to the raw-DOM recompute only if the
+    // engine value is genuinely unavailable, matching pdf-generator.js's
+    // equivalent, already-safer pattern for this same figure.
+    const engineEffectiveDist = window.auditTrailData?.traceability?.transport?.parameters?.effectiveDistanceKm;
     let dist = parseFloat(document.getElementById('transportDistance')?.value) || 300;
     const rawMode = document.getElementById('transportMode')?.value || 'road';
     const isCrisisActive = document.getElementById('crisisRoutingToggle')?.checked;
     let crisisNote = '';
-    if (isCrisisActive && (rawMode === 'sea' || rawMode === 'road')) {
+    if (typeof engineEffectiveDist === 'number' && !isNaN(engineEffectiveDist)) {
+        if (isCrisisActive && engineEffectiveDist !== dist) {
+            crisisNote = `<br><span style="color:#C0392B; font-size:0.85em; font-weight:bold;">[⚠️ CRISIS REROUTE: ${dist}km → ${engineEffectiveDist.toFixed(0)}km]</span>`;
+        }
+        dist = engineEffectiveDist;
+    } else if (isCrisisActive && (rawMode === 'sea' || rawMode === 'road')) {
         const originalDist = dist;
         dist = dist * 1.40;
         crisisNote = `<br><span style="color:#C0392B; font-size:0.85em; font-weight:bold;">[⚠️ CRISIS REROUTE: ${originalDist}km → ${dist.toFixed(0)}km]</span>`;
@@ -1256,7 +1271,7 @@ function exportCSRDMatrix() {
     const anyPrimaryIngredient = ingComps.some(ing => !!ing.primary_data_used || !!ing.primary_data);
     const usePrimaryMfg = document.getElementById('usePrimaryFactoryData')?.checked || false;
     const factoryKWh    = parseFloat(document.getElementById('factoryTotalKWh')?.value) || 0;
-    const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value) || 1;
+    const factoryOutput = parseFloat(document.getElementById('factoryTotalOutput')?.value);
     const hasPrimaryMfgData = usePrimaryMfg && factoryKWh > 0 && factoryOutput > 0;
     const primaryDataApplied = (anyPrimaryIngredient || hasPrimaryMfgData) ? 'YES' : 'NO';
     const primaryDataScope   = [

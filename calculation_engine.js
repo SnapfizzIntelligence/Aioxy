@@ -242,7 +242,7 @@
                     const mfgMethod      = (input && input.manufacturing && input.manufacturing.processingMethod) || 'none';
                     const mfgEnergySource= (input && input.manufacturing && input.manufacturing.energySource) || 'Grid Mix';
                     const kwhTotal       = mfgResult.kwh || 0;
-                    const productMassKg  = (input && input.product && input.product.weightKg) || 1;
+                    const productMassKg  = input.product.weightKg; // FIX MASS-TRACE-1: hard-validated at line ~597, fallback removed as unreachable and unnecessary
                     const kwhPerKg       = productMassKg > 0 ? kwhTotal / productMassKg : 0;
                     const gIntensity     = mfgResult.gridIntensityGPerKwh !== undefined ? mfgResult.gridIntensityGPerKwh : gridIntensity;
                     const tdLoss         = 0.07;
@@ -3390,7 +3390,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             });
         });
 
-        return { weightedDQR, dnmResult, hotspotResult, dqrComponents: dqrComponentsWithUncertainty };
+        return { weightedDQR, dnmResult, hotspotResult, dqrComponents: dqrComponentsWithUncertainty, dnmGateVerdict };
     }
 
     // ── STEP 7: SINGLE SCORE ─────────────────────────────────────────────────
@@ -3943,7 +3943,7 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         }
         // === END GAP A ===
 
-        const { weightedDQR, dnmResult, hotspotResult, dqrComponents } =
+        const { weightedDQR, dnmResult, hotspotResult, dqrComponents, dnmGateVerdict } =
             computeDQR(ingredientResults, pefResults);
 
         const singleScoreResult  = computeSingleScore(pefResults, input, ingredientResults);
@@ -4157,6 +4157,60 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             co2PerKg:  unifiedCO2PerKg
         });
 
+        // === ITEM #3: twin-as-oracle, wired to run automatically ===
+        // Runs on every calculation now, not only when a user manually opens the
+        // twin/comparison UI. Compares this product's own result against itself
+        // through the exact same calculateCategoryComparison() the twin feature
+        // uses. Two real, independent things fall out of one check:
+        //   1. Any category where dataMissing is true means this product's own
+        //      result is incomplete -- caught automatically, on this product,
+        //      right now, not discovered later by a human reading a report.
+        //   2. Any nonzero delta on a self-comparison would mean
+        //      calculateCategoryComparison itself is non-deterministic or has a
+        //      mutation bug -- a permanent regression guard, not a one-time test.
+        // Shadow mode via compliance_gate.js, consistent with JRC/DNM/cutoff:
+        // logs what it finds, does not block export. Not enforced yet for the
+        // same reason those aren't -- no real historical corpus available in
+        // this environment to confirm the false-positive rate first.
+        //
+        // FIX BLOCKING-2: relocated from below auditTrailData to here, immediately
+        // before it. It was previously computed AFTER the auditTrailData object
+        // literal that reads selfConsistencyCheck -- a temporal-dead-zone violation
+        // (selfConsistencyCheck is declared with let) that threw "Cannot access
+        // 'selfConsistencyCheck' before initialization" on every single calculation,
+        // unconditionally. Confirmed by direct execution of this file in Node: this
+        // was the second of two bugs (alongside dnmGateVerdict's wrong-scope issue)
+        // preventing calculate() from ever completing. Logic below is unchanged from
+        // the original -- only its position moved.
+        let selfConsistencyCheck = null;
+        try {
+            const selfCompare = window.corePhysics.calculateCategoryComparison({
+                pefA:       pefResults,
+                pefB:       pefResults,
+                massA:      input.product.weightKg,
+                massB:      input.product.weightKg,
+                categories: ALL_CATEGORIES
+            });
+            const incomplete = selfCompare.filter(r => r.dataMissing);
+            const inconsistent = selfCompare.filter(r => !r.dataMissing && r.delta !== 0);
+            selfConsistencyCheck = {
+                categoriesChecked:      selfCompare.length,
+                incompleteCategories:   incomplete.map(r => r.category),
+                inconsistentCategories: inconsistent.map(r => r.category),
+                pass:                   incomplete.length === 0 && inconsistent.length === 0
+            };
+            if (window.complianceGate) {
+                selfConsistencyCheck.gateVerdict = window.complianceGate.evaluateGate(
+                    'twinSelfConsistency',
+                    { compliant: selfConsistencyCheck.pass },
+                    { incomplete: incomplete.map(r => r.category), inconsistent: inconsistent.map(r => r.category) },
+                    'shadow'
+                );
+            }
+        } catch (e) {
+            selfConsistencyCheck = { pass: false, error: 'Self-consistency check itself failed: ' + (e && e.message ? e.message : String(e)) };
+        }
+
         const auditTrailData = {
             productName:          input.product.name,
             dppId:                dppIdPlaceholder,
@@ -4340,50 +4394,6 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             }
         };
 
-        // === ITEM #3: twin-as-oracle, wired to run automatically ===
-        // Runs on every calculation now, not only when a user manually opens the
-        // twin/comparison UI. Compares this product's own result against itself
-        // through the exact same calculateCategoryComparison() the twin feature
-        // uses. Two real, independent things fall out of one check:
-        //   1. Any category where dataMissing is true means this product's own
-        //      result is incomplete -- caught automatically, on this product,
-        //      right now, not discovered later by a human reading a report.
-        //   2. Any nonzero delta on a self-comparison would mean
-        //      calculateCategoryComparison itself is non-deterministic or has a
-        //      mutation bug -- a permanent regression guard, not a one-time test.
-        // Shadow mode via compliance_gate.js, consistent with JRC/DNM/cutoff:
-        // logs what it finds, does not block export. Not enforced yet for the
-        // same reason those aren't -- no real historical corpus available in
-        // this environment to confirm the false-positive rate first.
-        let selfConsistencyCheck = null;
-        try {
-            const selfCompare = window.corePhysics.calculateCategoryComparison({
-                pefA:       pefResults,
-                pefB:       pefResults,
-                massA:      input.product.weightKg,
-                massB:      input.product.weightKg,
-                categories: ALL_CATEGORIES
-            });
-            const incomplete = selfCompare.filter(r => r.dataMissing);
-            const inconsistent = selfCompare.filter(r => !r.dataMissing && r.delta !== 0);
-            selfConsistencyCheck = {
-                categoriesChecked:      selfCompare.length,
-                incompleteCategories:   incomplete.map(r => r.category),
-                inconsistentCategories: inconsistent.map(r => r.category),
-                pass:                   incomplete.length === 0 && inconsistent.length === 0
-            };
-            if (window.complianceGate) {
-                selfConsistencyCheck.gateVerdict = window.complianceGate.evaluateGate(
-                    'twinSelfConsistency',
-                    { compliant: selfConsistencyCheck.pass },
-                    { incomplete: incomplete.map(r => r.category), inconsistent: inconsistent.map(r => r.category) },
-                    'shadow'
-                );
-            }
-        } catch (e) {
-            selfConsistencyCheck = { pass: false, error: 'Self-consistency check itself failed: ' + (e && e.message ? e.message : String(e)) };
-        }
-
         // WIRE-GATE-2 FIX (this session): validateSystemBoundary() previously had zero
         // callers anywhere in the codebase, per compliance_engine.js's own ITEM #34
         // dead-code audit comment. A prior session deliberately left it unwired,
@@ -4423,6 +4433,17 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         // computed correctly but unreachable from the PDF, same failure class as the
         // gate verdicts before WIRE-GATE-3.
         auditTrailData.systemBoundaryCheck = systemBoundaryCheck;
+
+        // WIRE-GATE-4 FIX (this session): systemBoundaryCheck.gateVerdict reached
+        // auditTrailData.systemBoundaryCheck (PLACEMENT FIX above), but
+        // compliance_gate_summary -- the object pdf-generator.js's Compliance Gate
+        // Summary table actually reads -- only ever had 4 fields (dnm/jrc/cutoff/
+        // self_consistency), never system_boundary. Same failure class as
+        // WIRE-GATE-1/3: computed correctly, technically reachable via
+        // auditTrailData.systemBoundaryCheck, but the one table a human would
+        // actually open had no row for it. Folding it in here so pdf-generator.js
+        // can add a 5th row without reaching into a second object.
+        auditTrailData.compliance_gate_summary.system_boundary = systemBoundaryCheck.gateVerdict || null;
 
         return {
             selfConsistencyCheck: selfConsistencyCheck,

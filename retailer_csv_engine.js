@@ -60,6 +60,14 @@ function c(s) {
     return q('# ' + s);
 }
 
+// FIX EUDR-SCOPE-1: moved here from inside buildMasterData(), where it was
+// invisible to generateRetailerCSV() -- the only function that actually reads
+// it. Content unchanged; scope corrected. See removal-site comment for full
+// diagnosis (found via faithful execution testing, vm.runInThisContext).
+const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025/1093 (22 May 2025). ' +
+    'Rejected by European Parliament 9 Jul 2025 (data quality/transparency concerns); ' +
+    'first formal review scheduled 2026. Verify against the current official EC list before relying on this field.';
+
 // CSV-F6 FIX: Guard against Infinity in fix() — defensive, since perKg() already guards.
 function fix(n, d) {
     const v = parseFloat(n);
@@ -179,9 +187,6 @@ function buildMasterData() {
 // consistent with the same "verify against current source" discipline already used for
 // retailer CSV schema staleness (see SCHEMA_STALENESS_DAYS above).
 const EUDR_HR = new Set(['BY', 'KP', 'MM', 'RU']);
-const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025/1093 (22 May 2025). ' +
-    'Rejected by European Parliament 9 Jul 2025 (data quality/transparency concerns); ' +
-    'first formal review scheduled 2026. Verify against the current official EC list before relying on this field.';
 
     return {
         // Identity
@@ -382,7 +387,7 @@ function generateTescoCSV(d) {
     rows.push(['carbon_footprint_subcategory_note',       d.cc_subsplit_note,       '',            'Data-integrity disclosure, not a calculation discrepancy'].map(q).join(','));
     rows.push(['']);
     rows.push([c('Stage breakdown (required for TSN Scope 3 Category 1 disclosure):')]);
-    rows.push(['ghg_ingredients_per_kg',               fix(d.cc_ing, 6),            'kg CO2e/kg',  'GHG Protocol Scope 3 Cat.1 — purchased goods'].map(q).join(','));
+    rows.push(['ghg_ingredients_per_kg',               fix(d.cc_ing, 6),            'kg CO2e/kg',  'GHG Protocol Scope 3 Cat.1 (ingredients portion only -- see ghg_packaging_per_kg below for the packaging portion of Cat.1)'].map(q).join(','));
     rows.push(['ghg_manufacturing_per_kg',             fix(d.cc_mfg, 6),            'kg CO2e/kg',  'Scope 1+2 from manufacturer perspective'].map(q).join(','));
     rows.push(['ghg_transport_per_kg',          fix(d.cc_trans, 6),            'kg CO2e/kg', 'GHG Protocol Scope 3 Cat.4 — outbound transport (GLEC v3.2)'].map(q).join(','));
     rows.push(['ghg_upstream_transport_per_kg', fix(d.cc_upstream, 6),         'kg CO2e/kg', 'GHG Protocol Scope 3 Cat.4 — inbound ingredient transport (GLEC v3.2)'].map(q).join(','));
@@ -469,7 +474,7 @@ function generateSainsburysCSV(d) {
 
     rows.push([c("SSQ SECTION 2 — CLIMATE AND CARBON (Sainsbury's Plan for Better)")]);
     rows.push(['product_carbon_footprint_kg_co2e_per_kg', fix(d.cc, 6),      'kg CO2e/kg', 'S2.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
-    rows.push(['scope3_cat1_ingredients_kg_co2e_per_kg',  fix(d.cc_ing, 6),  'kg CO2e/kg', 'S2.2', 'GHG Protocol Scope 3 Cat.1'].map(q).join(','));
+    rows.push(['scope3_cat1_ingredients_kg_co2e_per_kg',  fix(d.cc_ing, 6),  'kg CO2e/kg', 'S2.2', 'Ingredients portion of Cat.1 only -- see packaging_ghg_kg_co2e_per_kg (S2.5) for the packaging portion'].map(q).join(','));
     rows.push(['scope1_scope2_manufacturing_kg_co2e_per_kg', fix(d.cc_mfg, 6),'kg CO2e/kg', 'S2.3', 'Manufacturer Scope 1+2'].map(q).join(','));
     rows.push(['scope3_cat4_transport_kg_co2e_per_kg',    fix(d.cc_trans, 6), 'kg CO2e/kg', 'S2.4', 'GHG Protocol Scope 3 Cat.4'].map(q).join(','));
     rows.push(['packaging_ghg_kg_co2e_per_kg',            fix(d.cc_pkg, 6),  'kg CO2e/kg', 'S2.5', 'CFF-adjusted packaging'].map(q).join(','));
@@ -702,7 +707,7 @@ function generateReweCSV(d) {
 
     rows.push([c('U1 — TREIBHAUSGASEMISSIONEN (GHG EMISSIONS)')]);
     rows.push(['thg_gesamt_kg_co2e_pro_kg',          fix(d.cc, 6),           'kg CO2e/kg', 'U1.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
-    rows.push(['thg_rohstoffe_zutaten',              fix(d.cc_ing, 6),       'kg CO2e/kg', 'U1.2', 'Scope 3 Kat.1 Einkauf'].map(q).join(','));
+    rows.push(['thg_rohstoffe_zutaten',              fix(d.cc_ing, 6),       'kg CO2e/kg', 'U1.2', 'Nur Zutaten-Anteil von Kat.1 -- siehe thg_verpackung fuer den Verpackungs-Anteil'].map(q).join(','));
     rows.push(['thg_produktion_herstellung',         fix(d.cc_mfg, 6),       'kg CO2e/kg', 'U1.3', 'Scope 1+2 Produzent'].map(q).join(','));
     rows.push(['thg_transport_logistik',             fix(d.cc_trans, 6),     'kg CO2e/kg', 'U1.4', 'Scope 3 Kat.4'].map(q).join(','));
     rows.push(['thg_verpackung',                     fix(d.cc_pkg, 6),       'kg CO2e/kg', 'U1.5', 'CFF-Methode PEF 3.1'].map(q).join(','));
@@ -773,7 +778,7 @@ function generateAlbertHeijnCSV(d) {
 
     rows.push([c('CATEGORY 2 — CLIMATE (AH Better Together strategy)')]);
     rows.push(['ah_total_product_co2e_per_kg',     fix(d.cc, 6),            'kg CO2e/kg', 'CAT2.1', (window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.charAt(0).toUpperCase() + window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE.slice(1))].map(q).join(','));
-    rows.push(['ah_co2e_ingredients_per_kg',       fix(d.cc_ing, 6),        'kg CO2e/kg', 'CAT2.2', 'GHG Protocol Scope 3 Cat.1'].map(q).join(','));
+    rows.push(['ah_co2e_ingredients_per_kg',       fix(d.cc_ing, 6),        'kg CO2e/kg', 'CAT2.2', 'Ingredients portion of Cat.1 only -- see ah_co2e_packaging_per_kg for the packaging portion'].map(q).join(','));
     rows.push(['ah_co2e_manufacturing_per_kg',     fix(d.cc_mfg, 6),        'kg CO2e/kg', 'CAT2.3', 'Factory operations'].map(q).join(','));
     rows.push(['ah_co2e_transport_per_kg',         fix(d.cc_trans, 6),      'kg CO2e/kg', 'CAT2.4', 'GLEC v3.2'].map(q).join(','));
     rows.push(['ah_co2e_packaging_per_kg',         fix(d.cc_pkg, 6),        'kg CO2e/kg', 'CAT2.5', 'PEF CFF Annex C'].map(q).join(','));
@@ -924,7 +929,7 @@ function generateLeclercCSV(d) {
     rows.push(['consommation_eau_m3_par_kg',      fix(d.water, 7),          'm3 world eq./kg', /* Session 5 FIX: was 'm3 eq./kg' */ 'E1', 'AWARE 2.0'].map(q).join(','));
     rows.push(['utilisation_sol_pt_par_kg',       fix(d.land, 4),           'Pt/kg',      'E2', ''].map(q).join(','));
     rows.push(['eutrophisation_fw_par_kg',        fix(d.eutr_fw, 8),        'kg Pe/kg',   'E3', ''].map(q).join(','));
-    rows.push(['risque_deforestation',            d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'OUI' : 'NON', '', 'E4', 'EUDR'].map(q).join(','));
+    rows.push(['risque_deforestation',            d.ingredients.some(i => i.eudrRisk === 'HIGH') ? 'ELEVE' : 'NON_ELEVE', '', 'E4', 'EUDR Annexe 1 — NON_ELEVE = confirme hors liste officielle a risque eleve ; AIOXY ne peut pas affirmer un niveau faible/standard, voir avertissement en en-tete'].map(q).join(','));
     rows.push(['']);
 
     rows.push([c('SECTION EMBALLAGE')]);
@@ -1079,7 +1084,7 @@ function generateCSRD_ESRS_CSV(d) {
     rows.push(['esrs_e1_ghg_intensity',          fix(d.cc, 6),             'kg CO2e/kg','ESRS E1', 'E1-6 §44','Disclosure','GHG intensity per unit of product'].map(q).join(','));
     rows.push(['esrs_e1_scope1_manufacturing',   fix(d.cc_mfg, 6),         'kg CO2e/kg','ESRS E1', 'E1-6 §44','Scope 1',  'Direct GHG from manufacturing'].map(q).join(','));
     rows.push(['esrs_e1_scope2_energy',          '0',                      'kg CO2e/kg','ESRS E1', 'E1-6 §44','Scope 2',  'Location-based — included in manufacturing above'].map(q).join(','));
-    rows.push(['esrs_e1_scope3_cat1_ingredients',fix(d.cc_ing, 6),         'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.1','Purchased goods and services'].map(q).join(','));
+    rows.push(['esrs_e1_scope3_cat1_ingredients',fix(d.cc_ing, 6),         'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.1','Purchased goods and services (ingredients portion -- see esrs_e1_scope3_cat1_packaging below for the packaging portion)'].map(q).join(','));
     rows.push(['esrs_e1_scope3_cat4_transport',            fix(d.cc_trans + d.cc_upstream, 6), 'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.4','Upstream transportation (inbound + outbound, GLEC v3.2)'].map(q).join(','));
     rows.push(['esrs_e1_scope3_cat4_outbound_transport',   fix(d.cc_trans, 6),                  'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.4','Outbound transport to retailer'].map(q).join(','));
     rows.push(['esrs_e1_scope3_cat4_inbound_transport',    fix(d.cc_upstream, 6),               'kg CO2e/kg','ESRS E1', 'E1-6 §51','Scope 3 Cat.4','Inbound ingredient transport (GLEC v3.2 screening)'].map(q).join(','));
@@ -1370,15 +1375,17 @@ function generateRetailerCSV(retailerKey) {
         const dateStr = masterData.assessDate.replace(/-/g, '');
         const filename = config.filename + '_' + pName + '_' + masterData.dppId + '_' + dateStr + '.csv';
 
-        const blob = new Blob([disclaimerRows + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url  = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+            const blob = new Blob([disclaimerRows + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
 
         console.log('[AIOXY Retailer CSV] Exported: ' + filename);
     } catch (err) {
