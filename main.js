@@ -596,6 +596,34 @@ async function calculateImpact() {
             mainCalcResult = await window.calculationEngine.calculate(input);
         }
 
+        // HARD-BLOCK-1 (this session, paired with calculation_engine.js): calculate()
+        // now returns { status: 'BLOCKED', ... } instead of a normal result when its
+        // internal self-consistency check fails (the engine disagreeing with itself
+        // on identical input -- see calculation_engine.js for full rationale on why
+        // only this specific check hard-blocks and DNM/cutoff/JRC do not yet).
+        //
+        // This check MUST run here, before ANY of the "Write main globals" assignments
+        // below, for two reasons: (1) mainCalcResult.auditTrailData.dppId (a few lines
+        // down) would otherwise throw a raw, unhelpful TypeError on a BLOCKED result,
+        // since a BLOCKED object has no auditTrailData property at all; (2) throwing
+        // BEFORE any window.* write means none of window.finalPefResults /
+        // window.massBalanceData / window.auditTrailData / window.currentDPPId get
+        // partially overwritten -- the existing catch block below (see its own
+        // comment) was already written specifically to avoid leaving stale/mixed
+        // state, and this reuses that exact same protection rather than adding a
+        // second, parallel error-handling path.
+        //
+        // Throwing (not returning/silently skipping) is deliberate: it routes through
+        // the existing catch block a few lines down, which already renders a visible
+        // inline error banner from error.message and explicitly does NOT touch the
+        // stale globals -- the same safety property a BLOCKED result needs.
+        if (mainCalcResult && mainCalcResult.status === 'BLOCKED') {
+            throw new Error('Primary product: ' + mainCalcResult.message);
+        }
+        if (twinCalcResult && twinCalcResult.status === 'BLOCKED') {
+            throw new Error('Comparison product: ' + twinCalcResult.message);
+        }
+
         // ── Write main globals ────────────────────────────────────────────────
         window.finalPefResults           = mainCalcResult.finalPefResults;
         window.massBalanceData           = mainCalcResult.massBalanceData;

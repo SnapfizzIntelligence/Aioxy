@@ -444,8 +444,35 @@
             // All parameters (Ev, Erec, Ed, R1, R2, A, Qs/Qp) are read from the
             // packaging database (window.aioxyData.packaging) — the same source used
             // by calculatePackaging() in core_physics.js.
+            //
+            // TRACE-MISMATCH-1 FIX (this session): the block below was previously
+            // gated only by `pkgTotal !== 0 || input.packaging.material` -- with NO
+            // check on `cat` -- so it ran on every one of the 13 category iterations
+            // of this loop and pushed the SAME Climate-Change-specific CFF derivation
+            // (Ev/Erec/R1/R2/A CO2e math, "Term 1", "Term 2", "Burden", "Credit") onto
+            // every category's Packaging.components[], including Particulate Matter,
+            // Land Use, Water Use, etc. -- categories this derivation says nothing
+            // about. Confirmed by direct execution: Particulate Matter's real,
+            // correctly-computed pkgTotal number (subtotal, from
+            // packagingResult.multiCategoryResults, line ~226 above -- itself
+            // unaffected by this bug) was being displayed next to a full CO2e
+            // Climate Change explanation, not an explanation of its own number.
+            // The auditor-facing NUMBER was always correct; the auditor-facing
+            // EXPLANATION next to it was wrong for 12 of 13 categories.
+            //
+            // Fix: this specific CFF derivation only runs for cat === 'Climate
+            // Change', the one category it actually explains. Every other category
+            // gets a minimal, honest component: the real pkgTotal number, with a
+            // truthful note (not a fabricated per-category formula) pointing to
+            // where the full CFF derivation lives. Inventing a distinct formula
+            // trace for each of the other 12 categories was considered and rejected
+            // -- most of those categories' packaging values come from a single
+            // database lookup (multiCategoryResults[cat]), not a multi-term formula
+            // the way Climate Change's CFF is; presenting one as if it had the same
+            // depth of derivation as the other would itself be a false traceability
+            // claim.
             const packagingComponents = [];
-            if (pkgTotal !== 0 || (input && input.packaging && input.packaging.material)) {
+            if (cat === 'Climate Change' && (pkgTotal !== 0 || (input && input.packaging && input.packaging.material))) {
                 const pkgMat  = (input && input.packaging) ? input.packaging.material : 'unknown';
                 const pkgWtKg = (input && input.packaging) ? (input.packaging.weightKg || 0) : 0;
                 const pkgRec  = (input && input.packaging) ? ((input.packaging.recycledPct || 0) / 100) : 0;
@@ -568,13 +595,75 @@
                     '',
                     '  Total = ' + perKg.toFixed(5) + ' kg CO2e/kg x ' + pkgWtKg.toFixed(4) + ' kg',
                     '        = ' + pkgTotal.toFixed(4) + ' kg CO2e'
-                ].join('\n');
+                ];
+
+                // JRC-COMPARE-1 (this session): append a real, live-read comparison
+                // to the JRC compliance-gate reference value, so an auditor reading
+                // this trace sees both AIOXY's own derived number AND the fixed
+                // regulatory benchmark it is checked against, with a stated reason
+                // for any difference -- not just the derivation in isolation.
+                // Reads the reference LIVE from complianceEngine.CONSTANTS.JRC.
+                // REFERENCE_VALUES (the actual, single source used by
+                // runJRCValidation() elsewhere in this file) rather than
+                // duplicating the number here, so this line cannot silently go
+                // stale if that table is ever updated. Only appended when a real
+                // mapped reference exists for this material+category (the same
+                // JRC_MATERIAL_MAP used later in this file: PET->PET_granulates,
+                // cardboard->cardboard, glass->glass_bottle) -- materials/
+                // categories JRC does not check get no comparison line, since
+                // there is nothing real to compare against.
+                try {
+                    const jrcMatMapTrace = { 'PET': 'PET_granulates', 'cardboard': 'cardboard', 'glass': 'glass_bottle' };
+                    const jrcKeyTrace = jrcMatMapTrace[pkgMat];
+                    const jrcRefs = (window.complianceEngine && window.complianceEngine.CONSTANTS &&
+                                      window.complianceEngine.CONSTANTS.JRC && window.complianceEngine.CONSTANTS.JRC.REFERENCE_VALUES)
+                                     ? window.complianceEngine.CONSTANTS.JRC.REFERENCE_VALUES : null;
+                    const jrcRefVal = (jrcKeyTrace && jrcRefs && jrcRefs[jrcKeyTrace]) ? jrcRefs[jrcKeyTrace]['Climate Change'] : undefined;
+                    if (typeof jrcRefVal === 'number') {
+                        const devPct = Math.abs((perKg - jrcRefVal) / jrcRefVal) * 100;
+                        cffTrace.push('');
+                        cffTrace.push('  --- Comparison to JRC BAT compliance-gate reference ---');
+                        cffTrace.push('  JRC reference (fixed benchmark, ' + jrcKeyTrace + '): ' + jrcRefVal.toFixed(2) + ' kg CO2e/kg');
+                        cffTrace.push('  This calculation (actual R1=' + r1.toFixed(2) + ' recycled content): ' + perKg.toFixed(4) + ' kg CO2e/kg');
+                        cffTrace.push('  Deviation: ' + devPct.toFixed(1) + '%. AIOXY computes a DYNAMIC value per the real');
+                        cffTrace.push('  CFF formula above, driven by this specific product\'s actual recycled content;');
+                        cffTrace.push('  the JRC reference is a SINGLE FIXED number representing one assumption (its own');
+                        cffTrace.push('  methodology/recycled-content basis is not stated in AIOXY\'s source data). Full');
+                        cffTrace.push('  compliance-gate disclosure, including known limits of this comparison: see');
+                        cffTrace.push('  Compliance Gate Summary section of this report.');
+                    }
+                } catch (jrcCompareErr) {
+                    // Comparison is supplementary context, not required for the
+                    // derivation above (which is already complete and correct on
+                    // its own) -- if it cannot be built for any reason, fail silent
+                    // here rather than block the real, already-verified trace.
+                }
+
+                const cffTraceFinal = cffTrace.join('\n');
 
                 packagingComponents.push({
                     name: 'Primary Packaging: ' + pkgMat,
                     notes: 'CFF-adjusted impact — PEF 3.1 Annex C v2.1',
                     subtotal: pkgTotal,
-                    calculation_trace: cffTrace
+                    calculation_trace: cffTraceFinal
+                });
+            } else if (cat !== 'Climate Change' && (pkgTotal !== 0 || (input && input.packaging && input.packaging.material))) {
+                // TRACE-MISMATCH-1 FIX (continued): honest fallback for the 12
+                // non-Climate-Change categories. Real pkgTotal number (from
+                // packagingResult.multiCategoryResults[cat], line ~226 above),
+                // truthful note -- not a fabricated formula trace for a
+                // derivation that was never built for this category.
+                const pkgMatFallback = (input && input.packaging) ? input.packaging.material : 'unknown';
+                packagingComponents.push({
+                    name: 'Primary Packaging: ' + pkgMatFallback,
+                    notes: 'Source: PACKAGING_MULTI_CATEGORY database (core_physics.js). ' +
+                           'A full term-by-term derivation (the kind shown for Climate Change, ' +
+                           'above) has not been built for this category — the value shown is a ' +
+                           'direct database lookup, not a multi-step formula result. See ' +
+                           'core_physics.js, PACKAGING_MULTI_CATEGORY.' + pkgMatFallback + ' for ' +
+                           'the underlying source and confidence rating of this specific number.',
+                    subtotal: pkgTotal,
+                    calculation_trace: null
                 });
             }
 
@@ -3765,6 +3854,21 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         if (typeof window.complianceEngine === 'undefined') throw new CalculationError('complianceEngine not loaded. Load compliance_engine.js before calculation_engine.js.');
         if (typeof window.exportEngine     === 'undefined') throw new CalculationError('exportEngine not loaded. Load export_engine.js before calculation_engine.js.');
         if (typeof window.aioxyData        === 'undefined') throw new CalculationError('window.aioxyData not loaded. Load database files before calculation_engine.js.');
+        // GUARD-FCE-1 FIX (this session): computeDQR() (below, called from calculate())
+        // hard-depends on window.foodCalculationEngine.calculateUncertainty() with no
+        // guard, unlike the four checks above. window.foodCalculationEngine is defined
+        // inline in main.js (not a separate <script> file), so in the normal browser
+        // flow this is always present by the time any button click can reach calculate().
+        // Found via this session's full-catalog sweep harness: calling calculate() from
+        // any context other than main.js's exact flow (a test harness, a future API
+        // endpoint, a different frontend) throws an unguarded, unclear
+        // "Cannot read properties of undefined (reading 'calculateUncertainty')" deep
+        // inside computeDQR() instead of a clear, named error at the top of calculate()
+        // like the other four dependencies. This guard makes that failure mode match
+        // the other four: loud, named, and pointing at the actual missing piece.
+        if (typeof window.foodCalculationEngine === 'undefined' || typeof window.foodCalculationEngine.calculateUncertainty !== 'function') {
+            throw new CalculationError('window.foodCalculationEngine not defined. It is set up inline in main.js (not a separate script file) — ensure main.js has run before calling calculate().');
+        }
 
         validateInput(input);
 
@@ -4142,6 +4246,53 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             productWeightKg: input.product.weightKg
         });
 
+        // ENVIROSCORE-ANOMALY-1 (this session): flag, not block. calculateEnviroscore()
+        // itself is correct — real, cited weighting table (Ramos et al. 2022, npj
+        // Science of Food, DOI 10.1038/s41538-022-00136-9), real normalization math,
+        // verified against real published figures. The formula was never the problem.
+        //
+        // The problem: this session found one real, isolated bad data point —
+        // "chicory-powder-agribalyse-3-2"'s Resource Use, minerals/metals raw value
+        // (281 in ingredients.js) — that is seven orders of magnitude larger than
+        // every comparable ingredient (typical range ~1e-06 to ~8e-05; confirmed by
+        // direct comparison against neighboring entries in the same file). This
+        // silently pushes any product using it to an EFSI score in the millions and
+        // an automatic Grade E, with nothing in the output signaling that the score
+        // is anomalous rather than a genuine reflection of the product.
+        //
+        // This is deliberately NOT a hard block like HARD-BLOCK-1/2 above: those
+        // guard pure integrity checks with zero legitimate exception (a number
+        // cannot legitimately disagree with itself). An EFSI score magnitude is a
+        // judgment call about what's "too high," not a zero-exception fact — a
+        // genuinely unusual real product should never be silently refused because
+        // of a threshold this file chose. So: flag clearly, do not block.
+        //
+        // Threshold source: this session ran the full 241-ingredient x 5-state x
+        // 4-country sweep (4,820 real runs) and found the highest efsiScore among
+        // every ingredient OTHER than chicory powder was 14.74 — chicory powder's
+        // own score reached into the millions, six orders of magnitude beyond any
+        // other real result. 100 is used as a flag threshold: real headroom (~7x)
+        // above the actual worst legitimate score this session observed, not an
+        // arbitrary round number. If the real ceiling ever needs revisiting, rerun
+        // the sweep (run_sweep.js in this session's tooling) rather than guess.
+        let enviroscoreAnomaly = null;
+        if (enviroscoreResult && typeof enviroscoreResult.efsiScore === 'number' && enviroscoreResult.efsiScore > 100) {
+            const topContrib = (enviroscoreResult.contributions && enviroscoreResult.contributions[0]) || null;
+            enviroscoreAnomaly = {
+                flagged: true,
+                efsiScore: enviroscoreResult.efsiScore,
+                referenceMax: 14.74,
+                referenceSource: 'Full-catalog sweep, this session: 241 ingredients x 5 processing states x 4 countries (4,820 runs). Highest legitimate score observed across all ingredients: 14.74.',
+                suspectCategory: topContrib ? topContrib.category : null,
+                message: 'This product\'s Enviroscore (' + enviroscoreResult.efsiScore.toFixed(2) + ') is far outside the ' +
+                         'range of every other real product tested against this database (highest legitimate score ' +
+                         'observed: 14.74). This does NOT mean the formula is wrong — the weighting table and math ' +
+                         'are real, cited, and correctly computed. It means at least one input ingredient likely has ' +
+                         'a data error in this specific product\'s recipe. Before treating this score as reliable, ' +
+                         'check the top-contributing category and ingredient for a possible raw-data error.'
+            };
+        }
+
         const unifiedCO2PerKg = pefResults['Climate Change'].total / input.product.weightKg;
         const baselineCO2PerKg = comparisonBaseline ? comparisonBaseline.co2PerKg : 0;
         const baselineWaterPerKg = comparisonBaseline ? (comparisonBaseline.waterPerKg || 0) : 0;
@@ -4211,6 +4362,37 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             selfConsistencyCheck = { pass: false, error: 'Self-consistency check itself failed: ' + (e && e.message ? e.message : String(e)) };
         }
 
+        // HARD-BLOCK-1 (this session): selfConsistencyCheck.pass === false means the
+        // engine computed the exact same input against itself (pefA vs pefB, same
+        // input.product.weightKg, same categories -- see the try block above) and got
+        // two DIFFERENT answers, or hit an exception trying to check. There is no
+        // legitimate reason for this to ever happen: unlike DNM/cutoff/JRC (which stay
+        // shadow-mode -- see their own comments above re: "no documented exception on
+        // file yet" and "do not flip to enforce without first running against real
+        // historical output") a self-consistency failure is not a business-policy
+        // question, it is evidence the engine's own math is internally contradictory.
+        // There is no valid exception to a number disagreeing with itself.
+        //
+        // Returning a DISTINCTLY-SHAPED object (status: 'BLOCKED', not the normal
+        // result shape) rather than a normal result with a flag attached is
+        // deliberate: a flag can be ignored by a downstream renderer that doesn't
+        // check for it (this is exactly what happened to dnmGateVerdict/
+        // cutoffGateVerdict before this session's WIRE-GATE-1 fix -- computed
+        // correctly, reached zero consumers). A different shape cannot be
+        // accidentally rendered by pdf-generator.js's normal path; pdf-generator.js
+        // must be explicitly updated to check for status==='BLOCKED' and refuse to
+        // proceed (separate fix, pdf-generator.js).
+        if (selfConsistencyCheck && selfConsistencyCheck.pass === false) {
+            return {
+                status: 'BLOCKED',
+                reason: 'SELF_CONSISTENCY_FAILURE',
+                message: 'Engine self-consistency check failed: the calculation disagreed with itself on identical input. This product cannot generate a client-facing output until the underlying computation issue is resolved.',
+                selfConsistencyCheck: selfConsistencyCheck,
+                productName: input.product.name,
+                timestamp: new Date().toISOString()
+            };
+        }
+
         const auditTrailData = {
             productName:          input.product.name,
             dppId:                dppIdPlaceholder,
@@ -4248,6 +4430,11 @@ const gasCO2 = gasM3PerKg * fuelFactor;
             // Single source of truth consumed identically by web and PDF —
             // see core_physics.js calculateEnviroscore() for full rationale.
             enviroscore: enviroscoreResult,
+            // ENVIROSCORE-ANOMALY-1 (this session): null on every normal product;
+            // populated only when efsiScore is far outside the real range this
+            // session's full-catalog sweep observed. See computation above for
+            // full rationale on why this is a flag, not a block.
+            enviroscore_anomaly: enviroscoreAnomaly,
 
             // ARCHITECTURE FIX (2026-07-30): centralized from ui.js.
             // 'delta' = measured difference vs comparison baseline (used by the
@@ -4433,6 +4620,34 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         // computed correctly but unreachable from the PDF, same failure class as the
         // gate verdicts before WIRE-GATE-3.
         auditTrailData.systemBoundaryCheck = systemBoundaryCheck;
+
+        // HARD-BLOCK-2 (this session, mirrors HARD-BLOCK-1 above): systemBoundaryCheck
+        // .compliant === false means window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE
+        // did not match window.complianceEngine's own copy of the same constant (see
+        // validateSystemBoundary, compliance_engine.js -- confirmed this session there
+        // is exactly one source of this value in this file, no second copy, no
+        // legitimate drift path). Like self-consistency, this is not a business-policy
+        // question the way DNM/cutoff/JRC are (compare compliance_gate.js's own
+        // DOCUMENTED_EXCEPTIONS -- PKG-F1 is a real, defensible boundary DIFFERENCE
+        // between two valid methodologies; a constant not matching itself has no
+        // equivalent legitimate reading). DNM/cutoff/JRC stay shadow-mode, unchanged,
+        // pending a documented exception policy from the product owner -- this block
+        // does not touch them.
+        //
+        // Same distinct-shape reasoning as HARD-BLOCK-1: returning early here, before
+        // the auditTrailData.systemBoundaryCheck assignment above), before
+        // compliance_gate_summary is real assembled below, guarantees this integrity
+        // failure cannot be silently rendered by pdf-generator.js's normal path.
+        if (systemBoundaryCheck && systemBoundaryCheck.compliant === false) {
+            return {
+                status: 'BLOCKED',
+                reason: 'SYSTEM_BOUNDARY_MISMATCH',
+                message: 'System boundary constant mismatch: window.corePhysics and window.complianceEngine disagree on the reporting system boundary. This is a configuration/deployment integrity failure, not a data quality issue -- this product cannot generate a client-facing output until the constants are resynchronized.',
+                systemBoundaryCheck: systemBoundaryCheck,
+                productName: input.product.name,
+                timestamp: new Date().toISOString()
+            };
+        }
 
         // WIRE-GATE-4 FIX (this session): systemBoundaryCheck.gateVerdict reached
         // auditTrailData.systemBoundaryCheck (PLACEMENT FIX above), but
