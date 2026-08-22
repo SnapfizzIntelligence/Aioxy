@@ -25,13 +25,30 @@
 <script src="ingredients.js"></script>
 
 <!-- 3. PEF 3.1 Master Database - MUST LOAD BEFORE ENGINE -->
-<!-- USEtox 2.14 (3077 substances) | AWARE 2.0 (184 countries) -->
-<!-- LANCA SQI (212 countries) | AIB Residual Mix (34 countries) -->
-<!-- FAOSTAT Yields | EF 3.1 NF/WF | ILCD UUIDs -->
-<script src="aioxy_pef3.1_database.js"></script>
+<!-- Split 2026-08-21 into 3 files for maintainability; verified 100% identical
+     to raw sources (FAOSTAT, USEtox 2.14, AWARE 2.0, LANCA v2.5, AIB 2024,
+     EC JRC EF-LCIAMethod, EF 3.1 NF/WF) on 2026-08-22. Load order among the
+     3 files below does not matter to each other, but all 3 MUST load before
+     core_physics.js, same as the single file they replace. -->
+<!-- 3a. Core: EF 3.1 NF/WF | ILCD UUIDs | AIB Residual Mix (34 countries) -->
+<!--     LANCA SQI (212 countries) | AWARE 2.0 (186 countries) -->
+<script src="aioxy_pef3.1_core.js"></script>
+
+<!-- 3b. FAOSTAT Crop Yields (5-year avg, 2020-2024; 66 countries) -->
+<script src="aioxy_pef3.1_crop_yields.js"></script>
+
+<!-- 3c. USEtox 2.14 — ecotoxicity + human toxicity (3077 substances) -->
+<script src="aioxy_pef3.1_usetox.js"></script>
 
 <!-- 3.5 Derived Database — Nutrition, Aquaculture, Commodity Prices -->
-<script src="aioxy_derived_db.js"></script>
+<!-- Split 2026-08-21 into 2 files; verified 100% identical to raw sources
+     (USDA SR Legacy, ANSES CIQUAL 2020, Tacon & Metian 2008, Fry et al. 2018,
+     World Bank Pink Sheet) on 2026-08-22. Both MUST load before core_physics.js. -->
+<!-- 3.5a Nutrition (USDA SR Legacy + CIQUAL 2020) -->
+<script src="aioxy_derived_nutrition.js"></script>
+
+<!-- 3.5b Aquaculture Feeds + Commodity Prices -->
+<script src="aioxy_derived_misc.js"></script>
     
 <!-- 4. Core Engine -->
 <!-- OLD: <script src="engine.js"></script> -->
