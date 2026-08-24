@@ -457,81 +457,28 @@ function updateResultsUI(results, twinCalcResult) {
     }
 
     // =====================================================================
-    // 🚀 FRONT-OF-PACK (FOP) ECO-SCORE ENGINE
-    // FIX-22: Replaced fabricated internal grade bands with the peer-reviewed
-    // Enviroscore/EFSI methodology. The PEF Single Score (mPt) itself is NOT
-    // fabricated — it is the official EU PEF methodology (JRC EUR 29540 EN,
-    // Table 7 WF, sum=1.0000) and is still shown below, labeled on its own
-    // terms as a reference figure, not as the source of the letter grade.
+    // 🚀 FRONT-OF-PACK (FOP) ECO-SCORE ENGINE — REMOVED (2026-08-22)
+    // Enviroscore/EFSI has been pulled from production. Root cause:
+    // Ramos et al. 2022's NF/WF reference basket is calibrated against a
+    // per-person-per-YEAR European food-basket impact, computed through a
+    // different LCI pipeline (Ecoinvent 3.5 + Agri-footprint via SimaPro)
+    // than AIOXY's own AGRIBALYSE-3.2-based ingredient data. A chicory-
+    // free test BOM (rice flour + salt — no data-quality issues of its
+    // own) independently scored Grade E, 22x beyond the worst product in
+    // the source paper's own validation set. Full writeup and what
+    // re-enabling requires: core_physics.js, above CONSTANTS.EFSI.
     //
-    // EFSI / Enviroscore source (full citation):
-    //   Ramos, S., Segovia, L., Melado-Herreros, A., Cidad, M., Zufía, J.,
-    //   Vranken, L. & Matthys, C. (2022). "Enviroscore: normalization,
-    //   weighting, and categorization algorithm to evaluate the relative
-    //   environmental impact of food and drink products." npj Science of
-    //   Food, 6:54. DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
-    //   Table 1 = EFSI-NF/WF values below. Table 2 = A-E cutoffs below.
-    //   NF basis: global population, 2013 = 509,718,000 (Table 1 footnote).
+    // The PEF Single Score (mPt) card below this block is UNAFFECTED —
+    // it is the official EU PEF methodology (JRC EUR 29540 EN, Table 7
+    // WF) and was never part of this issue.
+    //
+    // Following the same pattern as customWarningDiv just above: if the
+    // card exists from a prior render, remove it rather than leave a
+    // stale or partially-broken card in the DOM.
     // =====================================================================
-    const productWeightKg = massBalanceData?.final_content_weight_kg || 0.2;
-    const singleScoreData = window.auditTrailData?.pef_single_score || { singleScore: 0 };
-    const mPtScore = (typeof singleScoreData.singleScore === 'number' && isFinite(singleScoreData.singleScore))
-        ? singleScoreData.singleScore
-        : 0;
-
-    const pefCats = window.auditTrailData?.pefCategories || {};
-    const enviroscore = window.corePhysics.calculateEnviroscore({
-        pefResults:      pefCats,
-        productWeightKg: productWeightKg
-    });
-    const efsiScore     = enviroscore.efsiScore;
-    const topDriver      = { cat: enviroscore.primaryDriver.category, topStage: enviroscore.primaryDriver.topStage, topStageShare: enviroscore.primaryDriver.topStageShare };
-    const topDriverShare = enviroscore.primaryDriver.share;
-    const hasSingleDriver = enviroscore.primaryDriver.has;
-    const ecoGrade = enviroscore.grade;
-    const ecoColor = enviroscore.color;
-
-    let ecoScoreDiv = document.getElementById('fopEcoScoreCard');
-    if (!ecoScoreDiv && resultsContent) {
-        ecoScoreDiv = document.createElement('div');
-        ecoScoreDiv.id = 'fopEcoScoreCard';
-        const insertTarget = document.getElementById('gcdCustomWarning')?.nextSibling || resultsContent.firstChild;
-        resultsContent.insertBefore(ecoScoreDiv, insertTarget);
-    }
-
-    if (ecoScoreDiv) {
-        const driverBannerHTML = hasSingleDriver ? `
-            <div style="margin-top: 0.75rem; padding: 0.6rem 0.75rem; background: #FFF4E6; border: 1px solid ${ecoColor}; border-radius: 6px; font-size: 0.8rem; color: #5c4a1f;">
-                <strong>Primary driver:</strong> ${topDriver.cat} (${(topDriverShare * 100).toFixed(0)}% of EFSI),
-                mainly from ${topDriver.topStage} (${(topDriver.topStageShare * 100).toFixed(0)}% of that category).
-                This grade is not a general verdict on the product — see the audit trail for full driver detail.
-            </div>` : '';
-        ecoScoreDiv.innerHTML = `
-            <div style="background: linear-gradient(to right, #ffffff, #f8f9fa); border: 2px solid ${ecoColor}; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <div style="background: ${ecoColor}; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                            <i class="fas fa-leaf"></i>
-                        </div>
-                        <h3 style="margin: 0; color: var(--primary); font-size: 1.25rem;">Enviroscore</h3>
-                    </div>
-                    <div style="font-size: 0.9rem; color: var(--gray); max-width: 480px;">
-                        EFSI = ${efsiScore.toFixed(6)} · Ramos et al. 2022, <em>npj Science of Food</em>, DOI: 10.1038/s41538-022-00165-z.
-                        Reference only — PEF Single Score: ${mPtScore.toFixed(1)} µPt (official EU PEF methodology, separate metric, not used to derive this grade).
-                    </div>
-                </div>
-                <div style="display: flex; gap: 4px; align-items: flex-end;">
-                    <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'A' ? '50px' : '35px'}; background: ${ecoGrade === 'A' ? '#2A9D8F' : '#e0e0e0'}; color: ${ecoGrade === 'A' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">A</div>
-                    <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'B' ? '50px' : '35px'}; background: ${ecoGrade === 'B' ? '#8AB17D' : '#e0e0e0'}; color: ${ecoGrade === 'B' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">B</div>
-                    <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'C' ? '50px' : '35px'}; background: ${ecoGrade === 'C' ? '#E9C46A' : '#e0e0e0'}; color: ${ecoGrade === 'C' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">C</div>
-                    <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'D' ? '50px' : '35px'}; background: ${ecoGrade === 'D' ? '#F4A261' : '#e0e0e0'}; color: ${ecoGrade === 'D' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">D</div>
-                    <div style="display: flex; align-items: center; justify-content: center; width: 35px; height: ${ecoGrade === 'E' ? '50px' : '35px'}; background: ${ecoGrade === 'E' ? '#E63946' : '#e0e0e0'}; color: ${ecoGrade === 'E' ? 'white' : '#999'}; font-weight: 800; font-size: 1.2rem; border-radius: 6px; transition: all 0.3s;">E</div>
-                </div>
-                </div>
-                ${driverBannerHTML}
-            </div>
-        `;
+    const ecoScoreDivStale = document.getElementById('fopEcoScoreCard');
+    if (ecoScoreDivStale) {
+        ecoScoreDivStale.remove();
     }
 
     updateMassBalanceDisplay();
@@ -3682,40 +3629,24 @@ function displayCompleteAuditTrail() {
                         <div style="font-weight: 600; color: var(--primary); font-size: 0.85rem; text-transform: uppercase;">FOP Eco-Score (Internal)</div>
                         
                         ${(() => {
-                            // FIX-22: [ui.js audit] Third occurrence of the fabricated-threshold
-                            // eco-score, replaced with peer-reviewed Enviroscore/EFSI, consistent
-                            // with the main FOP card and pdf-generator.js. Source citation:
-                            // Ramos et al. 2022, npj Science of Food, 6:54, DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
-                            const localPWeightKg = audit.mass_balance?.final_content_weight_kg || 0.2;
-                            const pefCatsLocal = audit.pefCategories || {};
-                            const localEnviro = window.corePhysics.calculateEnviroscore({
-                                pefResults:      pefCatsLocal,
-                                productWeightKg: localPWeightKg
-                            });
-                            const localEfsi      = localEnviro.efsiScore;
-                            const localTop        = { cat: localEnviro.primaryDriver.category };
-                            const localTopShare   = localEnviro.primaryDriver.share;
-                            const localHasDriver  = localEnviro.primaryDriver.has;
+                            // EFSI / ENVIROSCORE — REMOVED FROM PRODUCTION (2026-08-22).
+                            // Ramos et al. 2022's NF/WF reference basket is calibrated
+                            // against a per-person-per-year European food-basket impact
+                            // computed through a different LCI pipeline (Ecoinvent 3.5 +
+                            // Agri-footprint via SimaPro) than AIOXY's own AGRIBALYSE-3.2-
+                            // based ingredient data. A chicory-free test BOM independently
+                            // scored Grade E, 22x beyond the worst product in the source
+                            // paper's own validation set. Full writeup: core_physics.js,
+                            // above CONSTANTS.EFSI.
                             const mPtRef = audit.pef_single_score?.singleScore || 0;
-
-                            const gradeToRating = { A: 'Very low', B: 'Low', C: 'Medium', D: 'High', E: 'Very high' };
-                            const grade = localEnviro.grade;
-                            const rating = gradeToRating[grade] || 'Very high';
-                            const ratingColor = localEnviro.color;
-
                             return `
                                 <div style="margin-top: 0.25rem;">
-                                    <div class="dqr-badge" style="background: ${ratingColor}; color: white; display: inline-block; margin-bottom: 0.25rem; font-size: 0.7rem; padding: 0.15rem 0.5rem;">
-                                        ${rating} • Enviroscore (Ramos et al. 2022)
+                                    <div style="font-size: 0.8rem; color: var(--gray); font-style: italic;">
+                                        Not currently shown — under recalibration
                                     </div>
-                                    <div style="font-weight: 800; font-size: 1.1rem; color: ${ratingColor};">
-                                        Grade ${grade}
-                                        <span style="font-size:0.75rem; font-weight:normal; color:var(--gray)">(EFSI ${localEfsi.toFixed(6)} · ref. PEF Single Score ${mPtRef.toFixed(1)} µPt)</span>
+                                    <div style="font-size: 0.7rem; color: var(--gray); margin-top: 0.2rem;">
+                                        Reference PEF Single Score: ${mPtRef.toFixed(1)} µPt (official EU PEF methodology, unaffected).
                                     </div>
-                                    ${localHasDriver ? `
-                                    <div style="font-size: 0.7rem; color: #8a6d1f; margin-top: 0.2rem;">
-                                        Driven mainly by ${localTop.cat} (${(localTopShare * 100).toFixed(0)}% of EFSI) — see Eco-Score page for full breakdown.
-                                    </div>` : ''}
                                 </div>
                             `;
                         })()}

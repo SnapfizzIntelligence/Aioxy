@@ -4234,64 +4234,21 @@ const gasCO2 = gasM3PerKg * fuelFactor;
         };
         // === END PHASE 2: manufacturing traceability ===
 
-        // === ARCHITECTURE FIX (2026-07-30): Enviroscore + Equivalencies ===
-        // Both were previously computed in ui.js (and Enviroscore ALSO
-        // independently in pdf-generator.js — a duplicated, driftable copy).
-        // Centralized here so web and PDF both read one already-computed,
-        // already-audited number instead of each doing their own arithmetic.
-        // See core_physics.js calculateEnviroscore/calculateEquivalencies
-        // for the full rationale and citations.
-        const enviroscoreResult = window.corePhysics.calculateEnviroscore({
-            pefResults:      pefResults,
-            productWeightKg: input.product.weightKg
-        });
-
-        // ENVIROSCORE-ANOMALY-1 (this session): flag, not block. calculateEnviroscore()
-        // itself is correct — real, cited weighting table (Ramos et al. 2022, npj
-        // Science of Food, DOI 10.1038/s41538-022-00136-9), real normalization math,
-        // verified against real published figures. The formula was never the problem.
-        //
-        // The problem: this session found one real, isolated bad data point —
-        // "chicory-powder-agribalyse-3-2"'s Resource Use, minerals/metals raw value
-        // (281 in ingredients.js) — that is seven orders of magnitude larger than
-        // every comparable ingredient (typical range ~1e-06 to ~8e-05; confirmed by
-        // direct comparison against neighboring entries in the same file). This
-        // silently pushes any product using it to an EFSI score in the millions and
-        // an automatic Grade E, with nothing in the output signaling that the score
-        // is anomalous rather than a genuine reflection of the product.
-        //
-        // This is deliberately NOT a hard block like HARD-BLOCK-1/2 above: those
-        // guard pure integrity checks with zero legitimate exception (a number
-        // cannot legitimately disagree with itself). An EFSI score magnitude is a
-        // judgment call about what's "too high," not a zero-exception fact — a
-        // genuinely unusual real product should never be silently refused because
-        // of a threshold this file chose. So: flag clearly, do not block.
-        //
-        // Threshold source: this session ran the full 241-ingredient x 5-state x
-        // 4-country sweep (4,820 real runs) and found the highest efsiScore among
-        // every ingredient OTHER than chicory powder was 14.74 — chicory powder's
-        // own score reached into the millions, six orders of magnitude beyond any
-        // other real result. 100 is used as a flag threshold: real headroom (~7x)
-        // above the actual worst legitimate score this session observed, not an
-        // arbitrary round number. If the real ceiling ever needs revisiting, rerun
-        // the sweep (run_sweep.js in this session's tooling) rather than guess.
-        let enviroscoreAnomaly = null;
-        if (enviroscoreResult && typeof enviroscoreResult.efsiScore === 'number' && enviroscoreResult.efsiScore > 100) {
-            const topContrib = (enviroscoreResult.contributions && enviroscoreResult.contributions[0]) || null;
-            enviroscoreAnomaly = {
-                flagged: true,
-                efsiScore: enviroscoreResult.efsiScore,
-                referenceMax: 14.74,
-                referenceSource: 'Full-catalog sweep, this session: 241 ingredients x 5 processing states x 4 countries (4,820 runs). Highest legitimate score observed across all ingredients: 14.74.',
-                suspectCategory: topContrib ? topContrib.category : null,
-                message: 'This product\'s Enviroscore (' + enviroscoreResult.efsiScore.toFixed(2) + ') is far outside the ' +
-                         'range of every other real product tested against this database (highest legitimate score ' +
-                         'observed: 14.74). This does NOT mean the formula is wrong — the weighting table and math ' +
-                         'are real, cited, and correctly computed. It means at least one input ingredient likely has ' +
-                         'a data error in this specific product\'s recipe. Before treating this score as reliable, ' +
-                         'check the top-contributing category and ingredient for a possible raw-data error.'
-            };
-        }
+        // === EFSI / ENVIROSCORE — REMOVED FROM PRODUCTION (2026-08-22) ===
+        // The Enviroscore/EFSI computation formerly here (and the
+        // enviroscoreAnomaly flag that used to guard it) has been removed.
+        // Root cause: a confirmed calibration mismatch between Ramos et
+        // al. 2022's NF/WF reference basket and AIOXY's own AGRIBALYSE-
+        // based ingredient data, not just the previously-identified
+        // chicory-powder Resource Use/minerals data error (that finding
+        // was real and is still true, but turned out not to be the only
+        // problem -- a chicory-free rice-flour-and-salt BOM independently
+        // scored Grade E, 22x beyond the worst product in the source
+        // paper's own validation set). Full root-cause writeup and the
+        // five items required to re-enable this are documented in
+        // core_physics.js, above CONSTANTS.EFSI. Both fields below are
+        // set directly to null in the auditTrailData return further down
+        // rather than through intermediate variables.
 
         const unifiedCO2PerKg = pefResults['Climate Change'].total / input.product.weightKg;
         const baselineCO2PerKg = comparisonBaseline ? comparisonBaseline.co2PerKg : 0;
@@ -4426,15 +4383,14 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 breakdown:             singleScoreResult.breakdown
             },
 
-            // ARCHITECTURE FIX (2026-07-30): centralized from ui.js/pdf-generator.js.
-            // Single source of truth consumed identically by web and PDF —
-            // see core_physics.js calculateEnviroscore() for full rationale.
-            enviroscore: enviroscoreResult,
-            // ENVIROSCORE-ANOMALY-1 (this session): null on every normal product;
-            // populated only when efsiScore is far outside the real range this
-            // session's full-catalog sweep observed. See computation above for
-            // full rationale on why this is a flag, not a block.
-            enviroscore_anomaly: enviroscoreAnomaly,
+            // EFSI / ENVIROSCORE — REMOVED FROM PRODUCTION (2026-08-22).
+            // Explicitly null, not omitted, so any consumer inspecting a
+            // real auditTrailData object sees a reason rather than a
+            // silently-missing key. See core_physics.js, above
+            // CONSTANTS.EFSI, for the full root-cause writeup.
+            enviroscore: null,
+            enviroscore_removed_reason: 'Calibration mismatch between Ramos et al. 2022 NF/WF reference basket and AIOXY AGRIBALYSE-based ingredient data, confirmed 2026-08-22. See core_physics.js.',
+            enviroscore_anomaly: null,
 
             // ARCHITECTURE FIX (2026-07-30): centralized from ui.js.
             // 'delta' = measured difference vs comparison baseline (used by the

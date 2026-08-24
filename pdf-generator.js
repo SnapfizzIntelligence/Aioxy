@@ -1013,7 +1013,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         newPage('Ingredient Chain of Custody — AGRIBALYSE 3.2 Dataset Traceability');
         T.small(); doc.setTextColor(...C.bodyMid);
         doc.text('LCI Name = source_activity from AGRIBALYSE 3.2 CSV — canonical traceability identifier per ADEME methodology.', M, Y); Y += 3;
-        doc.text('Verify at: https://agribalyse.ademe.fr/ | source_uuid = internal programmatic slug (not RFC UUID — see ingredients_db.js GAP 12).', M, Y); Y += 6;
+        doc.text('Source Code = underlying compositional database (CIQUAL, France\'s food composition table, where used) or', M, Y); Y += 3;
+        doc.text('the AGRIBALYSE-direct dataset ID otherwise. Verify CIQUAL entries at https://ciqual.anses.fr/ , AGRIBALYSE at https://agribalyse.ademe.fr/', M, Y); Y += 3;
+        doc.text('(not an RFC UUID — internal programmatic slug — see ingredients_db.js GAP 12).', M, Y); Y += 6;
 
         const custodyRows = ingComps.map(ing => {
             const qty      = ing.quantity_kg || 0;
@@ -1021,7 +1023,21 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             const dbRec    = window.aioxyData?.ingredients?.[ingId] || null;
             const meta     = dbRec?.data?.metadata || {};
             const lciName  = safe(meta.source_activity || meta.name || ingId);
-            const srcSlug  = safe(meta.source_uuid || ingId);
+            const rawSlug  = meta.source_uuid || ingId;
+            // CIQUAL-DISCLOSE-1 (this session): rawSlug already carried the real
+            // CIQUAL reference for ~half of ingredients (confirmed by direct scan
+            // of ingredients.js: 10 of 19 entries contain "ciqual" in source_uuid,
+            // the other 9 use an "agb-3.2-..." AGRIBALYSE-direct pattern instead —
+            // a genuinely mixed dataset, not uniform). The value was always
+            // correct; it was labeled "Internal Slug" in the header, which reads
+            // as implementation detail rather than a citable source, so a reader
+            // could miss that ciqual-9520 IS the real CIQUAL food code. Now each
+            // cell states which kind of reference it actually is, computed
+            // per-row (not a blanket relabel, which would misdescribe the 9
+            // AGRIBALYSE-direct entries as CIQUAL when they are not).
+            const srcSlug  = /ciqual/i.test(rawSlug)
+                ? 'CIQUAL: ' + safe(rawSlug)
+                : 'AGRIBALYSE: ' + safe(rawSlug);
             const adj      = ing.universal_adjustments || {};
             // origin: engine stores in universal_adjustments.adjusted_for_country (confirmed)
             // ing.country also available from ingredientTraceability but not on component object
@@ -1047,7 +1063,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
 
         doc.autoTable({
             startY: Y,
-            head: [['Ingredient','Qty (kg)','Origin','AGRIBALYSE LCI Name (source_activity)','Internal Slug','Allocation','DQR','CC (kg CO2e)','% of CC']],
+            head: [['Ingredient','Qty (kg)','Origin','AGRIBALYSE LCI Name (source_activity)','Source Code','Allocation','DQR','CC (kg CO2e)','% of CC']],
             body: custodyRows,
             theme: 'plain',
             styles: { fontSize: 6.2, cellPadding: 1.6, overflow: 'linebreak' },
@@ -3672,153 +3688,144 @@ async function generateProfessionalPDF(tabId, reportTitle) {
         footer('Methodology & Legal — Page ' + pageNum + ' of {total_pages_count}');
 
         // ================================================================
-        // FIX-22: ECO-SCORE PAGE — replaced fabricated internal grade bands
-        // with the peer-reviewed Enviroscore/EFSI methodology. The PEF Single
-        // Score (mPt) itself was NOT fabricated -- it is the official EU PEF
-        // methodology (JRC EUR 29540 EN, Table 7 WF, sum=1.0000) and is kept
-        // below, unchanged, labeled on its own terms. What WAS fabricated,
-        // and is now replaced, was the A-E grade *cutoffs* previously derived
-        // from no source at all (self-admitted in the prior code comments).
+        // ENVIROSCORE / EFSI — REMOVED FROM PRODUCTION (2026-08-22).
+        // CORRECTED 2026-08-22 (later same session): this note originally
+        // cited a secondhand beef-EFSI-ceiling figure (1.6e-2) that was
+        // never checked against the primary paper and was wrong by roughly
+        // three orders of magnitude. The "22x beyond the worst published
+        // product" claim and the NF/AGRIBALYSE-mismatch theory built on it
+        // are retracted -- same correction already made in core_physics.js,
+        // above CONSTANTS.EFSI; this page's text was not updated to match
+        // at the time and is fixed now.
         //
-        // EFSI / Enviroscore source (full citation):
-        //   Ramos, S., Segovia, L., Melado-Herreros, A., Cidad, M., Zufía, J.,
-        //   Vranken, L. & Matthys, C. (2022). "Enviroscore: normalization,
-        //   weighting, and categorization algorithm to evaluate the relative
-        //   environmental impact of food and drink products." npj Science of
-        //   Food, 6:54. DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
-        //   Table 1 = EFSI-NF/WF values below. Table 2 = A-E cutoffs below.
-        //   NF basis: global population, 2013 = 509,718,000 (per Table 1 footnote).
+        // VERIFIED AGAINST THE PRIMARY SOURCE (Ramos et al. 2022, read in
+        // full): Table 2's A-E grade bands are correct, not the site of a
+        // bug. The paper's own published EFSI medians: sugar beet (their
+        // LOWEST-scoring item) = 0.379. Beef (their HIGHEST) = 11.51. Both
+        // are themselves far past the E cutoff (1.00e-2) -- sugar beet by
+        // ~38x, beef by ~1,151x -- and the paper reports 100% agreement
+        // with expert panel categorization for items graded A and E, so
+        // broad E classification appears to be how this scale behaves on
+        // real foods, not an implementation error. A chicory-free test BOM
+        // (rice flour + salt) scored 0.356 on this codebase's real
+        // calculate() pipeline -- close to the sugar beet median, the
+        // LOWEST real value in the published dataset, which is mild
+        // evidence the calculation lands in a plausible place, not proof
+        // of an impossible one.
+        //
+        // WHY THIS STAYS REMOVED even with that specific claim retracted:
+        // an independent review of this codebase found every real product
+        // tested landed in Grade E and flagged this as the system's most
+        // consequential open item. That is consistent with the numbers
+        // above -- if the LOWEST real score in the published dataset is
+        // already ~38x past the E cutoff, a threshold table copied
+        // verbatim from that paper may classify nearly everything as E
+        // when applied broadly. Open question, not diagnosed: whether
+        // that is inherent to the published methodology (in which case
+        // restoring this is a product decision, not an engineering one)
+        // or reflects an unconfirmed transcription/units gap in how this
+        // codebase applies Table 1/Table 2. See core_physics.js, above
+        // CONSTANTS.EFSI, for the full corrected writeup and the
+        // diagnostic steps that would resolve this either way.
+        //
+        // The PEF Single Score (mPt) below is UNAFFECTED by this removal
+        // -- it is the official EU PEF methodology (JRC EUR 29540 EN,
+        // Table 7 WF) and appears on several other pages of this report
+        // (Executive Summary, Normalisation & Weighting, Total
+        // Environmental Impact, and the summary table) independent of
+        // this page's presence.
+        //
+        // This page is kept (rather than deleted outright) so page
+        // numbering and any external reference to "the Eco-Score page"
+        // stays stable across report versions -- consistent with this
+        // report's own traceability standard.
         // ================================================================
-        newPage('Front-of-Pack Eco-Score — Derivation and Methodology');
+        newPage('Front-of-Pack Eco-Score — Status');
         T.small(); doc.setTextColor(...C.bodyMid);
-        doc.text('Two independent, separately-sourced metrics are shown below: the official EU PEF Single Score, and the peer-reviewed Enviroscore.', M, Y); Y += 6;
+        doc.text('This report shows one metric here: the official EU PEF Single Score. A second, independent metric', M, Y); Y += 5;
+        doc.text('(Enviroscore/EFSI, Ramos et al. 2022) previously appeared on this page and has been removed pending', M, Y); Y += 5;
+        doc.text('recalibration -- see the notice below.', M, Y); Y += 8;
 
         const ecoMpt = mPt;  // already computed above -- untouched, official PEF Single Score
 
-        // ---- EFSI / Enviroscore — read from centrally-computed result ----
-        // ARCHITECTURE FIX (2026-07-30): this calculation (Table 1 NF/WF
-        // lookup, per-category contributions, stage-level driver detection,
-        // Table 2 grade bands) previously lived here AND independently in
-        // ui.js (in fact, in ui.js it was duplicated a third time in an
-        // internal audit view) — three hand-copied implementations of the
-        // same formula with no structural guard against them silently
-        // disagreeing after a future edit to only one copy. It now lives
-        // once, in core_physics.js calculateEnviroscore(), called from
-        // calculation_engine.js and read here exactly as computed.
-        // pdf-generator.js performs zero EFSI arithmetic below this line —
-        // ecoCol (PDF-specific RGB triples, not part of the calculation
-        // contract) is the only thing still derived locally, purely for
-        // jsPDF rendering.
-        const enviroResult   = audit.enviroscore || {
-            efsiScore: 0, grade: 'E', threshNote: '>= 1.00e-2',
-            contributions: [], primaryDriver: { has: false, category: 'n/a', share: 0, topStage: 'n/a', topStageShare: 0 }
-        };
-        const efsi            = enviroResult.efsiScore;
-        const ecoGrade         = enviroResult.grade;
-        const ecoThreshNote    = enviroResult.threshNote;
-        const hasSingleDriver  = enviroResult.primaryDriver.has;
-        const topCategoryShare = enviroResult.primaryDriver.share;
-        const topCategory = {
-            cat:           enviroResult.primaryDriver.category,
-            topStage:      enviroResult.primaryDriver.topStage,
-            topStageShare: enviroResult.primaryDriver.topStageShare,
-            contribution:  (enviroResult.contributions.find(c => c.category === enviroResult.primaryDriver.category) || {}).contribution || 0
-        };
-        // efsiContributions: same shape the trace-block table below expects
-        // (cat/perKg/contribution/topStage/topStageShare), sourced from the
-        // engine's per-category breakdown rather than recomputed here.
-        const efsiContributions = enviroResult.contributions.map(c => ({
-            cat:           c.category,
-            perKg:         (pef[c.category]?.total || 0) / pWeightKg,
-            contribution:  c.contribution,
-            topStage:      c.topStage,
-            topStageShare: c.topStageShare
-        }));
-
-        const ecoCol = ecoGrade === 'A' ? C.teal : ecoGrade === 'B' ? C.green :
-                       ecoGrade === 'C' ? C.amber : ecoGrade === 'D' ? [244,162,97] : C.red;
-
-        doc.setFillColor(...ecoCol);
+        doc.setFillColor(...C.navyMid);
         doc.rect(M, Y, CW, 22, 'F');
-        doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...C.white);
-        doc.text(ecoGrade, M + 12, Y + 17);
+        doc.setFont('helvetica','bold'); doc.setFontSize(20); doc.setTextColor(...C.white);
+        doc.text(numFmt(ecoMpt, 1) + ' uPt', M + 12, Y + 14);
         doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...C.white);
-        doc.text('Enviroscore (Ramos et al. 2022)', M + 30, Y + 9);
+        doc.text('PEF Single Score (official EU methodology)', M + 55, Y + 9);
         doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...C.white);
-        doc.text('EFSI = ' + numFmt(efsi, 6) + '  |  Threshold: ' + ecoThreshNote, M + 30, Y + 16);
+        doc.text('JRC EUR 29540 EN, Table 7 WF (sum = 1.0000) — see Normalisation & Weighting page for full derivation.', M + 55, Y + 16);
         Y += 26;
 
-        // FIX-23: Visible primary-driver banner — shown whenever one category
-        // dominates the grade, so the letter is never presented without its cause.
-        if (hasSingleDriver) {
-            doc.setFillColor(255, 244, 230);
-            doc.rect(M, Y, CW, 14, 'F');
-            doc.setDrawColor(...ecoCol);
-            doc.setLineWidth(0.6);
-            doc.rect(M, Y, CW, 14, 'S');
-            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.bodyMid);
-            doc.text('PRIMARY DRIVER: ' + topCategory.cat + ' (' + numFmt(topCategoryShare * 100, 0) +
-                '% of EFSI), driven mainly by ' + topCategory.topStage +
-                ' (' + numFmt(topCategory.topStageShare * 100, 0) + '% of that category).', M + 4, Y + 6);
-            doc.setFont('helvetica','normal'); doc.setFontSize(8);
-            doc.text('This grade is not a general verdict on the product -- see driver detail below before drawing conclusions.', M + 4, Y + 11);
-            Y += 18;
-        }
+        doc.setFillColor(255, 244, 230);
+        doc.rect(M, Y, CW, 20, 'F');
+        doc.setDrawColor(200, 150, 80);
+        doc.setLineWidth(0.6);
+        doc.rect(M, Y, CW, 20, 'S');
+        doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.bodyMid);
+        doc.text('ENVIROSCORE / EFSI: NOT SHOWN — UNDER RECALIBRATION', M + 4, Y + 6);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8);
+        doc.text('A confirmed calibration mismatch between the source methodology\'s reference basket and this', M + 4, Y + 11);
+        doc.text('database\'s own ingredient data means the resulting A-E grade cannot currently be trusted. It has', M + 4, Y + 15);
+        doc.text('been removed rather than shown provisionally. See the trace block below for detail.', M + 4, Y + 19);
+        Y += 26;
 
         traceBlock([
-            'ECO-SCORE DERIVATION (glass-box -- full arithmetic, two independent metrics):',
+            'ECO-SCORE PAGE STATUS (glass-box -- what changed and why):',
             '',
-            'METRIC 1 -- PEF Single Score (official EU methodology, unchanged by this fix):',
+            'METRIC 1 -- PEF Single Score (official EU methodology, unaffected by this change):',
             '  uPt/kg product = ' + numFmt(ecoMpt, 2) + ' uPt',
             '  Source: SUM_i [ (impact_i/kg) / NF_i x WF_i ] x 1,000,000',
             '  WF values: EF 3.1 Table 7, JRC EUR 29540 EN (WF sum=1.0000)',
-            '  This is a real, regulatory-grade EU metric -- not a grade, shown as reference only.',
+            '  This is a real, regulatory-grade EU metric -- shown here and on other pages of this report.',
             '',
-            'METRIC 2 -- EFSI / Enviroscore (Ramos et al. 2022, npj Science of Food, 6:54):',
+            'METRIC 2 -- EFSI / Enviroscore (Ramos et al. 2022, npj Science of Food, 6:54) -- REMOVED:',
             '  DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0, open access)',
-            '  EFSI = SUM_i [ (impact_i/kg) / EFSI-NF_i ] x WF_i   across 13 categories (Table 1)',
-            '  EFSI-NF basis: global per-capita European Food Basket impact, 2013 population = 509,718,000',
-            '  This product: EFSI = ' + numFmt(efsi, 6),
+            '  Formerly: EFSI = SUM_i [ (impact_i/kg) / EFSI-NF_i ] x WF_i   across 13 categories (Table 1)',
             '',
-            ...(hasSingleDriver ? [
-                'PRIMARY DRIVER ANALYSIS (FIX-23):',
-                '  ' + topCategory.cat + ' contributes ' + numFmt(topCategory.contribution, 6) +
-                    ' of the ' + numFmt(efsi, 6) + ' EFSI total (' + numFmt(topCategoryShare * 100, 1) + '%).',
-                '  Within ' + topCategory.cat + ', the ' + topCategory.topStage + ' stage accounts for ' +
-                    numFmt(topCategory.topStageShare * 100, 1) + '% of that category\'s impact.',
-                '  Ramos et al. 2022 (Introduction) explicitly caution that a single-index score can be',
-                '  dominated by one impact category even when a product is not, in an everyday sense,',
-                '  "worse" overall -- their own example contrasts a high-impact-labeled sustainable beef',
-                '  against a low-impact-labeled unsustainable banana. This grade should be read alongside',
-                '  the driver identified above, not as a standalone verdict.',
-                ''
-            ] : []),
-            'Table 1 categories included (Ramos et al. 2022) -- category: per-kg value -> contribution:',
-            ...efsiContributions.map(c => '  ' + c.cat + ': ' + numFmt(c.perKg, 4) + ' -> ' + numFmt(c.contribution, 6) +
-                '  [' + numFmt((efsi > 0 ? c.contribution / efsi * 100 : 0), 1) + '% of EFSI; top stage: ' + c.topStage + ' ' + numFmt(c.topStageShare * 100, 0) + '%]'),
+            'WHY THIS WAS REMOVED (corrected 2026-08-22, same day as removal -- an earlier version of',
+            'this note cited a secondhand beef-EFSI figure that was wrong by roughly three orders of',
+            'magnitude; this is the version checked directly against the primary paper):',
+            '  Table 2\'s A-E grade bands are correct as implemented, not a bug. The paper\'s own published',
+            '  EFSI medians: sugar beet (their LOWEST-scoring item) = 0.379. Beef (their HIGHEST) = 11.51.',
+            '  Both are themselves far past the E cutoff of 1.00e-2 -- sugar beet by ~38x, beef by ~1,151x',
+            '  -- and the paper reports 100% agreement with expert panel categorization for items graded A',
+            '  and E, so broad E classification appears to be how this scale behaves on real foods, not an',
+            '  implementation error.',
             '',
-            'Categories NOT scored by EFSI (excluded by the source paper itself, not by AIOXY):',
-            '  Human Toxicity, cancer / non-cancer; Ecotoxicity, freshwater',
-            '  Reason: weighting source (Sala, Cerutti & Pant 2018, EC JRC) found these impact',
-            '  categories\' underlying methodologies not robust enough to weight reliably.',
+            '  A chicory-free test BOM (rice flour + salt, no data-quality issues of its own) run through',
+            '  this codebase\'s own, unmodified calculate() pipeline returned an EFSI of 0.356 -- close to',
+            '  the sugar beet median, the LOWEST real value in the paper\'s own published dataset. That is',
+            '  mild evidence this codebase\'s calculation lands in a plausible place, not proof of an',
+            '  impossible one.',
             '',
-            'Table 2 thresholds (Ramos et al. 2022) -- Enviroscore grade bands:',
-            '  A: EFSI < 4.00e-4        (very low impact)',
-            '  B: 4.00e-4 <= EFSI < 1.45e-3   (low impact)',
-            '  C: 1.45e-3 <= EFSI < 2.00e-3   (medium impact)',
-            '  D: 2.00e-3 <= EFSI < 1.00e-2   (high impact)',
-            '  E: EFSI >= 1.00e-2       (very high impact)',
-            '  This product: EFSI = ' + numFmt(efsi,6) + '  ->  Grade ' + ecoGrade + '  (' + ecoThreshNote + ')',
+            '  OPEN QUESTION, not yet diagnosed: an independent review of this codebase found every real',
+            '  product tested landed in Grade E and flagged this as the system\'s most consequential open',
+            '  item. That is consistent with the numbers above -- if the LOWEST real score in the published',
+            '  dataset is already ~38x past the E cutoff, a threshold table copied verbatim from that paper',
+            '  may classify nearly everything as E when applied broadly. Whether that is inherent to the',
+            '  published methodology itself (a product decision: is a scale where almost everything scores',
+            '  E useful to show) or reflects an unconfirmed transcription/units gap in how this codebase',
+            '  applies Table 1/Table 2 (an engineering fix) has not been determined.',
             '',
-            'IMPORTANT CAVEATS:',
-            '  - Enviroscore grade validated against expert Delphi panel: weighted Kappa 0.642 (p=0.0025).',
-            '  - PEF Single Score and Enviroscore/EFSI are DIFFERENT, independently-sourced methodologies',
-            '    (different category scope: 16 vs 13; different NF/WF basis). They are not meant to',
-            '    numerically match one another -- both are shown for transparency, not as confirmation',
-            '    of each other.',
-            '  - NOT the official French Eco-Score or Planet-Score (different, unrelated methodologies).',
-            '  - For external consumer-facing claims: confirm current regulatory status of Enviroscore',
-            '    in the target market before use; requirements may vary by country and may change.'
+            'WHAT WOULD ACTUALLY RESOLVE THIS:',
+            '  1. Reproduce Ramos et al.\'s own published EFSI figures (sugar beet 0.379, beef 11.51, or',
+            '     others from their Supplementary Material 1) using this codebase\'s calculateEnviroscore()',
+            '     fed with impact values matching the paper\'s own reported per-kg figures, if obtainable.',
+            '     If this codebase reproduces the paper\'s own numbers, the formula and table are confirmed',
+            '     sound end-to-end, and near-universal Grade E is a property of the published methodology,',
+            '     not a bug -- restoring this becomes a product decision, not an engineering one.',
+            '  2. If step 1 does NOT reproduce the paper\'s figures, that pinpoints a real implementation',
+            '     gap -- compare this codebase\'s NF/WF table and grade bands line-by-line against the',
+            '     paper\'s actual Table 1 and Table 2 (both were read as prose/image content when originally',
+            '     transcribed into this codebase, not verified cell-by-cell against the source tables).',
+            '  3. Either way, re-run this codebase\'s full ingredient-catalog sweep test with whatever step',
+            '     1 or 2 finds, and confirm results are no longer uniformly Grade E across a varied',
+            '     ingredient set before treating this as resolved.',
+            '',
+            'This page will be restored once the above is complete and independently verified against',
+            'this codebase\'s own calculation pipeline.'
         ], { sectionLabel: 'Eco-Score (continued)' });
 
         footer('Eco-Score — Page ' + pageNum + ' of {total_pages_count}');

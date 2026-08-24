@@ -2314,57 +2314,115 @@
         }),
 
         // ═════════════════════════════════════════════════════════════════
-        // EFSI — Enviroscore Front-of-Pack grading methodology.
-        // Moved from ui.js / pdf-generator.js (2026-07-30 architecture fix):
-        // this table and its A–E thresholds are real, peer-reviewed
-        // environmental scoring — not a UI display concern — and were
-        // previously copy-pasted independently into both files, a silent-
-        // drift risk with no structural protection if only one copy were
-        // ever edited. Now a single source of truth for web and PDF alike.
+        // EFSI / ENVIROSCORE — REMOVED FROM PRODUCTION (2026-08-22).
+        // CORRECTED 2026-08-22 (same day, later in the session): the
+        // root-cause note originally written here has been retracted and
+        // replaced. It cited a secondhand figure for beef's EFSI ceiling
+        // (1.6e-2) that was never checked against the primary paper and
+        // turned out to be wrong by roughly three orders of magnitude.
+        // Everything built on that number — the "22x beyond the worst
+        // published product" claim and the resulting NF/AGRIBALYSE-
+        // mismatch theory — is retracted along with it. What follows is
+        // checked directly against the primary source (Ramos et al. 2022,
+        // fetched and read in full, not inferred from a citing paper).
         //
-        // Source: Ramos, S., Segovia, L., Melado-Herreros, A., Cidad, M.,
-        //   Zufía, J., Vranken, L. & Matthys, C. (2022). "Enviroscore:
-        //   normalization, weighting, and categorization algorithm to
-        //   evaluate the relative environmental impact of food and drink
-        //   products." npj Science of Food, 6:54.
-        //   DOI: 10.1038/s41538-022-00165-z (CC-BY 4.0).
-        //   Table 1 = NF/WF values below. Table 2 = A–E cutoffs below.
-        //   NF basis: global population, 2013 = 509,718,000 (Table 1 footnote).
-        // Human Toxicity (cancer/non-cancer) and Ecotoxicity, freshwater are
-        // correctly excluded — Ramos et al.'s weighting source (Sala,
-        // Cerutti & Pant 2018, EC JRC) dismissed those categories for lack
-        // of methodological robustness. Not a gap in this mapping.
-        EFSI: Object.freeze({
-            NF_WF_TABLE: Object.freeze({
-                'Climate Change':                Object.freeze({ nf: 2.42E+03, wf: 22.19 }),
-                'Ozone Depletion':                Object.freeze({ nf: 1.29E-04, wf: 6.75  }),
-                'Ionizing Radiation':             Object.freeze({ nf: 1.31E+02, wf: 5.37  }),
-                'Photochemical Ozone Formation':  Object.freeze({ nf: 1.08E+01, wf: 5.10  }),
-                'Particulate Matter':             Object.freeze({ nf: 2.44E-04, wf: 9.54  }),
-                'Acidification':                  Object.freeze({ nf: 3.93E+01, wf: 6.64  }),
-                'Eutrophication, freshwater':     Object.freeze({ nf: 3.81E-01, wf: 2.95  }),
-                'Eutrophication, terrestrial':    Object.freeze({ nf: 1.42E+01, wf: 3.12  }),
-                'Eutrophication, marine':         Object.freeze({ nf: 1.58E+02, wf: 3.91  }),
-                'Land Use':                       Object.freeze({ nf: 2.43E+05, wf: 8.42  }),
-                'Water Use/Scarcity (AWARE)':     Object.freeze({ nf: 7.83E+02, wf: 9.03  }),
-                'Resource Use, fossils':          Object.freeze({ nf: 1.96E+04, wf: 8.92  }),
-                'Resource Use, minerals/metals':  Object.freeze({ nf: 4.33E-03, wf: 8.08  })
-            }),
-            // Table 2 thresholds (Ramos et al. 2022).
-            GRADE_BANDS: Object.freeze([
-                Object.freeze({ grade: 'A', max: 4.00E-04, color: '#2A9D8F', threshNote: '< 4.00e-4' }),
-                Object.freeze({ grade: 'B', max: 1.45E-03, color: '#8AB17D', threshNote: '4.00e-4 to 1.45e-3' }),
-                Object.freeze({ grade: 'C', max: 2.00E-03, color: '#E9C46A', threshNote: '1.45e-3 to 2.00e-3' }),
-                Object.freeze({ grade: 'D', max: 1.00E-02, color: '#F4A261', threshNote: '2.00e-3 to 1.00e-2' }),
-                Object.freeze({ grade: 'E', max: Infinity,  color: '#E63946', threshNote: '>= 1.00e-2' })
-            ]),
-            // Primary-driver banner threshold: a category is flagged as the
-            // dominant driver when it accounts for >= 40% of the total EFSI
-            // score. Rationale: Ramos et al. 2022's own caveat about single-
-            // category dominance (e.g. "sustainable beef vs unsustainable
-            // banana") — a grade should be explainable, not a bare letter.
-            PRIMARY_DRIVER_SHARE_THRESHOLD: 0.40
-        })
+        // Ramos et al.'s NF/WF table (formerly here) and the
+        // calculateEnviroscore() function (formerly below, in this file)
+        // remain pulled from every calculation and display path. See
+        // core_physics.js, calculation_engine.js, pdf-generator.js,
+        // ui.js — all Enviroscore call sites removed in the same session.
+        // This removal itself is NOT retracted -- see "WHY THIS STAYS
+        // REMOVED" below -- only the stated reason for it is corrected.
+        //
+        // VERIFIED AGAINST THE PRIMARY SOURCE (Ramos et al. 2022, Results
+        // section, read in full):
+        //   - Table 2's own grade bands are exactly what this file's
+        //     GRADE_BANDS constant (below, now also removed) encoded:
+        //     A < 4.00e-4, B < 1.45e-3, C < 2.00e-3, D < 1.00e-2,
+        //     E >= 1.00e-2. Confirmed correct, not the site of a bug.
+        //   - The paper's own published EFSI medians: sugar beet (their
+        //     LOWEST-scoring item across the whole study) = 0.379 (IQR
+        //     0.197). Beef (their HIGHEST) = 11.51 (IQR 4.48). Both
+        //     numbers are quoted directly from the paper's Results text.
+        //   - Both of those numbers are themselves far past the E cutoff
+        //     of 1.00e-2 -- sugar beet by ~38x, beef by ~1,151x. The
+        //     paper's own validation reports 100% agreement with expert
+        //     panel categorization specifically for items graded A and E,
+        //     meaning broad E classification was not an artifact of
+        //     mis-implementation -- it appears to be how this scale
+        //     actually behaves across real foods, on the paper's own
+        //     numbers.
+        //   - A synthetic chicory-free test BOM (rice flour + salt) run
+        //     through this codebase's real calculate() pipeline returned
+        //     efsiScore = 0.356 -- almost exactly the sugar beet median,
+        //     the LOWEST real value in the entire published dataset. On
+        //     the corrected comparison, this is mild evidence the
+        //     calculation is landing in a plausible place, not proof of
+        //     an impossible one.
+        //
+        // WHAT THIS MEANS THE ORIGINAL DIAGNOSIS GOT WRONG: the claim
+        // that AIOXY's own per-kg values are structurally incompatible
+        // with Ramos et al.'s per-person-per-year NF basis (Equation 1)
+        // was a plausible-sounding hypothesis, but it was never actually
+        // confirmed -- it was built to explain a discrepancy that, once
+        // the correct beef/sugar-beet numbers are used, does not clearly
+        // exist. That mechanism is retracted as unverified, not as
+        // disproven -- it may still be a real factor, it just was never
+        // properly checked and should not be stated as a finding.
+        //
+        // WHY THIS STAYS REMOVED, even with the original root cause
+        // retracted: an independent prior review of this same codebase
+        // (documented separately, session summary dated before this
+        // correction) reported that every real product tested, across
+        // varied ingredients, landed in Grade E -- and flagged this as
+        // the system's most consequential unresolved item, describing
+        // the formula and weighting table as individually correct but
+        // the practical effect as non-discriminating in production use.
+        // That report is consistent with what the primary paper's own
+        // published numbers show above: if the LOWEST real score in
+        // Ramos et al.'s entire dataset (sugar beet, 0.379) is already
+        // ~38x past the E cutoff, a threshold table copied verbatim from
+        // that paper may simply classify nearly everything as E when
+        // applied broadly -- not because of an AIOXY-side bug, but
+        // because Table 2's cutoffs and Table 1's NF/WF values may need
+        // a shared context (e.g. a specific functional-unit or portion-
+        // size assumption used throughout Ramos et al. that has not been
+        // confirmed to match how this codebase applies the same table)
+        // that has not yet been identified. This is stated as an
+        // open question, not a diagnosis -- it has not been checked
+        // against the primary source the way the numbers above were.
+        //
+        // WHAT WOULD ACTUALLY RESOLVE THIS (replaces the previous,
+        // now-retracted 5-item mismatch-fix list; this is a diagnostic
+        // task list, not a rebuild task list, since it is not yet known
+        // whether rebuilding the NF table is even the right fix):
+        //   1. Reproduce Ramos et al.'s own published EFSI figures (sugar
+        //      beet 0.379, beef 11.51, or others from their Supplementary
+        //      Material 1) using THIS codebase's calculateEnviroscore()
+        //      fed with impact values matching the paper's own reported
+        //      per-kg figures for those items, if obtainable. If this
+        //      codebase reproduces the paper's own numbers correctly,
+        //      the formula and table are confirmed sound end-to-end, and
+        //      the "everything is Grade E" finding is a property of the
+        //      published methodology itself, not a bug -- in which case
+        //      the open question becomes a product/business one (is a
+        //      scale where almost everything scores E useful to show
+        //      clients), not an engineering one.
+        //   2. If step 1 does NOT reproduce the paper's figures, that
+        //      pinpoints a real implementation gap -- compare this
+        //      file's NF_WF_TABLE and GRADE_BANDS values line-by-line
+        //      against the paper's actual Table 1 and Table 2 (both
+        //      tables were read as prose/image content during the
+        //      session that removed this feature, not transcribed
+        //      cell-by-cell from the source tables -- that transcription
+        //      has not yet been independently verified).
+        //   3. Either way, re-run this codebase's full ingredient-catalog
+        //      sweep test with whatever fix step 1 or 2 identifies, and
+        //      confirm results are no longer uniformly Grade E across a
+        //      varied ingredient set before treating this as resolved.
+        //
+        // Until the above is done, no Enviroscore/EFSI/A-E grade should
+        // be computed, displayed, or exported anywhere in this codebase.
     });
 
     class PhysicsError extends Error {
@@ -2925,75 +2983,37 @@ return {
     }
 
     // ═════════════════════════════════════════════════════════════════════
-    // ENVIROSCORE / EFSI — Front-of-Pack A–E grade.
-    // Moved from ui.js and pdf-generator.js (2026-07-30 architecture fix).
-    // Both files independently reimplemented this exact algorithm off a
-    // copy-pasted EFSI table; centralizing here removes that drift risk and
-    // makes web and PDF read one already-computed, already-audited result.
-    // See CONSTANTS.EFSI above for full source citation (Ramos et al. 2022).
-    //
-    // Input: pefResults (window.aioxyData-shaped per-category totals, each
-    // with a contribution_tree), productWeightKg.
-    // Output: score, grade, color, per-category contributions, and the
-    // primary-driver banner data (which category/stage dominates, if any).
+    // ENVIROSCORE / EFSI — REMOVED FROM PRODUCTION (2026-08-22).
+    // See the "EFSI / ENVIROSCORE — REMOVED FROM PRODUCTION" note above
+    // CONSTANTS.EFSI (formerly a live table, now a documentation-only
+    // placeholder) for the full, corrected writeup -- an earlier version
+    // of that note and of this stub's message cited a secondhand figure
+    // for beef's EFSI ceiling that was wrong by roughly three orders of
+    // magnitude; both have been corrected against the primary source.
+    // This stub exists so that any call site this removal missed fails
+    // loudly and immediately, with a clear pointer to why, instead of a
+    // silent "undefined is not a function" or — worse — a wrong number
+    // reaching a client-facing report undetected.
     function calculateEnviroscore(input) {
-        const pefResults      = input.pefResults;
-        const productWeightKg = input.productWeightKg;
-
-        if (!pefResults) throw new MissingDataError('pefResults');
-        if (typeof productWeightKg !== 'number' || productWeightKg <= CONSTANTS.MATH.ZERO) {
-            throw new MissingDataError('productWeightKg');
-        }
-
-        const table = CONSTANTS.EFSI.NF_WF_TABLE;
-        let efsiScore = CONSTANTS.MATH.ZERO;
-        const contributions = [];
-
-        Object.keys(table).forEach(cat => {
-            const row = table[cat];
-            const perKg = (pefResults[cat] && pefResults[cat].total || CONSTANTS.MATH.ZERO) / productWeightKg;
-            const contribution = (perKg / row.nf) * row.wf;
-            efsiScore += contribution;
-
-            const tree = (pefResults[cat] && pefResults[cat].contribution_tree) || {};
-            const stages = {
-                Ingredients:   (tree.Ingredients   && tree.Ingredients.total   || CONSTANTS.MATH.ZERO) / productWeightKg,
-                Manufacturing: (tree.Manufacturing && tree.Manufacturing.total || CONSTANTS.MATH.ZERO) / productWeightKg,
-                Transport:     (tree.Transport      && tree.Transport.total     || CONSTANTS.MATH.ZERO) / productWeightKg,
-                Packaging:     (tree.Packaging      && tree.Packaging.total     || CONSTANTS.MATH.ZERO) / productWeightKg
-            };
-            const stageTotal = Object.values(stages).reduce((a, b) => a + b, CONSTANTS.MATH.ZERO) || CONSTANTS.MATH.ONE;
-            let topStage = 'Ingredients', topStageShare = CONSTANTS.MATH.ZERO;
-            Object.keys(stages).forEach(s => {
-                const share = stages[s] / stageTotal;
-                if (share > topStageShare) { topStageShare = share; topStage = s; }
-            });
-
-            contributions.push({ category: cat, contribution, topStage, topStageShare });
-        });
-
-        const sorted = [...contributions].sort((a, b) => b.contribution - a.contribution);
-        const topDriver = sorted[0] || { category: 'n/a', contribution: CONSTANTS.MATH.ZERO, topStage: 'n/a', topStageShare: CONSTANTS.MATH.ZERO };
-        const topDriverShare = efsiScore > CONSTANTS.MATH.ZERO ? (topDriver.contribution / efsiScore) : CONSTANTS.MATH.ZERO;
-        const hasPrimaryDriver = topDriverShare >= CONSTANTS.EFSI.PRIMARY_DRIVER_SHARE_THRESHOLD;
-
-        const band = CONSTANTS.EFSI.GRADE_BANDS.find(b => efsiScore < b.max) ||
-                     CONSTANTS.EFSI.GRADE_BANDS[CONSTANTS.EFSI.GRADE_BANDS.length - 1];
-
-        return {
-            efsiScore,
-            grade:      band.grade,
-            color:      band.color,
-            threshNote: band.threshNote,
-            contributions: sorted,
-            primaryDriver: {
-                has:            hasPrimaryDriver,
-                category:       topDriver.category,
-                share:          topDriverShare,
-                topStage:       topDriver.topStage,
-                topStageShare:  topDriver.topStageShare
-            }
-        };
+        throw new Error(
+            'calculateEnviroscore() has been removed from production ' +
+            '(2026-08-22, corrected same day). Not removed because the ' +
+            'formula or weighting table were confirmed wrong -- checked ' +
+            'against the primary source (Ramos et al. 2022) and both ' +
+            'are correct. Removed because an independent review found ' +
+            'every real product tested landed in Grade E, and the ' +
+            'paper\'s own published numbers show even its LOWEST-scoring ' +
+            'item (sugar beet, EFSI 0.379) sits ~38x past the E cutoff ' +
+            '(1.00e-2) -- so broad E classification may be inherent to ' +
+            'this threshold table rather than an AIOXY-side bug, but ' +
+            'that has not been confirmed either way. See the removal ' +
+            'note above CONSTANTS.EFSI in this file for the full, ' +
+            'corrected writeup and the diagnostic steps that would ' +
+            'actually resolve this. If you are seeing this error, a ' +
+            'caller was missed during removal -- find it and remove the ' +
+            'call, do not re-implement this function to make the error ' +
+            'go away.'
+        );
     }
 
     // ═════════════════════════════════════════════════════════════════════

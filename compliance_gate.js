@@ -140,6 +140,52 @@
                     'LCA practitioner with access to compare both data lineages. Full ' +
                     'derivation: core_physics.js, PACKAGING_MULTI_CATEGORY.glass, ' +
                     'comment PKG-DERIVE-2.'
+        },
+        // PKG-DERIVE-3-CARDBOARD-CLIMATE (this session): structurally different
+        // from PKG-F1 (a confirmed boundary-scope difference) and from
+        // PKG-DERIVE-1/2 above (unresolved, licensed-data-blocked gaps). This
+        // one has a real, checkable resolution: not a boundary difference, not
+        // an unexplained gap, but genuine published study-to-study variance.
+        //
+        // AIOXY's cardboard co2_virgin (1.03 kg CO2e/kg, core_physics.js
+        // ingredients.js entry, sourced ICE Database v3.0/Hammond & Jones 2019)
+        // deviates 19.77% from this file's JRC_REFERENCE (0.86 kg CO2e/kg,
+        // itself uncited in this codebase — same "not locatable via search"
+        // status as PKG-DERIVE-1/2's fossils reference).
+        //
+        // Checked against Brogaard et al. 2014 (peer-reviewed LCI literature
+        // review of corrugated cardboard, cited via Consumer Ecology's public
+        // summary — the review paper's DOI was not independently re-verified
+        // this session, so this citation carries that caveat): virgin
+        // corrugated cardboard across 17 real studies has mean 1.14 kg CO2e/kg,
+        // SD 0.45. AIOXY's 1.03 falls inside that range. JRC's 0.86 also falls
+        // inside that same range. Both real sources sit within one another's
+        // honestly-published uncertainty band -- the ~20% gap between them is
+        // not evidence either is wrong; it reflects genuine, well-documented
+        // variance in real-world corrugated board carbon footprints (different
+        // mills, energy mixes, recycled content), not a calculation defect.
+        //
+        // HONEST CAVEAT, not smoothed over: co2_recycled (0.49 kg CO2e/kg)
+        // sits just OUTSIDE the same review's recycled-cardboard range (mean
+        // 0.82, SD 0.31 -> 0.51-1.13) -- 0.02 below the lower bound. Close,
+        // but not clean. This exception excuses the Climate Change deviation
+        // on virgin-figure evidence; it does not independently confirm the
+        // recycled figure. Flagged here rather than left unmentioned.
+        {
+            id: 'PKG-DERIVE-3-CARDBOARD-CLIMATE-VARIANCE',
+            check: 'runJRCValidation',
+            match: (product) => product.materialType === 'cardboard',
+            category: 'Climate Change',
+            maxDeviationPct: 25, // observed 19.77%; margin reflects real published SD, not rounded arbitrarily
+            reason: 'AIOXY virgin figure (1.03 kg CO2e/kg, ICE Database v3.0) and ' +
+                    'JRC reference (0.86 kg CO2e/kg, uncited in this codebase) both ' +
+                    'fall within Brogaard et al. 2014\'s published range for virgin ' +
+                    'corrugated cardboard (17 studies, mean 1.14, SD 0.45 kg CO2e/kg) ' +
+                    '-- genuine study-to-study variance, not a calculation error. ' +
+                    'Caveat: co2_recycled (0.49) sits marginally outside the same ' +
+                    'review\'s recycled-cardboard range (mean 0.82, SD 0.31); not ' +
+                    'independently confirmed by this exception. See core_physics.js ' +
+                    'ingredients.js cardboard entry for full source citations.'
         }
         // Add more only with the same rigor: real check name, real match
         // condition, real cited reason, real bound. Anything without all
