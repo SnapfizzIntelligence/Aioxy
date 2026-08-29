@@ -68,6 +68,54 @@ Object.assign(window.aioxyData.ingredients, {
     },
 
   
+    "tap-water-ciqual-18066": {
+        "name": "Tap water",
+        "loss": 0.0,
+        "processing_yearly": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.000342,
+                "Climate Change - Fossil": 2.39e-07,
+                "Climate Change - Biogenic": 4.45e-07,
+                "Climate Change - Land Use": 0.000341,
+                "Ozone Depletion": 1.04e-11,
+                "Human Toxicity, non-cancer": 3.51e-11,
+                "Human Toxicity, cancer": 2.95e-12,
+                "Particulate Matter": 3.56e-11,
+                "Ionizing Radiation": 0.000288,
+                "Photochemical Ozone Formation": 1.87e-06,
+                "Acidification": 1.81e-06,
+                "Eutrophication, terrestrial": 4.87e-06,
+                "Eutrophication, freshwater": 1.09e-07,
+                "Eutrophication, marine": 4.85e-07,
+                "Ecotoxicity, freshwater": 0.00271,
+                "Land Use": 0.00117,
+                "Water Use/Scarcity (AWARE)": 0.00707,
+                "Resource Use, minerals/metals": 2.47e-09,
+                "Resource Use, fossils": 0.00963
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Eau du robinet",
+                "source_uuid": "ciqual-18066",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 2.0, "TiR": 2.0, "TeR": 3.0, "GR": 3.0 },
+                "dqr_overall": 2.50,
+                "single_score_mpt": 0.000104,
+                "biogenic_net": 4.45e-07,
+                "co2_luc_net": 0.000341,
+                "co2_fossil": 2.39e-07,
+                "ciqual_category": "boissons",
+                "ciqual_sub_category": "eaux",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK AGB",
+                "preparation": "Pas de préparation"
+            }
+        }
+    }, 
+                    
     "coconut-milk-ciqual-18041": {
         "name": "Coconut milk or coconut cream",
         "loss": 0.0,
@@ -115,6 +163,102 @@ Object.assign(window.aioxyData.ingredients, {
             }
         }
     },
+     
+    "beetroot-cooked-ciqual-20003": {
+        "name": "Beetroot, cooked",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 1.16,
+                "Climate Change - Fossil": 0.00298,
+                "Climate Change - Biogenic": 0.0521,
+                "Climate Change - Land Use": 1.1,
+                "Ozone Depletion": 3.58e-08,
+                "Human Toxicity, non-cancer": 1.16e-08,
+                "Human Toxicity, cancer": 4.75e-10,
+                "Particulate Matter": 5.11e-08,
+                "Ionizing Radiation": 0.189,
+                "Photochemical Ozone Formation": 0.00347,
+                "Acidification": 0.00376,
+                "Eutrophication, terrestrial": 0.0116,
+                "Eutrophication, freshwater": 0.000168,
+                "Eutrophication, marine": 0.00174,
+                "Ecotoxicity, freshwater": 8.63,
+                "Land Use": 11.7,
+                "Water Use/Scarcity (AWARE)": 0.689,
+                "Resource Use, minerals/metals": 5.11e-06,
+                "Resource Use, fossils": 18.7
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Betterave rouge, cuite",
+                "source_uuid": "ciqual-20003",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 3.0, "TiR": 2.0, "TeR": 3.0, "GR": 2.64 },
+                "dqr_overall": 2.66,
+                "single_score_mpt": 0.0998,
+                "biogenic_net": 0.0521,
+                "co2_luc_net": 1.1,
+                "co2_fossil": 0.00298,
+                "ciqual_category": "fruits, légumes, légumineuses et oléagineux",
+                "ciqual_sub_category": "légumes",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (moyen)",
+                "packaging": "PACK AGB",
+                "preparation": "Cuisson à l'eau"
+            }
+        }
+    },
+    "wheat-flour-t55-bread-ciqual-9436": {
+        "name": "Wheat flour, type 55 (for bread)",
+        "loss": 0.0,
+        "processing_yield": 1.0,
+        "data": {
+            "pef": {
+                "Climate Change": 0.791,
+                "Climate Change - Fossil": 0.0962,
+                "Climate Change - Biogenic": 0.0063,
+                "Climate Change - Land Use": 0.689,
+                "Ozone Depletion": 1.33e-08,
+                "Human Toxicity, non-cancer": 6.18e-09,
+                "Human Toxicity, cancer": 1.02e-09,
+                "Particulate Matter": 7.18e-08,
+                "Ionizing Radiation": 0.18,
+                "Photochemical Ozone Formation": 0.00266,
+                "Acidification": 0.00945,
+                "Eutrophication, terrestrial": 0.04,
+                "Eutrophication, freshwater": 0.00016,
+                "Eutrophication, marine": 0.00636,
+                "Ecotoxicity, freshwater": 13.4,
+                "Land Use": 84.2,
+                "Water Use/Scarcity (AWARE)": 0.205,
+                "Resource Use, minerals/metals": 3.62e-06,
+                "Resource Use, fossils": 9.03
+            },
+            "metadata": {
+                "source_dataset": "AGRIBALYSE 3.2 / CIQUAL",
+                "source_activity": "Farine de blé tendre ou froment T55 (pour pains)",
+                "source_uuid": "ciqual-9436",
+                "allocation_method": "Economic Allocation",
+                "dqr": { "P": 3.0, "TiR": 3.0, "TeR": 3.0, "GR": 2.48 },
+                "dqr_overall": 2.87,
+                "single_score_mpt": 0.102,
+                "biogenic_net": 0.0063,
+                "co2_luc_net": 0.689,
+                "co2_fossil": 0.0962,
+                "ciqual_category": "produits céréaliers",
+                "ciqual_sub_category": "farines et pâtes à tarte",
+                "season_code": 2,
+                "flight_code": 0,
+                "delivery_type": "Ambiant (long)",
+                "packaging": "PACK PROXY",
+                "preparation": "Pas de préparation"
+            }
+        }
+    }, 
+
      "mustard-with-grains-ciqual-11021": {
         "name": "Mustard, with grains",
         "loss": 0.0,
