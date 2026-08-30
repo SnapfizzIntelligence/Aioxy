@@ -1471,6 +1471,16 @@ window.aioxyData.processing = {
     // Physics: Q = Cp × ΔT + moisture evaporation; drum roaster efficiency 55%.
     // Gas: ~0.85 MJ/kg central (coffee 0.97, nuts 0.71). Range: 0.15–0.30 kWh/kg.
     // Source: Humbert et al. (2009) J. Cleaner Prod. 17; Illy & Viani (2005).
+    // SCOPE DISCLOSURE ADDED (2026-08-30, Claude -- cofounder-directed, external verification):
+    // nuts figure (0.16) independently confirmed against a real peer-reviewed empirical
+    // measurement, 0.185 +/- 0.005 kWh/kg (peanut roasting, Journal of Agricultural Engineering,
+    // India) -- close match, well within normal process variance. Coffee figure (0.22) is real
+    // for efficient electric drum roasters specifically -- but ~99.99% of industrial-scale
+    // (100kg+ batch) coffee roasting runs on gas, not electricity (Rubasse Roasters buyer's
+    // guide). This entry's OWN already-stated gas figure (0.85 MJ/kg central, 0.97 coffee-
+    // specific) is the dominant real-world thermal path for the scale this database targets --
+    // the electrical figure was not previously disclosed as representing a smaller-batch,
+    // electric-specific technology rather than the industrial-scale default.
     "roasting":       { co2_impact: 0.65, water_impact: 0.05, yield: 0.82,  loss: 0.18,  temp: 200, kwh_per_kg: 0.200, gas_mj_per_kg: 0.85  },
 
     // Method 6 — Frying (continuous immersion, 180°C, 25% moisture loss).
@@ -1505,6 +1515,18 @@ window.aioxyData.processing = {
     // Physics: Q_product + can metal heating + batch overhead = 625.5 kJ/kg.
     // Thermal gas: 625.5 ÷ 1000 ÷ 0.82 = 0.76 MJ/kg. Electrical ancillary (pumps, seaming): 0.05 kWh/kg.
     // Source: Holdsworth & Simpson (2016); Masanet et al. (2008) LBNL-59289 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "LBNL-559E", not a real report number -- verified against OSTI.gov and LBNL's own PDF] (0.6–1.0 MJ/kg).
+    // DISCREPANCY RESOLVED AS SCOPE MISMATCH (2026-08-30, Claude -- cofounder-directed, external
+    // verification): a real, peer-reviewed source (Chhinnan, Singh et al. 1980, Trans. ASAE --
+    // real 100,000 kg/day commercial vegetable canning plant) reports 2.7-6.6 MJ/kg for spinach,
+    // pork-and-beans, baked beans, hominy -- 3-11x this entry's stored 0.6-1.0 MJ/kg range.
+    // Confirmed this is NOT a contradiction of the same claim: the ASAE figure is explicitly
+    // whole-plant "process energy" (blanching, filling, seaming, cooling, general overhead
+    // included), while this entry is explicitly scoped to the retort-heating step alone ("same
+    // thermodynamics as sterilization"). A real, narrower-scope figure legitimately sits well
+    // below a real, wider-scope whole-plant figure for the same named process. Not fixed as an
+    // error; scope now explicitly disclosed. If AIOXY's "canning" category is meant to represent
+    // total plant energy rather than retort-heating alone, the ASAE range (2.7-6.6 MJ/kg) is the
+    // externally-supported figure for that wider scope -- a decision, not an automatic fix.
     "canning":        { co2_impact: 0.30, water_impact: 3.5,  yield: 0.95,  loss: 0.05,  temp: 110, kwh_per_kg: 0.050, gas_mj_per_kg: 0.76  },
 
     // Method 10 — Oat Processing (kilning ~100°C + steaming ~85°C + roller flaking).
@@ -1546,7 +1568,23 @@ window.aioxyData.processing = {
     // rather than silently rewritten, since the co2_impact/kwh_per_kg figures on this line
     // are a separate, unverified claim from the yield/loss figures below and neither should
     // be touched without the same direct-source verification applied to coProducts below.
-    "crushing":       { co2_impact: 0.12, water_impact: 1.0,  yield: 0.40,  loss: 0.60,  temp: 40,  kwh_per_kg: 0.040, gas_mj_per_kg: 0.00,
+    // YIELD CORRECTED (2026-08-30, Claude -- cofounder-directed, external verification): stored
+    // yield was 0.40 (40% of input mass becomes oil output). Checked against 5 real external
+    // sources for soybean expeller pressing specifically (matching this entry's own stated scope,
+    // "mechanical expeller press only, no solvent extraction"): soybean is 18-20% oil by whole-
+    // seed mass (Kumar Metal Industries; Resaca Sun -- industry process guides, corroborated by
+    // a peer-reviewed screw-press performance study); mechanical expeller extraction recovers
+    // 60-85% of that oil content, not 100% (Kumar Metal Industries; Oil Mill Machinery comparison
+    // guide). Multiplying oil content x extraction efficiency gives a real yield range of
+    // 0.108-0.17 (10.8-17% of whole-seed mass becomes oil output) -- stored 0.40 was
+    // approximately 2.9x the real-world midpoint. Corrected to 0.14, the midpoint of the
+    // converging real range. loss updated to 0.86 to match -- this is NOT waste; per the
+    // coProducts structure directly below, the non-oil mass is the real, economically-allocated
+    // meal/cake co-product, correctly handled elsewhere in this file's ISO 14044 §4.3.4(c) logic.
+    // This yield field is a separate mass-balance number from that allocation logic and needed
+    // its own correction. The co2_impact/kwh_per_kg figures remain the pre-existing, separately
+    // disclosed "still-unverified-to-primary-source" gap -- not resolved by this fix.
+    "crushing":       { co2_impact: 0.12, water_impact: 1.0,  yield: 0.14,  loss: 0.86,  temp: 40,  kwh_per_kg: 0.040, gas_mj_per_kg: 0.00,
         // coProducts: real economic allocation data for ISO 14044 §4.3.4(c) co-product
         // allocation (calculation_engine.js, adjustments.coproduct_allocation). ADDED
         // 2026-08-01, cofounder-directed. OIL MUST BE LISTED FIRST in each array — the
@@ -1589,19 +1627,59 @@ window.aioxyData.processing = {
     // Physics: Q_thermal = 1kg × 4.10 × 35°C ÷ 3600 ÷ 0.85 = 0.047 kWh/kg; pump work 0.008 kWh/kg.
     // Total 0.055 kWh/kg without regen; central 0.03 kWh/kg with heat recovery.
     // Range: 0.01–0.05 kWh/kg. Source: Bylund (1995) Dairy Processing Handbook p.108.
+    // SECOND SOURCE CONFIRMS, DOES NOT CONTRADICT (2026-08-30, Claude -- cofounder-directed,
+    // external verification): Bylund's physics independently re-verified by hand this pass
+    // (1×4.10×35÷3600÷0.85=0.0469, +0.008 pump = 0.0549, matching stated 0.055 to three
+    // decimals). A second real, peer-reviewed source was located: Samoichuk et al. (2020),
+    // Potravinarstvo Slovak Journal of Food Sciences 14, DOI 10.5219/1407 -- states conventional
+    // valve homogenizers reach 8 kWh/tonne = 0.008 kWh/kg. Directly fetched and read the paper's
+    // own scope: it is explicitly a MECHANICAL-dispersion-only study (fat-globule breakup
+    // efficiency across valve vs. counter-jet homogenizer designs), with no thermal-heating
+    // component in scope. Samoichuk's 0.008 kWh/kg matches, to three significant figures, this
+    // entry's OWN stated pump-work/mechanical sub-component (also 0.008 kWh/kg). Two unrelated
+    // sources reaching the identical mechanical-energy figure by different routes is genuine
+    // corroboration. This entry's stored total (0.03) is CONFIRMED, not contradicted.
     "emulsification": { co2_impact: 0.03, water_impact: 0.10, yield: 0.99,  loss: 0.01,  temp: 55,  kwh_per_kg: 0.030, gas_mj_per_kg: 0.00  },
 
     // Method 16 — Cleaning (commercial vegetable/fruit washing; conveying-dominated).
     // Benchmark: pump work is trivial (~0.0003 kWh/kg); real energy from conveyors/blowers.
     // Literature range 0.005–0.030 kWh/kg; central 0.01 kWh/kg. Confidence: LOW-MEDIUM.
     // Source: Masanet et al. (2008) LBNL-59289 [CORRECTED 2026-08-01, cofounder-directed citation audit: was "LBNL-559E", not a real report number -- verified against OSTI.gov and LBNL's own PDF]; Hospido et al. (2003) Int. Dairy J. 13(10) [CORRECTED 2026-08-01: was "J. Cleaner Prod." -- wrong journal; verified against 2 independent citing sources, the real paper "Simplified life cycle assessment of Galician milk production" is in International Dairy Journal].
+    // REACHABILITY + SCOPE CONFIRMED (2026-08-30, Claude -- cofounder-directed, external
+    // verification): confirmed via direct code trace (calculation_engine.js line ~2794) that
+    // "cleaning" is looked up dynamically via db.processing[input.manufacturing.processingMethod]
+    // -- the SAME generic mechanism as every other method here. It is not hardcoded dead code;
+    // any product whose BOM sets processingMethod: "cleaning" will reach this exact entry. No
+    // product using it was found in the 19 audited files, but it is live and reachable, same as
+    // crushing or roasting. Separately checked real-world cleaning/CIP energy data: it spans two
+    // to three orders of magnitude depending on what's being cleaned (a quick equipment rinse vs.
+    // a full daily CIP cycle -- e.g. a real dairy case study gives ~0.0014 kWh/kg for crate
+    // washing, while a peer-reviewed review states CIP can rival pasteurization's own energy use
+    // in the same plant). This entry's already-real citation (above) discloses a range and a
+    // LOW-MEDIUM confidence rating rather than a false-precise single figure -- that disclosure
+    // IS the correct, EU-audit-defensible answer for a generic, scope-unspecified "cleaning"
+    // method: no external source can honestly narrow this further without knowing which specific
+    // real-world cleaning operation a given product's BOM is meant to represent. Recommend: if a
+    // future client's actual factory process is known, replace this generic range with their
+    // specific, cited primary data at that time -- not before.
     "cleaning":       { co2_impact: 0.02, water_impact: 2.0,  yield: 0.98,  loss: 0.02,  temp: 25,  kwh_per_kg: 0.010, gas_mj_per_kg: 0.00  },
 
     // Method 17 — Wet Milling (corn wet milling incl. steeping + starch drying).
     // Physics: Q_steep = 135.3 kJ/kg gas; mechanical separation benchmark 0.08–0.15 kWh/kg;
     // starch drying (spray/flash) dominates thermal: total 2.5–4.0 MJ/kg; central 3.0 MJ/kg.
     // Electrical: 0.12 kWh/kg. Source: Masanet et al. (2008); Rausch & Belyea (2006) Appl. Biochem. Biotech. 128.
-    "wet_milling":    { co2_impact: 0.25, water_impact: 8.0,  yield: 0.65,  loss: 0.35,  temp: 50,  kwh_per_kg: 0.120, gas_mj_per_kg: 3.00  },
+    // YIELD CORRECTED (2026-08-30, Claude -- cofounder-directed, external verification): stored
+    // yield was 0.65 vs. this schema's own processing_archetypes.wet_extracted's 0.55 -- a 0.10
+    // discrepancy. Resolved using this schema's own established precedent: "crushing" (soybean
+    // oil pressing) carries a coProducts block for its real, ISO 14044 §4.3.4(c)-allocated
+    // co-products (oil + meal); "wet_milling" carries no such block, meaning -- per this schema's
+    // own design -- yield here represents the single named output (starch), not a multi-product
+    // mass balance. Checked against real corn wet-milling industry data (blog.amg-eng.com,
+    // standard bushel composition): starch-only yield is 56.2% of input mass. The archetype's
+    // 0.55 sits within 2.1% of this real figure; this entry's 0.65 was 15.6% too high. Corrected
+    // 0.65 -> 0.55 to match both the externally-supported value and the archetype it should align
+    // with.
+    "wet_milling":    { co2_impact: 0.25, water_impact: 8.0,  yield: 0.55,  loss: 0.45,  temp: 50,  kwh_per_kg: 0.120, gas_mj_per_kg: 3.00  },
 
     // Method 18 — Fermentation (aerobic industrial submerged fermentation, 30-35°C).
     // Physics/Benchmark: agitation 1.28 kWh/kg + aeration 0.19 kWh/kg + temp maintenance 0.05 kWh/kg.
@@ -1623,9 +1701,21 @@ window.aioxyData.processing_archetypes = {
     },
     // Method 11 — Dry Milled. Aligned to Report Method 11 (Milling): 0.06 kWh/kg, no gas thermal.
     // Previous legacy value was 0.15 kWh/kg; updated to derivation-report central estimate.
+    // YIELD CORRECTED (2026-08-30, Claude -- cofounder-directed, external verification): stored
+    // yield_factor was 0.90. Checked against 10 real external sources: Wikipedia's cited US
+    // wheat-milling-yield average 70-75%; two USPTO patent filings reporting empirical extraction
+    // yields of 65-68% and 67-68% from actual milling trials; a milling-optimization patent
+    // citing real 2014 USDA-scale US industry data -- 46M tons wheat milled to 21.2M tons flour,
+    // i.e. 76.9% actual national average; Oxford Reference/Encyclopedia.com both citing 72% as
+    // standard "normal white flour"; LibreTexts and BAKERpedia corroborating the same range. All
+    // ten sources cluster 65-86%; NONE support a 90% dry-milling flour yield without a
+    // specialized high-extraction process, which nothing in this entry claims. This schema's own
+    // processing.milling entry (0.78) sits almost exactly on the real 76.9% industry-average
+    // anchor. Corrected 0.90 -> 0.78 to match both the externally-supported value and
+    // processing.milling, since no scope difference was ever documented to justify a divergence.
     "dry_milled": { 
         "name": "Dry Milled (Flour)", 
-        "yield_factor": 0.90, 
+        "yield_factor": 0.78, 
         "energy_kwh": 0.06, // Report Method 11: 0.04-0.10 kWh/kg range; central 0.06 kWh/kg
         "gas_mj": 0.00,     // Report Method 11: no gas thermal for dry milling
         "dqr_reward": 0.1,
@@ -1633,6 +1723,11 @@ window.aioxyData.processing_archetypes = {
     },
     // Method 17 — Wet Extracted. Aligned to Report Method 17 (Wet Milling): 0.12 kWh/kg, 3.0 MJ/kg gas.
     // Previous legacy values were 0.80 kWh/kg and 2.50 MJ/kg; updated to derivation report.
+    // YIELD CONFIRMED CORRECT (2026-08-30, Claude -- cofounder-directed, external verification):
+    // this archetype's yield_factor (0.55) was checked against real corn wet-milling industry
+    // data (starch-only yield, 56.2% of input mass) and confirmed accurate within 2.1%. This
+    // schema's processing.wet_milling entry stored a mismatched 0.65 for the same real process --
+    // see that entry's own correction note. This archetype's 0.55 was correct all along.
     "wet_extracted": { 
         "name": "Wet Extracted", 
         "yield_factor": 0.55, 
@@ -1644,6 +1739,22 @@ window.aioxyData.processing_archetypes = {
     // Protein Isolate — not directly covered in derivation report. Values retained from legacy estimate.
     // Review against factory data. Approximate basis: wet_milling (Method 17) + spray drying (Method 8)
     // + additional purification steps. See food_processing_energy_intensity.md gaps section.
+    // RESEARCH LEAD, STRONGER SOURCE FOUND (2026-08-30, Claude -- cofounder-directed, external
+    // verification): located a real, primary candidate for closing this gap -- The Good Food
+    // Institute (GFI) / EarthShift Global "Comparative Life Cycle Assessment of Plant-Based Meats
+    // and Conventional Animal Meats" (April 2024, DOI: 10.62468/casv3213). ISO 14040/14044
+    // compliant, critically reviewed by a 3-person independent panel. System #2 (yellow pea, wet
+    // fractionation -> isolate) gives real, already-split primary-data figures across
+    // pre-processing, wet fractionation, and spray drying. Summing all electricity/heat inputs
+    // across these steps and rescaling to the 0.190 kg pea-protein-isolate output: ~3.56 kWh/kg
+    // isolate electrical, ~18.22 MJ/kg isolate gas/heat. Electricity (2.50 stored) is same order
+    // of magnitude as this real figure. Gas (6.00 stored) is ~3x LOWER than 18.22 -- a real,
+    // substantial discrepancy. NOT applied as a silent overwrite: the 3.56/18.22 figures are
+    // Claude's own arithmetic sum across 3 separate source tables, not a single stated GFI total;
+    // and this source is pea-specific with real industry data, while this archetype is a generic,
+    // legume-agnostic approximation. RECOMMENDATION: gas_mj (6.00) is the more likely candidate
+    // for correction given the 3x gap -- but changing it needs a decision on whether pea-specific
+    // primary data should set the generic isolate default, not an automatic fix.
     "isolated": { 
         "name": "Isolated (Protein Isolate)", 
         "yield_factor": 0.22, 
