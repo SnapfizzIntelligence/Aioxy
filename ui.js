@@ -1403,7 +1403,8 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                  as something "avoided" by a choice. Section now always shows
                  (previously gated on isBetter), since a measurement is
                  disclosed the same way regardless of which product is higher. -->
-            <div style="background: #F0FDF9; border: 1px solid #99F6E4;
+            <div id="equivStoryCard" data-co2-per-kg="${thisProductCO2}"
+                 style="background: #F0FDF9; border: 1px solid #99F6E4;
                         border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem;">
 
                 <div style="font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
@@ -1414,6 +1415,30 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                 <div style="font-size: 0.9rem; color: #134E4A; line-height: 1.6; margin-bottom: 0.7rem;">
                     Every kilogram of this product has a measured footprint of
                     <strong>${thisProductCO2.toFixed(3)} kg CO₂e</strong>, equivalent to:
+                </div>
+
+                <!-- FIX (2026-08-30, cofounder-directed): market-country selector.
+                     Only the electricity-grid-dependent cards (smartphone, LED) react
+                     to this -- car/flight don't depend on grid intensity, so they're
+                     unaffected by the selection. Options are the 41 codes
+                     ingredients.js's own Europe block covers (Ember-sourced). -->
+                <div style="margin-bottom: 0.8rem;">
+                    <label for="equivMarketCountry" style="font-size: 0.62rem; color: #0D9488;
+                            display: block; margin-bottom: 0.25rem;">
+                        Smartphone/LED figures below use the EU average grid. Select a market
+                        to use that country's own Ember-sourced grid instead:
+                    </label>
+                    <select id="equivMarketCountry" onchange="updateEquivMarket(this)"
+                            style="font-size: 0.78rem; padding: 0.35rem 0.5rem; border-radius: 6px;
+                                   border: 1px solid #99F6E4; width: 100%; background: white;">
+                        <option value="">EU average (Ember 2025, 213 g CO₂/kWh)</option>
+                        ${EUROPE_EMBER_CODES
+                            .filter(code => window.aioxyData?.countries?.[code]
+                                && typeof window.aioxyData?.grid_intensity?.[code] === 'number')
+                            .sort((a, b) => window.aioxyData.countries[a].name.localeCompare(window.aioxyData.countries[b].name))
+                            .map(code => `<option value="${code}">${window.aioxyData.countries[code].name}</option>`)
+                            .join('')}
+                    </select>
                 </div>
 
                 <!-- EQUIVALENCE CARDS -->
@@ -1439,7 +1464,7 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                     <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
                                 padding: 0.75rem; text-align: center;">
                         <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">📱</div>
-                        <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${smartCharges.toLocaleString()}</div>
+                        <div id="equivSmartCharges" style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${smartCharges.toLocaleString()}</div>
                         <div style="font-size: 0.68rem; font-weight: 600; color: #92400E;">smartphone charges</div>
                         <!-- FIX: [ui.js audit] Card previously said "8.25 Wh/charge" — the
                              actual constant (SMARTPHONE_CHARGES_PER_KG_CO2, main.js) is derived
@@ -1449,7 +1474,7 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                              itself was corrected from 397 to 391 — see main.js for the fix; the
                              grid-intensity figure it depended on (previously cited as 209.9
                              gCO2/kWh) did not match Ember's own published 213 gCO2/kWh figure. -->
-                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">EC Ecodesign 2024 + IEA 2022 — 12 Wh/charge</div>
+                        <div id="equivSmartCite" style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">EC Ecodesign 2024 + IEA 2022 — 12 Wh/charge</div>
                     </div>
 
                     <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
@@ -1463,9 +1488,9 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                     <div style="background: white; border: 1px solid #E2E8F0; border-radius: 8px;
                                 padding: 0.75rem; text-align: center;">
                         <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">💡</div>
-                        <div style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${ledHours.toLocaleString()}</div>
+                        <div id="equivLedHours" style="font-size: 1.3rem; font-weight: 800; color: #0A2540;">${ledHours.toLocaleString()}</div>
                         <div style="font-size: 0.68rem; font-weight: 600; color: #6D28D9;">hours LED lighting</div>
-                        <div style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">Ember 2025 EU grid — 10W LED</div>
+                        <div id="equivLedCite" style="font-size: 0.58rem; color: #94A3B8; margin-top: 0.15rem;">Ember 2025 EU grid — 10W LED</div>
                     </div>
 
                 </div>
@@ -2091,6 +2116,73 @@ window.selectBaseline = function(id, name) {
     if (dropdownEl) dropdownEl.classList.add('hidden');
     console.log(`⚖️ [Parametric Twin] Baseline locked to: ${name}`);
 };
+
+// FIX (2026-08-30, cofounder-directed): market-country selector for the
+// electricity-grid-dependent equivalence numbers (smartphone charges, LED
+// hours) in the story-mode "product's footprint, in context" card. car/flight
+// are untouched -- they aren't electricity-grid-dependent, so a market
+// selection has no bearing on them.
+//
+// This list is the same 41 codes ingredients.js groups under its own
+// "── Europe (all Ember 2025 actuals) ──" comment block in
+// window.aioxyData.grid_intensity. Kept explicit here rather than inferred at
+// runtime, since neither .countries nor .grid_intensity carries a
+// region/continent field to filter by -- if that block's country set changes,
+// update this list to match.
+const EUROPE_EMBER_CODES = [
+    'IS','AL','NO','CH','FR','FI','SK','DK','AT','LU','PT','LT','LV','BE',
+    'ES','HR','HU','SI','SE','GB','RO','NL','IE','ME','BG','IT','GR','EE',
+    'DE','CZ','MK','TR','MT','CY','BA','PL','MD','RS','XK','UA','RU'
+];
+// Mirrors the exact two countries ingredients.js's own per-country comments
+// mark "ember-2024" (2025 data not yet published for them at refresh time)
+// within that same Europe block -- every other code above is "ember-2025".
+// If ingredients.js's vintage tags for these two change, update this too.
+const EMBER_2024_FALLBACK_CODES = ['IS', 'AL'];
+
+// Recomputes smartCharges/ledHours for the selected market and patches just
+// those four DOM nodes -- does not re-run the full report render. Reads the
+// product's co2PerKg back off the card's own data attribute (set once, at
+// render time) rather than depending on any outer-scope variable still being
+// alive when the user changes the dropdown later.
+function updateEquivMarket(selectEl) {
+    const code = selectEl.value; // '' = EU average, the unchanged default
+    const card = document.getElementById('equivStoryCard');
+    if (!card) return;
+    const co2PerKg = parseFloat(card.dataset.co2PerKg);
+    if (!(co2PerKg > 0)) return;
+
+    // NOTE: reads .grid_intensity, not .countries[code].electricityCO2 --
+    // matching the "prefer grid_intensity" precedent already established
+    // elsewhere in this codebase (calculation_engine.js's manufacturing-
+    // footprint lookup) for the same two-table situation.
+    const gridVal = code ? window.aioxyData?.grid_intensity?.[code] : undefined;
+    const result = window.corePhysics.calculateEquivalencies({
+        mode: 'story',
+        co2PerKg: co2PerKg,
+        gridIntensityGPerKwh: typeof gridVal === 'number' ? gridVal : undefined
+    });
+
+    const smartEl = document.getElementById('equivSmartCharges');
+    const smartCiteEl = document.getElementById('equivSmartCite');
+    const ledEl = document.getElementById('equivLedHours');
+    const ledCiteEl = document.getElementById('equivLedCite');
+    if (smartEl) smartEl.textContent = result.smartCharges.toLocaleString();
+    if (ledEl) ledEl.textContent = result.ledHours.toLocaleString();
+
+    if (result.gridIntensityGPerKwhUsed !== null && code) {
+        const countryName = window.aioxyData?.countries?.[code]?.name || code;
+        const vintage = EMBER_2024_FALLBACK_CODES.includes(code) ? '2024' : '2025';
+        const citeBase = `Ember ${vintage} — ${countryName} (${result.gridIntensityGPerKwhUsed} g CO₂/kWh)`;
+        if (smartCiteEl) smartCiteEl.textContent = `${citeBase} · 12 Wh/charge assumption`;
+        if (ledCiteEl) ledCiteEl.textContent = `${citeBase} · 10W LED assumption`;
+    } else {
+        // Back to EU average -- restore the original default citation text
+        // verbatim (unchanged from before this feature; not re-verified here).
+        if (smartCiteEl) smartCiteEl.textContent = 'EC Ecodesign 2024 + IEA 2022 — 12 Wh/charge';
+        if (ledCiteEl) ledCiteEl.textContent = 'Ember 2025 EU grid — 10W LED';
+    }
+}
 
 function populateCountrySelect() {
     const targets = ['manufacturingCountry', 'ingredientOriginSelect'];

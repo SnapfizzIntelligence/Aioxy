@@ -2260,6 +2260,16 @@
             // into calculateEquivalencies() story mode as "electricityDays".
             HOUSEHOLD_ELEC_KG_DAY: 2.3375,
 
+            // FIX (2026-08-30, cofounder-directed): promoted from a documentation-only
+            // number inside the comment below into a real constant. The per-country
+            // equivalence resolver (see resolveSmartphoneChargesPerKg() below) needs
+            // this value at runtime to derive a charges-per-kg figure for ANY supplied
+            // grid intensity (e.g. a manufacturing-country or target-market selection
+            // from window.aioxyData.grid_intensity/countries, both Ember-sourced) using
+            // the exact same assumption that produced 391 for the EU-flat default —
+            // one number, one place, instead of a second hardcoded copy.
+            SMARTPHONE_WH_PER_CHARGE: 12,
+
             // 391 full smartphone charges per 1 kg CO2e. 12 Wh/charge ×
             // 0.2130 kg CO2e/kWh (Ember, European Electricity Review 2025,
             // EU 2024 grid) = 0.0025560 kg/charge → 1/that = 391.
@@ -2268,7 +2278,9 @@
             // Review 2025 EU-average figure (213 gCO2/kWh) exactly. A newer
             // Ember European Electricity Review 2026 edition now exists
             // (covering 2025 data) — this figure is one edition behind, not
-            // wrong; refresh in the next annual pass.
+            // wrong; refresh in the next annual pass. This is the EU-average
+            // DEFAULT used when no country-specific grid intensity is supplied
+            // to calculateEquivalencies() — see resolveSmartphoneChargesPerKg().
             SMARTPHONE_CHARGES_PER_KG_CO2: 391,
 
             // FLIGHT_KG_PER_KM_BY_CLASS — real per-class, per-haul kg CO2e per
@@ -2297,9 +2309,17 @@
             // official source to verify against).
             FLIGHT_KM_PER_KG_CO2: 7.95,
 
+            // FIX (2026-08-30, cofounder-directed): same promotion as
+            // SMARTPHONE_WH_PER_CHARGE above, for the same reason —
+            // resolveLedHoursPerKg() needs the bare wattage assumption, not
+            // just the already-multiplied-out EU default below.
+            LED_BULB_WATTS: 10,
+
             // 469 hours of 10W LED lighting per 1 kg CO2e. 0.010 kWh/hr ×
             // 0.2130 kg CO2e/kWh (Ember 2025, EU 2024 grid) = 0.00213
-            // kg/hr → 1/that = 469. Confidence: HIGH.
+            // kg/hr → 1/that = 469. Confidence: HIGH. This is the EU-average
+            // DEFAULT used when no country-specific grid intensity is supplied
+            // to calculateEquivalencies() — see resolveLedHoursPerKg().
             LED_HOURS_PER_KG_CO2: 469,
 
             // 0.5 litres per standard single-serve water bottle (EU
@@ -3054,6 +3074,32 @@ return {
             return C.FLIGHT_KG_PER_KM_BY_CLASS[flightCategory || 'short_haul_economy']
                 ?? (1 / C.FLIGHT_KM_PER_KG_CO2);
         }
+        // FIX (2026-08-30, cofounder-directed): country-specific electricity
+        // equivalences. If a caller supplies a grid intensity in g CO2e/kWh —
+        // e.g. from window.aioxyData.grid_intensity[countryCode], the same
+        // Ember-sourced table calculation_engine.js already uses for this
+        // product's manufacturing footprint — this recomputes the charges-per-kg
+        // figure from scratch using the SAME per-unit assumption (12 Wh/charge)
+        // that produced the EU-flat 391 default, rather than looking it up from
+        // a second table. No grid intensity supplied => unchanged EU-default
+        // behavior, so every existing caller (calculation_engine.js's automatic
+        // story-mode call; any ui.js call not yet passing one) is unaffected.
+        function resolveSmartphoneChargesPerKg(gridIntensityGPerKwh) {
+            if (typeof gridIntensityGPerKwh !== 'number' || gridIntensityGPerKwh <= 0) {
+                return C.SMARTPHONE_CHARGES_PER_KG_CO2;
+            }
+            const kgPerCharge = (C.SMARTPHONE_WH_PER_CHARGE / 1000) * (gridIntensityGPerKwh / 1000);
+            return 1 / kgPerCharge;
+        }
+        // Same pattern as resolveSmartphoneChargesPerKg() above, using the
+        // 10W LED bulb assumption instead of the 12 Wh/charge one.
+        function resolveLedHoursPerKg(gridIntensityGPerKwh) {
+            if (typeof gridIntensityGPerKwh !== 'number' || gridIntensityGPerKwh <= 0) {
+                return C.LED_HOURS_PER_KG_CO2;
+            }
+            const kgPerHour = (C.LED_BULB_WATTS / 1000) * (gridIntensityGPerKwh / 1000);
+            return 1 / kgPerHour;
+        }
 
         if (mode === 'delta') {
             const co2DeltaPerKg = Math.abs(input.co2DeltaPerKg);
@@ -3083,10 +3129,17 @@ return {
             const carKgPerKm = resolveCarKgPerKm(input.carSize, input.carFuelType);
             const flightKgPerKm = resolveFlightKgPerKm(input.flightCategory);
 
+            // input.gridIntensityGPerKwh (g CO2e/kWh) is OPTIONAL. When provided
+            // (e.g. from a market/country selection in ui.js), smartCharges and
+            // ledHours are calculated for that grid; otherwise both use the
+            // EU-flat default, exactly as before this change.
+            const smartChargesPerKg = resolveSmartphoneChargesPerKg(input.gridIntensityGPerKwh);
+            const ledHoursPerKg     = resolveLedHoursPerKg(input.gridIntensityGPerKwh);
+
             const carKm        = co2 > 0 ? Math.round(co2 / carKgPerKm) : 0;
-            const smartCharges = co2 > 0 ? Math.round(co2 * C.SMARTPHONE_CHARGES_PER_KG_CO2) : 0;
+            const smartCharges = co2 > 0 ? Math.round(co2 * smartChargesPerKg) : 0;
             const flightKm     = co2 > 0 ? Number((co2 / flightKgPerKm).toFixed(1)) : 0;
-            const ledHours     = co2 > 0 ? Math.round(co2 * C.LED_HOURS_PER_KG_CO2) : 0;
+            const ledHours     = co2 > 0 ? Math.round(co2 * ledHoursPerKg) : 0;
             // FIX (2026-08-01, cofounder-directed): household electricity-days added.
             // C.HOUSEHOLD_ELEC_KG_DAY was already real and sourced (Eurostat household
             // consumption x IEA/Ember EU grid intensity) but never wired into this
@@ -3118,6 +3171,14 @@ return {
                 carKm, smartCharges, flightKm, ledHours, electricityDays,
                 carCategory: { size: input.carSize || 'average', fuelType: input.carFuelType || 'petrol' },
                 flightCategory: input.flightCategory || 'short_haul_economy',
+                // Lets the caller render an accurate citation: null means the
+                // EU-flat default (Ember European Electricity Review 2025,
+                // EU 2024 grid, 213 gCO2/kWh) was used for smartCharges/ledHours;
+                // a number means that country-specific grid intensity was used
+                // instead — echoed back rather than re-derived, so the display
+                // label can never drift from what was actually calculated.
+                gridIntensityGPerKwhUsed: typeof input.gridIntensityGPerKwh === 'number'
+                    && input.gridIntensityGPerKwh > 0 ? input.gridIntensityGPerKwh : null,
                 headline: best
             };
         }
