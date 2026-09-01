@@ -452,9 +452,17 @@
             //     PM2.5: 0.04 × 0.027640 × 6.4e-4 = 7.076e-7
             //
             //   Photochemical Ozone Formation (kg NMVOCe/tkm):
-            //     NOx:   3.5 × 0.027640 × 0.028 = 2.703e-3
+            //     NOx:   3.5 × 0.027640 × 0.028 = 2.709e-3
             //     NMVOC: 0.4 × 0.027640 × 0.045 = 4.975e-4
-            //     Total = 2.703e-3 + 4.975e-4 = 3.200e-3
+            //     Total = 2.709e-3 + 4.975e-4 = 3.206e-3
+            //     AUDIT FIX (this session): NOx term was previously miscalculated as
+            //     2.703e-3 (arithmetic error — 3.5 × 0.027640 × 0.028 actually equals
+            //     2.709e-3), which propagated into a total of 3.200e-3 instead of the
+            //     correct 3.206e-3. The runtime constant below is corrected to match.
+            //     Understatement was ~0.19% — small, but this was a real transcription
+            //     error, not a rounding or methodology choice. Every other category in
+            //     this derivation block was independently re-verified and was already
+            //     correct.
             //
             //   Human Toxicity, cancer (CTUh/tkm):
             //     BaP: 2.4e-4 × 0.027640 × 6.8e-4 = 4.511e-9
@@ -500,7 +508,7 @@
                     'Eutrophication, marine':        2.128e-4,  // kg Ne/tkm     — MEDIUM confidence
                     'Eutrophication, freshwater':    0,         // kg Pe/tkm     — honest gap (P negligible)
                     'Particulate Matter':            7.076e-7,  // disease inc./tkm — MEDIUM confidence
-                    'Photochemical Ozone Formation': 3.200e-3,  // kg NMVOCe/tkm — MEDIUM confidence
+                    'Photochemical Ozone Formation': 3.206e-3,  // kg NMVOCe/tkm — MEDIUM confidence — AUDIT FIX (this session): corrected from 3.200e-3, see derivation above
                     'Human Toxicity, cancer':        4.511e-9,  // CTUh/tkm      — MEDIUM confidence
                     'Human Toxicity, non-cancer':    4.837e-10, // CTUh/tkm      — MEDIUM confidence
                     'Ecotoxicity, freshwater':       7.048e-4,  // CTUe/tkm      — LOW confidence
