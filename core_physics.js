@@ -1857,6 +1857,231 @@
             'Resource Use, fossils':         5.80
         }),
 
+        // ELECTRICITY_GRID_MULTI_BY_COUNTRY — per-country replacement for the flat
+        // EU27-average factors above, covering Acidification, Particulate Matter, and
+        // Eutrophication (terrestrial) only. This session's addition (cofounder-directed
+        // comparability/traceability upgrade). Built entirely from sources already used
+        // and cited elsewhere in this file — no new database introduced.
+        //
+        // ═══ METHODOLOGY ═══
+        // STEP 1 — Per-country generation mix (fuel type shares)
+        //   Source: Ember Yearly Electricity Data, 215 countries, rebuilt annually.
+        //   https://ember-energy.org (methodology: Ember Electricity Data Methodology,
+        //   files.ember-energy.org/public-downloads/ember_electricity_data_methodology.pdf)
+        //   Fuel types used here: Coal, Gas, Bioenergy, Other Fossil (Hydro, Nuclear,
+        //   Wind, Solar, Other Renewables correctly excluded — non-combustion sources,
+        //   zero NOx/SOx/NH3/PM from fuel burning).
+        //   NOTE: country-by-country generation-share table is not reproduced in this
+        //   file — it must be sourced live from Ember's dataset per country at
+        //   calculation time, the same way CONSTANTS elsewhere reference
+        //   window.aioxyData.grid_intensity/countries (Ember-sourced, see line ~2276).
+        //   This block defines the PER-UNIT-OF-FUEL factors only (STEP 2/3 below);
+        //   wiring to live per-country fuel shares is a calculation_engine.js task.
+        //
+        // STEP 2 — EMEP/EEA Tier 1 emission factors (g/GJ fuel burned)
+        //   Source: EMEP/EEA Air Pollutant Emission Inventory Guidebook 2023,
+        //   NFR 1.A.1.a "Public electricity and heat production", Tier 1 Emission
+        //   Factor rows only (technology = NA — average fleet technology, consistent
+        //   with not having per-plant technology data, same logic as the EU27-average
+        //   block above). Values verified directly against the EEA's own emission
+        //   factor database export (Tables 3-2, 3-3, 3-4, 3-8, 3-9):
+        //     Hard Coal  : NOx 209  SOx 820   PM10 7.7  PM2.5 3.4   [US EPA 1998 ch.1.1]
+        //     Brown Coal : NOx 247  SOx 1680  PM10 7.9  PM2.5 3.2   [US EPA 1998 ch.1.7]
+        //     Natural Gas: NOx 89   SOx 0.244 PM10 0.89 PM2.5 0.89  [SOx: DBI 2014/Fluxys
+        //                  2009-2011, EU Region value used in preference to US Region;
+        //                  NOx/PM: US EPA 1998 ch.1.4]
+        //     Biomass    : NOx 81   SOx 10.8  PM10 155  PM2.5 133   [Nielsen et al. 2010 /
+        //                  US EPA 2003 ch.1.6]
+        //     Biogas     : NOx 198  SOx 10.8  NH3 0.23  [DBFZ 2011] (PM not reported for
+        //                  Biogas in this table)
+        //   All values g/GJ fuel input.
+        //
+        //   HONEST GAP 1 — NH3: Tier 1 NH3 factor exists ONLY for Biogas in this table.
+        //   Hard Coal, Brown Coal, Natural Gas, Biomass have NO Tier 1 NH3 factor in
+        //   EMEP/EEA NFR 1.A.1.a. Do NOT assume/interpolate a value for these fuels —
+        //   per-country Eutrophication-terrestrial computed from this block therefore
+        //   reflects Biogas's NH3 contribution only; other fuels' NH3 contribution from
+        //   power generation is not modelled (fossil combustion NH3 is genuinely very
+        //   low relative to agricultural NH3, but "very low" is not "zero" — this is a
+        //   disclosed limitation, not an assumed non-issue).
+        //
+        //   HONEST GAP 2 — Other Fossil (oil): EMEP/EEA NFR 1.A.1.a provides NO Tier 1
+        //   row for Gas Oil or Residual Oil — only Tier 2 (technology-specific) rows
+        //   exist (e.g. Table 3-13 Dry Bottom Boilers, Table 3-20 Gas Turbines), which
+        //   require plant-technology data this engine does not collect. Ember's "Other
+        //   Fossil" generation share therefore cannot be given a Tier-1-consistent
+        //   factor from this table. Until resolved, "Other Fossil" share should be
+        //   treated the same as an unmapped/residual category (see calculation_engine.js
+        //   integration note) rather than silently assigned zero or a borrowed Tier 2
+        //   value — a borrowed Tier 2 value would break the Tier 1 consistency this
+        //   whole block relies on for the other four fuels.
+        //
+        // STEP 3 — JRC EF 3.1 Characterization Factors
+        //   Source: JRC Technical Report EUR 29540 EN (Huijbregts et al. 2017).
+        //   Same factors already used and cited elsewhere in this file (see line ~421):
+        //     NOx → Acidification:              0.0296 mol H+e/g NOx
+        //     SO2 → Acidification:              0.0313 mol H+e/g SO2
+        //     NH3 → Acidification:              0.0591 mol H+e/g NH3
+        //     NOx → Eutrophication terrestrial: 0.0128 mol Ne/g NOx
+        //     NH3 → Eutrophication terrestrial: 0.0316 mol Ne/g NH3 (see line ~1863,
+        //           manure NH3 block, same constant)
+        //     PM2.5 → Particulate Matter:       6.4e-4 disease inc./g PM2.5
+        //
+        // STEP 4 — Per-fuel-type impact factor (g/GJ × CF, this block's actual output)
+        //   Acidification (mol H+e/GJ fuel):
+        //     Hard Coal : (209×0.0296) + (820×0.0313)  = 31.85
+        //     Brown Coal: (247×0.0296) + (1680×0.0313) = 60.90
+        //     Natural Gas:(89×0.0296)  + (0.244×0.0313) = 2.643
+        //     Biomass   : (81×0.0296)  + (10.8×0.0313)  = 2.738
+        //     Biogas    : (198×0.0296) + (10.8×0.0313) + (0.23×0.0591) = 6.269
+        //   Particulate Matter (disease inc./GJ fuel):
+        //     Hard Coal : 3.4×6.4e-4  = 2.176e-3
+        //     Brown Coal: 3.2×6.4e-4  = 2.048e-3
+        //     Natural Gas:0.89×6.4e-4 = 5.696e-4
+        //     Biomass   : 133×6.4e-4  = 8.512e-2
+        //     Biogas    : not reported (HONEST GAP — no PM2.5 row for Biogas in Table 3-9)
+        //   Eutrophication, terrestrial (mol Ne/GJ fuel):
+        //     Hard Coal : 209×0.0128  = 2.675
+        //     Brown Coal: 247×0.0128  = 3.162
+        //     Natural Gas:89×0.0128   = 1.139
+        //     Biomass   : 81×0.0128   = 1.037
+        //     Biogas    : (198×0.0128) + (0.23×0.0316) = 2.541
+        //
+        //   These per-fuel-type factors are combined with a country's Ember fuel-mix
+        //   shares (STEP 1) at calculation time in calculation_engine.js to produce a
+        //   real per-country result, replacing the single ELECTRICITY_GRID_MULTI value
+        //   above for these three categories only. Ozone Depletion, Ionizing Radiation,
+        //   Human Toxicity (both), Photochemical Ozone Formation, Eutrophication
+        //   (freshwater/marine), Ecotoxicity freshwater, Land Use, Water Use/Scarcity,
+        //   and Resource Use (both) remain on the flat EU27-average
+        //   ELECTRICITY_GRID_MULTI constant above — extending those to per-country would
+        //   need different primary sources than the ones verified for this addition, and
+        //   is out of scope for this pass.
+        ELECTRICITY_GRID_MULTI_BY_COUNTRY: Object.freeze({
+            FUEL_FACTORS: {
+                'Coal_Hard':    { acidification_molHe_per_GJ: 31.85,  pm_diseaseinc_per_GJ: 2.176e-3, eutroph_terr_molNe_per_GJ: 2.675 },
+                'Coal_Brown':   { acidification_molHe_per_GJ: 60.90,  pm_diseaseinc_per_GJ: 2.048e-3, eutroph_terr_molNe_per_GJ: 3.162 },
+                'Gas':          { acidification_molHe_per_GJ: 2.643,  pm_diseaseinc_per_GJ: 5.696e-4, eutroph_terr_molNe_per_GJ: 1.139 },
+                'Bioenergy':    { acidification_molHe_per_GJ: 2.738,  pm_diseaseinc_per_GJ: 8.512e-2, eutroph_terr_molNe_per_GJ: 1.037 },
+                // NOTE: 'Bioenergy' factors above are Biomass (Table 3-8), not Biogas
+                // (Table 3-9) — Ember does not distinguish Biomass/Biogas within its
+                // 'Bioenergy' category, so Biomass (the larger/more common share) is
+                // used as the representative Tier 1 factor. Biogas's NH3 contribution
+                // (the only fossil/bio fuel with a reported Tier 1 NH3 factor at all)
+                // is therefore NOT reflected here — see HONEST GAP 1 above.
+                'Other_Fossil': null  // HONEST GAP 2 — no Tier 1 factor available, see above. Do not default to 0 or a borrowed Tier 2 value.
+            },
+            source: 'Ember Yearly Electricity Data (generation mix) x EMEP/EEA Guidebook 2023 NFR 1.A.1.a Tier 1 (emission factors) x JRC EF 3.1 (characterization) — see header comment for full derivation and disclosed gaps',
+            confidence: 'MEDIUM — Tier 1 defaults, per-country fuel mix real, per-fuel emission factors are fleet-average not plant-specific'
+        }),
+
+        // GRID_FUEL_SHARES_BY_COUNTRY -- real per-country electricity generation
+        // fuel-mix shares (% of total generation). This session's addition
+        // (cofounder-directed Comparability Disclosure upgrade -- consumed together
+        // with ELECTRICITY_GRID_MULTI_BY_COUNTRY in core_physics.js, which holds the
+        // per-fuel-type pollution factors this is multiplied against).
+        //
+        // Source: Our World in Data energy dataset (github.com/owid/energy-data),
+        // which sources its electricity generation-by-fuel-type columns from
+        // Ember's Yearly Electricity Data (confirmed directly from OWID's own
+        // repository documentation: 'Yearly Electricity Data (Ember)' listed as a
+        // named source dataset). Country matched to this engine's existing 2-letter
+        // codes via the country names already present in ingredients.js's
+        // grid_intensity comments -- 80 of 81 countries matched; Sri Lanka (LK)
+        // omitted -- OWID's own data has a genuinely blank gas_share_elec value for
+        // it (not a mapping failure), so it is left out here rather than assumed as
+        // zero. Each country's 'coal'/'gas'/'oil'/'biofuel' value is % of that
+        // country's total electricity generation from that fuel, most-recent year
+        // available per country (see 'year' field -- ranges 2024-2025 depending on
+        // country reporting lag). 'oil' share is carried here for completeness but
+        // NOT currently used in the multi-category calculation below -- see
+        // 'HONEST GAP 2' in core_physics.js: EMEP/EEA has no Tier 1 factor for
+        // oil/Other Fossil combustion, so this share cannot yet be converted to an
+        // Acidification/PM/Eutrophication contribution without a borrowed Tier 2
+        // value, which would break Tier 1 consistency with the other three fuels.
+        GRID_FUEL_SHARES_BY_COUNTRY: Object.freeze({
+            'AE': { coal: 0.0, gas: 68.267, oil: 0.0, biofuel: 0.118, year: 2024 },  // United Arab Emirates
+            'AL': { coal: 0.0, gas: 0.0, oil: 0.0, biofuel: 0.0, year: 2024 },  // Albania
+            'AR': { coal: 1.841, gas: 52.687, oil: 3.865, biofuel: 1.926, year: 2025 },  // Argentina
+            'AT': { coal: 0.0, gas: 11.937, oil: 4.466, biofuel: 6.364, year: 2025 },  // Austria
+            'AU': { coal: 42.729, gas: 16.432, oil: 2.221, biofuel: 1.062, year: 2025 },  // Australia
+            'BA': { coal: 55.402, gas: 0.0, oil: 1.039, biofuel: 0.277, year: 2025 },  // Bosnia-Herzegovina
+            'BD': { coal: 21.509, gas: 64.294, oil: 12.06, biofuel: 0.0, year: 2025 },  // Bangladesh
+            'BE': { coal: 0.0, gas: 21.539, oil: 6.448, biofuel: 5.172, year: 2025 },  // Belgium
+            'BG': { coal: 22.524, gas: 4.874, oil: 0.685, biofuel: 4.505, year: 2025 },  // Bulgaria
+            'BR': { coal: 2.29, gas: 7.308, oil: 1.685, biofuel: 7.344, year: 2025 },  // Brazil
+            'CA': { coal: 4.089, gas: 17.764, oil: 1.169, biofuel: 1.612, year: 2025 },  // Canada
+            'CH': { coal: 0.0, gas: 0.415, oil: 1.892, biofuel: 1.6, year: 2025 },  // Switzerland
+            'CI': { coal: 0.0, gas: 70.899, oil: 0.185, biofuel: 0.927, year: 2024 },  // Côte d'Ivoire
+            'CL': { coal: 17.763, gas: 15.299, oil: 0.565, biofuel: 5.684, year: 2025 },  // Chile
+            'CM': { coal: 0.0, gas: 22.039, oil: 4.821, biofuel: 0.551, year: 2024 },  // Cameroon
+            'CN': { coal: 54.345, gas: 3.158, oil: 0.846, biofuel: 2.013, year: 2025 },  // China
+            'CO': { coal: 6.12, gas: 13.756, oil: 3.099, biofuel: 2.601, year: 2025 },  // Colombia
+            'CY': { coal: 0.0, gas: 0.0, oil: 72.25, biofuel: 1.015, year: 2025 },  // Cyprus
+            'CZ': { coal: 35.232, gas: 5.404, oil: 0.212, biofuel: 8.013, year: 2025 },  // Czechia
+            'DE': { coal: 20.611, gas: 16.518, oil: 3.778, biofuel: 10.097, year: 2025 },  // Germany
+            'DK': { coal: 2.673, gas: 2.432, oil: 3.724, biofuel: 20.06, year: 2025 },  // Denmark
+            'DZ': { coal: 0.0, gas: 98.589, oil: 0.342, biofuel: 0.0, year: 2024 },  // Algeria
+            'EE': { coal: 0.0, gas: 1.309, oil: 39.116, biofuel: 21.768, year: 2025 },  // Estonia
+            'EG': { coal: 0.0, gas: 79.626, oil: 7.358, biofuel: 0.0, year: 2025 },  // Egypt
+            'ES': { coal: 0.32, gas: 21.557, oil: 3.484, biofuel: 2.227, year: 2025 },  // Spain
+            'ET': { coal: 0.0, gas: 0.0, oil: 0.0, biofuel: 0.03, year: 2025 },  // Ethiopia
+            'FI': { coal: 0.194, gas: 1.154, oil: 2.309, biofuel: 12.564, year: 2025 },  // Finland
+            'FR': { coal: 0.305, gas: 3.026, oil: 1.818, biofuel: 1.802, year: 2025 },  // France
+            'GB': { coal: 0.113, gas: 31.101, oil: 4.369, biofuel: 14.098, year: 2025 },  // United Kingdom
+            'GH': { coal: 0.0, gas: 61.434, oil: 2.349, biofuel: 0.082, year: 2024 },  // Ghana
+            'GR': { coal: 4.702, gas: 38.425, oil: 7.174, biofuel: 1.218, year: 2025 },  // Greece
+            'HR': { coal: 4.966, gas: 18.776, oil: 0.0, biofuel: 6.803, year: 2025 },  // Croatia
+            'HU': { coal: 3.429, gas: 20.253, oil: 0.994, biofuel: 5.939, year: 2025 },  // Hungary
+            'ID': { coal: 61.482, gas: 18.512, oil: 1.916, biofuel: 5.741, year: 2024 },  // Indonesia
+            'IE': { coal: 0.517, gas: 48.368, oil: 2.973, biofuel: 3.296, year: 2025 },  // Ireland
+            'IN': { coal: 70.818, gas: 2.332, oil: 0.197, biofuel: 1.107, year: 2025 },  // India
+            'IQ': { coal: 0.0, gas: 52.962, oil: 45.415, biofuel: 0.0, year: 2024 },  // Iraq
+            'IR': { coal: 0.184, gas: 89.542, oil: 4.573, biofuel: 0.008, year: 2025 },  // Iran
+            'IS': { coal: 0.0, gas: 0.0, oil: 0.0, biofuel: 0.0, year: 2024 },  // Iceland
+            'IT': { coal: 1.409, gas: 47.242, oil: 2.573, biofuel: 5.897, year: 2025 },  // Italy
+            'JP': { coal: 32.051, gas: 32.778, oil: 2.465, biofuel: 5.333, year: 2025 },  // Japan
+            'KE': { coal: 0.0, gas: 0.0, oil: 9.972, biofuel: 2.137, year: 2025 },  // Kenya
+            'KR': { coal: 31.142, gas: 27.948, oil: 0.953, biofuel: 3.152, year: 2025 },  // South Korea
+            'LT': { coal: 0.0, gas: 16.535, oil: 5.849, biofuel: 10.011, year: 2025 },  // Lithuania
+            'LU': { coal: 0.0, gas: 3.896, oil: 4.545, biofuel: 27.273, year: 2025 },  // Luxembourg
+            'LV': { coal: 0.0, gas: 26.156, oil: 0.797, biofuel: 9.729, year: 2025 },  // Latvia
+            'MA': { coal: 61.506, gas: 10.921, oil: 3.618, biofuel: 0.09, year: 2025 },  // Morocco
+            'MD': { coal: 0.0, gas: 85.227, oil: 3.571, biofuel: 0.325, year: 2025 },  // Moldova
+            'ME': { coal: 24.39, gas: 0.0, oil: 0.0, biofuel: 0.0, year: 2025 },  // Montenegro
+            'MK': { coal: 30.645, gas: 19.648, oil: 2.493, biofuel: 0.587, year: 2025 },  // North Macedonia
+            'MT': { coal: 0.0, gas: 83.105, oil: 0.913, biofuel: 0.457, year: 2025 },  // Malta
+            'MX': { coal: 3.048, gas: 61.607, oil: 9.407, biofuel: 1.67, year: 2025 },  // Mexico
+            'MY': { coal: 44.557, gas: 33.761, oil: 1.029, biofuel: 0.885, year: 2025 },  // Malaysia
+            'NG': { coal: 0.0, gas: 68.681, oil: 0.0, biofuel: 0.144, year: 2025 },  // Nigeria
+            'NL': { coal: 7.076, gas: 34.892, oil: 3.875, biofuel: 5.076, year: 2025 },  // Netherlands
+            'NO': { coal: 0.0, gas: 0.56, oil: 0.442, biofuel: 0.149, year: 2025 },  // Norway
+            'NP': { coal: 0.0, gas: 0.0, oil: 0.0, biofuel: 0.0, year: 2024 },  // Nepal
+            'NZ': { coal: 1.131, gas: 8.86, oil: 1.477, biofuel: 1.315, year: 2025 },  // New Zealand
+            'PE': { coal: 0.017, gas: 36.118, oil: 0.215, biofuel: 1.075, year: 2025 },  // Peru
+            'PH': { coal: 58.666, gas: 17.26, oil: 0.763, biofuel: 1.178, year: 2025 },  // Philippines
+            'PK': { coal: 14.823, gas: 21.048, oil: 9.224, biofuel: 0.856, year: 2025 },  // Pakistan
+            'PL': { coal: 50.398, gas: 14.325, oil: 3.769, biofuel: 4.894, year: 2025 },  // Poland
+            'PT': { coal: 0.0, gas: 16.409, oil: 2.64, biofuel: 6.806, year: 2025 },  // Portugal
+            'RO': { coal: 13.411, gas: 18.711, oil: 0.361, biofuel: 0.984, year: 2025 },  // Romania
+            'RS': { coal: 65.046, gas: 6.854, oil: 0.3, biofuel: 1.12, year: 2025 },  // Serbia
+            'RU': { coal: 18.404, gas: 44.699, oil: 1.213, biofuel: 0.065, year: 2025 },  // Russia
+            'SA': { coal: 0.0, gas: 63.342, oil: 34.498, biofuel: 0.0, year: 2024 },  // Saudi Arabia
+            'SE': { coal: 0.0, gas: 0.064, oil: 1.154, biofuel: 5.834, year: 2025 },  // Sweden
+            'SI': { coal: 14.69, gas: 6.402, oil: 0.0, biofuel: 1.954, year: 2025 },  // Slovenia
+            'SK': { coal: 1.065, gas: 11.271, oil: 2.509, biofuel: 5.43, year: 2025 },  // Slovakia
+            'TH': { coal: 17.828, gas: 65.523, oil: 0.074, biofuel: 5.413, year: 2025 },  // Thailand
+            'TN': { coal: 0.0, gas: 94.935, oil: 1.031, biofuel: 0.0, year: 2025 },  // Tunisia
+            'TR': { coal: 34.307, gas: 22.144, oil: 0.291, biofuel: 2.396, year: 2025 },  // Turkey
+            'TW': { coal: 36.253, gas: 48.774, oil: 1.605, biofuel: 0.728, year: 2025 },  // Taiwan
+            'UA': { coal: 20.913, gas: 6.439, oil: 0.475, biofuel: 0.699, year: 2022 },  // Ukraine
+            'US': { coal: 16.309, gas: 39.987, oil: 0.702, biofuel: 1.022, year: 2025 },  // United States
+            'UY': { coal: 0.0, gas: 0.0, oil: 2.178, biofuel: 24.874, year: 2025 },  // Uruguay
+            'VN': { coal: 48.143, gas: 6.239, oil: 0.2, biofuel: 0.332, year: 2025 },  // Vietnam
+            'XK': { coal: 88.785, gas: 0.0, oil: 0.187, biofuel: 0.0, year: 2025 },  // Kosovo
+            'ZA': { coal: 81.356, gas: 0.0, oil: 0.803, biofuel: 0.194, year: 2025 }  // South Africa
+        }),
+
         // FIX: [Audit A5] GAS_COMBUSTION_MULTI — non-CC multi-category factors per m³ natural gas
         // burned in a stationary industrial boiler (primary factory path).
         //

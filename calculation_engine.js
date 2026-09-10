@@ -3025,10 +3025,62 @@ const gasCO2 = gasM3PerKg * fuelFactor;
 
             // Bug 8 fix: compute multi-category results for primary factory data
             mfgResult.multiCategoryResults = {};
+            mfgResult.multiCategoryMethod = {};  // NEW (this session): records 'country-specific' vs 'EU27-average' per category, for Comparability Disclosure
             if (totalMfgKwh > 0) {
                 const multi = window.corePhysics.CONSTANTS.ELECTRICITY_GRID_MULTI;
+
+                // NEW (this session, cofounder-directed): country-specific Acidification /
+                // Particulate Matter / Eutrophication-terrestrial, built from real Ember
+                // fuel-mix shares x EMEP/EEA Tier 1 factors x JRC EF 3.1 characterization
+                // (see core_physics.js GRID_FUEL_SHARES_BY_COUNTRY and
+                // ELECTRICITY_GRID_MULTI_BY_COUNTRY for full sourcing and disclosed gaps).
+                // Only replaces these THREE categories -- all others keep using the flat
+                // EU27-average ELECTRICITY_GRID_MULTI below, same as before this session.
+                const countryShares  = window.corePhysics.CONSTANTS.GRID_FUEL_SHARES_BY_COUNTRY?.[mfgIn.country];
+                const fuelFactors    = window.corePhysics.CONSTANTS.ELECTRICITY_GRID_MULTI_BY_COUNTRY?.FUEL_FACTORS;
+                const countrySpecificCategories = {
+                    'Acidification':               'acidification_molHe_per_GJ',
+                    'Particulate Matter':           'pm_diseaseinc_per_GJ',
+                    'Eutrophication, terrestrial':  'eutroph_terr_molNe_per_GJ'
+                };
+
+                if (countryShares && fuelFactors) {
+                    // Convert kWh to GJ: 1 kWh = 0.0036 GJ
+                    const totalMfgGJ = totalMfgKwh * 0.0036;
+                    const fuelShareMap = {
+                        'Coal_Hard': countryShares.coal,   // NOTE: OWID/Ember does not split Hard/Brown coal per country in this dataset -- Hard Coal factor used as representative for the country's total coal share (see core_physics.js comment on Bioenergy for the same kind of disclosed simplification)
+                        'Gas':       countryShares.gas,
+                        'Bioenergy': countryShares.biofuel
+                        // 'Other_Fossil' (oil) deliberately omitted -- see HONEST GAP 2,
+                        // core_physics.js. countryShares.oil exists but is not consumed here.
+                    };
+                    for (const category of Object.keys(countrySpecificCategories)) {
+                        const factorKey = countrySpecificCategories[category];
+                        let weightedSum = 0;
+                        let anyFuelUsed = false;
+                        for (const fuelKey of Object.keys(fuelShareMap)) {
+                            const sharePct = fuelShareMap[fuelKey];
+                            const factor = fuelFactors[fuelKey]?.[factorKey];
+                            if (typeof sharePct === 'number' && typeof factor === 'number') {
+                                weightedSum += (sharePct / 100) * factor;
+                                anyFuelUsed = true;
+                            }
+                        }
+                        if (anyFuelUsed) {
+                            mfgResult.multiCategoryResults[category] = totalMfgGJ * weightedSum;
+                            mfgResult.multiCategoryMethod[category] = 'country-specific (Ember ' + countryShares.year + ' fuel mix x EMEP/EEA Tier 1 x JRC EF 3.1)';
+                        }
+                    }
+                }
+
                 for (const category of Object.keys(multi)) {
+                    // Skip categories already computed above via the country-specific path
+                    if (mfgResult.multiCategoryResults[category] !== undefined) continue;
                     mfgResult.multiCategoryResults[category] = totalMfgKwh * multi[category];
+                    mfgResult.multiCategoryMethod[category] = 'EU27-average (ENTSO-E 2023) -- ' +
+                        (countrySpecificCategories[category]
+                            ? 'country-specific data unavailable for ' + (mfgIn.country || 'this country')
+                            : 'no country-specific model built for this category yet');
                 }
             }
             // FIX: [Audit A5] Add gas combustion non-CC multi-category impacts.
@@ -4221,6 +4273,15 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                 refrigerantGWP:         mfgResult.refrigerantGWP ?? null,
                 refrigerantCO2PerKg:    mfgResult.refrigerantCO2PerKg ?? null
             },
+            // ADDED (this session): carries mfgResult.multiCategoryMethod through to the
+            // audit trail so the Comparability Disclosure panel (see
+            // auditTrailData.comparability_disclosure.electricity_grid_data) can show,
+            // per category, whether THIS specific calculation used real per-country data
+            // (Ember fuel mix x EMEP/EEA x JRC EF 3.1) or fell back to the flat
+            // EU27-average constant -- rather than only describing what's possible in
+            // general. Only present when totalMfgKwh > 0 (see calculation site);
+            // null otherwise, matching this object's existing ?? null pattern.
+            multi_category_method: mfgResult.multiCategoryMethod || null,
             residual_mix: mfgResult.residual_mix_available ? {
                 source:     mfgResult.residual_mix_source,
                 year:       mfgResult.residual_mix_year,
@@ -4496,6 +4557,49 @@ const gasCO2 = gasM3PerKg * fuelFactor;
                     system_boundary: window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE,
                     functional_unit: '1 kg of product as sold',   // BUG-19 FIX: functional unit is always 1 kg; input.product.weightKg (e.g. 0.2 kg) is the formulation batch weight used for per-kg normalisation
                     allocation:      'Economic allocation per ISO 14044'
+                }
+            },
+
+            // COMPARABILITY DISCLOSURE (this session, cofounder-directed addition):
+            // Evidenced problem this addresses: Konradsen et al. 2024 (Int J LCA 29(2),
+            // 291-307, peer-reviewed, 13 citations) found that "compliant" EPDs for the
+            // SAME product can diverge >10% purely from differences in system boundary,
+            // allocation method, functional unit, and energy-mix assumptions -- not from
+            // any calculation error on either side. A 2025 Nature review (Addressing
+            // critical challenges towards a robust data system for LCA) independently
+            // confirms databases "lack transparency in documenting the provenance and
+            // calculation methodologies," compounding this. Every field here is read from
+            // objects that already exist elsewhere in this same calculation -- nothing is
+            // newly computed for this block.
+            comparability_disclosure: {
+                purpose: 'If this result differs from another tool\'s footprint for the same product, check these fields first -- per peer-reviewed research (Konradsen et al. 2024, Int J LCA 29:291-307), this combination is the most common cause of divergence between two methodologically valid results, not a calculation error.',
+                characterization_method: 'EF 3.1 (JRC Technical Report EUR 29540 EN)',
+                system_boundary:         window.corePhysics.CONSTANTS.SYSTEM_BOUNDARY.VALUE,
+                functional_unit:         '1 kg of product as sold',
+                allocation_method:       'Economic allocation per ISO 14044 (ingredient-level overrides recorded per-ingredient in traceability.ingredients)',
+                background_databases: [
+                    'AGRIBALYSE 3.2 (ingredient LCI)',
+                    'LANCA v2.5 (Land Use)',
+                    'USEtox 2.14 (Human Toxicity, Ecotoxicity)',
+                    'AWARE 2.0 (Water Use/Scarcity)',
+                    'GLEC v3.2 (Transport)'
+                ],
+                // UPDATED (this session): previously stated flat EU27-average for ALL
+                // electricity-driven categories. As of this session, Acidification,
+                // Particulate Matter, and Eutrophication (terrestrial) use REAL per-country
+                // data (Ember fuel-mix share x EMEP/EEA Tier 1 x JRC EF 3.1) when available
+                // -- see mfgResult.multiCategoryMethod for the actual method used per
+                // category on THIS specific calculation (varies by manufacturing country
+                // and by category; falls back to EU27-average when country-specific data
+                // is unavailable). All other electricity-driven categories (Ozone
+                // Depletion, Ionizing Radiation, Human Toxicity both, Photochemical Ozone
+                // Formation, Eutrophication freshwater/marine, Ecotoxicity freshwater,
+                // Resource Use both) still use the flat EU27-average constant.
+                electricity_grid_data: {
+                    source:  'Acidification / Particulate Matter / Eutrophication-terrestrial: Ember yearly fuel-mix data (per-country, most recent year) x EMEP/EEA Guidebook 2023 Tier 1 x JRC EF 3.1, when country-specific data is available (see mfgResult.multiCategoryMethod for this calculation\'s actual per-category method). All other electricity-driven categories: ENTSO-E Statistical Factsheet 2023 (EU27 average generation mix).',
+                    caveat:  'Country-specific coverage is partial: 3 of 16 categories only, and only for countries with matched Ember data (80 of this engine\'s 81 countries -- see core_physics.js GRID_FUEL_SHARES_BY_COUNTRY). Oil/Other Fossil generation share is excluded from the country-specific calculation for all 3 categories -- no Tier 1 EMEP/EEA or IPCC emission factor could be verified for it (checked directly against both primary sources; see core_physics.js "HONEST GAP 2" comment). Where a category falls back to EU27-average, two products manufactured in different countries receive the same value for that category.',
+                    confidence: 'MEDIUM -- Tier 1 defaults / screening-level either way; country-specific path uses real per-country fuel mix, EU27-average path does not.',
+                    method_this_calculation: 'See mfgResult.multiCategoryMethod for the exact method (country-specific vs EU27-average) used for each category in this specific result.'
                 }
             },
 

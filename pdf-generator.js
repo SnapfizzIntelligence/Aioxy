@@ -3186,6 +3186,47 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'Allocation: Economic allocation, inherited from AGRIBALYSE 3.2 (ADEME methodology report).'
         ], { sectionLabel: 'Audit Trail (continued)' });
 
+        // Comparability disclosure
+        // NEW SECTION (this session, cofounder-directed): addresses a real, peer-reviewed
+        // problem, not a hypothetical one — Konradsen et al. 2024 (Int J LCA 29:291-307)
+        // found that methodologically "compliant" LCAs/EPDs for the SAME product can
+        // diverge >10% purely from differing system boundary, allocation, functional
+        // unit, and energy-mix choices, with no calculation error on either side. This
+        // section exists so a reader comparing this report's number to a DIFFERENT
+        // tool's number for the same product can check the actual known divergence
+        // drivers first, instead of assuming either result is wrong. Every value below
+        // is read from auditTrailData.comparability_disclosure (calculation_engine.js),
+        // which itself only consolidates fields that already exist elsewhere in the
+        // same audit trail — nothing here is newly computed for this section.
+        if (audit.comparability_disclosure) {
+            const cd = audit.comparability_disclosure;
+            const mcm = (audit.traceability && audit.traceability.manufacturing && audit.traceability.manufacturing.multi_category_method) || null;
+            subHeader('Comparability Disclosure — Why This Number May Differ From Another Tool\'s');
+            traceBlock([
+                cd.purpose || '',
+                '',
+                'Characterization method: ' + (cd.characterization_method || 'Not recorded'),
+                'System boundary: '         + (cd.system_boundary || 'Not recorded'),
+                'Functional unit: '         + (cd.functional_unit || 'Not recorded'),
+                'Allocation method: '       + (cd.allocation_method || 'Not recorded'),
+                '',
+                'Background databases used:',
+                ...((cd.background_databases || []).map(function(dbName) { return '  - ' + dbName; })),
+                '',
+                'Electricity grid data:',
+                '  ' + ((cd.electricity_grid_data && cd.electricity_grid_data.caveat) || ''),
+                '  Confidence: ' + ((cd.electricity_grid_data && cd.electricity_grid_data.confidence) || 'Not recorded'),
+                '',
+                // NEW (this session): actual per-category method used for THIS calculation,
+                // not just the general description above -- only rendered when mcm exists
+                // (i.e. manufacturing electricity was actually part of this calculation).
+                ...(mcm ? [
+                    'Method used for THIS calculation, by category:',
+                    ...Object.keys(mcm).map(function(cat) { return '  ' + cat + ': ' + mcm[cat]; })
+                ] : [])
+            ], { sectionLabel: 'Audit Trail (continued)' });
+        }
+
         // Known gaps
         subHeader('Known Gaps and Confidence Flags');
         const gapRows = [

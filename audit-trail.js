@@ -1382,6 +1382,32 @@ function exportCSRDMatrix() {
     rows.push(['gwp_ch4_factor',       '27.0 (biogenic) / 29.8 (fossil)',          'kg CO2e/kg CH4', 'IPCC AR6 Table 7.15',          'GWP100 100-year horizon'].map(q).join(','));
     rows.push(['gwp_n2o_factor',       '273',                                      'kg CO2e/kg N2O', 'IPCC AR6 Table 7.15',          'GWP100 100-year horizon'].map(q).join(','));
     rows.push(['water_scarcity',       'AWARE 2.0',                                '',     'Boulay et al. 2018',                  ''].map(q).join(','));
+    // COMPARABILITY NOTE (this session, cofounder-directed): the fields above
+    // (functional_unit, system_boundary, lci_database, lcia_method,
+    // transport_method, water_scarcity) are exactly the set that peer-reviewed
+    // research (Konradsen et al. 2024, Int J LCA 29:291-307) found to be the
+    // most common cause of >10% divergence between two methodologically valid
+    // LCA results for the SAME product. Flagged together here as one explicit
+    // row so a reader comparing this result to a different tool's number knows
+    // to check this combination first, rather than assuming either result is
+    // wrong. No new calculation — every value it points to already exists as
+    // its own row above.
+    rows.push(['comparability_note',   'If this result differs from another tool\'s footprint for the same product, check functional_unit / system_boundary / lci_database / lcia_method / transport_method / water_scarcity above first', '', 'Konradsen et al. 2024, Int J LCA 29:291-307', 'Peer-reviewed: this combination, not calculation error, is the most common cause of cross-tool divergence'].map(q).join(','));
+    // UPDATED (this session): previously stated flat EU27-average unconditionally.
+    // Acidification / Particulate Matter / Eutrophication-terrestrial now use real
+    // per-country data (Ember fuel-mix share x EMEP/EEA Tier 1 x JRC EF 3.1) when
+    // available for the manufacturing country -- see the mfg_electricity_method row
+    // below for what was actually used on THIS calculation. All other
+    // electricity-driven categories still use the flat EU27-average constant.
+    rows.push(['electricity_grid_data', 'Partial per-country coverage (3 of 16 categories) + ENTSO-E 2023 EU27 average (remaining categories)', '', 'Ember yearly data / EMEP-EEA 2023 / JRC EF 3.1 / ENTSO-E 2023', 'See mfg_electricity_method row below for the exact method used per category on this calculation'].map(q).join(','));
+    (function() {
+        const mcm = window.auditTrailData?.traceability?.manufacturing?.multi_category_method;
+        if (mcm) {
+            Object.keys(mcm).forEach(function(cat) {
+                rows.push(['mfg_electricity_method: ' + cat, mcm[cat], '', 'this calculation', 'actual method used for this specific product/country'].map(q).join(','));
+            });
+        }
+    })();
     rows.push(['overall_dqr',          dqrOverall,                                 '/5.0', 'PEF 3.1 §5.7',                        dqrLevel].map(q).join(','));
     rows.push(['uncertainty_ci_width_pct', uncPct, '%', 'Monte Carlo 1000 iterations — (P95-P5)/mean×100 per category, averaged', 'Lognormal propagation | Not a CV — see Block 4'].map(q).join(','));
     rows.push(['manufacturing_country',mfgCountry,                                 '',     'User input',                          ''].map(q).join(','));
