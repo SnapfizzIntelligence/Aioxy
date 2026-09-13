@@ -330,17 +330,19 @@ function displayAuditTrail() {
             <div style="margin-top: 10px; font-size: 0.8rem; color: #333;">
                 <div style="font-weight: bold; margin-bottom: 5px;">AUDIT CLEARANCE:</div>
                 ${(() => {
-                    // FIX EUDR-STALE-1: this list was still the old, superseded 14-country
-                    // classification after the real EUDR high-risk list (Commission Implementing
-                    // Regulation (EU) 2025/1093, 22 May 2025) was corrected elsewhere in this same
-                    // file (see EUDR_HIGH_RISK near the CSRD export function) and in
-                    // retailer_csv_engine.js. Left uncorrected, this created the exact contradiction
-                    // the previous fix comment here warned about: a green "Compliant" checkmark for
-                    // a Brazil/Indonesia/Malaysia-sourced product (genuinely standard-risk under the
-                    // real regulation) while the CSV export elsewhere in this file correctly showed
-                    // NOT_HIGH for the same origins. Corrected to match the real, verified 4-country
-                    // list used consistently everywhere else in this file.
-                    const eudrHighRisk = ['BY', 'KP', 'MM', 'RU'];
+                    // FIX EUDR-STALE-1 (historical): this list was still the old, superseded
+                    // 14-country classification after the real list was corrected elsewhere.
+                    // FIX EUDR-CENTRALIZE-1: this was a THIRD independent copy of the same
+                    // four-country list (alongside exportCSRDMatrix() in this file and
+                    // retailer_csv_engine.js) -- now reads core_physics.js's single source.
+                    // FIX EUDR-OVERCLAIM-1: this badge's "Compliant (all origins verified)" text
+                    // for the non-high case directly contradicted this file's own established
+                    // convention (see exportCSRDMatrix()'s NOT_HIGH labeling and its comment
+                    // explaining that no verification is ever performed for the non-high-risk
+                    // case). A green "verified" checkmark here was a live, user-facing overclaim
+                    // the same honesty fix already applied to the CSV export, just not to this
+                    // badge. Corrected to match: absence from the high-risk list, not verification.
+                    const eudrHighRisk = window.corePhysics.CONSTANTS.EUDR.HIGH_RISK_COUNTRIES;
                     const ingComponents = _auditCCTree.Ingredients?.components || [];
                     const highRiskIngs = ingComponents.filter(ing => {
                         const country = ing.universal_adjustments?.adjusted_for_country || '';
@@ -350,7 +352,7 @@ function displayAuditTrail() {
                         const countries = [...new Set(highRiskIngs.map(ing => ing.universal_adjustments?.adjusted_for_country))].join(', ');
                         return `<div style="color:#C0392B; font-weight:bold;">⚠️ EUDR: HIGH-RISK ORIGIN DETECTED — ${countries}</div>`;
                     }
-                    return '<div style="color:#27AE60;">✓ EUDR: Compliant (all origins verified)</div>';
+                    return '<div style="color:#27AE60;">✓ EUDR: No high-risk origins (NOT_HIGH — standard/low-risk status not independently verified)</div>';
                 })()}
                 <div>✓ Primary & Tertiary Logistics Accounted</div>
                 ${isCrisisActiveUI ? '<div style="color: #C0392B;">✓ Crisis Routing Applied (Cape of Good Hope Penalty)</div>' : ''}
@@ -402,6 +404,10 @@ function displayAuditTrail() {
 
         let bridgeHTML = '';
         const _pd = ing.primaryData || ing.primary_data || null;
+        const eudrDocDisplay = window.corePhysics.assessEudrDocumentation({
+            originCountry: origin,
+            primaryData: _pd || {}
+        });
         if (isPrimary && _pd) {
             const pd = _pd;
             const farmRegionText = pd.farmRegion ? `${pd.farmRegion}` : 'Not specified';
@@ -423,11 +429,12 @@ function displayAuditTrail() {
                 const ep = pd.entericParams || {};
                 const entericEF = ep.emissionFactor != null ? ep.emissionFactor : 'N/A';
                 const manureEF  = ep.manureN2OEF   != null ? ep.manureN2OEF   : 'N/A';
-                bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
+                bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA PROVIDED]</span><span style="font-size:0.75em; color:#777; font-weight:normal;"> (supplier-entered, not independently verified)</span><br>
                     <span style="font-size:0.85em; color: #555;">
                     🐄 Animal: ${animalLabel}<br>🏠 System: ${systemLabel}<br>📈 Productivity: ${productivity}<br>
                     💩 Manure: ${manureLabel}<br>📍 Farm: ${farmRegionText}<br>
                     🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>📋 ${ddsText || 'DDS: Not provided'}<br>
+                    ${eudrDocDisplay.isHighRisk ? `<span style="color:${eudrDocDisplay.status === 'DOCUMENTATION_PROVIDED' ? '#27AE60' : '#C0392B'};">🌍 EUDR Doc: ${eudrDocDisplay.status} (presence/format check only, not independently verified)</span><br>` : ''}
                     <span style="color:#2C7A7B;">⚙️ IPCC Tier 1 Applied:</span><br>
                     &nbsp;&nbsp;- Enteric CH₄: ${entericApplied} kg CO₂e (EF: ${entericEF} kg CH₄/head/yr × GWP 28)<br>
                     &nbsp;&nbsp;- Manure N₂O: ${manureApplied} kg CO₂e (EF: ${manureEF} kg N₂O-N/kg N)
@@ -437,12 +444,13 @@ function displayAuditTrail() {
                 const practiceLabels = { conventional:'Conventional', organic:'Organic', conservation:'Conservation Till', no_till:'No-Till' };
                 const irrigationText = irrigationLabels[pd.waterSource] || pd.waterSource || 'Not specified';
                 const practiceText  = practiceLabels[pd.farmingPractice] || pd.farmingPractice || 'Not specified';
-                bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA VERIFIED]</span><br>
+                bridgeHTML = `<span style="color:#27AE60; font-weight:bold;">[PRIMARY DATA PROVIDED]</span><span style="font-size:0.75em; color:#777; font-weight:normal;"> (supplier-entered, not independently verified)</span><br>
                     <span style="font-size:0.85em; color: #555;">
                     📍 Farm: ${farmRegionText}<br>🛰️ GPS: ${pd.geolocation || 'Not provided'}<br>
                     🌾 Yield: ${pd.yieldKgPerHa} kg/ha | 🧪 Synthetic N: ${pd.nitrogenKgPerTon} kg/t${pd.organicNitrogenKgPerTon ? ` | 🌿 Organic N: ${pd.organicNitrogenKgPerTon} kg/t (FRAC_GASM=0.20)` : ''}<br>
                     ${pd.phosphorusKgPerTon ? `💧 Phosphorus (P): ${pd.phosphorusKgPerTon} kg P/t → SALCA-P eutrophication freshwater<br>` : ''}💦 Irrigation: ${irrigationText} | 🌱 Practice: ${practiceText}<br>
                     📋 ${ddsText || 'DDS: Not provided'}<br>
+                    ${eudrDocDisplay.isHighRisk ? `<span style="color:${eudrDocDisplay.status === 'DOCUMENTATION_PROVIDED' ? '#27AE60' : '#C0392B'};">🌍 EUDR Doc: ${eudrDocDisplay.status} (presence/format check only, not independently verified)</span><br>` : ''}
                     ${adjustmentSummary ? `<span style="color:#2C7A7B;">⚙️ ${adjustmentSummary}</span>` : ''}
                     </span>`;
             }
@@ -917,6 +925,39 @@ function displayAuditTrail() {
             </div>
         </div>`;
 
+    // ========== CLAIMS CHECKED AGAINST THIS PRODUCT (Gap 1, this session) ==========
+    // Same filtering rule as Block 10 of the CSV export: only claims checked against
+    // THIS calculation's dppId/auditHash show here, so a claim checked before a
+    // recalculation never silently looks like it covers the current numbers.
+    (function renderClaimsHistorySummary() {
+        const dppId = window.currentDPPId || null;
+        const auditHash = window.auditTrailData?.auditHash || null;
+        const relevant = (window._claimsCheckHistory || []).filter(h =>
+            h.dppId === dppId || (auditHash && h.auditHash === auditHash)
+        );
+        if (relevant.length === 0) {
+            html += `
+        <div style="margin-top:15px; padding:12px; background:#F5F5F5; border-left:4px solid #9E9E9E; border-radius:4px; font-size:0.85rem; color:#666;">
+            No claims have been checked against this product in this browser session. Use the Claims Check tab before relying on this — an empty section here means "not yet checked," not "safe."
+        </div>`;
+        } else {
+            const rowsHtml = relevant.map(h => `
+                <tr>
+                    <td style="padding:6px; border-bottom:1px solid #eee;">${h.claimText}</td>
+                    <td style="padding:6px; border-bottom:1px solid #eee;"><span class="claims-verdict-pill verdict-${h.worstVerdict}">${h.worstVerdict.replace(/_/g, ' ')}</span></td>
+                    <td style="padding:6px; border-bottom:1px solid #eee; color:#888; font-size:0.8rem;">${new Date(h.timestamp).toLocaleString()}</td>
+                </tr>`).join('');
+            html += `
+        <div style="margin-top:15px;">
+            <h4 style="margin-bottom:8px;">Claims Checked Against This Product</h4>
+            <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                <thead><tr><th style="text-align:left; padding:6px;">Claim</th><th style="text-align:left; padding:6px;">Worst verdict</th><th style="text-align:left; padding:6px;">Checked</th></tr></thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        </div>`;
+        }
+    })();
+
     // Inject into DOM
     auditContent.innerHTML = html;
 
@@ -1279,31 +1320,18 @@ function exportCSRDMatrix() {
         hasPrimaryMfgData    ? 'Factory energy data'  : ''
     ].filter(Boolean).join('; ') || 'None — 100% AGRIBALYSE 3.2 secondary data';
 
-    // FIX (this session): Previous list (BR, ID, MY, AR, CO, PE, NG, CM, CG, CD, BO, HN, GT, VE)
-    // matched no official EU classification -- it reflected general public reputation for
-    // deforestation risk rather than the actual regulation, and additionally drifted out of
-    // sync with retailer_csv_engine.js after that file was independently corrected. The real,
-    // official European Commission country risk benchmarking under EUDR Article 29 (Commission
-    // Implementing Regulation (EU) 2025/1093, published 22 May 2025) classifies only FOUR
-    // countries as "high risk": Belarus, North Korea, Myanmar, and Russia. Brazil, Indonesia,
-    // Malaysia, and the other countries previously listed here are officially "standard risk",
-    // not high risk -- this function's old list directly contradicted the binding EU
-    // classification it claimed to represent, in the single most authoritative export this
-    // system produces (the 9-block CSRD/CDP regulatory filing CSV).
-    // This classification is under active political dispute -- the European Parliament voted
-    // 373-289 to reject it on 9 July 2025, citing data quality and transparency concerns, and a
-    // first formal review is scheduled for 2026. Disclosed in Block 9 / EUDR_CLASSIFICATION_SOURCE
-    // rather than presented as permanently settled.
-    // Additionally: 'LOW = verified compliant' below the old header comment was itself false --
-    // no verification was ever performed for the non-high-risk case. The EC's own system has
-    // three tiers (low/standard/high) but AIOXY does not have a complete verified list of the
-    // ~50 "standard" countries, so the non-high case is now honestly labeled NOT_HIGH rather
-    // than a false LOW/verified claim -- consistent with the same fix already applied across
-    // retailer_csv_engine.js's 13 export formats.
-    const EUDR_HIGH_RISK = new Set(['BY', 'KP', 'MM', 'RU']);
-    const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025/1093 (22 May 2025). ' +
-        'Rejected by European Parliament 9 Jul 2025 (data quality/transparency concerns); ' +
-        'first formal review scheduled 2026. Verify against the current official EC list before relying on this field.';
+    // FIX (historical, this file): previous list (BR, ID, MY, AR, CO, PE, NG, CM, CG, CD, BO,
+    // HN, GT, VE) matched no official EU classification -- it reflected general public
+    // reputation for deforestation risk rather than the actual regulation, and had drifted out
+    // of sync with retailer_csv_engine.js's own independently-corrected copy.
+    // FIX EUDR-CENTRALIZE-1: this function, retailer_csv_engine.js, and this file's own
+    // displayAuditTrail() clearance badge each held an independent copy of the same four-country
+    // list -- exactly the drift this comment above already warned about, just not yet fully
+    // closed. Now reads core_physics.js's CONSTANTS.EUDR (single source of truth) instead.
+    // The 'LOW = verified compliant' honesty fix from the old comment is unchanged and still
+    // correct: non-high origins are NOT_HIGH, never asserted as LOW/verified.
+    const EUDR_HIGH_RISK = new Set(window.corePhysics.CONSTANTS.EUDR.HIGH_RISK_COUNTRIES);
+    const EUDR_CLASSIFICATION_SOURCE = window.corePhysics.CONSTANTS.EUDR.CLASSIFICATION_SOURCE;
 
     const getTotal  = (cat) => (pef[cat]?.total ?? 0);
     const getPerKg  = (cat) => pWeightKg > 0 ? getTotal(cat) / pWeightKg : 0;
@@ -1594,6 +1622,31 @@ function exportCSRDMatrix() {
     rows.push(['packaging_material',    pkgMatTxt,                 '',             'User input',                      ''].map(q).join(','));
     rows.push(['packaging_weight_kg',   pkgWtKg.toFixed(4),        'kg',           'Mass balance',                    ''].map(q).join(','));
     rows.push(['recycled_content_pct',  pkgRecPct.toFixed(1),      '%',            'User input (R1 input)',           'PEF 3.1 Annex C'].map(q).join(','));
+    // ADDED (this session): PPWR (Regulation (EU) 2025/40) recycled-content minimum
+    // check. Recycled-content threshold only, never a recyclability grade -- that
+    // methodology has not been published by the Commission yet (due 1 Jan 2028); see
+    // assessPpwrRecycledContent's header comment in core_physics.js for the full scope
+    // boundary. NOT_APPLICABLE for non-plastic materials (cardboard, glass) -- that
+    // does not mean they have zero PPWR obligations, only that this specific
+    // recycled-content Article doesn't govern them.
+    (function () {
+        const ppwrCheck = window.corePhysics.assessPpwrRecycledContent({ material: pkgMat, recycledPct: pkgRecPct });
+        rows.push(['ppwr_recycled_content_status', ppwrCheck.status, '',
+                   ppwrCheck.source || 'Regulation (EU) 2025/40 (plastic packaging materials only)',
+                   ppwrCheck.reason || ppwrCheck.note || ''].map(q).join(','));
+    })();
+    // ADDED (this session): VSME (EFRAG Voluntary SME Standard) B7 material mass-flow
+    // -- THIS PRODUCT LINE's packaging contribution only, not a complete undertaking-
+    // level VSME figure. See calculateVsmeB7MaterialMassFlow's header comment in
+    // core_physics.js for the full scope boundary.
+    (function () {
+        const vsmeCheck = window.corePhysics.calculateVsmeB7MaterialMassFlow({
+            packagingWeightKgPerUnit: pkgWtKg,
+            annualVolumeUnits: window.currentAnnualVolume || 0
+        });
+        rows.push(['vsme_b7_packaging_mass_flow_kg_per_year', vsmeCheck.annualMassFlowKg.toFixed(2),
+                   'kg/yr', 'EFRAG VSME Basic Module', vsmeCheck.note].map(q).join(','));
+    })();
     rows.push(['eol_pathway',           pkgEoLTxt,                 '',             'User input',                      pkgEoLVal].map(q).join(','));
     rows.push(['cff_Ev_virgin_co2',     cff_Ev.toFixed(5),         'kg CO2e/kg',   'Virgin production emission factor', pkgSrc].map(q).join(','));
     rows.push(['cff_Erec_recycled_co2', cff_Erec.toFixed(5),       'kg CO2e/kg',   'Recycled production emission factor', pkgSrc].map(q).join(','));
@@ -1623,12 +1676,14 @@ function exportCSRDMatrix() {
     rows.push([c('Source: AGRIBALYSE 3.2 (ADEME/INRAE 2022). Values at farm gate.')]);
     rows.push([c('Allocation: economic, inherited from AGRIBALYSE 3.2 system boundary.')]);
     rows.push([c('eudr_risk_flag: HIGH = origin on the official EU high-risk list (' + EUDR_CLASSIFICATION_SOURCE + '); NOT_HIGH = confirmed not on that list. AIOXY does not assert a LOW/standard-risk classification — no verified complete list of EU "standard risk" countries exists. See scope_limitation notes in Block 9.')]);
+    rows.push([c('eudr_documentation_status (NEW, this session): presence/format check only, for HIGH-risk-origin ingredients -- confirms whether geolocation and DDS reference were supplied and are well-formed, NOT that AIOXY has validated them against any forest-cover, plot-registry, or government EUDR information system. NOT_APPLICABLE for NOT_HIGH origins, since this documentation is not required by this screening either way.')]);
     rows.push([
         'ingredient_name', 'internal_id', 'agribalyse_lci_name',
         'quantity_kg', 'origin_country', 'processing_state',
         'cc_total_kg_co2e', 'cc_per_kg_kg_co2e', 'pct_of_cc_total',
         'dqr', 'primary_data_applied', 'allocation_method',
-        'eudr_risk_flag', 'eudr_regulated_commodity_scope'   // GAP-3
+        'eudr_risk_flag', 'eudr_regulated_commodity_scope',   // GAP-3
+        'eudr_documentation_status'
     ].map(q).join(','));
 
     const ccTotal = getTotal('Climate Change');
@@ -1651,6 +1706,10 @@ function exportCSRDMatrix() {
         // 4-country list (Belarus/North Korea/Myanmar/Russia) would not be sourced data.
         const eudrRisk = EUDR_HIGH_RISK.has(origin) ? 'HIGH' : 'NOT_HIGH';
         const eudrCommodityScope = 'Regulation (EU) 2023/1115 Annex 1: cattle, cocoa, coffee, oil palm, rubber, soya, wood/derived products';
+        const eudrDoc = window.corePhysics.assessEudrDocumentation({
+            originCountry: origin,
+            primaryData: ing.primary_data || {}
+        });
 
         rows.push([
             ing.name || ingId, ingId, lciName,
@@ -1659,7 +1718,7 @@ function exportCSRDMatrix() {
             (ing.dqr || 0).toFixed(2),
             (!!ing.primary_data_used || !!ing.primary_data) ? 'YES' : 'NO',
             ing.allocationMethod || 'Economic (AGRIBALYSE 3.2)',
-            eudrRisk, eudrCommodityScope
+            eudrRisk, eudrCommodityScope, eudrDoc.status
         ].map(q).join(','));
     });
     rows.push(['']);
@@ -1739,9 +1798,39 @@ function exportCSRDMatrix() {
     rows.push(['scope_limitation_5', 'Results are screening-level — not for comparative advertising',
                'ISO 14044 §6 / EmpCo Directive (EU 2024/825, applies 27 Sep 2026)',
                'Any consumer-facing environmental claim must undergo ISO 14044 critical review'].map(q).join(','));
-    rows.push(['scope_limitation_6', 'EUDR high-risk country classification is under active political dispute',
-               'Commission Implementing Regulation (EU) 2025/1093 — rejected by European Parliament 9 Jul 2025, first formal review scheduled 2026',
+    // FIX EUDR-CENTRALIZE-2 (found during cross-check, this session): this row was a 4th
+    // independent copy of the stale EUDR citation, missed when the other 3 copies (this
+    // file's badge + exportCSRDMatrix, and retailer_csv_engine.js) were centralized into
+    // core_physics.js's CONSTANTS.EUDR. It still said "under active political dispute" and
+    // "first formal review scheduled 2026" — the exact unverified claim that fix deliberately
+    // dropped elsewhere for lack of a primary source, left sitting here uncorrected. Now reads
+    // the same single source of truth as every other EUDR reference in the codebase.
+    rows.push(['scope_limitation_6', 'EUDR high-risk country classification is set by regulation, not by AIOXY',
+               EUDR_CLASSIFICATION_SOURCE,
                'eudr_risk_flag in Block 6 reflects the current official 4-country list (Belarus, North Korea, Myanmar, Russia) only; verify against the current EC list before relying on this field'].map(q).join(','));
+    rows.push(['']);
+
+    // ── BLOCK 10: CLAIMS CHECKED AGAINST THIS PRODUCT (Gap 1, this session) ────
+    // Filtered by dppId/auditHash so a claim checked before a recalculation -- against
+    // now-stale numbers -- never silently appears as if it applies to the current ones.
+    const relevantClaims = (window._claimsCheckHistory || []).filter(function (h) {
+        return h.dppId === dppId || (auditHash && h.auditHash === auditHash);
+    });
+    rows.push([c('BLOCK 10 — CLAIMS CHECKED AGAINST THIS PRODUCT (EmpCo/ECGT pre-flight checker)')]);
+    rows.push([c('Only claims checked against THIS specific calculation appear here, matched against assessment_id/audit_hash below. A claim checked before a recalculation will not silently carry over as if it applies to the new numbers.')]);
+    if (relevantClaims.length === 0) {
+        rows.push([c('No claims were checked against this product in this browser session. Use the Claims Check tab before relying on this section — an empty section here does not mean the claims are safe, it means none were checked yet.')]);
+    } else {
+        rows.push(['checked_at', 'claim_id', 'claim_text', 'worst_verdict', 'finding_category', 'legal_basis', 'evidence_field', 'note'].map(q).join(','));
+        relevantClaims.forEach(function (h) {
+            h.findings.forEach(function (f) {
+                rows.push([
+                    h.timestamp, h.claimId, h.claimText, h.worstVerdict,
+                    f.category || '', f.legalBasis || '', f.evidenceField || '', f.note || ''
+                ].map(q).join(','));
+            });
+        });
+    }
     rows.push(['']);
     // Legacy comment-style legal footer
     // FIX: [audit-trail audit] Was citing "EU Green Claims Directive COM/2023/166" —

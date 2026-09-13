@@ -595,6 +595,49 @@
         DEFAULT_PRODUCT_WEIGHT_KG: Object.freeze({
             VALUE: 0.2
         }),
+        // FIX EUDR-CENTRALIZE-1 (cofounder-directed audit): the EUDR high-risk country
+        // set and its citation existed as THREE independent copies -- retailer_csv_engine.js
+        // (buildMasterData), audit-trail.js's exportCSRDMatrix(), and a third inline copy in
+        // audit-trail.js's displayAuditTrail() clearance badge. Each site's own comments
+        // already documented that the other copies had previously drifted out of sync --
+        // the exact ENGINE_VERSION / DEFAULT_PRODUCT_WEIGHT_KG shape of bug already fixed in
+        // this file, just not yet applied here. Centralized; all three sites now read this.
+        //
+        // The citation itself was also stale on two counts as of this session (2026-09-11):
+        //   1. The old comment said this classification was "Rejected by European Parliament
+        //      9 Jul 2025" without qualifying that the vote (373-289) was a non-binding
+        //      resolution objecting to the benchmarking METHODOLOGY. Multiple independent
+        //      compliance/legal sources confirm it did not annul, block, or suspend Commission
+        //      Implementing Regulation (EU) 2025/1093 -- the Regulation "remains in full
+        //      force" and the four-country classification is unchanged. "Rejected" was
+        //      accurate to the vote's intent but reads as "no longer in force," which is
+        //      wrong; corrected below to state plainly that it IS still the operative list.
+        //   2. The old comment said nothing about EUDR's own application date -- arguably the
+        //      more consequential fact for a food brand reading this field. Separately, in
+        //      Nov-Dec 2025 Parliament and Council agreed to postpone EUDR application by 12
+        //      months. That was missing entirely; added below.
+        // "First formal review scheduled 2026" from the old comment is dropped, not replaced
+        // with a fabricated date -- no independent primary-source date for that specific
+        // review was located this session.
+        EUDR: Object.freeze({
+            // Belarus, North Korea, Myanmar, Russia -- verified against Commission
+            // Implementing Regulation (EU) 2025/1093 (22 May 2025), the only four countries
+            // it classifies as "high risk."
+            HIGH_RISK_COUNTRIES: Object.freeze(['BY', 'KP', 'MM', 'RU']),
+            CLASSIFICATION_SOURCE: 'Commission Implementing Regulation (EU) 2025/1093 (22 May 2025) -- ' +
+                'country risk benchmarking under EUDR Article 29. Classifies exactly these four ' +
+                'countries as "high risk"; all other countries fall into "standard" or "low" risk ' +
+                'tiers, but AIOXY does not hold a complete verified list of that split and does ' +
+                'not assert it -- non-high origins are labeled NOT_HIGH, never LOW/verified. A ' +
+                'non-binding European Parliament resolution (373-289, 9 Jul 2025) objected to the ' +
+                'benchmarking methodology on data-quality/transparency grounds but did not annul ' +
+                'or suspend the Regulation; it remains in force. Separately, EUDR application ' +
+                'itself was postponed in Nov-Dec 2025 and now applies from 30 December 2026 for ' +
+                'large/medium operators and 30 June 2027 for micro/small enterprises. Verify ' +
+                'against the current official EC list before relying on this field.',
+            APPLICATION_DATE_LARGE_MEDIUM: '2026-12-30',
+            APPLICATION_DATE_MICRO_SMALL:  '2027-06-30'
+        }),
         FOSSIL_FRACTION: Object.freeze({
             // C8-F1 FIX (Audit Session 7): MANUFACTURING_ELECTRICITY retained for reference
             // but no longer used as a hardcoded value in calculateManufacturing().
@@ -3139,6 +3182,74 @@ return {
         return { impact: waterConsumptionM3 * awareCF };
     }
 
+    // NEW (cofounder-directed, this session): EUDR documentation completeness check.
+    // This does NOT validate that a geolocation point is actually deforestation-free --
+    // AIOXY has no access to forest-cover, plot-registry, or any EU information system
+    // data, and does not fake that check (same reason the geolocation/DDS form fields
+    // were left documentation-only rather than wired into a fabricated pass/fail). This
+    // only confirms whether the two pieces of documentation EUDR Article 9 requires
+    // (geolocation coordinates, DDS reference) were actually provided for a high-risk-
+    // origin ingredient, and whether what was provided is at least well-formed. A PASS
+    // here means "paperwork present and well-formed," never "compliant" and never
+    // "verified" -- same discipline as EUDR.CLASSIFICATION_SOURCE's NOT_HIGH/never-LOW
+    // rule above.
+    function isPlausibleLatLong(str) {
+        if (typeof str !== 'string') return false;
+        const m = str.trim().match(/^(-?\d{1,3}(?:\.\d+)?)\s*[, ]\s*(-?\d{1,3}(?:\.\d+)?)$/);
+        if (!m) return false;
+        const lat = parseFloat(m[1]);
+        const lon = parseFloat(m[2]);
+        return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+    }
+
+    function assessEudrDocumentation(input) {
+        if (!input || typeof input !== 'object') throw new MissingDataError('input');
+        if (typeof input.originCountry !== 'string' || !input.originCountry) {
+            throw new MissingDataError('originCountry');
+        }
+        const isHighRisk = CONSTANTS.EUDR.HIGH_RISK_COUNTRIES.indexOf(input.originCountry) !== -1;
+        if (!isHighRisk) {
+            return {
+                status: 'NOT_APPLICABLE',
+                isHighRisk: false,
+                note: 'Origin not on the official EUDR high-risk list -- this screening does not ' +
+                      'require geolocation/DDS documentation. This does not mean the origin is ' +
+                      'confirmed low-risk; see CONSTANTS.EUDR.CLASSIFICATION_SOURCE.'
+            };
+        }
+
+        const pd = input.primaryData || {};
+        const geo = typeof pd.geolocation === 'string' ? pd.geolocation.trim() : '';
+        const dds = typeof pd.ddsReference === 'string' ? pd.ddsReference.trim() : '';
+        const hasGeo = geo.length > 0;
+        const hasDds = dds.length > 0;
+        const geoWellFormed = hasGeo ? isPlausibleLatLong(geo) : null;
+
+        let status;
+        if (!hasGeo && !hasDds) {
+            status = 'DOCUMENTATION_MISSING';
+        } else if (hasGeo && !geoWellFormed) {
+            status = 'DOCUMENTATION_MALFORMED';
+        } else if (!hasDds) {
+            status = 'DOCUMENTATION_PARTIAL';
+        } else {
+            status = 'DOCUMENTATION_PROVIDED';
+        }
+
+        return {
+            status: status,
+            isHighRisk: true,
+            hasGeolocation: hasGeo,
+            geolocationWellFormed: geoWellFormed,
+            hasDdsReference: hasDds,
+            note: 'Confirms whether EUDR Article 9 documentation fields were provided and are ' +
+                  'well-formed for a high-risk-origin ingredient. Presence/format check only -- ' +
+                  'AIOXY does not validate this data against any forest-cover, plot-registry, or ' +
+                  'government EUDR information system, and does not assert the product is EUDR-' +
+                  'compliant.'
+        };
+    }
+
     function calculateUncertainty(input) {
         const components = input.components;
         const iterations = input.iterations;
@@ -4168,5 +4279,126 @@ return {
     exports.calculateParametricTwin = calculateParametricTwin;
     exports.calculateEntericMethane = calculateEntericMethane;
     exports.calculateManureN2O = calculateManureN2O;
+    // NEW (cofounder-directed, this session): PPWR recycled-content minimum check.
+    // SCOPE, READ BEFORE EXTENDING: PPWR (Regulation (EU) 2025/40) has TWO separate
+    // compliance mechanisms that get conflated in casual discussion:
+    //   1. Recyclability performance GRADES (A/B/C) -- Annex II. The assessment
+    //      METHODOLOGY for this does not exist yet; the Commission's delegated acts
+    //      defining it are due 1 January 2028. Multiple independent compliance-law
+    //      sources are explicit that no one can honestly classify a grade today --
+    //      "any page claiming otherwise goes beyond what the text allows"
+    //      (ppwr-packaging.com, checked this session). AIOXY DOES NOT attempt this.
+    //      Building it would mean inventing the exact missing methodology, which is
+    //      the precise failure mode this codebase has spent this whole session
+    //      refusing to commit (see EUDR forest-cover note above for the same logic).
+    //   2. Recycled-content MINIMUMS -- these ARE fixed directly in the regulation
+    //      text itself (confirmed via EUR-Lex, Regulation (EU) 2025/40, the Article
+    //      referencing Table 1 of Annex II), not deferred to any undefined act. This
+    //      function checks ONLY this second mechanism.
+    // FURTHER SCOPE LIMIT: the recycled-content mandate applies to the PLASTIC part
+    // of packaging only ("any plastic part of packaging" -- EUR-Lex). Of the three
+    // materials AIOXY currently models (PET, cardboard, glass), only PET is plastic.
+    // Cardboard and glass are NOT assessed here -- not because they have zero PPWR
+    // obligations, but because THIS specific recycled-content Article does not apply
+    // to them, and asserting a threshold that doesn't exist for them would be exactly
+    // the invented-precision failure this function exists to avoid.
+    // KNOWN AMBIGUITY, DISCLOSED RATHER THAN GUESSED: the 2030 threshold is 30% for
+    // both PET food-contact packaging AND PET single-use beverage bottles, so AIOXY
+    // can cite it confidently without needing the sub-category data it doesn't
+    // collect. The 2040 thresholds DIVERGE by sub-category (50% food-contact vs 65%
+    // beverage bottles) -- AIOXY has no field distinguishing these, so both are
+    // reported rather than one being picked arbitrarily.
+    var PPWR_PLASTIC_RECYCLED_CONTENT = Object.freeze({
+        PET: Object.freeze({
+            threshold2030: 0.30,
+            threshold2040_foodContact: 0.50,
+            threshold2040_beverageBottle: 0.65,
+            source: 'Regulation (EU) 2025/40, Article referencing Annex II Table 1 ' +
+                    '(EUR-Lex, checked this session) -- fixed in the regulation text, ' +
+                    'not dependent on any delegated or implementing act.'
+        })
+    });
+
+    function assessPpwrRecycledContent(input) {
+        if (!input || typeof input !== 'object') throw new MissingDataError('input');
+        if (typeof input.material !== 'string' || !input.material) {
+            throw new MissingDataError('material');
+        }
+        const materialRule = PPWR_PLASTIC_RECYCLED_CONTENT[input.material];
+        if (!materialRule) {
+            return {
+                status: 'NOT_APPLICABLE',
+                reason: '"' + input.material + '" is not a plastic material under this check\'s ' +
+                        'current scope (only PET is modeled). The PPWR recycled-content mandate ' +
+                        'applies to plastic packaging specifically -- this does not mean ' +
+                        input.material + ' has no PPWR obligations at all, only that this ' +
+                        'particular Article does not apply to it.'
+            };
+        }
+        if (typeof input.recycledPct !== 'number' || input.recycledPct < 0 || input.recycledPct > 100) {
+            throw new MissingDataError('recycledPct (expected a number 0-100)');
+        }
+        const actualFraction = input.recycledPct / 100;
+        const meets2030 = actualFraction >= materialRule.threshold2030;
+
+        return {
+            status: meets2030 ? 'MEETS_2030_MINIMUM' : 'BELOW_2030_MINIMUM',
+            isPlasticMaterial: true,
+            actualRecycledPct: input.recycledPct,
+            threshold2030Pct: materialRule.threshold2030 * 100,
+            threshold2040FoodContactPct: materialRule.threshold2040_foodContact * 100,
+            threshold2040BeverageBottlePct: materialRule.threshold2040_beverageBottle * 100,
+            source: materialRule.source,
+            note: 'Checks ONLY the recycled-content minimum. Does NOT assess or claim a ' +
+                  'PPWR recyclability performance grade (A/B/C) -- that methodology has not ' +
+                  'been published by the European Commission yet. 2040 threshold shown as a ' +
+                  'range because AIOXY does not currently distinguish food-contact packaging ' +
+                  'from beverage-bottle packaging within PET.'
+        };
+    }
+
+    // NEW (cofounder-directed, this session): VSME B7 material mass-flow contribution.
+    // SCOPE, READ BEFORE EXTENDING: VSME (EFRAG's Voluntary Sustainability Reporting
+    // Standard for non-listed SMEs, Commission Recommendation (EU) 2025/1710) is a
+    // COMPANY-level standard -- most of its 56 datapoints (total Scope 1+2 emissions,
+    // workforce, governance) do not map to AIOXY's product-level PEF data at all, and
+    // this function does NOT attempt them. The one narrow, honest fit is B7 §37(c):
+    // "annual mass-flow of relevant materials used," explicitly called out for
+    // packaging. AIOXY already has both real inputs needed for ONE product line's
+    // contribution to that figure: packaging weight per unit (the PEF functional-unit
+    // denominator's packaging term) and annual sales volume in units.
+    // WHAT THIS IS NOT: the full company-level VSME B7 figure. VSME asks for the
+    // mass-flow across the WHOLE undertaking. If a company sells more than this one
+    // product line, their other lines' contributions are not included here and must
+    // be added separately. This also covers PACKAGING material only -- B7's broader
+    // "materials used" concept can include non-packaging inputs (e.g. ingredients)
+    // that AIOXY does not aggregate at the mass-flow level.
+    function calculateVsmeB7MaterialMassFlow(input) {
+        if (!input || typeof input !== 'object') throw new MissingDataError('input');
+        if (typeof input.packagingWeightKgPerUnit !== 'number' || input.packagingWeightKgPerUnit < 0) {
+            throw new MissingDataError('packagingWeightKgPerUnit');
+        }
+        if (typeof input.annualVolumeUnits !== 'number' || input.annualVolumeUnits < 0) {
+            throw new MissingDataError('annualVolumeUnits');
+        }
+        const annualMassFlowKg = input.packagingWeightKgPerUnit * input.annualVolumeUnits;
+        return {
+            annualMassFlowKg: annualMassFlowKg,
+            annualMassFlowTonnes: annualMassFlowKg / 1000,
+            scope: 'SINGLE_PRODUCT_LINE_PACKAGING_ONLY',
+            vsmeDatapoint: 'VSME Basic Module, B7 paragraph 37(c) -- annual mass-flow of ' +
+                           'relevant materials used (EFRAG, Commission Recommendation ' +
+                           '(EU) 2025/1710)',
+            note: 'This is ONE product line\'s packaging contribution to VSME B7\'s ' +
+                  'annual-mass-flow datapoint, not a complete undertaking-level VSME ' +
+                  'figure. If this company sells other product lines, their ' +
+                  'contributions are not included here. Packaging material only -- ' +
+                  'does not include non-packaging material flows (e.g. ingredients).'
+        };
+    }
+
+    exports.assessEudrDocumentation = assessEudrDocumentation;
+    exports.assessPpwrRecycledContent = assessPpwrRecycledContent;
+    exports.calculateVsmeB7MaterialMassFlow = calculateVsmeB7MaterialMassFlow;
 
 })(typeof module !== 'undefined' && module.exports ? module.exports : (window.corePhysics = window.corePhysics || {}));

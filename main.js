@@ -15,6 +15,12 @@ var massBalanceData = {};
 var auditTrailData = {};
 var currentComparisonBaseline = null;
 var currentAnnualVolume = 10000;
+// NEW (cofounder-directed, this session, Gap 1): claims checked this session, each
+// tagged with the dppId/auditHash they were checked against -- so a claim checked
+// against a PREVIOUS calculation never silently appears as if it applies to the
+// current one after a recalculation. See ui.js's claims-check functions and
+// audit-trail.js's Block 10 for how this gets filtered and exported.
+var _claimsCheckHistory = [];
 
 // ── TWIN GLOBALS ─────────────────────────────────────────────────────────────
 // Mirrors selectedIngredients / auditTrailData for the parametric twin product.
@@ -663,6 +669,11 @@ async function calculateImpact() {
                 recycledContent:                 input.packaging.recycledPct,
                 packagingEoL:                    input.packaging.eolDestination,
                 crisisRoutingToggle:             input.transport.crisisRouting,
+                // NEW (cofounder-directed, this session, Gap 1): claims checked this
+                // session, tagged per-product below. Same 12-hour convenience window as
+                // everything else in this blob -- the actual permanent record is the
+                // downloaded CSV/audit-trail export, not this browser cache.
+                claimsCheckHistory:               window._claimsCheckHistory || [],
                 timestamp:                       Date.now()
             }));
         } catch(e) { /* localStorage may be unavailable */ }
@@ -875,6 +886,8 @@ function initApp() {
                         window.conventionalBaselineIngredients = conventionalBaselineIngredients;
                         if (typeof updateConventionalIngredientList === 'function') updateConventionalIngredientList();
                     }
+                    // NEW (cofounder-directed, this session, Gap 1): restore claims history
+                    window._claimsCheckHistory = Array.isArray(p.claimsCheckHistory) ? p.claimsCheckHistory : [];
                     if (p.productName)           document.getElementById('productName').value           = p.productName;
                     if (p.manufacturingCountry)  document.getElementById('manufacturingCountry').value  = p.manufacturingCountry;
                     if (p.processingMethod)      document.getElementById('processingMethod').value      = p.processingMethod;

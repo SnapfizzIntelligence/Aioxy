@@ -4374,4 +4374,235 @@ window.conventionalBaselineIngredients = conventionalBaselineIngredients;
 
 // ================== END CONVENTIONAL BASELINE RECIPE MANAGEMENT ==================
 
+// ================== CLAIMS PRE-FLIGHT CHECK (added this session, Gap 2 closure) ==================
+// Wires claims_check_engine.js into the UI. Reads the real window.auditTrailData
+// global that calculateImpact() populates (see main.js line ~630) — no mock
+// data, no reimplemented checking logic. If the checker module failed to load,
+// or no calculation has run yet, this shows an honest empty-state rather than
+// pretending to have an answer. Mirrors the existing "No calculation data
+// available" pattern already used in the Transparency Log tab.
+
+function _claimsCheckAuditDataReady() {
+    return !!(window.auditTrailData &&
+              window.auditTrailData.pefCategories &&
+              window.auditTrailData.dqr_summary &&
+              window.auditTrailData.traceability);
+}
+
+function _claimsCheckEngineReady() {
+    const missingBanner = document.getElementById('claimsCheckEngineMissing');
+    const ready = !!(window.claimsCheckEngine && typeof window.claimsCheckEngine.checkClaim === 'function');
+    if (missingBanner) missingBanner.classList.toggle('hidden', ready);
+    return ready;
+}
+
+function _renderVerdictPill(verdict) {
+    return '<span class="claims-verdict-pill verdict-' + verdict + '">' + verdict.replace(/_/g, ' ') + '</span>';
+}
+
+function _renderClaimFindings(result) {
+    if (!result || !Array.isArray(result.findings)) return '';
+    const findingsHtml = result.findings.map(function (f) {
+        return '' +
+            '<div class="claims-finding-card verdict-' + f.verdict + '">' +
+                _renderVerdictPill(f.verdict) +
+                '<strong>' + (f.category ? f.category.replace(/_/g, ' ') : 'No match') + '</strong>' +
+                (f.matchedTerm ? ' &mdash; matched: "<em>' + f.matchedTerm + '</em>"' : '') +
+                (f.legalBasis ? '<div style="font-size:0.8rem;margin-top:0.4rem;color:#444;">' + f.legalBasis + '</div>' : '') +
+                (f.evidenceField ? '<div style="font-size:0.8rem;margin-top:0.4rem;color:#2E7D32;"><i class="fas fa-check"></i> ' + f.evidenceField + '</div>' : '') +
+                (f.note ? '<div style="font-size:0.8rem;margin-top:0.4rem;color:#666;">' + f.note + '</div>' : '') +
+            '</div>';
+    }).join('');
+
+    const remindersHtml = (result.manualReviewReminders || []).map(function (r) {
+        return '<div style="font-size:0.78rem;color:#666;margin-top:0.4rem;">' +
+            '<i class="fas fa-eye"></i> <strong>Not checked (manual review needed):</strong> ' + r.description +
+            '</div>';
+    }).join('');
+
+    return findingsHtml + remindersHtml;
+}
+
+// NEW (cofounder-directed, this session, Gap 1): records a claims-check result into
+// the session history, tagged with the product it was checked against. This is what
+// lets a checked claim survive past this browser tab closing and show up in the CSV
+// export -- see audit-trail.js's Block 10, which filters this list by dppId/auditHash
+// so a claim checked against a DIFFERENT (or since-recalculated) product never
+// silently appears as if it applies to the current one.
+function _recordClaimsCheckHistory(entries) {
+    if (!window._claimsCheckHistory) window._claimsCheckHistory = [];
+    const dppId = window.currentDPPId || null;
+    const auditHash = (window.auditTrailData && window.auditTrailData.auditHash) || null;
+    const ts = new Date().toISOString();
+    entries.forEach(function (e) {
+        window._claimsCheckHistory.push({
+            dppId: dppId,
+            auditHash: auditHash,
+            timestamp: ts,
+            claimId: e.id,
+            claimText: e.text,
+            worstVerdict: e.result.worstVerdict,
+            findings: e.result.findings
+        });
+    });
+}
+
+function runSingleClaimCheck() {
+    if (!_claimsCheckEngineReady()) return;
+    const inputEl = document.getElementById('singleClaimInput');
+    const resultEl = document.getElementById('singleClaimResult');
+    if (!inputEl || !resultEl) return;
+
+    const text = inputEl.value.trim();
+    if (!text) {
+        resultEl.innerHTML = '<div class="claims-finding-card">Type or paste a claim first.</div>';
+        return;
+    }
+    if (!_claimsCheckAuditDataReady()) {
+        resultEl.innerHTML =
+            '<div class="empty-state">' +
+                '<i class="fas fa-calculator"></i>' +
+                '<h3>No calculation data available</h3>' +
+                '<p>Run a calculation first (Calculator tab) — this checker verifies claims ' +
+                'against this product\'s real computed data, it does not run without it.</p>' +
+            '</div>';
+        return;
+    }
+
+    try {
+        const result = window.claimsCheckEngine.checkClaim(text, window.auditTrailData);
+        window._lastSingleClaimCheck = result; // kept for exportClaimsAuditCSV()
+        _recordClaimsCheckHistory([{ id: 'single-check', text: text, result: result }]);
+        resultEl.innerHTML = '<div style="margin-top:0.75rem;">' + _renderClaimFindings(result) + '</div>';
+    } catch (e) {
+        resultEl.innerHTML = '<div class="claims-finding-card verdict-BLOCKED">Checker error: ' + e.message + '</div>';
+    }
+}
+
+function _parseBatchClaimsInput(rawText) {
+    return rawText.split('\n')
+        .map(function (line) { return line.trim(); })
+        .filter(function (line) { return line.length > 0; })
+        .map(function (line, idx) {
+            const sepIdx = line.indexOf('|');
+            if (sepIdx > -1) {
+                return { id: line.slice(0, sepIdx).trim(), text: line.slice(sepIdx + 1).trim() };
+            }
+            return { id: 'Claim-' + (idx + 1), text: line };
+        });
+}
+
+function runBatchClaimCheck() {
+    if (!_claimsCheckEngineReady()) return;
+    const inputEl = document.getElementById('batchClaimInput');
+    const summaryEl = document.getElementById('batchClaimSummary');
+    const resultsEl = document.getElementById('batchClaimResults');
+    if (!inputEl || !summaryEl || !resultsEl) return;
+
+    const claims = _parseBatchClaimsInput(inputEl.value);
+    if (claims.length === 0) {
+        summaryEl.innerHTML = '<div class="claims-finding-card">Paste at least one claim, one per line, first.</div>';
+        resultsEl.innerHTML = '';
+        return;
+    }
+    if (!_claimsCheckAuditDataReady()) {
+        summaryEl.innerHTML =
+            '<div class="empty-state">' +
+                '<i class="fas fa-calculator"></i>' +
+                '<h3>No calculation data available</h3>' +
+                '<p>Run a calculation first (Calculator tab) — this checker verifies claims ' +
+                'against this product\'s real computed data, it does not run without it.</p>' +
+            '</div>';
+        resultsEl.innerHTML = '';
+        return;
+    }
+
+    try {
+        const batch = window.claimsCheckEngine.checkClaimsBatch(claims, window.auditTrailData);
+        window._lastBatchClaimCheck = batch; // kept for exportClaimsAuditCSV()
+        _recordClaimsCheckHistory(batch.results.map(function (r) { return { id: r.id, text: r.text, result: r.result }; }));
+
+        summaryEl.innerHTML =
+            '<div class="claims-finding-card" style="border-left-color:#0A2540;">' +
+                '<strong>' + batch.summary.total + '</strong> claims checked &mdash; ' +
+                '<span style="color:#D32F2F;">' + batch.summary.blocked + ' blocked</span>, ' +
+                '<span style="color:#F57C00;">' + batch.summary.needsEvidence + ' need evidence</span>, ' +
+                '<span style="color:#2E7D32;">' + batch.summary.substantiated + ' substantiated</span>, ' +
+                '<span style="color:#616161;">' + batch.summary.manualReviewOnly + ' manual-review only</span>, ' +
+                '<span style="color:#9E9E9E;">' + batch.summary.noMatch + ' no pattern matched</span>.' +
+            '</div>';
+
+        const rows = batch.results.map(function (r) {
+            return '' +
+                '<tr>' +
+                    '<td>' + r.id + '</td>' +
+                    '<td>' + r.text + '</td>' +
+                    '<td>' + _renderVerdictPill(r.result.worstVerdict) + '</td>' +
+                '</tr>';
+        }).join('');
+
+        resultsEl.innerHTML =
+            '<table class="ledger-table">' +
+                '<thead><tr><th>ID</th><th>Claim</th><th>Worst verdict</th></tr></thead>' +
+                '<tbody>' + rows + '</tbody>' +
+            '</table>' +
+            '<p style="font-size:0.8rem;color:#666;">Click Export Audit (CSV) for the full ' +
+            'per-finding detail, not just the worst verdict per claim.</p>';
+    } catch (e) {
+        summaryEl.innerHTML = '<div class="claims-finding-card verdict-BLOCKED">Checker error: ' + e.message + '</div>';
+        resultsEl.innerHTML = '';
+    }
+}
+
+// Persistent record of what was checked — matches the same Blob/anchor
+// download pattern already used by audit-trail.js's CSV/JSON exports (same
+// UTF-8 BOM prefix, same q() quoting, same cleanup sequence), rather than
+// inventing a new download mechanism for this one feature.
+function exportClaimsAuditCSV() {
+    const batch = window._lastBatchClaimCheck;
+    const single = window._lastSingleClaimCheck;
+    if (!batch && !single) {
+        alert('Run a claim check first (single or batch) before exporting.');
+        return;
+    }
+
+    const q = function (s) { return '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"'; };
+    const rows = [];
+    rows.push([q('# AIOXY Claims Pre-Flight Audit — not legal advice, see in-app disclaimer')].join(','));
+    rows.push([q('# Directive (EU) 2024/825 (EmpCo/ECGT), applies from 27 September 2026, no transition period')].join(','));
+    rows.push(['generated_at', new Date().toISOString()].map(q).join(','));
+    rows.push(['product_dpp_id', window.currentDPPId || 'n/a'].map(q).join(','));
+    rows.push(['']);
+    rows.push(['claim_id', 'claim_text', 'verdict', 'category', 'matched_term', 'legal_basis', 'evidence_field', 'note'].map(q).join(','));
+
+    const pushResultRows = function (id, text, result) {
+        result.findings.forEach(function (f) {
+            rows.push([
+                id, text, f.verdict, f.category || '', f.matchedTerm || '',
+                f.legalBasis || '', f.evidenceField || '', f.note || ''
+            ].map(q).join(','));
+        });
+    };
+
+    if (batch) {
+        batch.results.forEach(function (r) { pushResultRows(r.id, r.text, r.result); });
+    }
+    if (single) {
+        pushResultRows('single-check', single.claimText, single);
+    }
+
+    const csvContent = '\uFEFF' + rows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'AIOXY_claims_audit_' + (window.currentDPPId || 'export') + '.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// ================== END CLAIMS PRE-FLIGHT CHECK ==================
+
 console.log("✅ [AIOXY] ui.js loaded - Interface ready");

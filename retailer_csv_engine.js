@@ -64,9 +64,15 @@ function c(s) {
 // invisible to generateRetailerCSV() -- the only function that actually reads
 // it. Content unchanged; scope corrected. See removal-site comment for full
 // diagnosis (found via faithful execution testing, vm.runInThisContext).
-const EUDR_CLASSIFICATION_SOURCE = 'Commission Implementing Regulation (EU) 2025/1093 (22 May 2025). ' +
-    'Rejected by European Parliament 9 Jul 2025 (data quality/transparency concerns); ' +
-    'first formal review scheduled 2026. Verify against the current official EC list before relying on this field.';
+// FIX EUDR-CENTRALIZE-1: the citation string itself is now read from
+// core_physics.js's CONSTANTS.EUDR (single source of truth -- see that file
+// for why; this copy had drifted stale on two counts). Kept as a function,
+// not a top-level const, so the read happens at call time rather than at
+// this file's own module-parse time -- avoiding a repeat of the exact
+// scope hazard EUDR-SCOPE-1 above already had to fix once.
+function getEudrClassificationSource() {
+    return window.corePhysics.CONSTANTS.EUDR.CLASSIFICATION_SOURCE;
+}
 
 // CSV-F6 FIX: Guard against Infinity in fix() — defensive, since perKg() already guards.
 function fix(n, d) {
@@ -170,23 +176,13 @@ function buildMasterData() {
     const primaryDataApplied = (anyPrimaryIng || hasPrimaryMfg) ? 'YES' : 'NO';
 
     // EUDR high-risk countries
-    // FIX EUDR-1: previous list ('BR','ID','MY','AR','CO','PE','NG','CM','CG','CD','BO','HN','GT','VE')
-// matched no official EU classification at any point -- it appears to reflect general
-// public reputation for deforestation risk (Brazil, Indonesia, Malaysia, etc.) rather than
-// the actual regulation. The real, official European Commission country risk benchmarking
-// under EUDR Article 29 (Commission Implementing Regulation (EU) 2025/1093, published 22
-// May 2025) classifies only FOUR countries as "high risk": Belarus, North Korea, Myanmar,
-// and Russia. Brazil, Indonesia, and Malaysia -- all present in the old list -- are
-// officially "standard risk", not high risk. This previous list directly contradicted the
-// binding EU classification it claimed to represent.
-//
-// Note: this classification is under active political dispute -- the European Parliament
-// voted 373-289 to reject it on 9 July 2025, citing data quality and transparency concerns,
-// and a first formal review is scheduled for 2026. AIOXY discloses the citation date and
-// dispute status explicitly below rather than presenting this as permanently settled,
-// consistent with the same "verify against current source" discipline already used for
-// retailer CSV schema staleness (see SCHEMA_STALENESS_DAYS above).
-const EUDR_HR = new Set(['BY', 'KP', 'MM', 'RU']);
+    // FIX EUDR-1 (historical): previous list ('BR','ID','MY','AR','CO','PE','NG','CM','CG',
+    // 'CD','BO','HN','GT','VE') matched no official EU classification -- it reflected general
+    // public reputation for deforestation risk rather than the actual regulation.
+    // FIX EUDR-CENTRALIZE-1: now reads the verified four-country list from core_physics.js's
+    // CONSTANTS.EUDR (single source of truth shared with audit-trail.js) instead of a local
+    // copy -- see that file for the full citation, dispute-status, and application-date detail.
+    const EUDR_HR = new Set(window.corePhysics.CONSTANTS.EUDR.HIGH_RISK_COUNTRIES);
 
     return {
         // Identity
@@ -235,6 +231,20 @@ const EUDR_HR = new Set(['BY', 'KP', 'MM', 'RU']);
         pkgWeightKg:    pkgWtKg,
         pkgRecycledPct: pkgRecPct,
         pkgEoLScenario: pkgEoL,
+        // NEW (cofounder-directed, this session): PPWR recycled-content minimum check.
+        // Recycled-content minimums only, never a recyclability grade -- see
+        // assessPpwrRecycledContent's own header comment in core_physics.js for why.
+        ppwrRecycledContent: window.corePhysics.assessPpwrRecycledContent({
+                                 material: pkgMat,
+                                 recycledPct: pkgRecPct
+                             }),
+        // NEW (cofounder-directed, this session): VSME B7 material mass-flow --
+        // ONE product line's packaging contribution only, not a full company figure.
+        // See calculateVsmeB7MaterialMassFlow's header comment in core_physics.js.
+        vsmeB7MassFlow: window.corePhysics.calculateVsmeB7MaterialMassFlow({
+                            packagingWeightKgPerUnit: pkgWtKg,
+                            annualVolumeUnits: window.currentAnnualVolume || 0
+                        }),
         pkgEv:          pkgCff.ev ?? (pkgDB.co2_virgin ?? null),
         pkgErec:        pkgCff.erecycled ?? (pkgDB.co2_recycled ?? null),
         pkgEd:          pkgDB.co2_disposal_average ?? pkgDB.co2_disposal ?? null,
@@ -338,7 +348,15 @@ const EUDR_HR = new Set(['BY', 'KP', 'MM', 'RU']);
                 // status is disclosed once in the CSV disclaimer header (see
                 // EUDR_CLASSIFICATION_SOURCE, added to disclaimerRows below) rather than
                 // repeated per-ingredient.
-                eudrRisk:       EUDR_HR.has(origin) ? 'HIGH' : 'NOT_HIGH'
+                eudrRisk:       EUDR_HR.has(origin) ? 'HIGH' : 'NOT_HIGH',
+                // NEW (cofounder-directed, this session): does documentation exist for
+                // high-risk-origin ingredients, and is it well-formed? Presence/format
+                // check only -- see assessEudrDocumentation's own note field, carried
+                // through below, for what this does NOT claim (not a compliance verdict).
+                eudrDoc:        window.corePhysics.assessEudrDocumentation({
+                                     originCountry: origin,
+                                     primaryData: ing.primary_data || {}
+                                 })
             };
         })
     };
@@ -438,12 +456,12 @@ function generateTescoCSV(d) {
 
     // Ingredient summary
     rows.push([c('SECTION G — INGREDIENT ORIGIN SUMMARY (Tesco GNFR / Responsible Sourcing)')]);
-    rows.push(['ingredient_name', 'quantity_kg', 'origin_country', 'ghg_kg_co2e', 'pct_of_total_ghg', 'eudr_risk', 'primary_data'].map(q).join(','));
+    rows.push(['ingredient_name', 'quantity_kg', 'origin_country', 'ghg_kg_co2e', 'pct_of_total_ghg', 'eudr_risk', 'primary_data', 'eudr_documentation_status'].map(q).join(','));
     d.ingredients.forEach(ing => {
         rows.push([
             ing.name, fix(ing.quantityKg, 4), ing.originCountry,
             fix(ing.ccTotal, 6), fix(ing.pctOfCC, 2) + '%',
-            ing.eudrRisk, ing.primaryData
+            ing.eudrRisk, ing.primaryData, ing.eudrDoc.status
         ].map(q).join(','));
     });
     rows.push(['']);
@@ -1310,6 +1328,14 @@ function generateGenericEUCSV(d) {
     rows.push(['packagingMaterial',               d.pkgMaterial,            '',           'gs1:packaging',   'ESSG:pkg_mat',''].map(q).join(','));
     rows.push(['packagingWeightKg',               fix(d.pkgWeightKg, 4),    'kg',         'gs1:pkgWeight',   'ESSG:pkg_wt',''].map(q).join(','));
     rows.push(['packagingRecycledContentPct',     fix(d.pkgRecycledPct, 1), '%',          'ESSG:recycled_in','ESSG:circ',''].map(q).join(','));
+    // ADDED (this session): PPWR Article 2025/40 recycled-content minimum check --
+    // recycled-content threshold only, never a recyclability grade (methodology not
+    // yet published by the Commission; see assessPpwrRecycledContent's header comment
+    // in core_physics.js). NOT_APPLICABLE for non-plastic packaging materials.
+    rows.push(['ppwrRecycledContentStatus',       d.ppwrRecycledContent.status, '',      'ESSG:ppwr_rc',    'PPWR Art. (Annex II Table 1)', d.ppwrRecycledContent.reason || d.ppwrRecycledContent.note || ''].map(q).join(','));
+    // ADDED (this session): VSME B7 material mass-flow -- THIS PRODUCT LINE's
+    // packaging contribution only, not the full undertaking-level VSME figure.
+    rows.push(['vsmeB7PackagingMassFlowKgPerYear', fix(d.vsmeB7MassFlow.annualMassFlowKg, 2), 'kg/yr', 'EFRAG VSME', 'B7 §37(c)', 'Single product line contribution only -- not a complete undertaking-level VSME B7 figure'].map(q).join(','));
     rows.push(['packagingEndOfLifeRoute',         d.pkgEoLScenario,         '',           'ESSG:eol_route',  'E5-4',''].map(q).join(','));
     rows.push(['']);
 
@@ -1400,7 +1426,7 @@ function generateRetailerCSV(retailerKey) {
             c('SCHEMA NOTE: No European retailer publishes a machine-readable CSV schema.'),
             c('Field names match each retailer\'s published questionnaire templates as of 2024.'),
             c('Field names are normalised to snake_case; display labels match retailer\'s published forms.'),
-            c('EUDR RISK CLASSIFICATION: ' + EUDR_CLASSIFICATION_SOURCE),
+            c('EUDR RISK CLASSIFICATION: ' + getEudrClassificationSource()),
             ...staleWarning,
             c('DPP ID: ' + (masterData.dppId || 'N/A') + '  |  Assessment date: ' + (masterData.assessDate || 'N/A')),
             c('Generated by AIOXY. SHA-256 audit hash available in the full audit trail export.'),
