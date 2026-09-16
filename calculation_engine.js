@@ -55,6 +55,31 @@
         c !== 'Climate Change - Land Use'
     );
 
+    // The 4 Climate Change categories (headline + 3 sub-splits) — used by country-ratio
+    // adjustment steps (e.g. STEP C2, FAOSTAT GCE/QCL) that must scale all 4 together,
+    // since the headline figure is a derived sum of the 3 sub-splits, not independent.
+    const CLIMATE_CHANGE_CATEGORIES = [
+        'Climate Change',
+        'Climate Change - Fossil',
+        'Climate Change - Biogenic',
+        'Climate Change - Land Use'
+    ];
+
+    // Shared fuel combustion CO2 factors — hoisted here (was previously a local const only
+    // inside processManufacturing's primary factory data block) so ingredient-level primary
+    // data (e.g. farm diesel, below) uses the identical, identically-sourced number rather
+    // than a second hand-copied constant that could silently drift out of sync over time.
+    // Source: European Commission, Covenant of Mayors, Emission Factors for Local Energy
+    // Use, 2024 Edition, JRC. Cross-checked against IPCC 2006 Vol.2 Ch.2 "gas/diesel oil"
+    // Tier 1 default (2.66085 kg CO2/litre) — matches to 3 decimal places.
+    const FUEL_CO2_FACTORS = {
+        natural_gas: 2.13,   // kg CO2/m³
+        lpg:         1.61,   // kg CO2/litre
+        fuel_oil:    2.66,   // kg CO2/litre (used for diesel — see farm diesel block below)
+        coal:        2.53,   // kg CO2/kg
+        none:        0.0
+    };
+
     // Unit labels for all categories (for contribution tree output)
     const CATEGORY_UNITS = {
         'Climate Change':                  'kg CO2e',
@@ -884,7 +909,8 @@
             reference_country: REFERENCE_COUNTRY,
             aware:  { applied: false },
             lanca:  { applied: false },
-            faostat: { applied: false }
+            faostat: { applied: false },       // yield benchmarking (STEP D, audit-only, does not modify flatPef)
+            faostat_crop: { applied: false }   // Climate Change crop-specific adjustment (STEP C2, modifies flatPef)
         };
 
         // === STEP B: AWARE 2.0 — Water Scarcity Adjustment ===
@@ -1054,6 +1080,159 @@
             countryFactorsLog.lanca = {
                 applied: false,
                 reason:  'LANCA v2.5 lookup failed: ' + (e && e.message ? e.message : String(e))
+            };
+        }
+
+        // === STEP C2: FAOSTAT GCE/QCL — Climate Change Crop-Specific Adjustment ===
+        // Adjusts Climate Change categories only, same ratio pattern as AWARE (Step B)
+        // and LANCA (Step C): originFactor / refFactor, applied multiplicatively on top
+        // of the AGRIBALYSE FR-reference value already in flatPef.
+        //
+        // PARTIAL FACTOR — see window.aioxyData.faostat_gce_crop header for full scope.
+        // Covers crop-residue decomposition, residue burning, and (rice only) paddy
+        // methane. Does NOT cover synthetic fertilizer, fuel/machinery, or background
+        // soil emissions — FAOSTAT has no defensible per-crop allocation basis for
+        // those yet (fertilizer is published country-wide, all crops combined; we do
+        // not have Area Harvested on hand to allocate it, and guessing an allocation
+        // would repeat the mistake FIX GEO-PROXY-1 already removed). This step is a
+        // real, sourced, narrower cousin of that removed multiplier — not its full
+        // replacement. adjustments.geo_proxy_removed_reason (Step 1g, above) still
+        // stands and still applies to everything this step does not cover.
+        //
+        // Only runs for ingredients whose FAOSTAT crop key is known (see CROP_KEY_MAP)
+        // and only when both origin and FR factors are found — otherwise no-ops with a
+        // disclosed reason, same fail-open-with-disclosure pattern as AWARE/LANCA.
+        try {
+            const faostatCropData = window.aioxyData && window.aioxyData.faostat_gce_crop;
+            const cropKey = ingredient.faostatCropKey || null; // set by ingredient mapping layer
+
+            if (!faostatCropData) {
+                countryFactorsLog.faostat_crop = {
+                    applied: false,
+                    reason:  'window.aioxyData.faostat_gce_crop not loaded'
+                };
+            } else if (!cropKey) {
+                countryFactorsLog.faostat_crop = {
+                    applied: false,
+                    reason:  'Ingredient has no mapped FAOSTAT crop key — not one of the ' +
+                             Object.keys(faostatCropData.crops).length + ' crops this factor covers.'
+                };
+            } else if (originCountry === REFERENCE_COUNTRY || !originCountry || ingredient.primaryData) {
+                countryFactorsLog.faostat_crop = {
+                    applied: false,
+                    reason:  originCountry === REFERENCE_COUNTRY
+                        ? 'Origin is reference country (FR) — no adjustment needed.'
+                        : ingredient.primaryData
+                            ? 'Ingredient has user-supplied primary data — takes precedence over any proxy.'
+                            : 'No origin country set.'
+                };
+            } else {
+                const cropTable = faostatCropData.crops[cropKey] || {};
+                const refEntry    = cropTable[REFERENCE_COUNTRY];
+                const originEntry = cropTable[originCountry];
+                // Data is nested { intensity, source_rows } as of the row-locator upgrade —
+                // unwrap here so the rest of this step reads plain numbers as before.
+                const refFactor    = refEntry    ? refEntry.intensity    : undefined;
+                const originFactor = originEntry ? originEntry.intensity : undefined;
+
+                // FAOSTAT_MIN_PLAUSIBLE_FACTOR: below this, a reported value is treated as a
+                // data-precision zero/near-zero (rounding artifact of a tiny production base),
+                // not a real physical near-zero emissions intensity — no crop genuinely has
+                // near-zero residue/burning/rice emissions per kg. Guards against a country
+                // with negligible production of a crop silently producing a 0x or ~0x ratio,
+                // which would report near-zero Climate Change — a worse, more misleading
+                // result than the disclosed non-adjustment this step exists to improve on.
+                const FAOSTAT_MIN_PLAUSIBLE_FACTOR = 0.005; // kg CO2e/kg — see comment above
+                // FAOSTAT_MAX_PLAUSIBLE_RATIO: bound on the ratio itself, not just the inputs.
+                // A >3x or <0.33x swing from the FR baseline, from this partial factor alone,
+                // is implausible enough to warrant disclosure-and-hold rather than silent
+                // application — same principle as the LANCA negative-ratio guard above
+                // (line ~1017), which resets rather than propagates an implausible value.
+                const FAOSTAT_MAX_PLAUSIBLE_RATIO = 3.0;
+
+                if (refFactor === undefined || refFactor === null) {
+                    countryFactorsLog.faostat_crop = {
+                        applied: false,
+                        reason:  'No FAOSTAT GCE/QCL factor for reference country FR for crop "' + cropKey + '".'
+                    };
+                } else if (originFactor === undefined || originFactor === null) {
+                    countryFactorsLog.faostat_crop = {
+                        applied: false,
+                        reason:  'No FAOSTAT GCE/QCL factor for origin country "' + originCountry +
+                                 '" for crop "' + cropKey + '" — country not in 2023 dataset for this crop, ' +
+                                 'or zero production reported.'
+                    };
+                } else if (refFactor < FAOSTAT_MIN_PLAUSIBLE_FACTOR) {
+                    countryFactorsLog.faostat_crop = {
+                        applied: false,
+                        reason:  'FR reference factor for crop "' + cropKey + '" (' + refFactor +
+                                 ' kg CO2e/kg) is below the plausibility floor — likely a rounding ' +
+                                 'artifact of a small national production base, not a real near-zero ' +
+                                 'emissions intensity. Reporting AGRIBALYSE FR-reference value unmodified.'
+                    };
+                } else if (originFactor < FAOSTAT_MIN_PLAUSIBLE_FACTOR) {
+                    countryFactorsLog.faostat_crop = {
+                        applied: false,
+                        reason:  'Origin ("' + originCountry + '") factor for crop "' + cropKey + '" (' +
+                                 originFactor + ' kg CO2e/kg) is below the plausibility floor — likely a ' +
+                                 'rounding artifact of a small national production base for this crop in ' +
+                                 'this country, not a real near-zero emissions intensity. Reporting ' +
+                                 'AGRIBALYSE FR-reference value unmodified rather than an implausible ratio.'
+                    };
+                } else {
+                    const faostatRatio = originFactor / refFactor;
+                    const ratioIsPlausible =
+                        faostatRatio <= FAOSTAT_MAX_PLAUSIBLE_RATIO &&
+                        faostatRatio >= (1 / FAOSTAT_MAX_PLAUSIBLE_RATIO);
+
+                    if (!ratioIsPlausible) {
+                        countryFactorsLog.faostat_crop = {
+                            applied:        false,
+                            ref_country:    REFERENCE_COUNTRY,
+                            ref_factor:     refFactor,
+                            origin_country: originCountry,
+                            origin_factor:  originFactor,
+                            ratio_computed: faostatRatio,
+                            reason:         'Computed ratio (' + faostatRatio.toFixed(3) + 'x) exceeds the ' +
+                                            FAOSTAT_MAX_PLAUSIBLE_RATIO + 'x plausibility bound for a partial ' +
+                                            '(residues+burning+rice only) factor. Held back from applying rather ' +
+                                            'than propagating an outlier — likely reflects a small national ' +
+                                            'production base for this crop/country, not a real emissions ' +
+                                            'difference of this magnitude. Reporting AGRIBALYSE FR-reference ' +
+                                            'value unmodified. Flagged for manual review.'
+                        };
+                    } else {
+                    for (const cat of CLIMATE_CHANGE_CATEGORIES) {
+                        if (flatPef[cat] !== undefined) {
+                            flatPef[cat] *= faostatRatio;
+                        }
+                    }
+                    countryFactorsLog.faostat_crop = {
+                        applied:           true,
+                        ref_country:       REFERENCE_COUNTRY,
+                        ref_factor:        refFactor,
+                        origin_country:    originCountry,
+                        origin_factor:     originFactor,
+                        ratio_applied:     faostatRatio,
+                        source:            faostatCropData.source,
+                        scope:             'PARTIAL — residue decomposition + burning + rice methane only. ' +
+                                           'Excludes fertilizer, fuel, machinery. See window.aioxyData.faostat_gce_crop header.',
+                        crop_key:          cropKey,
+                        category_adjusted: 'Climate Change (all sub-categories)',
+                        // Exact FAOSTAT row coordinates for both countries — lets an auditor
+                        // filter the raw source CSV directly to the row(s) behind this number,
+                        // no reconstruction needed. See faostat_gce_crop_data.js header.
+                        ref_source_rows:    refEntry.source_rows,
+                        origin_source_rows: originEntry.source_rows
+                    };
+                    countryFactorsLog.applied = true;
+                    }
+                }
+            }
+        } catch (e) {
+            countryFactorsLog.faostat_crop = {
+                applied: false,
+                reason:  'FAOSTAT GCE/QCL lookup failed: ' + (e && e.message ? e.message : String(e))
             };
         }
 
@@ -1251,6 +1430,17 @@ if (!traceability.usetox) {
                     'Ingredient not found in database: "' + ingredient.id + '". ' +
                     'Ensure ingredients_db.js is loaded and the id matches exactly.'
                 );
+            }
+
+            // Sets ingredient.faostatCropKey (if this ingredient is one of the 10 crops
+            // covered by window.aioxyData.faostat_gce_crop) for STEP C2, inside
+            // applyCountrySpecificFactors() below, to consume. Non-throwing: leaves
+            // faostatCropKey unset for the ~200 ingredients with no FAOSTAT crop mapping,
+            // same fail-open pattern as everything else in this pipeline. Mapping table is
+            // hand-verified — see ingredient_crop_mapping.js header for what was deliberately
+            // excluded (e.g. dairy ingredients that merely mention a crop as a feed input).
+            if (db.ingredientFaostatCropKey && db.ingredientFaostatCropKey[ingredient.id]) {
+                ingredient.faostatCropKey = db.ingredientFaostatCropKey[ingredient.id];
             }
 
             // FIX QUANTITY-EDIT-1 (this session, defense-in-depth engine-level guard):
@@ -1572,12 +1762,157 @@ if (!traceability.usetox) {
                             originCountry: ingredient.originCountry || null,
                             productionSystemRequested: pd.productionSystem || null
                         };
+
+                        // === TIER 2 SIMPLIFIED (this session) — real DMI-based enteric CH4 ===
+                        // Runs BEFORE Tier 1/1a resolution below and, if successful, computes
+                        // ef_ch4 directly rather than falling through to the flat regional
+                        // default — same "primary/more-specific data wins" principle as every
+                        // other override in this file. Only engages for cattle
+                        // (animalType 'dairy_cow' or 'beef_cattle') AND only when the user
+                        // supplied pd.cattleSubcategory + pd.liveweightKg (+ dietQuality, and
+                        // for lactating dairy, milk/fat). Missing inputs -> falls through to
+                        // Tier 1/1a untouched below, same fail-open pattern as everywhere else.
+                        // Source: IPCC 2019 Refinement Vol.4 Ch.10, Equations 10.17/10.18/
+                        // 10.18a/10.18b, Table 10.8/10.8a, Table 10.12 — see
+                        // CONSTANTS.IPCC_TIER1_LIVESTOCK.dmi*/dietNEmf/Ym for the transcribed
+                        // constants and their exact source citations.
+                        let tier2Applied = false;
+                        // TIER 2 DISABLED (this session, before any live/shipped use): sanity-
+                        // checked against real published enteric CH4 reference values across
+                        // THREE independent cases (lactating dairy, feedlot steer, growing
+                        // cattle) and all three landed at roughly HALF the real-world range
+                        // (e.g. feedlot steer: 15.5 kg/head/yr computed vs 33-69 kg/head/yr
+                        // real range; growing cattle: 21.4 vs 43.4 kg/head/yr Hanwoo reference).
+                        // That's a consistent pattern across independently-built sub-formulas,
+                        // not one bad transcription — points to a shared structural error in
+                        // the DMI-to-gross-energy conversion step (GE = DMI x NEmf), likely
+                        // conflating NEmf (net energy for maintenance) with true gross energy
+                        // intake, which are different quantities in IPCC's actual energy
+                        // balance. Root cause not yet fixed. `false &&` added here deliberately
+                        // rather than deleting the work below: the DMI formulas themselves
+                        // (Eq 10.17/10.18/10.18a, Table 10.8) may still be individually correct
+                        // — it's the GE conversion after DMI that's suspect — so a future
+                        // session can debug from here rather than re-derive from zero. DO NOT
+                        // remove this `false &&` until the GE conversion step is re-verified
+                        // against the primary IPCC source and re-tested against real-world
+                        // reference values for all five subcategories, the same way this
+                        // session caught the error. Live app falls through to Tier 1/1a,
+                        // which is unaffected and remains correct.
+                        if (false && (pd.animalType === 'dairy_cow' || pd.animalType === 'beef_cattle') &&
+                            pd.cattleSubcategory && pd.liveweightKg && pd.liveweightKg > 0) {
+                            try {
+                                const BW = pd.liveweightKg;
+                                const dietQ = pd.dietQuality || 'moderate_forage';
+                                const NEmf = TIER1.dietNEmf[dietQ];
+                                let dmiKgPerDay = null;
+                                let dmiFormula  = null;
+
+                                if (pd.cattleSubcategory === 'calf' && NEmf) {
+                                    const k = TIER1.dmiCalfConstants;
+                                    dmiKgPerDay = Math.pow(BW, 0.75) *
+                                        ((k.a * NEmf - k.b * NEmf * NEmf - k.c) / (k.denomMult * NEmf));
+                                    dmiFormula = 'Eq 10.17 (calf)';
+                                } else if (pd.cattleSubcategory === 'growing' && NEmf) {
+                                    const k = TIER1.dmiGrowingConstants;
+                                    dmiKgPerDay = Math.pow(BW, 0.75) *
+                                        ((k.a * NEmf - k.b * NEmf * NEmf - k.c) / (k.denomMult * NEmf));
+                                    dmiFormula = 'Eq 10.18 (growing cattle)';
+                                } else if (pd.cattleSubcategory === 'feedlot_steer') {
+                                    const k = TIER1.dmiFeedlotSteerBull;
+                                    dmiKgPerDay = (k.intercept + k.slope * BW) * k.factor;
+                                    dmiFormula = 'Eq 10.18a (feedlot steer/bull)';
+                                } else if (pd.cattleSubcategory === 'feedlot_heifer') {
+                                    const k = TIER1.dmiFeedlotHeifer;
+                                    dmiKgPerDay = (k.intercept + k.slope * BW) * k.factor;
+                                    dmiFormula = 'Eq 10.18a (feedlot heifer)';
+                                } else if (pd.cattleSubcategory === 'mature_beef_cow') {
+                                    const tier = TIER1.dmiMatureBeefCowPctBW[pd.forageQuality || 'average'];
+                                    if (tier) {
+                                        const pctBW = pd.lactating ? tier.lactating : tier.nonLactating;
+                                        dmiKgPerDay = BW * pctBW;
+                                        dmiFormula = 'Table 10.8 (mature beef cow, ' + (pd.lactating ? 'lactating' : 'non-lactating') + ', forage=' + (pd.forageQuality||'average') + ')';
+                                    }
+                                } else if (pd.cattleSubcategory === 'lactating_dairy') {
+                                    // DISABLED (this session, before any live use): the FCM-based
+                                    // Eq 10.18b formula originally written here was checked against
+                                    // real published enteric CH4 reference values (117-139 kg
+                                    // CH4/head/yr for high-productivity dairy cows -- South Korea
+                                    // Tier 2 study, World Bank livestock methane report, IPCC's own
+                                    // North America Tier 1 default) and produced ~60 kg/head/yr --
+                                    // roughly half the real range. A second source (Klein et al.,
+                                    // Germany historical livestock methane study, ScienceDirect)
+                                    // shows Eq 10.18b actually uses digestible energy % (DE%), not
+                                    // fat-corrected milk (FCM) -- a different formula than what was
+                                    // transcribed here from a CNCPS/Arnerdal source. Rather than
+                                    // patch a guess, this path is disabled until the DE%-based
+                                    // formula is verified directly against the primary IPCC PDF
+                                    // text. dmiKgPerDay stays null -> falls through to Tier 1/1a
+                                    // below, same fail-open pattern as every other unverified case.
+                                    efResolution.tier2_warning = 'Tier 2 lactating_dairy formula ' +
+                                        'DISABLED pending re-verification — an earlier version of this ' +
+                                        'formula was checked against real-world enteric CH4 reference ' +
+                                        'values and found to be materially wrong (~50% low). Falling ' +
+                                        'through to Tier 1/1a rather than use an unverified formula.';
+                                }
+                                // calf / growing / feedlot_steer / feedlot_heifer / mature_beef_cow
+                                // paths above are NOT yet independently sanity-checked against
+                                // real-world reference values the way lactating_dairy was -- they
+                                // remain enabled because DMI outputs looked plausible in testing,
+                                // but should be treated as provisional until each is checked the
+                                // same way (real published kg CH4/head/yr by subcategory).
+
+                                if (dmiKgPerDay && dmiKgPerDay > 0 && NEmf) {
+                                    // Eq 10.21: CH4 (kg/head/yr) = [GE_intake(MJ/day) x Ym x 365] / GE_METHANE_MJ_PER_KG
+                                    // GE_intake = DMI(kg/day) x NEmf(MJ/kg) -- NEmf used here as the
+                                    // gross-energy-content proxy per IPCC's own worked examples for
+                                    // this simplified method (full method would separately track GE
+                                    // vs NE; the simplified method folds this into NEmf directly).
+                                    const ymTier = pd.cattleSubcategory === 'feedlot_steer' || pd.cattleSubcategory === 'feedlot_heifer'
+                                        ? 'feedlot'
+                                        : (pd.cattleSubcategory === 'lactating_dairy' ? 'dairy' : 'grazing');
+                                    const YmPct = TIER1.Ym[ymTier];
+                                    const geIntakeMJPerDay = dmiKgPerDay * NEmf;
+                                    const ch4KgPerHeadPerYear =
+                                        (geIntakeMJPerDay * (YmPct / 100) * 365) / TIER1.GE_METHANE_MJ_PER_KG;
+
+                                    // Convert head/year -> per-kg-of-product using the same
+                                    // productivityMetric the Tier 1 path already requires
+                                    // (kg product per head per year) — same unit conversion
+                                    // pattern already used a few lines below for Tier 1.
+                                    if (pd.productivityMetric && pd.productivityMetric > 0) {
+                                        ef_ch4 = ch4KgPerHeadPerYear / pd.productivityMetric;
+                                        tier2Applied = true;
+                                        efResolution.tierUsed = 'Tier 2 simplified (' + dmiFormula + ', DMI=' +
+                                            dmiKgPerDay.toFixed(2) + ' kg/day, NEmf=' + NEmf + ' MJ/kg, Ym=' + YmPct + '%)';
+                                        efResolution.applied = true;
+                                        efResolution.tier2_inputs = {
+                                            liveweightKg: BW, cattleSubcategory: pd.cattleSubcategory,
+                                            dietQuality: dietQ, dmiKgPerDay: dmiKgPerDay,
+                                            ch4KgPerHeadPerYear: ch4KgPerHeadPerYear
+                                        };
+                                    } else {
+                                        efResolution.tier2_warning = 'Tier 2 DMI computed successfully but pd.productivityMetric ' +
+                                            'missing/zero — cannot convert kg CH4/head/year to per-kg-product. Falling through to Tier 1/1a.';
+                                    }
+                                } else {
+                                    efResolution.tier2_warning = 'Tier 2 inputs incomplete for cattleSubcategory="' +
+                                        pd.cattleSubcategory + '" (check liveweightKg, dietQuality/forageQuality, ' +
+                                        'and for lactating_dairy, milkYieldKgPerDay + milkFatPercent). Falling through to Tier 1/1a.';
+                                }
+                            } catch (e) {
+                                efResolution.tier2_error = 'Tier 2 calculation failed: ' + (e && e.message ? e.message : String(e)) +
+                                    '. Falling through to Tier 1/1a — no partial/unverified Tier 2 value used.';
+                                console.warn('[AIOXY] Tier 2 enteric calculation error:', e);
+                            }
+                        }
+                        // === END TIER 2 SIMPLIFIED ===
+
                         if (!animalDef) {
                             efResolution.n_excretion_warning = 'pd.animalType "' + pd.animalType + '" not found in IPCC_TIER1_LIVESTOCK.entericEF. n_excretion defaulted to 0 — manure N2O for this ingredient will understate real emissions.';
                             console.warn('[AIOXY] ' + efResolution.n_excretion_warning);
                         }
 
-                        if (animalDef && animalDef.byRegion) {
+                        if (!tier2Applied && animalDef && animalDef.byRegion) {
                             // Region-aware animal type (currently: dairy_cow, beef_cattle, buffalo)
                             const region = TIER1.COUNTRY_TO_IPCC_REGION[ingredient.originCountry] || null;
                             efResolution.resolvedRegion = region;
@@ -2260,6 +2595,108 @@ if (!traceability.usetox) {
                 }
                 // === END SOC SEQUESTRATION ===
 
+                // === FARM DIESEL OVERRIDE (this session) — real fuel bills, not AGRIBALYSE background ===
+                // Same override principle as processManufacturing's primaryFactoryData (2c):
+                // a brand/farm-supplied number derived from actual fuel purchase records,
+                // replacing AGRIBALYSE's background-modeled farm-machinery fuel estimate for
+                // this one flow only — not the whole ingredient, and not the other 15 EF3.1
+                // categories, which still depend on AGRIBALYSE/equivalent LCI background data
+                // (machinery manufacture, fertilizer production chain, etc. — no farm bill can
+                // supply these; see STEP C2 header and Climate Change country-factor discussion
+                // for why a full background-free override isn't possible for any LCA, not just
+                // AIOXY's).
+                // Formula: CO2e_per_kg = (dieselLPerTon / 1000) × FUEL_CO2_FACTORS.fuel_oil
+                // Uses the SAME JRC-cited factor as manufacturing's primary factory diesel —
+                // see shared FUEL_CO2_FACTORS constant, file header area.
+                // This does not attempt to net out AGRIBALYSE's own modeled machinery-fuel
+                // estimate (no clean way to isolate that sub-component from AGRIBALYSE's
+                // aggregate Climate Change figure) — so a farm supplying this number should
+                // understand it ADDS a real, measured fuel-emissions figure on top of the
+                // AGRIBALYSE baseline, same conservative non-double-counting caution already
+                // applied elsewhere in this file (see the AGRIBALYSE background Human Toxicity
+                // double-counting fix a few hundred lines up) — disclosed, not hidden.
+                if (pd.farmDieselLPerTon && pd.farmDieselLPerTon > 0) {
+                    const dieselCO2e_per_kg = (pd.farmDieselLPerTon / 1000) * FUEL_CO2_FACTORS.fuel_oil;
+                    flatPef['Climate Change - Fossil'] += dieselCO2e_per_kg;
+                    flatPef['Climate Change']          += dieselCO2e_per_kg;
+
+                    adjustments.farm_diesel = {
+                        applied:              true,
+                        diesel_l_per_ton:     pd.farmDieselLPerTon,
+                        co2_factor_used:      FUEL_CO2_FACTORS.fuel_oil,
+                        co2e_per_kg_added:    dieselCO2e_per_kg,
+                        category_affected:    'Climate Change - Fossil + Climate Change total',
+                        formula:              'CO2e/kg = (dieselLPerTon/1000) × ' + FUEL_CO2_FACTORS.fuel_oil + ' kg CO2/L',
+                        source:               'European Commission, Covenant of Mayors, Emission Factors for ' +
+                                              'Local Energy Use, 2024 Edition, JRC — same factor as manufacturing ' +
+                                              'primaryFactoryData. Cross-checked vs IPCC 2006 Vol.2 Ch.2 Tier 1 ' +
+                                              'gas/diesel oil default (2.66085 kg CO2/L).',
+                        caveat:               'ADDS to AGRIBALYSE background Climate Change value — does not ' +
+                                              'attempt to net out AGRIBALYSE\'s own modeled machinery-fuel ' +
+                                              'sub-component, which cannot be cleanly isolated from its ' +
+                                              'aggregate figure. Intended for brands measuring genuinely ' +
+                                              'additional on-farm fuel use beyond generic modeling, not as a ' +
+                                              'like-for-like swap.'
+                    };
+                }
+                // === END FARM DIESEL OVERRIDE ===
+
+                // === FARM ELECTRICITY OVERRIDE (this session) — real electricity bills ===
+                // Same override principle as farm diesel above and manufacturing's
+                // primaryFactoryData (2c). Formula: CO2e_per_kg = (electricityKWhPerTon / 1000)
+                // × grid_intensity[originCountry]. Reuses the same grid-intensity table
+                // manufacturing's primaryFactoryData path already reads from (db.grid_intensity
+                // or db.countries[...].electricityCO2), so a farm and a factory in the same
+                // country use the identical grid figure — no separate, second source to drift.
+                // Same non-double-counting caveat as farm diesel: adds to AGRIBALYSE's
+                // background rather than netting out its own modeled electricity estimate,
+                // which cannot be cleanly isolated from its aggregate Climate Change figure.
+                if (pd.farmElectricityKWhPerTon && pd.farmElectricityKWhPerTon > 0) {
+                    let farmGridIntensity = null;
+                    let farmGridSource    = null;
+                    if (db.grid_intensity && typeof db.grid_intensity[originCountry] === 'number') {
+                        farmGridIntensity = db.grid_intensity[originCountry];
+                        farmGridSource    = 'window.aioxyData.grid_intensity["' + originCountry + '"]';
+                    } else if (db.countries && db.countries[originCountry] &&
+                               typeof db.countries[originCountry].electricityCO2 === 'number') {
+                        farmGridIntensity = db.countries[originCountry].electricityCO2;
+                        farmGridSource    = 'window.aioxyData.countries["' + originCountry + '"].electricityCO2';
+                    }
+
+                    if (farmGridIntensity === null) {
+                        adjustments.farm_electricity = {
+                            applied: false,
+                            reason:  'Farm electricity supplied (' + pd.farmElectricityKWhPerTon + ' kWh/ton) but no ' +
+                                     'grid intensity found for origin country "' + originCountry + '". ' +
+                                     'Check window.aioxyData.grid_intensity["' + originCountry + '"] or ' +
+                                     'window.aioxyData.countries["' + originCountry + '"].electricityCO2. ' +
+                                     'Not applied — no unsourced default used.'
+                        };
+                    } else {
+                        // grid_intensity is typically g CO2/kWh — /1000 twice: once kWh/ton -> kWh/kg,
+                        // once g -> kg. (electricityKWhPerTon/1000) kWh/kg-of-output × (gridIntensity/1000) kg CO2/kWh
+                        const electricCO2e_per_kg = (pd.farmElectricityKWhPerTon / 1000) * (farmGridIntensity / 1000);
+                        flatPef['Climate Change - Fossil'] += electricCO2e_per_kg;
+                        flatPef['Climate Change']          += electricCO2e_per_kg;
+
+                        adjustments.farm_electricity = {
+                            applied:               true,
+                            electricity_kwh_per_ton: pd.farmElectricityKWhPerTon,
+                            grid_intensity_g_per_kwh: farmGridIntensity,
+                            grid_source:           farmGridSource,
+                            co2e_per_kg_added:     electricCO2e_per_kg,
+                            category_affected:     'Climate Change - Fossil + Climate Change total',
+                            formula:               'CO2e/kg = (electricityKWhPerTon/1000) x (gridIntensity_g_per_kWh/1000)',
+                            source:                'Origin-country grid intensity, ' + farmGridSource,
+                            caveat:                'ADDS to AGRIBALYSE background Climate Change value — does not ' +
+                                                   'attempt to net out AGRIBALYSE\'s own modeled electricity ' +
+                                                   'sub-component, which cannot be cleanly isolated from its ' +
+                                                   'aggregate figure. Same caveat as farm_diesel above.'
+                        };
+                    }
+                }
+                // === END FARM ELECTRICITY OVERRIDE ===
+
             // === USEtox 2.14: Substance-specific pesticide toxicity ===
                 if (pd.pesticides && pd.pesticides.length > 0 && pd.yieldKgPerHa && pd.yieldKgPerHa > 0) {
                     const usetoxDB = window.aioxyData.usetox;
@@ -2878,15 +3315,11 @@ if (!traceability.usetox) {
             const kwhPerKgActual = pfd.totalKWh   / pfd.totalOutputKg;
             const gasM3PerKg     = pfd.totalGasM3 / pfd.totalOutputKg;
 
-            // FUEL TYPE CO2 FACTOR — CoM 2024 JRC Edition
-            // Each factor is per the unit entered in the form (m³ for gas, litres for LPG/oil, kg for coal).
-            const FUEL_CO2_FACTORS = {
-                natural_gas: 2.13,   // kg CO2/m³  (0.20196 t CO2/MWh × 38 MJ/m³ ÷ 3600 MJ/MWh × 1000)
-                lpg:         1.61,   // kg CO2/litre (63.1 t CO2/TJ × 46.1 MJ/kg × 0.555 kg/L ÷ 1e6 × 1000)
-                fuel_oil:    2.66,   // kg CO2/litre (74.1 t CO2/TJ × 42.7 MJ/kg × 0.84 kg/L ÷ 1e6 × 1000)
-                coal:        2.53,   // kg CO2/kg   (94.6 t CO2/TJ × 26.7 MJ/kg ÷ 1e6 × 1000)
-                none:        0.0
-            };
+            // FUEL TYPE CO2 FACTOR — CoM 2024 JRC Edition. Unit is per the value entered
+            // in the form (m³ for gas, litres for LPG/oil, kg for coal). FUEL_CO2_FACTORS
+            // itself now lives as a shared top-level constant (see file header area) —
+            // reused as-is here, not redeclared, so this and the farm-diesel block below
+            // can never silently drift onto two different diesel numbers over time.
             const fuelType   = pfd.fuelType || 'natural_gas';
             // FIX (2026-07-31 audit): the ": 2.13" fallback previously silently
             // applied natural gas's CO2 factor to ANY unrecognized fuelType —

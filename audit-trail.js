@@ -1677,13 +1677,19 @@ function exportCSRDMatrix() {
     rows.push([c('Allocation: economic, inherited from AGRIBALYSE 3.2 system boundary.')]);
     rows.push([c('eudr_risk_flag: HIGH = origin on the official EU high-risk list (' + EUDR_CLASSIFICATION_SOURCE + '); NOT_HIGH = confirmed not on that list. AIOXY does not assert a LOW/standard-risk classification — no verified complete list of EU "standard risk" countries exists. See scope_limitation notes in Block 9.')]);
     rows.push([c('eudr_documentation_status (NEW, this session): presence/format check only, for HIGH-risk-origin ingredients -- confirms whether geolocation and DDS reference were supplied and are well-formed, NOT that AIOXY has validated them against any forest-cover, plot-registry, or government EUDR information system. NOT_APPLICABLE for NOT_HIGH origins, since this documentation is not required by this screening either way.')]);
+    rows.push([c('faostat_crop_climate_adjustment: when non-empty, cc_total_kg_co2e/cc_per_kg_kg_co2e above already include a country-specific ratio (origin_factor/FR_reference_factor) from FAOSTAT GCE (Crop Residues, Burning, Rice Cultivation elements) + QCL (Production), FAO TIER 1, 2023. PARTIAL FACTOR: covers residue decomposition, residue burning, and rice paddy methane only -- excludes synthetic fertilizer N2O and on-farm fuel/machinery, which FAOSTAT does not publish at crop-specific resolution. Empty = not applied, either because this ingredient is not one of the mapped crops, origin is FR, primary data was supplied, or the computed ratio/inputs failed a plausibility check (see full derivation in PDF report, Layer B8b/B8c) -- in all not-applied cases, cc_total/cc_per_kg reflect the unmodified AGRIBALYSE FR-reference value.')]);
+    rows.push([c('primary_data_overrides_applied (NEW, this session): comma-separated list of which specific brand/farm-supplied primary-data overrides changed this ingredient row\'s numbers -- distinct from the report-level primary_data_applied flag in Block 1, which only says primary data was used SOMEWHERE in the report, not which override or which ingredient. Possible values: nitrogen, organic_nitrogen, phosphorus, soc, pesticides, farm_diesel, farm_electricity (crops); productivity, manure_system (animals). Empty = this ingredient used AGRIBALYSE/FAOSTAT background data only, no brand-supplied override. Full formula and source for each override type is in the PDF report, Layer B (B14-B18).')]);
+    rows.push([c('livestock_methodology_tier (NEW, this session): for animal-derived ingredients, which IPCC tier produced the enteric methane figure above (Tier 1, Tier 1a productivity-split, or a cross-region fallback). Empty = not a livestock ingredient. IMPORTANT: Tier 1/1a is NOT the industry ceiling -- IPCC Tier 2/3 (diet-based: dry matter intake, feed digestibility, ration composition) is documented IPCC method, already used by some real commercial dairy carbon calculators, and a real 2026 published comparison measured Tier 2 enteric CH4 at ~28% higher than Tier 1 for identical animals/year -- a material difference, not a rounding one. AIOXY does not collect diet/ration data and cannot run Tier 2 today. Full disclosure in PDF report, Layer B5.')]);
     rows.push([
         'ingredient_name', 'internal_id', 'agribalyse_lci_name',
         'quantity_kg', 'origin_country', 'processing_state',
         'cc_total_kg_co2e', 'cc_per_kg_kg_co2e', 'pct_of_cc_total',
         'dqr', 'primary_data_applied', 'allocation_method',
         'eudr_risk_flag', 'eudr_regulated_commodity_scope',   // GAP-3
-        'eudr_documentation_status'
+        'eudr_documentation_status',
+        'faostat_crop_climate_adjustment',                    // STEP C2 disclosure
+        'primary_data_overrides_applied',                     // this session
+        'livestock_methodology_tier'                          // this session
     ].map(q).join(','));
 
     const ccTotal = getTotal('Climate Change');
@@ -1711,6 +1717,53 @@ function exportCSRDMatrix() {
             primaryData: ing.primary_data || {}
         });
 
+        // STEP C2 disclosure: cite the ratio and its source only when actually applied.
+        // Full ref/origin factor breakdown lives in the PDF (Layer B8b) -- this column
+        // is a citation for the CSV's already-adjusted cc_total/cc_per_kg figures, not
+        // a re-derivation of them, matching how eudr_risk_flag cites rather than re-proves.
+        // Livestock methodology tier (this session): discloses which IPCC tier produced
+        // the enteric methane figure, reusing calculation_engine.js's existing
+        // adj.enteric_ef_resolution.tierUsed rather than a new, less precise field --
+        // that field already distinguishes Tier 1a (productivity-system split) from
+        // plain Tier 1 and flags cross-region fallback cases. Empty = not a livestock
+        // ingredient (enteric methane does not apply). CEILING NOTE: Tier 1/1a is NOT
+        // the industry ceiling -- IPCC Tier 2/3 (diet-based: dry matter intake,
+        // digestibility, ration composition) is documented IPCC method already used by
+        // real deployed dairy carbon calculators, and measured ~28% higher enteric CH4
+        // than Tier 1 for identical animals in a real 2026 comparison. AIOXY does not
+        // collect diet/ration data and cannot run Tier 2 today -- see PDF Layer B5 for
+        // full disclosure.
+        const livestockTier = (adj.enteric_ef_resolution && adj.enteric_ef_resolution.tierUsed)
+            ? adj.enteric_ef_resolution.tierUsed + ' (NOT the industry ceiling -- see PDF B5 for Tier 2/3 gap)'
+            : '';
+
+        const fcAdj = adj.country_factors?.faostat_crop;
+        const faostatCropNote = (fcAdj && fcAdj.applied)
+            ? 'YES (crop=' + fcAdj.crop_key + ', ratio=' + fcAdj.ratio_applied.toFixed(4) +
+              'x, FAOSTAT GCE+QCL 2023, partial factor)'
+            : '';
+
+        // Per-ingredient breakdown of which specific primary-data override(s) applied --
+        // distinct from the report-level primary_data_applied flag (Block 1), which can't
+        // tell an auditor which ingredient or which override type. Field names verified
+        // directly against calculation_engine.js (not assumed) -- see nitrogen_adjustment
+        // (~line 2177), n2o_organic_applied (~line 2364), soc_sequestration (~line 2412),
+        // farm_diesel (~line 2461, this session), salca_p_applied, usetox_livestock.
+        const overridesApplied = [];
+        if (adj.nitrogen_adjustment)                              overridesApplied.push('nitrogen');
+        if (adj.n2o_organic_applied && adj.n2o_organic_applied.applied) overridesApplied.push('organic_nitrogen');
+        if (adj.salca_p_applied && adj.salca_p_applied.applied)   overridesApplied.push('phosphorus');
+        if (adj.soc_sequestration && adj.soc_sequestration.applied) overridesApplied.push('soc');
+        if (adj.usetox_livestock && adj.usetox_livestock.pesticides_entered &&
+            adj.usetox_livestock.pesticides_entered.length > 0) overridesApplied.push('pesticides');
+        if (adj.farm_diesel && adj.farm_diesel.applied)           overridesApplied.push('farm_diesel');
+        if (adj.farm_electricity && adj.farm_electricity.applied) overridesApplied.push('farm_electricity');
+        // Productivity: real brand-supplied value used (fallback NOT applied) means primary
+        // data WAS used -- inverse of the fallback flag, called out explicitly so this reads
+        // correctly rather than relying on a double-negative.
+        if (adj.productivity_fallback && adj.productivity_fallback.applied === false) overridesApplied.push('productivity');
+        const primaryOverridesNote = overridesApplied.join('; ');
+
         rows.push([
             ing.name || ingId, ingId, lciName,
             qty.toFixed(6), origin, ing.processingState || 'raw',
@@ -1718,7 +1771,10 @@ function exportCSRDMatrix() {
             (ing.dqr || 0).toFixed(2),
             (!!ing.primary_data_used || !!ing.primary_data) ? 'YES' : 'NO',
             ing.allocationMethod || 'Economic (AGRIBALYSE 3.2)',
-            eudrRisk, eudrCommodityScope, eudrDoc.status
+            eudrRisk, eudrCommodityScope, eudrDoc.status,
+            faostatCropNote,
+            primaryOverridesNote,
+            livestockTier
         ].map(q).join(','));
     });
     rows.push(['']);

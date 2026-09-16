@@ -1375,6 +1375,19 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     layerBLines.push('  enteric CO2e    : ' + fix(e.enteric_co2e_total||0,4) + ' kg CO2e');
                 }
                 layerBLines.push('  Source: IPCC 2006 Vol. 4 Table 10.11  |  GWP CH4 biogenic = 27.0 (IPCC AR6)');
+                // METHODOLOGY CEILING DISCLOSURE (this session): Tier 1 is a single regional
+                // EF per animal type, adjusted only by the productivity delta above -- NOT the
+                // industry ceiling. IPCC Tier 2/3 (diet-based: dry matter intake, digestibility,
+                // ration composition) is documented IPCC method, already used by real deployed
+                // commercial dairy carbon calculators, and a real 2026 comparison measured Tier 2
+                // enteric CH4 at 28.2% higher than Tier 1 for identical animals/year -- a
+                // material difference. AIOXY does not collect diet/ration data and cannot run
+                // Tier 2 today. Disclosed here rather than left implicit.
+                layerBLines.push('  CEILING: this is IPCC Tier 1 (regional default EF), not Tier 2/3 (diet-based).');
+                layerBLines.push('    Tier 2/3 needs dry matter intake, feed digestibility, and diet composition --');
+                layerBLines.push('    not collected by AIOXY today. A real published comparison found Tier 2');
+                layerBLines.push('    enteric CH4 ~28% higher than Tier 1 for the same animals/year -- a material,');
+                layerBLines.push('    not cosmetic, gap. Some commercial dairy carbon tools already offer Tier 2/3.');
                 layerBLines.push('');
             }
 
@@ -1455,7 +1468,72 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                     layerBLines.push('');
                 }
 
-                // FAOSTAT
+                // FAOSTAT GCE/QCL — Climate Change crop-specific adjustment (STEP C2)
+                if (cf.faostat_crop && cf.faostat_crop.applied) {
+                    const fg = cf.faostat_crop;
+                    layerBLines.push('B8b — FAOSTAT GCE/QCL Climate Change Adjustment (crop-specific, PARTIAL):');
+                    layerBLines.push('  Formula: Climate Change x= (origin_factor / reference_factor_FR)');
+                    layerBLines.push('  Matched crop            : ' + safe(fg.crop_key));
+                    layerBLines.push('  Reference factor (FR)   : ' + fix(fg.ref_factor||0, 5) + ' kg CO2e/kg');
+                    layerBLines.push('  Origin factor (' + origin + ')     : ' + fix(fg.origin_factor||0, 5) + ' kg CO2e/kg');
+                    layerBLines.push('  Ratio applied            : ' + fix(fg.ratio_applied||1, 4));
+                    layerBLines.push('  Applied to               : Climate Change (headline + Fossil + Biogenic + Land Use sub-splits)');
+                    layerBLines.push('');
+                    layerBLines.push('  SOURCE ROWS — exact FAOSTAT coordinates, filter either CSV on these fields:');
+                    const rowLabels = {
+                        crop_residues_n2o: 'Crop residues N2O',
+                        burning_n2o:       'Burning residues N2O',
+                        burning_ch4:       'Burning residues CH4',
+                        rice_ch4:          'Rice cultivation CH4',
+                        production:        'Production (QCL)'
+                    };
+                    const printRowSet = (label, rowSet) => {
+                        if (!rowSet) return;
+                        layerBLines.push('  [' + label + ']');
+                        Object.entries(rowSet).forEach(([k, row]) => {
+                            if (!row) return; // e.g. rice_ch4 is null for non-rice crops
+                            layerBLines.push('    ' + (rowLabels[k]||k) + ': file=' + safe(row.file) +
+                                ' | Domain Code=' + safe(row.domain_code) +
+                                ' | Area Code (M49)=' + safe(row.area_code_m49) + ' (' + safe(row.area) + ')' +
+                                ' | Element Code=' + safe(row.element_code) + ' (' + safe(row.element) + ')' +
+                                ' | Item Code=' + safe(row.item_code_cpc || row.item_code_fao) + ' (' + safe(row.item) + ')' +
+                                ' | Year=' + safe(row.year) +
+                                ' | Value=' + safe(row.value) + ' ' + safe(row.unit) +
+                                ' | Flag=' + safe(row.flag));
+                        });
+                    };
+                    printRowSet('Reference (FR)', fg.ref_source_rows);
+                    printRowSet('Origin (' + origin + ')', fg.origin_source_rows);
+                    layerBLines.push('');
+                    layerBLines.push('  SCOPE — PARTIAL FACTOR: covers crop-residue decomposition, residue burning,');
+                    layerBLines.push('    and (rice only) paddy methane ONLY. Does NOT include synthetic fertilizer N2O,');
+                    layerBLines.push('    on-farm fuel/machinery, or background soil emissions — FAOSTAT publishes');
+                    layerBLines.push('    fertilizer at whole-country level only (all crops combined), with no');
+                    layerBLines.push('    per-crop allocation basis available. Verified against AGRIBALYSE FR');
+                    layerBLines.push('    reference: this factor typically represents a minority share of a crop\'s');
+                    layerBLines.push('    total Climate Change value, not the complete farm-gate figure.');
+                    layerBLines.push('  Plausibility bounds: factor floor 0.005 kg CO2e/kg, ratio bound 0.33x-3.0x —');
+                    layerBLines.push('    values outside these bounds are held back and disclosed as not-applied');
+                    layerBLines.push('    rather than propagated (see B8c below if this ingredient was held back).');
+                    layerBLines.push('  Source: FAOSTAT domain GCE (Crop Residues, Burning, Rice Cultivation) +');
+                    layerBLines.push('    QCL (Production), FAO TIER 1, 2023. GWP100 AR6 (N2O=273, CH4=27).');
+                    layerBLines.push('');
+                } else if (cf.faostat_crop && cf.faostat_crop.hasOwnProperty('ratio_computed')) {
+                    // Held back by plausibility guard — disclose the computation AND the hold-back
+                    const fg = cf.faostat_crop;
+                    layerBLines.push('B8c — FAOSTAT GCE/QCL Climate Change Adjustment: computed but NOT applied');
+                    layerBLines.push('  Reference factor (FR)   : ' + fix(fg.ref_factor||0, 5) + ' kg CO2e/kg');
+                    layerBLines.push('  Origin factor (' + origin + ')     : ' + fix(fg.origin_factor||0, 5) + ' kg CO2e/kg');
+                    layerBLines.push('  Ratio computed           : ' + fix(fg.ratio_computed||1, 4) + '  (outside 0.33x-3.0x plausibility bound)');
+                    layerBLines.push('  Reason held back         : ' + safe(fg.reason));
+                    layerBLines.push('  Value used instead       : AGRIBALYSE FR-reference value, unmodified');
+                    layerBLines.push('');
+                } else if (cf.faostat_crop && cf.faostat_crop.applied === false && cf.faostat_crop.reason) {
+                    layerBLines.push('B8b — FAOSTAT GCE/QCL Climate Change Adjustment: not applied — ' + safe(cf.faostat_crop.reason));
+                    layerBLines.push('');
+                }
+
+                // FAOSTAT Yield Benchmarking (separate, pre-existing — audit reference only)
                 if (cf.faostat && cf.faostat.benchmarked) {
                     const f = cf.faostat;
                     layerBLines.push('B9 — FAOSTAT Yield Benchmarking (audit reference only — does NOT modify impact):');
@@ -1667,6 +1745,35 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 layerBLines.push('  P leach                : = ' + fix(sp.P_applied_kg||0,6) + ' x 0.05 = ' + fix(sp.P_leach_kg_P_eq||0,6) + ' kg P-eq');
                 layerBLines.push('  Per kg product         : ' + fix((sp.P_leach_kg_P_eq||0)/qty,8) + ' kg P-eq/kg');
                 layerBLines.push('  Added to               : Eutrophication, freshwater (kg P-eq, CF=1.0 per EF 3.1)');
+                layerBLines.push('');
+            }
+
+            // Farm Diesel Override (this session)
+            if (adj.farm_diesel && adj.farm_diesel.applied) {
+                const fd = adj.farm_diesel;
+                layerBLines.push('B17 — On-Farm Diesel Override (primary data, real fuel bills):');
+                layerBLines.push('  Diesel used            : ' + fix(fd.diesel_l_per_ton||0,3) + ' L / tonne harvested');
+                layerBLines.push('  CO2 factor used        : ' + fix(fd.co2_factor_used||0,5) + ' kg CO2/L');
+                layerBLines.push('  Formula: CO2e/kg = (dieselLPerTon / 1000) x ' + fix(fd.co2_factor_used||0,5));
+                layerBLines.push('  CO2e per kg added      : ' + fix(fd.co2e_per_kg_added||0,6) + ' kg CO2e/kg');
+                layerBLines.push('  Added to               : ' + safe(fd.category_affected));
+                layerBLines.push('  Source: ' + safe(fd.source));
+                layerBLines.push('  CAVEAT: ' + safe(fd.caveat));
+                layerBLines.push('');
+            }
+
+            // Farm Electricity Override (this session)
+            if (adj.farm_electricity && adj.farm_electricity.applied) {
+                const fe = adj.farm_electricity;
+                layerBLines.push('B18 — On-Farm Electricity Override (primary data, real electricity bills):');
+                layerBLines.push('  Electricity used       : ' + fix(fe.electricity_kwh_per_ton||0,3) + ' kWh / tonne harvested');
+                layerBLines.push('  Grid intensity used    : ' + fix(fe.grid_intensity_g_per_kwh||0,2) + ' g CO2/kWh');
+                layerBLines.push('  Grid source            : ' + safe(fe.grid_source));
+                layerBLines.push('  Formula: CO2e/kg = (electricityKWhPerTon/1000) x (gridIntensity_g_per_kWh/1000)');
+                layerBLines.push('  CO2e per kg added      : ' + fix(fe.co2e_per_kg_added||0,6) + ' kg CO2e/kg');
+                layerBLines.push('  Added to               : ' + safe(fe.category_affected));
+                layerBLines.push('  Source: ' + safe(fe.source));
+                layerBLines.push('  CAVEAT: ' + safe(fe.caveat));
                 layerBLines.push('');
             }
 
@@ -4284,7 +4391,17 @@ async function generateProfessionalPDF(tabId, reportTitle) {
             'CC: ' + numFmt(ccPerKg,4) + ' kg CO2e/kg',
             'Score: ' + numFmt(mPt,2) + ' uPt/kg',
             'DQR: ' + fix(dqrVal,2) + '/5.0',
-            'DB: AGRIBALYSE 3.2',
+            // FIX QR-DB-1 (this session): 'DB:' previously always read 'AGRIBALYSE 3.2'
+            // even when one or more ingredients had a FAOSTAT GCE/QCL country-specific
+            // Climate Change adjustment applied (STEP C2) — meaning the CC figure shown
+            // two lines above was not sourced from AGRIBALYSE alone, but the QR's only
+            // database credit line didn't say so. A reviewer scanning only the QR (not
+            // opening the full PDF) could reasonably read that line as a complete source
+            // list. Full derivation is always in the PDF (Layer B8b) — this only fixes
+            // the QR's own citation line to not omit a real contributing source.
+            'DB: ' + (ingComps.some(ing => (ing.country_factors||{}).faostat_crop?.applied)
+                ? 'AGRIBALYSE 3.2 + FAOSTAT GCE/QCL 2023'
+                : 'AGRIBALYSE 3.2'),
             'Method: EF 3.1 / PEF 3.1',
             'Date: ' + safe(dateStr),
             'Hash: ' + safe(auditHash).slice(0,16),

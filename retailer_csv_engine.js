@@ -356,7 +356,22 @@ function buildMasterData() {
                 eudrDoc:        window.corePhysics.assessEudrDocumentation({
                                      originCountry: origin,
                                      primaryData: ing.primary_data || {}
-                                 })
+                                 }),
+                // FAOSTAT GCE/QCL crop-specific Climate Change adjustment (STEP C2).
+                // Only set when actually applied -- see calculation_engine.js STEP C2 for
+                // the plausibility-bounded ratio logic and PDF Layer B8b for full derivation.
+                // This is a source citation for the final number, not the derivation itself --
+                // full ratio/ref-factor/origin-factor breakdown belongs in the PDF, per AIOXY's
+                // csv-cites / pdf-derives / pdf-qr-shows-story split.
+                faostatCropAdjustment: (() => {
+                    const fc = (ing.universal_adjustments || {}).country_factors?.faostat_crop;
+                    if (!fc || !fc.applied) return null;
+                    return {
+                        cropKey:      fc.crop_key,
+                        ratioApplied: fc.ratio_applied,
+                        source:       'FAOSTAT GCE+QCL, FAO TIER 1, 2023 (partial: residues+burning+rice only)'
+                    };
+                })()
             };
         })
     };

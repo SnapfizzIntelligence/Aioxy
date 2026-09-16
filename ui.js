@@ -2644,6 +2644,8 @@ function openSupplierModal(index) {
     document.getElementById('supplierPractice').value    = '';
     document.getElementById('primarySOCBaseline').value  = ''; // SOC FIX
     document.getElementById('primarySOCCurrent').value   = ''; // SOC FIX
+    document.getElementById('primaryFarmDieselL').value  = ''; // FARM FUEL FIX
+    document.getElementById('primaryFarmElectricityKWh').value = ''; // FARM ELECTRICITY FIX
     toggleSOCFields(''); // hide SOC section on fresh open
     document.getElementById('pesticide1Name').value      = '';
     document.getElementById('pesticide1CAS').value       = '';
@@ -2659,10 +2661,14 @@ function openSupplierModal(index) {
     const prodSystemEl     = document.getElementById('supplierProductionSystem');
     const productivityEl   = document.getElementById('supplierProductivity');
     const manureSystemEl   = document.getElementById('supplierManureSystem');
+    const animalDieselEl   = document.getElementById('animalFarmDieselL');       // FARM ENERGY FIX (livestock)
+    const animalElectricEl = document.getElementById('animalFarmElectricityKWh'); // FARM ENERGY FIX (livestock)
     if (animalTypeEl)   animalTypeEl.value   = '';
     if (prodSystemEl)   prodSystemEl.value   = '';
     if (productivityEl) productivityEl.value = '';
     if (manureSystemEl) manureSystemEl.value = '';
+    if (animalDieselEl)   animalDieselEl.value   = '';
+    if (animalElectricEl) animalElectricEl.value = '';
 
     // ── Detect ingredient type and show the correct section ───────────────
     const animalIngredient = isAnimalIngredient(ingredient);
@@ -2694,6 +2700,8 @@ function openSupplierModal(index) {
             if (prodSystemEl   && pd.productionSystem)   prodSystemEl.value   = pd.productionSystem;
             if (productivityEl && pd.productivityMetric) productivityEl.value = pd.productivityMetric;
             if (manureSystemEl && pd.manureSystem)       manureSystemEl.value = pd.manureSystem;
+            if (animalDieselEl   && pd.farmDieselLPerTon)        animalDieselEl.value   = pd.farmDieselLPerTon;   // FARM ENERGY FIX (livestock)
+            if (animalElectricEl && pd.farmElectricityKWhPerTon) animalElectricEl.value = pd.farmElectricityKWhPerTon; // FARM ENERGY FIX (livestock)
             // Update label + FAOSTAT hint for the restored animal type
             updateProductivityLabel();
         } else {
@@ -2705,6 +2713,8 @@ function openSupplierModal(index) {
             document.getElementById('supplierPractice').value    = pd.farmingPractice     || '';
             document.getElementById('primarySOCBaseline').value  = pd.socBaselineTC_ha    || ''; // SOC FIX
             document.getElementById('primarySOCCurrent').value   = pd.socCurrentTC_ha     || ''; // SOC FIX
+            document.getElementById('primaryFarmDieselL').value  = pd.farmDieselLPerTon   || ''; // FARM FUEL FIX
+            document.getElementById('primaryFarmElectricityKWh').value = pd.farmElectricityKWhPerTon || ''; // FARM ELECTRICITY FIX
             toggleSOCFields(pd.farmingPractice || ''); // show/hide SOC section based on saved practice
             if (pd.pesticides) {
                 var pest1 = pd.pesticides[0] || {};
@@ -2768,6 +2778,15 @@ function saveSupplierData() {
             ? parseFloat(document.getElementById('supplierProductivity').value)
             : NaN;
         const manureSystem      = document.getElementById('supplierManureSystem')      ? document.getElementById('supplierManureSystem').value      : '';
+        // FARM ENERGY FIX (livestock, this session): real on-farm diesel/electricity for
+        // barn operations, feed transport, milking parlor, cooling/heating — same override
+        // principle and shared FUEL_CO2_FACTORS / grid_intensity constants as the crop-side
+        // farm diesel/electricity fix. Confirmed against real published livestock LCA
+        // benchmarks (Teagasc Irish farm dataset, Carbon Trust-audited grass-based dairy
+        // study) which both list fuel/electricity/contractors as real foreground data
+        // collected alongside feed and manure. Optional: blank means "not supplied".
+        const animalDieselL      = document.getElementById('animalFarmDieselL')      ? parseFloat(document.getElementById('animalFarmDieselL').value)      : NaN;
+        const animalElectricKWh  = document.getElementById('animalFarmElectricityKWh') ? parseFloat(document.getElementById('animalFarmElectricityKWh').value) : NaN;
 
         if (!animalType) {
             alert('Please select an Animal Type');
@@ -2799,6 +2818,14 @@ function saveSupplierData() {
             productionSystem,
             productivityMetric,
             manureSystem: manureSystem || 'pasture',  // safe default
+
+            // FARM ENERGY FIX (livestock, this session) — see comment above. null = not
+            // supplied, use AGRIBALYSE background only. Reuses crop-side field names
+            // (farmDieselLPerTon / farmElectricityKWhPerTon) so calculation_engine.js's
+            // STEP-C2-area diesel/electricity blocks work identically for both paths
+            // without a separate animal-specific branch — same formula, same source.
+            farmDieselLPerTon: (!isNaN(animalDieselL) && animalDieselL > 0) ? animalDieselL : null,
+            farmElectricityKWhPerTon: (!isNaN(animalElectricKWh) && animalElectricKWh > 0) ? animalElectricKWh : null,
 
             // Pre-computed entericParams (convenience — engine also builds these itself)
             entericParams: {
@@ -2843,6 +2870,17 @@ function saveSupplierData() {
         const practice    = document.getElementById('supplierPractice').value;
         const socBaseline = parseFloat(document.getElementById('primarySOCBaseline').value); // SOC FIX
         const socCurrent  = parseFloat(document.getElementById('primarySOCCurrent').value);  // SOC FIX
+        // FARM FUEL FIX: real on-farm diesel use (machinery, irrigation pumping if diesel-driven),
+        // litres per tonne of harvested output. Same override pattern as manufacturing's
+        // primaryFactoryData (2c in calculation_engine.js) -- a real, measurable, bill-derived
+        // input, not a secondary-database estimate. Optional: blank means "not supplied", not zero.
+        const farmDieselL = parseFloat(document.getElementById('primaryFarmDieselL').value);
+        // FARM ELECTRICITY FIX: real on-farm electricity use (irrigation pumps if electric,
+        // grain drying, cold storage), kWh per tonne of harvested output. Grid-intensity
+        // lookup happens in calculation_engine.js using the ingredient's originCountry —
+        // same window.aioxyData.grid_intensity table manufacturing's primaryFactoryData
+        // already uses. Optional: blank means "not supplied", not zero.
+        const farmElectricityKWh = parseFloat(document.getElementById('primaryFarmElectricityKWh').value);
 
         if (isNaN(nitrogen) || isNaN(yieldVal)) {
             alert('Please fill in required fields: Nitrogen Fertilizer and Yield');
@@ -2872,6 +2910,8 @@ function saveSupplierData() {
             farmingPractice:   practice,
             socBaselineTC_ha:  (practice === 'regen' && !isNaN(socBaseline) && socBaseline > 0) ? socBaseline : null, // SOC FIX
             socCurrentTC_ha:   (practice === 'regen' && !isNaN(socCurrent)  && socCurrent  > 0) ? socCurrent  : null, // SOC FIX
+            farmDieselLPerTon: (!isNaN(farmDieselL) && farmDieselL > 0) ? farmDieselL : null, // FARM FUEL FIX: null = not supplied, use AGRIBALYSE background machinery/fuel modeling
+            farmElectricityKWhPerTon: (!isNaN(farmElectricityKWh) && farmElectricityKWh > 0) ? farmElectricityKWh : null, // FARM ELECTRICITY FIX: null = not supplied
             pesticides:        pesticides.length > 0 ? pesticides : null,
             timestamp:         new Date().toISOString(),
 

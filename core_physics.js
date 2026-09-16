@@ -2407,6 +2407,108 @@
                 'farmed_fish': Object.freeze({ ef_ch4: 0,    n_excretion: 0    })
             }),
 
+            // TIER2_SIMPLIFIED (this session, CORRECTED): IPCC 2019 Refinement to the 2006
+            // Guidelines, Vol.4 Ch.10, "Feed intake estimates using a simplified Tier 2
+            // method" (page ~10.30-10.33) -- Equations 10.17, 10.18, 10.18a, 10.18b, and
+            // Table 10.8. NOT the full 11-equation Tier 2 main method (Eq 10.3-10.16, which
+            // additionally needs weight gain, mature weight, activity/feeding situation,
+            // pregnancy, and work data -- a materially larger build, deliberately not
+            // attempted this session; flagged, not silently skipped).
+            //
+            // CORRECTION (this session): an earlier pass this same session wrote this block
+            // from a 2006-original-guidelines fetch that had scrambled PDF-extracted
+            // equation text, and mislabeled the variable NEmf as "NEma" (the OLD 2006 name --
+            // 2019 Refinement renamed it NEmf). That version was never wired into
+            // calculation_engine.js and is fully replaced here with values transcribed
+            // directly from a clean fetch of the actual 2019 Refinement PDF text
+            // (ipcc-nggip.iges.or.jp/public/2019rf/pdf/4_Volume4/19R_V4_Ch10_Livestock.pdf),
+            // cross-checked against a second independent fetch of the same document.
+            //
+            // Only applicable to cattle/buffalo (AIOXY animalType 'dairy_cow' / 'beef_cattle').
+            // Sheep/goats use a different equation set (Eq 10.7, 10.9, 10.10) not built here.
+            //
+            // WHICH SUB-FORMULA APPLIES: the 2019 Refinement gives FIVE different DMI
+            // estimators depending on the animal's actual life stage/system, not one formula
+            // for "cattle" generally -- calculation_engine.js's Tier 2 step must pick the
+            // right one from pd.cattleSubcategory (a new required field when Tier 2 is used):
+            //   'calf'            -> Equation 10.17 (dmiCalfConstants below)
+            //   'growing'         -> Equation 10.18 (dmiGrowingConstants below)
+            //   'feedlot_steer'   -> Equation 10.18a, steers/bulls (dmiFeedlotSteerBull below)
+            //   'feedlot_heifer'  -> Equation 10.18a, heifers (dmiFeedlotHeifer below)
+            //   'mature_beef_cow' -> Table 10.8 lookup (dmiMatureBeefCowPctBW below) -- NOT
+            //                        a formula, a direct %-of-bodyweight lookup by forage tier
+            //   'lactating_dairy' -> Equation 10.18b (needs milk yield + fat%, not just BW)
+            //
+            // dietNEmf: MJ per kg dry matter, midpoint of IPCC's own range per diet type.
+            // Source: Table 10.8a "Examples of NEmf content of typical diets fed to cattle
+            // for estimation of dry matter intake in equations 10.17 and 10.18" (renamed
+            // from Table 10.8 in the 2006 original -- table numbers shifted in 2019 Refinement).
+            // Ranges in the source table, midpoint used here (unchanged from 2006 values):
+            //   High grain diet (>90%):        7.5-8.5  -> 8.0
+            //   High quality forage:            6.5-7.5  -> 7.0
+            //   Moderate quality forage:        5.5-6.5  -> 6.0
+            //   Low quality forage:             3.5-5.5  -> 4.5
+            dietNEmf: Object.freeze({
+                'high_grain':        8.0,
+                'high_forage':       7.0,
+                'moderate_forage':   6.0,
+                'low_forage':        4.5
+            }),
+
+            // Equation 10.17: DMI = BW^0.75 x [(0.0582*NEmf - 0.00266*NEmf^2 - 0.1128) / (0.239*NEmf)]
+            // Numerator coefficients (a, b, c in a*NEmf - b*NEmf^2 - c), denominator multiplier.
+            dmiCalfConstants: Object.freeze({ a: 0.0582, b: 0.00266, c: 0.1128, denomMult: 0.239 }),
+
+            // Equation 10.18: same structure as 10.17, only the constant term differs (0.0869 not 0.1128).
+            dmiGrowingConstants: Object.freeze({ a: 0.0582, b: 0.00266, c: 0.0869, denomMult: 0.239 }),
+
+            // Equation 10.18a (steers and bulls): DMI = (3.83 + 0.0143*BW) x 0.96 -- linear in BW, no NEmf.
+            dmiFeedlotSteerBull: Object.freeze({ intercept: 3.83, slope: 0.0143, factor: 0.96 }),
+
+            // Equation 10.18a (heifers): DMI = (3.184 + 0.01536*BW) x 0.96
+            dmiFeedlotHeifer: Object.freeze({ intercept: 3.184, slope: 0.01536, factor: 0.96 }),
+
+            // Table 10.8 (NOT a formula): DMI as % of body weight, by forage digestibility tier,
+            // separate non-lactating/lactating columns. Source: Table 10.8 "DMI Required By
+            // Mature Non Dairy Cows Based On Forage Quality" (National Academies of Sciences,
+            // Engineering and Medicine 2016, as cited in the 2019 Refinement).
+            //   Low quality    (DE <52%):    1.8% non-lactating, 2.2% lactating
+            //   Average quality (DE 52-59%): 2.2% non-lactating, 2.5% lactating
+            //   High quality   (DE >59%):    2.5% non-lactating, 2.7% lactating
+            dmiMatureBeefCowPctBW: Object.freeze({
+                'low':     Object.freeze({ nonLactating: 0.018, lactating: 0.022 }),
+                'average': Object.freeze({ nonLactating: 0.022, lactating: 0.025 }),
+                'high':    Object.freeze({ nonLactating: 0.025, lactating: 0.027 })
+            }),
+
+            // Equation 10.18b (lactating dairy cows): DMI = 0.0185*BW + 0.305*FCM
+            // FCM (fat-corrected milk, 3.5%) = 0.4324*milk_kg + 16.216*fat_kg
+            //   where fat_kg = milk_kg * (fat_percent/100)
+            // Source: CNCPS (Fox et al. 1992) as modified by Arnerdal (2005), cited in 2019
+            // Refinement as the recommended lactating-dairy-cow DMI estimator.
+            dmiLactatingDairyConstants: Object.freeze({
+                bwCoeff: 0.0185, fcmCoeff: 0.305,
+                fcmMilkCoeff: 0.4324, fcmFatCoeff: 16.216
+            }),
+
+            // GE_METHANE_MJ_PER_KG: energy content of methane, Equation 10.21's fixed
+            // constant "55.65" (MJ/kg CH4) -- unchanged between 2006 and 2019 versions.
+            GE_METHANE_MJ_PER_KG: 55.65,
+
+            // Ym: methane conversion factor, % of gross energy converted to CH4.
+            // Source: Table 10.12 (2019 Refinement) "Cattle/buffalo methane conversion
+            // factors", midpoint of each stated range used (IPCC gives +/-1.0% uncertainty
+            // bands, not a single value -- midpoint is the defensible single-point estimate,
+            // disclosed as such rather than silently picking an endpoint). Values unchanged
+            // from the 2006 table.
+            //   Feedlot fed cattle (>=85% concentrate diet, updated threshold in 2019): 3.0% +/-1.0% -> 3.0
+            //   Dairy cows (and young) / other grazing cattle: 6.5% +/-1.0% -> 6.5
+            Ym: Object.freeze({
+                'feedlot':  3.0,
+                'grazing':  6.5,
+                'dairy':    6.5
+            }),
+
             // COUNTRY_TO_IPCC_REGION: maps every country code in window.aioxyData.countries
             // (81 total, verified against ingredients.js this session) to its IPCC 2019
             // Refinement Table 10.11 region. Built this session specifically to make the

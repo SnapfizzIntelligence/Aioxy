@@ -37,6 +37,21 @@
 <!-- 3b. FAOSTAT Crop Yields (5-year avg, 2020-2024; 66 countries) -->
 <script src="aioxy_pef3.1_crop_yields.js"></script>
 
+<!-- 3b2. FAOSTAT GCE (Emissions from Crops) + QCL (Production) derived Climate
+     Change country factors — 10 crops, 30 European countries, FAO TIER 1, 2023.
+     PARTIAL FACTOR: crop-residue decomposition + burning + rice methane only,
+     excludes synthetic fertilizer and on-farm fuel/machinery — see file header
+     for full scope disclosure. Consumed by calculation_engine.js STEP C2.
+     MUST load before calculation_engine.js, same as the other aioxyData files. -->
+<script src="faostat_gce_crop_data.js"></script>
+
+<!-- 3b3. Ingredient -> FAOSTAT crop key mapping (hand-verified; excludes any
+     ingredient that merely mentions a crop as a feed input, e.g. dairy entries
+     that reference silage maize). MUST load before calculation_engine.js —
+     processIngredients() reads window.aioxyData.ingredientFaostatCropKey
+     directly per-ingredient to set ingredient.faostatCropKey for STEP C2. -->
+<script src="ingredient_crop_mapping.js"></script>
+
 <!-- 3c. USEtox 2.14 — ecotoxicity + human toxicity (3077 substances) -->
 <script src="aioxy_pef3.1_usetox.js"></script>
 
@@ -2942,6 +2957,34 @@
                         </div>
                     </div>
 
+                    <!-- FARM DIESEL OVERRIDE (this session) — real fuel bills, JRC-cited factor -->
+                    <!-- CO2e/kg = (dieselLPerTon/1000) × 2.66 kg CO2/L (same factor as manufacturing) -->
+                    <!-- Affects: Climate Change − Fossil + Climate Change total -->
+                    <div class="form-group">
+                        <label>On-Farm Diesel Use (litres per tonne harvested) — optional</label>
+                        <input type="number" id="primaryFarmDieselL" placeholder="e.g. 12.5" step="0.1" min="0">
+                        <small style="color:#555; font-size:0.75rem;">
+                            From actual fuel purchase records for this crop/field (machinery, diesel-driven irrigation pumping).
+                            Adds a real, measured fuel-emissions figure on top of the AGRIBALYSE background value — does not
+                            replace AGRIBALYSE's own modeled machinery-fuel estimate, which cannot be cleanly isolated and
+                            subtracted from its aggregate Climate Change figure. Leave blank to use AGRIBALYSE background only.
+                        </small>
+                    </div>
+
+                    <!-- FARM ELECTRICITY OVERRIDE (this session) — real electricity bills, country grid-intensity factor -->
+                    <!-- CO2e/kg = (electricityKWhPerTon/1000) × grid_intensity[originCountry] -->
+                    <!-- Affects: Climate Change − Fossil + Climate Change total -->
+                    <div class="form-group">
+                        <label>On-Farm Electricity Use (kWh per tonne harvested) — optional</label>
+                        <input type="number" id="primaryFarmElectricityKWh" placeholder="e.g. 45.0" step="0.1" min="0">
+                        <small style="color:#555; font-size:0.75rem;">
+                            From actual electricity bills for this crop/field (electric irrigation pumps, grain drying, cold
+                            storage). Uses the origin country's grid carbon intensity. Adds to the AGRIBALYSE background value —
+                            does not replace AGRIBALYSE's own modeled electricity estimate, for the same reason as on-farm
+                            diesel above. Leave blank to use AGRIBALYSE background only.
+                        </small>
+                    </div>
+
                 </div><!-- end supplierCropSection -->
 
                 <!-- ═══ ANIMAL-SPECIFIC FIELDS (hidden when crop ingredient) ═══
@@ -3005,6 +3048,30 @@
                             Source: IPCC 2006 Vol. 4 Table 10.21, confirmed unchanged in 2019 Refinement.
                         </small>
                     </div>
+                    <!-- FARM ENERGY OVERRIDE (livestock, this session) — same pattern/constants as -->
+                    <!-- crop-side farm diesel/electricity. Reuses calculation_engine.js's existing -->
+                    <!-- pd.farmDieselLPerTon / pd.farmElectricityKWhPerTon blocks -- no new calc code, -->
+                    <!-- field-gated not type-gated. Confirmed against real livestock LCA benchmarks -->
+                    <!-- (Teagasc, Carbon Trust-audited studies) listing fuel/electricity/contractors -->
+                    <!-- as genuine foreground farm data alongside feed and manure. -->
+                    <div class="form-group">
+                        <label>On-Farm Diesel Use (litres per tonne of product) — optional</label>
+                        <input type="number" id="animalFarmDieselL" placeholder="e.g. 8.0" step="0.1" min="0">
+                        <small style="color:#555; font-size:0.75rem;">
+                            From actual fuel purchase records (feed transport, farm machinery, contractors).
+                            Adds to the AGRIBALYSE background value — does not replace AGRIBALYSE's own modeled
+                            fuel estimate, which cannot be cleanly isolated from its aggregate figure.
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label>On-Farm Electricity Use (kWh per tonne of product) — optional</label>
+                        <input type="number" id="animalFarmElectricityKWh" placeholder="e.g. 60.0" step="0.1" min="0">
+                        <small style="color:#555; font-size:0.75rem;">
+                            From actual electricity bills (milking parlor, barn heating/cooling/ventilation,
+                            lighting). Uses the origin country's grid carbon intensity. Adds to the AGRIBALYSE
+                            background value for the same reason as diesel above.
+                        </small>
+                    </div>
                     <!-- Compliance badge for animal section -->
                     <div style="background: #E8F5E9; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #A5D6A7; margin-top: 0.75rem; font-size: 0.8rem; color: #1B5E20;">
                         <i class="fas fa-leaf"></i>
@@ -3013,6 +3080,27 @@
                             <strong>How the calculation works:</strong> AGRIBALYSE 3.2 already embeds enteric CH₄ based on French national average productivity (ADEME/INRAE methodology, Collet et al. 2018 §4.3). Your productivity entry is compared against that baseline — the <em>delta</em> (difference) is applied. If your productivity equals the French average, the adjustment is zero. If lower (more animals needed per kg product), impact goes up. If higher, impact goes down. The Agribalyse default productivities used: Dairy cow 8,230 kg/yr | Beef 295 kg/yr | Pig 98 kg/yr | Broiler 2.1 kg/yr.
                         </div>
                         <span id="farmedFishNote" style="display:none; color: #0277BD; font-style: italic; display:block; margin-top:0.4rem;"> 🐟 Farmed fish: feed-driven emissions model using Tacon &amp; Metian (2008) FCR values. Species-specific feed conversion ratios are applied (salmon FCR=1.25, trout FCR=1.25, sea bass FCR=2.1, sea bream FCR=1.9, shrimp FCR=1.7). No enteric CH₄ or manure N₂O for aquatic species.</span>
+                    </div>
+                    <!-- METHODOLOGY CEILING DISCLOSURE (this session) — Tier 1, explicitly NOT the -->
+                    <!-- industry ceiling. Real, deployed dairy carbon calculators (CAP'2ER and others, -->
+                    <!-- per a 2026 peer-reviewed comparison of commercial farm-level tools) already run -->
+                    <!-- IPCC Tier 2/3 using diet composition + digestibility, which a 2026 gridded-livestock -->
+                    <!-- comparison measured at 28.2% higher enteric CH4 than Tier 1 for the same animals, -->
+                    <!-- same year -- a material, not cosmetic, difference. Tier 2 needs dry matter intake, -->
+                    <!-- feed digestibility (DE%), and diet composition -- none of which this form collects -->
+                    <!-- today. This is a real, separately-scoped upgrade, not a same-day field addition -->
+                    <!-- like diesel/electricity above (which ARE genuinely complete at their scope). -->
+                    <div style="background: #FFF3E0; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #FFB74D; margin-top: 0.5rem; font-size: 0.8rem; color: #7A4A00;">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <strong>Methodology ceiling — please read:</strong> the enteric methane and manure N₂O
+                        figures above use <strong>IPCC Tier 1</strong> — a single regional/national emissions
+                        factor per animal type, adjusted only by your productivity entry. This is <em>not</em>
+                        the industry ceiling. IPCC Tier 2/3 methods use each animal's actual diet — dry matter
+                        intake, feed digestibility, ration composition — and typically produce a materially
+                        different result (a real 2026 comparison found Tier 2 enteric CH₄ 28% higher than
+                        Tier 1 for identical animals). Some commercial dairy carbon calculators already offer
+                        Tier 2/3 today. AIOXY does not yet collect diet/ration data, so cannot run Tier 2 —
+                        this is disclosed here rather than presented as complete.
                     </div>
                 </div>
             </div>
