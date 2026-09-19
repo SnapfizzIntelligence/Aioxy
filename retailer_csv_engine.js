@@ -367,9 +367,12 @@ function buildMasterData() {
                     const fc = (ing.universal_adjustments || {}).country_factors?.faostat_crop;
                     if (!fc || !fc.applied) return null;
                     return {
-                        cropKey:      fc.crop_key,
-                        ratioApplied: fc.ratio_applied,
-                        source:       'FAOSTAT GCE+QCL, FAO TIER 1, 2023 (partial: residues+burning+rice only)'
+                        cropKey:            fc.crop_key,
+                        ratioApplied:       fc.ratio_applied,
+                        fertilizerIncluded: !!fc.fertilizer_included,
+                        source:             fc.fertilizer_included
+                                                ? 'FAOSTAT GCE+QCL, FAO TIER 1, 2023 (residues+burning+rice+synthetic fertilizer N2O)'
+                                                : 'FAOSTAT GCE+QCL, FAO TIER 1, 2023 (partial: residues+burning+rice only)'
                     };
                 })()
             };

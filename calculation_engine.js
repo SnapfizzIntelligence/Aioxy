@@ -1132,8 +1132,16 @@
                 const originEntry = cropTable[originCountry];
                 // Data is nested { intensity, source_rows } as of the row-locator upgrade —
                 // unwrap here so the rest of this step reads plain numbers as before.
-                const refFactor    = refEntry    ? refEntry.intensity    : undefined;
-                const originFactor = originEntry ? originEntry.intensity : undefined;
+                // FERTILIZER WIRING (2026-09-18): faostat_gce_crop_data.js now carries a
+                // combined_intensity field (residue+burning+rice+synthetic fertilizer N2O,
+                // IPCC Tier 1, allocated per crop by share of national Area harvested) on
+                // every record where fertilizer_included is true. Prefer it over the
+                // residue-only intensity when BOTH sides of the ratio have it, so a partial
+                // (fertilizer-only-on-one-side) comparison is never silently computed.
+                const bothHaveFertilizer = refEntry && originEntry &&
+                    refEntry.fertilizer_included && originEntry.fertilizer_included;
+                const refFactor    = refEntry    ? (bothHaveFertilizer ? refEntry.combined_intensity    : refEntry.intensity)    : undefined;
+                const originFactor = originEntry ? (bothHaveFertilizer ? originEntry.combined_intensity : originEntry.intensity) : undefined;
 
                 // FAOSTAT_MIN_PLAUSIBLE_FACTOR: below this, a reported value is treated as a
                 // data-precision zero/near-zero (rounding artifact of a tiny production base),
@@ -1215,8 +1223,13 @@
                         origin_factor:     originFactor,
                         ratio_applied:     faostatRatio,
                         source:            faostatCropData.source,
-                        scope:             'PARTIAL — residue decomposition + burning + rice methane only. ' +
-                                           'Excludes fertilizer, fuel, machinery. See window.aioxyData.faostat_gce_crop header.',
+                        scope:             bothHaveFertilizer
+                                             ? 'Residue decomposition + burning + rice methane + synthetic fertilizer N2O ' +
+                                               '(IPCC Tier 1, allocated per crop by share of national Area harvested). ' +
+                                               'Excludes on-farm fuel/machinery. See window.aioxyData.faostat_gce_crop header.'
+                                             : 'PARTIAL — residue decomposition + burning + rice methane only. ' +
+                                               'Excludes fertilizer, fuel, machinery. See window.aioxyData.faostat_gce_crop header.',
+                        fertilizer_included: bothHaveFertilizer,
                         crop_key:          cropKey,
                         category_adjusted: 'Climate Change (all sub-categories)',
                         // Exact FAOSTAT row coordinates for both countries — lets an auditor

@@ -793,7 +793,12 @@ function updateResultsUI(results, twinCalcResult) {
                 </div>`;
             }
             const pct = baseVal > 0 ? ((baseVal - userVal) / baseVal * 100) : 0;
-            const col = pct >= 0 ? '#27AE60' : '#E63946';
+            // FIX (consumer-psych/EmpCo pass, same treatment as the story-section HERO
+            // card): "advantage"/"liability" is verdict language, and green/red
+            // good-bad coloring implies a claim this table isn't substantiated to make.
+            // Direction is a fact (arrow); magnitude is a fact (%); neither needs a
+            // value judgment attached.
+            const col = '#64748B';
             const arrow = pct >= 0 ? '↓' : '↑';
             return `
                 <div>
@@ -805,7 +810,7 @@ function updateResultsUI(results, twinCalcResult) {
                     <div style="font-weight:700;color:#888;">${baseVal.toFixed(3)} <span style="font-weight:400;font-size:0.78rem;">${unit}</span></div>
                 </div>
                 <div style="grid-column:1/-1;text-align:right;">
-                    <span style="color:${col};font-weight:700;">${arrow} ${Math.abs(pct).toFixed(1)}% ${pct>=0?'advantage':'liability'} vs baseline</span>
+                    <span style="color:${col};font-weight:700;">${arrow} ${Math.abs(pct).toFixed(1)}% difference vs baseline</span>
                 </div>`;
         };
 
@@ -863,41 +868,6 @@ function updateResultsUI(results, twinCalcResult) {
         nutritionalDiv.remove();
     }
     
-    // 🛡️ REGULATOR FIX 1: Dynamic Honesty Badges (Removing Zero-Floor Masking)
-    const rawCo2Pct = safeBaseCO2 > 0 ? ((safeBaseCO2 - unifiedCO2) / safeBaseCO2) * 100 : 0;
-    const rawWaterPct = safeBaseWater > 0 ? ((safeBaseWater - results.waterScarcityPerKg) / safeBaseWater) * 100 : 0;
-
-    const formatHonestyBadge = (pct, elemId) => {
-        const el = document.getElementById(elemId);
-        if (!el) return;
-        if (pct >= 0) {
-            el.innerHTML = `<i class="fas fa-arrow-down"></i> ${pct.toFixed(1)}% lower vs ${baselineName}`;
-            el.style.background = 'var(--gradient-secondary)';
-        } else {
-            el.innerHTML = `<i class="fas fa-arrow-up"></i> ${Math.abs(pct).toFixed(1)}% higher vs ${baselineName}`;
-            el.style.background = '#E63946';
-        }
-    };
-
-    formatHonestyBadge(rawCo2Pct, 'co2Savings');
-    formatHonestyBadge(rawWaterPct, 'waterSavings');
-    
-    // === STEP 5: ZERO DATA SAFETY VALVE ===
-    if (unifiedCO2 <= 0.001) {
-        if(document.getElementById('co2Savings')) {
-            document.getElementById('co2Savings').textContent = "Data unavailable";
-            document.getElementById('co2Savings').style.background = "#CBD5E0";
-        }
-    }
-
-    if (results.waterScarcityPerKg <= 0.001) {
-        if(document.getElementById('waterSavings')) {
-            document.getElementById('waterSavings').textContent = "Data unavailable";
-            document.getElementById('waterSavings').style.background = "#CBD5E0";
-        }
-        if(document.getElementById('waterValue')) document.getElementById('waterValue').textContent = "—";
-    }
-    
     // === EQUIVALENCIES ENGINE ===
     // FIX: [ui.js audit] Previously used results.comparison?.co2SavedPerKg, which is
     // computed entirely inside the main product's own calculate() call using the legacy
@@ -942,6 +912,35 @@ function updateResultsUI(results, twinCalcResult) {
     const householdDays = Math.round(equivDeltaResult.electricityDays);
     const currentWater = results.waterScarcityPerKg;
     const waterScoreDiff = Math.abs(baselineWater - currentWater);
+
+    // 🛡️ REGULATOR FIX 1 (revised, consumer-psych pass): was "23.4% lower vs
+    // {baseline}" — a comparative verdict badge, the exact pattern flagged as
+    // greenwashing risk elsewhere in this file (small, standalone, no visible
+    // methodology, easy to screenshot out of context). Moved below the
+    // equivalencies engine so it can reuse carKm/waterScoreDiff — the same
+    // magnitude-only values already shown in the cards below, already
+    // compliance-reviewed ("Direction is already carried... these now only
+    // communicate magnitude, not benefit"). No new number, no new risk
+    // surface — just pointing the badge at what already exists instead of
+    // a raw percentage with a verdict word attached.
+    const formatHonestyBadge = (value, unit, label, elemId) => {
+        const el = document.getElementById(elemId);
+        if (!el) return;
+        if (value > 0) {
+            el.innerHTML = `${value} ${unit} <span style="font-weight:400;font-size:0.85em;">— measured difference, ${label}</span>`;
+            el.style.background = 'var(--gradient-secondary)';
+        } else {
+            el.textContent = 'Data unavailable';
+            el.style.background = '#CBD5E0';
+        }
+    };
+
+    formatHonestyBadge(unifiedCO2 > 0.001 ? carKm : 0, 'km', 'equiv. driving', 'co2Savings');
+    formatHonestyBadge(results.waterScarcityPerKg > 0.001 ? Math.round(waterScoreDiff * 10) / 10 : 0, 'm³', 'world eq. (AWARE)', 'waterSavings');
+    if (results.waterScarcityPerKg <= 0.001 && document.getElementById('waterValue')) {
+        document.getElementById('waterValue').textContent = '—';
+    }
+
 
     if(document.getElementById('carKm')) {
         document.getElementById('carKm').innerHTML = 
@@ -1319,6 +1318,17 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
     storyContent.innerHTML = `
         <div style="font-family: Inter, Arial, sans-serif;">
 
+            <!-- TRUST HOOK (cofounder addition, consumer-psych pass): most
+                 environmental communication asks a shopper to trust a verdict.
+                 This leads with access instead — the promise here is "you can
+                 check this yourself", not "this product is better". No claim,
+                 no comparison, so it carries none of the EmpCo substantiation
+                 burden a verdict-style headline would. -->
+            <div style="font-size: 0.8rem; color: #64748B; text-align: center; margin-bottom: 0.6rem; line-height: 1.5;">
+                Most environmental claims ask you to trust them.<br>
+                <strong style="color: #0D9488;">This one shows you how to check it.</strong>
+            </div>
+
             <!-- PUNCH HEADLINE — leads with the equivalence, not the raw number.
                  A human brain grasps "driving 1.6 km" faster than "0.393 kg CO2e/kg".
                  Same measurement, same source, just sequenced for impact instead of
@@ -1378,9 +1388,34 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                             ${Math.abs(pctReduction).toFixed(1)}%
                         </div>
                         <div style="font-size: 0.6rem; color: #94A3B8; margin-top: 0.2rem;">
-                            ${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg ${isBetter ? 'lower' : 'higher'}
+                            ${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg different
                         </div>
                     </div>
+                </div>
+
+                <!-- WITHIN-UNCERTAINTY NOTE (cofounder addition, consumer-psych pass):
+                     compares the measured difference against this product's OWN
+                     uncertainty band rather than asserting a verdict. When the
+                     difference is smaller than the band, that's a genuinely
+                     informative statistical fact worth stating plainly — and it
+                     defuses the comparison without needing "not significant"
+                     jargon or a good/bad framing either way. -->
+                ${Math.abs(actualSaving) < (thisProductCO2 * uncertainty / 100) ? `
+                <div style="font-size: 0.65rem; color: #94A3B8; padding-top: 0.5rem; line-height: 1.4;">
+                    That ${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg gap is smaller than this product's
+                    own ±${uncertainty}% uncertainty range — worth knowing, not a verdict.
+                </div>` : ''}
+
+                <!-- WHAT THE REFERENCE ACTUALLY IS (cofounder addition): a twin is
+                     easy to misread as "a competitor's product" or "the market
+                     average" — neither is true, and the misreading is exactly
+                     what makes a bare percentage feel like a superiority claim.
+                     Stated plainly once, here, rather than left implied. -->
+                <div style="font-size: 0.65rem; color: #64748B; padding-top: 0.6rem;
+                            border-top: 1px solid rgba(255,255,255,0.08); line-height: 1.4;">
+                    <strong>${baselineName}</strong> is not a competitor's product or an industry average.
+                    It's a hypothetical we configured ourselves — this same product, recalculated as if
+                    one input were different — to see how sensitive the footprint is to that change.
                 </div>
 
                 <!-- UNCERTAINTY LINE -->
@@ -1390,6 +1425,20 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                     &nbsp;|&nbsp; PEF 3.1 / AGRIBALYSE 3.2 / EF 3.1 / GLEC v3.2
                     &nbsp;|&nbsp; Functional unit: 1 kg as sold
                 </div>
+            </div>
+
+            <!-- UNCERTAINTY RANGE — elevated from a footnote to its own callout
+                 (cofounder addition, consumer-psych pass). Most published
+                 environmental figures don't disclose an uncertainty range at
+                 all; showing the actual span, stated plainly rather than
+                 rounded away, is framed here as the differentiator it is. -->
+            <div style="background: #FFFBEB; border-left: 3px solid #F59E0B; border-radius: 0 8px 8px 0;
+                        padding: 0.7rem 1rem; margin-bottom: 1rem; font-size: 0.78rem; color: #78350F; line-height: 1.5;">
+                <strong>±${uncertainty}% uncertainty — shown, not hidden.</strong>
+                Calculated over 1,000 Monte Carlo iterations. Most environmental figures you'll see
+                don't publish an uncertainty range at all — this is
+                ${(thisProductCO2 * (1 - uncertainty / 100)).toFixed(3)}–${(thisProductCO2 * (1 + uncertainty / 100)).toFixed(3)}
+                kg CO₂e/kg, stated plainly rather than rounded away.
             </div>
 
             ${secondaryCategoriesHTML}
@@ -1498,13 +1547,24 @@ function updateEnvironmentalStory(results, resolvedBaseline) {
                 <div style="font-size: 0.78rem; color: #134E4A; line-height: 1.5; margin-top: 0.8rem;
                             padding-top: 0.7rem; border-top: 1px dashed #99F6E4;">
                     For context — <strong>${baselineName}</strong> (reference): <strong>${baselineCO2.toFixed(3)} kg CO₂e/kg</strong>.
-                    Difference: ${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg ${isBetter ? 'lower' : 'higher'} than the reference.
+                    Difference: ${Math.abs(actualSaving).toFixed(3)} kg CO₂e/kg vs the reference.
                 </div>
 
                 <div style="font-size: 0.68rem; color: #64748B; font-style: italic; margin-top: 0.5rem;">
                     Note: Equivalences above are based on this product's own footprint,
                     not on the difference vs ${baselineName}.
                 </div>
+            </div>
+
+            <!-- CLOSING BOOKEND (cofounder addition, consumer-psych pass): pairs
+                 with the trust hook at the top of this section. Deliberately makes
+                 no claim about the product — only about how much of the derivation
+                 the reader has just been shown, which is a true, checkable
+                 statement, not a comparative or environmental one. -->
+            <div style="font-size: 0.85rem; color: #0A2540; font-weight: 700; line-height: 1.5;
+                        text-align: center; margin-bottom: 1rem;">
+                You now know more about this product than most people ever get to know
+                about anything they buy.
             </div>
 
             <!-- METHODOLOGY -->
@@ -3332,6 +3392,16 @@ function displayForegroundBackground() {
         });
         const allDomestic = !hasInternational;
 
+        // FAOSTAT GCE/QCL Climate Change adjustment (STEP C2) — was invisible in this panel
+        // until now even though AWARE/LANCA were shown here; added so this box actually lists
+        // every country adjustment that's live, not just water/land. Per-ingredient, not a
+        // single product-level flag, since fertilizer availability varies by origin/crop.
+        const faostatCropApplied = ingredients.filter(ing =>
+            ing.country_factors && ing.country_factors.faostat_crop && ing.country_factors.faostat_crop.applied);
+        const faostatCropAnyFert = faostatCropApplied.some(ing => ing.country_factors.faostat_crop.fertilizer_included);
+        const faostatCropAllFert = faostatCropApplied.length > 0 &&
+            faostatCropApplied.every(ing => ing.country_factors.faostat_crop.fertilizer_included);
+
         // 3. Find or create section
         const transparencyTab = document.getElementById('transparency-tab');
         if (!transparencyTab) return;
@@ -3469,7 +3539,7 @@ function displayForegroundBackground() {
                 <div>
                     <h3 style="color:var(--primary);margin:0;">International Supply Chain</h3>
                     <div style="color:var(--gray);font-size:0.9rem;">
-                        Ingredient origin traceability — AGRIBALYSE 3.2 country adjustments applied
+                        Ingredient origin traceability — AWARE 2.0 / LANCA v2.5 / FAOSTAT country adjustments applied
                     </div>
                 </div>
             </div>
@@ -3518,6 +3588,12 @@ function displayForegroundBackground() {
                 <strong>Country adjustments applied:</strong>
                 AWARE 2.0 water scarcity ratio, LANCA v2.5 land occupation, FAOSTAT yield delta,
                 for non-FR origins.
+                ${faostatCropApplied.length > 0 ? `
+                FAOSTAT GCE/QCL Climate Change adjustment (crop residues, burning, rice methane${
+                    faostatCropAnyFert ? ', + synthetic fertilizer N2O where available' : ''
+                }) applied to ${faostatCropApplied.length} ingredient${faostatCropApplied.length === 1 ? '' : 's'}${
+                    faostatCropAnyFert && !faostatCropAllFert ? ' (fertilizer data available for some, not all)' : ''
+                } — see PDF report Layer B8b for full derivation.` : ''}
                 Grid intensity for manufacturing: ${
                     window.aioxyData && window.aioxyData.grid_intensity && window.aioxyData.grid_intensity[destCode]
                         ? window.aioxyData.grid_intensity[destCode] + ' g CO₂/kWh (Ember 2025)'

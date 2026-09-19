@@ -1471,7 +1471,9 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                 // FAOSTAT GCE/QCL — Climate Change crop-specific adjustment (STEP C2)
                 if (cf.faostat_crop && cf.faostat_crop.applied) {
                     const fg = cf.faostat_crop;
-                    layerBLines.push('B8b — FAOSTAT GCE/QCL Climate Change Adjustment (crop-specific, PARTIAL):');
+                    const fertOn = !!fg.fertilizer_included;
+                    layerBLines.push('B8b — FAOSTAT GCE/QCL Climate Change Adjustment (crop-specific' +
+                        (fertOn ? ', includes fertilizer' : ', PARTIAL') + '):');
                     layerBLines.push('  Formula: Climate Change x= (origin_factor / reference_factor_FR)');
                     layerBLines.push('  Matched crop            : ' + safe(fg.crop_key));
                     layerBLines.push('  Reference factor (FR)   : ' + fix(fg.ref_factor||0, 5) + ' kg CO2e/kg');
@@ -1491,6 +1493,7 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                         if (!rowSet) return;
                         layerBLines.push('  [' + label + ']');
                         Object.entries(rowSet).forEach(([k, row]) => {
+                            if (k === 'fertilizer') return; // different shape — printed separately below
                             if (!row) return; // e.g. rice_ch4 is null for non-rice crops
                             layerBLines.push('    ' + (rowLabels[k]||k) + ': file=' + safe(row.file) +
                                 ' | Domain Code=' + safe(row.domain_code) +
@@ -1501,22 +1504,58 @@ async function generateProfessionalPDF(tabId, reportTitle) {
                                 ' | Value=' + safe(row.value) + ' ' + safe(row.unit) +
                                 ' | Flag=' + safe(row.flag));
                         });
+                        // FERTILIZER (2026-09-18): nested shape (national total + allocation inputs),
+                        // not a flat single row like the others above — printed separately so it
+                        // doesn't get run through the flat-row formatter and misprint 'undefined'.
+                        const fert = rowSet.fertilizer;
+                        if (fert) {
+                            const nf = fert.national_fertilizer_n2o;
+                            const ca = fert.crop_area_harvested;
+                            const ta = fert.national_total_area_harvested_ha;
+                            layerBLines.push('    Synthetic fertilizer N2O (national, allocated to this crop):');
+                            if (nf) layerBLines.push('      National fertilizer N2O : file=' + safe(nf.file) +
+                                ' | Area Code (M49)=' + safe(nf.area_code_m49) + ' (' + safe(nf.area) + ')' +
+                                ' | Element Code=' + safe(nf.element_code) + ' (' + safe(nf.element) + ')' +
+                                ' | Year=' + safe(nf.year) + ' | Value=' + safe(nf.value) + ' ' + safe(nf.unit) +
+                                ' | Flag=' + safe(nf.flag));
+                            if (ca) layerBLines.push('      Crop area harvested     : file=' + safe(ca.file) +
+                                ' | Area Code (M49)=' + safe(ca.area_code_m49) + ' (' + safe(ca.area) + ')' +
+                                ' | Item Code=' + safe(ca.item_code_cpc) + ' (' + safe(ca.item) + ')' +
+                                ' | Year=' + safe(ca.year) + ' | Value=' + safe(ca.value) + ' ' + safe(ca.unit) +
+                                ' | Flag=' + safe(ca.flag));
+                            if (ta) layerBLines.push('      National total area harvested : ' + safe(ta.value) + ' ' +
+                                safe(ta.unit) + ' (' + safe(ta.method) + ')');
+                            layerBLines.push('      Allocation share (this crop / national total) : ' +
+                                fix((fert.allocation_share||0)*100, 2) + '%');
+                            layerBLines.push('      Allocation formula      : ' + safe(fert.formula));
+                        }
                     };
                     printRowSet('Reference (FR)', fg.ref_source_rows);
                     printRowSet('Origin (' + origin + ')', fg.origin_source_rows);
                     layerBLines.push('');
-                    layerBLines.push('  SCOPE — PARTIAL FACTOR: covers crop-residue decomposition, residue burning,');
-                    layerBLines.push('    and (rice only) paddy methane ONLY. Does NOT include synthetic fertilizer N2O,');
-                    layerBLines.push('    on-farm fuel/machinery, or background soil emissions — FAOSTAT publishes');
-                    layerBLines.push('    fertilizer at whole-country level only (all crops combined), with no');
-                    layerBLines.push('    per-crop allocation basis available. Verified against AGRIBALYSE FR');
-                    layerBLines.push('    reference: this factor typically represents a minority share of a crop\'s');
-                    layerBLines.push('    total Climate Change value, not the complete farm-gate figure.');
+                    if (fertOn) {
+                        layerBLines.push('  SCOPE: covers crop-residue decomposition, residue burning, rice paddy');
+                        layerBLines.push('    methane, AND synthetic fertilizer N2O (IPCC Tier 1). Fertilizer is');
+                        layerBLines.push('    reported by FAOSTAT at whole-country level only (all crops combined);');
+                        layerBLines.push('    it is allocated to this crop by its share of national Area harvested —');
+                        layerBLines.push('    see allocation formula and share above. Still excludes on-farm');
+                        layerBLines.push('    fuel/machinery and background soil emissions.');
+                    } else {
+                        layerBLines.push('  SCOPE — PARTIAL FACTOR: covers crop-residue decomposition, residue burning,');
+                        layerBLines.push('    and (rice only) paddy methane ONLY. Does NOT include synthetic fertilizer N2O,');
+                        layerBLines.push('    on-farm fuel/machinery, or background soil emissions — fertilizer and/or');
+                        layerBLines.push('    area-harvested data needed for this specific country/crop was unavailable.');
+                        layerBLines.push('    Verified against AGRIBALYSE FR reference: this factor typically represents');
+                        layerBLines.push('    a minority share of a crop\'s total Climate Change value, not the complete');
+                        layerBLines.push('    farm-gate figure.');
+                    }
                     layerBLines.push('  Plausibility bounds: factor floor 0.005 kg CO2e/kg, ratio bound 0.33x-3.0x —');
                     layerBLines.push('    values outside these bounds are held back and disclosed as not-applied');
                     layerBLines.push('    rather than propagated (see B8c below if this ingredient was held back).');
-                    layerBLines.push('  Source: FAOSTAT domain GCE (Crop Residues, Burning, Rice Cultivation) +');
-                    layerBLines.push('    QCL (Production), FAO TIER 1, 2023. GWP100 AR6 (N2O=273, CH4=27).');
+                    layerBLines.push('  Source: FAOSTAT domain GCE (Crop Residues, Burning, Rice Cultivation' +
+                        (fertOn ? ', Synthetic Fertilizers' : '') + ') +');
+                    layerBLines.push('    QCL (Production' + (fertOn ? ', Area harvested' : '') +
+                        '), FAO TIER 1, 2023. GWP100 AR6 (N2O=273, CH4=27).');
                     layerBLines.push('');
                 } else if (cf.faostat_crop && cf.faostat_crop.hasOwnProperty('ratio_computed')) {
                     // Held back by plausibility guard — disclose the computation AND the hold-back
